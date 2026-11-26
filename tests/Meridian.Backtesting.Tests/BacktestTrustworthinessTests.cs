@@ -204,7 +204,7 @@ public sealed class BacktestTrustworthinessTests : IDisposable
 
         result.Fills.Should().ContainSingle(fill => fill.OrderId == Guid.Empty && fill.FillPrice == 0m);
         result.Snapshots.Last().Positions.Should().NotContainKey("GONE");
-        result.Ledger.GetBalance(LedgerAccounts.Securities("GONE", BacktestDefaults.DefaultBrokerageAccountId))
+        result.Ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("GONE"), BacktestDefaults.DefaultBrokerageAccountId))
             .Should().Be(0m);
         result.Ledger.GetBalance(LedgerAccounts.RealizedLossFor(BacktestDefaults.DefaultBrokerageAccountId))
             .Should().Be(1_000m);

@@ -175,7 +175,7 @@ public sealed class PaperTradingPortfolioVariationMarginTests
         settlement.Lines.Single(line => line.Account == LedgerAccounts.FuturesMtmSettlement(Es)).Credit.Should().Be(500m);
         var close = postings[1];
         close.Lines.Single(line => line.Account == LedgerAccounts.Cash).Credit.Should().Be(300m, "(6,004 - 6,010) x 50");
-        close.Lines.Should().NotContain(line => line.Account == LedgerAccounts.Securities(Es));
+        close.Lines.Should().NotContain(line => line.Account == LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(Es)));
     }
 
     [Fact]

@@ -292,7 +292,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                    carried.disposal_account_name, carried.disposal_account_type,
                    carried.disposal_symbol, carried.disposal_financial_account_id,
                    carried.replacement_lot_id, carried.window_days, carried.scope, carried.policy_id,
-                   carried.holding_period_carry_date
+                   carried.holding_period_carry_date,
+                   carried.disposal_account_security_id
             from {Qualified("tax_lot_mutations")} target
             join {Qualified("atomic_tax_lot_posting_batches")} target_batch
               on target_batch.mutation_batch_id = target.mutation_batch_id
@@ -311,7 +312,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
             while (await reader.ReadAsync(ct).ConfigureAwait(false))
                 evidence.Add(new(reader.GetGuid(0), reader.GetGuid(1), reader.GetGuid(2),
                     reader.IsDBNull(3) ? Guid.Empty : reader.GetGuid(3), reader.GetGuid(4), reader.GetGuid(5),
-                    DateOnly.FromDateTime(reader.GetDateTime(6)), ReadLedgerAccount(reader, 7),
+                    DateOnly.FromDateTime(reader.GetDateTime(6)), ReadLedgerAccount(reader, 7, "disposal_account_security_id"),
                     reader.GetString(11), reader.GetInt32(12),
                     Enum.Parse<WashSaleReplacementScope>(reader.GetString(13), ignoreCase: true), reader.GetString(14),
                     DateOnly.FromDateTime(reader.GetDateTime(15))));
@@ -408,7 +409,9 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                    recipient.symbol,
                    recipient.financial_account_id,
                    recipient.original_quantity,
-                   recipient.book_position_id
+                   recipient.book_position_id,
+                   deferral.disposal_account_security_id,
+                   recipient.account_security_id as recipient_account_security_id
             from {Qualified("wash_sale_deferrals")} deferral
             left join {Qualified("tax_lots")} recipient
               on recipient.tax_lot_record_id = deferral.replacement_tax_lot_record_id
@@ -431,7 +434,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
             // Bind every retained row to the disposed security, exact journal date, and full account.
             if (reader.GetGuid(8) != batch.SecurityId ||
                 DateOnly.FromDateTime(reader.GetDateTime(9)) != batch.SaleDate ||
-                ReadLedgerAccount(reader, 10) != batch.Account)
+                ReadLedgerAccount(reader, 10, "disposal_account_security_id") != batch.Account)
                 throw new LedgerValidationException("Retained wash-sale deferral security, sale date, or disposing account does not match its authoritative disposal batch.");
             var windowDays = reader.GetInt32(6);
             if (!Enum.TryParse<WashSaleReplacementScope>(reader.GetString(7), ignoreCase: true, out var scope) ||
@@ -440,7 +443,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                 reader.IsDBNull(24) || reader.GetGuid(24) == Guid.Empty ||
                 !string.Equals(reader.GetString(1), reader.GetString(16), StringComparison.OrdinalIgnoreCase) ||
                 Math.Abs(DateOnly.FromDateTime(reader.GetDateTime(18)).DayNumber - batch.SaleDate.DayNumber) > windowDays ||
-                (scope == WashSaleReplacementScope.DisposingAccount && ReadLedgerAccount(reader, 19) != batch.Account) ||
+                (scope == WashSaleReplacementScope.DisposingAccount && ReadLedgerAccount(reader, 19, "recipient_account_security_id") != batch.Account) ||
                 batch.CanonicalLots.Any(lot => lot.TaxLotRecordId == reader.GetGuid(14)))
                 throw new LedgerValidationException("Retained wash-sale deferral recipient does not match its durable lot, security, ledger book, replacement window, or account scope.");
 
@@ -451,7 +454,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                 reader.GetString(1),
                 reader.GetDecimal(2),
                 DateOnly.FromDateTime(reader.GetDateTime(4)),
-                ReadLedgerAccount(reader, 19))
+                ReadLedgerAccount(reader, 19, "recipient_account_security_id"))
             {
                 // The deferral proves that this revision governed this disposal. Its retained
                 // window and scope are authoritative; the mutable current policy is not. The

@@ -13840,6 +13840,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CanonicalSecurityResolution"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CanonicalSecurityResolutionException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CanonicalSecurityResolutionStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CashDistributionCorporateActionTerms"
     },
     {
@@ -15557,6 +15575,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.RejectCorporateActionSourceProposalRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ResolveCanonicalSecurityRequest"
     },
     {
       "kind": "contract-set-member",
@@ -31714,6 +31738,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CanonicalSecurityResolution"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CanonicalSecurityResolutionException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CanonicalSecurityResolutionStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CashDistributionCorporateActionTerms"
     },
     {
@@ -33431,6 +33473,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.RejectCorporateActionSourceProposalRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ResolveCanonicalSecurityRequest"
     },
     {
       "kind": "contract-set-member",
@@ -49617,6 +49665,24 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CanonicalSecurityResolution",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CanonicalSecurityResolutionStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CanonicalSecurityResolution",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CanonicalSecurityResolutionException",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CanonicalSecurityResolution"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.CashDistributionCorporateActionTerms",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionTerms"
     },
@@ -51017,6 +51083,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.ReferenceChangeCorporateActionTerms",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionTerms"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.ResolveCanonicalSecurityRequest",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind"
     },
     {
       "kind": "contract-reference",
@@ -63392,6 +63464,18 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_account_rekey_instruction on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.account_rekey_instruction"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_account_rekey_instruction on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.mutation_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.ck_atomic_tax_lot_batch_asset_scope on ledger.atomic_tax_lot_posting_batches",
       "target": "database:ledger.atomic_tax_lot_posting_batches.book_position_id"
     },
@@ -63520,6 +63604,12 @@
       "label": "",
       "source": "database:ledger.ck_journal_leg_currency_affirmations_legs on ledger.journal_leg_currency_affirmations",
       "target": "database:ledger.journal_leg_currency_affirmations.legs_repaired"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_journal_legs_account_security_id on ledger.journal_legs",
+      "target": "database:ledger.journal_legs.account_security_id"
     },
     {
       "kind": "normal",
@@ -72610,7 +72700,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "bf89ed06bc8c6cd517d94be7256eecd7aec321f5701261c6d73300c65ff430b5",
+  "fingerprint": "0040b5612960665cd6a878f2ba990ea6a96307b7d9cc1d280df46334c4f433da",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -86501,6 +86591,24 @@
     },
     {
       "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CanonicalSecurityResolution",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CanonicalSecurityResolution"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CanonicalSecurityResolutionException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CanonicalSecurityResolutionException"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CanonicalSecurityResolutionStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CanonicalSecurityResolutionStatus"
+    },
+    {
+      "classification": "record",
       "id": "contract:Meridian.Contracts.SecurityMaster.CashDistributionCorporateActionTerms",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.CashDistributionCorporateActionTerms"
@@ -88220,6 +88328,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.RejectCorporateActionSourceProposalRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.RejectCorporateActionSourceProposalRequestDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ResolveCanonicalSecurityRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ResolveCanonicalSecurityRequest"
     },
     {
       "classification": "request",
@@ -98779,6 +98893,11 @@
       "schema": "ledger"
     },
     {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.account_rekey_instruction",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.account_rekey_instruction"
+    },
+    {
       "id": "database:ledger.atomic_tax_lot_posting_batches.book_position_id",
       "kind": "database-object",
       "label": "ledger.atomic_tax_lot_posting_batches.book_position_id"
@@ -99159,6 +99278,11 @@
       "label": "ledger.ck_accounting_periods_status on ledger.accounting_periods"
     },
     {
+      "id": "database:ledger.ck_atomic_tax_lot_account_rekey_instruction on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.ck_atomic_tax_lot_account_rekey_instruction on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
       "id": "database:ledger.ck_atomic_tax_lot_batch_asset_scope on ledger.atomic_tax_lot_posting_batches",
       "kind": "database-object",
       "label": "ledger.ck_atomic_tax_lot_batch_asset_scope on ledger.atomic_tax_lot_posting_batches"
@@ -99232,6 +99356,11 @@
       "id": "database:ledger.ck_journal_leg_currency_affirmations_legs on ledger.journal_leg_currency_affirmations",
       "kind": "database-object",
       "label": "ledger.ck_journal_leg_currency_affirmations_legs on ledger.journal_leg_currency_affirmations"
+    },
+    {
+      "id": "database:ledger.ck_journal_legs_account_security_id on ledger.journal_legs",
+      "kind": "database-object",
+      "label": "ledger.ck_journal_legs_account_security_id on ledger.journal_legs"
     },
     {
       "id": "database:ledger.ck_journal_legs_adjustment_approval_metadata on ledger.journal_legs",
@@ -100377,6 +100506,11 @@
       "kind": "database-table",
       "label": "ledger.journal_legs",
       "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.journal_legs.account_security_id",
+      "kind": "database-object",
+      "label": "ledger.journal_legs.account_security_id"
     },
     {
       "id": "database:ledger.journal_legs.adjustment_approval_metadata",
@@ -106653,11 +106787,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4446,
-    "contract_set_memberships": 5872,
-    "edges": 12062,
+    "contract_references": 4450,
+    "contract_set_memberships": 5880,
+    "edges": 12077,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5919
+    "nodes": 5927
   }
 }

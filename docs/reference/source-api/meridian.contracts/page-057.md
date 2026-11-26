@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityRateIngestionRules
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRateIngestionRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L49).
+
+Explicit, reviewable conversion rules; a constant-maturity par yield is never a discount factor.
+
+```csharp
+public static class SecurityRateIngestionRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static PublishSecurityCurveVersionRequest BuildPublication(IngestSecurityRatesRequest request, SecurityCurveDefinitionDto definition, string actor);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L51) |  |
+
+## SecurityRateObservationDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRateObservationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L13).
+
+A source observation, never an OHLC bar. Unknown publication dates remain unknown.
+
+```csharp
+public sealed record SecurityRateObservationDto(string Provider, string SeriesId, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] decimal Value, string OriginalValue, [property : JsonRequired] SecurityRateUnit Unit, string SourceUnits, DateOnly ObservationDate, DateTimeOffset? PublishedAt, DateOnly? VintageDate, DateOnly? VintageEndDate, DateTimeOffset RetrievedAt, string Transformation, [property : JsonRequired] SecurityRateObservationKind Kind, string? Currency = null);
+```
+
+## SecurityRateObservationKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRateObservationKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L7).
+
+```csharp
+public enum SecurityRateObservationKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ObservedFixing</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L7) |  |
+| <code>ForecastRate</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L7) |  |
+| <code>Assumption</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L7) |  |
+| <code>TreasuryConstantMaturityYield</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L7) |  |
+| <code>EconomicObservation</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L7) |  |
+
+## SecurityRatePointEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRatePointEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L36).
+
+Raw observation and the explicit construction assumption retained with each immutable pillar.
+
+```csharp
+public sealed record SecurityRatePointEvidenceDto(SecurityRateObservationDto Observation, SecurityRateConstructionMethod ConstructionMethod, string MethodDescription, string ReviewedBy);
+```
+
 ## SecurityRateUnit
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRateUnit</code>. Kind: `enum`.
@@ -858,58 +920,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:775](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L775) |  |
 | <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:776](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L776) |  |
-
-## SecurityValuationBlockerDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationBlockerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L64).
-
-Why no value could be produced. When any blocker is present no number is substituted.
-
-```csharp
-public sealed record SecurityValuationBlockerDto(string Code, string Reason);
-```
-
-## SecurityValuationCurveInput
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationCurveInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L34).
-
-A curve the caller pins for a role; Role is Discount in this increment.
-
-```csharp
-public sealed record SecurityValuationCurveInput(string Role, Guid CurveId, Guid? CurveVersionId = null);
-```
-
-## SecurityValuationInputDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationInputDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L54).
-
-One retained input a value was built from, so the value can be rebuilt from the same evidence.
-
-```csharp
-public sealed record SecurityValuationInputDto(string Kind, string Reference, Guid? Id = null, long? Version = null, string? ContentSha256 = null, DateTimeOffset? AsOf = null, DateTimeOffset? RecordedAt = null);
-```
-
-## SecurityValuationModelKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationModelKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L7).
-
-The model a security is valued with.
-
-```csharp
-public enum SecurityValuationModelKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>QuotedPrice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L10) | The golden-copy price selected through the pricing hierarchy. |
-| <code>DiscountedCashFlow</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L13) | The projected cash flows discounted on a stored discount curve. |

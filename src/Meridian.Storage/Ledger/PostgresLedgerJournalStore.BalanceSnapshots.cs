@@ -44,7 +44,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerBalanceSnapshotS
         foreach (var row in (checkpoint?.Rows ?? []).Concat(rows))
         {
             var account = new LedgerAccount(row.AccountName,
-                Enum.Parse<LedgerAccountType>(row.AccountType, ignoreCase: true), row.Symbol, row.FinancialAccountId);
+                Enum.Parse<LedgerAccountType>(row.AccountType, ignoreCase: true), row.Symbol, row.FinancialAccountId,
+                row.SecurityId);
             if (!string.IsNullOrWhiteSpace(financialAccountId)
                 && !string.Equals(account.FinancialAccountId, financialAccountId, StringComparison.OrdinalIgnoreCase))
                 continue;
@@ -77,8 +78,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerBalanceSnapshotS
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText = $"""
-            select jl.account_name, jl.account_type, jl.symbol, jl.financial_account_id,
-                   jl.dimensions::text, sum(jl.debit), sum(jl.credit), count(*)
+            select jl.account_name, jl.account_type, max(jl.symbol), jl.financial_account_id,
+                   jl.dimensions::text, sum(jl.debit), sum(jl.credit), count(*), jl.account_security_id
             from {Qualified("journal_entries")} je
             join {Qualified("accounting_periods")} p on p.period_id = je.period_id
             join {Qualified("journal_legs")} jl on jl.journal_entry_id = je.journal_entry_id
@@ -97,9 +98,14 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerBalanceSnapshotS
         }
         command.CommandText += """
 
-            group by jl.account_name, jl.account_type, jl.symbol, jl.financial_account_id, jl.dimensions
+            -- Instrument key: a SecurityId-keyed account aggregates across ticker renames into one
+            -- row (display ticker = max(symbol), deterministic); a legacy account keys on its ticker.
+            group by jl.account_name, jl.account_type, jl.account_security_id,
+                     case when jl.account_security_id is null then jl.symbol end,
+                     jl.financial_account_id, jl.dimensions
             order by jl.account_name collate "C", jl.account_type collate "C",
-                     jl.symbol collate "C", jl.financial_account_id collate "C", jl.dimensions::text collate "C";
+                     max(jl.symbol) collate "C", jl.account_security_id nulls first,
+                     jl.financial_account_id collate "C", jl.dimensions::text collate "C";
             """;
         return await ReadBalanceRowsAsync(command, ct, canonicalizeAccountType: true).ConfigureAwait(false);
     }
@@ -116,7 +122,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerBalanceSnapshotS
                 reader.IsDBNull(2) ? null : reader.GetString(2),
                 reader.IsDBNull(3) ? null : reader.GetString(3),
                 reader.IsDBNull(4) ? null : reader.GetString(4),
-                reader.GetDecimal(5), reader.GetDecimal(6), reader.GetInt64(7)));
+                reader.GetDecimal(5), reader.GetDecimal(6), reader.GetInt64(7),
+                reader.IsDBNull(8) ? null : reader.GetGuid(8)));
         return rows;
     }
 
@@ -218,8 +225,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerBalanceSnapshotS
             insert.CommandText = $"""
                 insert into {Qualified("ledger_balance_checkpoint_rows")}
                     (checkpoint_id,row_no,account_name,account_type,symbol,financial_account_id,
-                     dimensions,debit,credit,entry_count)
-                values (@id,@row,@name,@type,@symbol,@account,@dimensions::jsonb,@debit,@credit,@count);
+                     dimensions,debit,credit,entry_count,account_security_id)
+                values (@id,@row,@name,@type,@symbol,@account,@dimensions::jsonb,@debit,@credit,@count,@security);
                 """;
             insert.Parameters.AddWithValue("id", content.CheckpointId);
             insert.Parameters.AddWithValue("row", index);
@@ -231,6 +238,10 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerBalanceSnapshotS
             insert.Parameters.AddWithValue("debit", row.Debit);
             insert.Parameters.AddWithValue("credit", row.Credit);
             insert.Parameters.AddWithValue("count", row.EntryCount);
+            insert.Parameters.Add(new NpgsqlParameter("security", NpgsqlTypes.NpgsqlDbType.Uuid)
+            {
+                Value = row.SecurityId is { } securityId ? securityId : DBNull.Value
+            });
             await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }

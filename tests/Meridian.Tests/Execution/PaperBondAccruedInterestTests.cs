@@ -36,7 +36,7 @@ public sealed partial class PaperBondAccruedInterestTests
             "settlement cash is clean consideration plus purchased accrued interest");
         portfolio.Positions[Bond].AverageCostBasis.Should().Be(1.0125m,
             "purchased accrued interest is a receivable, never capitalized into cost basis");
-        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Bond)).Should().Be(1_500m);
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Unresolved(Bond))).Should().Be(1_500m);
         result.Evidence!.AccruedInterest.Should().Be(1_500m);
         result.Evidence.AccruedInterestRelieved.Should().Be(0m);
     }
@@ -53,7 +53,7 @@ public sealed partial class PaperBondAccruedInterestTests
 
         portfolio.Cash.Should().Be(200_000m + 500m,
             "the seller receives $2,000 accrued against $1,500 paid: $500 earned while held");
-        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Bond)).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Unresolved(Bond))).Should().Be(0m);
         Math.Abs(ledger.GetBalance(LedgerAccounts.CouponIncome)).Should().Be(500m);
         result.Evidence!.AccruedInterest.Should().Be(2_000m);
         result.Evidence.AccruedInterestRelieved.Should().Be(1_500m);
@@ -68,7 +68,7 @@ public sealed partial class PaperBondAccruedInterestTests
 
         portfolio.ApplyFill(BondFill(OrderSide.Sell, 40_000m, 101.25m, accruedPer100: 1.50m));
 
-        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Bond)).Should().Be(900m);
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Unresolved(Bond))).Should().Be(900m);
         var account = (AccountState)portfolio.GetAccount(PaperTradingPortfolio.DefaultAccountId)!;
         account.Positions[Bond].PurchasedAccruedInterest.Should().Be(900m);
     }
@@ -82,7 +82,7 @@ public sealed partial class PaperBondAccruedInterestTests
         portfolio.ApplyFill(BondFill(OrderSide.Buy, 100_000m, 101.25m, accruedPer100: null));
 
         portfolio.Cash.Should().Be(98_750m);
-        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Bond)).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Unresolved(Bond))).Should().Be(0m);
     }
 
     [Fact]

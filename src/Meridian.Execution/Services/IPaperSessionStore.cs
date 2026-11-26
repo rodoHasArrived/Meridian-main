@@ -50,7 +50,11 @@ public sealed record PersistedLedgerAccountDto(
     string Name,
     string AccountType,
     string? Symbol,
-    string? FinancialAccountId);
+    string? FinancialAccountId,
+    // Security Master key of a per-security account (Security Master review F2); omitted when null
+    // so sessions persisted before SecurityId keying round-trip unchanged.
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    Guid? SecurityId = null);
 
 /// <summary>
 /// Lightweight serialisation DTO for a single debit/credit line in a journal entry.

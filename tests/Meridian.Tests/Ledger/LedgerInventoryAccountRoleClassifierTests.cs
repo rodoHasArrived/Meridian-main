@@ -36,7 +36,7 @@ public sealed class LedgerInventoryAccountRoleClassifierTests
     [Fact]
     public void DividendReceivableRequiresTypedActivityAndRetainedSourceRole()
     {
-        var line = Line(LedgerAccounts.DividendReceivable("AAPL", "equity-account"));
+        var line = Line(LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved("AAPL"), "equity-account"));
         var known = new JournalEntryMetadata(ActivityType: "DividendDeclared", LedgerView: LedgerViewKind.SecurityMaster);
         LedgerInventoryAccountRoleClassifier.Classify(line, known, Empty()).Should().Be(LedgerInventoryAccountRole.KnownNonLotAsset);
         LedgerInventoryAccountRoleClassifier.Classify(line, known with { LedgerView = null }, Empty())
@@ -70,7 +70,7 @@ public sealed class LedgerInventoryAccountRoleClassifierTests
         LedgerInventoryAccountRoleClassifier.Classify(line, new(), new HashSet<LedgerAccount> { account })
             .Should().Be(LedgerInventoryAccountRole.LotCarrying);
         LedgerInventoryAccountRoleClassifier.Classify(line, new(), Empty()).Should().Be(LedgerInventoryAccountRole.UnknownInstrumentAsset);
-        LedgerInventoryAccountRoleClassifier.Classify(Line(LedgerAccounts.Securities("AAPL", "account")), new(), Empty())
+        LedgerInventoryAccountRoleClassifier.Classify(Line(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "account")), new(), Empty())
             .Should().Be(LedgerInventoryAccountRole.LotCarrying);
     }
 

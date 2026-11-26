@@ -12,14 +12,14 @@ public sealed class SecurityTradePostingProjectorTests
         var ledger = new Meridian.Ledger.Ledger();
         var now = new DateTimeOffset(2026, 11, 1, 0, 0, 0, TimeSpan.Zero);
         ledger.PostLines(now, "Short opening", SecurityTradePostingProjector.Project(
-            new(SecurityTradePostingKind.OpenShort, 10m, 1_000m), "AAPL", "broker"));
+            new(SecurityTradePostingKind.OpenShort, 10m, 1_000m), LedgerSecurityKey.Unresolved("AAPL"), "broker"));
         ledger.PostLines(now, "Partial cover", SecurityTradePostingProjector.Project(
-            new(SecurityTradePostingKind.CoverShort, 4m, 360m, 400m), "AAPL", "broker"));
+            new(SecurityTradePostingKind.CoverShort, 4m, 360m, 400m), LedgerSecurityKey.Unresolved("AAPL"), "broker"));
 
         ledger.GetBalance(LedgerAccounts.CashAccount("broker")).Should().Be(640m);
-        ledger.GetBalance(LedgerAccounts.ShortSecuritiesPayable("AAPL", "broker")).Should().Be(600m);
+        ledger.GetBalance(LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("AAPL"), "broker")).Should().Be(600m);
         ledger.GetBalance(LedgerAccounts.RealizedGainFor("broker")).Should().Be(40m);
-        ledger.GetBalance(LedgerAccounts.Securities("AAPL", "broker")).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker")).Should().Be(0m);
         ledger.Journal.Should().OnlyContain(entry => entry.IsBalanced);
     }
 
@@ -28,7 +28,7 @@ public sealed class SecurityTradePostingProjectorTests
     {
         var posting = new SecurityTradePosting(SecurityTradePostingKind.CloseLong, 10m, 20m, 100m, LoanRepaid: 50m);
 
-        var lines = SecurityTradePostingProjector.Project(posting, "AAPL", "broker");
+        var lines = SecurityTradePostingProjector.Project(posting, LedgerSecurityKey.Unresolved("AAPL"), "broker");
 
         lines.Should().OnlyContain(line => line.Debit >= 0m && line.Credit >= 0m);
         lines.Single(line => line.Account.Name == "Cash").Credit.Should().Be(30m);
@@ -42,11 +42,11 @@ public sealed class SecurityTradePostingProjectorTests
     public void ClosingBasis_MissingIsRejectedButExplicitKnownZeroIsSupported()
     {
         var missing = () => SecurityTradePostingProjector.Project(
-            new(SecurityTradePostingKind.CloseLong, 1m, 10m), "AAPL");
+            new(SecurityTradePostingKind.CloseLong, 1m, 10m), LedgerSecurityKey.Unresolved("AAPL"));
         missing.Should().Throw<ArgumentException>().WithMessage("*explicit retained carrying value*");
 
         var knownZero = SecurityTradePostingProjector.Project(
-            new(SecurityTradePostingKind.CloseLong, 1m, 10m, 0m), "AAPL");
+            new(SecurityTradePostingKind.CloseLong, 1m, 10m, 0m), LedgerSecurityKey.Unresolved("AAPL"));
         knownZero.Should().HaveCount(2);
         knownZero.Single(line => line.Account == LedgerAccounts.RealizedGain).Credit.Should().Be(10m);
     }
@@ -57,7 +57,7 @@ public sealed class SecurityTradePostingProjectorTests
     public void ZeroProceedsSyntheticClose_RelievesKnownBasisWithoutInventingCash(
         SecurityTradePostingKind kind, string resultAccount)
     {
-        var lines = SecurityTradePostingProjector.Project(new(kind, 1m, 0m, 10m), "DELISTED");
+        var lines = SecurityTradePostingProjector.Project(new(kind, 1m, 0m, 10m), LedgerSecurityKey.Unresolved("DELISTED"));
 
         lines.Should().HaveCount(2);
         lines.Should().NotContain(line => line.Account.Name == "Cash");
@@ -71,7 +71,7 @@ public sealed class SecurityTradePostingProjectorTests
     {
         const decimal basis = 1.0000000000000000000000000001m;
         var lines = SecurityTradePostingProjector.Project(
-            new(SecurityTradePostingKind.CloseLong, 3m, 2m, basis), "AAPL");
+            new(SecurityTradePostingKind.CloseLong, 3m, 2m, basis), LedgerSecurityKey.Unresolved("AAPL"));
 
         lines.Single(line => line.Account.Name == "Securities").Credit.Should().Be(basis);
         lines.Single(line => line.Account.Name == "Realized Gain").Credit.Should().Be(2m - basis);
@@ -87,7 +87,7 @@ public sealed class SecurityTradePostingProjectorTests
         SecurityTradePostingKind kind, int quantity, int gross, int basis, int borrowed)
     {
         var project = () => SecurityTradePostingProjector.Project(
-            new(kind, quantity, gross, basis, borrowed), "AAPL");
+            new(kind, quantity, gross, basis, borrowed), LedgerSecurityKey.Unresolved("AAPL"));
         project.Should().Throw<ArgumentException>();
     }
 

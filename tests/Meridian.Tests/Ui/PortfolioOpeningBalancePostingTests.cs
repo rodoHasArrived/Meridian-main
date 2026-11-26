@@ -74,9 +74,19 @@ public sealed partial class PortfolioOpeningBalancePostingTests
             await database.JournalStore.SavePeriodAsync(new(period, book, 2026, 11, "2026-11",
                 new(2026, 11, 1), new(2026, 11, 30), "Open", at.AddDays(-1), null, 0), 0);
             var securities = Substitute.For<ISecurityMasterQueryService>();
+            // Opening positions resolve through the canonical (provider-less) resolver (Security Master
+            // review F2); the stub maps each ticker to the same SecurityId Security Master returns.
+            var canonical = Substitute.For<ISecurityResolver>();
             foreach (var symbol in new[] { "AAPL", "MSFT" })
             {
                 var detail = Security(symbol, at);
+                canonical.ResolveCanonicalAsync(
+                        Arg.Is<ResolveCanonicalSecurityRequest>(request => request.IdentifierValue == symbol), Arg.Any<CancellationToken>())
+                    .Returns(callInfo =>
+                    {
+                        var request = callInfo.Arg<ResolveCanonicalSecurityRequest>();
+                        return CanonicalSecurityResolution.FromCandidates(request, request.AsOfUtc ?? at, [detail.SecurityId]);
+                    });
                 securities.GetByIdentifierAsync(SecurityIdentifierKind.Ticker, symbol, null, Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>())
                     .Returns(detail);
                 securities.GetByIdAsync(detail.SecurityId, Arg.Any<CancellationToken>()).Returns(detail);
@@ -102,7 +112,8 @@ public sealed partial class PortfolioOpeningBalancePostingTests
             accountAuthority.GetAccountAsync(account, Arg.Any<CancellationToken>()).Returns(new AccountSummaryDto(
                 account, AccountTypeDto.Brokerage, entity, Guid.Parse(fund), null, null, "synthetic-account", "Imported brokerage",
                 "USD", "alpaca", true, at.AddYears(-1), null, null, null, null, null));
-            var queue = new PortfolioOpeningBalanceQueue(intake, new ConfigStore(configPath), database.JournalStore, securities, accountAuthority);
+            var queue = new PortfolioOpeningBalanceQueue(intake, new ConfigStore(configPath), database.JournalStore, securities, accountAuthority,
+                canonical);
             var request = new PortfolioImportRunRequest(Guid.NewGuid(), "alpaca", new(BrokerAccountId: "synthetic-account"),
                 new(tenant, company, fund, account, book, period, new(2026, 11, 12), "import-preparer", entity), true);
             var cashOnly = openRebook == OpeningRebookScenario.CashUnchanged;

@@ -1960,7 +1960,7 @@ public sealed partial class WorkstationEndpointsTests
                 "USD",
                 [
                     new ProjectedAccountingEffectLineDto(LedgerAccounts.Cash.ToString(), 1_750m, 0m, "USD"),
-                    new ProjectedAccountingEffectLineDto(LedgerAccounts.Securities("AAPL").ToString(), 0m, 1_750m, "USD")
+                    new ProjectedAccountingEffectLineDto(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")).ToString(), 0m, 1_750m, "USD")
                 ]);
             var posted = new PostedJournalImpactDto(
                 FinancialRecordExplorerJournalId,
@@ -1974,7 +1974,7 @@ public sealed partial class WorkstationEndpointsTests
                 1_750m,
                 [
                     new PostedJournalImpactLineDto(FinancialRecordExplorerDebitLineId, LedgerAccounts.Cash.ToString(), 1_750m, 0m, "USD", Dimensions: dimensions),
-                    new PostedJournalImpactLineDto(FinancialRecordExplorerCreditLineId, LedgerAccounts.Securities("AAPL").ToString(), 0m, 1_750m, "USD", Dimensions: dimensions)
+                    new PostedJournalImpactLineDto(FinancialRecordExplorerCreditLineId, LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")).ToString(), 0m, 1_750m, "USD", Dimensions: dimensions)
                 ]);
             var spine = new AssetAccountingEventSpineDto(
                 FinancialRecordExplorerEventId,
@@ -2052,7 +2052,7 @@ public sealed partial class WorkstationEndpointsTests
                 "MBS principal paydown",
                 [
                     new LedgerEntry(FinancialRecordExplorerDebitLineId, FinancialRecordExplorerJournalId, timestamp, LedgerAccounts.Cash, 1_750m, 0m, "MBS principal paydown", dimensions, new LedgerEntryCurrency("USD", "USD", 1_750m, 0m, 1m)),
-                    new LedgerEntry(FinancialRecordExplorerCreditLineId, FinancialRecordExplorerJournalId, timestamp, LedgerAccounts.Securities("AAPL"), 0m, 1_750m, "MBS principal paydown", dimensions, new LedgerEntryCurrency("USD", "USD", 0m, 1_750m, 1m))
+                    new LedgerEntry(FinancialRecordExplorerCreditLineId, FinancialRecordExplorerJournalId, timestamp, LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")), 0m, 1_750m, "MBS principal paydown", dimensions, new LedgerEntryCurrency("USD", "USD", 0m, 1_750m, 1m))
                 ],
                 new JournalEntryMetadata(
                     ActivityType: "MbsFactorPaydown",

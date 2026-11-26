@@ -1337,7 +1337,7 @@ public sealed partial class WorkstationEndpointsTests
         ]);
         PostBalancedEntry(ledger, completedAt, $"Buy {symbol}",
         [
-            (LedgerAccounts.Securities(symbol), 400m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(symbol)), 400m, 0m),
             (LedgerAccounts.Cash, 0m, 400m)
         ]);
 
@@ -1454,14 +1454,14 @@ public sealed partial class WorkstationEndpointsTests
             PostBalancedEntry(ledger, startedAt, $"Short sell {symbol}",
             [
                 (LedgerAccounts.CashAccount(accountId), 970_000m, 0m),
-                (LedgerAccounts.ShortSecuritiesPayable(symbol, accountId), 0m, 970_000m)
+                (LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved(symbol), accountId), 0m, 970_000m)
             ]);
         }
         else
         {
             PostBalancedEntry(ledger, startedAt, $"Buy {symbol}",
             [
-                (LedgerAccounts.Securities(symbol, accountId), 970_000m, 0m),
+                (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(symbol), accountId), 970_000m, 0m),
                 (LedgerAccounts.CashAccount(accountId), 0m, 970_000m)
             ]);
         }
@@ -1661,7 +1661,7 @@ public sealed partial class WorkstationEndpointsTests
         var metadata = SecurityTradePositionEvidence.WithPostings(
             new(ActivityType: "execution.trade-fill", Symbol: symbol, SecurityId: securityId, FinancialAccountId: accountId),
             [posting], SecurityLotUnitKind.Shares, 1m);
-        ledger.PostLines(timestamp, description, SecurityTradePostingProjector.Project(posting, symbol, accountId), metadata);
+        ledger.PostLines(timestamp, description, SecurityTradePostingProjector.Project(posting, LedgerSecurityKey.Resolved(securityId, symbol), accountId), metadata);
     }
 
     private static void PostBalancedEntry(

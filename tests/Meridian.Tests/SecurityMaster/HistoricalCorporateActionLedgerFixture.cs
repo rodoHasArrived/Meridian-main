@@ -173,7 +173,7 @@ internal sealed class HistoricalCorporateActionLedgerFixture
                     // Return of capital reduces the security's carrying value instead of
                     // recognizing dividend income; the receivable/receipt legs are shared.
                     var creditAccount = eventType == CorporateActionEventTypes.ReturnOfCapital
-                        ? LedgerAccounts.Securities(normalizedTicker)
+                        ? LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(normalizedTicker))
                         : LedgerAccounts.DividendIncome;
                     PostDividendDeclaration(ledger, action, normalizedTicker, ts, meta, grossDividend, amountPerUnit, economicUnits, creditAccount);
                     if (withholding > 0m)
@@ -384,7 +384,7 @@ internal sealed class HistoricalCorporateActionLedgerFixture
             description,
             [
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
-                    LedgerAccounts.DividendReceivable(ticker), grossAmount, 0m, description),
+                    LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved(ticker)), grossAmount, 0m, description),
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
                     creditAccount, 0m, grossAmount, description),
             ],
@@ -455,7 +455,7 @@ internal sealed class HistoricalCorporateActionLedgerFixture
         }
 
         lines.Add(new LedgerEntry(Guid.NewGuid(), journalId, ts,
-            LedgerAccounts.DividendReceivable(ticker), 0m, grossAmount, description));
+            LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved(ticker)), 0m, grossAmount, description));
 
         ledger.Post(new JournalEntry(journalId, ts, description, lines, meta));
     }
@@ -478,9 +478,9 @@ internal sealed class HistoricalCorporateActionLedgerFixture
             description,
             [
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
-                    LedgerAccounts.Securities(ticker), memoAmount, 0m, description),
+                    LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(ticker)), memoAmount, 0m, description),
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
-                    LedgerAccounts.Securities(ticker), 0m, memoAmount, description),
+                    LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(ticker)), 0m, memoAmount, description),
             ],
             meta);
 
@@ -503,9 +503,9 @@ internal sealed class HistoricalCorporateActionLedgerFixture
             description,
             [
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
-                    LedgerAccounts.Securities(ticker), memoAmount, 0m, description),
+                    LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(ticker)), memoAmount, 0m, description),
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
-                    LedgerAccounts.Securities(ticker), 0m, memoAmount, description),
+                    LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(ticker)), 0m, memoAmount, description),
             ],
             meta);
 
@@ -531,7 +531,7 @@ internal sealed class HistoricalCorporateActionLedgerFixture
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
                     LedgerAccounts.Cash, amount, 0m, description),
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
-                    LedgerAccounts.Securities(ticker), 0m, amount, description),
+                    LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(ticker)), 0m, amount, description),
             ],
             meta);
 
@@ -597,7 +597,7 @@ internal sealed class HistoricalCorporateActionLedgerFixture
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
                     LedgerAccounts.Cash, proceeds, 0m, description),
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
-                    LedgerAccounts.Securities(ticker), 0m, proceeds, description),
+                    LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(ticker)), 0m, proceeds, description),
             ],
             meta);
 
@@ -620,9 +620,9 @@ internal sealed class HistoricalCorporateActionLedgerFixture
             description,
             [
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
-                    LedgerAccounts.Securities(ticker), memoAmount, 0m, description),
+                    LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(ticker)), memoAmount, 0m, description),
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
-                    LedgerAccounts.Securities(ticker), 0m, memoAmount, description),
+                    LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(ticker)), 0m, memoAmount, description),
             ],
             meta);
 

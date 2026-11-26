@@ -205,7 +205,7 @@ public sealed class AmortizationReversalPreviewTests
                 Inputs = Inputs with { CalculationVersion = null };
             Forward = OpenLotAmortization.Project(Inputs);
             var lot = Inputs.ExpectedLot;
-            var account = LedgerAccounts.Securities("AMORT", "preview-account");
+            var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AMORT"), "preview-account");
             Before = new(lot.TaxLotRecordId, lot.LedgerBookId, account, lot.LotId, lot.AcquiredDate,
                 lot.OriginalQuantity / 100m, lot.OpenQuantity / 100m,
                 lot.Acquisition.TransactionCostBasis / (lot.OriginalQuantity / 100m),

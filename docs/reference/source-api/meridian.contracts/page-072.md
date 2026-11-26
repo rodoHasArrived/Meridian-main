@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationCaseSlaState
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseSlaState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:408](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L408).
+
+```csharp
+public enum ReconciliationCaseSlaState : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>NotStarted = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:410](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L410) |  |
+| <code>OnTrack = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:411](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L411) |  |
+| <code>Warning = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:412](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L412) |  |
+| <code>Breached = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:413](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L413) |  |
+| <code>Paused = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:414](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L414) |  |
+| <code>Stopped = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:415](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L415) |  |
+
+## ReconciliationCaseStateTransition
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseStateTransition</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:996](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L996).
+
+```csharp
+public sealed record ReconciliationCaseStateTransition(string TransitionId, ReconciliationCaseLifecycleState From, ReconciliationCaseLifecycleState To, string Actor, string? Rationale, DateTimeOffset OccurredAt, IReadOnlyList<string>? EvidenceReferences = null, string? PreviousHash = null, string? EntryHash = null);
+```
+
+## ReconciliationCaseTransitionAction
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseTransitionAction</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1007](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1007).
+
+```csharp
+public enum ReconciliationCaseTransitionAction : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>StartReview = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1009](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1009) |  |
+| <code>RequestApproval = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1010](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1010) |  |
+| <code>Approve = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1011](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1011) |  |
+| <code>Post = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1012](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1012) |  |
+| <code>Reopen = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1013](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1013) |  |
+| <code>Supersede = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1014](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1014) |  |
+
+## ReconciliationCaseTransitionCommand
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseTransitionCommand</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1017](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1017).
+
+```csharp
+public sealed record ReconciliationCaseTransitionCommand(string BreakId, ReconciliationCaseTransitionAction Action, string Actor, string Reason, IReadOnlyList<string> EvidenceReferences, string? Role = null, string? SupersedingBreakId = null);
+```
+
 ## ReconciliationCaseworkAction
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseworkAction</code>. Kind: `enum`.
@@ -646,61 +708,3 @@ Sanitized capability and durability posture for the canonical reporting authorit
 ```csharp
 public sealed record ReportingDeploymentCapabilityDto(bool IsReady = default, bool DurableGovernance = default, bool DurableArtifacts = default, bool DurableReconciliationEvidence = default, bool DurableRuns = default, bool DurableScheduling = default, bool DurableDelivery = default, bool RecipientDestinationsConfigured = default, bool ClientDocumentsConfigured = default, bool MigrationsManaged = default, IReadOnlyList<ReportingDeploymentComponentDto> Components = default !, IReadOnlyList<string> BlockingReasons = default !);
 ```
-
-## ReportingDeploymentComponentDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingDeploymentComponentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReportingDeploymentDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/ReportingDeploymentDtos.cs#L6).
-
-One deployment-owned prerequisite for authoritative reporting.
-
-```csharp
-public sealed record ReportingDeploymentComponentDto(string ComponentId = default !, string DisplayName = default !, bool IsReady = default, string Summary = default !);
-```
-
-## ReportingDueScheduleRunResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingDueScheduleRunResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1255](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1255).
-
-```csharp
-public sealed record ReportingDueScheduleRunResultDto(DateTimeOffset EvaluatedAtUtc, IReadOnlyList<ReportingScheduleRunResultDto> Runs);
-```
-
-## ReportingEntityScopeKindDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingEntityScopeKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1260](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1260).
-
-```csharp
-public enum ReportingEntityScopeKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>AllEntities = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1262](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1262) |  |
-| <code>Entity = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1263](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1263) |  |
-| <code>Portfolio = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1264](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1264) |  |
-| <code>Investor = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1265](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1265) |  |
-
-## ReportingFinalityDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingFinalityDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1298](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1298).
-
-```csharp
-public enum ReportingFinalityDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Draft = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1300](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1300) |  |
-| <code>Final = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1301](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1301) |  |

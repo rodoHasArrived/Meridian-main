@@ -292,14 +292,14 @@ public sealed class SimulatedPortfolioTests
         IChartOfAccounts chart = StandardChartOfAccounts.Instance;
         ledger.GetBalance(chart.Resolve(LedgerAccountRole.Cash, "broker-long")).Should().Be(9_595m);
         ledger.GetBalance(chart.Resolve(LedgerAccountRole.Cash, "broker-short")).Should().Be(10_635m);
-        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, "broker-long", "SPY")).Should().Be(500m);
-        ledger.GetBalance(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-short", "SPY")).Should().Be(600m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, "broker-long", LedgerSecurityKey.Unresolved("SPY"))).Should().Be(500m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-short", LedgerSecurityKey.Unresolved("SPY"))).Should().Be(600m);
         ledger.GetBalance(chart.Resolve(LedgerAccountRole.RealizedGain, "broker-long")).Should().Be(100m);
         ledger.GetBalance(chart.Resolve(LedgerAccountRole.RealizedGain, "broker-short")).Should().Be(40m);
         ledger.GetBalance(chart.Resolve(LedgerAccountRole.CommissionExpense, "broker-long")).Should().Be(5m);
         ledger.GetBalance(chart.Resolve(LedgerAccountRole.CommissionExpense, "broker-short")).Should().Be(5m);
-        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, "broker-short", "SPY")).Should().Be(0m);
-        ledger.GetBalance(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-long", "SPY")).Should().Be(0m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, "broker-short", LedgerSecurityKey.Unresolved("SPY"))).Should().Be(0m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-long", LedgerSecurityKey.Unresolved("SPY"))).Should().Be(0m);
         ledger.GetBalance(chart.Resolve(LedgerAccountRole.Cash, "broker-long"))
             .Should().Be(ledger.GetBalance(LedgerAccounts.CashAccount("broker-long")));
         ledger.Accounts.Should().OnlyContain(account => account.FinancialAccountId == "broker-long" || account.FinancialAccountId == "broker-short");
@@ -330,7 +330,7 @@ public sealed class SimulatedPortfolioTests
 
         portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", 10L, 400m, 0m, DateTimeOffset.UtcNow));
 
-        var securities = LedgerAccounts.Securities("SPY", BacktestDefaults.DefaultBrokerageAccountId);
+        var securities = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY"), BacktestDefaults.DefaultBrokerageAccountId);
         ledger.GetBalance(securities).Should().Be(4_000m);   // DR Securities
         ledger.GetBalance(LedgerAccounts.CashAccount(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(6_000m);  // CR Cash (10k - 4k)
         ledger.Journal.All(j => j.IsBalanced).Should().BeTrue();
@@ -420,8 +420,8 @@ public sealed class SimulatedPortfolioTests
     [Fact]
     public void Ledger_SymbolNormalization_SameAccountForDifferentCase()
     {
-        var lower = LedgerAccounts.Securities("spy");
-        var upper = LedgerAccounts.Securities("SPY");
+        var lower = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("spy"));
+        var upper = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY"));
 
         lower.Should().Be(upper);  // record equality; both use "SPY"
     }
@@ -436,7 +436,7 @@ public sealed class SimulatedPortfolioTests
         // Short sell 10 SPY @ $400 (no existing position)
         portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", -10L, 400m, 0m, DateTimeOffset.UtcNow));
 
-        var shortPayable = LedgerAccounts.ShortSecuritiesPayable("SPY", BacktestDefaults.DefaultBrokerageAccountId);
+        var shortPayable = LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("SPY"), BacktestDefaults.DefaultBrokerageAccountId);
         ledger.GetBalance(shortPayable).Should().Be(4_000m);     // CR Short Payable
         ledger.GetBalance(LedgerAccounts.CashAccount(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(14_000m); // 10k + 4k proceeds
         ledger.Journal.All(j => j.IsBalanced).Should().BeTrue();
@@ -454,7 +454,7 @@ public sealed class SimulatedPortfolioTests
         portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), orderId, "SPY", -10L, 400m, 0m, DateTimeOffset.UtcNow));
         portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), orderId, "SPY", 10L, 350m, 0m, DateTimeOffset.UtcNow));
 
-        var shortPayable = LedgerAccounts.ShortSecuritiesPayable("SPY", BacktestDefaults.DefaultBrokerageAccountId);
+        var shortPayable = LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("SPY"), BacktestDefaults.DefaultBrokerageAccountId);
         ledger.GetBalance(shortPayable).Should().Be(0m);              // payable cleared
         ledger.GetBalance(LedgerAccounts.RealizedGainFor(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(500m);  // (400-350)*10
         ledger.GetBalance(LedgerAccounts.RealizedLossFor(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(0m);
@@ -473,7 +473,7 @@ public sealed class SimulatedPortfolioTests
         portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), orderId, "SPY", -10L, 400m, 0m, DateTimeOffset.UtcNow));
         portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), orderId, "SPY", 10L, 450m, 0m, DateTimeOffset.UtcNow));
 
-        var shortPayable = LedgerAccounts.ShortSecuritiesPayable("SPY", BacktestDefaults.DefaultBrokerageAccountId);
+        var shortPayable = LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("SPY"), BacktestDefaults.DefaultBrokerageAccountId);
         ledger.GetBalance(shortPayable).Should().Be(0m);               // payable cleared
         ledger.GetBalance(LedgerAccounts.RealizedLossFor(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(500m);  // (450-400)*10
         ledger.GetBalance(LedgerAccounts.RealizedGainFor(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(0m);
@@ -622,8 +622,8 @@ public sealed class SimulatedPortfolioTests
         portfolio.Cash.Should().Be(9_945m);
         ledger.GetBalance(LedgerAccounts.CorporateActionIncomeFor(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(15m);
         ledger.GetBalance(LedgerAccounts.RealizedGainFor(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(110m);
-        ledger.GetBalance(LedgerAccounts.Securities("ATVI", BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(0m);
-        ledger.GetBalance(LedgerAccounts.Securities("MSFT", BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(180m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("ATVI"), BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("MSFT"), BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(180m);
     }
 
 }

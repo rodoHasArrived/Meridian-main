@@ -212,62 +212,98 @@ public static class LedgerAccounts
     public static readonly LedgerAccount CorporateActionExpense =
         new("Corporate Action Expense", LedgerAccountType.Expense);
 
+    /// <summary>Account name of <see cref="Securities"/> accounts.</summary>
+    public const string SecuritiesAccountName = "Securities";
+
+    /// <summary>Account name of <see cref="DividendReceivable"/> accounts.</summary>
+    public const string DividendReceivableAccountName = "Dividend Receivable";
+
+    /// <summary>Account name of <see cref="AccruedInterestReceivable"/> accounts.</summary>
+    public const string AccruedInterestReceivableAccountName = "Accrued Interest Receivable";
+
+    /// <summary>Account name of <see cref="CorpActionDistribution"/> accounts.</summary>
+    public const string CorpActionDistributionAccountName = "Corporate Action Distribution";
+
+    /// <summary>Account name of <see cref="ShortSecuritiesPayable"/> accounts.</summary>
+    public const string ShortSecuritiesPayableAccountName = "Short Securities Payable";
+
     /// <summary>
-    /// Returns the asset account representing equity holdings in <paramref name="symbol"/>.
-    /// Each symbol has its own securities account so per-symbol cost-basis is tracked separately.
-    /// The symbol is normalized to upper-case so accounts are case-insensitive by identity.
+    /// Per-security account names keyed by <see cref="LedgerSecurityKey"/> (SecurityId, or the
+    /// legacy ticker for unresolved and pre-2026-11-25 journals).
     /// </summary>
-    public static LedgerAccount Securities(string symbol, string? financialAccountId = null)
+    public static IReadOnlySet<string> SecurityKeyedAccountNames { get; } = new HashSet<string>(StringComparer.Ordinal)
     {
-        var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Securities", LedgerAccountType.Asset, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
+        SecuritiesAccountName,
+        DividendReceivableAccountName,
+        AccruedInterestReceivableAccountName,
+        CorpActionDistributionAccountName,
+        ShortSecuritiesPayableAccountName,
+    };
+
+    /// <summary>Returns <see langword="true"/> when <paramref name="account"/> is a per-security account.</summary>
+    public static bool IsSecurityKeyedAccount(LedgerAccount account)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+        return (account.Symbol is not null || account.SecurityId is not null)
+            && SecurityKeyedAccountNames.Contains(account.Name);
     }
+
+    /// <summary>
+    /// Keys a configured-chart account by Security Master identity when it is a per-security account
+    /// (by <see cref="SecurityKeyedAccountNames"/>) and <paramref name="securityId"/> is known; any
+    /// other account is returned unchanged. Used where posting paths build accounts from chart
+    /// nodes rather than the factories in this class.
+    /// </summary>
+    public static LedgerAccount KeyedBySecurity(LedgerAccount account, Guid? securityId)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+        if (securityId is not { } id || id == Guid.Empty || !SecurityKeyedAccountNames.Contains(account.Name)
+            || (account.Symbol is null && account.SecurityId is null))
+            return account;
+        if (account.SecurityId is { } existing && existing != id)
+            throw new ArgumentException($"Account '{account}' is already keyed by a different security.", nameof(securityId));
+        return account with { SecurityId = id };
+    }
+
+    /// <summary>
+    /// Returns the asset account representing holdings in <paramref name="security"/>.
+    /// Each security has its own securities account so per-security cost basis is tracked
+    /// separately. A resolved key is keyed by SecurityId (ticker kept for display), so a ticker
+    /// rename keeps one account history; see <see cref="LedgerSecurityKey"/>.
+    /// </summary>
+    public static LedgerAccount Securities(LedgerSecurityKey security, string? financialAccountId = null)
+        => CreateSecurityScoped(SecuritiesAccountName, LedgerAccountType.Asset, security, financialAccountId);
 
     /// <summary>
     /// Returns the asset account representing dividends declared but not yet received for
-    /// <paramref name="symbol"/> (ex-date passed; pay-date still pending).
+    /// <paramref name="security"/> (ex-date passed; pay-date still pending).
     /// Post: Dr DividendReceivable / Cr DividendIncome on declaration.
     ///        Dr Cash / Cr DividendReceivable when payment arrives.
-    /// The symbol is normalized to upper-case.
     /// </summary>
-    public static LedgerAccount DividendReceivable(string symbol, string? financialAccountId = null)
-    {
-        var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Dividend Receivable", LedgerAccountType.Asset, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
-    }
+    public static LedgerAccount DividendReceivable(LedgerSecurityKey security, string? financialAccountId = null)
+        => CreateSecurityScoped(DividendReceivableAccountName, LedgerAccountType.Asset, security, financialAccountId);
 
     /// <summary>
     /// Returns the asset account representing bond or fund coupon interest accrued but not yet
-    /// received for <paramref name="symbol"/>.
-    /// The symbol is normalized to upper-case.
+    /// received for <paramref name="security"/>.
     /// </summary>
-    public static LedgerAccount AccruedInterestReceivable(string symbol, string? financialAccountId = null)
-    {
-        var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Accrued Interest Receivable", LedgerAccountType.Asset, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
-    }
+    public static LedgerAccount AccruedInterestReceivable(LedgerSecurityKey security, string? financialAccountId = null)
+        => CreateSecurityScoped(AccruedInterestReceivableAccountName, LedgerAccountType.Asset, security, financialAccountId);
 
     /// <summary>
     /// Returns the revenue account for non-dividend corporate action distributions
-    /// (spin-off proceeds, rights issue income, merger cash, etc.) for <paramref name="symbol"/>.
-    /// The symbol is normalized to upper-case.
+    /// (spin-off proceeds, rights issue income, merger cash, etc.) for <paramref name="security"/>.
     /// </summary>
-    public static LedgerAccount CorpActionDistribution(string symbol, string? financialAccountId = null)
-    {
-        var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Corporate Action Distribution", LedgerAccountType.Revenue, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
-    }
+    public static LedgerAccount CorpActionDistribution(LedgerSecurityKey security, string? financialAccountId = null)
+        => CreateSecurityScoped(CorpActionDistributionAccountName, LedgerAccountType.Revenue, security, financialAccountId);
 
     /// <summary>
     /// Returns the liability account representing the obligation to return borrowed shares for
-    /// a short position in <paramref name="symbol"/>.
-    /// Each symbol has its own short payable account. The symbol is normalized to upper-case.
+    /// a short position in <paramref name="security"/>.
+    /// Each security has its own short payable account.
     /// </summary>
-    public static LedgerAccount ShortSecuritiesPayable(string symbol, string? financialAccountId = null)
-    {
-        var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Short Securities Payable", LedgerAccountType.Liability, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
-    }
+    public static LedgerAccount ShortSecuritiesPayable(LedgerSecurityKey security, string? financialAccountId = null)
+        => CreateSecurityScoped(ShortSecuritiesPayableAccountName, LedgerAccountType.Liability, security, financialAccountId);
 
     // -------------------------------------------------------------------------
     // Multi-currency / FX accounts
@@ -430,7 +466,7 @@ public static class LedgerAccounts
     /// a denomination.
     /// </summary>
     public static bool UsesInstrumentSymbol(LedgerAccount account)
-        => account.Symbol is not null && InstrumentSymbolAccountNames.Contains(account.Name);
+        => (account.Symbol is not null || account.SecurityId is not null) && InstrumentSymbolAccountNames.Contains(account.Name);
 
     /// <summary>
     /// Fund-level fee expense account names posted by the automated fee-accrual path
@@ -459,6 +495,18 @@ public static class LedgerAccounts
 
     private static LedgerAccount CreateScoped(string name, LedgerAccountType accountType, string financialAccountId)
         => new(name, accountType, FinancialAccountId: NormalizeAccountId(financialAccountId));
+
+    private static LedgerAccount CreateSecurityScoped(
+        string name,
+        LedgerAccountType accountType,
+        LedgerSecurityKey security,
+        string? financialAccountId)
+    {
+        if (security.SecurityId is null && security.Symbol is null)
+            throw new ArgumentException("A security key is required.", nameof(security));
+
+        return new(name, accountType, security.Symbol, TextPrimitives.NormalizeOptional(financialAccountId), security.SecurityId);
+    }
 
     private static string NormalizeSymbol(string symbol)
     {

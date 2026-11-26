@@ -18,7 +18,7 @@ namespace Meridian.Execution.Allocation;
 /// Usage pattern:
 /// <code>
 /// var engine = new ProportionalAllocationEngine();
-/// var result = engine.Allocate("AAPL", 1000, 180m, rule, DateTimeOffset.UtcNow);
+/// var result = engine.Allocate("AAPL", 1000, 180m, rule, DateTimeOffset.UtcNow) with { SecurityId = admittedSecurityId };
 /// BlockTradeAllocator.PostToFundLedger(book, result, side: OrderSide.Buy);
 /// </code>
 /// </para>
@@ -91,7 +91,11 @@ public static class BlockTradeAllocator
         AllocationSlice slice,
         bool isBuy)
     {
-        var securitiesAccount = LedgerAccounts.Securities(result.Symbol);
+        var securityId = result.SecurityId is { } id && id != Guid.Empty
+            ? id
+            : throw new InvalidOperationException(
+                $"Block allocation for {result.Symbol} has no Security Master identity; carry the SecurityId from order admission.");
+        var securitiesAccount = LedgerAccounts.Securities(LedgerSecurityKey.Resolved(securityId, result.Symbol));
         var cashAccount = LedgerAccounts.Cash;
 
         return isBuy

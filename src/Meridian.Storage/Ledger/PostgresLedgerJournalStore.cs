@@ -1040,7 +1040,8 @@ public sealed partial class PostgresLedgerJournalStore :
                 wash_sale_enabled,
                 wash_sale_window_days,
                 wash_sale_scope,
-                wash_sale_effective_date)
+                wash_sale_effective_date,
+                account_security_id)
             values (
                 @policy_record_id,
                 @ledger_book_id,
@@ -1057,7 +1058,8 @@ public sealed partial class PostgresLedgerJournalStore :
                 @wash_sale_enabled,
                 @wash_sale_window_days,
                 @wash_sale_scope,
-                @wash_sale_effective_date)
+                @wash_sale_effective_date,
+                @account_security_id)
             on conflict (policy_record_id) do update
             set ledger_book_id = excluded.ledger_book_id,
                 account_name = excluded.account_name,
@@ -1072,7 +1074,8 @@ public sealed partial class PostgresLedgerJournalStore :
                 wash_sale_enabled = excluded.wash_sale_enabled,
                 wash_sale_window_days = excluded.wash_sale_window_days,
                 wash_sale_scope = excluded.wash_sale_scope,
-                wash_sale_effective_date = excluded.wash_sale_effective_date
+                wash_sale_effective_date = excluded.wash_sale_effective_date,
+                account_security_id = excluded.account_security_id
             where not @require_tenant or exists (
                 select 1 from {Qualified("ledger_books")} retained_book
                 join {Qualified("fund_profile_tenancy")} retained_fund
@@ -1095,7 +1098,8 @@ public sealed partial class PostgresLedgerJournalStore :
                       wash_sale_enabled,
                       wash_sale_window_days,
                       wash_sale_scope,
-                      wash_sale_effective_date;
+                      wash_sale_effective_date,
+                      account_security_id;
             """;
         command.Parameters.AddWithValue("policy_record_id", policy.PolicyRecordId);
         command.Parameters.AddWithValue("ledger_book_id", policy.LedgerBookId);
@@ -1154,7 +1158,8 @@ public sealed partial class PostgresLedgerJournalStore :
                    wash_sale_enabled,
                    wash_sale_window_days,
                    wash_sale_scope,
-                   wash_sale_effective_date
+                   wash_sale_effective_date,
+                   account_security_id
             from {Qualified("tax_lot_policies")}
             where ledger_book_id = @ledger_book_id
             order by account_name, effective_date desc, policy_id;
@@ -1328,7 +1333,8 @@ public sealed partial class PostgresLedgerJournalStore :
                     transaction_credit,
                     fx_rate_to_functional,
                     memo,
-                    chart_account)
+                    chart_account,
+                    account_security_id)
                 values (
                     @entry_id,
                     @journal_entry_id,
@@ -1361,7 +1367,8 @@ public sealed partial class PostgresLedgerJournalStore :
                     @transaction_credit,
                     @fx_rate_to_functional,
                     @memo,
-                    cast(@chart_account as jsonb));
+                    cast(@chart_account as jsonb),
+                    @account_security_id);
                 """;
             command.Parameters.AddWithValue("entry_id", leg.EntryId);
             command.Parameters.AddWithValue("journal_entry_id", leg.JournalEntryId);
@@ -1384,6 +1391,7 @@ public sealed partial class PostgresLedgerJournalStore :
             command.Parameters.AddWithValue("account_type", leg.Account.AccountType.ToString());
             command.Parameters.AddWithValue("symbol", (object?)leg.Account.Symbol ?? DBNull.Value);
             command.Parameters.AddWithValue("financial_account_id", (object?)leg.Account.FinancialAccountId ?? DBNull.Value);
+            AddAccountSecurityIdParameter(command, leg.Account);
             command.Parameters.AddWithValue("debit", leg.Debit);
             command.Parameters.AddWithValue("credit", leg.Credit);
             command.Parameters.AddWithValue("description", leg.Description);
@@ -1441,7 +1449,8 @@ public sealed partial class PostgresLedgerJournalStore :
                    jl.transaction_credit,
                    jl.fx_rate_to_functional,
                    jl.memo,
-                   jl.chart_account::text
+                   jl.chart_account::text,
+                   jl.account_security_id
             from {Qualified("journal_entries")} je
             join {Qualified("journal_legs")} jl on jl.journal_entry_id = je.journal_entry_id
             """ + "\n";
@@ -1493,7 +1502,8 @@ public sealed partial class PostgresLedgerJournalStore :
                 reader.GetString(20),
                 accountType,
                 reader.IsDBNull(22) ? null : reader.GetString(22),
-                reader.IsDBNull(23) ? null : reader.GetString(23));
+                reader.IsDBNull(23) ? null : reader.GetString(23),
+                reader.IsDBNull(36) ? null : reader.GetGuid(36));
             current.Lines.Add(new LedgerEntry(
                 reader.GetGuid(19),
                 journalEntryId,
@@ -1724,7 +1734,7 @@ public sealed partial class PostgresLedgerJournalStore :
               and jl.account_type in ('Revenue', 'Expense')
             group by jl.account_name,
                      jl.account_type,
-                     jl.symbol,
+                     coalesce(jl.account_security_id::text, jl.symbol),
                      jl.financial_account_id,
                      jl.dimensions
             having sum(jl.debit) <> sum(jl.credit)
@@ -1855,6 +1865,30 @@ public sealed partial class PostgresLedgerJournalStore :
         command.Parameters.AddWithValue("account_type", account.AccountType.ToString());
         command.Parameters.AddWithValue("symbol", (object?)NormalizeOptional(account.Symbol) ?? DBNull.Value);
         command.Parameters.AddWithValue("financial_account_id", (object?)NormalizeOptional(account.FinancialAccountId) ?? DBNull.Value);
+        AddAccountSecurityIdParameter(command, account);
+    }
+
+    /// <summary>
+    /// Binds the account key column (<c>account_security_id</c>). Typed so SQL may test it for null:
+    /// a SecurityId-keyed account matches on SecurityId alone, a legacy account on its ticker
+    /// (see <see cref="AccountInstrumentMatch"/>).
+    /// </summary>
+    private static void AddAccountSecurityIdParameter(NpgsqlCommand command, LedgerAccount account, string name = "account_security_id")
+        => command.Parameters.Add(new NpgsqlParameter(name, NpgsqlTypes.NpgsqlDbType.Uuid)
+        {
+            Value = account.SecurityId is { } securityId ? securityId : DBNull.Value
+        });
+
+    /// <summary>
+    /// SQL predicate matching LedgerAccount instrument identity against <c>@account_security_id</c>
+    /// and <c>@symbol</c>: SecurityId-keyed accounts match on SecurityId whatever their display
+    /// ticker; legacy accounts (no SecurityId) keep matching on ticker. The two never match each other.
+    /// </summary>
+    private static string AccountInstrumentMatch(string alias = "", string securityIdParameter = "account_security_id", string symbolParameter = "symbol")
+    {
+        var prefix = string.IsNullOrEmpty(alias) ? string.Empty : alias + ".";
+        return $"{prefix}account_security_id is not distinct from @{securityIdParameter} "
+            + $"and (@{securityIdParameter} is not null or coalesce({prefix}symbol, '') = coalesce(@{symbolParameter}, ''))";
     }
 
     private static void AddWashSalePolicyParameters(NpgsqlCommand command, WashSalePolicy policy)
@@ -1868,12 +1902,23 @@ public sealed partial class PostgresLedgerJournalStore :
             policy.EffectiveDate is { } effectiveDate ? effectiveDate : (object)DBNull.Value);
     }
 
-    private static LedgerAccount ReadLedgerAccount(NpgsqlDataReader reader, int nameOrdinal)
-        => new(
+    /// <summary>
+    /// Reads the four contiguous account columns at <paramref name="nameOrdinal"/> plus the account
+    /// key selected under <paramref name="securityIdColumn"/>. Account-key columns are appended at
+    /// the end of select lists (aliased when a row carries more than one account) so existing
+    /// ordinals keep their meaning; the column is required, so a query that omits it fails loudly
+    /// instead of silently reading a SecurityId-keyed account as a legacy ticker account.
+    /// </summary>
+    private static LedgerAccount ReadLedgerAccount(NpgsqlDataReader reader, int nameOrdinal, string securityIdColumn)
+    {
+        var securityIdOrdinal = reader.GetOrdinal(securityIdColumn);
+        return new(
             reader.GetString(nameOrdinal),
             Enum.Parse<LedgerAccountType>(reader.GetString(nameOrdinal + 1), ignoreCase: true),
             reader.IsDBNull(nameOrdinal + 2) ? null : reader.GetString(nameOrdinal + 2),
-            reader.IsDBNull(nameOrdinal + 3) ? null : reader.GetString(nameOrdinal + 3));
+            reader.IsDBNull(nameOrdinal + 3) ? null : reader.GetString(nameOrdinal + 3),
+            reader.IsDBNull(securityIdOrdinal) ? null : reader.GetGuid(securityIdOrdinal));
+    }
 
     // Wash-sale columns are appended after the original twelve so every existing ordinal keeps its
     // meaning; callers that do not select them pass a reader with only 12 fields, which
@@ -1882,7 +1927,7 @@ public sealed partial class PostgresLedgerJournalStore :
         => new(
             reader.GetGuid(0),
             reader.GetGuid(1),
-            ReadLedgerAccount(reader, 2),
+            ReadLedgerAccount(reader, 2, "account_security_id"),
             Enum.Parse<LedgerTaxLotReliefMethod>(reader.GetString(6), ignoreCase: true),
             reader.GetString(7),
             DateOnly.FromDateTime(reader.GetDateTime(8)),

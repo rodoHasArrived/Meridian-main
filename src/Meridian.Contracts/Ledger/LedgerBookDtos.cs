@@ -327,6 +327,15 @@ public sealed record LedgerPeriodTrialBalanceLineDto(
     public string CreditTotalExact => CreditTotal.ToString(System.Globalization.CultureInfo.InvariantCulture);
     public IReadOnlyList<Guid> JournalEntryIds { get; init; } = [];
     public IReadOnlyList<Guid> LedgerEntryIds { get; init; } = [];
+
+    /// <summary>
+    /// Security Master key of a per-security account row (Security Master review F2). When set it is
+    /// the account identity and <see cref="Symbol"/> is the display ticker, so a renamed holding is
+    /// one row. Omitted when null so existing payloads and row identities are unchanged.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SecurityId { get; init; }
+
     public string? BalanceProofSubjectId { get; init; }
     public LedgerAmountScopeDto? BalanceProofScope { get; init; }
     public string? BalanceProofCurrency { get; init; }

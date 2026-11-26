@@ -6,6 +6,57 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageQualitySummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StorageQualitySummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:102](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L102).
+
+```csharp
+public sealed record StorageQualitySummaryDto(string Status, int FilesAnalyzed, double AverageScore, int LowQualityFileCount, IReadOnlyList<string> Recommendations, string? Message);
+```
+
+## StorageTierSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StorageTierSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:135](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L135).
+
+```csharp
+public sealed record StorageTierSummaryDto(string Tier, int FileCount, long TotalBytes);
+```
+
+## StpProcessingState
+
+Qualified name: <code>Meridian.Contracts.Workstation.StpProcessingState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4).
+
+```csharp
+public enum StpProcessingState : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Received = 0</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
+| <code>Validated = 1</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
+| <code>Approved = 2</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
+| <code>QueuedForSettlement = 3</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
+| <code>Settled = 4</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
+| <code>Exception = 5</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
+
+## StpStateTransition
+
+Qualified name: <code>Meridian.Contracts.Workstation.StpStateTransition</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:38](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L38).
+
+```csharp
+public sealed record StpStateTransition(Guid InstructionId, StpProcessingState State, DateTimeOffset AtUtc, string Detail, string? BreakQueueReason = null);
+```
+
 ## StrategyBriefingAlert
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyBriefingAlert</code>. Kind: `record`.
@@ -645,69 +696,3 @@ Canonical run identity and provenance contract shared by run projections.
 ```csharp
 public sealed record StrategyRunIdentity(string CanonicalRunKey, string? ParentCanonicalRunKey, IReadOnlyList<string> DerivedCanonicalRunKeys, StrategyRunMode Mode, string? PromotionSourceRunId, string? PromotionTargetRunId, string? PromotionDecision, string? ReplayAuditReference, DateTimeOffset? ReplayVerifiedAt, bool HasReplayAudit);
 ```
-
-## StrategyRunLineageEventType
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunLineageEventType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:761](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L761).
-
-Promotion/lineage event type emitted on strategy run timelines.
-
-```csharp
-public enum StrategyRunLineageEventType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>RunStarted</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:763](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L763) |  |
-| <code>RunCompleted</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:764](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L764) |  |
-| <code>PromotionDecision</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:765](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L765) |  |
-| <code>CrossModeTransition</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:766](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L766) |  |
-| <code>ReplayVerified</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:767](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L767) |  |
-
-## StrategyRunLineageTimelineEntry
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunLineageTimelineEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:804](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L804).
-
-Lineage timeline event grouped by canonical run identity.
-
-```csharp
-public sealed record StrategyRunLineageTimelineEntry(string? CanonicalRunKey = null, string? ParentCanonicalRunKey = null, string? RunId = null, string? StrategyId = null, string? StrategyName = null, StrategyRunMode? Mode = null, StrategyRunStatus? Status = null, DateTimeOffset? EventTimestamp = null, StrategyRunLineageEventType? EventType = null, string? PromotionDecision = null, StrategyRunCrossModeTransitionMetadata? CrossModeTransition = null);
-```
-
-## StrategyRunLiveStatus
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunLiveStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:66](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L66).
-
-Live-execution status fields attached to a running or recently completed live run. Surfaced on StrategyRunSummary and StrategyRunDetail when StrategyRunMode is Live.
-
-```csharp
-public sealed record StrategyRunLiveStatus(string BrokerId, string AccountId, bool IsConnected, bool IsSessionActive, int OpenOrderCount, int FillCount, decimal? RealizedPnl, decimal? UnrealizedPnl, DateTimeOffset? LastBrokerPollAt, string? ReconciliationBreakReason = null);
-```
-
-## StrategyRunMode
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunMode</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:11](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L11).
-
-Shared workstation-facing mode for a strategy run.
-
-```csharp
-public enum StrategyRunMode : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Backtest</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:13](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L13) |  |
-| <code>Paper</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:14](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L14) |  |
-| <code>Live</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:15](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L15) |  |

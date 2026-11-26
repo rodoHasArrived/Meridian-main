@@ -717,7 +717,7 @@ public sealed partial class GovernedLedgerPostingTargetTests
                     Guid.Parse("66666666-6666-6666-6666-666666666666"),
                     journalEntryId,
                     OccurredAt,
-                    LedgerAccounts.Securities("AAPL", "broker-alpha"),
+                    LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-alpha"),
                     100m,
                     0m,
                     description,

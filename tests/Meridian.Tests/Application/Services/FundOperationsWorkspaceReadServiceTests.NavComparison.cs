@@ -112,11 +112,11 @@ public sealed partial class FundOperationsWorkspaceReadServiceTests
         PostBalancedEntry(ledger, new DateTimeOffset(2026, 6, 10, 14, 0, 0, TimeSpan.Zero), "Short MSFT",
         [
             (LedgerAccounts.Cash, 150m, 0m),
-            (LedgerAccounts.ShortSecuritiesPayable("MSFT"), 0m, 150m)
+            (LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("MSFT")), 0m, 150m)
         ]);
         PostBalancedEntry(ledger, new DateTimeOffset(2026, 6, 30, 21, 0, 0, TimeSpan.Zero), "Mark AAPL",
         [
-            (LedgerAccounts.Securities("AAPL"), 50m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")), 50m, 0m),
             (LedgerAccounts.UnrealizedGain, 0m, 50m)
         ]);
         var repository = new StrategyRunStore();

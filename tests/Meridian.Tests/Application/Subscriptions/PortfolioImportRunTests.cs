@@ -42,9 +42,12 @@ public sealed class PortfolioImportRunTests : IDisposable
         calls.Should().Be(2);
         var watchlists = await new WatchlistService(Configuration()).GetAllWatchlistsAsync();
         watchlists.Should().ContainSingle().Which.Symbols.Should().Equal("AAPL");
-        var draft = PortfolioOpeningBalanceProjector.Build(second);
+        var draft = PortfolioOpeningBalanceProjector.Build(second, OpeningSecurityIds);
         draft.IsBalanced.Should().BeTrue();
         draft.Lines.Where(l => l.account.Name == "Securities").Sum(l => l.debit).Should().Be(350m);
+        draft.Lines.Where(l => l.account.Name == "Securities" && l.account.Symbol == "AAPL")
+            .Should().OnlyContain(l => l.account.SecurityId == AaplSecurityId,
+                "opening holdings are keyed by Security Master identity (F2)");
         draft.Lines.Single(l => l.account.Name == "Capital Account").credit.Should().Be(375m);
         (await restarted.RunAsync(request)).Should().BeEquivalentTo(second);
         queue.Calls.Should().Be(2);
@@ -102,7 +105,7 @@ public sealed class PortfolioImportRunTests : IDisposable
             [new("AAPL", quantity, null, 100m, null, assetClass, null, "USD", side)], DateTimeOffset.UtcNow);
         var run = new PortfolioImportRun(request, "command", PortfolioImportRunStatus.Partial, snapshot.RetrievedAt,
             snapshot.RetrievedAt, snapshot, PortfolioImportRunService.SnapshotHash(snapshot));
-        Assert.Throws<InvalidOperationException>(() => PortfolioOpeningBalanceProjector.Build(run));
+        Assert.Throws<InvalidOperationException>(() => PortfolioOpeningBalanceProjector.Build(run, OpeningSecurityIds));
     }
 
     [Fact]
@@ -113,14 +116,18 @@ public sealed class PortfolioImportRunTests : IDisposable
             [new("AAPL", -2m, null, 100m, null, "us_equity", null, "USD", "short")], DateTimeOffset.UtcNow);
         PortfolioImportRun Run(PortfolioSummary source) => new(request, "command", PortfolioImportRunStatus.Partial,
             source.RetrievedAt, source.RetrievedAt, source, PortfolioImportRunService.SnapshotHash(source));
-        var draft = PortfolioOpeningBalanceProjector.Build(Run(snapshot));
+        var draft = PortfolioOpeningBalanceProjector.Build(Run(snapshot), OpeningSecurityIds);
         draft.IsBalanced.Should().BeTrue();
         draft.Lines.Single(l => l.account.Name == "Short Securities Payable").credit.Should().Be(200m);
         draft.Lines.Single(l => l.account.Name == "Capital Account").credit.Should().Be(25m);
-        Assert.Throws<InvalidOperationException>(() => PortfolioOpeningBalanceProjector.Build(Run(snapshot with { CashBalance = null })));
+        Assert.Throws<InvalidOperationException>(() => PortfolioOpeningBalanceProjector.Build(Run(snapshot with { CashBalance = null }), OpeningSecurityIds));
         Assert.Throws<InvalidOperationException>(() => PortfolioOpeningBalanceProjector.Build(Run(snapshot with
-        { Positions = [snapshot.Positions[0] with { AverageCost = null }] })));
+        { Positions = [snapshot.Positions[0] with { AverageCost = null }] }), OpeningSecurityIds));
     }
+
+    private static readonly Guid AaplSecurityId = Guid.Parse("a0a0a0a0-0000-4000-8000-00000000aa01");
+    private static readonly IReadOnlyDictionary<string, Guid> OpeningSecurityIds =
+        new Dictionary<string, Guid>(StringComparer.Ordinal) { ["AAPL"] = AaplSecurityId, ["MSFT"] = Guid.Parse("a0a0a0a0-0000-4000-8000-00000000aa02") };
 
     private PortfolioImportRunRequest Request() => new(Guid.NewGuid(), "alpaca", new(BrokerAccountId: "test-account"),
         new("tenant-a", "company-a", Guid.NewGuid().ToString("D"), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),

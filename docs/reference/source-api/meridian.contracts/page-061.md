@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BiasDisclosureDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:285](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L285).
+
+Honest summary of the simulation assumptions behind a backtest result — fill timing, limit/stop realism, universe provenance, corporate-action handling, and forced delisting liquidations. Rendered as a bias-disclosure panel wherever backtest numbers are shown.
+
+```csharp
+public sealed record BiasDisclosureDto(string FillTiming, string FillConservatism, string DelistingPolicy, string UniverseSource, bool CorporateActionsAdjusted, string MaxSeverity, IReadOnlyList<BiasDisclosureItemDto> Items);
+```
+
+## BiasDisclosureItemDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:274](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L274).
+
+One disclosed simulation assumption or detected data-quality issue for a backtest run. Severity is info, caution, or warning.
+
+```csharp
+public sealed record BiasDisclosureItemDto(string Code, string Severity, string Title, string Detail);
+```
+
+## BookOfRecordStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BookOfRecordStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:140](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L140).
+
+Whether a ledger book may act as the book of record (publish, release, hard-close).
+
+```csharp
+public sealed record BookOfRecordStatusDto(Guid LedgerBookId, bool IsBookOfRecord, string? ShadowState, string? ShadowWorkspaceId, string Reason, int? CleanPeriodCount = null, int? RequiredPeriodCount = null, int? UnexplainedDifferenceCount = null);
+```
+
+## BooksBeforeBrokerReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L63).
+
+```csharp
+public sealed record BooksBeforeBrokerReadinessDto(bool IsBooksBeforeBrokerMode, bool CanStageBrokerAction, string ExpectedBrokerAction, string BrokerInstructionSummary, IReadOnlyList<string> RequiredApprovals, IReadOnlyList<string> Blockers, IReadOnlyList<string> EvidenceIds);
+```
+
 ## BrokerageAccountKindDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.BrokerageAccountKindDto</code>. Kind: `enum`.
@@ -571,57 +617,3 @@ Enum declarations:
 | <code>Blocked = 5</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L14) |  |
 | <code>Failed = 6</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L15) |  |
 | <code>Posted = 7</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L16) |  |
-
-## DailyValuationScheduleStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DailyValuationScheduleStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L22).
-
-Shared close-cockpit projection for scheduled daily valuation work.
-
-```csharp
-public sealed record DailyValuationScheduleStatusDto(string? ScheduleId, string? FundProfileId, Guid? LedgerBookId, Guid? PeriodId, bool IsConfigured, bool IsEnabled, DateTimeOffset? NextRunAtUtc, DateTimeOffset? LastRunAtUtc, DailyValuationScheduleStateDto State, string Summary, Guid? JournalEntryId, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string> Blockers, IReadOnlyList<Guid>? JournalEntryIds = null, string? BatchCorrelationId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;Guid&gt; JournalEntryIds { get; init; } = JournalEntryIds??[];</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L46) | Every governed draft in the latest valuation batch. JournalEntryId remains the first-entry compatibility alias for older clients. |
-
-## DataUploadPreviewResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DataUploadPreviewResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L53).
-
-Bounded upload preview result. The result retains evidence and validation output only.
-
-```csharp
-public sealed record DataUploadPreviewResultDto(string UploadId, string TemplateId, string TemplateLabel, string FileName, long FileSizeBytes, string ContentType, string UploadedBy, DateTimeOffset UploadedAtUtc, string RetainedPath, int ParsedRowCount, int PreviewRowCount, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyDictionary<string, string>> PreviewRows, IReadOnlyList<DataUploadValidationIssueDto> Issues, string Status, string NextAction);
-```
-
-## DataUploadTemplateCatalogDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DataUploadTemplateCatalogDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L12).
-
-Upload-template catalog surfaced by the Data workspace before source files are accepted.
-
-```csharp
-public sealed record DataUploadTemplateCatalogDto(IReadOnlyList<DataUploadTemplateDto> Templates, IReadOnlyList<string> AcceptedFileExtensions, int MaxPreviewRows, long MaxFileBytes, string? WorkbookFileName = null, IReadOnlyList<string>? WorkbookAcceptedFileExtensions = null, long WorkbookMaxFileBytes = 0);
-```
-
-## DataUploadTemplateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DataUploadTemplateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L24).
-
-A governed source-data template that operators can download and use for upload preview.
-
-```csharp
-public sealed record DataUploadTemplateDto(string TemplateId, string Label, string Description, string DataDomain, string TargetWorkflow, string FileName, string ContentType, string HeaderLine, IReadOnlyList<DataUploadTemplateFieldDto> Fields, IReadOnlyList<string> SampleRows, IReadOnlyList<string> ValidationNotes, IReadOnlyList<string>? SourceKinds = null, IReadOnlyList<string>? SetupChecklist = null, IReadOnlyList<string>? MappingGuidance = null);
-```

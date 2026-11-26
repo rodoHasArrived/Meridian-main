@@ -53,7 +53,7 @@ public sealed class PostedLedgerAccountReconciliationSourceTests
     [Fact]
     public async Task LegacyUnscopedOpening_CannotBeCoveredByScopedAcquisition()
     {
-        var opening = Record(1, 1000m, 25m, LedgerAccounts.Securities("AAPL"));
+        var opening = Record(1, 1000m, 25m, LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")));
         var acquisition = Record(2, 100m, 0m);
         var store = Store([opening, acquisition]);
         AddLots(store, Lot(acquisition, 1m));
@@ -109,8 +109,8 @@ public sealed class PostedLedgerAccountReconciliationSourceTests
         var invalid = mismatch switch
         {
             "book" => lot with { LedgerBookId = Guid.NewGuid() },
-            "account" => lot with { Account = LedgerAccounts.Securities("AAPL", Guid.NewGuid().ToString("D")) },
-            "symbol" => lot with { Account = LedgerAccounts.Securities("MSFT", AccountId.ToString("D")) },
+            "account" => lot with { Account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), Guid.NewGuid().ToString("D")) },
+            "symbol" => lot with { Account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("MSFT"), AccountId.ToString("D")) },
             "security" => lot with { SecurityId = Guid.NewGuid() },
             "position" => lot with { BookPositionId = Guid.NewGuid() },
             "origin" => lot with { SourceJournalEntryId = Guid.NewGuid() },
@@ -221,7 +221,7 @@ public sealed class PostedLedgerAccountReconciliationSourceTests
         var date = acquired ?? DateOnly.FromDateTime(at.UtcDateTime);
         var evidence = new RetainedEvidenceIdentityDto("source", "evidence://source", new string('a', 64), "broker", "fill-1",
             "Accepted", "reviewer", at, date, 1, at, "retainer", "OpenLotAcquisition", lotId.ToString("D"));
-        return new(lotId, BookId, LedgerAccounts.Securities("AAPL", AccountId.ToString("D")), "lot-" + lotId.ToString("N"),
+        return new(lotId, BookId, LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), AccountId.ToString("D")), "lot-" + lotId.ToString("N"),
             date, quantity, quantity, 100m, "USD", at, at, SourceJournalEntryId: origin.Entry.JournalEntryId, Version: 1,
             SecurityId: SecurityId, BookPositionId: PositionId,
             Acquisition: new OpenLotAcquisitionDto(LotQuantityBasis.Units, "USD", "USD", 1m, quantity * 100m, quantity * 100m, date, null, [evidence]));
@@ -256,7 +256,7 @@ public sealed class PostedLedgerAccountReconciliationSourceTests
         };
         var currency = mismatch == "foreign-currency" ? "EUR" : "USD";
         return new(new JournalEntry(id, at, "Retained mark",
-            [new(Guid.NewGuid(), id, at, LedgerAccounts.Securities("AAPL", account), 30m, 0m, "Retained mark", dimensions,
+            [new(Guid.NewGuid(), id, at, LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), account), 30m, 0m, "Retained mark", dimensions,
                 mismatch == "missing-currency" ? null : new LedgerEntryCurrency(currency, currency, 30m, 0m, 1m)),
              new(Guid.NewGuid(), id, at, counterpart, 0m, 30m, "Retained mark", dimensions,
                 mismatch == "missing-currency" ? null : new LedgerEntryCurrency(currency, currency, 0m, 30m, 1m))], metadata),
@@ -271,7 +271,7 @@ public sealed class PostedLedgerAccountReconciliationSourceTests
         var dimensions = new LedgerLineDimensionSet(InstrumentId: SecurityId) { PositionId = PositionId };
         var lines = new List<LedgerEntry>
         {
-            new(Guid.NewGuid(), id, at, securities ?? LedgerAccounts.Securities("AAPL", account), markedCost, 0m, "Retained book", dimensions),
+            new(Guid.NewGuid(), id, at, securities ?? LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), account), markedCost, 0m, "Retained book", dimensions),
             new(Guid.NewGuid(), id, at, LedgerAccounts.CapitalAccountFor(account), 0m, markedCost + cash, "Retained book", dimensions)
         };
         if (cash != 0m)

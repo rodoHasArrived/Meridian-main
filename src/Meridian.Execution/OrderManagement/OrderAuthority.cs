@@ -28,6 +28,7 @@ public static class OrderAuthorityReasonCodes
     public const string LiveOrderReadinessRejected = "LIVE_ORDER_READINESS_REJECTED";
     public const string ReadinessChangedBeforeDispatch = "READINESS_CHANGED_BEFORE_DISPATCH";
     public const string SecurityMasterRejectedAtDispatch = "SECURITY_MASTER_REJECTED_AT_DISPATCH";
+    public const string SecurityIdentityChangedBeforeDispatch = "SECURITY_IDENTITY_CHANGED_BEFORE_DISPATCH";
 }
 
 /// <summary>Retained run, promotion, and artifact state that strategy-run authority is checked against.</summary>
@@ -158,8 +159,14 @@ internal sealed class OrderAuthorityResolver
     /// readiness snapshot can be withdrawn, or an instrument can be suspended in that time.
     /// Untyped (legacy) orders keep their pre-existing path, which has no dispatch recheck.
     /// </summary>
+    /// <param name="admittedSecurityId">
+    /// The Security Master identity stamped on the order at admission. When the dispatch-time gate
+    /// resolves the ticker to a different security (for example a ticker re-pointed in between), the
+    /// order is refused rather than routed under one identity and booked under another.
+    /// </param>
     /// <returns>Null when the order may route; otherwise the refusal.</returns>
-    internal async Task<OrderAdmissionRefusal?> EvaluateDispatchAsync(PreparedOrderAdmission prepared, CancellationToken ct)
+    internal async Task<OrderAdmissionRefusal?> EvaluateDispatchAsync(
+        PreparedOrderAdmission prepared, CancellationToken ct, Guid? admittedSecurityId = null)
     {
         ArgumentNullException.ThrowIfNull(prepared);
         var root = Root(prepared.Authority);
@@ -193,6 +200,16 @@ internal sealed class OrderAuthorityResolver
             {
                 return new OrderAdmissionRefusal(
                     security.Reason, DispatchSource, OrderAuthorityReasonCodes.SecurityMasterRejectedAtDispatch);
+            }
+
+            // Security Master review F2: fills post to SecurityId-keyed accounts using the identity
+            // admitted with the order, so the instrument that routes must still be that identity.
+            if (admittedSecurityId is { } admitted && security.SecurityId is { } current && current != admitted)
+            {
+                return new OrderAdmissionRefusal(
+                    $"'{prepared.SafeRequest.Symbol}' now resolves to Security Master identity {current:D}, not the {admitted:D} admitted with the order.",
+                    DispatchSource,
+                    OrderAuthorityReasonCodes.SecurityIdentityChangedBeforeDispatch);
             }
         }
 

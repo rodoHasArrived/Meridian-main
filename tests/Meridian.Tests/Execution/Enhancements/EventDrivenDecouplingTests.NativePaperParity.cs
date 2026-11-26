@@ -60,7 +60,10 @@ public sealed partial class EventDrivenDecouplingTests
                 BookedMoneyMultiplier = multiplier,
                 BookedVariationMargin = scenario == "variation-margin",
                 UsesFaceValuePercentageOfPar = unit == SecurityLotUnitKind.FaceValue,
-                AccruedInterestPer100 = accrued
+                AccruedInterestPer100 = accrued,
+                // Admission stamps the identity the projection's gate resolves, so both books key
+                // per-security accounts by the same SecurityId (Security Master review F2).
+                AccountingSecurityId = PassingSecurityValidationGate.SecurityId
             };
             var result = portfolio.ApplyFillWithAccountingEvidence(report, ownerAccountId: "broker");
             result.Evidence.Should().NotBeNull();

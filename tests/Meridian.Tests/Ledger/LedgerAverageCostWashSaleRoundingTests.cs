@@ -79,7 +79,7 @@ public sealed class LedgerAverageCostWashSaleRoundingTests
 
     private static LedgerTaxLotReliefInput CreateInput(IReadOnlyList<LedgerTaxLot> lots, decimal quantity, decimal salePrice)
         => new(
-            LedgerAccounts.Securities("AAPL", "broker-1"),
+            LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-1"),
             new DateOnly(2026, 3, 1),
             quantity,
             salePrice,

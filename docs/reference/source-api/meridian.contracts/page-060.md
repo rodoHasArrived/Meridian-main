@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IScopeAssignmentProvider
+
+Qualified name: <code>Meridian.Contracts.Tenancy.IScopeAssignmentProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:149](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L149).
+
+One authority over a slice of the scope-assignment graph (custodied holdings, ledger books, mandates, …). Providers are composed by IAuthoritativeScopeFanOutService; each is individually responsible for failing closed rather than under-reporting.
+
+```csharp
+public interface IScopeAssignmentProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string AuthorityId { get; }</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:152](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L152) | Stable id stamped onto every assignment this provider asserts. |
+| <code>Task&lt;ScopeAssignmentProviderResult&gt; ResolveAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:159](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L159) | Resolves the scopes this authority can attribute the fact to. Implementations must report IsAuthoritative = false with a stated blocker whenever they cannot see the whole of their own slice, and must not throw for expected unavailability. |
+
+## ScopeAssignmentProviderResult
+
+Qualified name: <code>Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:168](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L168).
+
+One authority&#x27;s contribution to a fan-out resolution.
+
+```csharp
+public sealed record ScopeAssignmentProviderResult(bool IsAuthoritative, IReadOnlyList<AuthoritativeScopeAssignment> Scopes, IReadOnlyList<string> Blockers)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ScopeAssignmentProviderResult NotAuthoritative(string blocker) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:174](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L174) | A fail-closed contribution carrying a single stated reason. |
+| <code>public static ScopeAssignmentProviderResult Authoritative(IReadOnlyList&lt;AuthoritativeScopeAssignment&gt; scopes) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:178](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L178) | A complete contribution over the supplied scopes (possibly none). |
+
+## ScopeFanOutIdentifier
+
+Qualified name: <code>Meridian.Contracts.Tenancy.ScopeFanOutIdentifier</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:66](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L66).
+
+One identifier a holdings record may carry for the security under decision.
+
+```csharp
+public sealed record ScopeFanOutIdentifier(string IdentifierType, string Value);
+```
+
+## ScopeFanOutRequest
+
+Qualified name: <code>Meridian.Contracts.Tenancy.ScopeFanOutRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:78](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L78).
+
+A request to enumerate every accounting scope affected by a security-level fact.
+
+```csharp
+public sealed record ScopeFanOutRequest(Guid SecurityId, IReadOnlyList<ScopeFanOutIdentifier> Identifiers, DateOnly EffectiveDate);
+```
+
 ## ScopeFanOutResult
 
 Qualified name: <code>Meridian.Contracts.Tenancy.ScopeFanOutResult</code>. Kind: `record`.
@@ -655,50 +717,4 @@ Result returned after a retained bank-statement source file is applied as accoun
 
 ```csharp
 public sealed record BankStatementImportResultDto(string UploadId, Guid BatchId, Guid AccountId, string AccountCode, string BankName, DateOnly StatementDate, string FileName, long FileSizeBytes, string ImportedBy, DateTimeOffset ImportedAtUtc, string RetainedPath, int LineCount, IReadOnlyList<DataUploadValidationIssueDto> Issues, string Status, string NextAction);
-```
-
-## BiasDisclosureDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:285](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L285).
-
-Honest summary of the simulation assumptions behind a backtest result — fill timing, limit/stop realism, universe provenance, corporate-action handling, and forced delisting liquidations. Rendered as a bias-disclosure panel wherever backtest numbers are shown.
-
-```csharp
-public sealed record BiasDisclosureDto(string FillTiming, string FillConservatism, string DelistingPolicy, string UniverseSource, bool CorporateActionsAdjusted, string MaxSeverity, IReadOnlyList<BiasDisclosureItemDto> Items);
-```
-
-## BiasDisclosureItemDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:274](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L274).
-
-One disclosed simulation assumption or detected data-quality issue for a backtest run. Severity is info, caution, or warning.
-
-```csharp
-public sealed record BiasDisclosureItemDto(string Code, string Severity, string Title, string Detail);
-```
-
-## BookOfRecordStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BookOfRecordStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:140](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L140).
-
-Whether a ledger book may act as the book of record (publish, release, hard-close).
-
-```csharp
-public sealed record BookOfRecordStatusDto(Guid LedgerBookId, bool IsBookOfRecord, string? ShadowState, string? ShadowWorkspaceId, string Reason, int? CleanPeriodCount = null, int? RequiredPeriodCount = null, int? UnexplainedDifferenceCount = null);
-```
-
-## BooksBeforeBrokerReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L63).
-
-```csharp
-public sealed record BooksBeforeBrokerReadinessDto(bool IsBooksBeforeBrokerMode, bool CanStageBrokerAction, string ExpectedBrokerAction, string BrokerInstructionSummary, IReadOnlyList<string> RequiredApprovals, IReadOnlyList<string> Blockers, IReadOnlyList<string> EvidenceIds);
 ```

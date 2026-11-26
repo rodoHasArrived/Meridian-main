@@ -29,7 +29,7 @@ internal static class CorporateActionLedgerInvariants
     /// </summary>
     public static void AssertReceivablesSettled(DomainLedger ledger, string ticker)
     {
-        var receivable = LedgerAccounts.DividendReceivable(ticker.Trim().ToUpperInvariant());
+        var receivable = LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved(ticker.Trim().ToUpperInvariant()));
         ledger.GetBalance(receivable).Should().Be(0m,
             "pay-date settlement must zero the dividend receivable for {0}", ticker);
     }

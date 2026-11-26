@@ -71,8 +71,8 @@ public sealed class PaperNativeSnapshotEvidenceTests
             row.CoverageFailure.Should().BeNull();
             row.MonetaryBasis.Should().Be(scenario == "variation" ? 0m
                 : ledger.GetBalance(signedQuantity < 0m
-                    ? LedgerAccounts.ShortSecuritiesPayable("TEST", AccountId)
-                    : LedgerAccounts.Securities("TEST", AccountId)));
+                    ? LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Resolved(SecurityId, "TEST"), AccountId)
+                    : LedgerAccounts.Securities(LedgerSecurityKey.Resolved(SecurityId, "TEST"), AccountId)));
             var account = capture.Accounts.Single(item => item.AccountId == AccountId);
             account.Cash.Should().Be(portfolio.GetAccount(AccountId)!.Cash);
             account.AccountingShortMarketValue.Should().BeLessThanOrEqualTo(0m);

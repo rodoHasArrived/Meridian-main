@@ -6,6 +6,133 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementValidationFields
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementValidationFields</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:490](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L490).
+
+Defines canonical field names used in statement validation issues.
+
+```csharp
+public static class StatementValidationFields
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Account = &quot;account&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:492](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L492) |  |
+| <code>public const string SecurityIdentifier = &quot;securityIdentifier&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:493](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L493) |  |
+| <code>public const string Quantity = &quot;quantity&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:494](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L494) |  |
+| <code>public const string Price = &quot;price&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:495](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L495) |  |
+| <code>public const string CashAmount = &quot;cashAmount&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:496](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L496) |  |
+| <code>public const string ActivityCode = &quot;activityCode&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:497](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L497) |  |
+| <code>public const string TradeDate = &quot;tradeDate&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:498](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L498) |  |
+| <code>public const string Currency = &quot;currency&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:499](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L499) |  |
+| <code>public const string FeeAmount = &quot;feeAmount&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:500](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L500) |  |
+| <code>public const string SettlementDate = &quot;settlementDate&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:501](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L501) |  |
+| <code>public const string Description = &quot;description&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:502](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L502) |  |
+
+## StatementValidationIssueCode
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementValidationIssueCode</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:467](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L467).
+
+```csharp
+public enum StatementValidationIssueCode
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>SourceFileUnreadable</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:469](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L469) |  |
+| <code>MissingAccount</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:470](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L470) |  |
+| <code>MissingStatementPeriod</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:471](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L471) |  |
+| <code>InvalidStatementPeriod</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:472](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L472) |  |
+| <code>DuplicateImport</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:473](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L473) |  |
+| <code>MissingMappingProfile</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:474](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L474) |  |
+| <code>MissingToleranceProfile</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:475](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L475) |  |
+| <code>MissingRequiredField</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:476](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L476) |  |
+| <code>MalformedDate</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:477](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L477) |  |
+| <code>MalformedDecimal</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:478](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L478) |  |
+| <code>UnsupportedCurrency</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:479](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L479) |  |
+| <code>UnknownActivityType</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:480](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L480) |  |
+| <code>UnresolvedSecurity</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:481](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L481) |  |
+| <code>UnknownOptionalFeeColumn</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:482](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L482) |  |
+| <code>UnsupportedOptionalField</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:483](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L483) |  |
+| <code>OutOfPeriodRow</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:484](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L484) |  |
+
+## StatementValidationIssueDto
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementValidationIssueDto</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:443](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L443).
+
+```csharp
+public sealed record StatementValidationIssueDto(StatementValidationIssueCode Code, StatementValidationIssueSeverity Severity, int? RowNumber, string? Field, string Message);
+```
+
+## StatementValidationIssueSeverity
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementValidationIssueSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:461](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L461).
+
+```csharp
+public enum StatementValidationIssueSeverity
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Soft</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:463](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L463) |  |
+| <code>Blocker</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:464](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L464) |  |
+
+## StatementValidationPolicyDto
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementValidationPolicyDto</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:450](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L450).
+
+```csharp
+public sealed record StatementValidationPolicyDto(bool UnresolvedSecurityIsBlocker = false, bool UnknownOptionalFeeColumnsAreBlockers = false, bool UnsupportedOptionalFieldsAreBlockers = false, bool OutOfPeriodRowsAreBlockers = false, bool UnsupportedCurrencyIsBlocker = false, bool UnknownActivityTypeIsBlocker = false)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static StatementValidationPolicyDto Default { get; } = new ();</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:458](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L458) |  |
+
+## StatementValidationRequestDto
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementValidationRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:401](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L401).
+
+```csharp
+public sealed record StatementValidationRequestDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StatementValidationRequestDto(string SourcePath, string AccountId, DateOnly? StatementPeriodStart, DateOnly? StatementPeriodEnd, string MappingProfileId, string ToleranceProfileId, IReadOnlyDictionary&lt;string, string&gt;? FieldMappings = null, IReadOnlyList&lt;string&gt;? RequiredFields = null, StatementValidationPolicyDto? Policy = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:403](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L403) |  |
+| <code>public string SourcePath { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:425](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L425) |  |
+| <code>public string AccountId { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:426](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L426) |  |
+| <code>public DateOnly? StatementPeriodStart { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:427](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L427) |  |
+| <code>public DateOnly? StatementPeriodEnd { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:428](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L428) |  |
+| <code>public string MappingProfileId { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:429](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L429) |  |
+| <code>public string ToleranceProfileId { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:430](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L430) |  |
+| <code>public IReadOnlyDictionary&lt;string, string&gt; FieldMappings { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:431](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L431) |  |
+| <code>public IReadOnlyList&lt;string&gt; RequiredFields { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:432](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L432) |  |
+| <code>public StatementValidationPolicyDto Policy { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:433](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L433) |  |
+
 ## StatementValidationResultDto
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementValidationResultDto</code>. Kind: `record`.

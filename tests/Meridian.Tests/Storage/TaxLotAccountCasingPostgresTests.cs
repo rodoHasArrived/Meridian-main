@@ -40,7 +40,9 @@ public sealed class TaxLotAccountCasingPostgresTests
         var duplicate = () => database.JournalStore.SaveTaxLotAsync(lower, ct);
         var failure = await duplicate.Should().ThrowAsync<PostgresException>();
         failure.Which.SqlState.Should().Be(PostgresErrorCodes.UniqueViolation);
-        failure.Which.ConstraintName.Should().Be("ux_tax_lots_book_account_lot");
+        // V_ledger_085 (Security Master review F2) rebuilt the lot-label index on the instrument account key
+        // and kept the case-insensitive financial-account component this test protects.
+        failure.Which.ConstraintName.Should().Be("ux_tax_lots_book_account_instrument_lot");
 
         var retained = await database.JournalStore.GetTaxLotsByIdsAsync(bookId, [upper.TaxLotRecordId, lower.TaxLotRecordId], ct);
         retained.Should().ContainSingle().Which.Should().BeEquivalentTo(saved);

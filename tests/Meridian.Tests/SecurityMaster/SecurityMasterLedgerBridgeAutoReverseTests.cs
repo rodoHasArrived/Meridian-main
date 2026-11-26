@@ -72,7 +72,7 @@ public sealed class HistoricalCorporateActionLedgerFixtureAutoReverseTests
         await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger, context);
 
         ledger.JournalEntryCount.Should().BeGreaterThan(afterFirstSync, "reversing entries were booked");
-        ledger.GetBalance(LedgerAccounts.DividendReceivable(Ticker)).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved(Ticker))).Should().Be(0m);
         ledger.GetBalance(LedgerAccounts.DividendIncome).Should().Be(0m);
         ledger.GetBalance(LedgerAccounts.Cash).Should().Be(0m);
         ledger.Journal.Should().OnlyContain(entry => entry.IsBalanced);
@@ -95,11 +95,11 @@ public sealed class HistoricalCorporateActionLedgerFixtureAutoReverseTests
 
         // The amended declaration posts with the new 0.30/share terms (30 = 0.30 x 100 shares).
         var amendedDeclaration = ledger.Journal.Single(entry => entry.JournalEntryId == amendment.CorpActId);
-        amendedDeclaration.Lines.Single(line => line.Account == LedgerAccounts.DividendReceivable(Ticker))
+        amendedDeclaration.Lines.Single(line => line.Account == LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved(Ticker)))
             .Debit.Should().Be(30m);
 
         // Original terms fully reversed, so the receivable nets flat and only the amended income remains.
-        ledger.GetBalance(LedgerAccounts.DividendReceivable(Ticker)).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved(Ticker))).Should().Be(0m);
         ledger.Journal.Should().OnlyContain(entry => entry.IsBalanced);
     }
 

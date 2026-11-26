@@ -6,6 +6,90 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReopenedAccountingPeriod
+
+Qualified name: <code>Meridian.Ledger.ReopenedAccountingPeriod</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/PeriodReopenEvidence.cs:53](../../../../src/Meridian.Ledger/PeriodReopenEvidence.cs#L53).
+
+Immutable audit record of a locked accounting period being reopened, capturing the period that was unlocked, who reopened it and when, and the supporting PeriodReopenEvidence.
+
+```csharp
+public sealed record ReopenedAccountingPeriod(LockedAccountingPeriod Period, DateTimeOffset ReopenedAtUtc, string ReopenedBy, PeriodReopenEvidence Evidence);
+```
+
+## SecurityTradePositionEffect
+
+Qualified name: <code>Meridian.Ledger.SecurityTradePositionEffect</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:7](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L7).
+
+Native-unit changes and exact monetary basis changes from the existing trade projector.
+
+```csharp
+public sealed record SecurityTradePositionEffect(decimal LongQuantityChange, decimal ShortQuantityChange, decimal LongBasisChange, decimal ShortBasisChange, SecurityLotUnitKind QuantityUnit, decimal Multiplier);
+```
+
+## SecurityTradePositionEvidence
+
+Qualified name: <code>Meridian.Ledger.SecurityTradePositionEvidence</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:11](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L11).
+
+Retains position facts alongside trade journals; fees and financing do not invent units.
+
+```csharp
+public static class SecurityTradePositionEvidence
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string VersionTag = &quot;positionEvidence.version&quot;;</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:13](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L13) |  |
+| <code>public const string ReversalSignTag = &quot;positionEvidence.reversalSign&quot;;</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:14](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L14) |  |
+| <code>public static JournalEntryMetadata WithPostings(JournalEntryMetadata metadata, IReadOnlyList&lt;SecurityTradePosting&gt; postings, SecurityLotUnitKind unit, decimal multiplier);</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:17](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L17) |  |
+| <code>public static bool TryRead(JournalEntry journal, out SecurityTradePositionEffect? effect, out string? failure, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:67](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L67) |  |
+
+## SecurityTradePosting
+
+Qualified name: <code>Meridian.Ledger.SecurityTradePosting</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/SecurityTradePosting.cs:10](../../../../src/Meridian.Ledger/SecurityTradePosting.cs#L10).
+
+Exact monetary facts retained by the lot book for one opening or closing leg. Carrying value is relieved long basis or the original proceeds of a covered short. Opening legs carry zero; financing remains separate from securities basis.
+
+```csharp
+public sealed record SecurityTradePosting(SecurityTradePostingKind Kind, decimal Quantity, decimal GrossValue, decimal? CarryingValue = null, decimal BorrowedAmount = 0m, decimal LoanRepaid = 0m)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore] public decimal RealizedPnl =&gt; …;</code> | [src/Meridian.Ledger/SecurityTradePosting.cs:19](../../../../src/Meridian.Ledger/SecurityTradePosting.cs#L19) |  |
+
+## SecurityTradePostingKind
+
+Qualified name: <code>Meridian.Ledger.SecurityTradePostingKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ledger/SecurityTradePostingKind.cs:4](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L4).
+
+The economic leg of an execution, independent of its buy/sell order side.
+
+```csharp
+public enum SecurityTradePostingKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>OpenLong</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:6](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L6) |  |
+| <code>CloseLong</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:7](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L7) |  |
+| <code>OpenShort</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:8](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L8) |  |
+| <code>CoverShort</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:9](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L9) |  |
+
 ## SecurityTradePostingProjector
 
 Qualified name: <code>Meridian.Ledger.SecurityTradePostingProjector</code>. Kind: `class`.
@@ -22,7 +106,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; Project(SecurityTradePosting posting, string symbol, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:9](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L9) |  |
+| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; Project(SecurityTradePosting posting, LedgerSecurityKey security, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:9](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L9) |  |
 | <code>public static void Validate(SecurityTradePosting posting);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:84](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L84) | Validates exact trade facts without resolving or mutating any accounts. |
 | <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; Commission(decimal amount, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:110](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L110) |  |
 | <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; VariationMargin(string symbol, decimal amount, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:127](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L127) |  |
@@ -344,10 +428,12 @@ Declared public members:
 | <code>public static StandardChartOfAccounts Instance { get; } = new ();</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:12](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L12) |  |
 | <code>public const string Revision = &quot;meridian-standard-chart-v1&quot;;</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:13](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L13) |  |
 | <code>public LedgerAccount ResolveCode(string code, string? financialAccountId = null, string? symbol = null);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:69](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L69) | Resolves an explicitly registered posting code with the same scope rules as its role. |
-| <code>public LedgerAccountChartReference? GetPostingReference(LedgerAccount account) =&gt; …;</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:79](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L79) |  |
-| <code>public LedgerAccount GetDefinition(LedgerAccountRole role);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:83](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L83) |  |
-| <code>public LedgerAccount Resolve(LedgerAccountRole role, string? financialAccountId = null, string? symbol = null);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:92](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L92) |  |
-| <code>public bool TryGetRegistered(LedgerAccount account, out LedgerAccountRole role);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:113](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L113) |  |
+| <code>public LedgerAccount ResolveCode(string code, string? financialAccountId, LedgerSecurityKey security);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:79](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L79) | Resolves a registered per-security posting code by LedgerSecurityKey. |
+| <code>public LedgerAccountChartReference? GetPostingReference(LedgerAccount account) =&gt; …;</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:89](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L89) |  |
+| <code>public LedgerAccount GetDefinition(LedgerAccountRole role);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:93](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L93) |  |
+| <code>public LedgerAccount Resolve(LedgerAccountRole role, string? financialAccountId = null, string? symbol = null);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:102](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L102) |  |
+| <code>public LedgerAccount Resolve(LedgerAccountRole role, string? financialAccountId, LedgerSecurityKey security);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:127](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L127) |  |
+| <code>public bool TryGetRegistered(LedgerAccount account, out LedgerAccountRole role);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:152](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L152) |  |
 
 ## StructuredNoteAccountingTemplate
 
@@ -367,7 +453,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public const string TemplateId = &quot;structured-note-fvtpl-v1&quot;;</code> | [src/Meridian.Ledger/StructuredNoteAccountingTemplate.cs:11](../../../../src/Meridian.Ledger/StructuredNoteAccountingTemplate.cs#L11) |  |
 | <code>public static bool AppliesTo(string? assetClass) =&gt; …;</code> | [src/Meridian.Ledger/StructuredNoteAccountingTemplate.cs:13](../../../../src/Meridian.Ledger/StructuredNoteAccountingTemplate.cs#L13) |  |
-| <code>public static JournalTemplate Create(string symbol, string? financialAccountId, bool gain);</code> | [src/Meridian.Ledger/StructuredNoteAccountingTemplate.cs:31](../../../../src/Meridian.Ledger/StructuredNoteAccountingTemplate.cs#L31) | The reusable gain or loss template. Its amount is the absolute change in monetary carrying value, already converted from the class&#x27;s raw quote convention by the valuation projector. Generated instances remain subject to the existing governed valuation draft lifecycle. |
+| <code>public static JournalTemplate Create(string symbol, Guid securityId, string? financialAccountId, bool gain);</code> | [src/Meridian.Ledger/StructuredNoteAccountingTemplate.cs:31](../../../../src/Meridian.Ledger/StructuredNoteAccountingTemplate.cs#L31) | The reusable gain or loss template. Its amount is the absolute change in monetary carrying value, already converted from the class&#x27;s raw quote convention by the valuation projector. Generated instances remain subject to the existing governed valuation draft lifecycle. |
 
 ## TaxCharacter
 

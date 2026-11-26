@@ -54,3 +54,7 @@ de886adbf6285ae9b322b9ba1a64f68e2c8b025b:Meridian Design System/_ds_bundle.js:ge
 065ef993389fe92bfbbdeb5ffc4847f71f31f6d2:src/Meridian.Ui/dashboard/src/screens/reconciliation-bulk-decisions.test.tsx:generic-api-key:11
 b7c099a204503f925b60dfa77a57f23bb419f52d:tests/Meridian.Tests/Application/Ui/EffectiveConfigurationProjectionTests.cs:generic-api-key:67
 458dcaa9d7787271464ce52db0eb3febde836d6d:docs/reference/source-api/meridian.dataintegration/page-002.md:plaid-client-id:141
+# Synthetic tax-lot label "lot-legacy-20260512" in the Security Master review F2 re-key test fixture
+# (LegacyRekeyLot); a date-derived lot identifier, not a credential. Authorized by the repository
+# owner on 2026-11-25. Only this original commit/path/rule/line finding.
+760b8dd4cc99f116b64b0f911efc72a5f6c8724e:tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.AccountRekey.cs:generic-api-key:244

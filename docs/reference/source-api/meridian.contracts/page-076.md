@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterOpenLotDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOpenLotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:357](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L357).
+
+```csharp
+public sealed record SecurityMasterOpenLotDto(Guid SecurityId, string PortfolioId, string RunId, string? AccountScopeId, string? AccountScopeDisplayName, string? VehicleScopeId, string? VehicleScopeDisplayName, string LotId, string Symbol, DateTimeOffset TradeDate, DateTimeOffset? SettleDate, decimal OriginalQuantity, decimal CurrentQuantity, decimal? OriginalFace, decimal? CurrentFace, decimal? FactorAdjustedQuantity, decimal? FactorAdjustedFace, decimal CostBasis, decimal EntryPrice, decimal? UnrealizedPnl, string Currency, string LotStatus, string SourceSystem, string? SourceRecordId, DateTimeOffset AsOfUtc, string? SourceUpdatedBy, string? SourceReason, bool IsLongTerm, string? Notes)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsShort { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:389](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L389) | True when the positive lot quantity represents a short position. |
+
+## SecurityMasterOpenLotProvenanceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOpenLotProvenanceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:392](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L392).
+
+```csharp
+public sealed record SecurityMasterOpenLotProvenanceDto(string ProvenanceId, string RunId, string PortfolioId, string? AccountScopeId, string? AccountScopeDisplayName, string SourceSystem, string? SourceRecordId, DateTimeOffset AsOfUtc, string Summary);
+```
+
+## SecurityMasterOpenLotReadModelDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOpenLotReadModelDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:343](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L343).
+
+```csharp
+public sealed record SecurityMasterOpenLotReadModelDto(string QuantityModel, decimal? LotSize, decimal? ContractMultiplier, bool UsesFaceValue, bool SupportsFactorAdjustedExposure, bool RequiresResolvedSecurityId, decimal? CurrentFactor, DateOnly? CurrentFactorDate, DateTimeOffset AsOfUtc, string Summary, IReadOnlyList<SecurityMasterOpenLotDto> Lots, IReadOnlyList<SecurityMasterOpenLotProvenanceDto> ProvenanceHistory);
+```
+
+## SecurityMasterOperatingModelDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOperatingModelDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:519](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L519).
+
+```csharp
+public sealed record SecurityMasterOperatingModelDto(Guid SecurityId, string? ClientId, string? AccountId, string? FundProfileId, string Status, string Summary, IReadOnlyList<SecurityMasterOperatingModelStageDto> Stages, IReadOnlyList<SecurityMasterEntitlementApplicabilityDto> EntitlementApplicability, IReadOnlyList<SecurityMasterOperatorMetadataDto> OperatorMetadata, SecurityMasterManualChangeApprovalPostureDto ManualChangeApproval, IReadOnlyList<InstrumentPassportReferenceDataWorkbenchSectionDto> Controls, DateTimeOffset RetrievedAtUtc);
+```
+
 ## SecurityMasterOperatingModelStageDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOperatingModelStageDto</code>. Kind: `record`.
@@ -626,44 +672,4 @@ Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:98](../../
 
 ```csharp
 public sealed record StatementImportReviewRowDto(string RowId, int NormalizedIndex, int? SourceRowNumber, StatementRecordPreviewDto Record, IReadOnlyList<StatementImportIssueDto> Issues, bool CanExclude, string? ExclusionDisabledReason, bool CanAcceptAsBreak = false);
-```
-
-## StatementImportReviewRowsPageDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementImportReviewRowsPageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:109](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L109).
-
-```csharp
-public sealed record StatementImportReviewRowsPageDto(IReadOnlyList<StatementImportReviewRowDto> Rows, int TotalRows, int Offset, int Limit);
-```
-
-## StatementImportRowDispositionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementImportRowDispositionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:103](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L103).
-
-```csharp
-public sealed record StatementImportRowDispositionDto(string RowId, string Disposition, string Reason);
-```
-
-## StatementImportRowOutcomeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementImportRowOutcomeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:105](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L105).
-
-```csharp
-public sealed record StatementImportRowOutcomeDto(string RowId, int NormalizedIndex, string Disposition, string? Reason, string Status, string? RunId, IReadOnlyList<string> CaseIds);
-```
-
-## StatementImportRowOutcomesPageDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementImportRowOutcomesPageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:112](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L112).
-
-```csharp
-public sealed record StatementImportRowOutcomesPageDto(IReadOnlyList<StatementImportRowOutcomeDto> RowOutcomes, int TotalRows, int Offset, int Limit);
 ```

@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityAssetProfileGovernanceAuditEventDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileGovernanceAuditEventDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:148](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L148).
+
+```csharp
+public sealed record SecurityAssetProfileGovernanceAuditEventDto(string AuditId, string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Rationale, string CorrelationId, string ProfileId, int Version, SecurityAssetProfileStatusDto Status, int? PreviousVersion, string? ApprovalReference);
+```
+
+## SecurityAssetProfileGovernanceResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileGovernanceResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:166](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L166).
+
+```csharp
+public sealed record SecurityAssetProfileGovernanceResultDto(SecurityAssetProfileDefinitionDto Profile, SecurityAssetProfileLineageDto Lineage, SecurityAssetProfileGovernanceAuditEventDto AuditEvent);
+```
+
+## SecurityAssetProfileIdentifierPreferenceDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileIdentifierPreferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L73).
+
+```csharp
+public sealed record SecurityAssetProfileIdentifierPreferenceDto(SecurityIdentifierKind Kind, bool IsRequiredForClose, string Reason);
+```
+
+## SecurityAssetProfileLineageDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileLineageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:161](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L161).
+
+```csharp
+public sealed record SecurityAssetProfileLineageDto(string ProfileId, IReadOnlyList<SecurityAssetProfileDefinitionDto> Versions, IReadOnlyList<SecurityAssetProfileGovernanceAuditEventDto> AuditEvents);
+```
+
 ## SecurityAssetProfilePromotionCandidateDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfilePromotionCandidateDto</code>. Kind: `record`.
@@ -793,77 +833,3 @@ Enum declarations:
 | <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L9) |  |
 | <code>Percent</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L9) |  |
 | <code>Fraction</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L9) |  |
-
-## SecurityCurveDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L53).
-
-The write-once identity of a stored curve.
-
-```csharp
-public sealed record SecurityCurveDefinitionDto(Guid CurveId, string CurveKey, SecurityCurveKind Kind, string Currency, string? IndexName, string? Tenor, string DayCount, SecurityCurveInterpolation Interpolation, string Source, string? Description, string CreatedBy, DateTimeOffset CreatedAt)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public SecurityCurveRatePolicy RatePolicy { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L68) |  |
-
-## SecurityCurveInterpolation
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveInterpolation</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L32).
-
-How a value between two pillars is read. Linear is linear in DateOnly.DayNumber on the stored value (the arithmetic of SecurityForwardCurve.RateAt). Before the first pillar Forward and Inflation curves hold flat, while a Discount curve is 1 on or before its as-of date and linear from (as-of, 1) to the first pillar; after the last pillar Forward and Inflation curves hold flat and a Discount curve refuses.
-
-```csharp
-public enum SecurityCurveInterpolation
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Linear</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L34) |  |
-
-## SecurityCurveKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L11).
-
-What a stored curve&#x27;s values are: discount factors, projected index fixings or index levels.
-
-```csharp
-public enum SecurityCurveKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Discount</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L14) | Positive discount factors; legacy policy additionally requires (0, 1&#93; and nonincreasing pillars. At as-of the factor is 1. |
-| <code>Forward</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L17) | Projected annual fixings stored as fractions (0.04, never 4); signed values require an explicit SignedRates definition. |
-| <code>Inflation</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L20) | Projected levels of one inflation index; always positive. |
-
-## SecurityCurvePointDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurvePointDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L46).
-
-One dated pillar. Value is a discount factor (Discount), an annual rate as a FRACTION (Forward: 0.04, never 4) or an index level (Inflation). Tenor is a label such as 3M; the date is authoritative.
-
-```csharp
-public sealed record SecurityCurvePointDto(DateOnly Date, decimal Value, string? Tenor = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityRatePointEvidenceDto? RateEvidence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L49) |  |

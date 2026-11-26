@@ -38,7 +38,7 @@ public sealed partial class EventDrivenDecouplingTests
         await consumer.DisposeAsync();
 
         ledger.Journal.Should().HaveCount(2);
-        ledger.GetBalance(LedgerAccounts.Securities("AAPL")).Should().Be(0m,
+        ledger.GetBalance(LedgerAccounts.Securities(AaplKey)).Should().Be(0m,
             "a flat position must leave no residual Securities balance");
         ledger.GetBalance(LedgerAccounts.Cash).Should().Be(realizedPnl,
             "net cash across the round trip equals the realized P&L");

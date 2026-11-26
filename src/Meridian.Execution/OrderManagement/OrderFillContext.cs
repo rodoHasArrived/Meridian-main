@@ -11,6 +11,7 @@ internal sealed class OrderFillContext(
     IReadOnlyDictionary<string, string> financialAccountIds,
     IReadOnlyDictionary<string, decimal> contractMultipliers,
     IReadOnlyDictionary<string, bool> faceValueSizing,
+    IReadOnlyDictionary<string, Guid> securityIds,
     bool captureAccountingSource = false,
     bool syntheticSource = false)
 {
@@ -23,4 +24,6 @@ internal sealed class OrderFillContext(
     internal decimal GetContractMultiplier(string? orderId) =>
         orderId is not null && contractMultipliers.TryGetValue(orderId, out var multiplier) ? multiplier : 1m;
     internal bool UsesFaceValueSizing(string orderId) => faceValueSizing.ContainsKey(orderId);
+    internal Guid? GetSecurityId(string? orderId) =>
+        orderId is not null && securityIds.TryGetValue(orderId, out var securityId) ? securityId : null;
 }

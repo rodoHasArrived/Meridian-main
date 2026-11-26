@@ -59,7 +59,8 @@ public sealed partial class PostgresLedgerJournalStore
                 original_face,
                 booked_factor,
                 par_basis,
-                acquisition_terms)
+                acquisition_terms,
+                account_security_id)
             values (
                 @tax_lot_record_id,
                 @ledger_book_id,
@@ -85,11 +86,13 @@ public sealed partial class PostgresLedgerJournalStore
                 @original_face,
                 @booked_factor,
                 @par_basis,
-                @acquisition_terms)
+                @acquisition_terms,
+                @account_security_id)
             on conflict (tax_lot_record_id) do update
             set account_name = excluded.account_name,
                 account_type = excluded.account_type,
                 symbol = excluded.symbol,
+                account_security_id = excluded.account_security_id,
                 financial_account_id = excluded.financial_account_id,
                 lot_id = excluded.lot_id,
                 acquired_date = excluded.acquired_date,
@@ -144,7 +147,8 @@ public sealed partial class PostgresLedgerJournalStore
                       par_basis,
                       acquisition_terms,
                       basis_adjustment,
-                      current_factor;
+                      current_factor,
+                      account_security_id;
             """;
         command.Parameters.AddWithValue("tax_lot_record_id", lot.TaxLotRecordId);
         command.Parameters.AddWithValue("ledger_book_id", lot.LedgerBookId);
@@ -232,12 +236,13 @@ public sealed partial class PostgresLedgerJournalStore
                    par_basis,
                    acquisition_terms,
                    basis_adjustment,
-                   current_factor
+                   current_factor,
+                   account_security_id
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and account_name = @account_name
               and account_type = @account_type
-              and symbol is not distinct from @symbol
+              and {AccountInstrumentMatch()}
               and lower(financial_account_id) is not distinct from lower(@financial_account_id)
               and open_quantity > 0
             order by acquired_date, lot_id;
@@ -306,7 +311,8 @@ public sealed partial class PostgresLedgerJournalStore
                    par_basis,
                    acquisition_terms,
                    basis_adjustment,
-                   current_factor
+                   current_factor,
+                   account_security_id
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and tax_lot_record_id = any(@tax_lot_record_ids)
@@ -378,12 +384,13 @@ public sealed partial class PostgresLedgerJournalStore
                    par_basis,
                    acquisition_terms,
                    basis_adjustment,
-                   current_factor
+                   current_factor,
+                   account_security_id
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and account_name = @account_name
               and account_type = @account_type
-              and coalesce(symbol, '') = coalesce(@symbol, '')
+              and {AccountInstrumentMatch()}
               and lower(coalesce(financial_account_id, '')) = lower(coalesce(@financial_account_id, ''))
               and lot_id = any(@lot_ids)
             order by tax_lot_record_id;
@@ -471,7 +478,7 @@ public sealed partial class PostgresLedgerJournalStore
         => new(
             reader.GetGuid(0),
             reader.GetGuid(1),
-            ReadLedgerAccount(reader, 2),
+            ReadLedgerAccount(reader, 2, "account_security_id"),
             reader.GetString(6),
             DateOnly.FromDateTime(reader.GetDateTime(7)),
             reader.GetDecimal(8),

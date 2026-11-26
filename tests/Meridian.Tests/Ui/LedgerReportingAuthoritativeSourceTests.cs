@@ -878,7 +878,7 @@ public sealed partial class LedgerReportingAuthoritativeSourceTests
             line.JournalEntryId,
             line.Timestamp,
             line.Debit > 0m
-                ? LedgerAccounts.AccruedInterestReceivable("BOND", "brokerage-a")
+                ? LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Unresolved("BOND"), "brokerage-a")
                 : LedgerAccounts.CouponIncomeFor("brokerage-a"),
             line.Debit,
             line.Credit,

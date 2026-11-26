@@ -92,7 +92,7 @@ public static class DailyPortfolioPricingProjector
             if (line.MarkAdjustment == 0m)
                 continue;
 
-            var securitiesAccount = LedgerAccounts.Securities(line.Symbol, line.FinancialAccountId);
+            var securitiesAccount = LedgerAccounts.Securities(LedgerSecurityKey.From(line.SecurityId, line.Symbol), line.FinancialAccountId);
             var scope = line.FinancialAccountId ?? line.Symbol;
             var dimensions = new LedgerLineDimensionSet(
                 FundId: input.Policy.FundId,
@@ -102,7 +102,9 @@ public static class DailyPortfolioPricingProjector
 
             if (StructuredNoteAccountingTemplate.AppliesTo(line.InstrumentType))
             {
-                var template = StructuredNoteAccountingTemplate.Create(line.Symbol, line.FinancialAccountId,
+                var template = StructuredNoteAccountingTemplate.Create(line.Symbol,
+                    line.SecurityId ?? throw new InvalidOperationException("Structured-note valuation requires a canonical Security Master identity."),
+                    line.FinancialAccountId,
                     gain: line.MarkAdjustment > 0m);
                 var instance = template.Instantiate(new JournalTemplateInstantiation(input.AsOf,
                     new Dictionary<string, decimal> { ["markAdjustment"] = Math.Abs(line.MarkAdjustment) }, dimensions));

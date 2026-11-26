@@ -49,7 +49,8 @@ public sealed partial class AutomatedPostingGrantTests
         };
         var workspace = setup.Workspace with { ChartOfAccounts = chart };
         await database.AccountingConfigurationStore.SaveAsync(workspace);
-        var carrying = new LedgerAccount("Securities", LedgerAccountType.Asset, "AAPL", account);
+        // Fills post to the SecurityId-keyed carrying account (Security Master review F2).
+        var carrying = new LedgerAccount("Securities", LedgerAccountType.Asset, "AAPL", account, securityId);
         await database.JournalStore.SaveTaxLotPolicyAsync(new LedgerAccountTaxLotPolicyRecord(Guid.NewGuid(),
             book.LedgerBookId, carrying, LedgerTaxLotReliefMethod.Fifo, "fifo-v1", setup.Period.StartDate,
             Timestamp, Timestamp));

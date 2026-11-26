@@ -451,7 +451,8 @@ public sealed partial class OrderFillProcessorTests
             new Dictionary<string, OrderState> { [order.OrderId] = order },
             new Dictionary<string, string> { [order.OrderId] = order.FundAccountId!.Value.ToString("D") },
             new Dictionary<string, decimal> { [order.OrderId] = order.ContractMultiplier },
-            new Dictionary<string, bool>());
+            new Dictionary<string, bool>(),
+            new Dictionary<string, Guid>());
         hub = new ExecutionReportHub(new OrderManagementSystemOptions(), () => "fill-test", null,
             NullLogger.Instance, new ExecutionFailureState(NullLogger.Instance));
         return new OrderFillProcessor(context, portfolio, persistence,

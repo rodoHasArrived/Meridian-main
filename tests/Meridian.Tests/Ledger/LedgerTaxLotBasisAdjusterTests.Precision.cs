@@ -20,7 +20,7 @@ public sealed partial class LedgerTaxLotBasisAdjusterTests
             new(LedgerTaxLotBasisAdjustmentKind.Factor, 0.8m, new(2026, 2, 1), SecurityId),
             new(LedgerTaxLotBasisAdjustmentKind.Amortization, -5m, new(2026, 2, 1), SecurityId)
         };
-        var input = new LedgerTaxLotReliefInput(LedgerAccounts.Securities("EXACT"), new(2026, 2, 1),
+        var input = new LedgerTaxLotReliefInput(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("EXACT")), new(2026, 2, 1),
             quantitySold: 8m, salePrice: 120m, LedgerTaxLotReliefMethod.Fifo, [lot], basisAdjustments: adjustments);
 
         var result = LedgerTaxLotReliefProjector.Project(input);
@@ -41,7 +41,7 @@ public sealed partial class LedgerTaxLotBasisAdjusterTests
         };
         var adjustment = new LedgerTaxLotBasisAdjustment(LedgerTaxLotBasisAdjustmentKind.Factor,
             0.8m, new(2026, 2, 1), SecurityId);
-        var input = new LedgerTaxLotReliefInput(LedgerAccounts.Securities("EXACT"), new(2026, 2, 1),
+        var input = new LedgerTaxLotReliefInput(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("EXACT")), new(2026, 2, 1),
             quantitySold: 1.6m, salePrice: 1m, LedgerTaxLotReliefMethod.Fifo, [lot], basisAdjustments: [adjustment]);
 
         var result = LedgerTaxLotReliefProjector.Project(input);
@@ -106,7 +106,7 @@ public sealed partial class LedgerTaxLotBasisAdjusterTests
         };
         var adjustment = new LedgerTaxLotBasisAdjustment(LedgerTaxLotBasisAdjustmentKind.Amortization,
             -1m, new(2026, 2, 1), SecurityId);
-        var input = new LedgerTaxLotReliefInput(LedgerAccounts.Securities("BASIS"), new(2026, 2, 1),
+        var input = new LedgerTaxLotReliefInput(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("BASIS")), new(2026, 2, 1),
             quantitySold: 2m, salePrice: 1m, LedgerTaxLotReliefMethod.SpecificId, [exact, adjusted],
             specificLotIds: [exact.LotId], basisAdjustments: [adjustment]);
 

@@ -89,7 +89,10 @@ public sealed record FiscalYearCloseBalanceDto(
     LedgerDimensionSetDto? Dimensions,
     decimal DebitTotal,
     decimal CreditTotal,
-    decimal Balance);
+    decimal Balance,
+    // Security Master identity keying a per-security account (review F2); Symbol is then display
+    // only. Omitted when null so plans retained before F2 keep their hash.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? SecurityId = null);
 
 /// <summary>Stable blocker codes for the fiscal-year close plan.</summary>
 public static class FiscalYearCloseBlockerCodes

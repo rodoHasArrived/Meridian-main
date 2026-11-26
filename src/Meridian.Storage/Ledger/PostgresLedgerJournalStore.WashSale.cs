@@ -56,7 +56,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         var scopePredicate = accountScoped
             ? "and account_name = @account_name "
                 + "and account_type = @account_type "
-                + "and symbol is not distinct from @symbol "
+                + "and " + AccountInstrumentMatch() + " "
                 + "and lower(financial_account_id) is not distinct from lower(@financial_account_id)"
             : string.Empty;
 
@@ -70,7 +70,8 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
                    account_name,
                    account_type,
                    symbol,
-                   financial_account_id
+                   financial_account_id,
+                   account_security_id
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and security_id = @security_id
@@ -80,7 +81,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
               and not (lower(lot_id) = any(@relieved_lot_ids)
                   and account_name = @account_name
                   and account_type = @account_type
-                  and symbol is not distinct from @symbol
+                  and {AccountInstrumentMatch()}
                   and lower(financial_account_id) is not distinct from lower(@financial_account_id))
             {scopePredicate}
             order by acquired_date, lot_id;
@@ -103,7 +104,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
                 // bought and partly sold again inside the window still replaced the loss shares.
                 reader.GetDecimal(2),
                 reader.IsDBNull(3) ? null : reader.GetGuid(3),
-                ReadLedgerAccount(reader, 4)));
+                ReadLedgerAccount(reader, 4, "account_security_id")));
         }
 
         return replacements;
@@ -142,7 +143,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
               and lower(lot.lot_id) = any(@relieved_lot_ids)
               and lot.account_name = @account_name
               and lot.account_type = @account_type
-              and lot.symbol is not distinct from @symbol
+              and {AccountInstrumentMatch("lot")}
               and lower(lot.financial_account_id) is not distinct from lower(@financial_account_id)
             order by deferral.sale_date, deferral.deferral_id;
             """;
@@ -228,7 +229,8 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
                 policy_id,
                 window_days,
                 scope,
-                recorded_at)
+                recorded_at,
+                disposal_account_security_id)
             values (
                 @deferral_id,
                 @ledger_book_id,
@@ -247,7 +249,8 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
                 @policy_id,
                 @window_days,
                 @scope,
-                @recorded_at)
+                @recorded_at,
+                @account_security_id)
             on conflict (disposal_mutation_batch_id, replacement_tax_lot_record_id) do nothing;
             """;
         command.Parameters.AddWithValue("deferral_id", deferral.DeferralId);
@@ -311,7 +314,8 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
                    policy_id,
                    window_days,
                    scope,
-                   recorded_at
+                   recorded_at,
+                   disposal_account_security_id
             from {Qualified("wash_sale_deferrals")}
             where ledger_book_id = @ledger_book_id
               and sale_date >= @from_sale_date
@@ -332,7 +336,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
                 reader.GetGuid(2),
                 reader.GetGuid(3),
                 DateOnly.FromDateTime(reader.GetDateTime(4)),
-                ReadLedgerAccount(reader, 5),
+                ReadLedgerAccount(reader, 5, "disposal_account_security_id"),
                 reader.GetGuid(9),
                 reader.GetString(10),
                 reader.GetDecimal(11),

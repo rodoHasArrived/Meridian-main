@@ -9,8 +9,8 @@ public sealed partial class FundOperationsWorkspaceReadService
     /// <summary>Most month-ends a NAV trend may span.</summary>
     public const int MaxNavTrendMonths = 24;
 
-    private static readonly string LongSecuritiesAccountName = LedgerAccounts.Securities("X").Name;
-    private static readonly string ShortSecuritiesAccountName = LedgerAccounts.ShortSecuritiesPayable("X").Name;
+    private const string LongSecuritiesAccountName = LedgerAccounts.SecuritiesAccountName;
+    private const string ShortSecuritiesAccountName = LedgerAccounts.ShortSecuritiesPayableAccountName;
 
     /// <summary>
     /// Ledger NAV at the end of each of the last <paramref name="months"/> months, ending with NAV at

@@ -2,11 +2,36 @@
 
 # `security-master-contracts` data objects - page 4 of 8
 
-Objects 241-320 of 615. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 619. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_OperatorOverridesDto["OperatorOverridesDto"] {
+        +SecurityOverrideApprovalStatusDto ApprovalStatus
+        +IReadOnlyList~SecurityOverrideAuditEntryDto~ AuditTrail
+        +string? ReasonCode
+        +DateTimeOffset? ReviewedAt
+        +string? ReviewedBy
+        +Guid SecurityId
+        +DateTimeOffset UpdatedAt
+        +string UpdatedBy
+        +IReadOnlyDictionary~string__string~ Values
+    }
+    class Meridian_Contracts_SecurityMaster_OperatorOverridesPatchRequest["OperatorOverridesPatchRequest"] {
+        +string? ReasonCode
+        +IReadOnlyList~string~? RemoveKeys
+        +IReadOnlyDictionary~string__string~? SetValues
+    }
+    class Meridian_Contracts_SecurityMaster_OtcAuctionSettlementData["OtcAuctionSettlementData"] {
+        +DateOnly AuctionDate
+        +string AuctionReference
+        +Guid CreditEventId
+        +string Currency
+        +decimal FinalPricePercent
+        +decimal SettlementAmount
+        +int SettlementScale
+    }
     class Meridian_Contracts_SecurityMaster_OtcCollateralAgreementDto["OtcCollateralAgreementDto"] {
         +Guid CollateralAgreementId
         +string Currency
@@ -457,6 +482,12 @@ classDiagram
         +Guid ProposalId
         +string Reason
     }
+    class Meridian_Contracts_SecurityMaster_ResolveCanonicalSecurityRequest["ResolveCanonicalSecurityRequest"] {
+        +bool ActiveOnly
+        +DateTimeOffset? AsOfUtc
+        +SecurityIdentifierKind IdentifierKind
+        +string IdentifierValue
+    }
     class Meridian_Contracts_SecurityMaster_ResolveConflictRequest["ResolveConflictRequest"] {
         +string? ChosenWinnerSource
         +Guid ConflictId
@@ -464,43 +495,7 @@ classDiagram
         +string Resolution
         +string ResolvedBy
     }
-    class Meridian_Contracts_SecurityMaster_ResolveCorporateActionConflictRequestDto["ResolveCorporateActionConflictRequestDto"] {
-        +string Actor
-        +Guid CaseId
-        +string CompanyId
-        +Guid ConflictId
-        +string? CorrelationId
-        +string Disposition
-        +string EvidenceHash
-        +string EvidenceReference
-        +long ExpectedVersion
-        +string IdempotencyKey
-        +string Resolution
-        +CorporateActionCaseScopeDto? ScopeAssertion
-    }
-    class Meridian_Contracts_SecurityMaster_ResolveSecurityRequest["ResolveSecurityRequest"] {
-        +bool ActiveOnly
-        +DateTimeOffset? AsOfUtc
-        +SecurityIdentifierKind IdentifierKind
-        +string IdentifierValue
-        +string? Provider
-    }
-    class Meridian_Contracts_SecurityMaster_ScheduleConventionTerms["ScheduleConventionTerms"] {
-        +bool? AccrualAdjusted
-        +string? BusinessDayConvention
-        +string? CouponCashBasis
-        +string? CouponRateUnit
-        +string? Direction
-        +ScheduleConventionTerms Empty
-        +bool? EndOfMonthRule
-        +DateOnly? FirstRegularDate
-        +DateOnly? LastRegularDate
-        +IReadOnlyList~string~ PaymentCalendars
-        +int? PaymentLagBusinessDays
-        +string? RollConvention
-    }
-    class Meridian_Contracts_SecurityMaster_ScheduleSpecFactory["ScheduleSpecFactory"] {
-    }
+    Meridian_Contracts_SecurityMaster_OtcAuctionSettlementData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
     Meridian_Contracts_SecurityMaster_OtcCollateralAgreementDto --> Meridian_Contracts_SecurityMaster_OtcEligibleCollateralDto
     Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto --> Meridian_Contracts_SecurityMaster_OtcCollateralDirection
     Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto --> Meridian_Contracts_SecurityMaster_OtcCollateralKind

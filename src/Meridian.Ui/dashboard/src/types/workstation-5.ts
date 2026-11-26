@@ -1699,6 +1699,8 @@ export interface ManualJournalEntryLine {
   evidenceLink?: string | null;
   ledgerAccountSymbol?: string | null;
   ledgerAccountFinancialAccountId?: string | null;
+  /** Security Master key of a per-security ledger account; the account identity when set (F2). Round-tripped by corrections. */
+  ledgerAccountSecurityId?: string | null;
   dimensions?: LedgerDimensionSet | null;
   transactionCurrency?: { currency: string; amount: string | number; fxRateToFunctional: string | number } | null;
 }

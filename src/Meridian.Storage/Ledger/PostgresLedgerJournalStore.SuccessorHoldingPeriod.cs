@@ -70,6 +70,7 @@ public sealed partial class PostgresLedgerJournalStore
                   and security_id = @security and sale_date = @sale_date
                   and disposal_account_name = @account_name and disposal_account_type = @account_type
                   and disposal_symbol is not distinct from @symbol
+                  and disposal_account_security_id is not distinct from @account_security_id
                   and disposal_financial_account_id is not distinct from @financial_account_id
                   and replacement_tax_lot_record_id = @lot and replacement_lot_id = @lot_name
                   and disallowed_amount = @amount and matched_quantity = @quantity

@@ -32,8 +32,8 @@ public sealed class PaperTradingPortfolioAccountingEvidenceTests
         var chart = StandardChartOfAccounts.Instance;
         ledger.GetBalance(chart.Resolve(LedgerAccountRole.Cash, "broker-a")).Should().Be(8_994m);
         ledger.GetBalance(chart.Resolve(LedgerAccountRole.Cash, "broker-b")).Should().Be(10_638m);
-        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, "broker-a", "AAPL")).Should().Be(1_000m);
-        ledger.GetBalance(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-b", "AAPL")).Should().Be(600m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, "broker-a", LedgerSecurityKey.Unresolved("AAPL"))).Should().Be(1_000m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-b", LedgerSecurityKey.Unresolved("AAPL"))).Should().Be(600m);
         ledger.GetBalance(chart.Resolve(LedgerAccountRole.RealizedGain, "broker-b")).Should().Be(40m);
         ledger.GetBalance(chart.Resolve(LedgerAccountRole.CommissionExpense, "broker-a")).Should().Be(6m);
         ledger.GetBalance(chart.Resolve(LedgerAccountRole.CommissionExpense, "broker-b")).Should().Be(2m);
@@ -308,7 +308,7 @@ public sealed class PaperTradingPortfolioAccountingEvidenceTests
         ledger.GetBalance(chart.Resolve(LedgerAccountRole.Cash, "margin-a")).Should().Be(85_000m);
         ledger.GetBalance(chart.Resolve(LedgerAccountRole.RealizedLoss, "margin-a")).Should().Be(15_000m);
         ledger.GetBalance(chart.Resolve(LedgerAccountRole.MarginLoanPayable, "margin-a")).Should().Be(0m);
-        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, "margin-a", "AAPL")).Should().Be(0m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, "margin-a", LedgerSecurityKey.Unresolved("AAPL"))).Should().Be(0m);
         ledger.Journal.Should().OnlyContain(entry => entry.IsBalanced);
         ledger.Journal.SelectMany(entry => entry.Lines).Should().OnlyContain(line => line.Debit >= 0m && line.Credit >= 0m);
     }

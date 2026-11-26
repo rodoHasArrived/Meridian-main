@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationBrokerageSyncRunRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationBrokerageSyncRunRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L37).
+
+```csharp
+public sealed record WorkstationBrokerageSyncRunRequestDto(string? ProviderId = null, string? ExternalAccountId = null, string? RequestedBy = null, DateTimeOffset? Since = null, BrokerageAccountKindDto AccountKind = BrokerageAccountKindDto.Unknown);
+```
+
+## WorkstationBrokerageSyncStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationBrokerageSyncStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L69).
+
+```csharp
+public sealed record WorkstationBrokerageSyncStatusDto(Guid FundAccountId, string? ProviderId, string? ExternalAccountId, WorkstationBrokerageSyncHealth Health, bool IsLinked, bool IsStale, DateTimeOffset? LastAttemptedSyncAt, DateTimeOffset? LastSuccessfulSyncAt, string? LastError, int PositionCount, int OpenOrderCount, int FillCount, int CashTransactionCount, int SecurityMissingCount, IReadOnlyList<string> Warnings, BrokerageAccountKindDto AccountKind = BrokerageAccountKindDto.Unknown);
+```
+
+## WorkstationCrossScreenCount
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationCrossScreenCount</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs#L16).
+
+A single cross-screen count and the plain-language definition it was counted with.
+
+```csharp
+public sealed record WorkstationCrossScreenCount(int Count, string Definition);
+```
+
+## WorkstationCrossScreenCountsDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs#L9).
+
+Counts that appear on more than one workstation screen (Trading, Data, Settings, Accounting and the WPF desktop), each computed once with the definition its Definition text states, so every surface shows the same number for the same quantity. A count is null when its source is not registered or the caller may not read it; clients then show &quot;—&quot;, never a substitute number.
+
+```csharp
+public sealed record WorkstationCrossScreenCountsDto(DateTimeOffset AsOf, WorkstationCrossScreenCount? OpenOrders, WorkstationProviderHealthCount? Providers, WorkstationCrossScreenCount? OpenBreaks);
+```
+
 ## WorkstationDataBackfillRecord
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataBackfillRecord</code>. Kind: `record`.
@@ -526,52 +570,4 @@ Immutable provider or portal evidence retained against a canonical reporting del
 
 ```csharp
 public sealed record WorkstationReportingDeliveryReceiptPayload(string ReceiptId, string Kind, DateTimeOffset OccurredAtUtc, string TransportId, string? ProviderReference = null, string? EvidenceReference = null, string? Detail = null);
-```
-
-## WorkstationReportingHistoryPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingHistoryPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:796](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L796).
-
-Canonical tenant/company reporting history over durable run and delivery authorities.
-
-```csharp
-public sealed record WorkstationReportingHistoryPayload(IReadOnlyList<WorkstationReportingRunPayload> Runs, IReadOnlyList<WorkstationReportingDeliveryPayload> Deliveries, int Limit, DateTimeOffset GeneratedAtUtc);
-```
-
-## WorkstationReportingPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:765](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L765).
-
-Typed reporting payload returned directly by GET /api/workstation/reporting and also embedded as the Reporting summary inside WorkstationAccountingPayload.
-
-```csharp
-public sealed record WorkstationReportingPayload(int ProfileCount, IReadOnlyList<string> RecommendedProfiles, IReadOnlyList<WorkstationReportingProfilePayload> Profiles, IReadOnlyList<WorkstationReportPackDistributionPayload> ReportPackDistributions, string Summary, IReadOnlyList<WorkstationReportingTemplatePayload> Templates, IReadOnlyList<WorkstationReportingRunPayload> RecentRuns, IReadOnlyList<ReportingScheduleRecordDto>? Schedules = null, IReadOnlyList<ReportPackDeliveryAttemptDto>? DeliveryAttempts = null, string? SelectedFundProfileId = null, IReadOnlyList<ReportingScheduleDeliveryPlanDto>? ScheduleDeliveryPlans = null, FinancialRecordExplorerDto? ReportLineProvenanceExplorer = null, IReadOnlyList<PortfolioReportingCutDto>? PortfolioCuts = null, IReadOnlyList<PortfolioReportingLiveViewDto>? LivePortfolioViews = null, IReadOnlyList<CrossFundReportingConsolidationDto>? CrossFundConsolidations = null, IReadOnlyList<PortfolioReportingPnlSliceDto>? PnlSlices = null, IReadOnlyList<PortfolioReportingAnalyticsRowDto>? AnalyticsRows = null, IReadOnlyList<StructuredReportingExportDto>? StructuredExports = null, IReadOnlyList<ReportBrandingThemeDto>? BrandingThemes = null, IReadOnlyList<WorkstationReportWriterDatasetSourcePayload>? ReportWriterDatasetSources = null, WorkstationReportAccessAuditSummaryDto? AccessAudit = null, IReadOnlyList<WorkstationReportingDailyWorkItemDto>? DailyWork = null, IReadOnlyList<ReportingStarterKitDto>? StarterKits = null, ReportingStarterKitStateDto? StarterKitState = null, ReportingDeploymentCapabilityDto? DeploymentCapability = null, IReadOnlyList<WorkstationReportingDeliveryPayload>? CanonicalDeliveries = null);
-```
-
-## WorkstationReportingProfilePayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingProfilePayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:490](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L490).
-
-A single export/reporting profile shown in the Reporting workspace. Matches the Reporting profile type in browser workstation models.
-
-```csharp
-public sealed record WorkstationReportingProfilePayload(string Id, string Name, string TargetTool, string Format, string Description, bool LoaderScript, bool DataDictionary);
-```
-
-## WorkstationReportingRunLinkPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingRunLinkPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:600](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L600).
-
-Lightweight reporting run status with lineage and approval posture for operator surfaces.
-
-```csharp
-public sealed record WorkstationReportingRunLinkPayload(string Id, string Kind, string Label, string Href, string Method, bool IsBrowserNavigable, string Source);
 ```

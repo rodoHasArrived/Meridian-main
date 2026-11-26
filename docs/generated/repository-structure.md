@@ -6209,6 +6209,7 @@ Meridian-main
 │   │   │   │   ├── ScheduleRoll.cs
 │   │   │   │   ├── ScheduleSpec.cs
 │   │   │   │   └── ScheduleTenor.cs
+│   │   │   ├── CanonicalSecurityResolution.cs
 │   │   │   ├── CashDividendAccountRoleBindingDto.cs
 │   │   │   ├── CashDividendAttestationDeclarationContracts.cs
 │   │   │   ├── CashDividendReconciliationSupport.cs
@@ -7063,6 +7064,7 @@ Meridian-main
 │   │   │   ├── AccountingPostingCandidateService.BondAcquisition.cs
 │   │   │   ├── AccountingPostingCandidateService.BondIncome.cs
 │   │   │   ├── AccountingPostingCandidateService.CashFlow.cs
+│   │   │   ├── AccountingPostingCandidateService.Comparison.cs
 │   │   │   ├── AccountingPostingCandidateService.cs
 │   │   │   ├── AssetAccountingCandidateCanonicalizer.cs
 │   │   │   ├── AssetAccountingEventSpineService.BondCouponRecognition.cs
@@ -7088,6 +7090,7 @@ Meridian-main
 │   │   │   ├── ConfiguredLedgerAccountResolver.cs
 │   │   │   ├── FactorPaydownLotInstructionService.cs
 │   │   │   ├── LedgerJournalConstruction.cs
+│   │   │   ├── LedgerSecurityKeyRekeyService.cs
 │   │   │   ├── ShortCarryPostingGuard.cs
 │   │   │   ├── ShortCorrectionGuard.cs
 │   │   │   ├── ShortCoverPostingGuard.cs
@@ -7804,6 +7807,8 @@ Meridian-main
 │   │   ├── LedgerReportSchedulePlanner.cs
 │   │   ├── LedgerRunAttribution.cs
 │   │   ├── LedgerScheduledReportExportPackageBuilder.cs
+│   │   ├── LedgerSecurityKey.cs
+│   │   ├── LedgerSecurityKeyMigration.cs
 │   │   ├── LedgerSnapshot.cs
 │   │   ├── LedgerStatementControlPack.cs
 │   │   ├── LedgerTaxLot.cs
@@ -8466,7 +8471,9 @@ Meridian-main
 │   │   │   │   ├── V_ledger_081__book_fx_settlement_receipts.sql
 │   │   │   │   ├── V_ledger_082__external_gl_posting.sql
 │   │   │   │   ├── V_ledger_083__external_gl_evidence_truncate_guards.sql
-│   │   │   │   └── V_ledger_084__security_revision_workflow_scope.sql
+│   │   │   │   ├── V_ledger_084__security_revision_workflow_scope.sql
+│   │   │   │   ├── V_ledger_085__security_id_account_keys.sql
+│   │   │   │   └── V_ledger_086__tax_lot_account_rekey.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -8514,6 +8521,7 @@ Meridian-main
 │   │   │   ├── IntercompanyAgreementPostingGuard.cs
 │   │   │   ├── IntercompanyConfirmationClosePolicyStoreRules.cs
 │   │   │   ├── IntercompanyJournalCorrectionEvidence.cs
+│   │   │   ├── LedgerAccountRekeyRules.cs
 │   │   │   ├── LedgerBalanceCheckpointContent.cs
 │   │   │   ├── LedgerBalanceSnapshotExtensions.cs
 │   │   │   ├── LedgerBookServiceException.cs
@@ -8542,10 +8550,12 @@ Meridian-main
 │   │   │   ├── PostgresIntercompanyProposalStore.cs
 │   │   │   ├── PostgresLedgerBookService.cs
 │   │   │   ├── PostgresLedgerCurrencyBackfill.cs
+│   │   │   ├── PostgresLedgerJournalStore.AccountRekey.cs
 │   │   │   ├── PostgresLedgerJournalStore.AccrualHistory.cs
 │   │   │   ├── PostgresLedgerJournalStore.Amortization.cs
 │   │   │   ├── PostgresLedgerJournalStore.AmortizationFactorHistory.cs
 │   │   │   ├── PostgresLedgerJournalStore.AtomicTaxLots.cs
+│   │   │   ├── PostgresLedgerJournalStore.AtomicTaxLotScope.cs
 │   │   │   ├── PostgresLedgerJournalStore.Audit.cs
 │   │   │   ├── PostgresLedgerJournalStore.AutomatedPostingGrants.cs
 │   │   │   ├── PostgresLedgerJournalStore.AverageCostRelief.cs
@@ -13922,6 +13932,7 @@ Meridian-main
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OmsGovernedBrokerageOrderGatewayTests.cs
 │   │   │   ├── OrderAdmissionPolicyTests.cs
+│   │   │   ├── OrderAdmissionSecurityIdTests.cs
 │   │   │   ├── OrderAmendmentBookTests.cs
 │   │   │   ├── OrderApprovalReservationsTests.cs
 │   │   │   ├── OrderAuthorityPaperRehearsalTests.cs
@@ -14507,6 +14518,7 @@ Meridian-main
 │   │   │   ├── LedgerReportPreparerAttestationExportTests.cs
 │   │   │   ├── LedgerReportRendererCompositionTests.cs
 │   │   │   ├── LedgerScheduledExportFormatTests.cs
+│   │   │   ├── LedgerSecurityKeyTests.cs
 │   │   │   ├── LedgerStatementControlPackTests.cs
 │   │   │   ├── LedgerTaxCharacterTests.cs
 │   │   │   ├── LedgerTaxLotBasisAdjusterTests.cs
@@ -14536,6 +14548,7 @@ Meridian-main
 │   │   │   ├── ShareClassUnitRegisterTests.cs
 │   │   │   ├── StandardChartOfAccountsTests.cs
 │   │   │   ├── StructuredNoteAccountingTemplateTests.cs
+│   │   │   ├── TrialBalanceSecurityIdTests.cs
 │   │   │   └── YearEndCloseTests.cs
 │   │   ├── Mcp
 │   │   │   ├── LedgerToolsTests.cs
@@ -15076,6 +15089,7 @@ Meridian-main
 │   │   │   ├── AtomicFileWriterLogPrivacyTests.cs
 │   │   │   ├── AtomicFileWriterTests.cs
 │   │   │   ├── AtomicSnapshotTestWriter.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.AccountRekey.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AccrualAdmission.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AccrualHistory.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AcquisitionAdmission.cs
@@ -15184,6 +15198,7 @@ Meridian-main
 │   │   │   ├── GovernedLedgerPostingTargetTests.ActorAttribution.cs
 │   │   │   ├── GovernedLedgerPostingTargetTests.cs
 │   │   │   ├── GovernedLedgerPostingTargetTests.EntityControls.cs
+│   │   │   ├── GovernedLedgerPostingTargetTests.SecurityKeys.cs
 │   │   │   ├── HistoricalTaxLotAccrualTests.cs
 │   │   │   ├── HistoricalTaxLotQuantityTests.cs
 │   │   │   ├── IntercompanyAccountBindingFileTests.cs
@@ -15642,6 +15657,7 @@ Meridian-main
 │   │   │   ├── ManualJournalAgreementReviewTests.Corrections.cs
 │   │   │   ├── ManualJournalAgreementReviewTests.cs
 │   │   │   ├── ManualJournalAgreementReviewTests.Currencies.cs
+│   │   │   ├── ManualJournalLedgerAccountSecurityIdTests.cs
 │   │   │   ├── ManualJournalMutationRecoveryStoreTests.cs
 │   │   │   ├── MarginCertificationStoreTests.cs
 │   │   │   ├── MarginControlCenterReadServiceTests.cs
@@ -16192,6 +16208,7 @@ Meridian-main
 │   │   │   ├── AccountingCloseViewModelTests.cs
 │   │   │   ├── AccountingConfigureViewModelTests.cs
 │   │   │   ├── AccountingPreparerAttestationPresentationTests.cs
+│   │   │   ├── AccountingWorkbenchRebookSecurityIdTests.cs
 │   │   │   ├── AccountPortfolioViewModelTests.cs
 │   │   │   ├── ActivityLogViewModelTests.cs
 │   │   │   ├── AddProviderWizardViewModelTests.cs

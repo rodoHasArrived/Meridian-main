@@ -217,7 +217,10 @@ public static class FiscalYearCloseProjection
         foreach (var (account, dimensions, debit, credit) in lines)
         {
             var dto = LedgerDimensionMapper.ToDto(dimensions);
-            var key = string.Join('\u001f', account.AccountType, account.Name, account.Symbol, account.FinancialAccountId, ScopeKey(dto));
+            // Instrument key: a SecurityId-keyed account is one row across ticker renames; a legacy
+            // account keeps its ticker key (and therefore its retained row order and plan hash).
+            var instrument = account.SecurityId is { } securityId ? "security:" + securityId.ToString("D") : account.Symbol;
+            var key = string.Join('\u001f', account.AccountType, account.Name, instrument, account.FinancialAccountId, ScopeKey(dto));
             rows[key] = rows.TryGetValue(key, out var row)
                 ? row with { Debit = row.Debit + debit, Credit = row.Credit + credit }
                 : (account, dto, debit, credit);
@@ -228,13 +231,14 @@ public static class FiscalYearCloseProjection
             .Select(row => new FiscalYearCloseBalanceDto(row.Account.Name, row.Account.AccountType.ToString(),
                 row.Account.Symbol, row.Account.FinancialAccountId, row.Dimensions,
                 Normalize(row.Debit), Normalize(row.Credit),
-                Normalize(Meridian.Ledger.Ledger.CalculateNetBalance(row.Account, row.Debit, row.Credit))))
+                Normalize(Meridian.Ledger.Ledger.CalculateNetBalance(row.Account, row.Debit, row.Credit)),
+                row.Account.SecurityId))
             .ToArray();
     }
 
     private static IReadOnlyList<PeriodCloseAccountBalance> ToBalances(IReadOnlyList<FiscalYearCloseBalanceDto> rows)
         => rows.Select(row => new PeriodCloseAccountBalance(
-                new LedgerAccount(row.AccountName, Enum.Parse<LedgerAccountType>(row.AccountType), row.Symbol, row.FinancialAccountId),
+                new LedgerAccount(row.AccountName, Enum.Parse<LedgerAccountType>(row.AccountType), row.Symbol, row.FinancialAccountId, row.SecurityId),
                 row.Balance, LedgerDimensionMapper.ToDomain(row.Dimensions)))
             .ToArray();
 

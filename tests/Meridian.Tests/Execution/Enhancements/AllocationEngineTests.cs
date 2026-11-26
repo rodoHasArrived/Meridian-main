@@ -13,6 +13,8 @@ namespace Meridian.Tests.Execution.Enhancements;
 public sealed class AllocationEngineTests
 {
     private readonly IAllocationEngine _engine = new ProportionalAllocationEngine();
+    // Block allocations post to SecurityId-keyed sleeve accounts, so they carry the admitted SecurityId (F2).
+    private static readonly Guid AaplSecurityId = Guid.Parse("f2f2f2f2-0000-4000-8000-0000000000a1");
 
     // -------------------------------------------------------------------------
     // AllocationRule
@@ -210,15 +212,15 @@ public sealed class AllocationEngineTests
     {
         var book = new FundLedgerBook("FUND-001");
         var rule = AllocationRule.EqualWeight("2-sleeve", ["SleevA", "SleevB"]);
-        var result = _engine.Allocate("AAPL", 100, 200m, rule, DateTimeOffset.UtcNow);
+        var result = _engine.Allocate("AAPL", 100, 200m, rule, DateTimeOffset.UtcNow) with { SecurityId = AaplSecurityId };
 
         BlockTradeAllocator.PostToSleeveLedgers(book, result, isBuy: true);
 
         var sleeveA = book.SleeveLedger("SleevA");
         var sleeveB = book.SleeveLedger("SleevB");
 
-        sleeveA.GetBalance(LedgerAccounts.Securities("AAPL")).Should().Be(50 * 200m);
-        sleeveB.GetBalance(LedgerAccounts.Securities("AAPL")).Should().Be(50 * 200m);
+        sleeveA.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(AaplSecurityId, "AAPL"))).Should().Be(50 * 200m);
+        sleeveB.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(AaplSecurityId, "AAPL"))).Should().Be(50 * 200m);
     }
 
     [Fact]
@@ -226,7 +228,7 @@ public sealed class AllocationEngineTests
     {
         var book = new FundLedgerBook("FUND-001");
         var rule = AllocationRule.EqualWeight("2-sleeve", ["SleevA", "SleevB"]);
-        var result = _engine.Allocate("AAPL", 100, 200m, rule, DateTimeOffset.UtcNow);
+        var result = _engine.Allocate("AAPL", 100, 200m, rule, DateTimeOffset.UtcNow) with { SecurityId = AaplSecurityId };
 
         // First buy
         BlockTradeAllocator.PostToSleeveLedgers(book, result, isBuy: true);
@@ -236,7 +238,7 @@ public sealed class AllocationEngineTests
         var sleeveA = book.SleeveLedger("SleevA");
         sleeveA.GetBalance(LedgerAccounts.Cash).Should().Be(0m);
         // Securities debits == credits after buy+sell, net = 0
-        sleeveA.GetBalance(LedgerAccounts.Securities("AAPL")).Should().Be(0m);
+        sleeveA.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(AaplSecurityId, "AAPL"))).Should().Be(0m);
     }
 
     private static Dictionary<string, decimal> BuildGeneratedWeights(int destinationSeed, int weightSeed)

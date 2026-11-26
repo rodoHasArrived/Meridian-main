@@ -8,7 +8,7 @@ public static class SecurityTradePostingProjector
 {
     public static IReadOnlyList<(LedgerAccount Account, decimal Debit, decimal Credit)> Project(
         SecurityTradePosting posting,
-        string symbol,
+        LedgerSecurityKey security,
         string? financialAccountId = null,
         IChartOfAccounts? chart = null)
     {
@@ -16,7 +16,7 @@ public static class SecurityTradePostingProjector
         Validate(posting);
         chart ??= StandardChartOfAccounts.Instance;
         var cash = chart.Resolve(LedgerAccountRole.Cash, financialAccountId);
-        var securities = chart.Resolve(LedgerAccountRole.Securities, financialAccountId, symbol);
+        var securities = chart.Resolve(LedgerAccountRole.Securities, financialAccountId, security);
         var lines = new List<(LedgerAccount Account, decimal Debit, decimal Credit)>(4);
 
         void Add(LedgerAccount account, decimal debit, decimal credit)
@@ -63,10 +63,10 @@ public static class SecurityTradePostingProjector
                 break;
             case SecurityTradePostingKind.OpenShort:
                 Cash(posting.GrossValue);
-                Add(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, financialAccountId, symbol), 0m, posting.GrossValue);
+                Add(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, financialAccountId, security), 0m, posting.GrossValue);
                 break;
             case SecurityTradePostingKind.CoverShort:
-                Add(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, financialAccountId, symbol), posting.CarryingValue!.Value, 0m);
+                Add(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, financialAccountId, security), posting.CarryingValue!.Value, 0m);
                 if (posting.RealizedPnl < 0m)
                     Result(posting.RealizedPnl);
                 Cash(-posting.GrossValue);

@@ -10,7 +10,7 @@ namespace Meridian.Tests.Ledger;
 [Trait("Category", "Unit")]
 public sealed class LedgerWashSaleReportingTests
 {
-    private static LedgerAccount Account => LedgerAccounts.Securities("AAPL", "broker-1");
+    private static LedgerAccount Account => LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-1");
 
     [Fact]
     public void HistoryProjector_FrozenSubCentDisposalKeepsLegacyParcelsWhileNewProjectionRejectsIt()

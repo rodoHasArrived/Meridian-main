@@ -2,11 +2,31 @@
 
 # `security-master-contracts` data objects - page 8 of 8
 
-Objects 561-615 of 615. References crossing pages remain available in the dependency manifest.
+Objects 561-619 of 619. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDeriver["SecurityUnderlyingLinkDeriver"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto["SecurityUnderlyingLinkDto"] {
+        +DateTimeOffset CreatedAt
+        +string CreatedBy
+        +Guid LinkId
+        +string? Notes
+        +string? Reference
+        +SecurityUnderlyingRole Role
+        +Guid SecurityId
+        +SecurityUnderlyingLinkSource Source
+        +Guid? UnderlyingSecurityId
+        +DateTimeOffset ValidFrom
+        +DateTimeOffset? ValidTo
+        +decimal? Weight
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkSource["SecurityUnderlyingLinkSource"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingRole["SecurityUnderlyingRole"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto["SecurityValidationGateResultDto"] {
         +bool IsBlocked
         +bool IsResolved
@@ -420,6 +440,8 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkSource
+    Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingRole
     Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationReportDto
     Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto
     Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto

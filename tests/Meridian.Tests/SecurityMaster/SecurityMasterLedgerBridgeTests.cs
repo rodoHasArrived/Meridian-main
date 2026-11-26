@@ -48,7 +48,7 @@ public sealed class HistoricalCorporateActionLedgerFixtureTests
         ledger.Journal.Should().HaveCount(2);
         ledger.Journal[0].JournalEntryId.Should().Be(returnOfCapital.CorpActId);
         ledger.Journal[0].IsBalanced.Should().BeTrue();
-        ledger.GetBalance(LedgerAccounts.DividendReceivable(Ticker)).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved(Ticker))).Should().Be(0m);
         ledger.GetBalance(LedgerAccounts.Cash).Should().Be(40m, "100 units × 0.40 per unit from the payload");
         ledger.GetBalance(LedgerAccounts.DividendIncome).Should().Be(0m, "a return of capital reduces carrying value, not income");
     }
@@ -165,7 +165,7 @@ public sealed class HistoricalCorporateActionLedgerFixtureTests
         entry.Metadata.SecurityId.Should().Be(SecurityId);
         entry.Metadata.LedgerView.Should().Be(LedgerViewKind.SecurityMaster);
 
-        var receivable = LedgerAccounts.DividendReceivable(Ticker);
+        var receivable = LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved(Ticker));
         var income = LedgerAccounts.DividendIncome;
 
         ledger.GetBalance(receivable).Should().Be(0m);
@@ -192,7 +192,7 @@ public sealed class HistoricalCorporateActionLedgerFixtureTests
             new HistoricalCorporateActionPostingContext(PositionQuantity: 100m, WithholdingTaxRate: 0.2m));
 
         ledger.Journal.Should().HaveCount(3);
-        ledger.GetBalance(LedgerAccounts.DividendReceivable(Ticker)).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved(Ticker))).Should().Be(0m);
         ledger.GetBalance(LedgerAccounts.Cash).Should().Be(20m);
         ledger.GetBalance(LedgerAccounts.DividendIncome).Should().Be(25m);
         ledger.GetBalance(LedgerAccounts.WithholdingTaxExpenseFor(Ticker)).Should().Be(5m);
@@ -268,8 +268,8 @@ public sealed class HistoricalCorporateActionLedgerFixtureTests
         entry.Metadata.ActivityType.Should().Be("SpinOff");
 
         ledger.GetBalance(LedgerAccounts.Cash).Should().Be(0m);
-        ledger.GetBalance(LedgerAccounts.CorpActionDistribution(Ticker)).Should().Be(0m);
-        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.CorpActionDistribution(LedgerSecurityKey.Unresolved(Ticker))).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(Ticker))).Should().Be(0m);
     }
 
     [Fact]
@@ -298,7 +298,7 @@ public sealed class HistoricalCorporateActionLedgerFixtureTests
         entry.Metadata.LedgerView.Should().Be(LedgerViewKind.SecurityMaster);
 
         ledger.GetBalance(LedgerAccounts.Cash).Should().Be(850m);
-        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-850m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(Ticker))).Should().Be(-850m);
     }
 
     [Fact]
@@ -405,7 +405,7 @@ public sealed class HistoricalCorporateActionLedgerFixtureTests
         entry.IsBalanced.Should().BeTrue();
         entry.Metadata.ActivityType.Should().Be("BondCall");
         ledger.GetBalance(LedgerAccounts.Cash).Should().Be(1_012.50m);
-        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-1_012.50m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(Ticker))).Should().Be(-1_012.50m);
     }
 
     [Fact]
@@ -449,7 +449,7 @@ public sealed class HistoricalCorporateActionLedgerFixtureTests
         var entry = ledger.Journal.Should().ContainSingle().Subject;
         entry.IsBalanced.Should().BeTrue();
         entry.Metadata.ActivityType.Should().Be("Delisting");
-        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(Ticker))).Should().Be(0m);
     }
 
     [Fact]

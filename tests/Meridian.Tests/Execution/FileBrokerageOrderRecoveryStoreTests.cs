@@ -224,6 +224,31 @@ public sealed class FileBrokerageOrderRecoveryStoreTests
         bind.Should().Throw<InvalidOperationException>();
     }
 
+    [Fact]
+    public void Save_OrderWithAdmittedSecurityId_RestoresItAfterRestart()
+    {
+        // Security Master review F2: fills that arrive after a restart are stamped with the
+        // SecurityId admitted with the order, so it must survive recovery.
+        using var directory = new StoreDirectory();
+        var securityId = Guid.Parse("f2f2f2f2-0000-4000-8000-0000000000d1");
+        var retained = Order(OrderStatus.Accepted, 0m, "broker-1");
+        retained = retained with { State = retained.State with { SecurityId = securityId } };
+        directory.CreateStore().Save(retained);
+
+        directory.CreateStore().Load().Should().ContainSingle()
+            .Which.State.SecurityId.Should().Be(securityId);
+    }
+
+    [Fact]
+    public void Save_OrderWithoutSecurityId_OmitsTheFieldSoPreF2SnapshotsAreUnchanged()
+    {
+        using var directory = new StoreDirectory();
+        directory.CreateStore().Save(Order(OrderStatus.Accepted, 0m, "broker-1"));
+
+        File.ReadAllText(directory.Path).IndexOf("securityId", StringComparison.OrdinalIgnoreCase).Should().Be(-1);
+        directory.CreateStore().Load().Should().ContainSingle().Which.State.SecurityId.Should().BeNull();
+    }
+
     private static RetainedBrokerageOrder Order(OrderStatus status, decimal filledQuantity, string? brokerOrderId) => new(
         new OrderState
         {

@@ -6,6 +6,77 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ScheduleConventionTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ScheduleConventionTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs#L26).
+
+A scheduleConventions block as the shared reader (SecurityVersionedTerms.ReadScheduleConventions) reads it: how the contractual schedule kernel (ADR-025) builds an instrument&#x27;s periods. The members follow the F# ScheduleConventions record in order and meaning. Text members are kept verbatim, blank strings included, so a consumer can refuse a blank spelling instead of reading it as absent; a member the block does not carry, or carries with the wrong JSON kind, is null.
+
+```csharp
+public sealed record ScheduleConventionTerms(string? BusinessDayConvention, bool? AccrualAdjusted, IReadOnlyList<string> PaymentCalendars, int? PaymentLagBusinessDays, string? RollConvention, bool? EndOfMonthRule, DateOnly? FirstRegularDate, DateOnly? LastRegularDate, string? Direction, string? StubPolicy, string? CouponRateUnit, string? CouponCashBasis)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ScheduleConventionTerms Empty { get; } = new (null, null, [], null, null, null, null, null, null, null, null, null);</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs#L41) | No convention declared. |
+| <code>public bool IsEmpty =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs#L45) | Whether nothing is declared: no payment calendar and every other member null. |
+
+## ScheduleAnchorMode
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleAnchorMode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L18).
+
+How successive grid dates are derived from the anchor.
+
+```csharp
+public enum ScheduleAnchorMode
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Anchored</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L21) | Every grid date is the anchor plus k tenors, so month-end clamping never accumulates. |
+| <code>Compounded</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L28) | Every grid date is the previous grid date plus one tenor, so a clamp into a short month carries forward. This reproduces the legacy compounded generators and is restricted to forward, anchor-day, short-stub schedules without explicit regular dates. |
+
+## ScheduleCalendarPurpose
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarPurpose</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L81).
+
+What a calendar was used for while generating a schedule.
+
+```csharp
+public enum ScheduleCalendarPurpose
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Accrual</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:84](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L84) | Adjusting inner accrual boundaries. |
+| <code>EffectiveDate</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:87](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L87) | Adjusting the effective date. |
+| <code>TerminationDate</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:90](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L90) | Adjusting the termination date. |
+| <code>Payment</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L93) | Adjusting or lagging payment dates. |
+
+## ScheduleCalendarUsage
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:100](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L100).
+
+Evidence of one calendar, identified by id and content hash, used for one purpose.
+
+```csharp
+public sealed record ScheduleCalendarUsage(string CalendarId, string ContentHash, ScheduleCalendarPurpose Purpose);
+```
+
 ## ScheduleDayCount
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDayCount</code>. Kind: `class`.
@@ -1030,43 +1101,3 @@ Enum declarations:
 | <code>Enum</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L23) |  |
 | <code>CurrencyCode</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L24) |  |
 | <code>SecurityLink</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L25) |  |
-
-## SecurityAssetProfileGovernanceAuditEventDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileGovernanceAuditEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:148](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L148).
-
-```csharp
-public sealed record SecurityAssetProfileGovernanceAuditEventDto(string AuditId, string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Rationale, string CorrelationId, string ProfileId, int Version, SecurityAssetProfileStatusDto Status, int? PreviousVersion, string? ApprovalReference);
-```
-
-## SecurityAssetProfileGovernanceResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileGovernanceResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:166](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L166).
-
-```csharp
-public sealed record SecurityAssetProfileGovernanceResultDto(SecurityAssetProfileDefinitionDto Profile, SecurityAssetProfileLineageDto Lineage, SecurityAssetProfileGovernanceAuditEventDto AuditEvent);
-```
-
-## SecurityAssetProfileIdentifierPreferenceDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileIdentifierPreferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L73).
-
-```csharp
-public sealed record SecurityAssetProfileIdentifierPreferenceDto(SecurityIdentifierKind Kind, bool IsRequiredForClose, string Reason);
-```
-
-## SecurityAssetProfileLineageDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileLineageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:161](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L161).
-
-```csharp
-public sealed record SecurityAssetProfileLineageDto(string ProfileId, IReadOnlyList<SecurityAssetProfileDefinitionDto> Versions, IReadOnlyList<SecurityAssetProfileGovernanceAuditEventDto> AuditEvents);
-```

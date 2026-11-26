@@ -473,6 +473,59 @@ Declared public members:
 | --- | --- | --- |
 | <code>public string? MutationActor { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:378](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L378) | Actual command actor for this mutation; absent legacy attribution remains explicit. |
 
+## LedgerAccountRekeyInstruction
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountRekeyInstruction</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:513](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L513).
+
+The reviewed re-key of a legacy ticker-keyed per-security account onto its SecurityId-keyed account (Security Master review F2). LegacyBalance is the legacy account&#x27;s whole balance at review, which the reclass journal moves and the listed lots&#x27; open basis must equal.
+
+```csharp
+public sealed record LedgerAccountRekeyInstruction(LedgerAccount LegacyAccount, LedgerAccount TargetAccount, decimal LegacyBalance, IReadOnlyList<LedgerAccountRekeyLot> Lots);
+```
+
+## LedgerAccountRekeyLot
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountRekeyLot</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:496](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L496).
+
+One open lot moved by an AtomicTaxLotMutationKind.AccountRekey batch, with its reviewed state.
+
+```csharp
+public sealed record LedgerAccountRekeyLot(Guid TaxLotRecordId, string LotId, long ExpectedVersion, decimal ExpectedOpenQuantity, decimal ExpectedCostBasis, Guid BookPositionId, [property : System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] string? TargetLotId = null);
+```
+
+## LedgerAccountRekeyRules
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountRekeyRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:13](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L13).
+
+Pure (pre-lock) rules for an AtomicTaxLotMutationKind.AccountRekey batch: the governed reclass that moves a legacy ticker-keyed per-security account&#x27;s balance and every one of its open tax lots onto the SecurityId-keyed account (Security Master review F2). The store checks the locked lots, the complete open-lot population and the legacy balance under lock.
+
+```csharp
+public static class LedgerAccountRekeyRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string JournalTag = &quot;ledger.securityKeyRekey&quot;;</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:16](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L16) | Journal metadata tag carrying the reviewed legacy account, for reconciliation readers. |
+| <code>public const string RelabelMarker = &quot;~rekey&quot;;</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:19](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L19) | Suffix marking a lot label changed by a re-key because the original was taken on the target key. |
+| <code>public const int MaxRelabelAttempts = 8;</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:22](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L22) | Most relabel attempts a planner tries before reporting the account as blocked. |
+| <code>public static string RelabelCandidate(string lotId, int attempt);</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:28](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L28) | The deterministic relabel for lotId: {lotId}~rekey on the first attempt, then {lotId}~rekey2, {lotId}~rekey3 and so on. |
+| <code>public static string FinalLotId(LedgerAccountRekeyLot lot);</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:36](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L36) | The label lot carries after the re-key. |
+| <code>public const string EvidenceSubjectType = &quot;LedgerSecurityKeyMapping&quot;;</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:46](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L46) | Retained-evidence subject type for the mapping-report row that authorizes a re-key. |
+| <code>public static void Validate(AtomicTaxLotJournalCommand command);</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:49](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L49) | Validates the instruction, governance and exact two-line reclass journal of command. |
+| <code>public static void ValidateInstruction(LedgerAccountRekeyInstruction instruction, OpenLotDirection direction);</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:78](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L78) | The legacy/target identity, direction and lot-population rules. |
+| <code>public static void ValidateGovernance(LedgerJournalEntryWrite journal);</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:115](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L115) | Requires an approved Adjustment posting with complete approval metadata. A re-key is never auto-approved: the approval must be supplied by the governed review that accepted the mapping. |
+| <code>public static IReadOnlyList&lt;(Guid BookPositionId, decimal Amount)&gt; PositionAmounts(LedgerAccountRekeyInstruction instruction);</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:133](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L133) | The open basis each book position moves: the reclass journal carries one debit and one credit per position with non-zero basis, so position-level ledger views stay whole after the re-key. |
+| <code>public static void ValidateJournalShape(JournalEntry entry, LedgerAccountRekeyInstruction instruction);</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:149](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L149) | The journal is exactly the balanced reclass of the legacy balance onto the target: for every book position, one debit and one credit of that position&#x27;s lot basis, dimensioned by the target SecurityId and the position. A single-position account is one debit and one credit. |
+| <code>public static decimal OpenBasis(LedgerTaxLotRecord lot);</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:177](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L177) | The open functional basis a lot carries, as the re-key moves it. |
+
 ## LedgerAccountTaxLotPolicyRecord
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountTaxLotPolicyRecord</code>. Kind: `record`.
@@ -851,42 +904,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static OpenLotDto ToOpenLot(this LedgerTaxLotRecord record);</code> | [src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs:9](../../../../src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs#L9) |  |
-
-## LedgerPeriodCloseSnapshot
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodCloseSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:15](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L15).
-
-Immutable journal population retained in the same transaction as a hard close. The payload includes opening history, closing journals, source lineage, currency and dimensions, so the closed trial balance can be rebuilt without consulting a subsequently restated journal.
-
-```csharp
-public sealed record LedgerPeriodCloseSnapshot(Guid? LedgerBookId, Guid PeriodId, long PeriodVersion, Guid CloseEventId, DateTimeOffset ClosedAt, string PayloadJson, string ContentHashSha256)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static LedgerPeriodCloseSnapshot Capture(LedgerAccountingPeriod period, PeriodCloseEventRecord closeEvent, IReadOnlyList&lt;LedgerJournalEntryRecord&gt; entries);</code> | [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:24](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L24) |  |
-| <code>public LedgerPeriodCloseSnapshotPayload VerifyIntegrity();</code> | [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:63](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L63) | Checks retained bytes and the scope bound into them before serving a snapshot. |
-
-## LedgerPeriodCloseSnapshotJsonContext
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodCloseSnapshotJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:123](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L123).
-
-```csharp
-public sealed partial class LedgerPeriodCloseSnapshotJsonContext : JsonSerializerContext;
-```
-
-## LedgerPeriodCloseSnapshotPayload
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodCloseSnapshotPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:114](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L114).
-
-```csharp
-public sealed record LedgerPeriodCloseSnapshotPayload(int SchemaVersion, LedgerAccountingPeriod Period, PeriodCloseEventRecord CloseEvent, IReadOnlyList<LedgerJournalEntryRecord> Entries);
-```

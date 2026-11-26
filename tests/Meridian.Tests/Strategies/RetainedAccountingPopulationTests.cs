@@ -40,7 +40,7 @@ public sealed class RetainedAccountingPopulationTests
 
         portfolio.ApplyCanonicalActions(date.AddDays(1));
         AssertPosition(1, 10m, 1000m);
-        ledger.GetBalance(LedgerAccounts.DividendReceivable("TEST", accountId)).Should().Be(20m);
+        ledger.GetBalance(LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved("TEST"), accountId)).Should().Be(20m);
         if (sellBeforeSettlement)
         {
             portfolio.ProcessFill(new(Guid.NewGuid(), Guid.NewGuid(), "TEST", -4, 100m, 0m, at.AddDays(2).AddHours(12)));
@@ -49,7 +49,7 @@ public sealed class RetainedAccountingPopulationTests
 
         portfolio.ApplyCanonicalActions(date.AddDays(3));
         AssertPosition(3, sellBeforeSettlement ? 6m : 10m, sellBeforeSettlement ? 600m : 1000m);
-        ledger.GetBalance(LedgerAccounts.DividendReceivable("TEST", accountId)).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved("TEST"), accountId)).Should().Be(0m);
         cashFlows.OfType<DividendCashFlow>().Should().ContainSingle().Which.Amount.Should().Be(20m,
             "settlement retains the ex-date entitlement even after a partial sale");
 
@@ -85,7 +85,7 @@ public sealed class RetainedAccountingPopulationTests
         var metadata = SecurityTradePositionEvidence.WithPostings(new(Symbol: "TEST", FinancialAccountId: "account"),
             legs, SecurityLotUnitKind.Shares, 1m);
         ledger.PostLines(at, "Synthetic source position", legs.SelectMany(leg =>
-            SecurityTradePostingProjector.Project(leg, "TEST", "account")).ToArray(), metadata);
+            SecurityTradePostingProjector.Project(leg, LedgerSecurityKey.From(metadata.SecurityId, "TEST"), "account")).ToArray(), metadata);
         var receipt = new AssetEventCashFlow(at.AddDays(1), 0m, "TEST", AssetEventType.Split, 10, 0m, PositionFactor: 2m)
         { AccountId = "account" };
 
@@ -203,7 +203,7 @@ public sealed class RetainedAccountingPopulationTests
         var metadata = SecurityTradePositionEvidence.WithPostings(new JournalEntryMetadata(Symbol: "TEST",
             FinancialAccountId: "account", SecurityId: retainedId), legs, SecurityLotUnitKind.Shares, 1m);
         ledger.PostLines(at, "Synthetic native trade", legs.SelectMany(leg => SecurityTradePostingProjector.Project(leg,
-            "TEST", "account")).ToArray(), metadata);
+            LedgerSecurityKey.From(metadata.SecurityId, "TEST"), "account")).ToArray(), metadata);
         ledger.PostLines(at, "Synthetic commission", SecurityTradePostingProjector.Commission(1m, "account"),
             new JournalEntryMetadata(Symbol: "TEST", FinancialAccountId: "account"));
         var snapshot = new PortfolioSnapshot(at, day, 1000m, 0m, 0m, 0m, 1000m, 0m,
@@ -241,7 +241,7 @@ public sealed class RetainedAccountingPopulationTests
         if (nativeUnitsRetained)
             metadata = SecurityTradePositionEvidence.WithPostings(metadata, legs, SecurityLotUnitKind.Shares, 1m);
         ledger.PostLines(at, "Synthetic source facts", legs.SelectMany(leg =>
-            SecurityTradePostingProjector.Project(leg, "TEST", "account")).ToArray(), metadata);
+            SecurityTradePostingProjector.Project(leg, LedgerSecurityKey.From(metadata.SecurityId, "TEST"), "account")).ToArray(), metadata);
         var snapshot = new PortfolioSnapshot(at, day, 0m, 0m, 1000m, 0m, 1000m, 0m,
             new Dictionary<string, Position>(), new Dictionary<string, FinancialAccountSnapshot>(), []);
         var request = new BacktestRequest(day, day, InitialCash: 1000m);

@@ -247,6 +247,14 @@ public static class LedgerPeriodPostingGuard
                 $"Journal entry '{journalEntry.JournalEntryId}' posts multiple instrument symbols with a single Security Master security id; split the posting or provide line-level Security Master lineage before append.");
         }
 
+        // A SecurityId-keyed account (Security Master review F2) is the instrument identity itself;
+        // it must be the security the journal's lineage resolves, whatever its display ticker.
+        if (instrumentLines.Any(line => line.Account.SecurityId is { } keyed && keyed != securityId))
+        {
+            throw new LedgerValidationException(
+                $"Journal entry '{journalEntry.JournalEntryId}' posts a SecurityId-keyed account for a different security than its Security Master security id '{securityId}'.");
+        }
+
         if (!TryGetMetadataTag(metadata, "securityMasterProvenance", out var provenance) ||
             !ReferencesSecurityId(provenance, securityId))
         {
@@ -308,7 +316,9 @@ public static class LedgerPeriodPostingGuard
         foreach (var line in instrumentLines)
         {
             var symbol = line.Account.Symbol;
-            if (string.IsNullOrWhiteSpace(symbol))
+            // A SecurityId-keyed account carries its Security Master identity directly (checked
+            // against the journal's security id above); its ticker is display-only.
+            if (string.IsNullOrWhiteSpace(symbol) && line.Account.SecurityId is null)
             {
                 throw new LedgerValidationException(
                     $"Journal entry '{journalEntry.JournalEntryId}' posts instrument line '{line.Account.Name}' without an instrument symbol for Security Master lineage.");
@@ -318,6 +328,7 @@ public static class LedgerPeriodPostingGuard
 
     private static bool IsInstrumentBearingLine(LedgerEntry line) =>
         !string.IsNullOrWhiteSpace(line.Account.Symbol) ||
+        line.Account.SecurityId is not null ||
         IsInstrumentAccountName(line.Account.Name);
 
     private static bool IsInstrumentAccountName(string? accountName)

@@ -66,6 +66,90 @@ move to bound ledgers area by area. `JournalEntry` itself does not enforce balan
 because reporting builds dimension-filtered journal slices that deliberately do not balance;
 balance is enforced when an entry is posted, and therefore before it is stored.
 
+#### Per-security account keys (SecurityId)
+
+Owner decision 2026-11-25 (Security Master review F2): per-security accounts are keyed by
+Security Master `SecurityId`. This covers `Securities`, `Short Securities Payable`,
+`Dividend Receivable`, `Accrued Interest Receivable` and `Corporate Action Distribution`.
+`LedgerAccount.SecurityId` is the identity. `LedgerAccount.Symbol` keeps the ticker as a display
+attribute and does not take part in equality while a SecurityId is present. A ticker rename
+therefore keeps one account history.
+
+- **Factories take a `LedgerSecurityKey`.** `LedgerAccounts.Securities(key, financialAccountId)`
+  and its siblings have no ticker overload, and `IChartOfAccounts.Resolve(role, account, key)`
+  resolves per-security roles. `Resolve(role, account, symbol)` throws for those roles, so a
+  ticker-only call cannot post silently.
+- **Obtaining the key.** `LedgerSecurityKey.Resolved(securityId, ticker)` is the normal case.
+  Posting paths take the SecurityId from:
+  - the Security Master posting gate (execution ledger consumer);
+  - the posting authority, a pricing mark or a journal event (candidates, valuation, automated
+    drafts);
+  - the fill (`ExecutionReport.SecurityId`). OMS admission stamps the gate's SecurityId onto
+    `OrderRequest.SecurityId`, and the fill processor copies it onto reports that lack it. The
+    paper gateway also stamps it from the security definition.
+  - `ISecurityResolver.ResolveCanonicalAsync`, used by portfolio openings.
+- **Canonical resolution.** The resolver is provider-less and returns a typed `Resolved`,
+  `Ambiguous` or `NotFound`. An ambiguous ticker always fails closed.
+- **Legacy ticker keys.** `LedgerSecurityKey.Unresolved(ticker)` is the pre-decision ticker key.
+  It is used only for Security Master `NotFound` holdings (for example automated drafts without a
+  resolved security) and for run-local backtest ledgers (`SimulatedPortfolio.SimulationKey`),
+  which are simulations rather than books.
+- **Paper positions.** A paper position pins its key when it opens, so a holding never splits
+  mid-life.
+- **Existing journals keep their keys.** A SecurityId-keyed account never equals a ticker-keyed
+  one. Retained-journal verification (`LedgerSecurityKeyMigration.IsRetainedEquivalent`) accepts
+  a rebuilt SecurityId line against its retained ticker-keyed form, so replays still verify.
+- **Mapping and reclass.** `LedgerSecurityKeyMigration.BuildReportAsync` maps each ticker-keyed
+  account to its SecurityId through the canonical resolver and lists ambiguous and unregistered
+  tickers. `ProposeReclass` builds a balanced reclass proposal. It is submitted through the
+  governed adjustment path for approval and never posts by itself.
+- **Tax-lot re-key.** A legacy account that carries open tax lots moves through
+  `LedgerSecurityKeyRekeyService` instead. `LedgerFeatureRegistration` registers it as a singleton.
+  It resolves only where the durable journal, the atomic tax-lot store and the canonical resolver
+  are registered. `PlanAsync` builds the mapping report and returns one
+  proposal per lot-carrying legacy account. Accounts without lots (for example a dividend
+  receivable) are listed as balance-only, and accounts it cannot move are listed with a reason.
+  `ExecuteAsync` takes an approved adjustment and posts one atomic `AccountRekey` batch
+  (`V_ledger_086__tax_lot_account_rekey`). The batch appends the reclass and re-keys every open lot
+  of the legacy account in place. The reclass has one debit and one credit per book position, each
+  dimensioned by the SecurityId and position and moving that position's lot basis, so a holding
+  spread over several positions moves in one batch.
+  - The store refuses the batch unless all of these hold:
+    - the target is the legacy account keyed by SecurityId (`IsRetainedEquivalent`);
+    - every listed lot is still open on the legacy account at its reviewed version, quantity and
+      basis;
+    - each lot's instrument is the target SecurityId, and each lot is in the book position its
+      instruction names;
+    - the listed lots are every open lot on the legacy account;
+    - the reclass amount equals the legacy balance and the lots' open basis;
+    - the posting is an approved adjustment with retained mapping evidence.
+  - Lots keep their record id, label, acquisition date, basis, acquisition facts, lineage and
+    wash-sale links. Relief-policy history is copied to the target key with the same effective
+    dates.
+  - As-of lot reads rebuild from the current row and its dated quantity mutations, so after the
+    re-key a lot's whole history reads under the SecurityId account and nothing reads under the
+    legacy key.
+  - Lots with no Security Master or book-position identity (pre-canonical lots) are listed under
+    `AwaitingBackfill`. They re-key after the governed open-lot backfill attributes them.
+  - A lot whose label is already taken on the SecurityId-keyed account is relabeled to its first
+    free `{label}~rekey` form. The original and target labels are in the reviewed instruction, and
+    the record id is unchanged.
+  - The `protect_tax_lot_account_key` trigger allows a lot's account key, and label, to change only
+    as the batch's instruction lists that lot.
+- **Persistence.** Postgres stores the key in `account_security_id`
+  (`V_ledger_085__security_id_account_keys`) on journal legs, tax lots, tax-lot policies, balance
+  checkpoint rows and wash-sale deferrals. Account-identity predicates and indexes use
+  `coalesce(account_security_id::text, symbol, '')`.
+- **Manual journal corrections.** Reversal, rebook and correction-inverse drafts keep each posted
+  line's `LedgerAccountSecurityId`; the browser and WPF clients send it back unchanged. A line whose
+  account SecurityId disagrees with its instrument is refused. Corrections are never re-keyed, so a
+  pre-F2 ticker-keyed entry reverses on its own account.
+- **Period trial balance.** `LedgerPeriodTrialBalanceLineDto.SecurityId` carries the key. A renamed
+  holding is one row, and SecurityId rows never merge with legacy ticker rows.
+- **Readers.** Mark-to-market carrying value reads the SecurityId account plus any legacy ticker
+  account for the same ticker until a reclass has moved it. Posted-ledger reconciliation groups
+  rows by SecurityId and labels them with the broker symbol for the same security.
+
 Book-scoped chart nodes can carry a stable account code. Resolution validates the exact node,
 book, type, and financial scope and retains the chart revision on the posting line. New postings
 can carry a line memo separately from the journal description. The posted-journal views and

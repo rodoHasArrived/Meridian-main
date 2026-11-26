@@ -344,7 +344,7 @@ public sealed record RevokeAutomatedPostingGrantRequest(long ExpectedVersion, Op
 
 Qualified name: <code>Meridian.Contracts.Ledger.RuleDryRunRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:918](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L918).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:926](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L926).
 
 ```csharp
 public sealed record RuleDryRunRequestDto(string FundProfileId, string SourceEventType, decimal EventAmount, string Currency, DateOnly EffectiveDate, string Actor, Guid? LedgerBookId = null, LedgerDimensionSetDto? Dimensions = null, string? CounterpartyId = null, string? InstrumentSymbol = null, string? CorrelationId = null, string? TenantId = null, string? CompanyId = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyDictionary<string, decimal>? LotMutationComponents = null);
@@ -354,7 +354,7 @@ public sealed record RuleDryRunRequestDto(string FundProfileId, string SourceEve
 
 Qualified name: <code>Meridian.Contracts.Ledger.RuleDryRunResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:947](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L947).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:955](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L955).
 
 ```csharp
 public sealed record RuleDryRunResultDto(string FundProfileId, Guid? LedgerBookId, string SourceEventType, DateOnly EffectiveDate, decimal EventAmount, string Currency, bool IsPostingBalanced, string? SelectedRuleId, IReadOnlyList<AccountingRuleDryRunMatchDto> RuleMatches, IReadOnlyList<AccountingJournalPreviewLineDto> GeneratedLines, IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues, IReadOnlyList<GeneratedPostingLineDto>? GeneratedPostingLines = null)
@@ -364,7 +364,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;GeneratedPostingLineDto&gt; GeneratedPostingLines { get; init; } = GeneratedPostingLines??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:961](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L961) |  |
+| <code>public IReadOnlyList&lt;GeneratedPostingLineDto&gt; GeneratedPostingLines { get; init; } = GeneratedPostingLines??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:969](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L969) |  |
 
 ## RulePromotionApprovalDto
 
@@ -422,7 +422,7 @@ public sealed record SubmitManualJournalEntryApprovalRequest(Guid JournalEntryId
 
 Qualified name: <code>Meridian.Contracts.Ledger.TreasuryLedgerContextDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:789](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L789).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:797](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L797).
 
 ```csharp
 public sealed record TreasuryLedgerContextDto(DateOnly? EffectiveDate = null, string? IdempotencyKey = null, string? FundEventId = null, string? FundEventType = null, string? CapitalAccountId = null, string? InvestorId = null, string? PaymentIntentId = null, string? SettlementReference = null, string? BatchCorrelationId = null);

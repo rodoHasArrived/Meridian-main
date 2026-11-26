@@ -184,7 +184,7 @@ public sealed partial class LedgerTaxLotBasisAdjusterTests
     [Fact]
     public void Project_WithSplitAdjustment_RelievesAgainstSplitAdjustedLots()
     {
-        var account = LedgerAccounts.Securities("AAPL", "broker-1");
+        var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-1");
         var input = new LedgerTaxLotReliefInput(
             account,
             new DateOnly(2026, 3, 1),
@@ -213,7 +213,7 @@ public sealed partial class LedgerTaxLotBasisAdjusterTests
     [Fact]
     public void Project_WithFactorPaydown_ReducesRelievableBasis()
     {
-        var account = LedgerAccounts.Securities("MBS1", "broker-2");
+        var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("MBS1"), "broker-2");
         var input = new LedgerTaxLotReliefInput(
             account,
             new DateOnly(2026, 6, 30),
@@ -236,7 +236,7 @@ public sealed partial class LedgerTaxLotBasisAdjusterTests
     [Fact]
     public void Project_WhenAdjustedQuantityIsInsufficient_Throws()
     {
-        var account = LedgerAccounts.Securities("MBS1", "broker-2");
+        var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("MBS1"), "broker-2");
         var input = new LedgerTaxLotReliefInput(
             account,
             new DateOnly(2026, 6, 30),

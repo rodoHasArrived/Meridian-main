@@ -276,7 +276,7 @@ public sealed class FileLedgerJournalLogTests : IDisposable
             (_chart.Resolve(LedgerAccountRole.Capital, "broker-1"), 0m, 100_000m)
         ]);
         ledger.PostLines(Start.AddHours(1), "Buy 100 AAPL @ 190", [
-            (_chart.Resolve(LedgerAccountRole.Securities, "broker-1", "AAPL"), 19000m, 0m),
+            (_chart.Resolve(LedgerAccountRole.Securities, "broker-1", LedgerSecurityKey.Unresolved("AAPL")), 19000m, 0m),
             (cash, 0m, 19000m)
         ]);
         ledger.PostLines(Start.AddHours(1), "Commission AAPL", [

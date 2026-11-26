@@ -10,7 +10,7 @@ public sealed class LedgerCanonicalCashFlowTests
     [Fact]
     public void TaxLotMaterialization_RetainsFinancialAccountAndExplicitDimensions()
     {
-        var account = LedgerAccounts.Securities("AAPL", "broker-a");
+        var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-a");
         var projection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(account,
             new(2026, 1, 2), 1m, 100m, LedgerTaxLotReliefMethod.Fifo,
             [new LedgerTaxLot("lot", new(2025, 1, 1), 1m, 110m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }]));
@@ -33,7 +33,7 @@ public sealed class LedgerCanonicalCashFlowTests
     [InlineData(90)]
     public void TaxLotDisposal_RetainsActualInvestingProceedsAndReversal(int basis)
     {
-        var account = LedgerAccounts.Securities("AAPL");
+        var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"));
         var projection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(account,
             new(2026, 1, 2), 1m, 100m, LedgerTaxLotReliefMethod.Fifo,
             [new LedgerTaxLot("lot", new(2025, 1, 1), 1m, basis) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }]));

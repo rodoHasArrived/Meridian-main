@@ -89,6 +89,7 @@ public sealed partial class OrderManagementSystem
             _orderSessionIds.TryRemove(removableOrderId, out _);
             _orderFinancialAccountIds.TryRemove(removableOrderId, out _);
             _orderContractMultipliers.TryRemove(removableOrderId, out _);
+            _orderSecurityIds.TryRemove(removableOrderId, out _);
             _orderFaceValueSizing.TryRemove(removableOrderId, out _);
             _adoptedFillGaps.TryRemove(removableOrderId, out _);
         }

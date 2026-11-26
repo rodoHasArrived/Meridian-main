@@ -32,7 +32,7 @@ public sealed partial class EventDrivenDecouplingTests
 
         ledger.Journal.Should().ContainSingle(entry => entry.Description.Contains("Commission"));
         ledger.Journal.SelectMany(static entry => entry.Lines)
-            .Should().NotContain(line => line.Account == LedgerAccounts.Securities("ESZ6"));
+            .Should().NotContain(line => line.Account == LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("ESZ6")));
     }
 
     [Fact]

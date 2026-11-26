@@ -24,12 +24,12 @@ public sealed class LedgerQueryTests
             t2,
             "Buy SPY",
             [
-                (LedgerAccounts.Securities("SPY"), 4_000m, 0m),
+                (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY")), 4_000m, 0m),
                 (LedgerAccounts.Cash, 0m, 4_000m)
             ]);
 
         ledger.Accounts.Should().BeEquivalentTo(
-            [LedgerAccounts.Cash, LedgerAccounts.CapitalAccount, LedgerAccounts.Securities("SPY")]);
+            [LedgerAccounts.Cash, LedgerAccounts.CapitalAccount, LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY"))]);
         ledger.HasAccount(LedgerAccounts.Cash).Should().BeTrue();
         ledger.HasAccount(LedgerAccounts.RealizedGain).Should().BeFalse();
 
@@ -44,7 +44,7 @@ public sealed class LedgerQueryTests
         ledger.SummarizeAccounts(LedgerAccountType.Asset)
             .Select(summary => summary.Account)
             .Should()
-            .BeEquivalentTo([LedgerAccounts.Cash, LedgerAccounts.Securities("SPY")]);
+            .BeEquivalentTo([LedgerAccounts.Cash, LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY"))]);
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public sealed class LedgerQueryTests
         var t1 = new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero);
         var t2 = t1.AddMinutes(5);
         var t3 = t2.AddMinutes(5);
-        var securities = LedgerAccounts.Securities("SPY");
+        var securities = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY"));
 
         ledger.PostLines(
             t1,
@@ -98,7 +98,7 @@ public sealed class LedgerQueryTests
         var t1 = new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero);
         var t2 = t1.AddMinutes(5);
         var t3 = t2.AddMinutes(5);
-        var securities = LedgerAccounts.Securities("SPY");
+        var securities = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY"));
 
         ledger.PostLines(
             t1,
@@ -207,7 +207,7 @@ public sealed class LedgerQueryTests
             t1,
             "Buy SPY",
             [
-                (LedgerAccounts.Securities("SPY"), 4_000m, 0m),
+                (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY")), 4_000m, 0m),
                 (LedgerAccounts.Cash, 0m, 4_000m)
             ],
             new JournalEntryMetadata(ActivityType: "buy", Symbol: "spy", OrderId: orderId, FillId: fillId));
@@ -253,7 +253,7 @@ public sealed class LedgerQueryTests
             t2,
             "Buy SPY",
             [
-                (LedgerAccounts.Securities("SPY"), 4_000m, 0m),
+                (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY")), 4_000m, 0m),
                 (LedgerAccounts.Cash, 0m, 4_000m)
             ],
             new JournalEntryMetadata(ActivityType: "buy", Symbol: "SPY"));
@@ -275,7 +275,7 @@ public sealed class LedgerQueryTests
         snapshot.JournalEntryCount.Should().Be(2);
         snapshot.LedgerEntryCount.Should().Be(4);
         snapshot.Balances[LedgerAccounts.Cash].Should().Be(6_000m);
-        snapshot.Balances[LedgerAccounts.Securities("SPY")].Should().Be(4_000m);
+        snapshot.Balances[LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY"))].Should().Be(4_000m);
         snapshot.Balances.Should().NotContainKey(LedgerAccounts.CommissionExpense);
     }
 
@@ -328,7 +328,7 @@ public sealed class LedgerQueryTests
                 t1,
                 description,
                 [
-                    (LedgerAccounts.Securities("SPY"), 100m, 0m),
+                    (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY")), 100m, 0m),
                     (LedgerAccounts.Cash, 0m, 100m)
                 ],
                 new JournalEntryMetadata(

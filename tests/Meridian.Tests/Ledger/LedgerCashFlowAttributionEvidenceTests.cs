@@ -20,7 +20,7 @@ public sealed class LedgerCashFlowAttributionEvidenceTests
         var ledger = OpeningLedger();
         LedgerCashFlowTestData.Post(ledger, Start.AddDays(1),
             [(LedgerAccounts.Cash, 100m, 0m, null), (Reserve, 0m, 100m, null),
-             (reclassification ? LedgerAccounts.Securities("AAPL") : Expense, 25m, 0m, null),
+             (reclassification ? LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")) : Expense, 25m, 0m, null),
              (Payable, 0m, 25m, null)], "transfer", "transfer", "noncash", "noncash");
 
         var cashFlow = Build(ledger);

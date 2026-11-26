@@ -2982,13 +2982,13 @@ public sealed class ReconciliationRunServiceTests
             ]);
             PostBalancedEntry(ledger, asOf.AddMinutes(-20), "Buy AAPL",
             [
-                (LedgerAccounts.Securities("AAPL"), 400m, 0m),
+                (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")), 400m, 0m),
                 (LedgerAccounts.Cash, 0m, 400m)
             ]);
             PostBalancedEntry(ledger, asOf.AddMinutes(-10), "Open TSLA short",
             [
                 (LedgerAccounts.Cash, 150m, 0m),
-                (LedgerAccounts.ShortSecuritiesPayable("TSLA"), 0m, 150m)
+                (LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("TSLA")), 0m, 150m)
             ]);
             return ledger;
         }

@@ -271,7 +271,7 @@ public sealed record PaperSessionDetailDto(PaperSessionSummaryDto Summary, IRead
 
 Qualified name: <code>Meridian.Execution.Services.PaperSessionFillAppendResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:272](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L272).
+Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:276](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L276).
 
 Idempotent durable-fill append result.
 
@@ -283,7 +283,7 @@ public sealed record PaperSessionFillAppendResult(PaperSessionFillAppendStatus S
 
 Qualified name: <code>Meridian.Execution.Services.PaperSessionFillAppendStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:264](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L264).
+Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:268](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L268).
 
 Outcome of attempting to durably claim a paper-session FillId.
 
@@ -295,15 +295,15 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Added = 0</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:266](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L266) |  |
-| <code>ExistingSame = 1</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:267](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L267) |  |
-| <code>Conflict = 2</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:268](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L268) |  |
+| <code>Added = 0</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:270](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L270) |  |
+| <code>ExistingSame = 1</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:271](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L271) |  |
+| <code>Conflict = 2</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:272](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L272) |  |
 
 ## PaperSessionFillRecord
 
 Qualified name: <code>Meridian.Execution.Services.PaperSessionFillRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:109](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L109).
+Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:113](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L113).
 
 Versioned durable envelope for one paper-session fill. FillId is the idempotency key and CanonicalHash detects a conflicting reuse of that key. IsApplied is reconstructed from the store&#x27;s durable apply acknowledgements; it is not part of the immutable fill claim itself.
 
@@ -315,16 +315,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const int CurrentSchemaVersion = 1;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:118](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L118) | Current on-disk envelope schema. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public int AccountingEvidenceVersion { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:126](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L126) | Version of exact accounting evidence retained when this fill was captured. Zero means opening authority is unknown, including historical records and unverified current fills. This is independent of the live event schema and does not change its canonical report hash. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? FinancialAccountId { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:130](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L130) | Accounting owner retained with captured evidence; absent in historical records. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? StrategyId { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:133](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L133) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? RunId { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:136](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L136) |  |
-| <code>public static PaperSessionFillRecord Create(Guid fillId, ExecutionReport fill, DateTimeOffset? recordedAt = null, bool isApplied = false);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:145](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L145) | Creates a validated current-version envelope for fill. |
-| <code>public static PaperSessionFillRecord CreateCanonical(ExecutionReport fill, DateTimeOffset? recordedAt = null, bool isApplied = false);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:177](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L177) | Creates an envelope whose FillId is derived only from stable execution-report content. Account scope and cumulative portfolio state are deliberately excluded so every producer uses the same paper-session idempotency key for the same fill. |
-| <code>public static Guid ComputeCanonicalFillId(ExecutionReport fill);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:191](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L191) | Computes the canonical, account-independent identity of an execution fill. The full payload hash remains a separate conflict detector so changed non-identity content cannot silently reuse this id. |
-| <code>public static string ComputeCanonicalHash(ExecutionReport fill);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:211](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L211) | Computes the stable content hash used to distinguish retry from conflict. |
-| <code>public PaperSessionFillRecord Validate();</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:219](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L219) | Validates the envelope version, identity, and canonical content hash. |
+| <code>public const int CurrentSchemaVersion = 1;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:122](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L122) | Current on-disk envelope schema. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public int AccountingEvidenceVersion { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:130](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L130) | Version of exact accounting evidence retained when this fill was captured. Zero means opening authority is unknown, including historical records and unverified current fills. This is independent of the live event schema and does not change its canonical report hash. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? FinancialAccountId { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:134](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L134) | Accounting owner retained with captured evidence; absent in historical records. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? StrategyId { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:137](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L137) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? RunId { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:140](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L140) |  |
+| <code>public static PaperSessionFillRecord Create(Guid fillId, ExecutionReport fill, DateTimeOffset? recordedAt = null, bool isApplied = false);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:149](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L149) | Creates a validated current-version envelope for fill. |
+| <code>public static PaperSessionFillRecord CreateCanonical(ExecutionReport fill, DateTimeOffset? recordedAt = null, bool isApplied = false);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:181](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L181) | Creates an envelope whose FillId is derived only from stable execution-report content. Account scope and cumulative portfolio state are deliberately excluded so every producer uses the same paper-session idempotency key for the same fill. |
+| <code>public static Guid ComputeCanonicalFillId(ExecutionReport fill);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:195](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L195) | Computes the canonical, account-independent identity of an execution fill. The full payload hash remains a separate conflict detector so changed non-identity content cannot silently reuse this id. |
+| <code>public static string ComputeCanonicalHash(ExecutionReport fill);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:215](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L215) | Computes the stable content hash used to distinguish retry from conflict. |
+| <code>public PaperSessionFillRecord Validate();</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:223](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L223) | Validates the envelope version, identity, and canonical content hash. |
 
 ## PaperSessionJournalBatch
 
@@ -446,7 +446,7 @@ Declared public members:
 | <code>public Task RecordFillAsync(string sessionId, Guid fillId, ExecutionReport fill, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:831](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L831) | Durably claims and applies a fill using the caller-provided canonical OMS FillId. Reusing the FillId with identical content is idempotent; reusing it with different content fails closed. |
 | <code>public async Task&lt;ExecutionPortfolioSnapshotDto?&gt; ReplaySessionAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:987](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L987) | Replays the persisted fill log for sessionId through a fresh PaperTradingPortfolio and returns the reconstructed portfolio snapshot. |
 | <code>public async Task&lt;PaperSessionReplayVerificationDto?&gt; VerifyReplayAsync(string sessionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1052](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1052) | Verifies that the current session portfolio matches the replayed fill-log state. This gives operators an explicit continuity check for paper sessions that are expected to survive restarts and replay cleanly from durable fills. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1646](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1646) | Cancels an in-flight initialisation attempt and closes this service to new work. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1647](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1647) | Cancels an in-flight initialisation attempt and closes this service to new work. |
 
 Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs:9](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs#L9).
 
@@ -497,7 +497,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.PaperSessionSettlementAppendStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:332](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L332).
+Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:336](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L336).
 
 Outcome of an idempotent durable settlement append.
 
@@ -509,15 +509,15 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Added = 0</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:335](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L335) | The settlement was appended. |
-| <code>ExistingSame = 1</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:338](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L338) | The same settlement (key and price) was already recorded. |
-| <code>Conflict = 2</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:341](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L341) | The key was already settled at a different price. |
+| <code>Added = 0</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:339](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L339) | The settlement was appended. |
+| <code>ExistingSame = 1</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:342](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L342) | The same settlement (key and price) was already recorded. |
+| <code>Conflict = 2</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:345](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L345) | The key was already settled at a different price. |
 
 ## PaperSessionSettlementRecord
 
 Qualified name: <code>Meridian.Execution.Services.PaperSessionSettlementRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:287](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L287).
+Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:291](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L291).
 
 One durable daily variation-margin settlement of a paper futures position. Its identity is the account, symbol and trading date, so a position settles at most once per trading day; replay applies it at SettledAt among the session&#x27;s fills.
 
@@ -529,10 +529,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const int CurrentSchemaVersion = 1;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:296](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L296) | The schema version written by this build. |
-| <code>public static PaperSessionSettlementRecord Create(string accountId, string symbol, DateOnly tradingDate, decimal settlementPrice, DateTimeOffset settledAt);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:299](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L299) | Creates a current-schema settlement record. |
-| <code>public string Key =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:313](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L313) | The once-per-trading-day identity: account, normalized symbol and date. |
-| <code>public void Validate();</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:318](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L318) | Throws InvalidDataException when the record cannot be applied. |
+| <code>public const int CurrentSchemaVersion = 1;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:300](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L300) | The schema version written by this build. |
+| <code>public static PaperSessionSettlementRecord Create(string accountId, string symbol, DateOnly tradingDate, decimal settlementPrice, DateTimeOffset settledAt);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:303](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L303) | Creates a current-schema settlement record. |
+| <code>public string Key =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:317](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L317) | The once-per-trading-day identity: account, normalized symbol and date. |
+| <code>public void Validate();</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:322](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L322) | Throws InvalidDataException when the record cannot be applied. |
 
 ## PaperSessionSummaryDto
 
@@ -567,7 +567,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;PaperLedgerIntegrityBreak&gt; CheckLedgerIntegrity(decimal tolerance = LedgerToleranceConstants.Balance);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.Accounting.cs:13](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.Accounting.cs#L13) | Compares the current journal against cash, exact lot basis and financing balances. |
+| <code>public IReadOnlyList&lt;PaperLedgerIntegrityBreak&gt; CheckLedgerIntegrity(decimal tolerance = LedgerToleranceConstants.Balance);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.Accounting.cs:21](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.Accounting.cs#L21) | Compares the current journal against cash, exact lot basis and financing balances. |
 
 Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.CanonicalRecovery.cs:20](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.CanonicalRecovery.cs#L20).
 
@@ -613,13 +613,13 @@ Declared public members:
 | <code>public void ApplyFill(ExecutionReport report, string? ownerAccountId, decimal contractMultiplier = 1m, bool usesFaceValuePercentageOfPar = false) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:453](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L453) | Applies a fill to the default account while recording the fund account that owns it and the contract multiplier it carries. The attribution lets a shared execution book be read per fund and keeps a derivative position&#x27;s exposure from being measured as if each contract were one share. For options the multiplier also scales the money: cash, ledger, lot basis, market value and P&amp;L move at quote × quantity × multiplier, while the stored cost basis stays a per-unit quote. Futures settle daily variation margin instead: no notional moves, only price changes scaled by the multiplier (see ApplyVariationMarginFill and ApplyVariationMarginSettlement). |
 | <code>public void ApplyFill(string accountId, ExecutionReport report) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:464](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L464) | Applies a fill to a specific accountId. When the account does not exist it is ignored (no-op). |
 | <code>public void ApplyFill(string accountId, ExecutionReport report, string? ownerAccountId, decimal contractMultiplier = 1m, bool usesFaceValuePercentageOfPar = false) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:475](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L475) |  |
-| <code>public void UpdateMarketPrice(string symbol, decimal price);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:813](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L813) | Updates the last-known market price for symbol across all accounts. A position opened by face-value fills stores its cost basis and market price in dollars per unit of face, so a quote still arriving as a percentage of par is normalized the same way the fill price was — otherwise a 100,000-face position marked at 102.25 would report ~$10.2M of market value instead of ~$102K. |
-| <code>public void UpdateMarketPrice(string accountId, string symbol, decimal price);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:828](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L828) | Updates the last-known market price for symbol in a specific account. |
-| <code>public IReadOnlyLedger? Ledger =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:846](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L846) | Read-only view of the double-entry ledger for this session. Returns null when no ledger was supplied at construction time. |
-| <code>public Task ApplyCorporateActionsAsync(string symbol, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:854](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L854) | Applies any corporate-action adjustments (splits, dividends) to an existing open position in the default account. No-op when no adjuster was supplied. |
-| <code>public async Task ApplyCorporateActionsAsync(string accountId, string symbol, DateTimeOffset positionOpenedAt, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:863](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L863) | Applies corporate-action adjustments to a position in a specific accountId. |
-| <code>public decimal ApplyVariationMarginSettlement(string accountId, string symbol, decimal settlementPrice, DateTimeOffset asOf);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1149](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1149) | Settles the daily variation margin of an open futures position in accountId at settlementPrice: cash and realized P&amp;L move by (settlement − last settlement) × quantity × multiplier, and the settlement becomes the new reference price, so the position&#x27;s unrealized P&amp;L returns to zero at that price. Mirrors FuturePosition.SettleDaily. Returns the cash moved; zero, and nothing changes, for a flat position, a notional-model position, or an account or symbol that is not held. |
-| <code>public IReadOnlyList&lt;VariationMarginPositionSnapshot&gt; GetOpenVariationMarginPositions();</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1187](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1187) | The open positions, in every account, that settle daily variation margin, with the price they were last settled at. An end-of-day job settles each of these once per trading day. |
+| <code>public void UpdateMarketPrice(string symbol, decimal price);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:814](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L814) | Updates the last-known market price for symbol across all accounts. A position opened by face-value fills stores its cost basis and market price in dollars per unit of face, so a quote still arriving as a percentage of par is normalized the same way the fill price was — otherwise a 100,000-face position marked at 102.25 would report ~$10.2M of market value instead of ~$102K. |
+| <code>public void UpdateMarketPrice(string accountId, string symbol, decimal price);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:829](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L829) | Updates the last-known market price for symbol in a specific account. |
+| <code>public IReadOnlyLedger? Ledger =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:847](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L847) | Read-only view of the double-entry ledger for this session. Returns null when no ledger was supplied at construction time. |
+| <code>public Task ApplyCorporateActionsAsync(string symbol, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:855](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L855) | Applies any corporate-action adjustments (splits, dividends) to an existing open position in the default account. No-op when no adjuster was supplied. |
+| <code>public async Task ApplyCorporateActionsAsync(string accountId, string symbol, DateTimeOffset positionOpenedAt, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:864](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L864) | Applies corporate-action adjustments to a position in a specific accountId. |
+| <code>public decimal ApplyVariationMarginSettlement(string accountId, string symbol, decimal settlementPrice, DateTimeOffset asOf);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1158](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1158) | Settles the daily variation margin of an open futures position in accountId at settlementPrice: cash and realized P&amp;L move by (settlement − last settlement) × quantity × multiplier, and the settlement becomes the new reference price, so the position&#x27;s unrealized P&amp;L returns to zero at that price. Mirrors FuturePosition.SettleDaily. Returns the cash moved; zero, and nothing changes, for a flat position, a notional-model position, or an account or symbol that is not held. |
+| <code>public IReadOnlyList&lt;VariationMarginPositionSnapshot&gt; GetOpenVariationMarginPositions();</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1196](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1196) | The open positions, in every account, that settle daily variation margin, with the price they were last settled at. An end-of-day job settles each of these once per trading day. |
 
 Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.Financing.cs:7](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.Financing.cs#L7).
 
@@ -660,7 +660,7 @@ public sealed record PendingExecutionWebhook(ExecutionNotification Notification,
 
 Qualified name: <code>Meridian.Execution.Services.PersistedJournalEntryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:84](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L84).
+Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:88](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L88).
 
 Lightweight serialisation DTO for a complete journal entry plus its optional audit metadata. Written one per line to ledger.jsonl.
 
@@ -672,7 +672,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Meridian.Ledger.JournalEntryMetadata? Metadata { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:100](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L100) | Complete posting provenance, including cash-flow groups bound to the original persisted line identities. Legacy records omit this property and retain their scalar metadata. |
+| <code>public Meridian.Ledger.JournalEntryMetadata? Metadata { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:104](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L104) | Complete posting provenance, including cash-flow groups bound to the original persisted line identities. Legacy records omit this property and retain their scalar metadata. |
 
 ## PersistedLedgerAccountDto
 
@@ -683,14 +683,14 @@ Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:49](../../../../s
 Lightweight serialisation DTO for a Meridian.Ledger.LedgerAccount.
 
 ```csharp
-public sealed record PersistedLedgerAccountDto(string Name, string AccountType, string? Symbol, string? FinancialAccountId);
+public sealed record PersistedLedgerAccountDto(string Name, string AccountType, string? Symbol, string? FinancialAccountId, [property : System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] Guid? SecurityId = null);
 ```
 
 ## PersistedLedgerLineDto
 
 Qualified name: <code>Meridian.Execution.Services.PersistedLedgerLineDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:58](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L58).
+Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:62](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L62).
 
 Lightweight serialisation DTO for a single debit/credit line in a journal entry.
 
@@ -702,10 +702,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public LedgerEntryCurrency? Currency { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:68](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L68) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public LedgerLineDimensionSet? Dimensions { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:71](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L71) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? Memo { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:74](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L74) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public LedgerAccountChartReference? ChartAccount { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:77](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L77) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public LedgerEntryCurrency? Currency { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:72](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L72) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public LedgerLineDimensionSet? Dimensions { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:75](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L75) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? Memo { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:78](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L78) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public LedgerAccountChartReference? ChartAccount { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:81](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L81) |  |
 
 ## PersistedSessionRecord
 

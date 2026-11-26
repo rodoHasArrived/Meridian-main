@@ -61,6 +61,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderIntentS
     private readonly ConcurrentDictionary<string, string> _orderFinancialAccountIds = new(StringComparer.OrdinalIgnoreCase);
     // Contract multiplier per order id, for derivative fills.
     private readonly ConcurrentDictionary<string, decimal> _orderContractMultipliers = new(StringComparer.OrdinalIgnoreCase);
+    // Security Master identity resolved at admission, stamped onto fills that do not echo it.
+    private readonly ConcurrentDictionary<string, Guid> _orderSecurityIds = new(StringComparer.OrdinalIgnoreCase);
     // Order ids the active gateway routes as face value priced as a percentage of par, so the
     // fill booking path scales the clean price exactly as the pre-trade rails valued the order.
     private readonly ConcurrentDictionary<string, bool> _orderFaceValueSizing = new(StringComparer.OrdinalIgnoreCase);
@@ -155,7 +157,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderIntentS
         _brokerOrderSweep = new BrokerOrderSweep(gateway, _brokerIdentities, _executionAudit, logger);
         _amendmentBook = new OrderAmendmentBook(_orders);
         _fillProcessor = new OrderFillProcessor(
-            new OrderFillContext(_orders, _orderFinancialAccountIds, _orderContractMultipliers, _orderFaceValueSizing,
+            new OrderFillContext(_orders, _orderFinancialAccountIds, _orderContractMultipliers, _orderFaceValueSizing, _orderSecurityIds,
                 tradeEventPublisher is IScopedTradeEventPublisher scopedPublisher && scopedPublisher.ScopeIdentity.AccountingProtocolVersion == 2,
                 gateway is PaperTradingGateway),
             portfolioState, sessionPersistence, _accountingHandoff, _executionReportHub, _executionAudit, logger, _intentJournal);
@@ -412,7 +414,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderIntentS
             OrderAdmissionRefusal? authorityRefusal;
             try
             {
-                authorityRefusal = await _admissionPolicy.EvaluateDispatchAuthorityAsync(prepared, ct).ConfigureAwait(false);
+                authorityRefusal = await _admissionPolicy.EvaluateDispatchAuthorityAsync(prepared, ct, safeRequest.SecurityId)
+                    .ConfigureAwait(false);
             }
             catch
             {
@@ -480,6 +483,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderIntentS
                 // identity travels too, so the reserve and any amendment are valued exactly
                 // as the pre-trade gate valued the order.
                 ContractMultiplier = orderMultiplier,
+                SecurityId = safeRequest.SecurityId,
                 OptionContract = safeRequest.OptionContract,
                 // Snapshot the legs. An in-process caller can hand in a mutable list and
                 // clear or edit it after submission returns, while the broker keeps working
@@ -586,6 +590,15 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderIntentS
                 }
             }
 
+            if (safeRequest.SecurityId is { } admittedSecurityId)
+            {
+                _orderSecurityIds[orderId] = admittedSecurityId;
+            }
+            else
+            {
+                _orderSecurityIds.TryRemove(orderId, out _);
+            }
+
             if (orderMultiplier > 1m)
             {
                 _orderContractMultipliers[orderId] = orderMultiplier;
@@ -663,7 +676,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderIntentS
             if (await _admissionPolicy.EvaluateDispatchMarketChecksAsync(safeRequest, ct).ConfigureAwait(false) is { } marketRefusal)
                 throw new BrokerageRequestNotSentException(marketRefusal.Reason ?? "Current market conditions do not allow dispatch.");
             if (_admissionPolicy.UsesLiveStrategyAuthorization &&
-                await _admissionPolicy.EvaluateDispatchAuthorityAsync(prepared, ct).ConfigureAwait(false) is { } authorityRefusal)
+                await _admissionPolicy.EvaluateDispatchAuthorityAsync(prepared, ct, safeRequest.SecurityId).ConfigureAwait(false)
+                    is { } authorityRefusal)
                 throw new BrokerageRequestNotSentException(authorityRefusal.Reason ?? "Live order authority was withdrawn.");
 
             Task<ExecutionReport> submission;

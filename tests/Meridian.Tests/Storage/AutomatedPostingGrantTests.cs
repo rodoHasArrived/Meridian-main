@@ -113,7 +113,7 @@ public sealed partial class AutomatedPostingGrantTests
         {
             ("currency blind", original.Entry.Lines[0].Account, null),
             ("foreign currency", original.Entry.Lines[0].Account, new LedgerEntryCurrency("EUR", "USD", 100m, 0m, 1m)),
-            ("other account", LedgerAccounts.Securities("AAPL", "other-account"), new LedgerEntryCurrency("USD", "USD", 100m, 0m, 1m)),
+            ("other account", LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "other-account"), new LedgerEntryCurrency("USD", "USD", 100m, 0m, 1m)),
             ("short liability", new LedgerAccount("Short Proceeds", LedgerAccountType.Liability, "AAPL", AccountId), new LedgerEntryCurrency("USD", "USD", 100m, 0m, 1m))
         };
 
@@ -343,7 +343,7 @@ public sealed partial class AutomatedPostingGrantTests
         const string description = "Synthetic buy 1 AAPL";
         var journal = new JournalEntry(journalId, Timestamp, description,
         [
-            new LedgerEntry(Guid.NewGuid(), journalId, Timestamp, LedgerAccounts.Securities("AAPL", AccountId),
+            new LedgerEntry(Guid.NewGuid(), journalId, Timestamp, LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), AccountId),
                 100m, 0m, description, currency: new LedgerEntryCurrency("USD", "USD", 100m, 0m, 1m)),
             new LedgerEntry(Guid.NewGuid(), journalId, Timestamp, LedgerAccounts.CashAccount(AccountId),
                 0m, 100m, description, currency: new LedgerEntryCurrency("USD", "USD", 0m, 100m, 1m))

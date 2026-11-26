@@ -18,14 +18,20 @@ public sealed class SecurityMasterGateIdentityTests
     {
         var identity = Guid.NewGuid();
         var resolver = Substitute.For<ISecurityResolver>();
-        resolver.ResolveAsync(Arg.Any<ResolveSecurityRequest>(), Arg.Any<CancellationToken>()).Returns(identity);
+        // The gate resolves through the provider-less canonical resolver (Security Master review F2).
+        resolver.ResolveCanonicalAsync(Arg.Any<ResolveCanonicalSecurityRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var request = call.Arg<ResolveCanonicalSecurityRequest>();
+                return CanonicalSecurityResolution.FromCandidates(request, request.AsOfUtc ?? DateTimeOffset.UtcNow, [identity]);
+            });
         var gate = new SecurityMasterGate(resolver, NullLogger<SecurityMasterGate>.Instance);
 
         var decision = await gate.CheckAsync("AAPL");
 
         Assert.True(decision.IsApproved);
         Assert.Equal(identity, decision.SecurityId);
-        await resolver.Received(1).ResolveAsync(Arg.Is<ResolveSecurityRequest>(request =>
+        await resolver.Received(1).ResolveCanonicalAsync(Arg.Is<ResolveCanonicalSecurityRequest>(request =>
             request.IdentifierKind == SecurityIdentifierKind.Ticker && request.IdentifierValue == "AAPL" && request.ActiveOnly),
             Arg.Any<CancellationToken>());
     }

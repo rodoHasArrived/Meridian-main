@@ -24,7 +24,7 @@ public sealed class LedgerMarkToMarketCarryingValueSourceTests
                 Arg.Is<LedgerLineDimensionSet>(dimensions => dimensions.EntityId == "entity-a"), cancellation.Token)
             .Returns(new Dictionary<LedgerAccount, decimal>
             {
-                [LedgerAccounts.Securities("AAPL", "broker-a")] = 0m
+                [LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-a")] = 0m
             });
         MarkToMarketPosition[] positions =
         [
@@ -109,7 +109,7 @@ public sealed class LedgerMarkToMarketCarryingValueSourceTests
         var dimensions = new LedgerLineDimensionSet(FundId: "fund-a", EntityId: entityId);
         var entry = new JournalEntry(id, occurredAt, "Retained acquisition",
         [
-            new LedgerEntry(Guid.NewGuid(), id, occurredAt, LedgerAccounts.Securities("AAPL", "broker-a"),
+            new LedgerEntry(Guid.NewGuid(), id, occurredAt, LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-a"),
                 amount, 0m, "Retained acquisition", dimensions),
             new LedgerEntry(Guid.NewGuid(), id, occurredAt, LedgerAccounts.Cash, 0m, amount,
                 "Retained acquisition", dimensions)

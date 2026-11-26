@@ -6,6 +6,80 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityCurveDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L53).
+
+The write-once identity of a stored curve.
+
+```csharp
+public sealed record SecurityCurveDefinitionDto(Guid CurveId, string CurveKey, SecurityCurveKind Kind, string Currency, string? IndexName, string? Tenor, string DayCount, SecurityCurveInterpolation Interpolation, string Source, string? Description, string CreatedBy, DateTimeOffset CreatedAt)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public SecurityCurveRatePolicy RatePolicy { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L68) |  |
+
+## SecurityCurveInterpolation
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveInterpolation</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L32).
+
+How a value between two pillars is read. Linear is linear in DateOnly.DayNumber on the stored value (the arithmetic of SecurityForwardCurve.RateAt). Before the first pillar Forward and Inflation curves hold flat, while a Discount curve is 1 on or before its as-of date and linear from (as-of, 1) to the first pillar; after the last pillar Forward and Inflation curves hold flat and a Discount curve refuses.
+
+```csharp
+public enum SecurityCurveInterpolation
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Linear</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L34) |  |
+
+## SecurityCurveKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L11).
+
+What a stored curve&#x27;s values are: discount factors, projected index fixings or index levels.
+
+```csharp
+public enum SecurityCurveKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Discount</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L14) | Positive discount factors; legacy policy additionally requires (0, 1&#93; and nonincreasing pillars. At as-of the factor is 1. |
+| <code>Forward</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L17) | Projected annual fixings stored as fractions (0.04, never 4); signed values require an explicit SignedRates definition. |
+| <code>Inflation</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L20) | Projected levels of one inflation index; always positive. |
+
+## SecurityCurvePointDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurvePointDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L46).
+
+One dated pillar. Value is a discount factor (Discount), an annual rate as a FRACTION (Forward: 0.04, never 4) or an index level (Inflation). Tenor is a label such as 3M; the date is authoritative.
+
+```csharp
+public sealed record SecurityCurvePointDto(DateOnly Date, decimal Value, string? Tenor = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityRatePointEvidenceDto? RateEvidence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L49) |  |
+
 ## SecurityCurveRatePolicy
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveRatePolicy</code>. Kind: `enum`.
@@ -800,80 +874,3 @@ One listing-identity inconsistency on a stored security.
 ```csharp
 public sealed record SecurityListingIdentityFinding(string Code, string FieldPath, string Message);
 ```
-
-## SecurityListItemBinding
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityListItemBinding</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L70).
-
-One key of a written list entry and the entry member it carries.
-
-```csharp
-public sealed record SecurityListItemBinding(string Key, string Member);
-```
-
-## SecurityLotModel
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityLotModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L49).
-
-The one lot model: every SecurityLotUnitKind maps to exactly one entry stating what its quantity means and which typed lot carries it. Consumers that need to know how a holding is sized read For(SecurityLotUnitKind) or ForAssetClass(string?) instead of switching on asset-class strings. Shares, listed contracts and currency amounts deliberately have no typed lot: the generic execution, backtesting and ledger lots carry them, with the catalog&#x27;s unit and multiplier (LotQuantity.UnitFor). Ledger relief-history lots are normalized to units with a multiplier of one and a monetary unit cost, so quantity times unit cost is the basis; they do not restate the instrument&#x27;s unit. Two guards keep the boundaries aligned with the catalog: LotQuantityBasisRules refuses a face-booked acquisition of a class that is not face-denominated, and PaperLotUnitCatalogAgreementTests holds paper fills to the catalog unit.
-
-```csharp
-public static class SecurityLotModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;SecurityLotUnitDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L66) | Every lot unit the model describes, in enum order. |
-| <code>public static SecurityLotUnitDescriptor For(SecurityLotUnitKind unitKind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:69](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L69) | The entry for unitKind. |
-| <code>public static SecurityLotUnitDescriptor ForAssetClass(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:75](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L75) | The entry for the lot unit the asset-class registry assigns to assetClass. |
-| <code>public static SecurityLotUnitDescriptor For(IUnitizedLot lot);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L79) | The entry for the unit a lot reports. |
-| <code>public static IReadOnlyList&lt;string&gt; AssetClassesWithUnit(SecurityLotUnitKind unitKind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:86](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L86) | The asset classes whose lots carry unitKind, in catalog order. |
-| <code>public static bool IsCanonicalLot(IUnitizedLot lot);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L96) | True when lot is the canonical typed lot for its own unit, or its unit has no typed lot and any IUnitizedLot may carry it. |
-
-## SecurityLotUnitDescriptor
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityLotUnitDescriptor</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L23).
-
-What one lot unit means and which canonical lot type carries it. Keyed on SecurityLotUnitKind, so an asset class&#x27;s lot behaviour is read from its descriptor&#x27;s SecurityAssetClassDescriptor.LotUnit and never from its name.
-
-```csharp
-public sealed record SecurityLotUnitDescriptor(SecurityLotUnitKind UnitKind, Type? CanonicalLotType, string QuantityMeaning, bool TracksPaydownFactor = false, bool AmortizesBySchedule = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool HasCanonicalLotType =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L31) | True when a typed lot aggregate owns this unit&#x27;s economics. |
-
-## SecurityLotUnitKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityLotUnitKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L9).
-
-What one unit of a position lot measures.
-
-```csharp
-public enum SecurityLotUnitKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Shares</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L12) | Equity shares. |
-| <code>Contracts</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L15) | Listed derivative contracts, scaled by the class&#x27;s contract multiplier. |
-| <code>FaceValue</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L18) | Par (face) amount of a debt instrument. |
-| <code>Notional</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L21) | Notional amount of an OTC derivative. |
-| <code>Units</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L24) | Fund, holding or other units with no par or notional meaning. |
-| <code>CurrencyAmount</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L27) | An amount of currency (FX spot, cash sweep balances). |
-| <code>Commitment</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L30) | A committed amount (fund commitments, guarantees). |

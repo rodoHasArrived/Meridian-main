@@ -150,6 +150,8 @@ public sealed class PostedStrategyRunLedgerSource(
         public LedgerAccount GetDefinition(LedgerAccountRole role) => StandardChartOfAccounts.Instance.GetDefinition(role);
         public LedgerAccount Resolve(LedgerAccountRole role, string? financialAccountId = null, string? symbol = null)
             => StandardChartOfAccounts.Instance.Resolve(role, financialAccountId, symbol);
+        public LedgerAccount Resolve(LedgerAccountRole role, string? financialAccountId, LedgerSecurityKey security)
+            => StandardChartOfAccounts.Instance.Resolve(role, financialAccountId, security);
         public bool TryGetRegistered(LedgerAccount account, out LedgerAccountRole role)
         {
             if (registrations.ContainsKey(account))

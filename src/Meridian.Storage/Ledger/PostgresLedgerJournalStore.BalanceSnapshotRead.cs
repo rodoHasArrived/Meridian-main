@@ -75,7 +75,8 @@ public sealed partial class PostgresLedgerJournalStore
             throw BalanceCheckpointIntegrityFailure("The retained balance checkpoint header is invalid.");
         command.Parameters.Clear();
         command.CommandText = $"""
-            select account_name,account_type,symbol,financial_account_id,dimensions::text,debit,credit,entry_count
+            select account_name,account_type,symbol,financial_account_id,dimensions::text,debit,credit,entry_count,
+                   account_security_id
             from {Qualified("ledger_balance_checkpoint_rows")} where checkpoint_id=@id order by row_no;
             """;
         command.Parameters.AddWithValue("id", content.CheckpointId);

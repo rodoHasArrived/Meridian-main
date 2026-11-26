@@ -124,7 +124,7 @@ public sealed partial class WorkstationEndpointsTests
                     [LedgerQuery.AccountingRunIdTag] = run.RunId
                 }), legs, SecurityLotUnitKind.Shares, 1m);
             privateLedger.PostLines(at, "Private strategy claim", legs.SelectMany(leg =>
-                SecurityTradePostingProjector.Project(leg, "SPY", account)).ToArray(), metadata);
+                SecurityTradePostingProjector.Project(leg, LedgerSecurityKey.From(metadata.SecurityId, "SPY"), account)).ToArray(), metadata);
             run = run with { Metrics = run.Metrics with { Ledger = privateLedger } };
         }
         await using var app = await CreateAppAsync(services =>

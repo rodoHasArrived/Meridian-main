@@ -20,6 +20,34 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     private readonly List<PositionLot> _lots = [];
     private readonly Dictionary<string, decimal> _ownerQuantities = new(StringComparer.OrdinalIgnoreCase);
     public string Symbol { get; } = symbol;
+
+    /// <summary>
+    /// Security Master identity pinned when the position opens. Per-security ledger accounts are
+    /// keyed by it for the whole holding (Security Master review F2); a holding opened from a fill
+    /// without an identity stays on its legacy ticker key until flat, so it never splits.
+    /// </summary>
+    public Guid? SecurityId { get; private set; }
+
+    /// <summary>The ledger key for this holding's per-security accounts.</summary>
+    public Meridian.Ledger.LedgerSecurityKey LedgerKey => Meridian.Ledger.LedgerSecurityKey.From(SecurityId, Symbol);
+
+    /// <summary>Pins the holding's identity from a fill; see <see cref="SecurityId"/>.</summary>
+    public void BindSecurity(Guid? securityId)
+    {
+        if (securityId is not { } id || id == Guid.Empty)
+            return;
+        if (SecurityId is { } pinned)
+        {
+            if (pinned != id && !IsFlatWithoutLots)
+                throw new InvalidOperationException(
+                    $"Fill identity {id:D} does not match the open '{Symbol}' holding's Security Master identity {pinned:D}.");
+            if (pinned != id)
+                SecurityId = id;
+            return;
+        }
+        if (IsFlatWithoutLots)
+            SecurityId = id;
+    }
     public decimal Quantity { get; set; }
     public decimal CostBasis { get; set; }
     public decimal MarketPrice { get; set; } = marketPrice;

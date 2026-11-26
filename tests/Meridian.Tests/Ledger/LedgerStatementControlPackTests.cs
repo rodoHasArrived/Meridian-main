@@ -18,7 +18,7 @@ public sealed class LedgerStatementControlPackTests
         ledger.PostLines(Start.AddDays(-1), "Opening capital", [(foreignCash, 1000m, 0m), (LedgerAccounts.CapitalAccount, 0m, 1000m)]);
         ledger.PostLines(Start.AddDays(1), "Realized profit", [(LedgerAccounts.Cash, 100m, 0m), (LedgerAccounts.RealizedGain, 0m, 100m)],
             new JournalEntryMetadata(Symbol: "ABC", SecurityId: instrument));
-        ledger.PostLines(Start.AddDays(2), "Market mark", [(LedgerAccounts.Securities("ABC"), 60m, 0m), (LedgerAccounts.UnrealizedGain, 0m, 60m)],
+        ledger.PostLines(Start.AddDays(2), "Market mark", [(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("ABC")), 60m, 0m), (LedgerAccounts.UnrealizedGain, 0m, 60m)],
             new JournalEntryMetadata(Symbol: "ABC", SecurityId: instrument));
         ledger.PostLines(Start.AddDays(3), "Cash revaluation", [(foreignCash, 5m, 0m), (LedgerAccounts.UnrealizedFxGain, 0m, 5m)]);
         var fxJournal = ledger.Journal.Last().JournalEntryId;
@@ -50,7 +50,7 @@ public sealed class LedgerStatementControlPackTests
         var ledger = new Meridian.Ledger.Ledger();
         ledger.PostLines(Start.AddDays(1), "Unbalanced perimeter",
         [
-            (LedgerAccounts.Securities("ABC"), 100m, 0m, new LedgerLineDimensionSet(EntityId: "account-a")),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("ABC")), 100m, 0m, new LedgerLineDimensionSet(EntityId: "account-a")),
             (LedgerAccounts.CapitalAccount, 0m, 100m, new LedgerLineDimensionSet(EntityId: "account-b"))
         ]);
         var request = Request(new LedgerLineDimensionSet(EntityId: "account-a")) with { StatementControl = Definition() };

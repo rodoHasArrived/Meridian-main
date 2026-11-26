@@ -98,7 +98,8 @@ public sealed partial class PostgresLedgerJournalStore
                    par_basis,
                    acquisition_terms,
                    basis_adjustment,
-                   current_factor
+                   current_factor,
+                   account_security_id
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and security_id = @security_id

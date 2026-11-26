@@ -103,7 +103,8 @@ public sealed class CanonicalPaperPositionAttributionTests
         private readonly Guid _securityId = Guid.NewGuid();
         private readonly Guid _positionId = Guid.NewGuid();
         private readonly Guid _periodId = Guid.NewGuid();
-        private readonly LedgerAccount _account = LedgerAccounts.Securities("TEST", AccountId);
+        // Per-security accounts are keyed by SecurityId (Security Master review F2).
+        private LedgerAccount _account => LedgerAccounts.Securities(LedgerSecurityKey.Resolved(_securityId, "TEST"), AccountId);
         private readonly Dictionary<Guid, LedgerTaxLotRecord> _lots = [];
         public List<LedgerJournalEntryRecord> Journals { get; } = [];
         public Dictionary<Guid, AtomicTaxLotJournalResult> Receipts { get; } = [];

@@ -7,7 +7,10 @@ namespace Meridian.Execution;
 /// </summary>
 public sealed record SecurityMasterGateResult(bool IsApproved, string? Reason = null)
 {
-    /// <summary>The stable identity resolved by this admission check, when available.</summary>
+    /// <summary>
+    /// Canonical Security Master identity of the approved symbol, when the gate resolved one. Carry it
+    /// on the order (<c>OrderRequest.SecurityId</c>) so fills post to SecurityId-keyed ledger accounts.
+    /// </summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public Guid? SecurityId { get; init; }
 }

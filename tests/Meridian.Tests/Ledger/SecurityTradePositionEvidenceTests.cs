@@ -73,7 +73,7 @@ public sealed class SecurityTradePositionEvidenceTests
     {
         var metadata = SecurityTradePositionEvidence.WithPostings(new JournalEntryMetadata(Symbol: "TEST", FinancialAccountId: "account"), legs, unit, multiplier);
         var ledger = new Meridian.Ledger.Ledger(LedgerPolicy.Trading());
-        ledger.PostLines(Time, "fill", legs.SelectMany(leg => SecurityTradePostingProjector.Project(leg, "TEST", "account")).ToArray(), metadata);
+        ledger.PostLines(Time, "fill", legs.SelectMany(leg => SecurityTradePostingProjector.Project(leg, LedgerSecurityKey.From(metadata.SecurityId, "TEST"), "account")).ToArray(), metadata);
         return ledger.Journal.Single();
     }
 }

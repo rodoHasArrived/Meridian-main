@@ -24,7 +24,7 @@ public sealed class LedgerIntegrityTests
 
         var lots = portfolio.GetOpenLots("SPY");
         lots.Select(lot => lot.CostBasis()).Should().Equal(0m, 18m);
-        ledger.GetBalance(LedgerAccounts.Securities("SPY", AccountId)).Should().Be(18m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY"), AccountId)).Should().Be(18m);
         ledger.GetBalance(LedgerAccounts.RealizedGainFor(AccountId)).Should().Be(2m);
         ledger.HasAccount(LedgerAccounts.CorporateActionIncomeFor(AccountId)).Should().BeFalse();
         var snapshot = Snapshot(portfolio);
@@ -37,7 +37,7 @@ public sealed class LedgerIntegrityTests
         metrics.SymbolAttribution["SPY"].RealizedPnl.Should().Be(2m);
 
         portfolio.ProcessFill(Fill(-5, 10m, Start.AddDays(2)));
-        ledger.GetBalance(LedgerAccounts.Securities("SPY", AccountId)).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY"), AccountId)).Should().Be(0m);
         ledger.GetBalance(LedgerAccounts.RealizedGainFor(AccountId)).Should().Be(34m);
         Snapshot(portfolio, 3);
         portfolio.LedgerIntegrityBreaks.Should().BeEmpty();
@@ -99,8 +99,8 @@ public sealed class LedgerIntegrityTests
 
         portfolio.LedgerIntegrityBreaks.Should().BeEmpty();
         ledger.HasAccount(LedgerAccounts.Cash).Should().BeFalse();
-        ledger.GetBalance(LedgerAccounts.Securities("SPY", "long")).Should().Be(40m);
-        ledger.GetBalance(LedgerAccounts.ShortSecuritiesPayable("SPY", "short")).Should().Be(40m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY"), "long")).Should().Be(40m);
+        ledger.GetBalance(LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("SPY"), "short")).Should().Be(40m);
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public sealed class LedgerIntegrityTests
         ledger.PostLines(Start.AddHours(1), "Incorrect allocation",
             [(LedgerAccounts.AllocationControl, 7m, 0m), (LedgerAccounts.CashAccount(AccountId), 0m, 7m)]);
         ledger.PostLines(Start.AddHours(2), "Orphan position",
-            [(LedgerAccounts.Securities("ORPHAN", AccountId), 9m, 0m), (LedgerAccounts.CapitalAccountFor(AccountId), 0m, 9m)]);
+            [(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("ORPHAN"), AccountId), 9m, 0m), (LedgerAccounts.CapitalAccountFor(AccountId), 0m, 9m)]);
         ledger.PostLines(Start.AddDays(10), "Future cash",
             [(LedgerAccounts.CashAccount(AccountId), 100m, 0m), (LedgerAccounts.CapitalAccountFor(AccountId), 0m, 100m)]);
 

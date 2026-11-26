@@ -10,7 +10,10 @@ internal sealed record LedgerBalanceCheckpointRow(
     string? DimensionsJson,
     decimal Debit,
     decimal Credit,
-    long EntryCount);
+    long EntryCount,
+    // Account key of a SecurityId-keyed per-security row (Security Master review F2). Omitted from
+    // the digest payload when null so checkpoints retained before F2 keep verifying.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? SecurityId = null);
 
 internal sealed record LedgerBalanceCheckpointContent(
     int SchemaVersion,

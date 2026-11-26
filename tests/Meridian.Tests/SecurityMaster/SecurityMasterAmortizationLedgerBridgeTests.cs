@@ -80,7 +80,7 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
         posted.Should().Be(2);
         ledger.Journal.Should().HaveCount(2);
         ledger.Journal.Should().OnlyContain(entry => entry.IsBalanced);
-        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(60m);
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(SecurityId, Ticker))).Should().Be(60m);
         ledger.GetBalance(LedgerAccounts.CouponIncome).Should().Be(60m);
 
         var first = ledger.Journal[0];
@@ -104,8 +104,8 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
 
         posted.Should().Be(1);
         ledger.Journal[0].IsBalanced.Should().BeTrue();
-        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(20m);
-        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-20m); // carrying value written down
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(SecurityId, Ticker))).Should().Be(20m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(SecurityId, Ticker))).Should().Be(-20m); // carrying value written down
         ledger.GetBalance(LedgerAccounts.CouponIncome).Should().Be(0m); // coupon 20 offset by premium 20
     }
 
@@ -121,7 +121,7 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
 
         posted.Should().Be(1);
         ledger.Journal[0].IsBalanced.Should().BeTrue();
-        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(20m); // carrying value written up
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(SecurityId, Ticker))).Should().Be(20m); // carrying value written up
         ledger.GetBalance(LedgerAccounts.CouponIncome).Should().Be(20m);
     }
 
@@ -138,7 +138,7 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
         ledger.Journal.Should().HaveCount(2);
         ledger.Journal.Should().OnlyContain(entry => entry.IsBalanced);
         ledger.GetBalance(LedgerAccounts.Cash).Should().Be(500m);
-        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-500m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(SecurityId, Ticker))).Should().Be(-500m);
 
         var paydown = ledger.Journal.Single(entry => entry.Metadata.ActivityType == "PrincipalPaydown");
         paydown.Metadata.SecurityId.Should().Be(SecurityId);
@@ -184,7 +184,7 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
         var logger = Substitute.For<ILogger<SecurityMasterAmortizationLedgerBridge>>();
         var bridge = new SecurityMasterAmortizationLedgerBridge(service, logger);
         var ledger = new DomainLedger();
-        var interestReceivable = LedgerAccounts.AccruedInterestReceivable(Ticker);
+        var interestReceivable = LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(SecurityId, Ticker));
 
         (await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger)).Should().Be(1);
         var originalJournal = ledger.Journal.Should().ContainSingle().Which;
@@ -238,7 +238,7 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
 
         // A premium position must only ever credit (write down) the carrying account; a debit would
         // mean an erroneous discount accretion on a premium bond.
-        var securities = LedgerAccounts.Securities(Ticker);
+        var securities = LedgerAccounts.Securities(LedgerSecurityKey.Resolved(SecurityId, Ticker));
         ledger.Journal.SelectMany(entry => entry.Lines)
             .Where(line => line.Account == securities)
             .Should().OnlyContain(line => line.Debit == 0m);
@@ -263,7 +263,7 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
         var posted = await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, context);
 
         posted.Should().Be(2);
-        var securities = LedgerAccounts.Securities(Ticker);
+        var securities = LedgerAccounts.Securities(LedgerSecurityKey.Resolved(SecurityId, Ticker));
         var credits = ledger.Journal
             .Select(entry => entry.Lines.Where(line => line.Account == securities).Sum(line => line.Credit))
             .ToList();
@@ -289,7 +289,7 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
 
         // Only the second period posts: the first has no coupon and no amortization yet.
         posted.Should().Be(1);
-        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-20m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(SecurityId, Ticker))).Should().Be(-20m);
     }
 
     [Fact]
@@ -331,7 +331,7 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
         var context = new AmortizationLedgerPostingContext(FinancialAccountId: "broker-9");
         await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, context);
 
-        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker, "broker-9")).Should().Be(40m);
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(SecurityId, Ticker), "broker-9")).Should().Be(40m);
         ledger.GetBalance(LedgerAccounts.CouponIncomeFor("broker-9")).Should().Be(40m);
         ledger.Journal[0].Metadata.FinancialAccountId.Should().Be("broker-9");
     }
@@ -425,8 +425,8 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
             new AmortizationLedgerPostingContext(OpenLots: [Lot(quantity: 10m, unitCost: 102m)],
                 AmortizedThrough: new DateOnly(2026, 7, 2)));
 
-        whole.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-20m);
-        remainder.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-10.03m);
+        whole.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(SecurityId, Ticker))).Should().Be(-20m);
+        remainder.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(SecurityId, Ticker))).Should().Be(-10.03m);
         remainder.Journal.Should().OnlyContain(entry => entry.IsBalanced);
     }
 
@@ -468,7 +468,7 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
                 new AmortizationLedgerPostingContext(AccrualWindow: new AmortizationAccrualWindow(start, end)));
             posted.Should().Be(1);
             ledger.Journal.Should().ContainSingle().Which.Metadata.EffectiveDate.Should().Be(end);
-            monthly.Add(ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)));
+            monthly.Add(ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(SecurityId, Ticker))));
         }
 
         monthly.Should().Equal(310m, 280m, 310m, 300m, 310m, 300m);
@@ -488,7 +488,7 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
             AccrualWindow: new AmortizationAccrualWindow(new DateOnly(2026, 2, 1), new DateOnly(2026, 2, 28))));
 
         // Cumulative 3.18 through 28 February less 1.64 through 31 January.
-        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-1.54m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(SecurityId, Ticker))).Should().Be(-1.54m);
     }
 
     [Theory]
@@ -516,8 +516,8 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
             OpenLots: [lot], CouponPrincipalBasis: 10_000m,
             AccrualWindow: new(new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1))));
 
-        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(31m);
-        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(SecurityId, Ticker))).Should().Be(31m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(SecurityId, Ticker))).Should().Be(0m);
         ledger.Journal.Should().ContainSingle().Which.IsBalanced.Should().BeTrue();
     }
 
@@ -543,7 +543,7 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
             OpenLots: [lot], CouponPrincipalBasis: 10_000m,
             AccrualWindow: new(new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1))));
 
-        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(8m);
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(SecurityId, Ticker))).Should().Be(8m);
     }
 
     [Theory]
@@ -564,7 +564,7 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
         await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger,
             new AmortizationLedgerPostingContext(OpenLots: [lot], QuoteConvention: quote));
 
-        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-20m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(SecurityId, Ticker))).Should().Be(-20m);
         ledger.Journal.Should().ContainSingle().Which.IsBalanced.Should().BeTrue();
     }
 

@@ -769,6 +769,14 @@ public sealed record ManualJournalEntryLineDto(
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ManualJournalLineCurrencyDto? TransactionCurrency { get; init; }
+
+    /// <summary>
+    /// Security Master key of a per-security ledger account (Security Master review F2). When set,
+    /// it is the account identity and <see cref="LedgerAccountSymbol"/> is the display ticker.
+    /// Omitted when null so existing drafts and their digests are unchanged.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? LedgerAccountSecurityId { get; init; }
 }
 
 public sealed record ManualJournalLineCurrencyDto(string Currency,

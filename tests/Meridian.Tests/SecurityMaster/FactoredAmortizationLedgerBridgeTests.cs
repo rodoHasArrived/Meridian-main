@@ -28,7 +28,7 @@ public sealed class FactoredAmortizationLedgerBridgeTests
         var bridge = Bridge(Projection());
         await bridge.PostProjectedCashFlowsAsync(Security, Ticker, ledger, Context(history, Start, End));
         // 5 days at 8, 2 days at 6, then 3 days at 3 after the half disposal.
-        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(61m);
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(Security, Ticker))).Should().Be(61m);
         ledger.Journal.Should().ContainSingle().Which.IsBalanced.Should().BeTrue();
         ledger.Journal.Should().NotContain(entry => entry.Metadata.ActivityType == "PrincipalPaydown");
         (await bridge.PostProjectedCashFlowsAsync(Security, Ticker, ledger, Context(history, Start, End))).Should().Be(0);
@@ -46,9 +46,9 @@ public sealed class FactoredAmortizationLedgerBridgeTests
         for (var day = Start; day <= End; day = day.AddDays(1))
             await bridge.PostProjectedCashFlowsAsync(Security, Ticker, daily,
                 Context(history.Where(holding => holding.Date <= day).ToArray(), day, day));
-        full.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(0.01m);
-        daily.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker))
-            .Should().Be(full.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)));
+        full.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(Security, Ticker))).Should().Be(0.01m);
+        daily.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(Security, Ticker)))
+            .Should().Be(full.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(Security, Ticker))));
         daily.Journal.Should().OnlyContain(entry => entry.IsBalanced);
     }
 
@@ -67,7 +67,7 @@ public sealed class FactoredAmortizationLedgerBridgeTests
         var ledger = new DomainLedger();
         await Bridge(Projection() with { Schedule = [row] }).PostProjectedCashFlowsAsync(Security, Ticker, ledger,
             Context(history, Start, End));
-        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(70m);
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(Security, Ticker))).Should().Be(70m);
         ledger.Journal.Should().ContainSingle();
     }
 
@@ -80,7 +80,7 @@ public sealed class FactoredAmortizationLedgerBridgeTests
             AmortizationMethod: BondAmortizationMethod.StraightLine)).ToArray();
         var ledger = new DomainLedger();
         await Bridge(Projection()).PostProjectedCashFlowsAsync(Security, Ticker, ledger, Context(history, Start, End));
-        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(18m);
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(Security, Ticker))).Should().Be(18m);
     }
 
     [Theory]
@@ -146,7 +146,7 @@ public sealed class FactoredAmortizationLedgerBridgeTests
                 AmortizationMethod: BondAmortizationMethod.StraightLine)).ToArray();
         var ledger = new DomainLedger();
         await Bridge(projection).PostProjectedCashFlowsAsync(Security, Ticker, ledger, Context(history, Start, End));
-        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(0.25m);
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(Security, Ticker))).Should().Be(0.25m);
     }
 
     [Fact]
@@ -159,7 +159,7 @@ public sealed class FactoredAmortizationLedgerBridgeTests
         var ledger = new DomainLedger();
         await bridge.PostProjectedCashFlowsAsync(Security, Ticker, ledger,
             Context(History(100), Start, End) with { RetainedProjection = projection });
-        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(70m);
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(Security, Ticker))).Should().Be(70m);
         source.ReceivedCalls().Should().BeEmpty();
     }
 
@@ -184,10 +184,10 @@ public sealed class FactoredAmortizationLedgerBridgeTests
                 Context(history.Where(holding => holding.Date <= day).ToArray(), day, day));
 
         // Premium is 800 for six of eleven lifetime days, then 600 for five days.
-        full.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-expectedPremium);
-        full.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(70m);
-        daily.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-expectedPremium);
-        daily.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(70m);
+        full.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(Security, Ticker))).Should().Be(-expectedPremium);
+        full.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(Security, Ticker))).Should().Be(70m);
+        daily.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Resolved(Security, Ticker))).Should().Be(-expectedPremium);
+        daily.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(Security, Ticker))).Should().Be(70m);
         full.Journal.Should().OnlyContain(entry => entry.IsBalanced);
         daily.Journal.Should().OnlyContain(entry => entry.IsBalanced);
     }

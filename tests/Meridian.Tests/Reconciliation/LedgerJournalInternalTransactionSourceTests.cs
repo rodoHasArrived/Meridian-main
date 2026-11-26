@@ -108,7 +108,7 @@ public sealed partial class LedgerJournalInternalTransactionSourceTests
             Timestamp(2026, 5, 28),
             "Buy 10 MSFT",
             new JournalEntryMetadata(ActivityType: "buy", Symbol: "MSFT", FinancialAccountId: AccountLabel),
-            (LedgerAccounts.Securities("MSFT", AccountLabel), 5000m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("MSFT"), AccountLabel), 5000m, 0m),
             (LedgerAccounts.CommissionExpenseFor(AccountLabel), 5m, 0m),
             (LedgerAccounts.CashAccount(AccountLabel), 0m, 5005m));
         var fee = Journal(
@@ -129,7 +129,7 @@ public sealed partial class LedgerJournalInternalTransactionSourceTests
             Timestamp(2026, 5, 30),
             "Fair value mark MSFT",
             new JournalEntryMetadata(ActivityType: "fair-value-mark", Symbol: "MSFT", FinancialAccountId: AccountLabel),
-            (LedgerAccounts.Securities("MSFT", AccountLabel), 100m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("MSFT"), AccountLabel), 100m, 0m),
             (LedgerAccounts.UnrealizedGainFor(AccountLabel), 0m, 100m));
         var internalReclass = Journal(
             Timestamp(2026, 5, 30),
@@ -179,7 +179,7 @@ public sealed partial class LedgerJournalInternalTransactionSourceTests
                     ["quantity"] = "5",
                     ["settlementDate"] = "2026-05-30",
                 }),
-            (LedgerAccounts.Securities("MSFT", AccountLabel), 100m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("MSFT"), AccountLabel), 100m, 0m),
             (LedgerAccounts.CashAccount(AccountLabel), 0m, 100m));
         var internalTransactions = await Source(trade).GetTransactionsAsync(Query());
 
@@ -241,7 +241,7 @@ public sealed partial class LedgerJournalInternalTransactionSourceTests
                 FinancialAccountId: AccountLabel,
                 EffectiveDate: new DateOnly(2026, 5, 28),
                 Tags: tags),
-            (LedgerAccounts.Securities("MSFT", AccountLabel), 1253.125m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("MSFT"), AccountLabel), 1253.125m, 0m),
             (LedgerAccounts.CashAccount(AccountLabel), 0m, 1253.125m));
 
         var internalTransactions = await Source(trade).GetTransactionsAsync(Query());

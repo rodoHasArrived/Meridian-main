@@ -340,6 +340,33 @@ public sealed class OrderAuthorityResolverTests
         security.Calls.Should().Be(1);
     }
 
+    [Fact]
+    public async Task Dispatch_TickerNowResolvesToADifferentSecurity_IsRefused()
+    {
+        // Security Master review F2: fills book under the identity admitted with the order.
+        var admitted = Guid.Parse("f2f2f2f2-0000-4000-8000-0000000000f1");
+        var repointed = Guid.Parse("f2f2f2f2-0000-4000-8000-0000000000f2");
+        var resolver = Resolver(ExecutionMode.Paper, new RecordingReadinessGate(approve: true),
+            security: new StubSecurityGate(approve: true, securityId: repointed));
+
+        var refusal = await resolver.EvaluateDispatchAsync(Prepared(Ticket()), default, admitted);
+
+        refusal!.ReasonCode.Should().Be(OrderAuthorityReasonCodes.SecurityIdentityChangedBeforeDispatch);
+        refusal.Source.Should().Be("order authority at dispatch");
+        refusal.Reason.Should().Contain(repointed.ToString("D")).And.Contain(admitted.ToString("D"));
+    }
+
+    [Fact]
+    public async Task Dispatch_SameAdmittedSecurity_Passes_AndNoAdmittedIdentityKeepsPriorBehavior()
+    {
+        var admitted = Guid.Parse("f2f2f2f2-0000-4000-8000-0000000000f1");
+        var resolver = Resolver(ExecutionMode.Paper, new RecordingReadinessGate(approve: true),
+            security: new StubSecurityGate(approve: true, securityId: admitted));
+
+        (await resolver.EvaluateDispatchAsync(Prepared(Ticket()), default, admitted)).Should().BeNull();
+        (await resolver.EvaluateDispatchAsync(Prepared(Ticket()), default)).Should().BeNull();
+    }
+
     // ---- Helpers ----
 
     private static OrderAuthorityResolver Resolver(
@@ -350,14 +377,17 @@ public sealed class OrderAuthorityResolverTests
         ISecurityMasterGate? security = null) =>
         new(mode, readiness, runs, options, new FixedClock(Now), security);
 
-    private sealed class StubSecurityGate(bool approve) : ISecurityMasterGate
+    private sealed class StubSecurityGate(bool approve, Guid? securityId = null) : ISecurityMasterGate
     {
         public int Calls { get; private set; }
 
         public Task<SecurityMasterGateResult> CheckAsync(string symbol, CancellationToken ct = default)
         {
             Calls++;
-            return Task.FromResult(new SecurityMasterGateResult(approve, approve ? null : "instrument suspended"));
+            return Task.FromResult(new SecurityMasterGateResult(approve, approve ? null : "instrument suspended")
+            {
+                SecurityId = approve ? securityId : null
+            });
         }
     }
 

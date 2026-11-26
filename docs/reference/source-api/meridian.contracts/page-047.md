@@ -85,6 +85,64 @@ Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttest
 public sealed record AttestCorporateActionCashDividendRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, Guid ProjectionId, long ExpectedDeclarationRevision, string ExpectedEligibilityHash, string Reason, string EvidenceReference, string EvidenceHash, string Confirmation, string Actor, CorporateActionCaseScopeDto? ScopeAssertion = null, string? CorrelationId = null, CorporateActionCashDividendDecisionAuthorityDto? Authority = null);
 ```
 
+## CanonicalSecurityResolution
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CanonicalSecurityResolution</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L28).
+
+Typed result of ISecurityResolver.ResolveCanonicalAsync.
+
+```csharp
+public sealed record CanonicalSecurityResolution(CanonicalSecurityResolutionStatus Status, Guid? SecurityId, IReadOnlyList<Guid> Candidates, SecurityIdentifierKind IdentifierKind, string IdentifierValue, DateTimeOffset AsOfUtc)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsResolved =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L37) | true when exactly one security was resolved. |
+| <code>public static CanonicalSecurityResolution FromCandidates(ResolveCanonicalSecurityRequest request, DateTimeOffset asOfUtc, IEnumerable&lt;Guid&gt; candidates);</code> | [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:40](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L40) | Builds a result from the distinct candidates that claim the identifier. |
+
+## CanonicalSecurityResolutionException
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CanonicalSecurityResolutionException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:65](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L65).
+
+Thrown when a workflow requires one canonical security but resolution was not unique.
+
+```csharp
+public sealed class CanonicalSecurityResolutionException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CanonicalSecurityResolutionException(CanonicalSecurityResolution resolution) : base(BuildMessage(resolution));</code> | [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L67) |  |
+| <code>public CanonicalSecurityResolution Resolution { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:74](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L74) | The typed resolution that blocked the workflow. |
+
+## CanonicalSecurityResolutionStatus
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CanonicalSecurityResolutionStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L15).
+
+Outcome of a canonical (provider-less) identifier resolution.
+
+```csharp
+public enum CanonicalSecurityResolutionStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Resolved</code> | [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L18) | Exactly one security claims the identifier at the requested instant. |
+| <code>Ambiguous</code> | [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L21) | More than one security claims the identifier; the caller must not pick one. |
+| <code>NotFound</code> | [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L24) | No security claims the identifier at the requested instant. |
+
 ## CashDistributionCorporateActionTerms
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDistributionCorporateActionTerms</code>. Kind: `record`.
@@ -698,48 +756,4 @@ Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttest
 
 ```csharp
 public sealed record CorporateActionCashDividendAttestationResultDto(CorporateActionProcessingCaseDto Case, CorporateActionCashDividendAttestationDto Attestation, CorporateActionCaseTransitionDto Transition, bool Replayed);
-```
-
-## CorporateActionCashDividendAttestationValidation
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationValidation</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs#L7).
-
-Write-boundary predicates shared by preflight and native cash-dividend persistence.
-
-```csharp
-public static class CorporateActionCashDividendAttestationValidation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ExcludedProblemCode = &quot;cash_dividend_attestation_excluded&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs#L9) |  |
-| <code>public static string RelatedEventKey(Guid securityId, DateOnly exDate) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs#L11) |  |
-| <code>public static void EnsureEligibility(CorporateActionProcessingCaseDto processingCase, CorporateActionCaseAccountingProjectionDto projection, CorporateActionCashDividendEligibilityDto eligibility);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs#L14) |  |
-| <code>public static void EnsureAccountRoleBinding(CashDividendAccountRoleBindingDto? binding, CorporateActionCaseAccountingProjectionDto projection);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs#L70) |  |
-| <code>public static void EnsureSameAccountRoleBinding(CashDividendAccountRoleBindingDto? declarationBinding, CashDividendAccountRoleBindingDto? retainedBinding);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs:85](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs#L85) |  |
-
-## CorporateActionCashDividendCaseFactsDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCashDividendCaseFactsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendCaseFactsDto.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendCaseFactsDto.cs#L7).
-
-Complete retained processing options and case evidence in one exact scoped case-version read. The digest binds immutable content, excluding workflow-only case-version increments.
-
-```csharp
-public sealed record CorporateActionCashDividendCaseFactsDto(Guid CaseId, long CaseVersion, IReadOnlyList<CorporateActionProcessingOptionDto> Options, IReadOnlyList<CorporateActionEvidenceDto> Evidence, string SnapshotJson, string SnapshotHash);
-```
-
-## CorporateActionCashDividendDecisionAuthorityDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCashDividendDecisionAuthorityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L27).
-
-```csharp
-public sealed record CorporateActionCashDividendDecisionAuthorityDto(bool CanAttestAccounting, bool CanPostAccounting, OperationsActionOriginDto Origin = OperationsActionOriginDto.HumanOperator);
 ```

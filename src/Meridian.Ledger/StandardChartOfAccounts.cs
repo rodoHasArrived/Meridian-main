@@ -17,8 +17,8 @@ public sealed class StandardChartOfAccounts : IChartOfAccounts
         {
             [LedgerAccountRole.Cash] = new("1000", LedgerAccounts.Cash),
             [LedgerAccountRole.Capital] = new("3000", LedgerAccounts.CapitalAccount),
-            [LedgerAccountRole.Securities] = new("1100", LedgerAccounts.Securities("_"), SymbolScope.Required),
-            [LedgerAccountRole.ShortSecuritiesPayable] = new("2100", LedgerAccounts.ShortSecuritiesPayable("_"), SymbolScope.Required),
+            [LedgerAccountRole.Securities] = new("1100", new LedgerAccount(LedgerAccounts.SecuritiesAccountName, LedgerAccountType.Asset), SymbolScope.SecurityKey),
+            [LedgerAccountRole.ShortSecuritiesPayable] = new("2100", new LedgerAccount(LedgerAccounts.ShortSecuritiesPayableAccountName, LedgerAccountType.Liability), SymbolScope.SecurityKey),
             [LedgerAccountRole.RealizedGain] = new("4000", LedgerAccounts.RealizedGain),
             [LedgerAccountRole.RealizedLoss] = new("5000", LedgerAccounts.RealizedLoss),
             [LedgerAccountRole.CommissionExpense] = new("5010", LedgerAccounts.CommissionExpense),
@@ -27,8 +27,8 @@ public sealed class StandardChartOfAccounts : IChartOfAccounts
             [LedgerAccountRole.ShortRebateIncome] = new("4020", LedgerAccounts.ShortRebateIncome),
             [LedgerAccountRole.DividendIncome] = new("4030", LedgerAccounts.DividendIncome),
             [LedgerAccountRole.DividendExpense] = new("5030", LedgerAccounts.DividendExpense),
-            [LedgerAccountRole.DividendReceivable] = new("1110", LedgerAccounts.DividendReceivable("_"), SymbolScope.Required),
-            [LedgerAccountRole.AccruedInterestReceivable] = new("1120", LedgerAccounts.AccruedInterestReceivable("_"), SymbolScope.Required),
+            [LedgerAccountRole.DividendReceivable] = new("1110", new LedgerAccount(LedgerAccounts.DividendReceivableAccountName, LedgerAccountType.Asset), SymbolScope.SecurityKey),
+            [LedgerAccountRole.AccruedInterestReceivable] = new("1120", new LedgerAccount(LedgerAccounts.AccruedInterestReceivableAccountName, LedgerAccountType.Asset), SymbolScope.SecurityKey),
             [LedgerAccountRole.CouponIncome] = new("4040", LedgerAccounts.CouponIncome),
             [LedgerAccountRole.CouponExpense] = new("5040", LedgerAccounts.CouponExpense),
             [LedgerAccountRole.CorporateActionIncome] = new("4050", LedgerAccounts.CorporateActionIncome),
@@ -75,6 +75,16 @@ public sealed class StandardChartOfAccounts : IChartOfAccounts
         return Resolve(role, financialAccountId, symbol);
     }
 
+    /// <summary>Resolves a registered per-security posting code by <see cref="LedgerSecurityKey"/>.</summary>
+    public LedgerAccount ResolveCode(string code, string? financialAccountId, LedgerSecurityKey security)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(code);
+        if (!RolesByCode.TryGetValue(code.Trim(), out var role))
+            throw new ArgumentException($"Posting account code '{code}' is not registered.", nameof(code));
+
+        return Resolve(role, financialAccountId, security);
+    }
+
     /// <inheritdoc />
     public LedgerAccountChartReference? GetPostingReference(LedgerAccount account)
         => TryGetRegistered(account, out var role) ? Definitions[role].Reference : null;
@@ -85,7 +95,7 @@ public sealed class StandardChartOfAccounts : IChartOfAccounts
         if (!Definitions.TryGetValue(role, out var definition))
             throw new ArgumentOutOfRangeException(nameof(role), role, "Posting account role is not registered.");
 
-        return definition.Account with { Symbol = null, FinancialAccountId = null };
+        return definition.Account with { Symbol = null, FinancialAccountId = null, SecurityId = null };
     }
 
     /// <inheritdoc />
@@ -99,6 +109,10 @@ public sealed class StandardChartOfAccounts : IChartOfAccounts
 
         var accountId = string.IsNullOrWhiteSpace(financialAccountId) ? null : financialAccountId.Trim();
         var normalizedSymbol = string.IsNullOrWhiteSpace(symbol) ? null : symbol.Trim().ToUpperInvariant();
+        if (definition.SymbolScope == SymbolScope.SecurityKey)
+            throw new ArgumentException(
+                $"Posting account role '{role}' is keyed by Security Master identity; resolve it with a LedgerSecurityKey.",
+                nameof(symbol));
         if (definition.SymbolScope == SymbolScope.Required && normalizedSymbol is null)
             throw new ArgumentException($"Posting account role '{role}' requires a symbol.", nameof(symbol));
         if (definition.SymbolScope == SymbolScope.None && normalizedSymbol is not null)
@@ -107,6 +121,31 @@ public sealed class StandardChartOfAccounts : IChartOfAccounts
             throw new ArgumentException($"Posting account role '{role}' requires a financial account.", nameof(financialAccountId));
 
         return definition.Account with { Symbol = normalizedSymbol, FinancialAccountId = accountId };
+    }
+
+    /// <inheritdoc />
+    public LedgerAccount Resolve(
+        LedgerAccountRole role,
+        string? financialAccountId,
+        LedgerSecurityKey security)
+    {
+        if (!Definitions.TryGetValue(role, out var definition))
+            throw new ArgumentOutOfRangeException(nameof(role), role, "Posting account role is not registered.");
+        if (definition.SymbolScope != SymbolScope.SecurityKey)
+            throw new ArgumentException($"Posting account role '{role}' is not keyed by security.", nameof(security));
+        if (security.SecurityId is null && security.Symbol is null)
+            throw new ArgumentException($"Posting account role '{role}' requires a security key.", nameof(security));
+
+        var accountId = string.IsNullOrWhiteSpace(financialAccountId) ? null : financialAccountId.Trim();
+        if (definition.RequiresFinancialAccount && accountId is null)
+            throw new ArgumentException($"Posting account role '{role}' requires a financial account.", nameof(financialAccountId));
+
+        return definition.Account with
+        {
+            Symbol = security.Symbol,
+            SecurityId = security.SecurityId,
+            FinancialAccountId = accountId
+        };
     }
 
     /// <inheritdoc />
@@ -122,9 +161,10 @@ public sealed class StandardChartOfAccounts : IChartOfAccounts
         var definition = Definitions[candidate];
         var symbolAccepted = definition.SymbolScope switch
         {
-            SymbolScope.Required => account.Symbol is not null,
-            SymbolScope.None => account.Symbol is null,
-            _ => true
+            SymbolScope.Required => account.Symbol is not null && account.SecurityId is null,
+            SymbolScope.SecurityKey => account.Symbol is not null || account.SecurityId is not null,
+            SymbolScope.None => account.Symbol is null && account.SecurityId is null,
+            _ => account.SecurityId is null
         };
         if (!symbolAccepted || (definition.RequiresFinancialAccount && account.FinancialAccountId is null))
             return false;
@@ -151,5 +191,6 @@ public sealed class StandardChartOfAccounts : IChartOfAccounts
         public LedgerAccountChartReference Reference { get; } = new($"standard:{Code}", Revision, Code);
     }
 
-    private enum SymbolScope { None, Optional, Required }
+    // SecurityKey: per-security roles keyed by LedgerSecurityKey (SecurityId, ticker for display).
+    private enum SymbolScope { None, Optional, Required, SecurityKey }
 }

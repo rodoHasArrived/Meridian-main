@@ -264,7 +264,7 @@ public sealed partial class SecurityMasterCostBasisAdjustmentServiceTests
         var queryService = QueryServiceWith(actions: [Action("StockSplit", new DateOnly(2024, 6, 1), splitRatio: 2m)]);
         var service = BuildService(queryService);
 
-        var account = LedgerAccounts.Securities(Ticker, "broker-1");
+        var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(Ticker), "broker-1");
         var baseInput = new LedgerTaxLotReliefInput(
             account,
             new DateOnly(2025, 1, 1),
@@ -288,7 +288,7 @@ public sealed partial class SecurityMasterCostBasisAdjustmentServiceTests
         var queryService = QueryServiceWith();
         var service = BuildService(queryService);
 
-        var account = LedgerAccounts.Securities(Ticker, "broker-1");
+        var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(Ticker), "broker-1");
         var baseInput = new LedgerTaxLotReliefInput(
             account,
             new DateOnly(2025, 1, 1),

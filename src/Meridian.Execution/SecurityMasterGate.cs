@@ -27,21 +27,26 @@ public sealed class SecurityMasterGate : ISecurityMasterGate
             return new SecurityMasterGateResult(false, "Symbol must not be empty.");
         }
 
-        var securityId = await _resolver.ResolveAsync(
-            new ResolveSecurityRequest(
-                IdentifierKind: SecurityIdentifierKind.Ticker,
-                IdentifierValue: symbol,
-                Provider: null,
-                AsOfUtc: DateTimeOffset.UtcNow,
+        var resolution = await _resolver.ResolveCanonicalAsync(
+            new ResolveCanonicalSecurityRequest(
+                SecurityIdentifierKind.Ticker,
+                symbol,
+                DateTimeOffset.UtcNow,
                 ActiveOnly: true),
             ct).ConfigureAwait(false);
 
-        if (securityId.HasValue)
+        if (resolution.IsResolved)
         {
-            return new SecurityMasterGateResult(true)
-            {
-                SecurityId = securityId.Value == Guid.Empty ? null : securityId
-            };
+            return new SecurityMasterGateResult(true) { SecurityId = resolution.SecurityId };
+        }
+
+        if (resolution.Status == CanonicalSecurityResolutionStatus.Ambiguous)
+        {
+            _logger.LogWarning("Security Master gate: symbol '{Symbol}' is ambiguous across {CandidateCount} securities",
+                LogSanitizer.Sanitize(symbol), resolution.Candidates.Count);
+            return new SecurityMasterGateResult(
+                false,
+                $"Symbol '{symbol}' matches {resolution.Candidates.Count} active securities in the Security Master; refusing an ambiguous order.");
         }
 
         _logger.LogWarning("Security Master gate: symbol '{Symbol}' not found or inactive", LogSanitizer.Sanitize(symbol));

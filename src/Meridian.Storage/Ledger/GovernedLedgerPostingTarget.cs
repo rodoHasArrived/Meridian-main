@@ -135,7 +135,7 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
             && TimestampsMatch(retained.Timestamp, candidate.Timestamp)
             && string.Equals(retained.Description, candidate.Description, StringComparison.Ordinal)
             && MetadataEquivalent(retained.Metadata, candidate.Metadata)
-            && JournalLinesEquivalent(retained.Lines, candidate.Lines);
+            && JournalLinesEquivalent(retained.Lines, ComparableCandidateLines(retained.Lines, candidate.Lines));
 
         if (!equivalent)
         {
@@ -202,6 +202,45 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Existing journals keep their keys (Security Master review F2). A journal retained before
+    /// per-security accounts were keyed by SecurityId carries no SecurityId on any line; a replay of
+    /// its command now rebuilds SecurityId-keyed lines with the same display ticker. For such a
+    /// retained journal the candidate's account keys are compared in their legacy (ticker) form.
+    /// The projection is applied to every candidate line uniformly, so line comparison stays an
+    /// equivalence relation. A retained journal that already carries SecurityId keys is compared
+    /// strictly.
+    /// </summary>
+    private static IReadOnlyList<LedgerEntry> ComparableCandidateLines(
+        IReadOnlyList<LedgerEntry> retained,
+        IReadOnlyList<LedgerEntry> candidate)
+    {
+        if (retained.Any(static line => line.Account.SecurityId is not null)
+            || !candidate.Any(static line => line.Account.SecurityId is not null))
+        {
+            return candidate;
+        }
+
+        return candidate
+            .Select(static line => line.Account.SecurityId is null
+                ? line
+                : new LedgerEntry(
+                    line.EntryId,
+                    line.JournalEntryId,
+                    line.Timestamp,
+                    line.Account with { SecurityId = null },
+                    line.Debit,
+                    line.Credit,
+                    line.Description,
+                    line.Dimensions,
+                    line.Currency)
+                {
+                    Memo = line.Memo,
+                    ChartAccount = line.ChartAccount
+                })
+            .ToArray();
     }
 
     private static LineGroup? FindGroup(List<LineGroup> groups, LedgerEntry line)
@@ -318,7 +357,11 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
         => TimestampsMatch(retained.Timestamp, candidate.Timestamp)
            && retained.Account.AccountType == candidate.Account.AccountType
            && string.Equals(retained.Account.Name, candidate.Account.Name, StringComparison.Ordinal)
-           && string.Equals(retained.Account.Symbol, candidate.Account.Symbol, StringComparison.OrdinalIgnoreCase)
+           // Instrument identity: SecurityId-keyed accounts match on SecurityId alone (the ticker is
+           // display-only), legacy accounts on ticker; the two forms never match each other here.
+           && retained.Account.SecurityId == candidate.Account.SecurityId
+           && (retained.Account.SecurityId is not null
+               || string.Equals(retained.Account.Symbol, candidate.Account.Symbol, StringComparison.OrdinalIgnoreCase))
            && string.Equals(
                retained.Account.FinancialAccountId,
                candidate.Account.FinancialAccountId,

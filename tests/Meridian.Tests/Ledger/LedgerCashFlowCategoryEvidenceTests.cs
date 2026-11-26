@@ -78,9 +78,9 @@ public sealed class LedgerCashFlowCategoryEvidenceTests
         var id = Guid.NewGuid();
         var entry = LedgerCashFlowAttribution.WithClassifiedActivity(new JournalEntry(id, timestamp, "two owners",
             [new(Guid.NewGuid(), id, timestamp, LedgerAccounts.CashAccount("a"), 100m, 0m, "two owners"),
-             new(Guid.NewGuid(), id, timestamp, LedgerAccounts.Securities("AAPL", "a"), 0m, 100m, "two owners"),
+             new(Guid.NewGuid(), id, timestamp, LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "a"), 0m, 100m, "two owners"),
              new(Guid.NewGuid(), id, timestamp, LedgerAccounts.CashAccount("b"), 50m, 0m, "two owners"),
-             new(Guid.NewGuid(), id, timestamp, LedgerAccounts.Securities("AAPL", "b"), 0m, 50m, "two owners")]),
+             new(Guid.NewGuid(), id, timestamp, LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "b"), 0m, 50m, "two owners")]),
             LedgerCashFlowCategory.Investing, "disposal");
         var ledger = new Meridian.Ledger.Ledger();
         ledger.Post(entry);
@@ -93,7 +93,7 @@ public sealed class LedgerCashFlowCategoryEvidenceTests
 
     private static JournalEntry Disposal()
     {
-        var projection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(LedgerAccounts.Securities("AAPL"),
+        var projection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")),
             new(2026, 1, 2), 1m, 100m, LedgerTaxLotReliefMethod.Fifo,
             [new LedgerTaxLot("lot", new(2025, 1, 1), 1m, 110m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m }]));
         return projection.ToJournalEntry(Guid.NewGuid(), CanonicalCashFlowTestData.Start.AddDays(1), "Disposal");

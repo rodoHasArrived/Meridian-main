@@ -461,7 +461,10 @@ public sealed class AutomatedJournalDraftIntakeService
                     EvidenceLink: firstEvidenceLink,
                     Dimensions: LedgerDimensionMapper.ToDto(line.dimensions),
                     LedgerAccountSymbol: line.account.Symbol,
-                    LedgerAccountFinancialAccountId: line.account.FinancialAccountId);
+                    LedgerAccountFinancialAccountId: line.account.FinancialAccountId)
+                {
+                    LedgerAccountSecurityId = line.account.SecurityId
+                };
             })
             .ToArray();
 

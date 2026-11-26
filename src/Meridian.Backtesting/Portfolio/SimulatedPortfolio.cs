@@ -13,6 +13,14 @@ internal sealed partial class SimulatedPortfolio
 {
     private readonly BacktestLedger? _ledger;
     private readonly IChartOfAccounts _chart;
+
+    /// <summary>
+    /// Backtest ledgers are run-local simulations, not books: per-security accounts stay keyed by
+    /// ticker (the legacy <see cref="LedgerSecurityKey.Unresolved"/> key) so a simulated symbol
+    /// change continues to move basis explicitly between ticker accounts. Exports into the books
+    /// re-key by SecurityId through <c>BacktestLedgerExportMapper</c>.
+    /// </summary>
+    internal static LedgerSecurityKey SimulationKey(string symbol) => LedgerSecurityKey.Unresolved(symbol);
     private readonly IReadOnlyDictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)> _lotConventions;
     private readonly string _defaultBrokerageAccountId;
     private readonly Dictionary<string, AccountState> _accounts;
@@ -621,7 +629,7 @@ internal sealed partial class SimulatedPortfolio
             var accountId = account.Account.AccountId;
             var lines = new List<(LedgerAccount account, decimal debit, decimal credit)>();
             var cashAccount = _chart.Resolve(LedgerAccountRole.Cash, accountId);
-            var securitiesAccount = _chart.Resolve(LedgerAccountRole.Securities, accountId, assetEvent.Symbol);
+            var securitiesAccount = _chart.Resolve(LedgerAccountRole.Securities, accountId, SimulationKey(assetEvent.Symbol));
             if (amount > 0m)
                 lines.Add((cashAccount, amount, 0m));
             else
@@ -1220,11 +1228,11 @@ internal sealed partial class SimulatedPortfolio
             !targetSymbol.Equals(sourceSymbol, StringComparison.OrdinalIgnoreCase))
         {
             var sourceAccount = isShort
-                ? _chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, accountId, sourceSymbol)
-                : _chart.Resolve(LedgerAccountRole.Securities, accountId, sourceSymbol);
+                ? _chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, accountId, SimulationKey(sourceSymbol))
+                : _chart.Resolve(LedgerAccountRole.Securities, accountId, SimulationKey(sourceSymbol));
             var targetAccount = isShort
-                ? _chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, accountId, targetSymbol)
-                : _chart.Resolve(LedgerAccountRole.Securities, accountId, targetSymbol);
+                ? _chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, accountId, SimulationKey(targetSymbol))
+                : _chart.Resolve(LedgerAccountRole.Securities, accountId, SimulationKey(targetSymbol));
             IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> transferLines =
                 isShort
                 ?
@@ -1252,7 +1260,7 @@ internal sealed partial class SimulatedPortfolio
         if (isShort)
         {
             if (fractionalBasis > 0m)
-                lines.Add((_chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, accountId, sourceSymbol), fractionalBasis, 0m));
+                lines.Add((_chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, accountId, SimulationKey(sourceSymbol)), fractionalBasis, 0m));
             if (cashInLieu < 0m)
                 lines.Add((cashAccount, 0m, Math.Abs(cashInLieu)));
             else if (cashInLieu > 0m)
@@ -1265,7 +1273,7 @@ internal sealed partial class SimulatedPortfolio
             else if (cashInLieu < 0m)
                 lines.Add((cashAccount, 0m, Math.Abs(cashInLieu)));
             if (fractionalBasis > 0m)
-                lines.Add((_chart.Resolve(LedgerAccountRole.Securities, accountId, sourceSymbol), 0m, fractionalBasis));
+                lines.Add((_chart.Resolve(LedgerAccountRole.Securities, accountId, SimulationKey(sourceSymbol)), 0m, fractionalBasis));
         }
 
         if (fractionalRealized > 0m)
@@ -1378,7 +1386,7 @@ internal sealed partial class SimulatedPortfolio
                 $"Buy {longBuyQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
                 SecurityTradePostingProjector.Project(
                     new(SecurityTradePostingKind.OpenLong, longBuyQty, Money(symbol, longBuyQty, price)),
-                    symbol, accountId, _chart),
+                    SimulationKey(symbol), accountId, _chart),
                 PositionMetadata(new(SecurityTradePostingKind.OpenLong, longBuyQty, Money(symbol, longBuyQty, price)), "buy"));
         }
         else if (qty < 0 && existingQty > 0 && realised.HasValue)
@@ -1389,7 +1397,7 @@ internal sealed partial class SimulatedPortfolio
                 $"Sell {closeQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
                 SecurityTradePostingProjector.Project(
                     new(SecurityTradePostingKind.CloseLong, closeQty, Money(symbol, closeQty, price), CarryingValue: costBasisRemoved),
-                    symbol, accountId, _chart),
+                    SimulationKey(symbol), accountId, _chart),
                 PositionMetadata(new(SecurityTradePostingKind.CloseLong, closeQty, Money(symbol, closeQty, price), CarryingValue: costBasisRemoved), "sell"));
         }
 
@@ -1400,7 +1408,7 @@ internal sealed partial class SimulatedPortfolio
                 $"Short sell {shortOpenQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
                 SecurityTradePostingProjector.Project(
                     new(SecurityTradePostingKind.OpenShort, shortOpenQty, Money(symbol, shortOpenQty, price)),
-                    symbol, accountId, _chart),
+                    SimulationKey(symbol), accountId, _chart),
                 PositionMetadata(new(SecurityTradePostingKind.OpenShort, shortOpenQty, Money(symbol, shortOpenQty, price)), "short_sell"));
         }
 
@@ -1412,7 +1420,7 @@ internal sealed partial class SimulatedPortfolio
                 $"Cover short {coverQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
                 SecurityTradePostingProjector.Project(
                     new(SecurityTradePostingKind.CoverShort, coverQty, Money(symbol, coverQty, price), CarryingValue: shortOriginalProceeds),
-                    symbol, accountId, _chart),
+                    SimulationKey(symbol), accountId, _chart),
                 PositionMetadata(new(SecurityTradePostingKind.CoverShort, coverQty, Money(symbol, coverQty, price), CarryingValue: shortOriginalProceeds), "cover_short"));
         }
 

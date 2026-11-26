@@ -41,7 +41,7 @@ public sealed class LedgerCashFlowExportTests
             (LedgerAccounts.InvestorCapitalFor("lp-1"), Math.Max(-capital, 0), Math.Max(capital, 0)),
         };
         if (investment != 0)
-            lines.Add((LedgerAccounts.Securities("AAPL"), Math.Max(investment, 0), Math.Max(-investment, 0)));
+            lines.Add((LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")), Math.Max(investment, 0), Math.Max(-investment, 0)));
         if (cashChange != 0)
         {
             lines.Add((LedgerAccounts.Cash, Math.Max(cashChange, 0), Math.Max(-cashChange, 0)));
@@ -127,7 +127,7 @@ public sealed class LedgerCashFlowExportTests
         AddActivity(new LedgerAccount("Noncash asset", LedgerAccountType.Asset), LedgerAccounts.ManagementFeePayableFor("fund-alpha"), 11, "reclassification");
         AddActivity(LedgerAccounts.Cash, LedgerAccounts.InvestorCapitalFor("lp-1"), capital, "contribution");
         AddActivity(LedgerAccounts.ManagementFeeExpenseFor("fund-alpha"), LedgerAccounts.Cash, expense, "expense payment");
-        AddActivity(LedgerAccounts.Securities("AAPL"), LedgerAccounts.Cash, investment, "investment payment");
+        AddActivity(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")), LedgerAccounts.Cash, investment, "investment payment");
         LedgerCashFlowTestData.Post(ledger, DateTimeOffset.Parse("2026-02-15T12:00:00Z"), lines, groups.ToArray());
 
         AssertExports(ledger, expense, investment, capital, beginning: 500m);

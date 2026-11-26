@@ -543,7 +543,7 @@ public sealed class StrategyRunContinuityServiceTests
         var metadata = SecurityTradePositionEvidence.WithPostings(
             new(ActivityType: "execution.trade-fill", Symbol: "AAPL", SecurityId: AaplSecurityId, FinancialAccountId: accountId),
             [posting], SecurityLotUnitKind.Shares, 1m);
-        ledger.PostLines(completedAt, "Buy AAPL", SecurityTradePostingProjector.Project(posting, "AAPL", accountId), metadata);
+        ledger.PostLines(completedAt, "Buy AAPL", SecurityTradePostingProjector.Project(posting, LedgerSecurityKey.Resolved(AaplSecurityId, "AAPL"), accountId), metadata);
         return ledger;
     }
 }

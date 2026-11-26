@@ -190,11 +190,14 @@ internal sealed class OperationsLedgerPostingService
                         line.EntryId.GetValueOrDefault() == Guid.Empty ? Guid.NewGuid() : line.EntryId.GetValueOrDefault(),
                         journalEntryId,
                         candidate.Timestamp,
-                        new LedgerAccount(
-                            line.AccountName.Trim(),
-                            accountType,
-                            NormalizeOptional(line.Symbol),
-                            NormalizeOptional(line.FinancialAccountId)),
+                        // Per-security accounts are keyed by the line's SecurityId (Security Master review F2).
+                        LedgerAccounts.KeyedBySecurity(
+                            new LedgerAccount(
+                                line.AccountName.Trim(),
+                                accountType,
+                                NormalizeOptional(line.Symbol),
+                                NormalizeOptional(line.FinancialAccountId)),
+                            line.SecurityId),
                         line.Debit,
                         line.Credit,
                         description,

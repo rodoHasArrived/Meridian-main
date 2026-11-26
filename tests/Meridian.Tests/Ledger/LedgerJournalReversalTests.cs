@@ -34,7 +34,7 @@ public sealed class LedgerJournalReversalTests
             Ts,
             description,
             [
-                new LedgerEntry(Guid.NewGuid(), id, Ts, LedgerAccounts.DividendReceivable("ABC"), 100m, 0m, description),
+                new LedgerEntry(Guid.NewGuid(), id, Ts, LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved("ABC")), 100m, 0m, description),
                 new LedgerEntry(Guid.NewGuid(), id, Ts, LedgerAccounts.DividendIncome, 0m, 100m, description),
             ],
             meta);
@@ -52,7 +52,7 @@ public sealed class LedgerJournalReversalTests
         reversal.JournalEntryId.Should().Be(reversalId);
         reversal.IsBalanced.Should().BeTrue();
 
-        var receivable = LedgerAccounts.DividendReceivable("ABC");
+        var receivable = LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved("ABC"));
         reversal.Lines.Single(line => line.Account == receivable).Credit.Should().Be(100m); // was a debit
         reversal.Lines.Single(line => line.Account == receivable).Debit.Should().Be(0m);
         reversal.Lines.Single(line => line.Account == LedgerAccounts.DividendIncome).Debit.Should().Be(100m); // was a credit
@@ -65,7 +65,7 @@ public sealed class LedgerJournalReversalTests
         const string description = "EUR purchase";
         var original = new JournalEntry(id, Ts, description,
         [
-            new LedgerEntry(Guid.NewGuid(), id, Ts, LedgerAccounts.Securities("ABC"), 110m, 0m, description,
+            new LedgerEntry(Guid.NewGuid(), id, Ts, LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("ABC")), 110m, 0m, description,
                 currency: new LedgerEntryCurrency("EUR", "USD", 100m, 0m, 1.1m)),
             new LedgerEntry(Guid.NewGuid(), id, Ts, LedgerAccounts.Cash, 0m, 110m, description,
                 currency: new LedgerEntryCurrency("EUR", "USD", 0m, 100m, 1.1m))
@@ -113,7 +113,7 @@ public sealed class LedgerJournalReversalTests
 
         ledger.Post(LedgerJournalReversal.Reverse(original, Guid.NewGuid(), Ts, "cancelled"));
 
-        ledger.GetBalance(LedgerAccounts.DividendReceivable("ABC")).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved("ABC"))).Should().Be(0m);
         ledger.GetBalance(LedgerAccounts.DividendIncome).Should().Be(0m);
     }
 

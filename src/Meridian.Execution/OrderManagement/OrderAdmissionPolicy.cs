@@ -208,6 +208,24 @@ internal sealed class OrderAdmissionPolicy
                 return new OrderAdmissionDecision(riskRequest, usesFaceValue, controlDecision, readiness,
                     new OrderAdmissionRefusal(securityDecision.Reason, "Security Master gate"));
             }
+
+            // Carry the admitted Security Master identity on the order so its fills post to
+            // SecurityId-keyed ledger accounts (Security Master review F2). A caller-supplied
+            // identity must agree with what the gate resolved for the ticker.
+            if (securityDecision.SecurityId is { } admittedSecurityId)
+            {
+                if (safeRequest.SecurityId is { } requested && requested != admittedSecurityId)
+                {
+                    return new OrderAdmissionDecision(riskRequest, usesFaceValue, controlDecision, readiness,
+                        new OrderAdmissionRefusal(
+                            $"Order security {requested:D} does not match the Security Master identity {admittedSecurityId:D} resolved for '{safeRequest.Symbol}'.",
+                            "Security Master gate",
+                            "SECURITY_IDENTITY_MISMATCH"));
+                }
+
+                resolved = resolved.WithSecurityId(admittedSecurityId);
+            }
+
             accountingSecurityId = securityDecision.SecurityId is { } id && id != Guid.Empty ? id : null;
         }
 
@@ -232,8 +250,9 @@ internal sealed class OrderAdmissionPolicy
     /// Re-checks typed order authority after risk validation and before the order becomes
     /// visible; see <see cref="OrderAuthorityResolver.EvaluateDispatchAsync"/>.
     /// </summary>
-    internal Task<OrderAdmissionRefusal?> EvaluateDispatchAuthorityAsync(PreparedOrderAdmission prepared, CancellationToken ct) =>
-        _authority.EvaluateDispatchAsync(prepared, ct);
+    internal Task<OrderAdmissionRefusal?> EvaluateDispatchAuthorityAsync(
+        PreparedOrderAdmission prepared, CancellationToken ct, Guid? admittedSecurityId = null) =>
+        _authority.EvaluateDispatchAsync(prepared, ct, admittedSecurityId);
 
     internal bool UsesLiveStrategyAuthorization => _executionMode == ExecutionMode.Live &&
         (_liveStrategyAuthorization is not null || _requireLiveStrategyAuthorization);
@@ -287,7 +306,8 @@ internal sealed class OrderAdmissionPolicy
         const string actor = "strategy-runtime";
         var grant = new ExecutionAccountGrant(account, actor, ExecutionAccountGrantSources.StrategyRun, _clock.GetUtcNow());
         var authority = OrderSubmissionAuthority.ForStrategyRun(actor, grant, runId, original.StrategyArtifactId);
-        return await EvaluateDispatchAuthorityAsync(Prepare(replacement, original.OrderId, authority), ct).ConfigureAwait(false);
+        return await EvaluateDispatchAuthorityAsync(Prepare(replacement, original.OrderId, authority), ct, original.SecurityId)
+            .ConfigureAwait(false);
     }
 
     internal static OrderAdmissionRefusal ControlRefusal(ExecutionControlDecision decision, string source) =>

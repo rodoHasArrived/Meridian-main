@@ -56,7 +56,7 @@ public sealed class ReportPackProvenanceResolverTests
         var ledger = new Meridian.Ledger.Ledger();
         ledger.PostLines(AsOf, "Buy 100 AAPL @ 150",
         [
-            (LedgerAccounts.Securities("AAPL"), 15_000m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")), 15_000m, 0m),
             (LedgerAccounts.Cash, 0m, 15_000m)
         ]);
 
@@ -72,7 +72,7 @@ public sealed class ReportPackProvenanceResolverTests
             AsOf,
             "Daily fair-value mark for AAPL",
             [
-                (LedgerAccounts.Securities("AAPL"), 1_000m, 0m),
+                (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")), 1_000m, 0m),
                 (LedgerAccounts.UnrealizedGain, 0m, 1_000m)
             ],
             new JournalEntryMetadata(

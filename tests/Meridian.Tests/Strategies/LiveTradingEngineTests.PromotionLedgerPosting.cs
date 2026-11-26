@@ -139,7 +139,7 @@ public sealed partial class LiveTradingEngineTests
             var accountId = tradeJournal.Metadata.FinancialAccountId;
             var backtestProjection = SecurityTradePostingProjector.Project(
                 new SecurityTradePosting(SecurityTradePostingKind.OpenLong, quantity, quantity * observedPrice),
-                "AAPL",
+                LedgerSecurityKey.FromAccount(tradeJournal.Lines.Single(line => line.Account.Name == LedgerAccounts.SecuritiesAccountName).Account),
                 accountId);
             tradeJournal.Lines.Select(line => (line.Account, line.Debit, line.Credit)).Should()
                 .BeEquivalentTo(backtestProjection,

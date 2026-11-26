@@ -75,7 +75,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
                     || !string.Equals(line.Currency, draft.Currency, StringComparison.OrdinalIgnoreCase))
                     return "The original native-currency account mapping is unavailable for the opening correction inverse.";
                 var identity = new LedgerAccount(account.AccountName, type,
-                    NormalizeOptional(line.LedgerAccountSymbol), NormalizeOptional(line.LedgerAccountFinancialAccountId));
+                    NormalizeOptional(line.LedgerAccountSymbol), NormalizeOptional(line.LedgerAccountFinancialAccountId),
+                    line.LedgerAccountSecurityId);
                 var index = unmatched.FindIndex(source => source.Account == identity
                     && source.Debit == (line.Side == AccountingTemplateLineSideDto.Credit ? line.Amount : 0m)
                     && source.Credit == (line.Side == AccountingTemplateLineSideDto.Debit ? line.Amount : 0m)

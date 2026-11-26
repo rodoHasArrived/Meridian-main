@@ -239,7 +239,7 @@ public sealed class AutomatedJournalDraftIntakeServiceTests
                 IdempotencyKey: "fair-value|corrected-aapl"),
             "Correct AAPL close",
             [
-                (LedgerAccounts.Securities("AAPL"), 10m, 0m, null),
+                (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")), 10m, 0m, null),
                 (LedgerAccounts.Cash, 0m, 10m, null)
             ],
             new JournalEntryMetadata(

@@ -10,7 +10,7 @@ public sealed class LedgerPeriodStatementsTests
     {
         var ledger = new Meridian.Ledger.Ledger();
         var investorCapital = LedgerAccounts.InvestorCapitalFor("lp-1");
-        var securities = LedgerAccounts.Securities("AAPL");
+        var securities = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"));
         var interestIncome = LedgerAccounts.CashInterestIncome;
         var managementFee = LedgerAccounts.ManagementFeeExpenseFor("fund-a");
 

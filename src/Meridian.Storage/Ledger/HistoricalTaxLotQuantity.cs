@@ -97,8 +97,10 @@ internal static class HistoricalTaxLotQuantity
                 if (mutation.EffectiveDate <= effectiveDate)
                     factorAsOf = factor;
             }
-            // An average-cost survivor restatement changes basis only; it never moves quantity.
+            // An average-cost survivor restatement changes basis only; it never moves quantity. An
+            // account re-key (Security Master review F2) changes only the owning account's key.
             else if (mutation.Kind is AtomicTaxLotMutationKind.BasisRedistribution or AtomicTaxLotMutationKind.Amortization or AtomicTaxLotMutationKind.CapitalReturn
+                    or AtomicTaxLotMutationKind.AccountRekey
                     ? mutation.Delta != 0m || mutation.Before <= 0m
                     : mutation.Kind != AtomicTaxLotMutationKind.Disposal || mutation.Delta >= 0m)
                 throw Missing();

@@ -1375,7 +1375,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<Meridian.Application.Subscriptions.Services.WatchlistService>(),
                 sp.GetService<ILedgerJournalStore>() is { } importStore
                     ? new PortfolioOpeningBalanceQueue(sp.GetRequiredService<AutomatedJournalDraftIntakeService>(),
-                        sp.GetRequiredService<ConfigStore>(), importStore, sp.GetService<ContractSecurityMasterQueryService>(), sp.GetService<IFundAccountService>())
+                        sp.GetRequiredService<ConfigStore>(), importStore, sp.GetService<ContractSecurityMasterQueryService>(), sp.GetService<IFundAccountService>(),
+                        sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityResolver>())
                     : null));
         services.TryAddSingleton(AutomatedJournalEvidencePolicy.Default);
         services.TryAddSingleton(sp =>

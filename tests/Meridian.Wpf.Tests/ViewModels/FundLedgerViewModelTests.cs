@@ -2807,13 +2807,13 @@ public sealed class FundLedgerViewModelTests
         ]);
         PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 10, 0, 0, TimeSpan.Zero), "Buy AAPL",
         [
-            (LedgerAccounts.Securities("AAPL", financialAccountId), 400m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), financialAccountId), 400m, 0m),
             (financialAccountId is null ? LedgerAccounts.Cash : LedgerAccounts.CashAccount(financialAccountId), 0m, 400m)
         ]);
         PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 20, 0, 0, TimeSpan.Zero), "Open TSLA short",
         [
             (financialAccountId is null ? LedgerAccounts.Cash : LedgerAccounts.CashAccount(financialAccountId), 150m, 0m),
-            (LedgerAccounts.ShortSecuritiesPayable("TSLA", financialAccountId), 0m, 150m)
+            (LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("TSLA"), financialAccountId), 0m, 150m)
         ]);
         return ledger;
     }

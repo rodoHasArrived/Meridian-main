@@ -21,6 +21,17 @@ public sealed class ValidatedOrder
     public OrderRequest Request { get; }
     public OrderPricing Pricing { get; }
 
+    /// <summary>
+    /// Returns this validated order carrying the Security Master identity resolved at admission.
+    /// The identity does not affect pricing or sizing, so validation is unchanged.
+    /// </summary>
+    public ValidatedOrder WithSecurityId(Guid securityId)
+    {
+        if (securityId == Guid.Empty)
+            throw new ArgumentException("A Security Master identity is required.", nameof(securityId));
+        return Request.SecurityId == securityId ? this : new(Request with { SecurityId = securityId }, Pricing);
+    }
+
     /// <summary>Snapshots caller collections before validating the fields used downstream.</summary>
     public static bool TryCreate(
         OrderRequest request,

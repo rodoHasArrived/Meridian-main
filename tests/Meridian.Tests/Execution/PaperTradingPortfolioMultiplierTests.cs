@@ -33,7 +33,7 @@ public sealed class PaperTradingPortfolioMultiplierTests
         position.ContractMultiplier.Should().Be(100m);
 
         var buy = ledger.Journal.Single(e => e.Description.StartsWith("Buy"));
-        buy.Lines.Single(l => l.Account == LedgerAccounts.Securities(Option)).Debit.Should().Be(250m);
+        buy.Lines.Single(l => l.Account == LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(Option))).Debit.Should().Be(250m);
         buy.Lines.Single(l => l.Account == LedgerAccounts.Cash).Credit.Should().Be(250m);
     }
 

@@ -2,11 +2,21 @@
 
 # `security-master-contracts` data objects - page 3 of 8
 
-Objects 161-240 of 615. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 619. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_DayCountConvention["DayCountConvention"] {
+    }
+    class Meridian_Contracts_SecurityMaster_DayCountConventions["DayCountConventions"] {
+    }
+    class Meridian_Contracts_SecurityMaster_DayCountPeriodContext["DayCountPeriodContext"] {
+        +Func~DateOnly__bool~? IsBusinessDay
+        +int? PeriodsPerYear
+        +IReadOnlyList~DayCountReferencePeriod~ ReferencePeriods
+        +DateOnly? TerminationDate
+    }
     class Meridian_Contracts_SecurityMaster_DayCountReferencePeriod["DayCountReferencePeriod"] {
         +DateOnly End
         +DateOnly Start
@@ -397,31 +407,7 @@ classDiagram
         +string? Comment
         +SecurityOverrideApprovalStatusDto Decision
     }
-    class Meridian_Contracts_SecurityMaster_OperatorOverridesDto["OperatorOverridesDto"] {
-        +SecurityOverrideApprovalStatusDto ApprovalStatus
-        +IReadOnlyList~SecurityOverrideAuditEntryDto~ AuditTrail
-        +string? ReasonCode
-        +DateTimeOffset? ReviewedAt
-        +string? ReviewedBy
-        +Guid SecurityId
-        +DateTimeOffset UpdatedAt
-        +string UpdatedBy
-        +IReadOnlyDictionary~string__string~ Values
-    }
-    class Meridian_Contracts_SecurityMaster_OperatorOverridesPatchRequest["OperatorOverridesPatchRequest"] {
-        +string? ReasonCode
-        +IReadOnlyList~string~? RemoveKeys
-        +IReadOnlyDictionary~string__string~? SetValues
-    }
-    class Meridian_Contracts_SecurityMaster_OtcAuctionSettlementData["OtcAuctionSettlementData"] {
-        +DateOnly AuctionDate
-        +string AuctionReference
-        +Guid CreditEventId
-        +string Currency
-        +decimal FinalPricePercent
-        +decimal SettlementAmount
-        +int SettlementScale
-    }
+    Meridian_Contracts_SecurityMaster_DayCountPeriodContext --> Meridian_Contracts_SecurityMaster_DayCountReferencePeriod
     Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusalCode
     Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal
     Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution --> Meridian_Contracts_SecurityMaster_DeclaredScheduleStatus

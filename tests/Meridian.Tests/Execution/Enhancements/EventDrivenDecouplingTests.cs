@@ -116,7 +116,7 @@ public sealed partial class EventDrivenDecouplingTests
         ledger.Journal.Should().ContainSingle();
         var entry = ledger.Journal[0];
         entry.Lines.Should().HaveCount(2);
-        entry.Lines.Single(l => l.Account == LedgerAccounts.Securities("AAPL")).Debit.Should()
+        entry.Lines.Single(l => l.Account == LedgerAccounts.Securities(AaplKey)).Debit.Should()
             .Be(100 * 150m);
         entry.Lines.Single(l => l.Account == LedgerAccounts.Cash).Credit.Should()
             .Be(100 * 150m);
@@ -2049,6 +2049,10 @@ public sealed partial class EventDrivenDecouplingTests
 
         public ValueTask DisposeAsync() => _inner.DisposeAsync();
     }
+
+    // PassingSecurityValidationGate resolves AAPL to its SecurityId, so fills post to the
+    // SecurityId-keyed account (Security Master review F2); the ticker is its display symbol.
+    private static LedgerSecurityKey AaplKey => LedgerSecurityKey.Resolved(PassingSecurityValidationGate.SecurityId, "AAPL");
 
     internal sealed class PassingSecurityValidationGate : ISecurityValidationGateService
     {

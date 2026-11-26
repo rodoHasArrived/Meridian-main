@@ -21,7 +21,7 @@ public static class AutomatedJournalDraftProjector
             : journalEvent.Description.Trim();
         // Automated economic events (dividends, fees, ...) are scoped by financial account on the
         // ledger account itself, not by a dimensional line scope, so their draft lines carry none.
-        var lines = ProjectLines(journalEvent.Kind, symbol, journalEvent.Amount, financialAccountId)
+        var lines = ProjectLines(journalEvent.Kind, symbol, journalEvent.SecurityId, journalEvent.Amount, financialAccountId)
             .Select(static line => (line.account, line.debit, line.credit, (LedgerLineDimensionSet?)null))
             .ToArray();
         var metadata = new JournalEntryMetadata(
@@ -40,6 +40,7 @@ public static class AutomatedJournalDraftProjector
     private static IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> ProjectLines(
         AutomatedJournalEventKind kind,
         string symbol,
+        Guid? securityId,
         decimal amount,
         string? financialAccountId)
     {
@@ -58,7 +59,7 @@ public static class AutomatedJournalDraftProjector
         var corporateActionExpense = string.IsNullOrWhiteSpace(financialAccountId)
             ? LedgerAccounts.CorporateActionExpense
             : LedgerAccounts.CorporateActionExpenseFor(financialAccountId);
-        var dividendReceivable = LedgerAccounts.DividendReceivable(symbol, financialAccountId);
+        var dividendReceivable = LedgerAccounts.DividendReceivable(LedgerSecurityKey.From(securityId, symbol), financialAccountId);
         var accrualScope = financialAccountId ?? symbol;
         var managementFeeExpense = LedgerAccounts.ManagementFeeExpenseFor(accrualScope);
         var managementFeePayable = LedgerAccounts.ManagementFeePayableFor(accrualScope);

@@ -91,7 +91,7 @@ public sealed class FixedIncomeAccrualCalculation(
             throw new InvalidOperationException(
                 $"The cash-flow projection for {ticker} states no retained interest segments; StructuredCredit and factored accrual require explicit principal and factor evidence.");
 
-        var securitiesAccount = LedgerAccounts.Securities(ticker, financialAccountId);
+        var securitiesAccount = LedgerAccounts.Securities(LedgerSecurityKey.Resolved(securityId, ticker), financialAccountId);
         async Task<LedgerTaxLot[]> LotsHeldAsync(DateOnly date)
             => (await inputs.ListOpenLotsAsync(context.Scope, securitiesAccount, securityId, bookPositionId, date, ct).ConfigureAwait(false))
                 .Where(lot => lot.SecurityId == securityId)

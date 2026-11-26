@@ -34,13 +34,13 @@ public sealed class StandardChartOfAccountsTests
     {
         _chart.Resolve(LedgerAccountRole.Cash).Should().Be(LedgerAccounts.Cash);
         _chart.Resolve(LedgerAccountRole.Capital, " broker-a ").Should().Be(LedgerAccounts.CapitalAccountFor("broker-a"));
-        var securities = _chart.Resolve(LedgerAccountRole.Securities, " broker-a ", " aapl ");
-        securities.Should().Be(LedgerAccounts.Securities("AAPL", "broker-a"));
-        securities.Should().Be(_chart.Resolve(LedgerAccountRole.Securities, "BROKER-A", "AAPL"));
-        securities.Should().NotBe(_chart.Resolve(LedgerAccountRole.Securities, "broker-b", "AAPL"));
-        securities.Should().NotBe(_chart.Resolve(LedgerAccountRole.Securities, "broker-a", "MSFT"));
-        _chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-a", "aapl")
-            .Should().Be(LedgerAccounts.ShortSecuritiesPayable("AAPL", "broker-a"));
+        var securities = _chart.Resolve(LedgerAccountRole.Securities, " broker-a ", LedgerSecurityKey.Unresolved(" aapl "));
+        securities.Should().Be(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-a"));
+        securities.Should().Be(_chart.Resolve(LedgerAccountRole.Securities, "BROKER-A", LedgerSecurityKey.Unresolved("AAPL")));
+        securities.Should().NotBe(_chart.Resolve(LedgerAccountRole.Securities, "broker-b", LedgerSecurityKey.Unresolved("AAPL")));
+        securities.Should().NotBe(_chart.Resolve(LedgerAccountRole.Securities, "broker-a", LedgerSecurityKey.Unresolved("MSFT")));
+        _chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-a", LedgerSecurityKey.Unresolved("aapl"))
+            .Should().Be(LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("AAPL"), "broker-a"));
         _chart.Resolve(LedgerAccountRole.FuturesMtmSettlement, "broker-a", "esz6")
             .Should().Be(LedgerAccounts.FuturesMtmSettlement("ESZ6", "broker-a"));
     }
@@ -74,7 +74,7 @@ public sealed class StandardChartOfAccountsTests
         });
         ledger.PostLines(timestamp, "Security acquisition", new[]
         {
-            (_chart.Resolve(LedgerAccountRole.Securities, accountId, "AAPL"), 200m, 0m),
+            (_chart.Resolve(LedgerAccountRole.Securities, accountId, LedgerSecurityKey.Unresolved("AAPL")), 200m, 0m),
             (_chart.Resolve(LedgerAccountRole.Cash, accountId), 0m, 200m)
         });
         ledger.PostLines(timestamp, "Loan funding", new[]
@@ -97,16 +97,22 @@ public sealed class StandardChartOfAccountsTests
     {
         foreach (var role in Enum.GetValues<LedgerAccountRole>())
         {
-            var symbol = role is LedgerAccountRole.Securities or LedgerAccountRole.ShortSecuritiesPayable
-                or LedgerAccountRole.FuturesMtmSettlement or LedgerAccountRole.DividendReceivable
-                or LedgerAccountRole.AccruedInterestReceivable ? "AAPL" : null;
-            var account = _chart.Resolve(role, "broker-1", symbol);
+            var securityKeyed = role is LedgerAccountRole.Securities or LedgerAccountRole.ShortSecuritiesPayable
+                or LedgerAccountRole.DividendReceivable or LedgerAccountRole.AccruedInterestReceivable;
+            var security = LedgerSecurityKey.Resolved(Guid.Parse("f2f2f2f2-0000-4000-8000-0000000000a1"), "AAPL");
+            var symbol = role is LedgerAccountRole.FuturesMtmSettlement ? "AAPL" : null;
+            var account = securityKeyed
+                ? _chart.Resolve(role, "broker-1", security)
+                : _chart.Resolve(role, "broker-1", symbol);
 
             _chart.TryGetRegistered(account, out var registered).Should().BeTrue(role.ToString());
             _chart.GetDefinition(registered).Should().Be(_chart.GetDefinition(role), role.ToString());
             var reference = _chart.GetPostingReference(account);
             reference.Should().NotBeNull();
-            StandardChartOfAccounts.Instance.ResolveCode(reference!.AccountCode!, "broker-1", symbol).Should().Be(account);
+            (securityKeyed
+                    ? StandardChartOfAccounts.Instance.ResolveCode(reference!.AccountCode!, "broker-1", security)
+                    : StandardChartOfAccounts.Instance.ResolveCode(reference!.AccountCode!, "broker-1", symbol))
+                .Should().Be(account);
         }
     }
 

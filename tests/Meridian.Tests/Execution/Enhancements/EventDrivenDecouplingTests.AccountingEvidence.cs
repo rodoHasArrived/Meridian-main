@@ -26,10 +26,10 @@ public sealed partial class EventDrivenDecouplingTests
             var ledger = await DrainCurrentEvidenceAsync(target, store, opening, cover);
             (await store.LoadPendingAsync()).Should().BeEmpty();
             ledger.GetBalance(LedgerAccounts.CashAccount("broker")).Should().Be(634m);
-            ledger.GetBalance(LedgerAccounts.ShortSecuritiesPayable("AAPL", "broker")).Should().Be(600m);
+            ledger.GetBalance(LedgerAccounts.ShortSecuritiesPayable(AaplKey, "broker")).Should().Be(600m);
             ledger.GetBalance(LedgerAccounts.RealizedGainFor("broker")).Should().Be(40m);
             ledger.GetBalance(LedgerAccounts.CommissionExpenseFor("broker")).Should().Be(6m);
-            ledger.GetBalance(LedgerAccounts.Securities("AAPL", "broker")).Should().Be(0m);
+            ledger.GetBalance(LedgerAccounts.Securities(AaplKey, "broker")).Should().Be(0m);
         }
         target.RetainedEntries.Should().HaveCount(3);
         target.RetainedEntries.Should().OnlyContain(entry => entry.IsBalanced);
@@ -57,8 +57,8 @@ public sealed partial class EventDrivenDecouplingTests
 
         ledger.Journal.Should().HaveCount(3);
         ledger.GetBalance(LedgerAccounts.CashAccount("broker")).Should().Be(-70m);
-        ledger.GetBalance(LedgerAccounts.Securities("AAPL", "broker")).Should().Be(180m);
-        ledger.GetBalance(LedgerAccounts.ShortSecuritiesPayable("AAPL", "broker")).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.Securities(AaplKey, "broker")).Should().Be(180m);
+        ledger.GetBalance(LedgerAccounts.ShortSecuritiesPayable(AaplKey, "broker")).Should().Be(0m);
         ledger.GetBalance(LedgerAccounts.RealizedGainFor("broker")).Should().Be(110m);
     }
 

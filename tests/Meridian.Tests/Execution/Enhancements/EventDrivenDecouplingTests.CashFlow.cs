@@ -16,7 +16,7 @@ public sealed partial class EventDrivenDecouplingTests
     {
         var ledger = new Meridian.Ledger.Ledger();
         ledger.PostLines(CanonicalCashFlowTestData.Start, "opening holding",
-            [(LedgerAccounts.Securities("AAPL"), 100m - realizedPnl, 0m),
+            [(LedgerAccounts.Securities(AaplKey), 100m - realizedPnl, 0m),
              (LedgerAccounts.RetainedEarnings, 0m, 100m - realizedPnl)]);
         var consumer = new LedgerPostingConsumer(new InMemoryTradeFillLedgerPostingTarget(),
             NullLogger<LedgerPostingConsumer>.Instance, new InMemoryTradeFillPostingStore(TestPostingScope),

@@ -6,6 +6,61 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityValuationBlockerDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationBlockerDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L64).
+
+Why no value could be produced. When any blocker is present no number is substituted.
+
+```csharp
+public sealed record SecurityValuationBlockerDto(string Code, string Reason);
+```
+
+## SecurityValuationCurveInput
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationCurveInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L34).
+
+A curve the caller pins for a role; Role is Discount in this increment.
+
+```csharp
+public sealed record SecurityValuationCurveInput(string Role, Guid CurveId, Guid? CurveVersionId = null);
+```
+
+## SecurityValuationInputDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationInputDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L54).
+
+One retained input a value was built from, so the value can be rebuilt from the same evidence.
+
+```csharp
+public sealed record SecurityValuationInputDto(string Kind, string Reference, Guid? Id = null, long? Version = null, string? ContentSha256 = null, DateTimeOffset? AsOf = null, DateTimeOffset? RecordedAt = null);
+```
+
+## SecurityValuationModelKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationModelKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L7).
+
+The model a security is valued with.
+
+```csharp
+public enum SecurityValuationModelKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>QuotedPrice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L10) | The golden-copy price selected through the pricing hierarchy. |
+| <code>DiscountedCashFlow</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L13) | The projected cash flows discounted on a stored discount curve. |
+
 ## SecurityValuationObservability
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationObservability</code>. Kind: `enum`.
@@ -754,87 +809,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task ApplyLifecycleProjectionAsync(EntityLifecycleRevisionDto revision, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:17](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L17) |  |
-
-## IEntityLifecycleService
-
-Qualified name: <code>Meridian.Contracts.Services.IEntityLifecycleService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:6](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L6).
-
-Tenant-authorized immutable entity lifecycle history.
-
-```csharp
-public interface IEntityLifecycleService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;EntityLifecycleRevisionDto?&gt; GetAsync(Guid entityId, long? revision = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:8](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L8) |  |
-| <code>Task&lt;IReadOnlyList&lt;EntityLifecycleRevisionDto&gt;&gt; GetHistoryAsync(Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:9](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L9) |  |
-| <code>Task&lt;EntityLifecycleRevisionDto&gt; TransitionAsync(AppendEntityLifecycleRevisionRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:11](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L11) |  |
-
-## IEnvironmentDesignService
-
-Qualified name: <code>Meridian.Contracts.Services.IEnvironmentDesignService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:8](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L8).
-
-Creates, retrieves, and saves environment design drafts.
-
-```csharp
-public interface IEnvironmentDesignService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;EnvironmentDraftDto&gt;&gt; ListDraftsAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:10](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L10) |  |
-| <code>Task&lt;EnvironmentDraftDto?&gt; GetDraftAsync(Guid draftId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:12](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L12) |  |
-| <code>Task&lt;EnvironmentDraftDto&gt; CreateDraftAsync(CreateEnvironmentDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:14](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L14) |  |
-| <code>Task&lt;EnvironmentDraftDto&gt; SaveDraftAsync(EnvironmentDraftDto draft, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:16](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L16) |  |
-| <code>Task DeleteDraftAsync(Guid draftId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:18](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L18) |  |
-| <code>Task&lt;IReadOnlyList&lt;PublishedEnvironmentVersionDto&gt;&gt; ListPublishedVersionsAsync(Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:20](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L20) |  |
-| <code>Task&lt;PublishedEnvironmentVersionDto?&gt; GetPublishedVersionAsync(Guid versionId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:24](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L24) |  |
-| <code>Task&lt;PublishedEnvironmentVersionDto?&gt; GetCurrentPublishedVersionAsync(Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:26](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L26) |  |
-
-## IEnvironmentPublishService
-
-Qualified name: <code>Meridian.Contracts.Services.IEnvironmentPublishService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEnvironmentPublishService.cs:8](../../../../src/Meridian.Contracts/Services/IEnvironmentPublishService.cs#L8).
-
-Previews, publishes, and rolls back versioned environment configurations.
-
-```csharp
-public interface IEnvironmentPublishService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;EnvironmentPublishPreviewDto&gt; PreviewPublishAsync(EnvironmentPublishPlanDto plan, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentPublishService.cs:10](../../../../src/Meridian.Contracts/Services/IEnvironmentPublishService.cs#L10) |  |
-| <code>Task&lt;PublishedEnvironmentVersionDto&gt; PublishAsync(EnvironmentPublishPlanDto plan, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentPublishService.cs:12](../../../../src/Meridian.Contracts/Services/IEnvironmentPublishService.cs#L12) |  |
-| <code>Task&lt;PublishedEnvironmentVersionDto&gt; RollbackAsync(RollbackEnvironmentVersionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentPublishService.cs:14](../../../../src/Meridian.Contracts/Services/IEnvironmentPublishService.cs#L14) |  |
-
-## IEnvironmentRuntimeProjectionService
-
-Qualified name: <code>Meridian.Contracts.Services.IEnvironmentRuntimeProjectionService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs:8](../../../../src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs#L8).
-
-Retrieves the runtime projection of the current or a specified published environment version.
-
-```csharp
-public interface IEnvironmentRuntimeProjectionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;PublishedEnvironmentRuntimeDto?&gt; GetCurrentRuntimeAsync(Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs:10](../../../../src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs#L10) |  |
-| <code>Task&lt;PublishedEnvironmentRuntimeDto?&gt; GetRuntimeForVersionAsync(Guid versionId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs:12](../../../../src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs#L12) |  |

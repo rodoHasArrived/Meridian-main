@@ -340,6 +340,7 @@ classDiagram
         +decimal DebitTotal
         +LedgerDimensionSetDto? Dimensions
         +string? FinancialAccountId
+        +Guid? SecurityId
         +string? Symbol
     }
     class Meridian_Contracts_Ledger_FiscalYearCloseBlockerCodes["FiscalYearCloseBlockerCodes"] {

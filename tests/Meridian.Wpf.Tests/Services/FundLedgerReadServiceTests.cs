@@ -338,7 +338,7 @@ public sealed class FundLedgerReadServiceTests
         ]);
         Post(ledger, timestamp.AddMinutes(1), "Security purchase",
         [
-            (LedgerAccounts.Securities("AAPL", financialAccountId), securityCost, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), financialAccountId), securityCost, 0m),
             (LedgerAccounts.CashAccount(financialAccountId), 0m, securityCost)
         ]);
 

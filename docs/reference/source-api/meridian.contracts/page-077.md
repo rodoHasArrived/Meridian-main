@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementImportReviewRowsPageDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementImportReviewRowsPageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:109](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L109).
+
+```csharp
+public sealed record StatementImportReviewRowsPageDto(IReadOnlyList<StatementImportReviewRowDto> Rows, int TotalRows, int Offset, int Limit);
+```
+
+## StatementImportRowDispositionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementImportRowDispositionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:103](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L103).
+
+```csharp
+public sealed record StatementImportRowDispositionDto(string RowId, string Disposition, string Reason);
+```
+
+## StatementImportRowOutcomeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementImportRowOutcomeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:105](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L105).
+
+```csharp
+public sealed record StatementImportRowOutcomeDto(string RowId, int NormalizedIndex, string Disposition, string? Reason, string Status, string? RunId, IReadOnlyList<string> CaseIds);
+```
+
+## StatementImportRowOutcomesPageDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementImportRowOutcomesPageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:112](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L112).
+
+```csharp
+public sealed record StatementImportRowOutcomesPageDto(IReadOnlyList<StatementImportRowOutcomeDto> RowOutcomes, int TotalRows, int Offset, int Limit);
+```
+
 ## StatementKindSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementKindSummaryDto</code>. Kind: `record`.
@@ -587,55 +627,4 @@ Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:140](
 
 ```csharp
 public sealed record StorageQualityAlertDto(string AlertId, string Severity, string Subject, string Message, DateTimeOffset DetectedAt);
-```
-
-## StorageQualitySummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageQualitySummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:102](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L102).
-
-```csharp
-public sealed record StorageQualitySummaryDto(string Status, int FilesAnalyzed, double AverageScore, int LowQualityFileCount, IReadOnlyList<string> Recommendations, string? Message);
-```
-
-## StorageTierSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageTierSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:135](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L135).
-
-```csharp
-public sealed record StorageTierSummaryDto(string Tier, int FileCount, long TotalBytes);
-```
-
-## StpProcessingState
-
-Qualified name: <code>Meridian.Contracts.Workstation.StpProcessingState</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4).
-
-```csharp
-public enum StpProcessingState : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Received = 0</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-| <code>Validated = 1</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-| <code>Approved = 2</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-| <code>QueuedForSettlement = 3</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-| <code>Settled = 4</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-| <code>Exception = 5</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-
-## StpStateTransition
-
-Qualified name: <code>Meridian.Contracts.Workstation.StpStateTransition</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:38](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L38).
-
-```csharp
-public sealed record StpStateTransition(Guid InstructionId, StpProcessingState State, DateTimeOffset AtUtc, string Detail, string? BreakQueueReason = null);
 ```
