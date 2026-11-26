@@ -2559,20 +2559,20 @@ W11-EXEC-001: planned; health green; evidence planned_evidence. Record canonical
 | Field | Value |
 | --- | --- |
 | Wave | W11 |
-| Status | ready_for_acceptance |
+| Status | accepted |
 | Health | green |
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | complete |
-| Last reviewed | 2026-11-25 |
+| Last reviewed | 2026-11-26 |
 
 ### Current Summary
 
-W11-PACK-002: ready_for_acceptance; health green; evidence complete. Switched to generated code under DEC-PACK-CODEGEN-001. SecurityAssetClassDeclarations generates six marked regions in src; a unit test fails on drift. Per-class semantic sites stay hand-written and are listed in the plan. Owner acceptance pending.
+W11-PACK-002: accepted; health green; evidence complete. Accepted by the owner (DEC-PACK-ACCEPT-001). SecurityAssetClassDeclarations generates six marked regions in src, and a unit test fails on drift. Per-class semantic sites stay hand-written and are listed in the plan.
 
 ### Status References
 
-- Decisions: DEC-PACK-SPLIT-001, DEC-PACK-CODEGEN-001
+- Decisions: DEC-PACK-SPLIT-001, DEC-PACK-CODEGEN-001, DEC-PACK-ACCEPT-001
 - PR references (not inferred acceptance): [#3760](https://github.com/rodoHasArrived/Meridian-main/pull/3760)
 - Evidence: [docs/engineering/plans/security-master-class-plumbing-codegen.md](../../engineering/plans/security-master-class-plumbing-codegen.md)
 - Evidence: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassDeclarations.cs](../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassDeclarations.cs)
@@ -2586,7 +2586,7 @@ W11-PACK-002: ready_for_acceptance; health green; evidence complete. Switched to
 - The generated code is committed source between generated-region markers. SecurityClassPlumbingGenerationTests regenerates every region and fails when the committed text differs; MERIDIAN_ACCEPT_GENERATED_CODEC=1 writes the regenerated regions, as for the flat codec.
 - The repository owner recorded the switch to generated code (DEC-PACK-CODEGEN-001). The declaration follows the F# union order; the catalog row order stays its hand-written presentation order and is checked as a set.
 - Each remaining per-class site is listed in the plan as a deliberate semantic edit, not generated.
-- Roadmap status stays ready_for_acceptance until the owner accepts the generated regions on main.
+- The owner accepted the generated regions (DEC-PACK-ACCEPT-001) after Meridian CI / quality-gate passed on the PR head.
 
 ### Source Modules
 

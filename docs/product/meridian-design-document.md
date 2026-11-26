@@ -781,7 +781,7 @@ does not adopt ranks, accept an entire row, or reprioritize the adopted work:
 | W11 · 4 | `W11-SHADOW-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Shadow-mode onboarding with opening-balance reconciliation (Section 22.3) |
 | W11 · 5 | `W11-PACK-001` | `planned` | `DEC-CHARTER-DIRECTION-001`, `DEC-PACK-SPLIT-001` | Runtime contract-pack governance for profile-backed (CustomAsset-style) classes (Section 22.2) |
 | W11 · 6 | `W11-EXEC-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Trading & Execution bounded-context ownership (Section 7.1) |
-| W11 · 7 | `W11-PACK-002` | `ready_for_acceptance` | `DEC-PACK-SPLIT-001`, `DEC-PACK-CODEGEN-001` | Generated Security Master class plumbing from one declaration (Section 22.2) |
+| W11 · 7 | `W11-PACK-002` | `accepted` | `DEC-PACK-SPLIT-001`, `DEC-PACK-CODEGEN-001`, `DEC-PACK-ACCEPT-001` | Generated Security Master class plumbing from one declaration (Section 22.2) |
 | W12 · unranked | `W12-BOOK-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | Accounting book, basis, and FX control workbench (Sections 6.2.1, 11.7) |
 | W12 · unranked | `W12-CAPITAL-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | Governed investor capital and allocation lifecycle (Sections 6.2.2, 6.7) |
 | W12 · unranked | `W12-YEND-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | Fiscal year-end close and opening-balance roll-forward (Sections 6.2.1, 11.7) |

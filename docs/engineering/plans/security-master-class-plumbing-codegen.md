@@ -4,7 +4,7 @@
 **Owner:** core-team
 **Reviewed:** 2026-11-25
 **Scope:** Engineering
-**Roadmap:** `W11-PACK-002`. It was split from `W11-PACK-001` under `DEC-PACK-SPLIT-001` and switched to generated code under `DEC-PACK-CODEGEN-001`.
+**Roadmap:** `W11-PACK-002`, accepted under `DEC-PACK-ACCEPT-001`. It was split from `W11-PACK-001` under `DEC-PACK-SPLIT-001` and switched to generated code under `DEC-PACK-CODEGEN-001`.
 
 This plan records item E2 of the 2026-11-24 Security Master architecture review, which challenged
 `W11-PACK-001`. The owner first chose a prototype. The hand-written source stayed authoritative,
