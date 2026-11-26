@@ -6,6 +6,59 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaperFillCostBreakdown
+
+Qualified name: <code>Meridian.Execution.PaperMatching.PaperFillCostBreakdown</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs:9](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs#L9).
+
+Cost breakdown for one paper fill. Commission, Fees, and SlippageCost are explicit cash costs charged to the paper account; SpreadCost is the implicit cost already embedded in the fill price (distance from the quote midpoint), reported for economics visibility.
+
+```csharp
+public sealed record PaperFillCostBreakdown(decimal Commission, decimal Fees, decimal SlippageCost, decimal SpreadCost, string CostModelVersion)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal ExplicitCost =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs:17](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs#L17) | Total explicit cash cost charged to the account for this fill. |
+| <code>public static PaperFillCostBreakdown Zero { get; } = new (0m, 0m, 0m, 0m, PaperTradingCostModel.CostModelVersion);</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs:20](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs#L20) | A zero-cost breakdown (used when no cost model is configured). |
+
+## PaperMarketObservation
+
+Qualified name: <code>Meridian.Execution.PaperMatching.PaperMarketObservation</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:13](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L13).
+
+The observed market data in effect for one symbol at paper-matching time: the last best-bid/offer quote, the last trade print, and the last completed bar, whichever are available. The observation defines the price envelope a paper fill may never leave — fills are anchored to observed market data, not fabricated prices.
+
+```csharp
+public readonly record struct PaperMarketObservation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;MarketDataInputEvidence&gt;? MarketDataEvidence { get; init; }</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:16](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L16) | Conservative input population for the price envelope and execution-cost model. |
+| <code>public decimal? BidPrice { get; init; }</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:18](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L18) | Best observed bid price, when a quote has been seen. |
+| <code>public decimal? AskPrice { get; init; }</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:21](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L21) | Best observed ask price, when a quote has been seen. |
+| <code>public decimal? LastTradePrice { get; init; }</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:24](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L24) | Last observed trade price, when a trade print has been seen. |
+| <code>public decimal? BarLow { get; init; }</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:27](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L27) | Low of the last observed bar, when bar data is in effect. |
+| <code>public decimal? BarHigh { get; init; }</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:30](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L30) | High of the last observed bar, when bar data is in effect. |
+| <code>public decimal? BarClose { get; init; }</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:33](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L33) | Close of the last observed bar, when bar data is in effect. |
+| <code>public bool IsStale { get; init; }</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:40](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L40) | True when the symbol has tick data but none of it is inside the configured freshness window (PaperObservationFreshnessPolicy). A stale observation carries no prices: nothing fills, triggers, or prices against it. |
+| <code>public static PaperMarketObservation Stale =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:43](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L43) | The observation of a symbol whose tick feed has stalled. |
+| <code>public bool HasAnyObservation =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:46](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L46) | True when at least one usable observed price is present. |
+| <code>public decimal? EnvelopeLow =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:54](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L54) | Lower bound of the observed price envelope: the minimum across every observed price component present (bid, last trade, bar low/close). |
+| <code>public decimal? EnvelopeHigh =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:60](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L60) | Upper bound of the observed price envelope: the maximum across every observed price component present (ask, last trade, bar high/close). |
+| <code>public decimal? MidPrice =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:63](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L63) | Quote midpoint when both sides of the book have been observed. |
+| <code>public decimal? ResolveAggressiveReferencePrice(OrderSide side) =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:90](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L90) | The price a stop on side triggers against: the last trade, then the bar close, and only then the side the order would cross. null when nothing has been observed. This is the single definition of that precedence, and it exists as one method precisely so it cannot drift. Both the matcher (which decides whether a stop fires) and the pre-trade fat-finger guard (which decides whether a stop is on the wrong side of the market and would fire on arrival) resolve through here. A guard that reconstructed the precedence separately would disagree with the engine on exactly the cases that matter — approving an already-triggered stop, or refusing one that is still resting. |
+| <code>public decimal? ResolveStopTriggerPrice(OrderSide side) =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:93](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L93) |  |
+| <code>public static PaperMarketObservation Capture(ILiveFeedAdapter? feed, string symbol);</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:101](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L101) | Captures the current observation for symbol from a live feed adapter. Non-positive prices are treated as absent. Returns an empty observation when no feed is wired or nothing has been observed yet. |
+| <code>public static PaperMarketObservation FromCallerPrice(decimal price) =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:163](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L163) | Builds a degenerate observation from a caller-supplied simulated price (the documented Market-order seam where the caller provides its own mark). The envelope collapses to that single price. |
+
 ## PaperMatchOutcome
 
 Qualified name: <code>Meridian.Execution.PaperMatching.PaperMatchOutcome</code>. Kind: `enum`.
@@ -858,53 +911,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;LiveOrderReadinessDecision&gt; EvaluateAsync(LiveOrderReadinessRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:17](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L17) |  |
-
-## ILiveOrderReadinessPreview
-
-Qualified name: <code>Meridian.Execution.Services.ILiveOrderReadinessPreview</code>. Kind: `interface`.
-
-Source: [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:6](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L6).
-
-Reads already-produced readiness evidence; never initializes or reconciles runtime state.
-
-```csharp
-public interface ILiveOrderReadinessPreview
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>LiveOrderReadinessDecision? Observe(LiveOrderReadinessRequest request);</code> | [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:8](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L8) |  |
-
-## IPaperSessionStore
-
-Qualified name: <code>Meridian.Execution.Services.IPaperSessionStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:349](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L349).
-
-Storage abstraction for paper trading session persistence. Implementations may store session data in-memory, on the local file system, or in any other durable backend.
-
-```csharp
-public interface IPaperSessionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>bool SupportsJournalBatches =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:352](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L352) | Whether newly created sessions can use append-only effect journals. |
-| <code>Task&lt;PaperSessionJournalReceipt&gt; AppendJournalBatchAsync(PaperSessionJournalBatch batch, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:355](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L355) | Appends one immutable batch or recovers an identical receipt. |
-| <code>Task&lt;IReadOnlyList&lt;PaperSessionJournalReceipt&gt;&gt; LoadJournalBatchesAsync(string sessionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:360](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L360) | Loads all verified journal receipts for a session. |
-| <code>Task AppendFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:368](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L368) | Appends a single fill event to the session&#x27;s immutable fill log. |
-| <code>Task&lt;PaperSessionFillAppendResult&gt; TryAppendFillAsync(string sessionId, PaperSessionFillRecord record, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:376](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L376) | Durably and atomically claims record before the caller applies it to portfolio state. Implementations must serialize concurrent claims for one FillId and must not complete until the claim is crash-durable. The default fails closed so a legacy store cannot silently substitute a read-then-append sequence. |
-| <code>Task MarkFillAppliedAsync(string sessionId, Guid fillId, string canonicalHash, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:388](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L388) | Durably and idempotently marks a claimed fill as applied. Implementations must reject an unknown FillId or a canonical-hash mismatch and must not complete until the acknowledgement is crash-durable. The default fails closed instead of silently acknowledging nothing. |
-| <code>Task AppendOrderUpdateAsync(string sessionId, OrderState order, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:397](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L397) | Appends an order-state snapshot to the session&#x27;s order history log. |
-| <code>Task SaveLedgerJournalAsync(string sessionId, IReadOnlyList&lt;PersistedJournalEntryDto&gt; entries, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:403](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L403) | Writes the complete ledger journal for sessionId to a JSONL sidecar file (ledger.jsonl). Replaces any previously-written ledger for the same session. |
-| <code>Task&lt;IReadOnlyList&lt;PersistedSessionRecord&gt;&gt; LoadAllSessionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:409](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L409) | Returns metadata records for every persisted session. |
-| <code>Task&lt;IReadOnlyList&lt;ExecutionReport&gt;&gt; LoadFillsAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:412](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L412) | Returns all recorded fill events for sessionId, in order. |
-| <code>async Task&lt;IReadOnlyList&lt;PaperSessionFillRecord&gt;&gt; LoadFillRecordsAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:420](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L420) | Returns versioned fill records including durable apply state. The default adapter treats legacy raw fills as already acknowledged while deriving their account-independent canonical identity from the retained report content. New writes still require explicit atomic claim and acknowledgement implementations above. |
-| <code>Task&lt;IReadOnlyList&lt;OrderState&gt;&gt; LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:434](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L434) | Returns the order-state history for sessionId, in order. |
-| <code>Task&lt;PaperSessionSettlementAppendStatus&gt; TryAppendSettlementAsync(string sessionId, PaperSessionSettlementRecord record, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:442](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L442) | Durably appends a daily variation-margin settlement unless its key (account, symbol, trading date) is already recorded. Implementations must serialize concurrent appends and must not complete until the record is crash-durable. The default fails closed, so a store that cannot persist settlements never lets one reach the portfolio. |
-| <code>Task&lt;IReadOnlyList&lt;PaperSessionSettlementRecord&gt;&gt; LoadSettlementsAsync(string sessionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:453](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L453) | Returns the recorded variation-margin settlements for sessionId, in append order. The default returns none, which is exact for stores that cannot append them. |
-| <code>Task&lt;IReadOnlyList&lt;PersistedJournalEntryDto&gt;&gt; LoadLedgerJournalAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:462](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L462) | Returns the persisted ledger journal entries for sessionId. Returns an empty list when no ledger has been saved for this session. |

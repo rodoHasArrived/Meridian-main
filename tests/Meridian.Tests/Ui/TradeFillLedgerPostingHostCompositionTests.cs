@@ -87,6 +87,71 @@ public sealed class TradeFillLedgerPostingHostCompositionTests
     }
 
     [Fact]
+    public void BuildContext_FileStoreWithCanonicalAccounting_IsRejected()
+    {
+        var options = new TradeFillLedgerPostingHostOptions
+        {
+            Enabled = true,
+            Store = TradeFillLedgerStoreKind.File,
+            AggregateId = Guid.NewGuid(),
+            PeriodId = Guid.NewGuid(),
+            LedgerBookId = Guid.NewGuid(),
+            ExpectedPeriodVersion = 0,
+            CanonicalAccounting = new AutomatedTradeFillAccountingOptions()
+        };
+
+        var build = () => options.BuildContext();
+
+        build.Should().Throw<InvalidOperationException>()
+            .WithMessage("*Store=File supports only journal-only posting*");
+    }
+
+    [Fact]
+    public async Task UiServer_FileStoreWithoutDurableLedger_Composes()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "trade-fill-host-file-store",
+            Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var configPath = Path.Combine(root, "appsettings.json");
+        File.WriteAllText(configPath, BuildConfig(root, store: "File", expectedPeriodVersion: 0));
+
+        var priorUnifiedConnection = Environment.GetEnvironmentVariable("MERIDIAN_DATABASE_URL");
+        var priorLedgerConnection = Environment.GetEnvironmentVariable("MERIDIAN_LEDGER_CONNECTION_STRING");
+        var priorGovernance = Environment.GetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE");
+        var priorAspNetCoreEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        var priorDotnetEnvironment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+        try
+        {
+            Environment.SetEnvironmentVariable("MERIDIAN_DATABASE_URL", null);
+            Environment.SetEnvironmentVariable("MERIDIAN_LEDGER_CONNECTION_STRING", null);
+            Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", Environments.Development);
+            Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", Environments.Development);
+
+            await using var server = new UiServer(configPath, port: 0);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MERIDIAN_DATABASE_URL", priorUnifiedConnection);
+            Environment.SetEnvironmentVariable("MERIDIAN_LEDGER_CONNECTION_STRING", priorLedgerConnection);
+            Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", priorGovernance);
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", priorAspNetCoreEnvironment);
+            Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", priorDotnetEnvironment);
+            try
+            {
+                Directory.Delete(root, recursive: true);
+            }
+            catch
+            {
+                // Best-effort test cleanup.
+            }
+        }
+    }
+
+    [Fact]
     public void UiServer_EarlyCompositionFailure_DisposesOwnedLifecycle()
     {
         var root = Path.Combine(
@@ -273,7 +338,7 @@ public sealed class TradeFillLedgerPostingHostCompositionTests
         }
     }
 
-    private static string BuildConfig(string root)
+    private static string BuildConfig(string root, string? store = null, long? expectedPeriodVersion = null)
     {
         var config = new
         {
@@ -304,7 +369,9 @@ public sealed class TradeFillLedgerPostingHostCompositionTests
                     Enabled = true,
                     AggregateId = "11111111-1111-1111-1111-111111111111",
                     PeriodId = "22222222-2222-2222-2222-222222222222",
-                    LedgerBookId = "33333333-3333-3333-3333-333333333333"
+                    LedgerBookId = "33333333-3333-3333-3333-333333333333",
+                    Store = store,
+                    ExpectedPeriodVersion = expectedPeriodVersion
                 }
             }
         };

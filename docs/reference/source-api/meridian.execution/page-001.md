@@ -467,6 +467,25 @@ Declared public members:
 | <code>public static PaperTradingPortfolio CreatePortfolio(AutomatedTradeFillAccountingOptions options, LiveMarketDataCache? cache = null);</code> | [src/Meridian.Execution/Events/CanonicalPaperPortfolioBootstrapper.cs:26](../../../../src/Meridian.Execution/Events/CanonicalPaperPortfolioBootstrapper.cs#L26) |  |
 | <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/CanonicalPaperPortfolioBootstrapper.cs:38](../../../../src/Meridian.Execution/Events/CanonicalPaperPortfolioBootstrapper.cs#L38) |  |
 
+## FileTradeFillLedger
+
+Qualified name: <code>Meridian.Execution.Events.FileTradeFillLedger</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Events/FileTradeFillLedger.cs:10](../../../../src/Meridian.Execution/Events/FileTradeFillLedger.cs#L10).
+
+Composes trade-fill posting over the file-backed journal used when no Postgres ledger is configured. Posting reuses the same governed target chain as Postgres, so posting-identity collisions, equivalent-retry handling and replay comparison behave identically.
+
+```csharp
+public static class FileTradeFillLedger
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ITradeFillLedgerPostingTarget CreatePostingTarget(FileTradeFillLedgerJournalStore store);</code> | [src/Meridian.Execution/Events/FileTradeFillLedger.cs:13](../../../../src/Meridian.Execution/Events/FileTradeFillLedger.cs#L13) | Creates the trade-fill posting target over store. |
+| <code>public static async Task&lt;LedgerJournalChainVerification&gt; VerifyBeforeHostStartupAsync(FileTradeFillLedgerJournalStore store, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/FileTradeFillLedger.cs:24](../../../../src/Meridian.Execution/Events/FileTradeFillLedger.cs#L24) | Rebuilds and verifies the on-disk journal before the host starts, so a damaged or tampered ledger stops startup instead of failing the first fill after trading has begun. |
+
 ## GovernedTradeFillLedgerPostingTarget
 
 Qualified name: <code>Meridian.Execution.Events.GovernedTradeFillLedgerPostingTarget</code>. Kind: `class`.
@@ -776,6 +795,24 @@ Declared public members:
 | <code>public string SnapshotPath =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:105](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L105) |  |
 | <code>public string LockPath =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:111](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L111) | Persistent lock-file path used to coordinate independent store instances and processes. The file remains on disk; ownership is the lifetime of an exclusive file handle. |
 
+## TradeFillLedgerBackendBinding
+
+Qualified name: <code>Meridian.Execution.Events.TradeFillLedgerBackendBinding</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Events/TradeFillLedgerBackendBinding.cs:18](../../../../src/Meridian.Execution/Events/TradeFillLedgerBackendBinding.cs#L18).
+
+Binds one exact trade-fill posting scope to the authoritative journal backend it posts to.
+
+```csharp
+public static class TradeFillLedgerBackendBinding
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void Ensure(TradeFillPostingStoreOptions options, TradeFillLedgerStoreKind store);</code> | [src/Meridian.Execution/Events/TradeFillLedgerBackendBinding.cs:30](../../../../src/Meridian.Execution/Events/TradeFillLedgerBackendBinding.cs#L30) | Records store for the scope on first use, or verifies that the scope was bound to the same backend. Must run before the scope&#x27;s handoff store is opened, so existing handoff data reliably means the scope predates the binding. |
+
 ## TradeFillLedgerPostingConfirmation
 
 Qualified name: <code>Meridian.Execution.Events.TradeFillLedgerPostingConfirmation</code>. Kind: `record`.
@@ -1025,39 +1062,3 @@ Declared public members:
 | <code>Task&lt;OrderAcknowledgement&gt; SubmitAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/Interfaces/IOrderGateway.cs:36](../../../../src/Meridian.Execution/Interfaces/IOrderGateway.cs#L36) | Submits an order to the gateway. Returns an acknowledgement immediately; fills arrive asynchronously via StreamOrderUpdatesAsync. |
 | <code>Task&lt;bool&gt; CancelAsync(string orderId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Interfaces/IOrderGateway.cs:42](../../../../src/Meridian.Execution/Interfaces/IOrderGateway.cs#L42) | Requests cancellation of a working order. Returns true if the cancellation was accepted, false if the order was already terminal. |
 | <code>IAsyncEnumerable&lt;OrderStatusUpdate&gt; StreamOrderUpdatesAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Interfaces/IOrderGateway.cs:48](../../../../src/Meridian.Execution/Interfaces/IOrderGateway.cs#L48) | Streams all order lifecycle events (fills, partial fills, cancellations, rejections) for this session. Callers should consume this stream on a dedicated background task. |
-
-## IPaperFillEvaluationTrigger
-
-Qualified name: <code>Meridian.Execution.Interfaces.IPaperFillEvaluationTrigger</code>. Kind: `interface`.
-
-Source: [src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs:9](../../../../src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs#L9).
-
-Implemented by paper gateways that hold resting limit/stop orders. The host&#x27;s market event tap pokes this after recording new market data for a symbol so resting orders are re-evaluated against the fresh observation without polling. Implementations must be non-blocking: evaluation work is scheduled, never run inline on the market data path.
-
-```csharp
-public interface IPaperFillEvaluationTrigger
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>void EvaluateSymbol(string symbol);</code> | [src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs:12](../../../../src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs#L12) | Schedules re-evaluation of resting paper orders for symbol. |
-
-## IPositionAccountingEvidenceSource
-
-Qualified name: <code>Meridian.Execution.Interfaces.IPositionAccountingEvidenceSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Execution/Interfaces/IPositionAccountingEvidenceSource.cs:6](../../../../src/Meridian.Execution/Interfaces/IPositionAccountingEvidenceSource.cs#L6).
-
-Optional native-book source of exact position and account facts, captured atomically.
-
-```csharp
-public interface IPositionAccountingEvidenceSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>PositionAccountingEvidenceSnapshot CapturePositionAccountingEvidence();</code> | [src/Meridian.Execution/Interfaces/IPositionAccountingEvidenceSource.cs:8](../../../../src/Meridian.Execution/Interfaces/IPositionAccountingEvidenceSource.cs#L8) |  |

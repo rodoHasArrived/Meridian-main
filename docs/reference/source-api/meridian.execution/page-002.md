@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IPaperFillEvaluationTrigger
+
+Qualified name: <code>Meridian.Execution.Interfaces.IPaperFillEvaluationTrigger</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs:9](../../../../src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs#L9).
+
+Implemented by paper gateways that hold resting limit/stop orders. The host&#x27;s market event tap pokes this after recording new market data for a symbol so resting orders are re-evaluated against the fresh observation without polling. Implementations must be non-blocking: evaluation work is scheduled, never run inline on the market data path.
+
+```csharp
+public interface IPaperFillEvaluationTrigger
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>void EvaluateSymbol(string symbol);</code> | [src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs:12](../../../../src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs#L12) | Schedules re-evaluation of resting paper orders for symbol. |
+
+## IPositionAccountingEvidenceSource
+
+Qualified name: <code>Meridian.Execution.Interfaces.IPositionAccountingEvidenceSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution/Interfaces/IPositionAccountingEvidenceSource.cs:6](../../../../src/Meridian.Execution/Interfaces/IPositionAccountingEvidenceSource.cs#L6).
+
+Optional native-book source of exact position and account facts, captured atomically.
+
+```csharp
+public interface IPositionAccountingEvidenceSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>PositionAccountingEvidenceSnapshot CapturePositionAccountingEvidence();</code> | [src/Meridian.Execution/Interfaces/IPositionAccountingEvidenceSource.cs:8](../../../../src/Meridian.Execution/Interfaces/IPositionAccountingEvidenceSource.cs#L8) |  |
+
 ## MarketDataSnapshot
 
 Qualified name: <code>Meridian.Execution.Interfaces.MarketDataSnapshot</code>. Kind: `record struct`.
@@ -1133,56 +1169,3 @@ Enum declarations:
 | <code>PerShare</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:7](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L7) | PaperTradingCostOptions.CommissionRate is charged per share/contract. |
 | <code>BasisPointsOfNotional</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:10](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L10) | PaperTradingCostOptions.CommissionRate is charged in basis points of fill notional. |
 | <code>FixedPerOrder</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:13](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L13) | PaperTradingCostOptions.CommissionRate is a fixed amount per order. |
-
-## PaperFillCostBreakdown
-
-Qualified name: <code>Meridian.Execution.PaperMatching.PaperFillCostBreakdown</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs:9](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs#L9).
-
-Cost breakdown for one paper fill. Commission, Fees, and SlippageCost are explicit cash costs charged to the paper account; SpreadCost is the implicit cost already embedded in the fill price (distance from the quote midpoint), reported for economics visibility.
-
-```csharp
-public sealed record PaperFillCostBreakdown(decimal Commission, decimal Fees, decimal SlippageCost, decimal SpreadCost, string CostModelVersion)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal ExplicitCost =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs:17](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs#L17) | Total explicit cash cost charged to the account for this fill. |
-| <code>public static PaperFillCostBreakdown Zero { get; } = new (0m, 0m, 0m, 0m, PaperTradingCostModel.CostModelVersion);</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs:20](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs#L20) | A zero-cost breakdown (used when no cost model is configured). |
-
-## PaperMarketObservation
-
-Qualified name: <code>Meridian.Execution.PaperMatching.PaperMarketObservation</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:13](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L13).
-
-The observed market data in effect for one symbol at paper-matching time: the last best-bid/offer quote, the last trade print, and the last completed bar, whichever are available. The observation defines the price envelope a paper fill may never leave — fills are anchored to observed market data, not fabricated prices.
-
-```csharp
-public readonly record struct PaperMarketObservation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;MarketDataInputEvidence&gt;? MarketDataEvidence { get; init; }</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:16](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L16) | Conservative input population for the price envelope and execution-cost model. |
-| <code>public decimal? BidPrice { get; init; }</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:18](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L18) | Best observed bid price, when a quote has been seen. |
-| <code>public decimal? AskPrice { get; init; }</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:21](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L21) | Best observed ask price, when a quote has been seen. |
-| <code>public decimal? LastTradePrice { get; init; }</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:24](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L24) | Last observed trade price, when a trade print has been seen. |
-| <code>public decimal? BarLow { get; init; }</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:27](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L27) | Low of the last observed bar, when bar data is in effect. |
-| <code>public decimal? BarHigh { get; init; }</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:30](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L30) | High of the last observed bar, when bar data is in effect. |
-| <code>public decimal? BarClose { get; init; }</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:33](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L33) | Close of the last observed bar, when bar data is in effect. |
-| <code>public bool IsStale { get; init; }</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:40](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L40) | True when the symbol has tick data but none of it is inside the configured freshness window (PaperObservationFreshnessPolicy). A stale observation carries no prices: nothing fills, triggers, or prices against it. |
-| <code>public static PaperMarketObservation Stale =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:43](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L43) | The observation of a symbol whose tick feed has stalled. |
-| <code>public bool HasAnyObservation =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:46](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L46) | True when at least one usable observed price is present. |
-| <code>public decimal? EnvelopeLow =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:54](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L54) | Lower bound of the observed price envelope: the minimum across every observed price component present (bid, last trade, bar low/close). |
-| <code>public decimal? EnvelopeHigh =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:60](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L60) | Upper bound of the observed price envelope: the maximum across every observed price component present (ask, last trade, bar high/close). |
-| <code>public decimal? MidPrice =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:63](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L63) | Quote midpoint when both sides of the book have been observed. |
-| <code>public decimal? ResolveAggressiveReferencePrice(OrderSide side) =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:90](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L90) | The price a stop on side triggers against: the last trade, then the bar close, and only then the side the order would cross. null when nothing has been observed. This is the single definition of that precedence, and it exists as one method precisely so it cannot drift. Both the matcher (which decides whether a stop fires) and the pre-trade fat-finger guard (which decides whether a stop is on the wrong side of the market and would fire on arrival) resolve through here. A guard that reconstructed the precedence separately would disagree with the engine on exactly the cases that matter — approving an already-triggered stop, or refusing one that is still resting. |
-| <code>public decimal? ResolveStopTriggerPrice(OrderSide side) =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:93](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L93) |  |
-| <code>public static PaperMarketObservation Capture(ILiveFeedAdapter? feed, string symbol);</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:101](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L101) | Captures the current observation for symbol from a live feed adapter. Non-positive prices are treated as absent. Returns an empty observation when no feed is wired or nothing has been observed yet. |
-| <code>public static PaperMarketObservation FromCallerPrice(decimal price) =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:163](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L163) | Builds a degenerate observation from a caller-supplied simulated price (the documented Market-order seam where the caller provides its own mark). The envelope collapses to that single price. |

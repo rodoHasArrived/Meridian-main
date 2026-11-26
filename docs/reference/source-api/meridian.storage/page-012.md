@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityGovernancePayloadContracts
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernancePayloadContracts</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:303](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L303).
+
+The registry of declared governance payload contracts, keyed by stream and event type.
+
+```csharp
+public static class SecurityGovernancePayloadContracts
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int InitialPayloadVersion = 1;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:306](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L306) | The version of every payload shape written before explicit versioning (migration 040&#x27;s default). |
+| <code>public static IReadOnlyList&lt;SecurityGovernancePayloadContract&gt; All { get; } = [SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.Aliases, &quot;AliasRevisionRecorded&quot;, Json.AliasRevisionRecordedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.Aliases, &quot;AliasRevisionsSynchronized&quot;, Json.AliasRevisionsSynchronizedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.ProjectionRebuild, &quot;ProjectionBatchRebuilt&quot;, Json.ProjectionBatchRebuiltPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.OperatorOverrides, &quot;Patched&quot;, Json.OperatorOverridesPatchedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.OperatorOverrides, &quot;Approved&quot;, Json.OperatorOverridesDecisionPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.OperatorOverrides, &quot;Rejected&quot;, Json.OperatorOverridesDecisionPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.UnderlyingGraph, SecurityUnderlyingLinkWriter.DeclaredEvent, Json.UnderlyingLinkDeclaredPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.UnderlyingGraph, SecurityUnderlyingLinkWriter.AmendedEvent, Json.UnderlyingLinkDeclaredPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.UnderlyingGraph, SecurityUnderlyingLinkWriter.RemovedEvent, Json.UnderlyingLinkRemovedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.Curves, PostgresSecurityCurveStore.DefinedEvent, Json.CurveDefinedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.Curves, PostgresSecurityCurveStore.VersionPublishedEvent, Json.CurveVersionPublishedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.OtcCollateral, PostgresOtcCollateralStore.SnapshotRecordedEvent, Json.OtcExposureSnapshotRecordedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.OtcCollateral, PostgresOtcCollateralStore.BalanceRecordedEvent, Json.OtcCollateralBalanceChangedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.OtcCollateral, PostgresOtcCollateralStore.BalanceAmendedEvent, Json.OtcCollateralBalanceChangedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.OtcCollateral, PostgresOtcCollateralStore.CallIssuedEvent, Json.OtcMarginCallIssuedPayload), ..new[] { Meridian.Contracts.SecurityMaster.OtcMarginCallAction.Agree, Meridian.Contracts.SecurityMaster.OtcMarginCallAction.Dispute, Meridian.Contracts.SecurityMaster.OtcMarginCallAction.Settle, Meridian.Contracts.SecurityMaster.OtcMarginCallAction.Cancel }.Select(static action =&gt; SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.OtcCollateral, Meridian.Contracts.SecurityMaster.OtcMarginCallRules.EventType(action), Json.OtcMarginCallTransitionedPayload))];</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:311](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L311) | Every declared contract. |
+| <code>public static bool TryResolve(string stream, string eventType, out SecurityGovernancePayloadContract contract) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:344](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L344) | The contract declared for stream/eventType, if any. |
+| <code>public static SecurityGovernancePayloadContract Resolve(string stream, string eventType) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:348](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L348) | The contract declared for stream/eventType. |
+| <code>public static TPayload Read&lt;TPayload&gt;(string stream, string eventType, int payloadVersion, JsonElement payload) where TPayload : class, ISecurityGovernancePayload;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:371](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L371) | Reads a stored payload through its declared contract, dispatching on payloadVersion. Throws when the event type has no contract, the version has no reader on this node, or TPayload is not the declared payload type. |
+
 ## SecurityGovernancePayloadVersionException
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernancePayloadVersionException</code>. Kind: `class`.
@@ -818,14 +840,4 @@ Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:957](../../../.
 
 ```csharp
 public sealed record DefragResult(int FilesProcessed, int FilesCreated, long BytesBefore, long BytesAfter, double CompressionImprovement, TimeSpan Duration, int MergeGroupsAttempted = 0, int MergeGroupsSucceeded = 0, int FilesDeleted = 0, IReadOnlyList<string>? Errors = null);
-```
-
-## DiscoveryQuery
-
-Qualified name: <code>Meridian.Storage.Services.DiscoveryQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:779](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L779).
-
-```csharp
-public sealed record DiscoveryQuery;
 ```

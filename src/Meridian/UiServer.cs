@@ -197,15 +197,37 @@ public sealed class UiServer : IAsyncDisposable
                 ?? new TradeFillLedgerPostingHostOptions();
             if (tradeFillPostingOptions.Enabled)
             {
-                if (!LedgerStartup.IsConfigured())
+                var useFileLedger = tradeFillPostingOptions.Store == TradeFillLedgerStoreKind.File;
+                if (!useFileLedger && !LedgerStartup.IsConfigured())
                 {
                     throw new InvalidOperationException(
                         $"{TradeFillLedgerPostingHostOptions.SectionKey}:Enabled requires {LedgerStartup.ConnectionStringVariable} " +
-                        $"(or {Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable}) so accepted fills have an authoritative ledger target.");
+                        $"(or {Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable}) so accepted fills have an authoritative ledger target, " +
+                        $"or {TradeFillLedgerPostingHostOptions.SectionKey}:Store=File for the file-backed journal.");
                 }
 
                 var postingContext = tradeFillPostingOptions.BuildContext();
                 var tradeFillStoreRoot = Path.Combine(resolvedDataRoot, "execution", "trade-fill-ledger");
+                // Before any handoff store opens: a scope stays on the backend that acknowledged
+                // its fills, so switching Store cannot silently split one scope across journals.
+                TradeFillLedgerBackendBinding.Ensure(
+                    new TradeFillPostingStoreOptions(tradeFillStoreRoot, postingContext),
+                    tradeFillPostingOptions.Store);
+                // Paper sessions bind to this scope even when no financing service is composed.
+                builder.Services.AddSingleton(postingContext);
+                if (useFileLedger)
+                {
+                    // The file journal is the authoritative store for this posting scope only. It is
+                    // deliberately not registered as ILedgerJournalStore: books, periods and lots
+                    // stay Postgres-only, and features probing for that store must not light up.
+                    builder.Services.AddSingleton(_ => new FileTradeFillLedgerJournalStore(
+                        FileTradeFillLedgerJournalStore.DirectoryFor(
+                            Path.Combine(tradeFillStoreRoot, "file-ledger"), postingContext.PostingScope),
+                        postingContext.PostingScope,
+                        // Journal-only fill postings carry no per-line currency detail, so they
+                        // post to an unbound ledger exactly as the Postgres store accepts them.
+                        policy: null));
+                }
                 if (tradeFillPostingOptions.CanonicalAccounting is { } canonicalAccounting)
                 {
                     if (canonicalAccounting.Grant is null)
@@ -223,9 +245,11 @@ public sealed class UiServer : IAsyncDisposable
                 }
                 builder.Services.AddTradeFillLedgerPosting(
                     postingContext,
-                    sp => new GovernedTradeFillLedgerPostingTarget(
-                        sp.GetRequiredService<IGovernedLedgerPostingTarget>(),
-                        sp.GetRequiredService<ILedgerJournalStore>()),
+                    useFileLedger
+                        ? sp => FileTradeFillLedger.CreatePostingTarget(sp.GetRequiredService<FileTradeFillLedgerJournalStore>())
+                        : sp => new GovernedTradeFillLedgerPostingTarget(
+                            sp.GetRequiredService<IGovernedLedgerPostingTarget>(),
+                            sp.GetRequiredService<ILedgerJournalStore>()),
                     sp => new WalTradeFillPostingStore(
                         new TradeFillPostingStoreOptions(tradeFillStoreRoot, postingContext),
                         sp.GetRequiredService<ILogger<WalTradeFillPostingStore>>()),
@@ -239,11 +263,21 @@ public sealed class UiServer : IAsyncDisposable
                         options.DrainTimeout = tradeFillPostingOptions.DrainTimeout;
                         options.CancellationTimeout = tradeFillPostingOptions.CancellationTimeout;
                     });
-                builder.Services.AddSingleton(sp => new PaperFinancingPostingService(
-                    tradeFillStoreRoot, postingContext,
-                    sp.GetRequiredService<ITradeFillLedgerPostingTarget>(),
-                    sp.GetRequiredService<ILedgerJournalStore>().GetPeriodAsync,
-                    sp.GetRequiredService<ILedgerJournalStore>().GetLedgerBookAsync));
+                if (useFileLedger)
+                {
+                    // Financing accruals validate against Postgres periods and books.
+                    Serilog.Log.Warning(
+                        "Trade-fill ledger posting uses the file-backed journal for scope {PostingScope}; paper financing accruals are not posted in this mode",
+                        postingContext.PostingScope);
+                }
+                else
+                {
+                    builder.Services.AddSingleton(sp => new PaperFinancingPostingService(
+                        tradeFillStoreRoot, postingContext,
+                        sp.GetRequiredService<ITradeFillLedgerPostingTarget>(),
+                        sp.GetRequiredService<ILedgerJournalStore>().GetPeriodAsync,
+                        sp.GetRequiredService<ILedgerJournalStore>().GetLedgerBookAsync));
+                }
             }
 
             builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));
@@ -1309,6 +1343,8 @@ public sealed class UiServer : IAsyncDisposable
             await EnsureDatabaseReadinessAsync(ct).ConfigureAwait(false);
             try
             {
+                if (_app.Services.GetService<FileTradeFillLedgerJournalStore>() is { } fileTradeFillLedger)
+                    await FileTradeFillLedger.VerifyBeforeHostStartupAsync(fileTradeFillLedger, ct).ConfigureAwait(false);
                 if (_app.Services.GetService<CanonicalPaperPortfolioBootstrapper>() is { } canonicalPaper)
                     await canonicalPaper.InitializeAsync(ct).ConfigureAwait(false);
                 _applicationStartBegan = true;

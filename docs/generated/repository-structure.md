@@ -133,6 +133,8 @@ Meridian-main
 │   │   ├── meridian-roadmap-strategist.md
 │   │   ├── meridian-simulated-user-panel.md
 │   │   └── meridian-test-writer.md
+│   ├── hooks
+│   │   └── format-csharp.sh
 │   ├── skills
 │   │   ├── _shared
 │   │   │   └── project-context.md
@@ -6747,6 +6749,7 @@ Meridian-main
 │   │   ├── Events
 │   │   │   ├── AutomatedTradeFillAccountingService.cs
 │   │   │   ├── CanonicalPaperPortfolioBootstrapper.cs
+│   │   │   ├── FileTradeFillLedger.cs
 │   │   │   ├── IRetainedTradeEventPublisher.cs
 │   │   │   ├── ITradeEventPublisher.cs
 │   │   │   ├── LedgerPostingConsumer.cs
@@ -6757,6 +6760,7 @@ Meridian-main
 │   │   │   ├── TradeFillAccountingIdentity.cs
 │   │   │   ├── TradeFillCashFlowReplayCompatibility.cs
 │   │   │   ├── TradeFillHandoffFailureStore.cs
+│   │   │   ├── TradeFillLedgerBackendBinding.cs
 │   │   │   ├── TradeFillLedgerPostingTarget.cs
 │   │   │   └── TradeFillPostingStore.cs
 │   │   ├── Exceptions
@@ -6862,6 +6866,7 @@ Meridian-main
 │   │   │   ├── PaperSessionPersistenceService.DurableJournal.cs
 │   │   │   ├── PaperSessionPersistenceService.HistoricalAccounting.cs
 │   │   │   ├── PaperSessionPersistenceService.OrderRouting.cs
+│   │   │   ├── PaperSessionPersistenceService.Session.cs
 │   │   │   ├── PaperTradingPortfolio.Accounting.cs
 │   │   │   ├── PaperTradingPortfolio.CanonicalRecovery.cs
 │   │   │   ├── PaperTradingPortfolio.cs
@@ -8485,6 +8490,7 @@ Meridian-main
 │   │   │   ├── FileLedgerJournalLog.cs
 │   │   │   ├── FileLedgerJournalLogFactory.cs
 │   │   │   ├── FileLegacyIntercompanyAttributionStore.cs
+│   │   │   ├── FileTradeFillLedgerJournalStore.cs
 │   │   │   ├── FiscalYearCloseProjection.cs
 │   │   │   ├── GeneralLedgerExportBuilder.cs
 │   │   │   ├── GeneralLedgerSymbolPnlBuilder.cs
@@ -13862,6 +13868,7 @@ Meridian-main
 │   │   │   │   ├── EventDrivenDecouplingTests.CashFlow.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.CompletedEvidenceReplay.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.cs
+│   │   │   │   ├── EventDrivenDecouplingTests.FileLedger.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.LegacyCashFlowReplay.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.NativePaperParity.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.PreCoverAccountingReplay.cs
@@ -13990,6 +13997,7 @@ Meridian-main
 │   │   │   ├── TradeFillAccountingEvidencePersistenceTests.cs
 │   │   │   ├── TradeFillCanonicalScopeTests.cs
 │   │   │   ├── TradeFillHandoffFailureStoreConcurrencyTests.cs
+│   │   │   ├── TradeFillLedgerScopeBindingTests.cs
 │   │   │   ├── TradierExecutionReconciliationTests.cs
 │   │   │   ├── TypedOrderEntryTests.cs
 │   │   │   ├── UntrackedFillPositionContextTests.cs
@@ -15163,6 +15171,7 @@ Meridian-main
 │   │   │   ├── FileLedgerJournalLogTests.cs
 │   │   │   ├── FileMaintenanceServiceTests.cs
 │   │   │   ├── FilePermissionsServiceTests.cs
+│   │   │   ├── FileTradeFillLedgerJournalStoreTests.cs
 │   │   │   ├── FiscalYearClosePlanPostgresTests.cs
 │   │   │   ├── FundAccountTenantColumnMigrationTests.cs
 │   │   │   ├── FundScopedWriteTenantGateTests.cs

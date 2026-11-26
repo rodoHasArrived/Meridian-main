@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DiscoveryQuery
+
+Qualified name: <code>Meridian.Storage.Services.DiscoveryQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:779](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L779).
+
+```csharp
+public sealed record DiscoveryQuery;
+```
+
 ## EventBuffer (generic arity 1)
 
 Qualified name: <code>Meridian.Storage.Services.EventBuffer</code>. Kind: `class`.
@@ -916,14 +926,4 @@ Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:447](../../../..
 
 ```csharp
 public sealed record LifecycleEvaluationResult(DateTime EvaluatedAtUtc, int FilesEvaluated, IReadOnlyList<LifecycleAction> Actions, IReadOnlyList<string> Errors);
-```
-
-## LifecycleExecutionResult
-
-Qualified name: <code>Meridian.Storage.Services.LifecycleExecutionResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:471](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L471).
-
-```csharp
-public sealed record LifecycleExecutionResult(DateTime ExecutedAtUtc, int ActionsExecuted, int ActionsFailed, long BytesMigrated, long BytesDeleted, bool DryRun, IReadOnlyList<string> Errors);
 ```

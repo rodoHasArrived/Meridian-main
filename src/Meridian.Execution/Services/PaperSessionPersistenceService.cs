@@ -40,6 +40,10 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
     private readonly IPaperSessionStore? _store;
     private readonly PaperFinancingPostingService? _financing;
     private readonly ResolvePaperAccountCurrency? _resolveAccountCurrency;
+    // The posting scope new sessions are bound to. Financing supplies it when composed; a host
+    // that posts fills without financing (the file-backed trade-fill journal) supplies it directly,
+    // so scope rollovers still make prior-scope sessions read-only.
+    private readonly TradeFillLedgerPostingContext? _accountingContext;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly ILogger<PaperSessionPersistenceService> _logger;
     private Task? _initialisationTask;
@@ -53,13 +57,21 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         IPaperSessionStore? store = null,
         ExecutionAuditTrailService? auditTrail = null,
         PaperFinancingPostingService? financing = null,
-        ResolvePaperAccountCurrency? resolveAccountCurrency = null)
+        ResolvePaperAccountCurrency? resolveAccountCurrency = null,
+        TradeFillLedgerPostingContext? accountingContext = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _store = store;
         _auditTrail = auditTrail;
         _financing = financing;
         _resolveAccountCurrency = resolveAccountCurrency;
+        if (financing is not null && accountingContext is not null && accountingContext != financing.PostingContext)
+        {
+            throw new ArgumentException(
+                "The paper-session accounting scope must match the financing posting scope.", nameof(accountingContext));
+        }
+
+        _accountingContext = financing?.PostingContext ?? accountingContext;
     }
 
     // ------------------------------------------------------------------
@@ -164,7 +176,7 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
             var (financingCharges, accountingUnavailableReason) = await LoadSessionFinancingAsync(
                 record.AccountingContext, record.SessionId, ct).ConfigureAwait(false);
             var historicalAccounting = record.AccountingContext is not null
-                && record.AccountingContext != _financing?.PostingContext;
+                && record.AccountingContext != _accountingContext;
             if (financingCharges.Count > 0 && record.AccountingContext is null)
                 throw new InvalidDataException("An unbound paper session cannot claim retained financing assessments.");
             var appliedFillHashes = new Dictionary<Guid, string>();
@@ -361,9 +373,9 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                 // evidence can cite exactly which paper execution model produced them.
                 MatchingModelVersion = PaperMatching.PaperOrderMatchingPolicy.MatchingModelVersion,
                 CostModelVersion = PaperMatching.PaperTradingCostModel.CostModelVersion,
-                AccountingContext = _financing?.PostingContext,
-                FinancialAccountId = _financing is null ? request.FinancialAccountId : PaperTradingPortfolio.DefaultAccountId,
-                JournalCurrency = _store is { SupportsJournalBatches: true } && _financing is null ? NativeJournalCurrency : null,
+                AccountingContext = _accountingContext,
+                FinancialAccountId = _accountingContext is null ? request.FinancialAccountId : PaperTradingPortfolio.DefaultAccountId,
+                JournalCurrency = _store is { SupportsJournalBatches: true } && _accountingContext is null ? NativeJournalCurrency : null,
                 IsAccountDefault = isAccountDefault
             };
 
@@ -1951,45 +1963,5 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                     (fill.Commission ?? 0m) + (fill.Fees ?? 0m) + (fill.SlippageCost ?? 0m)),
                 AccountingUnavailableReason: session.AccountingUnavailableReason);
         }
-    }
-
-    private sealed class PaperSession
-    {
-        public object SyncRoot { get; } = new();
-        public required string SessionId { get; init; }
-        public required string StrategyId { get; init; }
-        public string? StrategyName { get; init; }
-        public decimal InitialCash { get; init; }
-        public DateTimeOffset CreatedAt { get; init; }
-        public DateTimeOffset? ClosedAt { get; set; }
-        public bool IsActive { get; set; } = true;
-        public List<string> Symbols { get; init; } = [];
-        public string? MatchingModelVersion { get; init; }
-        public string? CostModelVersion { get; init; }
-        public TradeFillLedgerPostingContext? AccountingContext { get; init; }
-        public string? FinancialAccountId { get; init; }
-        public string? JournalCurrency { get; init; }
-        public bool IsAccountDefault { get; init; }
-        public HashSet<string> NativeOrderReservations { get; } = new(StringComparer.OrdinalIgnoreCase);
-        public IReadOnlyLedger? DurableLedger { get; set; }
-        public Dictionary<Guid, PaperSessionJournalReceipt> DurableReceipts { get; set; } = [];
-        public List<PaperSessionFillRecord> DurableFills { get; } = [];
-        public Guid? PendingDurableEffect { get; set; }
-        public string? AccountingUnavailableReason { get; init; }
-        public PaperTradingPortfolio? Portfolio { get; set; }
-        public List<OrderState> OrderHistory { get; } = [];
-        public List<ExecutionReport> FillHistory { get; } = [];
-        public List<PaperSessionSettlementRecord> SettlementHistory { get; } = [];
-        public List<PaperFinancingCharge> FinancingHistory { get; } = [];
-        public Guid? PendingFinancingSourceEventId { get; set; }
-        public Dictionary<Guid, string> AppliedFillHashes { get; } = [];
-        public Dictionary<Guid, (int Version, string? FinancialAccountId)> FillAccountingProvenance { get; } = [];
-
-        /// <summary>
-        /// Ledger reconstructed from persisted JSONL entries on load (closed sessions only).
-        /// For active sessions use <c>Portfolio.Ledger</c> instead.
-        /// </summary>
-        public IReadOnlyLedger? ReconstructedLedger { get; init; }
-        public LedgerReconstructionResult Reconstruction { get; init; } = LedgerReconstructionResult.Empty;
     }
 }
