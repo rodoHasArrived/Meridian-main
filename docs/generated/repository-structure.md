@@ -751,6 +751,8 @@ Meridian-main
 │   │   │   └── action.yml
 │   │   ├── install-playwright-chromium
 │   │   │   └── action.yml
+│   │   ├── service-backed-integrations
+│   │   │   └── action.yml
 │   │   └── setup-dotnet-nuget
 │   │       └── action.yml
 │   ├── agents

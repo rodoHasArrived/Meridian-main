@@ -9,8 +9,8 @@ on a trigger or purpose stated here.
 
 | Workflow | File | Runs on |
 |---|---|---|
-| Meridian CI | `meridian-ci.yml` | PRs, `main` pushes, merge groups, manual. Four lanes plus `quality-gate` and `integration-gate` |
-| Service-backed Integrations | `service-backed-integrations.yml` | Reusable; called by Meridian CI and Production Certification |
+| Meridian CI | `meridian-ci.yml` | PRs, `main` pushes, merge groups, manual. Four lanes in three jobs plus `quality-gate` and `integration-gate` |
+| Service-backed Integrations | `service-backed-integrations.yml` | Reusable; called by Production Certification. Its suites live in the `.github/actions/service-backed-integrations` action, which Meridian CI's `integration-gate` also runs |
 | CI | `ci.yml` | Secret Scan on PRs/pushes/merge groups; nightly and manual coverage |
 | CodeQL | `codeql.yml` | PRs, `main` pushes, weekly, manual, release gate |
 | Maintenance | `maintenance.yml` | Workflow/docs/tooling changes, weekly, manual |

@@ -18,7 +18,7 @@ counts depend on Markdown across the repository; the structure report depends on
 path. A browser source merge requires a new build artifact with new hashes and removal of old ones. Taking either
 parent's output is only a seed for regeneration, not proof that the merged tree is current.
 
-The canonical `Meridian CI / verify-docs` lane already runs the maintained generation sequence
+The canonical `verify-docs` lane of Meridian CI already runs the maintained generation sequence
 and freshness-checks its reviewed outputs; mechanical outputs are CI artifacts. `meridian-ci.yml` runs without path filters on pull requests, main pushes,
 and `merge_group` events. Earlier versions of this note incorrectly described missing whole-tree
 and merge-group detection. Those gaps are closed by the canonical lane. Documentation Automation provides a manual refresh using the same catalog. The stable `quality-gate` still requires all four canonical lanes.

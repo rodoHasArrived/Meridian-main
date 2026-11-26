@@ -13,8 +13,8 @@ Follow [AGENTS.md](../../../AGENTS.md) for the current contribution and review r
 
 | Surface | Current responsibility |
 | --- | --- |
-| `Meridian CI` (`meridian-ci.yml`) | Runs `verify-dotnet`, `verify-browser`, `verify-docs`, and `verify-workflows`; their stable aggregate is `quality-gate`. |
-| `Meridian CI / integration-gate` | Separately reports service-backed PostgreSQL integration evidence from the shared `service-backed-integrations.yml` workflow. It is not a fifth local `scripts/ci.sh` lane. |
+| `Meridian CI` (`meridian-ci.yml`) | Runs the `verify-dotnet`, `verify-browser`, `verify-docs` and `verify-workflows` lanes (docs and workflows share one job); their stable aggregate is `quality-gate`. |
+| `Meridian CI / integration-gate` | Runs the service-backed PostgreSQL integration suites itself through the shared `.github/actions/service-backed-integrations` action (also used by Production Certification) and reports their evidence. It is not a fifth local `scripts/ci.sh` lane. |
 | Legacy `CI` (`ci.yml`) | Owns Secret Scan and nightly/manual coverage/scenario execution, not the canonical .NET/browser/docs lanes. |
 | Documentation Automation | Validates documentation and runs maintained generation/freshness checks. Generated changes belong to their generators, not manual edits. |
 | Windows Desktop Build / Targeted Test | Provide Windows desktop validation and whitelisted manually selected hosted checks. A targeted pass establishes only its selected scope. |

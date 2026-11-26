@@ -22,16 +22,18 @@ or certification evidence need separate governed preservation before expiry. See
 [reproduction, retention rationale and storage measurement](../../docs/engineering/pipeline-benchmark.md).
 Its workflow changes require **human governance review**. Sustained-load soak remains separate.
 
-Meridian CI also calls `service-backed-integrations.yml` on pull requests (including forks),
-merge groups, main pushes and manual/reusable runs. Its always-reported `integration-gate`
-companion requires a successful PostgreSQL run. The one exception shares the .NET lane's change
-classification: a pull request that changes only recognized documentation skips the
-integration job, and the gate passes only for that explicit, successfully classified skip.
+Meridian CI's `integration-gate` job runs the PostgreSQL-backed suites itself on pull requests
+(including forks), merge groups, main pushes and manual/reusable runs, through the composite action
+`.github/actions/service-backed-integrations`, and requires a successful run with complete evidence.
+The one exception uses the .NET lane's change classification (the same steps, verbatim): a pull
+request that changes only recognized documentation skips the suites, and the gate passes only for
+that explicit, successfully classified skip.
 The Meridian suite runs as the two complementary processes declared in
 `integration_evidence.MERIDIAN_PROCESSES` (the serial `AtomicTaxLotJournalStoreTests` class
 against its own `meridian_tax_lot` database, every other test against `meridian`), started by
 `run-meridian-integrations.py` from one build with isolated outputs. The four canonical `scripts/ci.sh` lanes and
-their `quality-gate` remain unchanged. Production Certification calls the same implementation.
+their `quality-gate` remain unchanged. Production Certification runs the same action through
+`service-backed-integrations.yml`.
 Within the release coordinator it consumes CI's immutable integration artifact and revalidates
 the exact commit/run/attempt, producer workflow, suite results, coverage and file digests.
 Standalone certification executes the tests itself. Reuse retains both the original receipt and
@@ -127,8 +129,8 @@ before claiming an end-to-end speedup.
 | `quality-gate` | `Meridian CI` (`meridian-ci.yml`) fans out parallel evidence lanes and finishes with one stable `quality-gate` aggregator. `quality-gate` is one of four GitHub Actions contexts the administrator rollout in [CI/CD ownership and rollout](../../docs/engineering/ci-cd-optimization.md#administrator-rollout) asks to be required for `main` (`quality-gate`, `Secret Scan`, `Analyze csharp`, `Analyze javascript-typescript`); `integration-gate` is an optional companion. Required contexts are set in repository settings, not by these files; the owner confirms them, and path-filtered specialist checks are not required. Which tier of local verification applies to a change is defined in [solo-developer workflow](../../docs/ai/solo-developer-workflow.md#verification-tiers). |
 | `verify-dotnet` | `Meridian CI` .NET lane plus local `bash scripts/ci.sh --lane verify-dotnet`. |
 | `verify-browser` | `Meridian CI` browser lane plus local `bash scripts/ci.sh --lane verify-browser`. |
-| `verify-docs` | `Meridian CI` owns automatic docs/source/AI, rules/memory, diagram generation, dashboard regression and freshness checks. Documentation Automation is manual-only; Roadmap Source Docs retains phase scope/schema checks and standalone manual generation. |
-| `verify-workflows` | `Meridian CI` workflow hygiene lane plus lane manifest validation. |
+| `verify-docs` | `Meridian CI` (in the shared `verify-docs-workflows` job) owns automatic docs/source/AI, rules/memory, diagram generation, dashboard regression and freshness checks. Documentation Automation is manual-only; Roadmap Source Docs retains phase scope/schema checks and standalone manual generation. |
+| `verify-workflows` | `Meridian CI` workflow hygiene lane plus lane manifest validation, run after the docs lane in the shared `verify-docs-workflows` job. |
 | `verify-fast` | `make verify-fast` and `bash scripts/ci.sh --lane verify-fast` both run the complete `verify-dotnet` and `verify-browser` lanes, including their static ratchets. |
 | `targeted-test` | `Targeted Test` (`targeted-test.yml`) for manually dispatched GitHub-hosted curated lanes. |
 | `schema-control` | `PostgreSQL Schema Control` (`schema-control.yml`) for migration execution, catalog/policy validation, and generated schema/data-object drift checks. |
@@ -164,14 +166,21 @@ executes the whole lane.
 
 `verify-dotnet` also classifies the pull request itself with `detect-dotnet-changes.py`; there is
 no separate `changes` job for any lane to queue behind. On a docs-only PR it runs, skips its .NET
-steps and reports success, and `quality-gate` requires its decision to be `true` or `false`. The
-reusable integration job classifies the same way when Meridian CI passes
-`skip-when-docs-only: true`, and `integration-gate` fails unless the two lanes' decisions agree.
-Production Certification never passes that input, so it always runs the suite.
+steps and reports success, and `quality-gate` requires its decision to be `true` or `false`.
+`integration-gate` runs the same two classification steps verbatim instead of waiting for
+`verify-dotnet`; a contract test keeps them identical, so both jobs reach the same decision.
+Production Certification always runs the suite.
 
-Pushes to `main` never cancel a running Meridian CI run, so every merge gets a completed
-`quality-gate`; GitHub keeps only the newest pending run per concurrency group. Pull request
-and merge-group runs still cancel superseded work.
+Meridian CI runs five jobs: `verify-dotnet`, `verify-browser`, `verify-docs-workflows`,
+`quality-gate` and `integration-gate`. Every job is a separate wait for a hosted runner, so the
+docs and workflow lanes share one job: each lane is still its own `scripts/ci.sh` run with its own
+artifact (`meridian-ci-docs-*`, `meridian-ci-workflows-*`), the workflow lane runs even when the
+docs lane fails, and `quality-gate` reports both lanes and the shared job's result.
+
+Pushes to `main` never cancel a running Meridian CI run. GitHub keeps only the newest pending run
+per concurrency group, so **the newest commit on `main` gets a completed `quality-gate`**, and a
+merge that lands while a run is in progress is covered by the next run rather than its own. Pull
+request and merge-group runs still cancel superseded work.
 
 CodeQL, legacy CI's `Secret Scan`, Windows Desktop Build and Roadmap Source Docs skip draft pull
 requests and run on `ready_for_review`. A draft cannot merge, so the required `Secret Scan` and
@@ -236,8 +245,8 @@ claiming a speedup.
 
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
-| Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET` and browser workstation (one job each that runs the lane and proves its roster), docs/source/AI, and workflow-hygiene lanes in parallel, then reports the stable `quality-gate` aggregator. Calls shared PostgreSQL integrations and always reports their separate `integration-gate` companion. Required-check changes need administrator rollout and human review. | Lane summaries, build logs, TRX summaries, docs outputs, workflow-hygiene and PostgreSQL integration evidence |
-| Service-backed Integrations | `service-backed-integrations.yml` | Reusable calls from Meridian CI and Production Certification | Runs the Meridian, Direct Lending and Demo integration projects independently against disposable PostgreSQL, runs the Meridian suite as two declared processes with separate databases, validates every TRX, all three required suite prefixes and both process prefixes, and retains coverage plus schema evidence for each database. Fork PRs use the event commit and read-only permissions without production secrets. | TRX/Cobertura/skip evidence, PostgreSQL schema dump and table/migration-ledger inventories |
+| Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET` and browser workstation (one job each that runs the lane and proves its roster) and the docs/source/AI and workflow-hygiene lanes (one shared job) in parallel, then reports the stable `quality-gate` aggregator. Its `integration-gate` job runs the shared PostgreSQL integration action itself and reports the result. Required-check changes need administrator rollout and human review. | Lane summaries, build logs, TRX summaries, docs outputs, workflow-hygiene and PostgreSQL integration evidence |
+| Service-backed Integrations | `service-backed-integrations.yml` | Reusable calls from Production Certification | Runs the `.github/actions/service-backed-integrations` composite action (also used directly by Meridian CI's `integration-gate`): the Meridian, Direct Lending and Demo integration projects independently against disposable PostgreSQL, runs the Meridian suite as two declared processes with separate databases, validates every TRX, all three required suite prefixes and both process prefixes, and retains coverage plus schema evidence for each database. Fork PRs use the event commit and read-only permissions without production secrets. | TRX/Cobertura/skip evidence, PostgreSQL schema dump and table/migration-ledger inventories |
 | CI | `ci.yml` | Pull requests, pushes to `main`, merge groups, nightly, manual | Runs Secret Scan on PRs, main pushes and merge groups. Nightly/manual `main` runs retain full coverage and scenario evidence; canonical Meridian CI owns .NET/browser/docs checks. | Secret scan SARIF/evidence and nightly coverage artifacts |
 | CodeQL | `codeql.yml` | Pull requests, pushes to `main`, weekly schedule, manual, reusable release gate | Runs GitHub CodeQL static analysis for C# and JavaScript/TypeScript. C# uses an explicit .NET 10 restore/build (`build-mode: manual`); JavaScript/TypeScript uses `build-mode: none`. On pull requests, `detect-codeql-languages.py` skips a language whose analysis the change cannot affect (documentation for both; dashboard-only changes for C#; .NET source and project files for JavaScript/TypeScript). The required `Analyze <language>` check still runs and passes; unknown paths and empty diffs analyze, and every other event always analyzes. | Security alerts and retained SARIF evidence |
 | Targeted Test | `targeted-test.yml` | Manual only | Runs a whitelisted hosted validation mode when local machine capacity, locks, or long-running suites make local validation impractical. Modes include filtered .NET, browser workstation, docs/source, WPF dev loop (optional filter or `build_only`), WPF route (`wpf_route=both` by default, or one route), and desktop smoke. | Targeted TRX, browser bundle, docs/source, WPF validation, or desktop smoke artifacts |
