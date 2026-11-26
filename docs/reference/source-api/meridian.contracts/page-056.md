@@ -6,6 +6,59 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterClosePricesJsonContext
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePricesJsonContext.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePricesJsonContext.cs#L14).
+
+Provides source-generated JSON metadata for retained close price snapshots and their approval evidence.
+
+```csharp
+public sealed partial class SecurityMasterClosePricesJsonContext : JsonSerializerContext;
+```
+
+## SecurityMasterConflict
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterConflict</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L45).
+
+A field-level or identifier-level conflict detected between providers for the same security.
+
+```csharp
+public sealed record SecurityMasterConflict(Guid ConflictId, Guid SecurityId, string ConflictKind, string FieldPath, string ProviderA, string ValueA, string ProviderB, string ValueB, DateTimeOffset DetectedAt, string Status)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? ResolvedWinnerSource { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L58) | The source the resolver chose as the winner; set atomically when the conflict resolves. |
+| <code>public string? ResolvedBy { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L61) | The actor who resolved the conflict; set atomically when the conflict resolves. |
+| <code>public string? ResolvedReason { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L64) | The resolver-supplied reason; set atomically when the conflict resolves. |
+| <code>public DateTimeOffset? ResolvedAt { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L67) | When the conflict was resolved; set atomically when the conflict resolves. |
+
+## SecurityMasterConflictFieldCategories
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategories</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L36).
+
+Classifies a SecurityMasterConflict by the declared names in its field path, not by substrings of the path text. Each dot-separated path segment is compared whole (case-insensitive, underscores ignored) with the names below, so a field such as ProfileFields.transferRestrictions no longer reads as an identifier because it contains &quot;ric&quot;, and ProfileFields.slotCount no longer reads as a trading parameter because it contains &quot;lot&quot;. Identifier names come from SecurityIdentifierKind (the kinds conflict detection writes as Identifiers.{Kind}) and trading-parameter names from TradingParametersDto (the fields the workbench reads under TradingParameters.). A field outside these declared names has no category and takes the default review route.
+
+```csharp
+public static class SecurityMasterConflictFieldCategories
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyDictionary&lt;string, SecurityMasterConflictFieldCategory&gt; DeclaredNames =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L42) | The declared segment names and the category each one carries. |
+| <code>public static SecurityMasterConflictFieldCategory For(SecurityMasterConflict conflict);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L44) |  |
+| <code>public static SecurityMasterConflictFieldCategory For(string? fieldPath, string? conflictKind);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L50) |  |
+
 ## SecurityMasterConflictFieldCategory
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategory</code>. Kind: `enum`.
@@ -726,9 +779,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlyList&lt;SecurityRateFieldDeclaration&gt; All { get; } = [Ratio(&quot;Equity&quot;, &quot;preferredTerms.dividendRate&quot;, &quot;Annual preferred dividend rate&quot;, AnnualRateMax), Coupon(&quot;Bond&quot;, &quot;couponRate&quot;, &quot;Annual fixed coupon rate&quot;), SignedRate(&quot;Bond&quot;, &quot;capRate&quot;, &quot;Floating coupon cap&quot;, consumedBy : LegacyCashFlow + &quot;, &quot; + Preview), SignedRate(&quot;Bond&quot;, &quot;floorRate&quot;, &quot;Floating coupon floor&quot;, consumedBy : LegacyCashFlow + &quot;, &quot; + Preview), Coupon(&quot;Bond&quot;, &quot;stepSchedule.rate&quot;, &quot;Step-coupon rate from its effective date&quot;, Preview), SignedRate(&quot;Bond&quot;, &quot;currentIndexRate&quot;, &quot;Observed floating index fixing&quot;, consumedBy : LegacyCashFlow), SignedRate(&quot;Bond&quot;, &quot;resetSchedule.fixingRate&quot;, &quot;Observed floating index fixing on a reset date&quot;, consumedBy : LegacyCashFlow + &quot;, &quot; + Preview), Bps(&quot;Bond&quot;, &quot;spreadBps&quot;, &quot;Floating coupon spread over the index&quot;, allowsNegative : true, LegacyCashFlow + &quot;, &quot; + Preview), Bps(&quot;Bond&quot;, &quot;callSchedule.makeWholeSpreadBps&quot;, &quot;Make-whole call spread over the benchmark&quot;, allowsNegative : false), SignedRate(&quot;Deposit&quot;, &quot;interestRate&quot;, &quot;Annual deposit interest rate&quot;, RateUnit.Fraction, CouponReaders + &quot;, &quot; + Obligations), Coupon(&quot;CertificateOfDeposit&quot;, &quot;couponRate&quot;, &quot;Annual CD coupon rate&quot;), Coupon(&quot;CommercialPaper&quot;, &quot;discountRate&quot;, &quot;Discount yield (not a coupon; accretion only)&quot;, &quot;&quot;), Coupon(&quot;TreasuryBill&quot;, &quot;discountRate&quot;, &quot;Discount yield (not a coupon; accretion only)&quot;, &quot;&quot;), SignedRate(&quot;Repo&quot;, &quot;repoRate&quot;, &quot;Annual repo financing rate&quot;, consumedBy : CouponReaders), Ratio(&quot;Repo&quot;, &quot;haircut&quot;, &quot;Collateral haircut&quot;, 1m), SignedRate(&quot;CashSweep&quot;, &quot;yieldRate&quot;, &quot;Sweep vehicle yield&quot;, RateUnit.Fraction), SignedRate(&quot;Swap&quot;, &quot;legs.fixedRate&quot;, &quot;Fixed-leg annual rate&quot;, consumedBy : LegacyCashFlow + &quot;, &quot; + Preview), SignedRate(&quot;Swap&quot;, &quot;legs.currentIndexRate&quot;, &quot;Observed floating index fixing&quot;, consumedBy : LegacyCashFlow), SignedRate(&quot;Swap&quot;, &quot;legs.resetSchedule.fixingRate&quot;, &quot;Observed floating index fixing on a reset date&quot;, consumedBy : LegacyCashFlow + &quot;, &quot; + Preview), Bps(&quot;Swap&quot;, &quot;legs.spreadBps&quot;, &quot;Floating-leg spread over the index&quot;, allowsNegative : true, LegacyCashFlow + &quot;, &quot; + Preview), Bps(&quot;DirectLoan&quot;, &quot;spreadBps&quot;, &quot;Loan spread over the reference index&quot;, allowsNegative : true), Coupon(&quot;DirectLoan&quot;, &quot;currentCouponRate&quot;, &quot;Current all-in loan coupon&quot;), Coupon(&quot;StructuredCredit&quot;, &quot;couponOrIndex&quot;, &quot;Numeric tranche coupon (an index name is not a rate)&quot;), Coupon(&quot;StructuredCredit&quot;, &quot;weightedAverageCoupon&quot;, &quot;Collateral weighted-average coupon&quot;, Accounting), Ratio(&quot;StructuredCredit&quot;, &quot;attachmentPoint&quot;, &quot;Loss attachment point&quot;, 1m), Ratio(&quot;StructuredCredit&quot;, &quot;detachmentPoint&quot;, &quot;Loss detachment point&quot;, 1m), Ratio(&quot;CommitmentGuarantee&quot;, &quot;feeRate&quot;, &quot;Commitment or guarantee fee rate&quot;, AnnualRateMax), Bps(&quot;CreditDefaultSwap&quot;, &quot;fixedCouponBps&quot;, &quot;CDS running coupon&quot;, allowsNegative : false), Ratio(&quot;CreditDefaultSwap&quot;, &quot;recoveryRateAssumption&quot;, &quot;Assumed recovery rate&quot;, 1m), SignedRate(&quot;Swaption&quot;, &quot;strikeRate&quot;, &quot;Underlying swap fixed-rate strike&quot;), SignedRate(&quot;CapFloor&quot;, &quot;capStrike&quot;, &quot;Cap strike rate&quot;), SignedRate(&quot;CapFloor&quot;, &quot;floorStrike&quot;, &quot;Floor strike rate&quot;), Ratio(&quot;StructuredNote&quot;, &quot;principalProtectionPct&quot;, &quot;Protected share of principal&quot;, null), Ratio(&quot;StructuredNote&quot;, &quot;participationRate&quot;, &quot;Participation in the underlying&#x27;s return&quot;, null), Ratio(&quot;StructuredNote&quot;, &quot;returnCap&quot;, &quot;Cap on the participating return&quot;, null), Coupon(&quot;StructuredNote&quot;, &quot;couponRate&quot;, &quot;Annual note coupon rate&quot;, &quot;&quot;)];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs:82](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs#L82) | Every declared rate field, in catalog order. |
-| <code>public static SecurityRateFieldDeclaration? Find(string? assetClass, string fieldKey);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs:144](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs#L144) | The declaration of fieldKey on assetClass (canonical name or registered alias), or null when the field is not a catalogued rate field. |
-| <code>public static string CouponFieldKey(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs:155](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs#L155) | The flat key that carries the scalar annual coupon for assetClass, matching the class-specific coupon key StructuredCashFlowTermsResolver reads first. |
+| <code>public static IReadOnlyList&lt;SecurityRateFieldDeclaration&gt; All { get; } = SecurityAssetClassModules.All.SelectMany(static module =&gt; module.RateFields).ToArray();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs#L58) | Every declared rate field, in catalog order. |
+| <code>public static SecurityRateFieldDeclaration? Find(string? assetClass, string fieldKey);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs#L68) | The declaration of fieldKey on assetClass (canonical name or registered alias), or null when the field is not a catalogued rate field. |
+| <code>public static string CouponFieldKey(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs#L79) | The flat key that carries the scalar annual coupon for assetClass, matching the class-specific coupon key StructuredCashFlowTermsResolver reads first. |
 
 ## SecurityRateIngestionPointDto
 
@@ -801,58 +854,3 @@ Raw observation and the explicit construction assumption retained with each immu
 ```csharp
 public sealed record SecurityRatePointEvidenceDto(SecurityRateObservationDto Observation, SecurityRateConstructionMethod ConstructionMethod, string MethodDescription, string ReviewedBy);
 ```
-
-## SecurityRateUnit
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRateUnit</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10).
-
-```csharp
-public enum SecurityRateUnit
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Fraction</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10) |  |
-| <code>Percent</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10) |  |
-| <code>BasisPoints</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10) |  |
-| <code>IndexLevel</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10) |  |
-
-## SecurityRawPriceDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRawPriceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L26).
-
-A dated source observation retained without overwriting earlier prices.
-
-```csharp
-public sealed record SecurityRawPriceDto(string SourceId, decimal Price, DateTimeOffset PriceAsOf, SecurityPriceUnit Unit)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityPriceQuotationEvidence? Quotation { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L29) |  |
-
-## SecurityRecordProvenance
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRecordProvenance</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L26).
-
-Typed record-level provenance read from the Security Master provenance document — who supplied the record, when it was true, and who applied it.
-
-```csharp
-public sealed record SecurityRecordProvenance(string SourceSystem, string? SourceRecordId, DateTimeOffset? AsOf, string? UpdatedBy, string? Reason)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityFieldProvenance ForField(string fieldPath, decimal? confidence = null) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L37) | Projects this record-level provenance onto one field — the per-field (vendor, asOf, confidence) attribution consumed by field-conflict assessment and display. |

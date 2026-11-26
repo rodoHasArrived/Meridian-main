@@ -6,68 +6,23 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-23
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.Application
 
-Direct-lending restructuring validates principal relief before mutation and retains the same applied
-amount for servicing principal, drawdown lots, event evidence and the restructuring journal. A stable
-command retry returns committed state; changed terms, dates, reasons or amounts conflict. New events
-retain the original terms-version and servicing-revision evidence for recovery.
+Security Master validation composes one built-in contribution for each of the 32 asset classes
+through `SecurityAssetValidationModules` (`SecurityMaster/Validation/Modules/`). Each class-owned
+factory keeps the rules the class had in `AssetClassValidatorRegistry`; the registry keeps shared
+schema validation, the shared rule types and its public custom-registry constructor. Composition
+refuses a duplicate, missing or mismatched class. `SecurityAssetValidationModuleTests` covers it.
 
-The loan event rebuilder covers every accepted credit and lifecycle event, including historical
-in-memory aliases. Recovery applies recorded write-off/amortization amounts, nullable servicer
-observations, collateral identity and original status/terms evidence without reposting journals.
-Exact duplicates have one effect; conflicting or incomplete aggregate histories fail. New amortization
-events retain opening/closing basis, and historical nonzero amortization without basis evidence remains
-explicitly unrecoverable. Focused coverage: `DirectLendingLifecycleReplayTests`,
-`DirectLendingEventRebuilderTests`, `PostgresDirectLendingCommandServiceTests`,
-`DirectLendingRestructuringTests`.
-
-Accounting closes require the historical adapter's explicit raw-price capability. The mark source
-validates its raw basis, positive price, symbol, session window, actual provider/feed and source-record
-digest. Unsupported or incomplete evidence leaves the mark unavailable and lets the registered chain
-try its next provider. The immutable price reference retains these facts through valuation drafts,
-journal metadata and retry fingerprints. Research-bar adjustment settings remain independent.
-Focused coverage: `AccountingCloseMarkPriceSourceTests`, `AlpacaAccountingClosePriceTests`.
-
-Cross-source backfill reconciliation resolves a complete, bounded exchange-session calendar before
-judging provider agreement. Missing leading, interior or trailing sessions block closure even when
-every provider omits the same date. Results retain the calendar identity, range and expected sessions;
-unknown or partial calendar coverage and older receipts without it remain incomplete. A confirmed
-holiday-only window can close with no bars. Focused coverage: `CrossSourceBackfillReconciliationServiceTests`.
-
-Reconnection and automatic gap remediation stamp an opaque repair-operation reference onto their
-backfill request. The historical writer binds that purpose and the assessment known at ingestion
-to its existing flushed batch receipt. Ordinary backfills do not infer historical repair status.
-The live market-event tap captures the same assessment snapshot with the feed-cache update so paper
-fills never attach a quality score fetched later during accounting.
-
-Loan reconciliation now consumes eligible nonvoid incoming receipts and their retained allocations
-once, by currency and due date. Current durable and synthetic allocation aliases share a matcher;
-PRD-115 principal prepayments, prepaid interest and unapplied cash retain their explained dispositions,
-and outgoing refunds cannot satisfy projected receipts. Retained unapplied-cash application events
-consume their original allocation pools once and match on the application date; refunds reduce those
-pools before later applications. Results retain the application and funding evidence without creating
-another cash receipt. Multiple applications can settle one unambiguous projected obligation; an
-exact combined amount takes precedence over a tolerance-only match. Competing obligations and
-arbitrary subsets remain unmatched. Unlinked, insufficient or incompatible funding leaves coverage
-unavailable.
-Optional amount/day tolerances are pinned
-to the retryable command; omitted requests preserve exact matching. Canonical balance comparisons
-use the registered loan account roles, an atomic exact-book journal capture and any pinned configured
-chart revision, including PIK, prepaid-interest and unapplied-cash balances. Missing role, currency or
-book evidence stays unavailable. A changed canonical security reference or incompatible chart history
-cannot hide earlier carrying legs: the comparison reports unavailable with its captured journal IDs.
-Migration `012_direct_lending_reconciliation_evidence.sql` retains
-new request/source evidence across restarts while leaving legacy evidence unknown.
-
-Historical ticker-era retagging preserves `HistoricalBar.PriceBasis`. The daily-close accounting
-source requires an explicit Raw basis and records `basis=Raw` in new evidence references; adjusted
-or unknown latest observations produce an unavailable mark rather than an older raw substitution.
-This guard does not supply the dedicated raw accounting-close capability or expand its provider
-coverage. Legacy `IsAdjusted=false` alone cannot qualify an accounting mark.
+`SecurityMasterMapping.AssetPackCodecs` composes the decode contributions generated from the
+Contracts binding rows, with the handwritten CustomAsset profile decode and Bond's existing
+diagnostic-order hook. It checks exact catalog coverage before dispatch, so a catalog class
+without exactly one decoder fails at type initialization. The mapping keeps its guards, its
+write refusal and read fallback for an unrecognized class, and the generated-code check in
+`SecurityFlatCodecGenerationTests`. The F# writer and replay behavior are unchanged.
 
 Corporate-action ingest forwards specialized source terms and the provider's original JSON
 record into durable source proposals. Exact raw-text digests are checked before recording; source
@@ -81,8 +36,7 @@ instrument-position projection to registered valuation models. It resolves retai
 Security Master terms, validates their economic window, checks position/state identity and all
 book/policy/account/currency boundaries, and replays the exact golden-copy receipt for quoted
 prices. Stale or mismatched evidence blocks amounts. Supported long holder share/unit conventions
-and original-face DCF delegate to existing kernels; any retained current factor is reconciled with
-the model amount even when current face is absent. Multiplier/notional and ambiguous signed
+and original-face DCF delegate to existing kernels; multiplier/notional and ambiguous signed
 conventions require dedicated adapters. DCF dirty values withhold P/L without a compatible
 carrying/accrual basis. The comparison is market value less retained carrying amount, separate
 from posted ledger, realized, tax-cost or total-return P/L. `KnownAt` is refused because projection
@@ -122,25 +76,16 @@ The current runtime cannot rebuild providers in process, so pending provider rec
 `RequiresRestart=true`; clients must not imply that a connection retry applies new provider options.
 Later live saves retain outstanding restart/reconnect changes; reverting a field to its host baseline
 clears that field's pending state. The journal stores value hashes rather than configuration values.
-After a durable save, `ConfigStore` offers changed settings to local runtime appliers attached to
-the file. Each managed save, including template publication and verified Alpaca feed changes,
-records a distinct revision ID and SHA-256 digest beside the configuration. Only a committed
-receipt matching the current file can carry collector evidence for the `DataSources` section.
-The collector's file watcher reconciles the latest saved document under the same lease as
-configuration writers.
-It records the revision, collector instance, application time, and typed setting paths and
-outcomes. The journal retains the current revision only and stores no configuration values.
-A stopped collector, an externally edited file, or an interrupted receipt yields unknown
-application status. Unacknowledged provider paths carry forward until the collector confirms
-them. A deferred or failed application leaves the saved file intact.
-
-`ProviderConfigReconciler` can apply failover rule thresholds, backup order among providers with
-a live client, the health-check interval and source enable/disable live. Settings the streaming
-runtime ignores are reported as `NoRuntimeEffect`. `CrossProviderPolicyApplier` applies
-`DataQuality.CrossProvider` tolerances to the local `CrossProviderComparisonService`. The collector
-also publishes its coordinator to `StreamingFailoverRegistry.Process` and honours
-`Sources[*].Enabled = false` at startup. A single-source collector acknowledges source toggles
-as changes to failover eligibility and reports a restart requirement when failover is configured.
+After a durable save, `ConfigStore` offers the changed paths to `IConfigurationRuntimeApplier`s attached
+to that file (`ConfigurationRuntimeAppliers`, process-wide because desktop mode hosts the UI server and
+collector in separate containers). Applied paths stop being pending; deferred paths stay
+`RestartHost` with a reason in `ConfigurationChangeStatus.LastApply`; applier failures never fail
+the save. `ProviderConfigReconciler` (attached by `CollectorModeRunner` when streaming failover runs)
+applies failover rule thresholds, backup order among providers with a live client, the health-check
+interval and source enable/disable live, and reports settings the runtime does not read as
+`NoRuntimeEffect`. `CrossProviderPolicyApplier` applies `DataQuality.CrossProvider` tolerances to the
+running `CrossProviderComparisonService`. The collector also publishes its coordinator to
+`StreamingFailoverRegistry.Process` and honours `Sources[*].Enabled = false` at startup.
 `SaveAsync` now also refuses to overwrite a malformed existing authoritative document.
 Feature-capability override saves record their setting changes after the document is durably saved.
 The effective configuration projection reads declared fields and reports activation impact and
@@ -240,19 +185,6 @@ lines as authoritative posting, including reversal, principal receipt, amortizat
 Unknown roles, unbalanced projections, missing required amounts and negative source amounts fail
 before posting or draft creation. Public compatibility line helpers use registry definitions without
 inventing a posting scope; zero-line filtering cannot discard a malformed monetary component.
-
-Loan restructuring uses shared haircut validation against outstanding principal in both the in-memory
-and PostgreSQL command paths. Null means zero; a negative amount or one above outstanding principal
-is rejected before terms, state or history changes. The admitted amount reduces principal and
-drawdown lots using the existing earliest-drawdown policy and supplies the restructuring journal.
-The event retains `appliedPrincipalHaircut`, matching journal amount aliases, and the exact new
-terms version and servicing revision. `DirectLendingEventRebuilder` restores these facts, including
-their recorded timestamps, and rejects inconsistent amounts or projection evidence. Older events
-without embedded revisions use their retained event timestamp. Identical command retries reuse
-the committed restructuring, including after a full haircut; altered requests under the same
-command ID conflict. Restructuring outbox messages use the retained event ID in their duplicate
-key so earlier loan events cannot suppress their publication. Rebuilding state leaves retained
-events and posted journals unchanged.
 
 Backfill diagnostics render date ranges invariantly and encode line breaks in untrusted log fields.
 Provider requests and coverage checkpoints retain the original symbol identities.
@@ -1963,7 +1895,7 @@ infrastructure details when an abstraction already exists.
 ## Related docs
 
 - `docs/architecture/module-map.md`
-- `docs/start/README.md`
+- `docs/developer/build-test-run.md`
 - `docs/source/generated/source-module-index.md`
 
 ### Cash-flow and price readiness

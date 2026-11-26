@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TextPrimitives
+
+Qualified name: <code>Meridian.Contracts.Text.TextPrimitives</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Text/TextPrimitives.cs:33](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L33).
+
+The shared home for the trivial string helpers that were previously redeclared as private static in hundreds of files.
+
+```csharp
+public static class TextPrimitives
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string? NormalizeOptional(string? value) =&gt; …;</code> | [src/Meridian.Contracts/Text/TextPrimitives.cs:43](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L43) | Returns value trimmed, or null when it is null, empty, or entirely white space. |
+| <code>public static string RequireText(string? value, [CallerArgumentExpression(nameof(value))] string? paramName = null);</code> | [src/Meridian.Contracts/Text/TextPrimitives.cs:58](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L58) | Returns value trimmed, throwing when it is null, empty, or entirely white space. |
+| <code>public static string? FirstNonBlank(params string?[] values);</code> | [src/Meridian.Contracts/Text/TextPrimitives.cs:74](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L74) | Returns the first entry of values that is not null, empty, or entirely white space, trimmed; or null when every entry is blank. |
+
+## MmfDetailDto
+
+Qualified name: <code>Meridian.Contracts.Treasury.MmfDetailDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:25](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L25).
+
+Full reference record for a money market fund, including canonical identity, sweep eligibility, weighted-average maturity, and liquidity-fee metadata.
+
+```csharp
+public sealed record MmfDetailDto(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool IsSweepEligible, int? WeightedAverageMaturityDays, bool HasLiquidityFee, string Status, long Version, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo);
+```
+
+## MmfFundFamilyDto
+
+Qualified name: <code>Meridian.Contracts.Treasury.MmfFundFamilyDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:63](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L63).
+
+Fund-family grouping projection. Normalised family name is upper-case; members are the canonical security IDs of all active MMFs sharing that family lineage.
+
+```csharp
+public sealed record MmfFundFamilyDto(string NormalizedFamilyName, IReadOnlyList<Guid> MemberSecurityIds, int MemberCount, DateTimeOffset AsOf);
+```
+
 ## MmfLiquidityDto
 
 Qualified name: <code>Meridian.Contracts.Treasury.MmfLiquidityDto</code>. Kind: `record`.
@@ -611,45 +655,4 @@ Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:145](../../../.
 
 ```csharp
 public sealed record BrokerageCashFlowSummaryDto(Guid FundAccountId, string? ProviderId, string? ExternalAccountId, BrokerageAccountKindDto AccountKind, DateOnly? From, DateOnly? To, decimal TotalInflows, decimal TotalOutflows, decimal NetCashFlow, string Currency, int TransactionCount, IReadOnlyList<BrokerageCashFlowEntryDto> Entries, IReadOnlyList<string> Warnings);
-```
-
-## BrokerageConnectionStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageConnectionStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:27](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L27).
-
-```csharp
-public enum BrokerageConnectionStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotConfigured = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L29) |  |
-| <code>Disconnected = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:30](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L30) |  |
-| <code>AuthorizationPending = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L31) |  |
-| <code>Connected = 3</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L32) |  |
-| <code>ReauthorizationRequired = 4</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L33) |  |
-| <code>Degraded = 5</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:34](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L34) |  |
-
-## BrokerageConnectionStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageConnectionStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:87](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L87).
-
-```csharp
-public sealed record BrokerageConnectionStatusDto(string ProviderId, string DisplayName, BrokerageConnectionStateDto State, bool IsConfigured, bool IsConnected, string? AuthorizationUrl, DateTimeOffset? ConnectedAt, DateTimeOffset? ExpiresAt, string? LastError, IReadOnlyList<string> Warnings, IReadOnlyList<string> Scopes, string? Environment = null, string? ExternalAccountId = null, DateTimeOffset? VerifiedAt = null, string? MaskedKeyId = null);
-```
-
-## BrokerageHouseholdAccountDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageHouseholdAccountDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:160](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L160).
-
-```csharp
-public sealed record BrokerageHouseholdAccountDto(Guid FundAccountId, string ProviderId, string ExternalAccountId, string DisplayName, BrokerageAccountKindDto AccountKind, WorkstationBrokerageSyncHealth Health, decimal Cash, decimal Equity, decimal BuyingPower, string Currency, DateTimeOffset SyncedAt, int PositionCount, int CashTransactionCount, IReadOnlyList<string> Warnings);
 ```

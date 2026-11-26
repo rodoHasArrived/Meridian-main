@@ -6,6 +6,53 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementMatchTier
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementMatchTier</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:39](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L39).
+
+Confidence tier assigned to a statement item matched against Meridian books and activity.
+
+```csharp
+public enum StatementMatchTier : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L41) |  |
+| <code>Exact = 1</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L42) |  |
+| <code>WithinTolerance = 2</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L43) |  |
+| <code>Probable = 3</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L44) |  |
+| <code>Manual = 4</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:45](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L45) |  |
+| <code>Unmatched = 5</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L46) |  |
+
+## StatementNormalizedCashDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementNormalizedCashDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:125](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L125).
+
+Canonical cash-balance row normalized from a statement source.
+
+```csharp
+public sealed record StatementNormalizedCashDto(string? RowId, string? AccountId, string? Currency, decimal? Amount, DateTimeOffset? AsOfUtc, string? Fingerprint, string? CashType = null, string? SourceReference = null);
+```
+
+## StatementNormalizedPositionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementNormalizedPositionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:106](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L106).
+
+Canonical position row normalized from a statement source.
+
+```csharp
+public sealed record StatementNormalizedPositionDto(string? RowId, string? AccountId, string? Symbol, decimal? Quantity, decimal? MarketPrice, decimal? MarketValue, string? Currency, DateTimeOffset? AsOfUtc, string? Fingerprint, string? SecurityId = null, string? Cusip = null, string? Isin = null, string? Sedol = null, string? SourceReference = null);
+```
+
 ## StatementNormalizedTransactionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementNormalizedTransactionDto</code>. Kind: `record`.
@@ -597,40 +644,4 @@ Generated QuantScript source and metadata.
 
 ```csharp
 public sealed record StrategyDesignCompiledScript(string Source, string DatasetFingerprint, IReadOnlyList<string> FieldRefs, IReadOnlyList<string> DisabledFieldRefs);
-```
-
-## StrategyDesignDocument
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignDocument</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L9).
-
-Workstation-facing strategy design document persisted by the Strategy Builder. The opaque server revision is required when updating or running a scoped draft.
-
-```csharp
-public sealed record StrategyDesignDocument(string DocumentId, string Name, string Description, string Version, string DatasetReference, IReadOnlyList<string> Universe, IReadOnlyList<StrategyDesignCell> Cells, IReadOnlyList<StrategyDesignTransition> Transitions, IReadOnlyDictionary<string, string>? Metadata, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string? Revision = null);
-```
-
-## StrategyDesignDraftSaveRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignDraftSaveRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:149](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L149).
-
-Request body for saving a strategy design draft.
-
-```csharp
-public sealed record StrategyDesignDraftSaveRequest(StrategyDesignDocument Document, string? ExpectedRevision = null);
-```
-
-## StrategyDesignDraftSaveResponse
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignDraftSaveResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:154](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L154).
-
-Response returned after saving a strategy design draft.
-
-```csharp
-public sealed record StrategyDesignDraftSaveResponse(StrategyDesignDocument Document, StrategyDesignDraftSummary Summary, StrategyDesignValidationResult Validation, IReadOnlyList<StrategyDesignRunTraceEntry> Trace);
 ```

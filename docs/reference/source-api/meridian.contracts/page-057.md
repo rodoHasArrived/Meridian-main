@@ -6,6 +6,61 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityRateUnit
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRateUnit</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10).
+
+```csharp
+public enum SecurityRateUnit
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Fraction</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10) |  |
+| <code>Percent</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10) |  |
+| <code>BasisPoints</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10) |  |
+| <code>IndexLevel</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10) |  |
+
+## SecurityRawPriceDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRawPriceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L26).
+
+A dated source observation retained without overwriting earlier prices.
+
+```csharp
+public sealed record SecurityRawPriceDto(string SourceId, decimal Price, DateTimeOffset PriceAsOf, SecurityPriceUnit Unit)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityPriceQuotationEvidence? Quotation { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L29) |  |
+
+## SecurityRecordProvenance
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRecordProvenance</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L26).
+
+Typed record-level provenance read from the Security Master provenance document — who supplied the record, when it was true, and who applied it.
+
+```csharp
+public sealed record SecurityRecordProvenance(string SourceSystem, string? SourceRecordId, DateTimeOffset? AsOf, string? UpdatedBy, string? Reason)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityFieldProvenance ForField(string fieldPath, decimal? confidence = null) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L37) | Projects this record-level provenance onto one field — the per-field (vendor, asOf, confidence) attribution consumed by field-conflict assessment and display. |
+
 ## SecurityRecordRateUnit
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRecordRateUnit</code>. Kind: `class`.
@@ -727,7 +782,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1541](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1541).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:764](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L764).
 
 The declared mark-based accounting treatment for an asset class.
 
@@ -739,8 +794,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1543](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1543) |  |
-| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1544](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1544) |  |
+| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:766](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L766) |  |
+| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:767](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L767) |  |
 
 ## SecurityValuationBlockerDto
 
@@ -847,60 +902,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public bool IsBlocked =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L93) |  |
 | <code>public static SecurityValuationResult Blocked(SecurityValuationRequest request, SecurityDetailDto security, SecurityValuationModelKind model, string modelKey, string modelVersion, DateTimeOffset knowledgeAsOf, IReadOnlyList&lt;SecurityValuationBlockerDto&gt; blockers, IReadOnlyList&lt;SecurityValuationInputDto&gt;? inputs = null, IReadOnlyList&lt;string&gt;? diagnostics = null);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L96) | A blocked result for model: no price, value or market value, and the blockers given. |
-
-## SecurityVersionedTermDecoding
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityVersionedTermDecoding</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L50).
-
-Which versioned containers a payload decodes (ADR-024 decision 3). A versioned container (SecurityVersionedTerms.IsVersionedContainer) is decoded only from a payload that is not profile-governed and only when its version is at or below Through; every other field is decoded as before. Built by SecurityVersionedTerms.Decoding.
-
-```csharp
-public readonly record struct SecurityVersionedTermDecoding(bool ProfileGoverned, int Through)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool WriteMode { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L53) | Write validation skips readable modules whose authoring remains disabled. |
-| <code>public bool Decodes(SecurityAssetTermField field);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L56) | Whether field is decoded from the payload this decoding describes. |
-
-## SecurityVersionedTerms
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityVersionedTerms</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L73).
-
-The versioned class-term containers of the flat terms family (ADR-024, readable before writable): the scheduleConventions block and the callSchedule and putSchedule arrays, at the payload root and inside array elements (a swap leg&#x27;s block). It holds their keys, the one predicate deciding which of them a payload decodes, and the one reader of the block, so the mapping, the schema validator and the cash-flow engine cannot disagree about what a row declares.
-
-```csharp
-public static class SecurityVersionedTerms
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ScheduleConventionsKey = &quot;scheduleConventions&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L76) | The schedule-conventions block (ADR-025). |
-| <code>public const string CallScheduleKey = &quot;callSchedule&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L79) | The declared call schedule. |
-| <code>public const string PutScheduleKey = &quot;putSchedule&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:82](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L82) | The declared put schedule. |
-| <code>public const string DeclaredScheduleMappingVersion = &quot;security-master-declared-schedule-v1&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:92](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L92) | The version of the mapping from a declared scheduleConventions block to a schedule specification (ADR-025). Schedule evidence and the startup capability line report it, so a node&#x27;s logs and its evidence name one mapping. This is the only literal: the schedule factory&#x27;s DeclaredMappingVersion must be declared as this constant, never as its own string, and its tests must assert that the two are equal. Any change to how a declared block maps to a schedule ships under a new value. |
-| <code>public static bool IsVersionedContainer(SecurityAssetTermField field);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:104](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L104) | Whether field is a versioned container: an object or array term introduced above asset-class terms version 1. Its members are frozen with it, and it is never walked, decoded or validated in a profile envelope (ADR-024 decision 3). Containers that predate per-class versioning (swap legs, a bond&#x27;s principalSchedule) and later scalar terms are not. |
-| <code>public static SecurityVersionedTermDecoding Decoding(string assetClass, JsonElement payload, bool writeMode) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L116) | The decoding of a payload of assetClass. A read decodes the versioned containers at or below the payload&#x27;s own stamp; a write decodes those at or below the class&#x27;s write version. A profile envelope decodes none in either mode. |
-| <code>public static ScheduleConventionTerms ReadScheduleConventions(JsonElement container, string key);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:135](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L135) | Reads the scheduleConventions block under key (exact case) of container, tolerantly and verbatim, without any version gate: callers decide whether the container is decoded (SecurityVersionedTermDecoding.Decodes). A key whose value is not an object, and a container that is not an object, read as ScheduleConventionTerms.Empty. Members match exactly by name; strings are read only from string tokens and keep blanks; booleans only from true or false; the lag only from a number that fits an int; dates through the current culture&#x27;s DateOnly.TryParse(string?, out DateOnly); calendars from the string items of an array, dropping whitespace-only ids without trimming the rest. |
-| <code>public static SecurityDeclaredConventionsRead ReadDeclaredScheduleConventions(string assetClass, JsonElement storedTerms);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:170](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L170) | The root scheduleConventions block a stored row of assetClass declares, decided exactly as the Read-mode mapping decodes it. SecurityDeclaredConventionsStatus.None when the terms are not an object, the class declares no root block, the payload declares a format other than flat or custom profile (economic terms are read through their own family), the row does not decode the block, or the block is empty. SecurityDeclaredConventionsStatus.Unreadable when the row&#x27;s stamp is one this node does not read. There is no flat-format check: a row of a class without profile-backed terms decodes its root block by its own stamp even when it carries a customProfileId and profileFields. |
-| <code>public static SecurityDeclaredConventionsRead ReadDeclaredLegScheduleConventions(string assetClass, JsonElement storedTerms);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:206](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L206) | The scheduleConventions blocks a stored row of assetClass declares inside the elements of an array term (today only swap legs), decided exactly as the Read-mode mapping decodes them. The elements come from the container the mapping reads: the first of the term&#x27;s key and aliases, in that order and matched case-insensitively, whose value is a non-empty array. A row the mapping cannot read, because one of those keys holds something other than an array, declares nothing. The format, stamp and decode rules are those of ReadDeclaredScheduleConventions; the result is Declared with SecurityDeclaredConventionsRead.ElementBlocks when any object element carries a non-empty block. |
-
-## SplitCorporateActionTerms
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SplitCorporateActionTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:168](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L168).
-
-Unit count scaled by a ratio (forward or reverse split).
-
-```csharp
-public sealed record SplitCorporateActionTerms(string EventType, decimal? Ratio) : CorporateActionTerms(EventType);
-```

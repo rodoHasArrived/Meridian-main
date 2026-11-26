@@ -6,6 +6,58 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationJobControl
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationJobControl</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1146](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1146).
+
+Queue orchestration controls and replay metadata for resilient reconciliation jobs.
+
+```csharp
+public sealed record ReconciliationJobControl(string JobId, string IdempotencyKey, int Attempt, int MaxAttempts, bool DeadLettered, string? DeadLetterReason, DateTimeOffset EnqueuedAt, DateTimeOffset? LastAttemptAt, DateTimeOffset? NextAttemptAt, string BackpressureBucket);
+```
+
+## ReconciliationLogicalBreakIdentity
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationLogicalBreakIdentity</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:188](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L188).
+
+Builds a stable, case-normalized identity for one logical reconciliation check and its source scope. The hash keeps caller-provided identifiers from becoming ambiguous delimiter-separated keys while retaining a versioned contract prefix.
+
+```csharp
+public static class ReconciliationLogicalBreakIdentity
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string Create(string checkId, Guid? bankEntityId = null, string? sourceScope = null, OperationsContinuityCorrelationKeysDto? correlationKeys = null);</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:190](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L190) |  |
+
+## ReconciliationMatchDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationMatchDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:123](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L123).
+
+Successful comparison row emitted by the reconciliation engine.
+
+```csharp
+public sealed record ReconciliationMatchDto(string CheckId, string Label, string ExpectedSource, string ActualSource, decimal? ExpectedAmount, decimal? ActualAmount, decimal Variance, DateTimeOffset? ExpectedAsOf, DateTimeOffset? ActualAsOf)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;ReconciliationBreakMeasureDto&gt; Measures { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:134](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L134) |  |
+| <code>public string? LogicalBreakIdentity { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:137](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L137) | Canonical identity of the logical check resolved by this match. |
+| <code>public Guid? BankEntityId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:139](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L139) |  |
+| <code>public string? SourceScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:141](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L141) |  |
+| <code>public OperationsContinuityCorrelationKeysDto? CorrelationKeys { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:143](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L143) |  |
+
 ## ReconciliationMonetaryTotal
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationMonetaryTotal</code>. Kind: `record`.
@@ -637,42 +689,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1354](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1354) |  |
-
-## ReportingRunReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1357](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1357).
-
-```csharp
-public sealed record ReportingRunReadinessDto(string EvaluationId, DateTimeOffset EvaluatedAtUtc, VersionedReportTemplateIdDto ResolvedTemplate, ReportingRunParametersDto ResolvedParameters, ReportingRunReadinessStatusDto Status, bool CanGenerateDraft, bool CanGenerateFinal, IReadOnlyList<ReportingRunReadinessCheckDto> Checks, IReadOnlyList<string> BlockingReasons, string EvidenceHash);
-```
-
-## ReportingRunReadinessStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunReadinessStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1305](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1305).
-
-```csharp
-public enum ReportingRunReadinessStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Ready = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1307](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1307) |  |
-| <code>ReviewRequired = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1308](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1308) |  |
-| <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1309](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1309) |  |
-| <code>Unavailable = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1310](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1310) |  |
-
-## ReportingRunRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1369](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1369).
-
-```csharp
-public sealed record ReportingRunRequestDto(string TemplateId, DateOnly? AsOfDate = null, int MaxRetries = 0, string? JobId = null, string? RequestedBy = null, IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null, string? DatasetSourceId = null, string? RetryReason = null, bool AllowRestatement = false, VersionedReportTemplateIdDto? Template = null, ReportingRunParametersDto? Parameters = null);
-```

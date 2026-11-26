@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradingReportPackReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingReportPackReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:324](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L324).
+
+```csharp
+public sealed record TradingReportPackReadinessDto(TradingAcceptanceGateStatusDto Status, string Detail, string? FundProfileId, Guid? ReportId, DateTimeOffset? GeneratedAt, IReadOnlyList<string> RelatedRunIds, int ArtifactCount, int WarningCount, string? ManifestPath);
+```
+
+## TradingTrustGateContractReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingTrustGateContractReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:282](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L282).
+
+```csharp
+public sealed record TradingTrustGateContractReadinessDto(string ContractId, string DocumentPath, string Status, IReadOnlyList<string> RequiredPayloadFields, IReadOnlyList<string> RequiredReasonCodes, IReadOnlyList<string> RequiredMetrics, bool? FpFnReviewRequired, IReadOnlyList<string> MissingRequirements);
+```
+
+## TradingTrustGateEvidenceDocumentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingTrustGateEvidenceDocumentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:274](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L274).
+
+```csharp
+public sealed record TradingTrustGateEvidenceDocumentDto(string Name, string Gate, string Path, bool Exists, string Status, IReadOnlyList<string> MissingRequirements);
+```
+
 ## TradingTrustGateReadinessDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.TradingTrustGateReadinessDto</code>. Kind: `record`.
@@ -556,34 +586,4 @@ Compact routing summary embedded in a Data workspace provider row.
 
 ```csharp
 public sealed record WorkstationDataProviderRoutingSummary(string? ConnectionId, string? ProviderFamilyId, bool? ProductionReady, bool? CertificationFresh, int BindingCount, int FallbackRouteCount, string? HealthStatus);
-```
-
-## WorkstationGeneratedReportWriterGridPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationGeneratedReportWriterGridPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:619](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L619).
-
-```csharp
-public sealed record WorkstationGeneratedReportWriterGridPayload(string GridId, string Title, string Kind, string Artifact, int DimensionCount, int MetricCount, int FormulaCount, string? ValidationSummary = null, int? ValidationPassedCount = null, int? ValidationWarningCount = null, int? ValidationFailedCount = null);
-```
-
-## WorkstationKernelAlertThresholdsPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelAlertThresholdsPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:909](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L909).
-
-```csharp
-public sealed record WorkstationKernelAlertThresholdsPayload(int MinimumSampleCount, double MinimumShortRate, double ZeroBaselineShortRate, double RelativeMultiplier, double AbsoluteIncrease);
-```
-
-## WorkstationKernelCriticalSeverityRatePayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelCriticalSeverityRatePayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:916](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L916).
-
-```csharp
-public sealed record WorkstationKernelCriticalSeverityRatePayload(double ShortWindow, double LongWindow, int ShortWindowSamples, int LongWindowSamples, bool JumpAlertActive, int JumpAlertCount, WorkstationKernelAlertThresholdsPayload AlertThresholds);
 ```

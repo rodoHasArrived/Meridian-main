@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderLedgerReconciliationDetailDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationDetailDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:554](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L554).
+
+```csharp
+public sealed record ProviderLedgerReconciliationDetailDto(ProviderLedgerReconciliationSummaryDto Summary, IReadOnlyList<ProviderLedgerReconciliationCheckDto> Checks, IReadOnlyList<ProviderLedgerReconciliationBreakDto> Breaks, IReadOnlyList<string> Warnings, IReadOnlyList<string> EvidenceLinks, IReadOnlyList<ProviderSecurityMasterPassportDto>? SecurityMasterPassports = null, ProviderShadowBookComparisonDto? ShadowBookComparison = null, ProviderCorporateActionReadinessDto? CorporateActionReadiness = null, VerifiedOperationOutcome? Outcome = null);
+```
+
+## ProviderLedgerReconciliationRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:344](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L344).
+
+```csharp
+public sealed record ProviderLedgerReconciliationRequestDto(decimal AmountTolerance = 0.01m, int ProviderStaleAfterMinutes = 30, string? RequestedBy = null, string? DefaultBreakOwner = null, IReadOnlyList<string>? SignedOffBreakKeys = null, string? SignedOffBy = null, string? OperationId = null);
+```
+
+## ProviderLedgerReconciliationStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:312](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L312).
+
+```csharp
+public enum ProviderLedgerReconciliationStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Matched = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:314](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L314) |  |
+| <code>Breaks = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:315](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L315) |  |
+| <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:316](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L316) |  |
+
 ## ProviderLedgerReconciliationSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationSummaryDto</code>. Kind: `record`.
@@ -756,55 +794,3 @@ Cross-workflow correlation metadata stamped on every reconciliation payload.
 ```csharp
 public sealed record ReconciliationCorrelationContext(string TraceId, string SpanId, string? ParentSpanId, string WorkflowId, string? JobId = null);
 ```
-
-## ReconciliationJobControl
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationJobControl</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1146](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1146).
-
-Queue orchestration controls and replay metadata for resilient reconciliation jobs.
-
-```csharp
-public sealed record ReconciliationJobControl(string JobId, string IdempotencyKey, int Attempt, int MaxAttempts, bool DeadLettered, string? DeadLetterReason, DateTimeOffset EnqueuedAt, DateTimeOffset? LastAttemptAt, DateTimeOffset? NextAttemptAt, string BackpressureBucket);
-```
-
-## ReconciliationLogicalBreakIdentity
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationLogicalBreakIdentity</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:188](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L188).
-
-Builds a stable, case-normalized identity for one logical reconciliation check and its source scope. The hash keeps caller-provided identifiers from becoming ambiguous delimiter-separated keys while retaining a versioned contract prefix.
-
-```csharp
-public static class ReconciliationLogicalBreakIdentity
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string Create(string checkId, Guid? bankEntityId = null, string? sourceScope = null, OperationsContinuityCorrelationKeysDto? correlationKeys = null);</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:190](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L190) |  |
-
-## ReconciliationMatchDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationMatchDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:123](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L123).
-
-Successful comparison row emitted by the reconciliation engine.
-
-```csharp
-public sealed record ReconciliationMatchDto(string CheckId, string Label, string ExpectedSource, string ActualSource, decimal? ExpectedAmount, decimal? ActualAmount, decimal Variance, DateTimeOffset? ExpectedAsOf, DateTimeOffset? ActualAsOf)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;ReconciliationBreakMeasureDto&gt; Measures { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:134](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L134) |  |
-| <code>public string? LogicalBreakIdentity { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:137](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L137) | Canonical identity of the logical check resolved by this match. |
-| <code>public Guid? BankEntityId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:139](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L139) |  |
-| <code>public string? SourceScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:141](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L141) |  |
-| <code>public OperationsContinuityCorrelationKeysDto? CorrelationKeys { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:143](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L143) |  |
