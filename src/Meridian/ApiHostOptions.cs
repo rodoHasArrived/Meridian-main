@@ -17,6 +17,17 @@ public sealed record ApiHostOptions
     public bool AllowInsecureTransportForReverseProxy { get; init; }
     public bool ServeWorkstationAssets { get; init; } = true;
 
+    /// <summary>Default for <see cref="SlowRequestThresholdMs"/>.</summary>
+    public const int DefaultSlowRequestThresholdMs = 2000;
+
+    /// <summary>
+    /// Requests taking at least this many milliseconds are logged at Warning with their route
+    /// template, status and trace identifier (<c>ApiHost:SlowRequestThresholdMs</c>). Zero or a
+    /// negative value turns the log off; <c>mdc_http_request_duration_seconds</c> is recorded
+    /// either way.
+    /// </summary>
+    public int SlowRequestThresholdMs { get; init; } = DefaultSlowRequestThresholdMs;
+
     public bool IsProductionApi => DeploymentMode == MeridianApiDeploymentMode.ProductionApi;
 
     /// <summary>
@@ -64,7 +75,11 @@ public sealed record ApiHostOptions
             AllowedOrigins = NormalizeOrigins(allowedOrigins),
             AllowInsecureTransportForReverseProxy = ReadBoolean(section["AllowInsecureTransportForReverseProxy"])
                 || ReadBoolean(configuration["MERIDIAN_ALLOW_INSECURE_REVERSE_PROXY_TRANSPORT"]),
-            ServeWorkstationAssets = !ReadFalse(section["ServeWorkstationAssets"])
+            ServeWorkstationAssets = !ReadFalse(section["ServeWorkstationAssets"]),
+            SlowRequestThresholdMs = int.TryParse(section["SlowRequestThresholdMs"], System.Globalization.NumberStyles.Integer,
+                System.Globalization.CultureInfo.InvariantCulture, out var slowMs)
+                ? slowMs
+                : DefaultSlowRequestThresholdMs
         };
     }
 

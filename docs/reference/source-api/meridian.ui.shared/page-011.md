@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DemoTenantProvisioningReport
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantProvisioningReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs:463](../../../../src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs#L463).
+
+Summary of what the demo-tenant provisioning step wrote. The Loaded flags report whether each surface is present in its desk store after provisioning (freshly seeded or already there), which is what onboarding advertises — distinct from ReconciliationBreaksSeeded, which counts only the breaks created on this run.
+
+```csharp
+public sealed record DemoTenantProvisioningReport(int ReconciliationBreaksSeeded, bool ReconciliationLoaded, bool StrategyRunLoaded, IReadOnlyList<string> Warnings, bool FundAccountLoaded = false, bool PortfolioPositionsLoaded = false, int JournalDraftsSeeded = 0, bool ReportPackLoaded = false);
+```
+
+## DemoWorkspaceResetReport
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DemoWorkspaceResetReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:425](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L425).
+
+Outcome of tearing down the demo workspace.
+
+```csharp
+public sealed record DemoWorkspaceResetReport(string DemoRoot, bool Deleted);
+```
+
 ## DemoWorkspaceSeeder
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DemoWorkspaceSeeder</code>. Kind: `class`.
@@ -869,34 +893,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public FileManualJournalMutationRecoveryStore(string directory, ManualJournalMutationRecoveryOptions? options = null, TimeProvider? clock = null);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:66](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L66) |  |
 | <code>public async Task&lt;IManualJournalMutationSession&gt; OpenSessionAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:78](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L78) |  |
-
-## FileOnboardingWorkspaceStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileOnboardingWorkspaceStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:9](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L9).
-
-Atomic, version-checked retention of onboarding inputs, history and frozen packets.
-
-```csharp
-public sealed class FileOnboardingWorkspaceStore(string snapshotPath) : JsonFileSnapshotStore<FileOnboardingWorkspaceStore.Snapshot>(snapshotPath, JsonOptions), IOnboardingWorkspaceStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListAsync(string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:36](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L36) |  |
-| <code>public Task&lt;OnboardingWorkspaceDto?&gt; GetAsync(string tenantId, string companyId, string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:44](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L44) |  |
-| <code>public Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListByLedgerBookAsync(string tenantId, string? companyId, Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:51](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L51) |  |
-| <code>public async Task SaveAsync(OnboardingWorkspaceDto workspace, int? expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:62](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L62) |  |
-
-## Snapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileOnboardingWorkspaceStore.Snapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:14](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L14).
-
-```csharp
-public sealed record Snapshot(IReadOnlyList<OnboardingWorkspaceDto> Workspaces);
-```

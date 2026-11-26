@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityMasterWorkbenchQueryService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchQueryService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:9](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L9).
+
+Supplies trust, passport, and operating-model views and bulk conflict resolution for the workbench.
+
+```csharp
+public interface ISecurityMasterWorkbenchQueryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityMasterTrustSnapshotDto?&gt; GetTrustSnapshotAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:11](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L11) |  |
+| <code>Task&lt;InstrumentPassportDto?&gt; GetInstrumentPassportAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:16](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L16) |  |
+| <code>Task&lt;SecurityMasterOperatingModelDto?&gt; GetOperatingModelAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:21](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L21) |  |
+| <code>Task&lt;BulkResolveSecurityMasterConflictsResult&gt; BulkResolveConflictsAsync(BulkResolveSecurityMasterConflictsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:26](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L26) |  |
+
+## Releaser
+
+Qualified name: <code>Meridian.Application.SecurityMaster.KeyedGatePool.Releaser</code>. Kind: `struct`.
+
+Source: [src/Meridian.Application/SecurityMaster/KeyedGatePool.cs:85](../../../../src/Meridian.Application/SecurityMaster/KeyedGatePool.cs#L85).
+
+```csharp
+public readonly struct Releaser : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public void Dispose();</code> | [src/Meridian.Application/SecurityMaster/KeyedGatePool.cs:98](../../../../src/Meridian.Application/SecurityMaster/KeyedGatePool.cs#L98) |  |
+
 ## LedgerBookAffectedResolver
 
 Qualified name: <code>Meridian.Application.SecurityMaster.LedgerBookAffectedResolver</code>. Kind: `class`.
@@ -1015,39 +1052,3 @@ Declared public members:
 | <code>public async Task RecordConflictsForProjectionsAsync(IReadOnlyList&lt;SecurityProjectionRecord&gt; projections, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:198](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L198) |  |
 | <code>public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:289](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L289) |  |
 | <code>public Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:317](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs#L317) |  |
-
-## SecurityMasterContractRegistrationExtensions
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterContractRegistrationExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs:8](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs#L8).
-
-Bridges existing host registrations to the canonical Security Master contracts.
-
-```csharp
-public static class SecurityMasterContractRegistrationExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddSecurityMasterContractAdapters(this IServiceCollection services);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs:14](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterContractRegistrationExtensions.cs#L14) | Shares the registered query service through its narrow contracts. Explicit host registrations are preserved. |
-
-## SecurityMasterCostBasisAdjustmentService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterCostBasisAdjustmentService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs:48](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs#L48).
-
-```csharp
-public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCostBasisAdjustmentService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterCostBasisAdjustmentService(ISecurityMasterQueryService queryService, ILogger&lt;SecurityMasterCostBasisAdjustmentService&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs:53](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs#L53) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerTaxLotBasisAdjustment&gt;&gt; BuildAdjustmentsAsync(Guid securityId, IReadOnlyList&lt;LedgerTaxLot&gt; openLots, DateOnly asOf, decimal priorFactor = 1m, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs:62](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs#L62) |  |
-| <code>public async Task&lt;LedgerTaxLotReliefProjection&gt; ProjectReliefAsync(LedgerTaxLotReliefInput baseInput, Guid securityId, decimal priorFactor = 1m, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs:88](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs#L88) |  |

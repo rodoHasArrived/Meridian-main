@@ -883,6 +883,26 @@ Enum declarations:
 | <code>Unhealthy</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:490](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L490) |  |
 | <code>Unknown</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:491](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L491) |  |
 
+## ErrorLogRecorder
+
+Qualified name: <code>Meridian.Application.Monitoring.ErrorLogRecorder</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Monitoring/ErrorLogRecorder.cs:16](../../../../src/Meridian.Application/Monitoring/ErrorLogRecorder.cs#L16).
+
+Records the process&#x27;s Error and Fatal log events into an ErrorRingBuffer, so /api/errors returns the recent errors an operator would otherwise have to find in the log file.
+
+```csharp
+public sealed class ErrorLogRecorder : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ErrorLogRecorder(ErrorRingBuffer buffer, ErrorLogTap? tap = null);</code> | [src/Meridian.Application/Monitoring/ErrorLogRecorder.cs:21](../../../../src/Meridian.Application/Monitoring/ErrorLogRecorder.cs#L21) | Creates a recorder that subscribes to tap. |
+| <code>public ErrorRingBuffer Buffer { get; }</code> | [src/Meridian.Application/Monitoring/ErrorLogRecorder.cs:28](../../../../src/Meridian.Application/Monitoring/ErrorLogRecorder.cs#L28) | The buffer that receives the recorded errors. |
+| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Application/Monitoring/ErrorLogRecorder.cs:51](../../../../src/Meridian.Application/Monitoring/ErrorLogRecorder.cs#L51) |  |
+
 ## HealthCheckItem
 
 Qualified name: <code>Meridian.Application.Monitoring.HealthCheckItem</code>. Kind: `record`.
@@ -911,7 +931,7 @@ public sealed record HealthSummary(int TotalChecks, int HealthyChecks, int Degra
 
 Qualified name: <code>Meridian.Application.Monitoring.PrometheusMetrics</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:27](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L27).
+Source: [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:29](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L29).
 
 Prometheus metrics exporter for Meridian. Implements best practices from prometheus-net documentation and production patterns from Grafana dashboard templates. Naming conventions follow Prometheus best practices: - snake_case for metric names - _total suffix for counters - Descriptive help text - Appropriate metric types (Counter, Gauge, Histogram) Cardinality guards: Symbol-labeled metrics are gated by a configurable allowlist. Symbols not in the allowlist are aggregated under &quot;__other__&quot;. This prevents metric explosion with dynamic/large symbol universes.
 
@@ -923,37 +943,64 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void SetMaxSymbolLabels(int max);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:46](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L46) | Configures the maximum number of distinct symbol labels allowed in metrics. Symbols beyond this limit are aggregated under &quot;__other__&quot;. |
-| <code>public static void AdmitSymbol(string symbol);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:55](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L55) | Pre-admits specific symbols to the metrics label set. Call during startup for known monitored symbols. |
-| <code>public static double PublishedEventsValue =&gt; …;</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:464](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L464) | Current value of mdc_events_published_total as exported. |
-| <code>public static void UpdateFromSnapshot();</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:497](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L497) |  |
-| <code>public static void UpdateValidationMetrics(ValidationMetricsSnapshot snapshot);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:578](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L578) | Updates Prometheus validation metrics from a ValidationMetricsSnapshot. |
-| <code>public static void RecordTrade(string symbol, string venue, decimal price, int size);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:592](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L592) | Records a trade event with symbol and venue labels. Uses cardinality guard to prevent label explosion with many symbols. |
-| <code>public static void RecordProcessingLatency(double latencyMicroseconds);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:603](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L603) | Records event processing latency in microseconds. |
-| <code>public static void RecordKernelExecution(string domain, double latencyMilliseconds);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:611](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L611) | Records kernel execution latency and throughput for a specific domain. |
-| <code>public static void SetKernelThroughputPerMinute(string domain, double throughputPerMinute);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:621](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L621) | Sets kernel throughput per minute for a domain. |
-| <code>public static void SetKernelLatencyPercentile(string domain, string percentile, double latencyMilliseconds);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:630](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L630) | Sets kernel latency percentile in milliseconds for a domain. |
-| <code>public static void RecordKernelDeterminismCheck(string domain, bool isMatch);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:640](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L640) | Records one determinism check outcome for a kernel domain. |
-| <code>public static void SetKernelReasonCoverage(string domain, double coveragePercent);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:649](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L649) | Sets kernel reason-code coverage percentage for a domain. |
-| <code>public static void SetKernelDriftScore(string domain, string metric, double driftScore);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:658](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L658) | Sets kernel drift score for a given domain/metric pair. |
-| <code>public static void SetKernelCriticalSeverityRate(string domain, double criticalRate, bool raiseJumpAlert);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:668](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L668) | Sets current critical severity rate for a domain and optionally records alert count. |
-| <code>public static void UpdateSlaMetrics(SlaStatusSnapshot snapshot);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:681](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L681) | Updates SLA metrics from a DataFreshnessSlaMonitor snapshot (ADQ-4.5). |
-| <code>public static void RecordReconnectionAttempt(string provider, bool success);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:706](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L706) | Records a provider reconnection attempt with outcome. |
-| <code>public static void RecordWalRecovery(long recoveredEvents, double durationSeconds);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:715](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L715) | Records WAL recovery metrics after startup recovery completes. |
-| <code>public static void RecordWalReplay(long newlyReplayedEvents);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:733](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L733) | Adds the WAL records a recovery batch just replayed durably to primary storage. Callers publish as each batch crosses its durability boundary rather than at the end of the pass, so a later failure cannot strand the telemetry of records that are already durable and will never be enumerated again. |
-| <code>public static void RecordSlaFreshness(string symbol, double freshnessMs);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:744](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L744) | Records SLA freshness for a specific symbol. |
-| <code>public static void UpdateCanonicalizationMetrics(CanonicalizationMetricsSnapshot snapshot, int activeVersion);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:754](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L754) | Updates canonicalization metrics from a CanonicalizationMetricsSnapshot. Called periodically by the metrics updater. |
-| <code>public static void RecordRunContinuityMissingLineage(string surface, string failureKind);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:775](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L775) | Records a run continuity lineage failure for the specified surface. |
-| <code>public static void RecordRunContinuityStaleProjection(string surface, string failureKind);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:785](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L785) | Records a run continuity stale projection failure for the specified surface. |
-| <code>public static void RecordRunContinuityUnresolvedBlockerLinkage(string surface, string failureKind);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:795](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L795) | Records a run continuity blocker-linkage failure for the specified surface. |
-| <code>public static void RecordRunContinuityCrossSurfaceIdentityMismatch(string surface, string failureKind);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:805](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L805) | Records a cross-surface run identity mismatch for the specified surface. |
-| <code>public static CollectorRegistry Registry =&gt; …;</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:851](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L851) | Gets the Prometheus metrics registry for HTTP export. Use this with Prometheus.MetricServer or ASP.NET Core middleware. |
+| <code>public static void SetMaxSymbolLabels(int max);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:48](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L48) | Configures the maximum number of distinct symbol labels allowed in metrics. Symbols beyond this limit are aggregated under &quot;__other__&quot;. |
+| <code>public static void AdmitSymbol(string symbol);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:57](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L57) | Pre-admits specific symbols to the metrics label set. Call during startup for known monitored symbols. |
+| <code>public const string LivePipelineLabel = &quot;live&quot;;</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:490](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L490) | The pipeline label value for the host&#x27;s live market-data pipeline. |
+| <code>public static void UpdateDiskMetrics(IReadOnlyList&lt;DiskSpaceInfo&gt; disks);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:508](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L508) | Updates the disk-space series from a SystemHealthChecker snapshot. |
+| <code>public static void RecordBackfillRun(string outcome, TimeSpan duration);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:537](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L537) | Records one backfill run&#x27;s outcome and duration. |
+| <code>public static double BackfillRunsValue(string outcome) =&gt; …;</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:545](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L545) | Current value of mdc_backfill_runs_total for outcome. |
+| <code>public static double PublishedEventsValue =&gt; …;</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:580](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L580) | Current value of mdc_events_published_total as exported. |
+| <code>public static void UpdateFromSnapshot();</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:613](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L613) |  |
+| <code>public static void UpdatePipelineMetrics(in PipelineStatistics statistics, string pipeline = LivePipelineLabel);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:700](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L700) | Updates the pipeline backlog and consumer-health series from a pipeline statistics snapshot. |
+| <code>public static void UpdateValidationMetrics(ValidationMetricsSnapshot snapshot);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:725](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L725) | Updates Prometheus validation metrics from a ValidationMetricsSnapshot. |
+| <code>public static void RecordTrade(string symbol, string venue, decimal price, int size);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:739](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L739) | Records a trade event with symbol and venue labels. Uses cardinality guard to prevent label explosion with many symbols. |
+| <code>public static void RecordProcessingLatency(double latencyMicroseconds);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:750](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L750) | Records event processing latency in microseconds. |
+| <code>public static void RecordKernelExecution(string domain, double latencyMilliseconds);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:758](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L758) | Records kernel execution latency and throughput for a specific domain. |
+| <code>public static void SetKernelThroughputPerMinute(string domain, double throughputPerMinute);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:768](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L768) | Sets kernel throughput per minute for a domain. |
+| <code>public static void SetKernelLatencyPercentile(string domain, string percentile, double latencyMilliseconds);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:777](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L777) | Sets kernel latency percentile in milliseconds for a domain. |
+| <code>public static void RecordKernelDeterminismCheck(string domain, bool isMatch);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:787](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L787) | Records one determinism check outcome for a kernel domain. |
+| <code>public static void SetKernelReasonCoverage(string domain, double coveragePercent);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:796](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L796) | Sets kernel reason-code coverage percentage for a domain. |
+| <code>public static void SetKernelDriftScore(string domain, string metric, double driftScore);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:805](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L805) | Sets kernel drift score for a given domain/metric pair. |
+| <code>public static void SetKernelCriticalSeverityRate(string domain, double criticalRate, bool raiseJumpAlert);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:815](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L815) | Sets current critical severity rate for a domain and optionally records alert count. |
+| <code>public static void UpdateSlaMetrics(SlaStatusSnapshot snapshot);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:828](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L828) | Updates SLA metrics from a DataFreshnessSlaMonitor snapshot (ADQ-4.5). |
+| <code>public static void RecordReconnectionAttempt(string provider, bool success);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:853](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L853) | Records a provider reconnection attempt with outcome. |
+| <code>public static void RecordWalRecovery(long recoveredEvents, double durationSeconds);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:862](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L862) | Records WAL recovery metrics after startup recovery completes. |
+| <code>public static void RecordWalReplay(long newlyReplayedEvents);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:880](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L880) | Adds the WAL records a recovery batch just replayed durably to primary storage. Callers publish as each batch crosses its durability boundary rather than at the end of the pass, so a later failure cannot strand the telemetry of records that are already durable and will never be enumerated again. |
+| <code>public static void RecordSlaFreshness(string symbol, double freshnessMs);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:891](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L891) | Records SLA freshness for a specific symbol. |
+| <code>public static void UpdateCanonicalizationMetrics(CanonicalizationMetricsSnapshot snapshot, int activeVersion);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:901](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L901) | Updates canonicalization metrics from a CanonicalizationMetricsSnapshot. Called periodically by the metrics updater. |
+| <code>public static void RecordRunContinuityMissingLineage(string surface, string failureKind);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:922](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L922) | Records a run continuity lineage failure for the specified surface. |
+| <code>public static void RecordRunContinuityStaleProjection(string surface, string failureKind);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:932](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L932) | Records a run continuity stale projection failure for the specified surface. |
+| <code>public static void RecordRunContinuityUnresolvedBlockerLinkage(string surface, string failureKind);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:942](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L942) | Records a run continuity blocker-linkage failure for the specified surface. |
+| <code>public static void RecordRunContinuityCrossSurfaceIdentityMismatch(string surface, string failureKind);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:952](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L952) | Records a cross-surface run identity mismatch for the specified surface. |
+| <code>public static CollectorRegistry Registry =&gt; …;</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:998](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L998) | Gets the Prometheus metrics registry for HTTP export. Use this with Prometheus.MetricServer or ASP.NET Core middleware. |
+
+## BackfillOutcome
+
+Qualified name: <code>Meridian.Application.Monitoring.PrometheusMetrics.BackfillOutcome</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:548](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L548).
+
+The outcome label values of mdc_backfill_runs_total.
+
+```csharp
+public static class BackfillOutcome
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Succeeded = &quot;succeeded&quot;;</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:551](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L551) | The run completed and reported success. |
+| <code>public const string Failed = &quot;failed&quot;;</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:554](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L554) | The run completed but reported failure (for example every provider failed). |
+| <code>public const string Error = &quot;error&quot;;</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:557](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L557) | The run threw an unexpected exception. |
+| <code>public const string Cancelled = &quot;cancelled&quot;;</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:560](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L560) | The run was cancelled. |
+| <code>public const string Rejected = &quot;rejected&quot;;</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:563](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L563) | The request was refused before fetching (for example a clone conflict). |
 
 ## PrometheusMetricsUpdater
 
 Qualified name: <code>Meridian.Application.Monitoring.PrometheusMetricsUpdater</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:868](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L868).
+Source: [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:1015](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L1015).
 
 Background service that periodically updates Prometheus metrics.
 
@@ -965,14 +1012,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PrometheusMetricsUpdater(TimeSpan updateInterval);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:874](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L874) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:895](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L895) |  |
+| <code>public PrometheusMetricsUpdater(TimeSpan updateInterval);</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:1021](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L1021) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:1042](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L1042) |  |
 
 ## PrometheusReconnectionMetrics
 
 Qualified name: <code>Meridian.Application.Monitoring.PrometheusReconnectionMetrics</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:859](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L859).
+Source: [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:1006](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L1006).
 
 IReconnectionMetrics implementation that delegates to PrometheusMetrics.RecordReconnectionAttempt. Registered as a singleton in DI by the composition root.
 
@@ -984,41 +1031,4 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public void RecordAttempt(string provider, bool success) =&gt; …;</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:861](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L861) |  |
-
-## StatusSnapshot
-
-Qualified name: <code>Meridian.Application.Monitoring.StatusSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Monitoring/StatusSnapshot.cs:9](../../../../src/Meridian.Application/Monitoring/StatusSnapshot.cs#L9).
-
-```csharp
-public sealed record StatusSnapshot(DateTimeOffset TimestampUtc, long Published, long Dropped, long Integrity, bool IbEnabled, int SymbolCount, IReadOnlyDictionary<string, int> DepthSubscriptions, IReadOnlyDictionary<string, int> TradeSubscriptions)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static StatusSnapshot FromRuntime(AppConfig cfg, IMarketDataClient ib, SubscriptionOrchestrator subs, IEventMetrics? metrics = null);</code> | [src/Meridian.Application/Monitoring/StatusSnapshot.cs:20](../../../../src/Meridian.Application/Monitoring/StatusSnapshot.cs#L20) |  |
-
-## StatusWriter
-
-Qualified name: <code>Meridian.Application.Monitoring.StatusWriter</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Monitoring/StatusWriter.cs:15](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L15).
-
-Periodically writes a small status snapshot JSON file for dashboards.
-
-```csharp
-public sealed class StatusWriter : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatusWriter(string path, Func&lt;AppConfig&gt; configProvider, IEventMetrics? metrics = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:31](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L31) |  |
-| <code>public void Start(TimeSpan interval);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:39](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L39) |  |
-| <code>public async Task WriteOnceAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:73](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L73) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:98](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L98) |  |
+| <code>public void RecordAttempt(string provider, bool success) =&gt; …;</code> | [src/Meridian.Application/Monitoring/PrometheusMetrics.cs:1008](../../../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs#L1008) |  |

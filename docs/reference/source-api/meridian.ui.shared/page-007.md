@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationTenantScopeMetadata
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationTenantScopeMetadata</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:137](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L137).
+
+Marks endpoints that require an authenticated workstation tenant scope.
+
+```csharp
+public sealed class WorkstationTenantScopeMetadata;
+```
+
+## AccountCashForecastEvidenceAdapter
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastEvidenceAdapter</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L37).
+
+Exact supported source economics and accepted review, scoped to a single account/book.
+
+```csharp
+public sealed class AccountCashForecastEvidenceAdapter(IEvidenceArtifactStore store)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task VerifyMonitoringAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:47](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L47) |  |
+| <code>public async Task VerifyAsync(AccountCashForecastRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:71](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L71) |  |
+
 ## AccountCashForecastSourceAuthorityException
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastSourceAuthorityException</code>. Kind: `class`.
@@ -955,32 +986,3 @@ Declared public members:
 | <code>public string? TenantId { get; init; }</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:14](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L14) |  |
 | <code>public string? CompanyId { get; init; }</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:15](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L15) |  |
 | <code>public string? WorkflowId { get; init; }</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:16](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L16) |  |
-
-## StatementReconciliationReportArtifactDownload
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportArtifactDownload</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:30](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L30).
-
-```csharp
-public sealed record StatementReconciliationReportArtifactDownload(StatementReconciliationReportArtifactDto Descriptor, byte[] Content);
-```
-
-## StatementReconciliationReportFetchIngestionAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportFetchIngestionAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs:15](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs#L15).
-
-Adapts scheduled connector fetches into the existing statement reconciliation report workflow. The scheduler uses this authority to re-resolve persisted account ownership before provider access, and ingestion resolves it again before treating the fetched document as authoritative. Success is reported only after Operations Continuity and canonical casework publication have been retained.
-
-```csharp
-public sealed class StatementReconciliationReportFetchIngestionAuthority(StatementReconciliationReportWorkflowService workflow, IStatementReconciliationIntakeAuthority intakeAuthority) : IStatementFetchIngestionAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;StatementAccountingScope&gt; AuthorizeAsync(StatementFetchAuthorizationCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs:19](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs#L19) |  |
-| <code>public async Task&lt;StatementImportCommitResultDto&gt; IngestAsync(StatementFetchIngestionCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs#L37) |  |

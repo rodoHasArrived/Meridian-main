@@ -16,7 +16,7 @@ Object rows introduce the child keys below them. Array-object fields retain thei
 (for example `DataSources.Sources[0].Id`); the index identifies an example, not a fixed runtime slot.
 Sensitive-key values are redacted. Only the tracked sample is read; local configuration and environment values are never read.
 
-Explicit sample keys: **341**. Regenerate with:
+Explicit sample keys: **342**. Regenerate with:
 
 ```bash
 python3 build/scripts/docs/generate-configuration-reference.py
@@ -61,426 +61,427 @@ python3 build/scripts/docs/generate-configuration-reference.py --check
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `ApiHost` | object | `object (5 keys)` | LocalWorkstation preserves the default localhost API + /workstation asset host. ProductionApi is the remote-service posture for deployed browser and WPF workstations. In production auth-required environments, at least one HTTPS binding is required unless a trusted reverse proxy terminates TLS and AllowInsecureTransportForReverseProxy is explicitly enabled. | [line 79](../../config/appsettings.sample.json#L79) |
+| `ApiHost` | object | `object (6 keys)` | LocalWorkstation preserves the default localhost API + /workstation asset host. ProductionApi is the remote-service posture for deployed browser and WPF workstations. In production auth-required environments, at least one HTTPS binding is required unless a trusted reverse proxy terminates TLS and AllowInsecureTransportForReverseProxy is explicitly enabled. | [line 79](../../config/appsettings.sample.json#L79) |
 | `ApiHost.DeploymentMode` | string | `"LocalWorkstation"` | — | [line 80](../../config/appsettings.sample.json#L80) |
 | `ApiHost.Urls` | array | `["http://localhost:8080"]` | — | [line 81](../../config/appsettings.sample.json#L81) |
 | `ApiHost.AllowedOrigins` | array | `[]` | — | [line 84](../../config/appsettings.sample.json#L84) |
 | `ApiHost.AllowInsecureTransportForReverseProxy` | boolean | `false` | — | [line 85](../../config/appsettings.sample.json#L85) |
 | `ApiHost.ServeWorkstationAssets` | boolean | `true` | — | [line 86](../../config/appsettings.sample.json#L86) |
+| `ApiHost.SlowRequestThresholdMs` | integer | `2000` | Requests taking at least this long are logged at Warning (route template, status, trace id). 0 turns the log off; mdc_http_request_duration_seconds is recorded either way. | [line 89](../../config/appsettings.sample.json#L89) |
 
 ## `Compress`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `Compress` | boolean | `false` | Enable gzip compression for JSONL files (.jsonl.gz) | [line 90](../../config/appsettings.sample.json#L90) |
+| `Compress` | boolean | `false` | Enable gzip compression for JSONL files (.jsonl.gz) | [line 93](../../config/appsettings.sample.json#L93) |
 
 ## `DataSource`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `DataSource` | string | `"Synthetic"` | Primary real-time data source. Set to "Synthetic" for offline development and replay. Supported real-time values: "IB", "Alpaca", "Polygon", "NYSE", "Synthetic" "Yahoo" is backfill/historical only - it has no streaming factory and is rejected here. Default is "Synthetic" so the program runs out-of-the-box without API keys or IB. | [line 96](../../config/appsettings.sample.json#L96) |
+| `DataSource` | string | `"Synthetic"` | Primary real-time data source. Set to "Synthetic" for offline development and replay. Supported real-time values: "IB", "Alpaca", "Polygon", "NYSE", "Synthetic" "Yahoo" is backfill/historical only - it has no streaming factory and is rejected here. Default is "Synthetic" so the program runs out-of-the-box without API keys or IB. | [line 99](../../config/appsettings.sample.json#L99) |
 
 ## `Coordination`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `Coordination` | object | `object (7 keys)` | Leave disabled for the default single-instance deployment shape. Enable SharedStorage mode only when multiple Meridian instances share the same DataRoot and coordination-capable filesystem. | [line 104](../../config/appsettings.sample.json#L104) |
-| `Coordination.Enabled` | boolean | `false` | — | [line 105](../../config/appsettings.sample.json#L105) |
-| `Coordination.Mode` | string | `"SingleInstance"` | — | [line 106](../../config/appsettings.sample.json#L106) |
-| `Coordination.InstanceId` | null | `null` | — | [line 107](../../config/appsettings.sample.json#L107) |
-| `Coordination.LeaseTtlSeconds` | integer | `30` | — | [line 108](../../config/appsettings.sample.json#L108) |
-| `Coordination.RenewIntervalSeconds` | integer | `10` | — | [line 109](../../config/appsettings.sample.json#L109) |
-| `Coordination.TakeoverDelaySeconds` | integer | `5` | — | [line 110](../../config/appsettings.sample.json#L110) |
-| `Coordination.RootPath` | string | `"_coordination"` | — | [line 111](../../config/appsettings.sample.json#L111) |
+| `Coordination` | object | `object (7 keys)` | Leave disabled for the default single-instance deployment shape. Enable SharedStorage mode only when multiple Meridian instances share the same DataRoot and coordination-capable filesystem. | [line 107](../../config/appsettings.sample.json#L107) |
+| `Coordination.Enabled` | boolean | `false` | — | [line 108](../../config/appsettings.sample.json#L108) |
+| `Coordination.Mode` | string | `"SingleInstance"` | — | [line 109](../../config/appsettings.sample.json#L109) |
+| `Coordination.InstanceId` | null | `null` | — | [line 110](../../config/appsettings.sample.json#L110) |
+| `Coordination.LeaseTtlSeconds` | integer | `30` | — | [line 111](../../config/appsettings.sample.json#L111) |
+| `Coordination.RenewIntervalSeconds` | integer | `10` | — | [line 112](../../config/appsettings.sample.json#L112) |
+| `Coordination.TakeoverDelaySeconds` | integer | `5` | — | [line 113](../../config/appsettings.sample.json#L113) |
+| `Coordination.RootPath` | string | `"_coordination"` | — | [line 114](../../config/appsettings.sample.json#L114) |
 
 ## `SecurityMasterWorkbench`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `SecurityMasterWorkbench` | object | `object (4 keys)` | Configure the governed-write conflict-authority ladder for operator passport edits. Leave SourcePrecedence empty until deployment-specific source-system identifiers are known; the policy then falls back to freshness and confidence instead of ranking placeholders. | [line 120](../../config/appsettings.sample.json#L120) |
-| `SecurityMasterWorkbench.SourcePrecedence` | array | `[]` | — | [line 121](../../config/appsettings.sample.json#L121) |
-| `SecurityMasterWorkbench.GoldenCopySource` | null | `null` | — | [line 122](../../config/appsettings.sample.json#L122) |
-| `SecurityMasterWorkbench.RequireIndependentReviewer` | boolean | `true` | GovernanceProfile is "Standard" (the default, used when the key is absent) or "Institutional". Under Institutional, RequireGovernedTermAmendments, RequireIndependentReviewer and RequireIndependentProfileApprover are all in force and cannot be turned off. A production deployment posture always runs Institutional, whatever this says. A host running Institutional refuses to start while any of the three is explicitly false, or (on a production posture) while this key is explicitly "Standard"; remove the contradicting key or set it to match. Standard stays the default because the local workstation is single-operator, and one actor could never approve a governed edit. Leaving Institutional needs a restart: a running host ignores a reload back to Standard. "GovernanceProfile": "Institutional", When true, a governed field-edit revision cannot be reviewed by its drafter or approved by its submitter. The code default is false; this sample opts in. Forced on by Institutional. | [line 135](../../config/appsettings.sample.json#L135) |
-| `SecurityMasterWorkbench.MaxBulkResolveBatch` | integer | `200` | — | [line 136](../../config/appsettings.sample.json#L136) |
+| `SecurityMasterWorkbench` | object | `object (4 keys)` | Configure the governed-write conflict-authority ladder for operator passport edits. Leave SourcePrecedence empty until deployment-specific source-system identifiers are known; the policy then falls back to freshness and confidence instead of ranking placeholders. | [line 123](../../config/appsettings.sample.json#L123) |
+| `SecurityMasterWorkbench.SourcePrecedence` | array | `[]` | — | [line 124](../../config/appsettings.sample.json#L124) |
+| `SecurityMasterWorkbench.GoldenCopySource` | null | `null` | — | [line 125](../../config/appsettings.sample.json#L125) |
+| `SecurityMasterWorkbench.RequireIndependentReviewer` | boolean | `true` | GovernanceProfile is "Standard" (the default, used when the key is absent) or "Institutional". Under Institutional, RequireGovernedTermAmendments, RequireIndependentReviewer and RequireIndependentProfileApprover are all in force and cannot be turned off. A production deployment posture always runs Institutional, whatever this says. A host running Institutional refuses to start while any of the three is explicitly false, or (on a production posture) while this key is explicitly "Standard"; remove the contradicting key or set it to match. Standard stays the default because the local workstation is single-operator, and one actor could never approve a governed edit. Leaving Institutional needs a restart: a running host ignores a reload back to Standard. "GovernanceProfile": "Institutional", When true, a governed field-edit revision cannot be reviewed by its drafter or approved by its submitter. The code default is false; this sample opts in. Forced on by Institutional. | [line 138](../../config/appsettings.sample.json#L138) |
+| `SecurityMasterWorkbench.MaxBulkResolveBatch` | integer | `200` | — | [line 139](../../config/appsettings.sample.json#L139) |
 
 ## `Synthetic`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `Synthetic` | object | `object (12 keys)` | Synthetic/offline market data provider settings. When enabled and selected as the DataSource, the app can run entirely from deterministic historical/reference data including trades, order books, quotes, dividends, splits, and symbol metadata. | [line 149](../../config/appsettings.sample.json#L149) |
-| `Synthetic.Enabled` | boolean | `true` | — | [line 150](../../config/appsettings.sample.json#L150) |
-| `Synthetic.Seed` | integer | `1729` | — | [line 151](../../config/appsettings.sample.json#L151) |
-| `Synthetic.Priority` | integer | `1` | — | [line 152](../../config/appsettings.sample.json#L152) |
-| `Synthetic.EventsPerSecond` | integer | `8` | — | [line 153](../../config/appsettings.sample.json#L153) |
-| `Synthetic.HistoricalTradeDensityPerDay` | integer | `120` | — | [line 154](../../config/appsettings.sample.json#L154) |
-| `Synthetic.HistoricalQuoteDensityPerDay` | integer | `180` | — | [line 155](../../config/appsettings.sample.json#L155) |
-| `Synthetic.DefaultDepthLevels` | integer | `10` | — | [line 156](../../config/appsettings.sample.json#L156) |
-| `Synthetic.IncludeCorporateActions` | boolean | `true` | — | [line 157](../../config/appsettings.sample.json#L157) |
-| `Synthetic.IncludeReferenceData` | boolean | `true` | — | [line 158](../../config/appsettings.sample.json#L158) |
-| `Synthetic.UniverseSymbols` | array | `["AAPL", "MSFT", "SPY", "NVDA", "XOM"]` | — | [line 159](../../config/appsettings.sample.json#L159) |
-| `Synthetic.DefaultHistoryStart` | string | `"2024-01-02"` | — | [line 160](../../config/appsettings.sample.json#L160) |
-| `Synthetic.DefaultHistoryEnd` | string | `"2024-12-31"` | — | [line 161](../../config/appsettings.sample.json#L161) |
+| `Synthetic` | object | `object (12 keys)` | Synthetic/offline market data provider settings. When enabled and selected as the DataSource, the app can run entirely from deterministic historical/reference data including trades, order books, quotes, dividends, splits, and symbol metadata. | [line 152](../../config/appsettings.sample.json#L152) |
+| `Synthetic.Enabled` | boolean | `true` | — | [line 153](../../config/appsettings.sample.json#L153) |
+| `Synthetic.Seed` | integer | `1729` | — | [line 154](../../config/appsettings.sample.json#L154) |
+| `Synthetic.Priority` | integer | `1` | — | [line 155](../../config/appsettings.sample.json#L155) |
+| `Synthetic.EventsPerSecond` | integer | `8` | — | [line 156](../../config/appsettings.sample.json#L156) |
+| `Synthetic.HistoricalTradeDensityPerDay` | integer | `120` | — | [line 157](../../config/appsettings.sample.json#L157) |
+| `Synthetic.HistoricalQuoteDensityPerDay` | integer | `180` | — | [line 158](../../config/appsettings.sample.json#L158) |
+| `Synthetic.DefaultDepthLevels` | integer | `10` | — | [line 159](../../config/appsettings.sample.json#L159) |
+| `Synthetic.IncludeCorporateActions` | boolean | `true` | — | [line 160](../../config/appsettings.sample.json#L160) |
+| `Synthetic.IncludeReferenceData` | boolean | `true` | — | [line 161](../../config/appsettings.sample.json#L161) |
+| `Synthetic.UniverseSymbols` | array | `["AAPL", "MSFT", "SPY", "NVDA", "XOM"]` | — | [line 162](../../config/appsettings.sample.json#L162) |
+| `Synthetic.DefaultHistoryStart` | string | `"2024-01-02"` | — | [line 163](../../config/appsettings.sample.json#L163) |
+| `Synthetic.DefaultHistoryEnd` | string | `"2024-12-31"` | — | [line 164](../../config/appsettings.sample.json#L164) |
 
 ## `Backfill`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `Backfill` | object | `object (17 keys)` | Pull free end-of-day bars from multiple providers with automatic failover. Supports: Alpaca, Yahoo Finance, Polygon.io, Tiingo, Finnhub, Stooq, Alpha Vantage (intraday), FRED economic data, and Nasdaq Data Link (Quandl). | [line 170](../../config/appsettings.sample.json#L170) |
-| `Backfill.Enabled` | boolean | `false` | Enable backfill mode (pulls historical data instead of live streaming) | [line 172](../../config/appsettings.sample.json#L172) |
-| `Backfill.Provider` | string | `"composite"` | Provider to use: "composite" (auto-failover), "synthetic", "alpaca", "yahoo", "stooq", "nasdaq" | [line 175](../../config/appsettings.sample.json#L175) |
-| `Backfill.Symbols` | array | `["SPY", "QQQ", "AAPL"]` | Symbols to backfill | [line 178](../../config/appsettings.sample.json#L178) |
-| `Backfill.From` | string | `"2024-01-01"` | Date range (inclusive) | [line 181](../../config/appsettings.sample.json#L181) |
-| `Backfill.To` | string | `"2024-12-31"` | — | [line 182](../../config/appsettings.sample.json#L182) |
-| `Backfill.Granularity` | string | `"daily"` | Data granularity: "daily", "hourly", "minute1", "minute5", "minute15", "minute30" | [line 185](../../config/appsettings.sample.json#L185) |
-| `Backfill.EnableFallback` | boolean | `true` | Enable automatic failover to alternate providers on failure | [line 188](../../config/appsettings.sample.json#L188) |
-| `Backfill.PreferAdjustedPrices` | boolean | `true` | Use split/dividend adjusted prices when available | [line 191](../../config/appsettings.sample.json#L191) |
-| `Backfill.EnableSymbolResolution` | boolean | `true` | Enable OpenFIGI symbol resolution (normalizes symbols across providers) | [line 194](../../config/appsettings.sample.json#L194) |
-| `Backfill.SymbolResolutionMode` | string | `"Compare"` | Canonical symbol rollout: "Legacy", "Compare", or "Canonical". Compare preserves legacy output while recording disagreements with the registry. | [line 198](../../config/appsettings.sample.json#L198) |
-| `Backfill.ProviderPriority` | null | `null` | Custom provider priority order (optional, lower = tried first) Default: ["alpaca", "yahoo", "stooq", "nasdaq"] (alpaca only if credentials available) | [line 202](../../config/appsettings.sample.json#L202) |
-| `Backfill.EnableRateLimitRotation` | boolean | `true` | Enable rate-limit aware provider rotation When enabled, automatically switches to alternate providers when approaching rate limits | [line 206](../../config/appsettings.sample.json#L206) |
-| `Backfill.RateLimitRotationThreshold` | number | `0.8` | Threshold (0.0-1.0) at which to start rotating to other providers Default: 0.8 (start rotating when 80% of rate limit is used) | [line 210](../../config/appsettings.sample.json#L210) |
-| `Backfill.SkipExistingData` | boolean | `true` | Check existing archives and skip dates that already have data | [line 213](../../config/appsettings.sample.json#L213) |
-| `Backfill.FillGapsOnly` | boolean | `true` | Only fill detected gaps in existing data (vs. full backfill) | [line 216](../../config/appsettings.sample.json#L216) |
-| `Backfill.Jobs` | object | `object (11 keys)` | Job management configuration | [line 219](../../config/appsettings.sample.json#L219) |
-| `Backfill.Jobs.PersistJobs` | boolean | `true` | Persist job state to disk for resume after restart | [line 221](../../config/appsettings.sample.json#L221) |
-| `Backfill.Jobs.JobsDirectory` | string | `"_backfill_jobs"` | Directory for job state files (relative to DataRoot) | [line 224](../../config/appsettings.sample.json#L224) |
-| `Backfill.Jobs.MaxConcurrentRequests` | integer | `3` | Maximum concurrent requests across all providers | [line 227](../../config/appsettings.sample.json#L227) |
-| `Backfill.Jobs.MaxConcurrentPerProvider` | integer | `2` | Maximum concurrent requests per provider | [line 230](../../config/appsettings.sample.json#L230) |
-| `Backfill.Jobs.MaxRetries` | integer | `3` | Maximum retries for failed requests | [line 233](../../config/appsettings.sample.json#L233) |
-| `Backfill.Jobs.RetryDelaySeconds` | integer | `5` | Delay between retries in seconds | [line 236](../../config/appsettings.sample.json#L236) |
-| `Backfill.Jobs.BatchSizeDays` | integer | `365` | Maximum days per request batch | [line 239](../../config/appsettings.sample.json#L239) |
-| `Backfill.Jobs.AutoPauseOnRateLimit` | boolean | `true` | Automatically pause job when all providers are rate-limited | [line 242](../../config/appsettings.sample.json#L242) |
-| `Backfill.Jobs.AutoResumeAfterRateLimit` | boolean | `true` | Automatically resume after rate limit window expires | [line 245](../../config/appsettings.sample.json#L245) |
-| `Backfill.Jobs.MaxRateLimitWaitMinutes` | integer | `5` | Maximum minutes to wait for rate limit before pausing | [line 248](../../config/appsettings.sample.json#L248) |
-| `Backfill.Jobs.Scheduling` | object | `object (8 keys)` | Scheduled backfill configuration | [line 251](../../config/appsettings.sample.json#L251) |
-| `Backfill.Jobs.Scheduling.Enabled` | boolean | `false` | Enable scheduled backfill service | [line 253](../../config/appsettings.sample.json#L253) |
-| `Backfill.Jobs.Scheduling.ScheduleCheckIntervalSeconds` | integer | `60` | How often to check for due schedules (seconds) | [line 256](../../config/appsettings.sample.json#L256) |
-| `Backfill.Jobs.Scheduling.MaxExecutionDurationHours` | integer | `6` | Maximum duration for a single execution (hours) | [line 259](../../config/appsettings.sample.json#L259) |
-| `Backfill.Jobs.Scheduling.CatchUpMissedSchedules` | boolean | `true` | Catch up missed schedules on startup | [line 262](../../config/appsettings.sample.json#L262) |
-| `Backfill.Jobs.Scheduling.CatchUpWindowHours` | integer | `24` | How far back to look for missed schedules (hours) | [line 265](../../config/appsettings.sample.json#L265) |
-| `Backfill.Jobs.Scheduling.MaxConcurrentExecutions` | integer | `1` | Maximum concurrent scheduled executions | [line 268](../../config/appsettings.sample.json#L268) |
-| `Backfill.Jobs.Scheduling.PauseDuringMarketHours` | boolean | `false` | Pause executions during market hours | [line 271](../../config/appsettings.sample.json#L271) |
-| `Backfill.Jobs.Scheduling.DefaultSchedules` | array | `[]` | Default schedules to create on first startup (optional) Presets available: "daily", "weekly", "eod", "monthly" | [line 275](../../config/appsettings.sample.json#L275) |
-| `Backfill.Providers` | object | `object (12 keys)` | Individual provider configuration | [line 299](../../config/appsettings.sample.json#L299) |
-| `Backfill.Providers.Synthetic` | object | `object (11 keys)` | Priority is LAST-RESORT on purpose (lower = tried first, and the composite selector takes the first success). At priority 1 the fabricated provider always succeeded first, so adding real API keys still produced synthetic bars. Real vendors must outrank fabricated data; synthetic only serves when every real provider is unavailable. | [line 311](../../config/appsettings.sample.json#L311) |
-| `Backfill.Providers.Synthetic.Enabled` | boolean | `true` | — | [line 312](../../config/appsettings.sample.json#L312) |
-| `Backfill.Providers.Synthetic.Priority` | integer | `99` | — | [line 313](../../config/appsettings.sample.json#L313) |
-| `Backfill.Providers.Synthetic.Seed` | integer | `1729` | — | [line 314](../../config/appsettings.sample.json#L314) |
-| `Backfill.Providers.Synthetic.HistoricalTradeDensityPerDay` | integer | `120` | — | [line 315](../../config/appsettings.sample.json#L315) |
-| `Backfill.Providers.Synthetic.HistoricalQuoteDensityPerDay` | integer | `180` | — | [line 316](../../config/appsettings.sample.json#L316) |
-| `Backfill.Providers.Synthetic.DefaultDepthLevels` | integer | `10` | — | [line 317](../../config/appsettings.sample.json#L317) |
-| `Backfill.Providers.Synthetic.IncludeCorporateActions` | boolean | `true` | — | [line 318](../../config/appsettings.sample.json#L318) |
-| `Backfill.Providers.Synthetic.IncludeReferenceData` | boolean | `true` | — | [line 319](../../config/appsettings.sample.json#L319) |
-| `Backfill.Providers.Synthetic.UniverseSymbols` | array | `["AAPL", "MSFT", "SPY", "NVDA", "XOM"]` | — | [line 320](../../config/appsettings.sample.json#L320) |
-| `Backfill.Providers.Synthetic.DefaultHistoryStart` | string | `"2024-01-02"` | — | [line 321](../../config/appsettings.sample.json#L321) |
-| `Backfill.Providers.Synthetic.DefaultHistoryEnd` | string | `"2024-12-31"` | — | [line 322](../../config/appsettings.sample.json#L322) |
-| `Backfill.Providers.Alpaca` | object | `object (5 keys)` | Alpaca Markets - Highest priority when credentials are available See: https://docs.alpaca.markets/reference/stockbars Credentials: Set ALPACA_KEY_ID and ALPACA_SECRET_KEY environment variables | [line 328](../../config/appsettings.sample.json#L328) |
-| `Backfill.Providers.Alpaca.Enabled` | boolean | `true` | — | [line 329](../../config/appsettings.sample.json#L329) |
-| `Backfill.Providers.Alpaca.Feed` | string | `"iex"` | Data feed: "iex" (free), "sip" (paid), or "delayed_sip" (free, 15-min delay) | [line 331](../../config/appsettings.sample.json#L331) |
-| `Backfill.Providers.Alpaca.Adjustment` | string | `"all"` | Price adjustment: "raw", "split", "dividend", or "all" (recommended) | [line 333](../../config/appsettings.sample.json#L333) |
-| `Backfill.Providers.Alpaca.Priority` | integer | `5` | — | [line 334](../../config/appsettings.sample.json#L334) |
-| `Backfill.Providers.Alpaca.RateLimitPerMinute` | integer | `200` | — | [line 335](../../config/appsettings.sample.json#L335) |
-| `Backfill.Providers.Yahoo` | object | `object (3 keys)` | Yahoo Finance - Broad free coverage, but unofficial API No API key required; keep as low-priority resilience fallback | [line 340](../../config/appsettings.sample.json#L340) |
-| `Backfill.Providers.Yahoo.Enabled` | boolean | `true` | — | [line 341](../../config/appsettings.sample.json#L341) |
-| `Backfill.Providers.Yahoo.Priority` | integer | `22` | — | [line 342](../../config/appsettings.sample.json#L342) |
-| `Backfill.Providers.Yahoo.RateLimitPerHour` | integer | `2000` | — | [line 343](../../config/appsettings.sample.json#L343) |
-| `Backfill.Providers.Polygon` | object | `object (3 keys)` | Polygon.io - High-quality data with 2-year history on free tier See: https://polygon.io/docs/stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to Free tier: 5 API calls/minute, delayed data Credentials: Set POLYGON_API_KEY environment variable | [line 350](../../config/appsettings.sample.json#L350) |
-| `Backfill.Providers.Polygon.Enabled` | boolean | `true` | — | [line 351](../../config/appsettings.sample.json#L351) |
-| `Backfill.Providers.Polygon.Priority` | integer | `12` | — | [line 352](../../config/appsettings.sample.json#L352) |
-| `Backfill.Providers.Polygon.RateLimitPerMinute` | integer | `5` | — | [line 353](../../config/appsettings.sample.json#L353) |
-| `Backfill.Providers.Tiingo` | object | `object (3 keys)` | Tiingo - Best for dividend-adjusted OHLCV with corporate actions See: https://api.tiingo.com/documentation/end-of-day Free tier: 1,000 requests/day, 50 requests/hour Credentials: Set TIINGO_API_TOKEN environment variable | [line 360](../../config/appsettings.sample.json#L360) |
-| `Backfill.Providers.Tiingo.Enabled` | boolean | `true` | — | [line 361](../../config/appsettings.sample.json#L361) |
-| `Backfill.Providers.Tiingo.Priority` | integer | `15` | — | [line 362](../../config/appsettings.sample.json#L362) |
-| `Backfill.Providers.Tiingo.RateLimitPerHour` | integer | `50` | — | [line 363](../../config/appsettings.sample.json#L363) |
-| `Backfill.Providers.Finnhub` | object | `object (3 keys)` | Finnhub - Generous free tier with fundamentals data See: https://finnhub.io/docs/api/stock-candles Free tier: 60 API calls/minute Credentials: Set FINNHUB_API_KEY environment variable | [line 370](../../config/appsettings.sample.json#L370) |
-| `Backfill.Providers.Finnhub.Enabled` | boolean | `true` | — | [line 371](../../config/appsettings.sample.json#L371) |
-| `Backfill.Providers.Finnhub.Priority` | integer | `18` | — | [line 372](../../config/appsettings.sample.json#L372) |
-| `Backfill.Providers.Finnhub.RateLimitPerMinute` | integer | `60` | — | [line 373](../../config/appsettings.sample.json#L373) |
-| `Backfill.Providers.Stooq` | object | `object (3 keys)` | Stooq - Reliable free EOD data for US equities No API key required | [line 378](../../config/appsettings.sample.json#L378) |
-| `Backfill.Providers.Stooq.Enabled` | boolean | `true` | — | [line 379](../../config/appsettings.sample.json#L379) |
-| `Backfill.Providers.Stooq.Priority` | integer | `20` | — | [line 380](../../config/appsettings.sample.json#L380) |
-| `Backfill.Providers.Stooq.DefaultMarket` | string | `"us"` | — | [line 381](../../config/appsettings.sample.json#L381) |
-| `Backfill.Providers.AlphaVantage` | object | `object (4 keys)` | Alpha Vantage - Unique intraday historical data See: https://www.alphavantage.co/documentation/ Free tier: 25 requests/day (very limited), 5 calls/minute Disabled by default due to severely limited free tier Credentials: Set ALPHA_VANTAGE_API_KEY environment variable | [line 389](../../config/appsettings.sample.json#L389) |
-| `Backfill.Providers.AlphaVantage.Enabled` | boolean | `false` | — | [line 390](../../config/appsettings.sample.json#L390) |
-| `Backfill.Providers.AlphaVantage.Priority` | integer | `25` | — | [line 391](../../config/appsettings.sample.json#L391) |
-| `Backfill.Providers.AlphaVantage.RateLimitPerMinute` | integer | `5` | — | [line 392](../../config/appsettings.sample.json#L392) |
-| `Backfill.Providers.AlphaVantage.RateLimitPerDay` | integer | `25` | — | [line 393](../../config/appsettings.sample.json#L393) |
-| `Backfill.Providers.Fred` | object | `object (3 keys)` | FRED - Federal Reserve Economic Data time series Uses FRED series IDs such as GDP, UNRATE, CPIAUCSL as backfill symbols Observations are mapped into synthetic daily bars (OHLC all equal to the observation value) Credentials: Set FRED_API_KEY environment variable | [line 400](../../config/appsettings.sample.json#L400) |
-| `Backfill.Providers.Fred.Enabled` | boolean | `false` | — | [line 401](../../config/appsettings.sample.json#L401) |
-| `Backfill.Providers.Fred.Priority` | integer | `28` | — | [line 402](../../config/appsettings.sample.json#L402) |
-| `Backfill.Providers.Fred.RateLimitPerMinute` | integer | `120` | — | [line 403](../../config/appsettings.sample.json#L403) |
-| `Backfill.Providers.Nasdaq` | object | `object (3 keys)` | Nasdaq Data Link (formerly Quandl) - Alternative/financial datasets Credentials: Set NASDAQ_API_KEY environment variable (optional, higher rate limits) | [line 408](../../config/appsettings.sample.json#L408) |
-| `Backfill.Providers.Nasdaq.Enabled` | boolean | `true` | — | [line 409](../../config/appsettings.sample.json#L409) |
-| `Backfill.Providers.Nasdaq.Database` | string | `"WIKI"` | — | [line 410](../../config/appsettings.sample.json#L410) |
-| `Backfill.Providers.Nasdaq.Priority` | integer | `30` | — | [line 411](../../config/appsettings.sample.json#L411) |
-| `Backfill.Providers.Robinhood` | object | `object (3 keys)` | Robinhood - Unofficial API, daily OHLCV for US equities IMPORTANT: No official public API — use at your own risk. Credentials: Set ROBINHOOD_ACCESS_TOKEN environment variable (personal Bearer token) Disabled by default; enable only after reading the disclaimer in the provider docs. | [line 418](../../config/appsettings.sample.json#L418) |
-| `Backfill.Providers.Robinhood.Enabled` | boolean | `false` | — | [line 419](../../config/appsettings.sample.json#L419) |
-| `Backfill.Providers.Robinhood.Priority` | integer | `35` | — | [line 420](../../config/appsettings.sample.json#L420) |
-| `Backfill.Providers.Robinhood.RateLimitPerHour` | integer | `100` | — | [line 421](../../config/appsettings.sample.json#L421) |
-| `Backfill.Providers.OpenFigi` | object | `object (2 keys)` | OpenFIGI symbol resolver - Normalizes symbols across providers Credentials: Set OPENFIGI_API_KEY environment variable (optional, higher rate limits) | [line 426](../../config/appsettings.sample.json#L426) |
-| `Backfill.Providers.OpenFigi.Enabled` | boolean | `true` | — | [line 427](../../config/appsettings.sample.json#L427) |
-| `Backfill.Providers.OpenFigi.CacheResults` | boolean | `true` | — | [line 428](../../config/appsettings.sample.json#L428) |
+| `Backfill` | object | `object (17 keys)` | Pull free end-of-day bars from multiple providers with automatic failover. Supports: Alpaca, Yahoo Finance, Polygon.io, Tiingo, Finnhub, Stooq, Alpha Vantage (intraday), FRED economic data, and Nasdaq Data Link (Quandl). | [line 173](../../config/appsettings.sample.json#L173) |
+| `Backfill.Enabled` | boolean | `false` | Enable backfill mode (pulls historical data instead of live streaming) | [line 175](../../config/appsettings.sample.json#L175) |
+| `Backfill.Provider` | string | `"composite"` | Provider to use: "composite" (auto-failover), "synthetic", "alpaca", "yahoo", "stooq", "nasdaq" | [line 178](../../config/appsettings.sample.json#L178) |
+| `Backfill.Symbols` | array | `["SPY", "QQQ", "AAPL"]` | Symbols to backfill | [line 181](../../config/appsettings.sample.json#L181) |
+| `Backfill.From` | string | `"2024-01-01"` | Date range (inclusive) | [line 184](../../config/appsettings.sample.json#L184) |
+| `Backfill.To` | string | `"2024-12-31"` | — | [line 185](../../config/appsettings.sample.json#L185) |
+| `Backfill.Granularity` | string | `"daily"` | Data granularity: "daily", "hourly", "minute1", "minute5", "minute15", "minute30" | [line 188](../../config/appsettings.sample.json#L188) |
+| `Backfill.EnableFallback` | boolean | `true` | Enable automatic failover to alternate providers on failure | [line 191](../../config/appsettings.sample.json#L191) |
+| `Backfill.PreferAdjustedPrices` | boolean | `true` | Use split/dividend adjusted prices when available | [line 194](../../config/appsettings.sample.json#L194) |
+| `Backfill.EnableSymbolResolution` | boolean | `true` | Enable OpenFIGI symbol resolution (normalizes symbols across providers) | [line 197](../../config/appsettings.sample.json#L197) |
+| `Backfill.SymbolResolutionMode` | string | `"Compare"` | Canonical symbol rollout: "Legacy", "Compare", or "Canonical". Compare preserves legacy output while recording disagreements with the registry. | [line 201](../../config/appsettings.sample.json#L201) |
+| `Backfill.ProviderPriority` | null | `null` | Custom provider priority order (optional, lower = tried first) Default: ["alpaca", "yahoo", "stooq", "nasdaq"] (alpaca only if credentials available) | [line 205](../../config/appsettings.sample.json#L205) |
+| `Backfill.EnableRateLimitRotation` | boolean | `true` | Enable rate-limit aware provider rotation When enabled, automatically switches to alternate providers when approaching rate limits | [line 209](../../config/appsettings.sample.json#L209) |
+| `Backfill.RateLimitRotationThreshold` | number | `0.8` | Threshold (0.0-1.0) at which to start rotating to other providers Default: 0.8 (start rotating when 80% of rate limit is used) | [line 213](../../config/appsettings.sample.json#L213) |
+| `Backfill.SkipExistingData` | boolean | `true` | Check existing archives and skip dates that already have data | [line 216](../../config/appsettings.sample.json#L216) |
+| `Backfill.FillGapsOnly` | boolean | `true` | Only fill detected gaps in existing data (vs. full backfill) | [line 219](../../config/appsettings.sample.json#L219) |
+| `Backfill.Jobs` | object | `object (11 keys)` | Job management configuration | [line 222](../../config/appsettings.sample.json#L222) |
+| `Backfill.Jobs.PersistJobs` | boolean | `true` | Persist job state to disk for resume after restart | [line 224](../../config/appsettings.sample.json#L224) |
+| `Backfill.Jobs.JobsDirectory` | string | `"_backfill_jobs"` | Directory for job state files (relative to DataRoot) | [line 227](../../config/appsettings.sample.json#L227) |
+| `Backfill.Jobs.MaxConcurrentRequests` | integer | `3` | Maximum concurrent requests across all providers | [line 230](../../config/appsettings.sample.json#L230) |
+| `Backfill.Jobs.MaxConcurrentPerProvider` | integer | `2` | Maximum concurrent requests per provider | [line 233](../../config/appsettings.sample.json#L233) |
+| `Backfill.Jobs.MaxRetries` | integer | `3` | Maximum retries for failed requests | [line 236](../../config/appsettings.sample.json#L236) |
+| `Backfill.Jobs.RetryDelaySeconds` | integer | `5` | Delay between retries in seconds | [line 239](../../config/appsettings.sample.json#L239) |
+| `Backfill.Jobs.BatchSizeDays` | integer | `365` | Maximum days per request batch | [line 242](../../config/appsettings.sample.json#L242) |
+| `Backfill.Jobs.AutoPauseOnRateLimit` | boolean | `true` | Automatically pause job when all providers are rate-limited | [line 245](../../config/appsettings.sample.json#L245) |
+| `Backfill.Jobs.AutoResumeAfterRateLimit` | boolean | `true` | Automatically resume after rate limit window expires | [line 248](../../config/appsettings.sample.json#L248) |
+| `Backfill.Jobs.MaxRateLimitWaitMinutes` | integer | `5` | Maximum minutes to wait for rate limit before pausing | [line 251](../../config/appsettings.sample.json#L251) |
+| `Backfill.Jobs.Scheduling` | object | `object (8 keys)` | Scheduled backfill configuration | [line 254](../../config/appsettings.sample.json#L254) |
+| `Backfill.Jobs.Scheduling.Enabled` | boolean | `false` | Enable scheduled backfill service | [line 256](../../config/appsettings.sample.json#L256) |
+| `Backfill.Jobs.Scheduling.ScheduleCheckIntervalSeconds` | integer | `60` | How often to check for due schedules (seconds) | [line 259](../../config/appsettings.sample.json#L259) |
+| `Backfill.Jobs.Scheduling.MaxExecutionDurationHours` | integer | `6` | Maximum duration for a single execution (hours) | [line 262](../../config/appsettings.sample.json#L262) |
+| `Backfill.Jobs.Scheduling.CatchUpMissedSchedules` | boolean | `true` | Catch up missed schedules on startup | [line 265](../../config/appsettings.sample.json#L265) |
+| `Backfill.Jobs.Scheduling.CatchUpWindowHours` | integer | `24` | How far back to look for missed schedules (hours) | [line 268](../../config/appsettings.sample.json#L268) |
+| `Backfill.Jobs.Scheduling.MaxConcurrentExecutions` | integer | `1` | Maximum concurrent scheduled executions | [line 271](../../config/appsettings.sample.json#L271) |
+| `Backfill.Jobs.Scheduling.PauseDuringMarketHours` | boolean | `false` | Pause executions during market hours | [line 274](../../config/appsettings.sample.json#L274) |
+| `Backfill.Jobs.Scheduling.DefaultSchedules` | array | `[]` | Default schedules to create on first startup (optional) Presets available: "daily", "weekly", "eod", "monthly" | [line 278](../../config/appsettings.sample.json#L278) |
+| `Backfill.Providers` | object | `object (12 keys)` | Individual provider configuration | [line 302](../../config/appsettings.sample.json#L302) |
+| `Backfill.Providers.Synthetic` | object | `object (11 keys)` | Priority is LAST-RESORT on purpose (lower = tried first, and the composite selector takes the first success). At priority 1 the fabricated provider always succeeded first, so adding real API keys still produced synthetic bars. Real vendors must outrank fabricated data; synthetic only serves when every real provider is unavailable. | [line 314](../../config/appsettings.sample.json#L314) |
+| `Backfill.Providers.Synthetic.Enabled` | boolean | `true` | — | [line 315](../../config/appsettings.sample.json#L315) |
+| `Backfill.Providers.Synthetic.Priority` | integer | `99` | — | [line 316](../../config/appsettings.sample.json#L316) |
+| `Backfill.Providers.Synthetic.Seed` | integer | `1729` | — | [line 317](../../config/appsettings.sample.json#L317) |
+| `Backfill.Providers.Synthetic.HistoricalTradeDensityPerDay` | integer | `120` | — | [line 318](../../config/appsettings.sample.json#L318) |
+| `Backfill.Providers.Synthetic.HistoricalQuoteDensityPerDay` | integer | `180` | — | [line 319](../../config/appsettings.sample.json#L319) |
+| `Backfill.Providers.Synthetic.DefaultDepthLevels` | integer | `10` | — | [line 320](../../config/appsettings.sample.json#L320) |
+| `Backfill.Providers.Synthetic.IncludeCorporateActions` | boolean | `true` | — | [line 321](../../config/appsettings.sample.json#L321) |
+| `Backfill.Providers.Synthetic.IncludeReferenceData` | boolean | `true` | — | [line 322](../../config/appsettings.sample.json#L322) |
+| `Backfill.Providers.Synthetic.UniverseSymbols` | array | `["AAPL", "MSFT", "SPY", "NVDA", "XOM"]` | — | [line 323](../../config/appsettings.sample.json#L323) |
+| `Backfill.Providers.Synthetic.DefaultHistoryStart` | string | `"2024-01-02"` | — | [line 324](../../config/appsettings.sample.json#L324) |
+| `Backfill.Providers.Synthetic.DefaultHistoryEnd` | string | `"2024-12-31"` | — | [line 325](../../config/appsettings.sample.json#L325) |
+| `Backfill.Providers.Alpaca` | object | `object (5 keys)` | Alpaca Markets - Highest priority when credentials are available See: https://docs.alpaca.markets/reference/stockbars Credentials: Set ALPACA_KEY_ID and ALPACA_SECRET_KEY environment variables | [line 331](../../config/appsettings.sample.json#L331) |
+| `Backfill.Providers.Alpaca.Enabled` | boolean | `true` | — | [line 332](../../config/appsettings.sample.json#L332) |
+| `Backfill.Providers.Alpaca.Feed` | string | `"iex"` | Data feed: "iex" (free), "sip" (paid), or "delayed_sip" (free, 15-min delay) | [line 334](../../config/appsettings.sample.json#L334) |
+| `Backfill.Providers.Alpaca.Adjustment` | string | `"all"` | Price adjustment: "raw", "split", "dividend", or "all" (recommended) | [line 336](../../config/appsettings.sample.json#L336) |
+| `Backfill.Providers.Alpaca.Priority` | integer | `5` | — | [line 337](../../config/appsettings.sample.json#L337) |
+| `Backfill.Providers.Alpaca.RateLimitPerMinute` | integer | `200` | — | [line 338](../../config/appsettings.sample.json#L338) |
+| `Backfill.Providers.Yahoo` | object | `object (3 keys)` | Yahoo Finance - Broad free coverage, but unofficial API No API key required; keep as low-priority resilience fallback | [line 343](../../config/appsettings.sample.json#L343) |
+| `Backfill.Providers.Yahoo.Enabled` | boolean | `true` | — | [line 344](../../config/appsettings.sample.json#L344) |
+| `Backfill.Providers.Yahoo.Priority` | integer | `22` | — | [line 345](../../config/appsettings.sample.json#L345) |
+| `Backfill.Providers.Yahoo.RateLimitPerHour` | integer | `2000` | — | [line 346](../../config/appsettings.sample.json#L346) |
+| `Backfill.Providers.Polygon` | object | `object (3 keys)` | Polygon.io - High-quality data with 2-year history on free tier See: https://polygon.io/docs/stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to Free tier: 5 API calls/minute, delayed data Credentials: Set POLYGON_API_KEY environment variable | [line 353](../../config/appsettings.sample.json#L353) |
+| `Backfill.Providers.Polygon.Enabled` | boolean | `true` | — | [line 354](../../config/appsettings.sample.json#L354) |
+| `Backfill.Providers.Polygon.Priority` | integer | `12` | — | [line 355](../../config/appsettings.sample.json#L355) |
+| `Backfill.Providers.Polygon.RateLimitPerMinute` | integer | `5` | — | [line 356](../../config/appsettings.sample.json#L356) |
+| `Backfill.Providers.Tiingo` | object | `object (3 keys)` | Tiingo - Best for dividend-adjusted OHLCV with corporate actions See: https://api.tiingo.com/documentation/end-of-day Free tier: 1,000 requests/day, 50 requests/hour Credentials: Set TIINGO_API_TOKEN environment variable | [line 363](../../config/appsettings.sample.json#L363) |
+| `Backfill.Providers.Tiingo.Enabled` | boolean | `true` | — | [line 364](../../config/appsettings.sample.json#L364) |
+| `Backfill.Providers.Tiingo.Priority` | integer | `15` | — | [line 365](../../config/appsettings.sample.json#L365) |
+| `Backfill.Providers.Tiingo.RateLimitPerHour` | integer | `50` | — | [line 366](../../config/appsettings.sample.json#L366) |
+| `Backfill.Providers.Finnhub` | object | `object (3 keys)` | Finnhub - Generous free tier with fundamentals data See: https://finnhub.io/docs/api/stock-candles Free tier: 60 API calls/minute Credentials: Set FINNHUB_API_KEY environment variable | [line 373](../../config/appsettings.sample.json#L373) |
+| `Backfill.Providers.Finnhub.Enabled` | boolean | `true` | — | [line 374](../../config/appsettings.sample.json#L374) |
+| `Backfill.Providers.Finnhub.Priority` | integer | `18` | — | [line 375](../../config/appsettings.sample.json#L375) |
+| `Backfill.Providers.Finnhub.RateLimitPerMinute` | integer | `60` | — | [line 376](../../config/appsettings.sample.json#L376) |
+| `Backfill.Providers.Stooq` | object | `object (3 keys)` | Stooq - Reliable free EOD data for US equities No API key required | [line 381](../../config/appsettings.sample.json#L381) |
+| `Backfill.Providers.Stooq.Enabled` | boolean | `true` | — | [line 382](../../config/appsettings.sample.json#L382) |
+| `Backfill.Providers.Stooq.Priority` | integer | `20` | — | [line 383](../../config/appsettings.sample.json#L383) |
+| `Backfill.Providers.Stooq.DefaultMarket` | string | `"us"` | — | [line 384](../../config/appsettings.sample.json#L384) |
+| `Backfill.Providers.AlphaVantage` | object | `object (4 keys)` | Alpha Vantage - Unique intraday historical data See: https://www.alphavantage.co/documentation/ Free tier: 25 requests/day (very limited), 5 calls/minute Disabled by default due to severely limited free tier Credentials: Set ALPHA_VANTAGE_API_KEY environment variable | [line 392](../../config/appsettings.sample.json#L392) |
+| `Backfill.Providers.AlphaVantage.Enabled` | boolean | `false` | — | [line 393](../../config/appsettings.sample.json#L393) |
+| `Backfill.Providers.AlphaVantage.Priority` | integer | `25` | — | [line 394](../../config/appsettings.sample.json#L394) |
+| `Backfill.Providers.AlphaVantage.RateLimitPerMinute` | integer | `5` | — | [line 395](../../config/appsettings.sample.json#L395) |
+| `Backfill.Providers.AlphaVantage.RateLimitPerDay` | integer | `25` | — | [line 396](../../config/appsettings.sample.json#L396) |
+| `Backfill.Providers.Fred` | object | `object (3 keys)` | FRED - Federal Reserve Economic Data time series Uses FRED series IDs such as GDP, UNRATE, CPIAUCSL as backfill symbols Observations are mapped into synthetic daily bars (OHLC all equal to the observation value) Credentials: Set FRED_API_KEY environment variable | [line 403](../../config/appsettings.sample.json#L403) |
+| `Backfill.Providers.Fred.Enabled` | boolean | `false` | — | [line 404](../../config/appsettings.sample.json#L404) |
+| `Backfill.Providers.Fred.Priority` | integer | `28` | — | [line 405](../../config/appsettings.sample.json#L405) |
+| `Backfill.Providers.Fred.RateLimitPerMinute` | integer | `120` | — | [line 406](../../config/appsettings.sample.json#L406) |
+| `Backfill.Providers.Nasdaq` | object | `object (3 keys)` | Nasdaq Data Link (formerly Quandl) - Alternative/financial datasets Credentials: Set NASDAQ_API_KEY environment variable (optional, higher rate limits) | [line 411](../../config/appsettings.sample.json#L411) |
+| `Backfill.Providers.Nasdaq.Enabled` | boolean | `true` | — | [line 412](../../config/appsettings.sample.json#L412) |
+| `Backfill.Providers.Nasdaq.Database` | string | `"WIKI"` | — | [line 413](../../config/appsettings.sample.json#L413) |
+| `Backfill.Providers.Nasdaq.Priority` | integer | `30` | — | [line 414](../../config/appsettings.sample.json#L414) |
+| `Backfill.Providers.Robinhood` | object | `object (3 keys)` | Robinhood - Unofficial API, daily OHLCV for US equities IMPORTANT: No official public API — use at your own risk. Credentials: Set ROBINHOOD_ACCESS_TOKEN environment variable (personal Bearer token) Disabled by default; enable only after reading the disclaimer in the provider docs. | [line 421](../../config/appsettings.sample.json#L421) |
+| `Backfill.Providers.Robinhood.Enabled` | boolean | `false` | — | [line 422](../../config/appsettings.sample.json#L422) |
+| `Backfill.Providers.Robinhood.Priority` | integer | `35` | — | [line 423](../../config/appsettings.sample.json#L423) |
+| `Backfill.Providers.Robinhood.RateLimitPerHour` | integer | `100` | — | [line 424](../../config/appsettings.sample.json#L424) |
+| `Backfill.Providers.OpenFigi` | object | `object (2 keys)` | OpenFIGI symbol resolver - Normalizes symbols across providers Credentials: Set OPENFIGI_API_KEY environment variable (optional, higher rate limits) | [line 429](../../config/appsettings.sample.json#L429) |
+| `Backfill.Providers.OpenFigi.Enabled` | boolean | `true` | — | [line 430](../../config/appsettings.sample.json#L430) |
+| `Backfill.Providers.OpenFigi.CacheResults` | boolean | `true` | — | [line 431](../../config/appsettings.sample.json#L431) |
 
 ## `DataQuality`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `DataQuality` | object | `object (1 keys)` | How far two vendors may disagree before a discrepancy is flagged. Values are percent (0.05 = 5 bps). Defaults reproduce the built-in thresholds. Bounds: price, quote and close 0-5%, volume 0-50%. Edit from Data -&gt; data-quality watch so loosening records a reason and an audit entry; saved values apply to the running host without a restart. | [line 450](../../config/appsettings.sample.json#L450) |
-| `DataQuality.CrossProvider` | object | `object (7 keys)` | — | [line 451](../../config/appsettings.sample.json#L451) |
-| `DataQuality.CrossProvider.PriceTolerancePercent` | number | `0.5` | — | [line 452](../../config/appsettings.sample.json#L452) |
-| `DataQuality.CrossProvider.QuoteTolerancePercent` | number | `0.5` | — | [line 453](../../config/appsettings.sample.json#L453) |
-| `DataQuality.CrossProvider.VolumeTolerancePercent` | number | `10.0` | — | [line 454](../../config/appsettings.sample.json#L454) |
-| `DataQuality.CrossProvider.VolumeMode` | string | `"Alert"` | Alert, Informational (recorded, not counted as an alert) or Off | [line 456](../../config/appsettings.sample.json#L456) |
-| `DataQuality.CrossProvider.BackfillBarsToCompare` | integer | `5` | Backfill cross-validation (when enabled): bars compared per request (null = every bar) | [line 458](../../config/appsettings.sample.json#L458) |
-| `DataQuality.CrossProvider.BackfillCloseTolerancePercent` | number | `1.0` | — | [line 459](../../config/appsettings.sample.json#L459) |
-| `DataQuality.CrossProvider.AssetClassOverrides` | object | `object (1 keys)` | Optional per-asset-class overrides; unset fields inherit the values above. | [line 461](../../config/appsettings.sample.json#L461) |
-| `DataQuality.CrossProvider.AssetClassOverrides.preferred` | object | `object (2 keys)` | — | [line 462](../../config/appsettings.sample.json#L462) |
-| `DataQuality.CrossProvider.AssetClassOverrides.preferred.PriceTolerancePercent` | number | `2.0` | — | [line 462](../../config/appsettings.sample.json#L462) |
-| `DataQuality.CrossProvider.AssetClassOverrides.preferred.VolumeMode` | string | `"Informational"` | — | [line 462](../../config/appsettings.sample.json#L462) |
+| `DataQuality` | object | `object (1 keys)` | How far two vendors may disagree before a discrepancy is flagged. Values are percent (0.05 = 5 bps). Defaults reproduce the built-in thresholds. Bounds: price, quote and close 0-5%, volume 0-50%. Edit from Data -&gt; data-quality watch so loosening records a reason and an audit entry; saved values apply to the running host without a restart. | [line 453](../../config/appsettings.sample.json#L453) |
+| `DataQuality.CrossProvider` | object | `object (7 keys)` | — | [line 454](../../config/appsettings.sample.json#L454) |
+| `DataQuality.CrossProvider.PriceTolerancePercent` | number | `0.5` | — | [line 455](../../config/appsettings.sample.json#L455) |
+| `DataQuality.CrossProvider.QuoteTolerancePercent` | number | `0.5` | — | [line 456](../../config/appsettings.sample.json#L456) |
+| `DataQuality.CrossProvider.VolumeTolerancePercent` | number | `10.0` | — | [line 457](../../config/appsettings.sample.json#L457) |
+| `DataQuality.CrossProvider.VolumeMode` | string | `"Alert"` | Alert, Informational (recorded, not counted as an alert) or Off | [line 459](../../config/appsettings.sample.json#L459) |
+| `DataQuality.CrossProvider.BackfillBarsToCompare` | integer | `5` | Backfill cross-validation (when enabled): bars compared per request (null = every bar) | [line 461](../../config/appsettings.sample.json#L461) |
+| `DataQuality.CrossProvider.BackfillCloseTolerancePercent` | number | `1.0` | — | [line 462](../../config/appsettings.sample.json#L462) |
+| `DataQuality.CrossProvider.AssetClassOverrides` | object | `object (1 keys)` | Optional per-asset-class overrides; unset fields inherit the values above. | [line 464](../../config/appsettings.sample.json#L464) |
+| `DataQuality.CrossProvider.AssetClassOverrides.preferred` | object | `object (2 keys)` | — | [line 465](../../config/appsettings.sample.json#L465) |
+| `DataQuality.CrossProvider.AssetClassOverrides.preferred.PriceTolerancePercent` | number | `2.0` | — | [line 465](../../config/appsettings.sample.json#L465) |
+| `DataQuality.CrossProvider.AssetClassOverrides.preferred.VolumeMode` | string | `"Informational"` | — | [line 465](../../config/appsettings.sample.json#L465) |
 
 ## `DataSources`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `DataSources` | object | `object (9 keys)` | Configure multiple simultaneous data providers with automatic failover. This replaces the single DataSource setting when enabled. NOTE: Credentials are resolved from environment variables - do NOT add them here. NOTE: In a running collector (with --watch-config or a workstation save), failover rule thresholds, backup order among providers that already have a live client, the health-check interval and Sources[*].Enabled for those providers apply without a restart. Provider kinds, IDs, credentials, endpoints, new rules and EnableFailover still need a host restart; each save reports which is which. | [line 478](../../config/appsettings.sample.json#L478) |
-| `DataSources.Sources` | array | `array (3 items; fields below)` | List of configured data sources | [line 480](../../config/appsettings.sample.json#L480) |
-| `DataSources.Sources[0].Id` | string | `"synthetic-local"` | — | [line 488](../../config/appsettings.sample.json#L488) |
-| `DataSources.Sources[0].Name` | string | `"Synthetic (offline)"` | — | [line 489](../../config/appsettings.sample.json#L489) |
-| `DataSources.Sources[0].Provider` | string | `"Synthetic"` | — | [line 490](../../config/appsettings.sample.json#L490) |
-| `DataSources.Sources[0].Enabled` | boolean | `true` | — | [line 491](../../config/appsettings.sample.json#L491) |
-| `DataSources.Sources[0].Type` | string | `"Both"` | — | [line 492](../../config/appsettings.sample.json#L492) |
-| `DataSources.Sources[0].Priority` | integer | `1` | — | [line 493](../../config/appsettings.sample.json#L493) |
-| `DataSources.Sources[0].Description` | string | `"Credential-free generated market data; matches the top-level DataSource"` | — | [line 494](../../config/appsettings.sample.json#L494) |
-| `DataSources.Sources[1].Id` | string | `"alpaca-primary"` | — | [line 499](../../config/appsettings.sample.json#L499) |
-| `DataSources.Sources[1].Name` | string | `"Alpaca Primary"` | — | [line 500](../../config/appsettings.sample.json#L500) |
-| `DataSources.Sources[1].Provider` | string | `"Alpaca"` | — | [line 501](../../config/appsettings.sample.json#L501) |
-| `DataSources.Sources[1].Enabled` | boolean | `true` | — | [line 502](../../config/appsettings.sample.json#L502) |
-| `DataSources.Sources[1].Type` | string | `"RealTime"` | — | [line 503](../../config/appsettings.sample.json#L503) |
-| `DataSources.Sources[1].Priority` | integer | `10` | — | [line 504](../../config/appsettings.sample.json#L504) |
-| `DataSources.Sources[1].Description` | string | `"Primary real-time feed from Alpaca"` | — | [line 505](../../config/appsettings.sample.json#L505) |
-| `DataSources.Sources[1].Alpaca` | object | `object (1 keys)` | — | [line 506](../../config/appsettings.sample.json#L506) |
-| `DataSources.Sources[1].Alpaca.Feed` | string | `"sip"` | — | [line 507](../../config/appsettings.sample.json#L507) |
-| `DataSources.Sources[2].Id` | string | `"ib-backup"` | — | [line 513](../../config/appsettings.sample.json#L513) |
-| `DataSources.Sources[2].Name` | string | `"Interactive Brokers Backup"` | — | [line 514](../../config/appsettings.sample.json#L514) |
-| `DataSources.Sources[2].Provider` | string | `"IB"` | — | [line 515](../../config/appsettings.sample.json#L515) |
-| `DataSources.Sources[2].Enabled` | boolean | `true` | — | [line 516](../../config/appsettings.sample.json#L516) |
-| `DataSources.Sources[2].Type` | string | `"RealTime"` | — | [line 517](../../config/appsettings.sample.json#L517) |
-| `DataSources.Sources[2].Priority` | integer | `20` | — | [line 518](../../config/appsettings.sample.json#L518) |
-| `DataSources.Sources[2].Description` | string | `"Backup feed via Interactive Brokers"` | — | [line 519](../../config/appsettings.sample.json#L519) |
-| `DataSources.Sources[2].IB` | object | `object (3 keys)` | — | [line 520](../../config/appsettings.sample.json#L520) |
-| `DataSources.Sources[2].IB.Host` | string | `"127.0.0.1"` | — | [line 521](../../config/appsettings.sample.json#L521) |
-| `DataSources.Sources[2].IB.Port` | integer | `7497` | — | [line 522](../../config/appsettings.sample.json#L522) |
-| `DataSources.Sources[2].IB.ClientId` | integer | `1` | — | [line 523](../../config/appsettings.sample.json#L523) |
-| `DataSources.DefaultRealTimeSourceId` | string | `"synthetic-local"` | Default data source ID for real-time streaming Points at the keyless Synthetic source so routing previews agree with the tape the collector actually runs. Switch to "alpaca-primary" once ALPACA_KEY_ID and ALPACA_SECRET_KEY are set. | [line 532](../../config/appsettings.sample.json#L532) |
-| `DataSources.DefaultHistoricalSourceId` | string | `"synthetic-local"` | Default data source ID for historical data requests | [line 535](../../config/appsettings.sample.json#L535) |
-| `DataSources.EnableFailover` | boolean | `false` | Enable automatic failover between providers Disabled by default so copying this sample honours the documented "DataSource": "Synthetic" default. With failover on, CollectorModeRunner catches the Alpaca constructor failure of a keyless install but still creates ib-backup, and a non-empty provider map wins over the top-level selector - so the sample would quietly run IB (simulation in a normal build, a TWS connection attempt under IBAPI) instead of Synthetic. Turn this on once at least one listed source has real credentials. | [line 548](../../config/appsettings.sample.json#L548) |
-| `DataSources.FailoverTimeoutSeconds` | integer | `30` | Timeout in seconds before failover to next provider | [line 551](../../config/appsettings.sample.json#L551) |
-| `DataSources.HealthCheckIntervalSeconds` | integer | `10` | Health check interval in seconds | [line 554](../../config/appsettings.sample.json#L554) |
-| `DataSources.AutoRecover` | boolean | `true` | Automatically recover to primary provider when it becomes healthy | [line 557](../../config/appsettings.sample.json#L557) |
-| `DataSources.FailoverRules` | array | `array (1 items; fields below)` | Failover rules - define primary/backup chains | [line 560](../../config/appsettings.sample.json#L560) |
-| `DataSources.FailoverRules[0].Id` | string | `"realtime-failover"` | — | [line 562](../../config/appsettings.sample.json#L562) |
-| `DataSources.FailoverRules[0].PrimaryProviderId` | string | `"alpaca-primary"` | — | [line 563](../../config/appsettings.sample.json#L563) |
-| `DataSources.FailoverRules[0].BackupProviderIds` | array | `["ib-backup"]` | Every id here must match a configured DataSources.Sources entry: CollectorModeRunner falls back to the top-level DataSource for an unknown id, which would silently create a client under a misleading identity and promote it after real feeds fail. | [line 567](../../config/appsettings.sample.json#L567) |
-| `DataSources.FailoverRules[0].FailoverThreshold` | integer | `3` | — | [line 568](../../config/appsettings.sample.json#L568) |
-| `DataSources.FailoverRules[0].RecoveryThreshold` | integer | `5` | — | [line 569](../../config/appsettings.sample.json#L569) |
-| `DataSources.FailoverRules[0].DataQualityThreshold` | integer | `70` | — | [line 570](../../config/appsettings.sample.json#L570) |
-| `DataSources.FailoverRules[0].MaxLatencyMs` | integer | `100` | — | [line 571](../../config/appsettings.sample.json#L571) |
-| `DataSources.SymbolMappings` | object | `object (4 keys)` | Map canonical symbols to provider-specific symbols | [line 579](../../config/appsettings.sample.json#L579) |
-| `DataSources.SymbolMappings.PersistencePath` | string | `"data/_config/symbol-mappings.json"` | Path to persist symbol mappings | [line 581](../../config/appsettings.sample.json#L581) |
-| `DataSources.SymbolMappings.ResolutionMode` | string | `"Compare"` | Migration mode: Legacy, Compare (observe only), or Canonical. | [line 584](../../config/appsettings.sample.json#L584) |
-| `DataSources.SymbolMappings.ReportMismatches` | boolean | `true` | Retain bounded mismatch evidence for the operator registry panel. | [line 587](../../config/appsettings.sample.json#L587) |
-| `DataSources.SymbolMappings.Mappings` | array | `array (2 items; fields below)` | Pre-configured mappings for common edge cases | [line 590](../../config/appsettings.sample.json#L590) |
-| `DataSources.SymbolMappings.Mappings[0].CanonicalSymbol` | string | `"BRK.B"` | — | [line 592](../../config/appsettings.sample.json#L592) |
-| `DataSources.SymbolMappings.Mappings[0].IbSymbol` | string | `"BRK B"` | — | [line 593](../../config/appsettings.sample.json#L593) |
-| `DataSources.SymbolMappings.Mappings[0].AlpacaSymbol` | string | `"BRK.B"` | — | [line 594](../../config/appsettings.sample.json#L594) |
-| `DataSources.SymbolMappings.Mappings[0].PolygonSymbol` | string | `"BRK.B"` | — | [line 595](../../config/appsettings.sample.json#L595) |
-| `DataSources.SymbolMappings.Mappings[0].YahooSymbol` | string | `"BRK-B"` | — | [line 596](../../config/appsettings.sample.json#L596) |
-| `DataSources.SymbolMappings.Mappings[0].Name` | string | `"Berkshire Hathaway Class B"` | — | [line 597](../../config/appsettings.sample.json#L597) |
-| `DataSources.SymbolMappings.Mappings[1].CanonicalSymbol` | string | `"BRK.A"` | — | [line 600](../../config/appsettings.sample.json#L600) |
-| `DataSources.SymbolMappings.Mappings[1].IbSymbol` | string | `"BRK A"` | — | [line 601](../../config/appsettings.sample.json#L601) |
-| `DataSources.SymbolMappings.Mappings[1].AlpacaSymbol` | string | `"BRK.A"` | — | [line 602](../../config/appsettings.sample.json#L602) |
-| `DataSources.SymbolMappings.Mappings[1].PolygonSymbol` | string | `"BRK.A"` | — | [line 603](../../config/appsettings.sample.json#L603) |
-| `DataSources.SymbolMappings.Mappings[1].YahooSymbol` | string | `"BRK-A"` | — | [line 604](../../config/appsettings.sample.json#L604) |
-| `DataSources.SymbolMappings.Mappings[1].Name` | string | `"Berkshire Hathaway Class A"` | — | [line 605](../../config/appsettings.sample.json#L605) |
+| `DataSources` | object | `object (9 keys)` | Configure multiple simultaneous data providers with automatic failover. This replaces the single DataSource setting when enabled. NOTE: Credentials are resolved from environment variables - do NOT add them here. NOTE: In a running collector (with --watch-config or a workstation save), failover rule thresholds, backup order among providers that already have a live client, the health-check interval and Sources[*].Enabled for those providers apply without a restart. Provider kinds, IDs, credentials, endpoints, new rules and EnableFailover still need a host restart; each save reports which is which. | [line 481](../../config/appsettings.sample.json#L481) |
+| `DataSources.Sources` | array | `array (3 items; fields below)` | List of configured data sources | [line 483](../../config/appsettings.sample.json#L483) |
+| `DataSources.Sources[0].Id` | string | `"synthetic-local"` | — | [line 491](../../config/appsettings.sample.json#L491) |
+| `DataSources.Sources[0].Name` | string | `"Synthetic (offline)"` | — | [line 492](../../config/appsettings.sample.json#L492) |
+| `DataSources.Sources[0].Provider` | string | `"Synthetic"` | — | [line 493](../../config/appsettings.sample.json#L493) |
+| `DataSources.Sources[0].Enabled` | boolean | `true` | — | [line 494](../../config/appsettings.sample.json#L494) |
+| `DataSources.Sources[0].Type` | string | `"Both"` | — | [line 495](../../config/appsettings.sample.json#L495) |
+| `DataSources.Sources[0].Priority` | integer | `1` | — | [line 496](../../config/appsettings.sample.json#L496) |
+| `DataSources.Sources[0].Description` | string | `"Credential-free generated market data; matches the top-level DataSource"` | — | [line 497](../../config/appsettings.sample.json#L497) |
+| `DataSources.Sources[1].Id` | string | `"alpaca-primary"` | — | [line 502](../../config/appsettings.sample.json#L502) |
+| `DataSources.Sources[1].Name` | string | `"Alpaca Primary"` | — | [line 503](../../config/appsettings.sample.json#L503) |
+| `DataSources.Sources[1].Provider` | string | `"Alpaca"` | — | [line 504](../../config/appsettings.sample.json#L504) |
+| `DataSources.Sources[1].Enabled` | boolean | `true` | — | [line 505](../../config/appsettings.sample.json#L505) |
+| `DataSources.Sources[1].Type` | string | `"RealTime"` | — | [line 506](../../config/appsettings.sample.json#L506) |
+| `DataSources.Sources[1].Priority` | integer | `10` | — | [line 507](../../config/appsettings.sample.json#L507) |
+| `DataSources.Sources[1].Description` | string | `"Primary real-time feed from Alpaca"` | — | [line 508](../../config/appsettings.sample.json#L508) |
+| `DataSources.Sources[1].Alpaca` | object | `object (1 keys)` | — | [line 509](../../config/appsettings.sample.json#L509) |
+| `DataSources.Sources[1].Alpaca.Feed` | string | `"sip"` | — | [line 510](../../config/appsettings.sample.json#L510) |
+| `DataSources.Sources[2].Id` | string | `"ib-backup"` | — | [line 516](../../config/appsettings.sample.json#L516) |
+| `DataSources.Sources[2].Name` | string | `"Interactive Brokers Backup"` | — | [line 517](../../config/appsettings.sample.json#L517) |
+| `DataSources.Sources[2].Provider` | string | `"IB"` | — | [line 518](../../config/appsettings.sample.json#L518) |
+| `DataSources.Sources[2].Enabled` | boolean | `true` | — | [line 519](../../config/appsettings.sample.json#L519) |
+| `DataSources.Sources[2].Type` | string | `"RealTime"` | — | [line 520](../../config/appsettings.sample.json#L520) |
+| `DataSources.Sources[2].Priority` | integer | `20` | — | [line 521](../../config/appsettings.sample.json#L521) |
+| `DataSources.Sources[2].Description` | string | `"Backup feed via Interactive Brokers"` | — | [line 522](../../config/appsettings.sample.json#L522) |
+| `DataSources.Sources[2].IB` | object | `object (3 keys)` | — | [line 523](../../config/appsettings.sample.json#L523) |
+| `DataSources.Sources[2].IB.Host` | string | `"127.0.0.1"` | — | [line 524](../../config/appsettings.sample.json#L524) |
+| `DataSources.Sources[2].IB.Port` | integer | `7497` | — | [line 525](../../config/appsettings.sample.json#L525) |
+| `DataSources.Sources[2].IB.ClientId` | integer | `1` | — | [line 526](../../config/appsettings.sample.json#L526) |
+| `DataSources.DefaultRealTimeSourceId` | string | `"synthetic-local"` | Default data source ID for real-time streaming Points at the keyless Synthetic source so routing previews agree with the tape the collector actually runs. Switch to "alpaca-primary" once ALPACA_KEY_ID and ALPACA_SECRET_KEY are set. | [line 535](../../config/appsettings.sample.json#L535) |
+| `DataSources.DefaultHistoricalSourceId` | string | `"synthetic-local"` | Default data source ID for historical data requests | [line 538](../../config/appsettings.sample.json#L538) |
+| `DataSources.EnableFailover` | boolean | `false` | Enable automatic failover between providers Disabled by default so copying this sample honours the documented "DataSource": "Synthetic" default. With failover on, CollectorModeRunner catches the Alpaca constructor failure of a keyless install but still creates ib-backup, and a non-empty provider map wins over the top-level selector - so the sample would quietly run IB (simulation in a normal build, a TWS connection attempt under IBAPI) instead of Synthetic. Turn this on once at least one listed source has real credentials. | [line 551](../../config/appsettings.sample.json#L551) |
+| `DataSources.FailoverTimeoutSeconds` | integer | `30` | Timeout in seconds before failover to next provider | [line 554](../../config/appsettings.sample.json#L554) |
+| `DataSources.HealthCheckIntervalSeconds` | integer | `10` | Health check interval in seconds | [line 557](../../config/appsettings.sample.json#L557) |
+| `DataSources.AutoRecover` | boolean | `true` | Automatically recover to primary provider when it becomes healthy | [line 560](../../config/appsettings.sample.json#L560) |
+| `DataSources.FailoverRules` | array | `array (1 items; fields below)` | Failover rules - define primary/backup chains | [line 563](../../config/appsettings.sample.json#L563) |
+| `DataSources.FailoverRules[0].Id` | string | `"realtime-failover"` | — | [line 565](../../config/appsettings.sample.json#L565) |
+| `DataSources.FailoverRules[0].PrimaryProviderId` | string | `"alpaca-primary"` | — | [line 566](../../config/appsettings.sample.json#L566) |
+| `DataSources.FailoverRules[0].BackupProviderIds` | array | `["ib-backup"]` | Every id here must match a configured DataSources.Sources entry: CollectorModeRunner falls back to the top-level DataSource for an unknown id, which would silently create a client under a misleading identity and promote it after real feeds fail. | [line 570](../../config/appsettings.sample.json#L570) |
+| `DataSources.FailoverRules[0].FailoverThreshold` | integer | `3` | — | [line 571](../../config/appsettings.sample.json#L571) |
+| `DataSources.FailoverRules[0].RecoveryThreshold` | integer | `5` | — | [line 572](../../config/appsettings.sample.json#L572) |
+| `DataSources.FailoverRules[0].DataQualityThreshold` | integer | `70` | — | [line 573](../../config/appsettings.sample.json#L573) |
+| `DataSources.FailoverRules[0].MaxLatencyMs` | integer | `100` | — | [line 574](../../config/appsettings.sample.json#L574) |
+| `DataSources.SymbolMappings` | object | `object (4 keys)` | Map canonical symbols to provider-specific symbols | [line 582](../../config/appsettings.sample.json#L582) |
+| `DataSources.SymbolMappings.PersistencePath` | string | `"data/_config/symbol-mappings.json"` | Path to persist symbol mappings | [line 584](../../config/appsettings.sample.json#L584) |
+| `DataSources.SymbolMappings.ResolutionMode` | string | `"Compare"` | Migration mode: Legacy, Compare (observe only), or Canonical. | [line 587](../../config/appsettings.sample.json#L587) |
+| `DataSources.SymbolMappings.ReportMismatches` | boolean | `true` | Retain bounded mismatch evidence for the operator registry panel. | [line 590](../../config/appsettings.sample.json#L590) |
+| `DataSources.SymbolMappings.Mappings` | array | `array (2 items; fields below)` | Pre-configured mappings for common edge cases | [line 593](../../config/appsettings.sample.json#L593) |
+| `DataSources.SymbolMappings.Mappings[0].CanonicalSymbol` | string | `"BRK.B"` | — | [line 595](../../config/appsettings.sample.json#L595) |
+| `DataSources.SymbolMappings.Mappings[0].IbSymbol` | string | `"BRK B"` | — | [line 596](../../config/appsettings.sample.json#L596) |
+| `DataSources.SymbolMappings.Mappings[0].AlpacaSymbol` | string | `"BRK.B"` | — | [line 597](../../config/appsettings.sample.json#L597) |
+| `DataSources.SymbolMappings.Mappings[0].PolygonSymbol` | string | `"BRK.B"` | — | [line 598](../../config/appsettings.sample.json#L598) |
+| `DataSources.SymbolMappings.Mappings[0].YahooSymbol` | string | `"BRK-B"` | — | [line 599](../../config/appsettings.sample.json#L599) |
+| `DataSources.SymbolMappings.Mappings[0].Name` | string | `"Berkshire Hathaway Class B"` | — | [line 600](../../config/appsettings.sample.json#L600) |
+| `DataSources.SymbolMappings.Mappings[1].CanonicalSymbol` | string | `"BRK.A"` | — | [line 603](../../config/appsettings.sample.json#L603) |
+| `DataSources.SymbolMappings.Mappings[1].IbSymbol` | string | `"BRK A"` | — | [line 604](../../config/appsettings.sample.json#L604) |
+| `DataSources.SymbolMappings.Mappings[1].AlpacaSymbol` | string | `"BRK.A"` | — | [line 605](../../config/appsettings.sample.json#L605) |
+| `DataSources.SymbolMappings.Mappings[1].PolygonSymbol` | string | `"BRK.A"` | — | [line 606](../../config/appsettings.sample.json#L606) |
+| `DataSources.SymbolMappings.Mappings[1].YahooSymbol` | string | `"BRK-A"` | — | [line 607](../../config/appsettings.sample.json#L607) |
+| `DataSources.SymbolMappings.Mappings[1].Name` | string | `"Berkshire Hathaway Class A"` | — | [line 608](../../config/appsettings.sample.json#L608) |
 
 ## `IB`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `IB` | object | `object (7 keys)` | Used for real-time streaming, historical data, and native order routing. Prerequisites: 1. Install IB TWS or IB Gateway 2. Enable API connections in TWS: File -&gt; Global Configuration -&gt; API -&gt; Settings 3. Ensure "Enable ActiveX and Socket Clients" is checked 4. Note the port (default 7497 for TWS paper, 7496 for live) See docs/operators/provider-onboarding-interactive-brokers.md for detailed setup instructions. | [line 621](../../config/appsettings.sample.json#L621) |
-| `IB.Host` | string | `"127.0.0.1"` | — | [line 622](../../config/appsettings.sample.json#L622) |
-| `IB.Port` | integer | `7497` | — | [line 623](../../config/appsettings.sample.json#L623) |
-| `IB.ClientId` | integer | `1` | — | [line 624](../../config/appsettings.sample.json#L624) |
-| `IB.UsePaperTrading` | boolean | `true` | — | [line 625](../../config/appsettings.sample.json#L625) |
-| `IB.SubscribeDepth` | boolean | `true` | — | [line 626](../../config/appsettings.sample.json#L626) |
-| `IB.DepthLevels` | integer | `10` | — | [line 627](../../config/appsettings.sample.json#L627) |
-| `IB.TickByTick` | boolean | `true` | — | [line 628](../../config/appsettings.sample.json#L628) |
+| `IB` | object | `object (7 keys)` | Used for real-time streaming, historical data, and native order routing. Prerequisites: 1. Install IB TWS or IB Gateway 2. Enable API connections in TWS: File -&gt; Global Configuration -&gt; API -&gt; Settings 3. Ensure "Enable ActiveX and Socket Clients" is checked 4. Note the port (default 7497 for TWS paper, 7496 for live) See docs/operators/provider-onboarding-interactive-brokers.md for detailed setup instructions. | [line 624](../../config/appsettings.sample.json#L624) |
+| `IB.Host` | string | `"127.0.0.1"` | — | [line 625](../../config/appsettings.sample.json#L625) |
+| `IB.Port` | integer | `7497` | — | [line 626](../../config/appsettings.sample.json#L626) |
+| `IB.ClientId` | integer | `1` | — | [line 627](../../config/appsettings.sample.json#L627) |
+| `IB.UsePaperTrading` | boolean | `true` | — | [line 628](../../config/appsettings.sample.json#L628) |
+| `IB.SubscribeDepth` | boolean | `true` | — | [line 629](../../config/appsettings.sample.json#L629) |
+| `IB.DepthLevels` | integer | `10` | — | [line 630](../../config/appsettings.sample.json#L630) |
+| `IB.TickByTick` | boolean | `true` | — | [line 631](../../config/appsettings.sample.json#L631) |
 
 ## `IBClientPortal`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `IBClientPortal` | object | `object (3 keys)` | Separate from the socket/TWS connection above. Leave disabled unless you use portfolio import or other Client Portal HTTP endpoints. | [line 636](../../config/appsettings.sample.json#L636) |
-| `IBClientPortal.Enabled` | boolean | `false` | — | [line 637](../../config/appsettings.sample.json#L637) |
-| `IBClientPortal.BaseUrl` | string | `"https://localhost:5000"` | — | [line 638](../../config/appsettings.sample.json#L638) |
-| `IBClientPortal.AllowSelfSignedCertificates` | boolean | `true` | — | [line 639](../../config/appsettings.sample.json#L639) |
+| `IBClientPortal` | object | `object (3 keys)` | Separate from the socket/TWS connection above. Leave disabled unless you use portfolio import or other Client Portal HTTP endpoints. | [line 639](../../config/appsettings.sample.json#L639) |
+| `IBClientPortal.Enabled` | boolean | `false` | — | [line 640](../../config/appsettings.sample.json#L640) |
+| `IBClientPortal.BaseUrl` | string | `"https://localhost:5000"` | — | [line 641](../../config/appsettings.sample.json#L641) |
+| `IBClientPortal.AllowSelfSignedCertificates` | boolean | `true` | — | [line 642](../../config/appsettings.sample.json#L642) |
 
 ## `Alpaca`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `Alpaca` | object | `object (3 keys)` | Required when DataSource is set to "Alpaca" Credentials: Set ALPACA_KEY_ID and ALPACA_SECRET_KEY environment variables | [line 647](../../config/appsettings.sample.json#L647) |
-| `Alpaca.Feed` | string | `"iex"` | Data feed to use: "iex" (free) or "sip" (paid, requires subscription) IEX provides 15-min delayed data for free accounts SIP provides real-time consolidated data (requires Alpaca paid plan) | [line 651](../../config/appsettings.sample.json#L651) |
-| `Alpaca.UseSandbox` | boolean | `false` | Use sandbox environment for testing (paper trading) | [line 654](../../config/appsettings.sample.json#L654) |
-| `Alpaca.SubscribeQuotes` | boolean | `false` | Subscribe to quote data (BBO updates) in addition to trades | [line 657](../../config/appsettings.sample.json#L657) |
+| `Alpaca` | object | `object (3 keys)` | Required when DataSource is set to "Alpaca" Credentials: Set ALPACA_KEY_ID and ALPACA_SECRET_KEY environment variables | [line 650](../../config/appsettings.sample.json#L650) |
+| `Alpaca.Feed` | string | `"iex"` | Data feed to use: "iex" (free) or "sip" (paid, requires subscription) IEX provides 15-min delayed data for free accounts SIP provides real-time consolidated data (requires Alpaca paid plan) | [line 654](../../config/appsettings.sample.json#L654) |
+| `Alpaca.UseSandbox` | boolean | `false` | Use sandbox environment for testing (paper trading) | [line 657](../../config/appsettings.sample.json#L657) |
+| `Alpaca.SubscribeQuotes` | boolean | `false` | Subscribe to quote data (BBO updates) in addition to trades | [line 660](../../config/appsettings.sample.json#L660) |
 
 ## `PaperTrading`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `PaperTrading` | object | `object (1 keys)` | Cost model applied to every paper fill (commission, fees, and slippage). The code default for SlippageBasisPoints is 0 while backtests default to 5 bps (BacktestRequest.SlippageBasisPoints), so an unconfigured paper session systematically flatters the backtest it is supposed to validate. This sample ships the backtest-matching 5 bps; set values to 0 explicitly only when you intend to simulate free, frictionless execution. | [line 669](../../config/appsettings.sample.json#L669) |
-| `PaperTrading.Costs` | object | `object (6 keys)` | — | [line 670](../../config/appsettings.sample.json#L670) |
-| `PaperTrading.Costs.CommissionKind` | string | `"PerShare"` | Commission computation: "PerShare", "BasisPointsOfNotional", or "FixedPerOrder" | [line 672](../../config/appsettings.sample.json#L672) |
-| `PaperTrading.Costs.CommissionRate` | number | `0.005` | Interpreted per CommissionKind: currency per share/contract, basis points of notional, or currency per order (default: 0.005 per share) | [line 676](../../config/appsettings.sample.json#L676) |
-| `PaperTrading.Costs.CommissionMinimum` | number | `1.0` | Minimum commission per order (default: 1.00) | [line 679](../../config/appsettings.sample.json#L679) |
-| `PaperTrading.Costs.FeePerOrder` | integer | `0` | Flat regulatory/exchange fee charged per order (default: 0) | [line 682](../../config/appsettings.sample.json#L682) |
-| `PaperTrading.Costs.FeeBasisPoints` | integer | `0` | Fee in basis points of fill notional (default: 0) | [line 685](../../config/appsettings.sample.json#L685) |
-| `PaperTrading.Costs.SlippageBasisPoints` | integer | `5` | Slippage in basis points of fill notional, charged as an explicit cash cost on every fill; 5 matches the backtest engine's default so paper and backtest economics agree | [line 689](../../config/appsettings.sample.json#L689) |
+| `PaperTrading` | object | `object (1 keys)` | Cost model applied to every paper fill (commission, fees, and slippage). The code default for SlippageBasisPoints is 0 while backtests default to 5 bps (BacktestRequest.SlippageBasisPoints), so an unconfigured paper session systematically flatters the backtest it is supposed to validate. This sample ships the backtest-matching 5 bps; set values to 0 explicitly only when you intend to simulate free, frictionless execution. | [line 672](../../config/appsettings.sample.json#L672) |
+| `PaperTrading.Costs` | object | `object (6 keys)` | — | [line 673](../../config/appsettings.sample.json#L673) |
+| `PaperTrading.Costs.CommissionKind` | string | `"PerShare"` | Commission computation: "PerShare", "BasisPointsOfNotional", or "FixedPerOrder" | [line 675](../../config/appsettings.sample.json#L675) |
+| `PaperTrading.Costs.CommissionRate` | number | `0.005` | Interpreted per CommissionKind: currency per share/contract, basis points of notional, or currency per order (default: 0.005 per share) | [line 679](../../config/appsettings.sample.json#L679) |
+| `PaperTrading.Costs.CommissionMinimum` | number | `1.0` | Minimum commission per order (default: 1.00) | [line 682](../../config/appsettings.sample.json#L682) |
+| `PaperTrading.Costs.FeePerOrder` | integer | `0` | Flat regulatory/exchange fee charged per order (default: 0) | [line 685](../../config/appsettings.sample.json#L685) |
+| `PaperTrading.Costs.FeeBasisPoints` | integer | `0` | Fee in basis points of fill notional (default: 0) | [line 688](../../config/appsettings.sample.json#L688) |
+| `PaperTrading.Costs.SlippageBasisPoints` | integer | `5` | Slippage in basis points of fill notional, charged as an explicit cash cost on every fill; 5 matches the backtest engine's default so paper and backtest economics agree | [line 692](../../config/appsettings.sample.json#L692) |
 
 ## `Storage`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `Storage` | object | `object (8 keys)` | — | [line 696](../../config/appsettings.sample.json#L696) |
-| `Storage.NamingConvention` | string | `"BySymbol"` | File naming convention: "Flat"     - {root}/{symbol}_{type}_{date}.jsonl "BySymbol" - {root}/{symbol}/{type}/{date}.jsonl (DEFAULT, RECOMMENDED) "ByDate"   - {root}/{date}/{symbol}/{type}.jsonl "ByType"   - {root}/{type}/{symbol}/{date}.jsonl | [line 702](../../config/appsettings.sample.json#L702) |
-| `Storage.DatePartition` | string | `"Daily"` | Date partitioning: "None"    - Single file per symbol/type "Daily"   - One file per day (DEFAULT) "Hourly"  - One file per hour (for high-volume scenarios) "Monthly" - One file per month (for long-term storage) | [line 709](../../config/appsettings.sample.json#L709) |
-| `Storage.IncludeProvider` | boolean | `false` | Include provider name in file path | [line 712](../../config/appsettings.sample.json#L712) |
-| `Storage.FilePrefix` | null | `null` | Optional prefix for all file names | [line 715](../../config/appsettings.sample.json#L715) |
-| `Storage.Profile` | null | `null` | Optional storage profile preset: Research, LowLatency, Archival | [line 718](../../config/appsettings.sample.json#L718) |
-| `Storage.RetentionDays` | null | `null` | Auto-delete files older than this many days (null = keep forever) | [line 721](../../config/appsettings.sample.json#L721) |
-| `Storage.MaxTotalMegabytes` | null | `null` | Maximum total storage in MB (null = unlimited) When exceeded, oldest files are removed first | [line 725](../../config/appsettings.sample.json#L725) |
-| `Storage.Sinks` | null | `null` | Active storage sink plugins (null = use legacy EnableParquetSink flag). List the IDs of [StorageSink]-decorated classes you want to activate. Built-in IDs: "jsonl" (always on by default), "parquet" (columnar analytics). Example: ["jsonl", "parquet"] Custom sinks: add [StorageSink("clickhouse", "ClickHouse")] to your sink class, ensure the assembly is scanned at startup, then list it here. | [line 733](../../config/appsettings.sample.json#L733) |
+| `Storage` | object | `object (8 keys)` | — | [line 699](../../config/appsettings.sample.json#L699) |
+| `Storage.NamingConvention` | string | `"BySymbol"` | File naming convention: "Flat"     - {root}/{symbol}_{type}_{date}.jsonl "BySymbol" - {root}/{symbol}/{type}/{date}.jsonl (DEFAULT, RECOMMENDED) "ByDate"   - {root}/{date}/{symbol}/{type}.jsonl "ByType"   - {root}/{type}/{symbol}/{date}.jsonl | [line 705](../../config/appsettings.sample.json#L705) |
+| `Storage.DatePartition` | string | `"Daily"` | Date partitioning: "None"    - Single file per symbol/type "Daily"   - One file per day (DEFAULT) "Hourly"  - One file per hour (for high-volume scenarios) "Monthly" - One file per month (for long-term storage) | [line 712](../../config/appsettings.sample.json#L712) |
+| `Storage.IncludeProvider` | boolean | `false` | Include provider name in file path | [line 715](../../config/appsettings.sample.json#L715) |
+| `Storage.FilePrefix` | null | `null` | Optional prefix for all file names | [line 718](../../config/appsettings.sample.json#L718) |
+| `Storage.Profile` | null | `null` | Optional storage profile preset: Research, LowLatency, Archival | [line 721](../../config/appsettings.sample.json#L721) |
+| `Storage.RetentionDays` | null | `null` | Auto-delete files older than this many days (null = keep forever) | [line 724](../../config/appsettings.sample.json#L724) |
+| `Storage.MaxTotalMegabytes` | null | `null` | Maximum total storage in MB (null = unlimited) When exceeded, oldest files are removed first | [line 728](../../config/appsettings.sample.json#L728) |
+| `Storage.Sinks` | null | `null` | Active storage sink plugins (null = use legacy EnableParquetSink flag). List the IDs of [StorageSink]-decorated classes you want to activate. Built-in IDs: "jsonl" (always on by default), "parquet" (columnar analytics). Example: ["jsonl", "parquet"] Custom sinks: add [StorageSink("clickhouse", "ClickHouse")] to your sink class, ensure the assembly is scanned at startup, then list it here. | [line 736](../../config/appsettings.sample.json#L736) |
 
 ## `Symbols`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `Symbols` | array | `array (3 items; fields below)` | Array of symbols to subscribe to. Each symbol can have its own settings. | [line 740](../../config/appsettings.sample.json#L740) |
-| `Symbols[0].Symbol` | string | `"SPY"` | — | [line 743](../../config/appsettings.sample.json#L743) |
-| `Symbols[0].SubscribeTrades` | boolean | `true` | — | [line 744](../../config/appsettings.sample.json#L744) |
-| `Symbols[0].SubscribeDepth` | boolean | `true` | — | [line 745](../../config/appsettings.sample.json#L745) |
-| `Symbols[0].DepthLevels` | integer | `10` | — | [line 746](../../config/appsettings.sample.json#L746) |
-| `Symbols[0].SecurityType` | string | `"STK"` | IB-specific contract fields (ignored for Alpaca) | [line 749](../../config/appsettings.sample.json#L749) |
-| `Symbols[0].Exchange` | string | `"SMART"` | — | [line 750](../../config/appsettings.sample.json#L750) |
-| `Symbols[0].Currency` | string | `"USD"` | — | [line 751](../../config/appsettings.sample.json#L751) |
-| `Symbols[0].PrimaryExchange` | string | `"ARCA"` | — | [line 752](../../config/appsettings.sample.json#L752) |
-| `Symbols[1].Symbol` | string | `"AAPL"` | — | [line 757](../../config/appsettings.sample.json#L757) |
-| `Symbols[1].SubscribeTrades` | boolean | `true` | — | [line 758](../../config/appsettings.sample.json#L758) |
-| `Symbols[1].SubscribeDepth` | boolean | `false` | — | [line 759](../../config/appsettings.sample.json#L759) |
-| `Symbols[1].DepthLevels` | integer | `10` | — | [line 760](../../config/appsettings.sample.json#L760) |
-| `Symbols[1].SecurityType` | string | `"STK"` | — | [line 761](../../config/appsettings.sample.json#L761) |
-| `Symbols[1].Exchange` | string | `"SMART"` | — | [line 762](../../config/appsettings.sample.json#L762) |
-| `Symbols[1].Currency` | string | `"USD"` | — | [line 763](../../config/appsettings.sample.json#L763) |
-| `Symbols[1].PrimaryExchange` | string | `"NASDAQ"` | — | [line 764](../../config/appsettings.sample.json#L764) |
-| `Symbols[2].Symbol` | string | `"PCG-PA"` | — | [line 769](../../config/appsettings.sample.json#L769) |
-| `Symbols[2].SubscribeTrades` | boolean | `true` | — | [line 770](../../config/appsettings.sample.json#L770) |
-| `Symbols[2].SubscribeDepth` | boolean | `true` | — | [line 771](../../config/appsettings.sample.json#L771) |
-| `Symbols[2].DepthLevels` | integer | `10` | — | [line 772](../../config/appsettings.sample.json#L772) |
-| `Symbols[2].SecurityType` | string | `"STK"` | — | [line 773](../../config/appsettings.sample.json#L773) |
-| `Symbols[2].Exchange` | string | `"SMART"` | — | [line 774](../../config/appsettings.sample.json#L774) |
-| `Symbols[2].Currency` | string | `"USD"` | — | [line 775](../../config/appsettings.sample.json#L775) |
-| `Symbols[2].PrimaryExchange` | string | `"NYSE"` | — | [line 776](../../config/appsettings.sample.json#L776) |
-| `Symbols[2].LocalSymbol` | string | `"PCG PRA"` | — | [line 777](../../config/appsettings.sample.json#L777) |
+| `Symbols` | array | `array (3 items; fields below)` | Array of symbols to subscribe to. Each symbol can have its own settings. | [line 743](../../config/appsettings.sample.json#L743) |
+| `Symbols[0].Symbol` | string | `"SPY"` | — | [line 746](../../config/appsettings.sample.json#L746) |
+| `Symbols[0].SubscribeTrades` | boolean | `true` | — | [line 747](../../config/appsettings.sample.json#L747) |
+| `Symbols[0].SubscribeDepth` | boolean | `true` | — | [line 748](../../config/appsettings.sample.json#L748) |
+| `Symbols[0].DepthLevels` | integer | `10` | — | [line 749](../../config/appsettings.sample.json#L749) |
+| `Symbols[0].SecurityType` | string | `"STK"` | IB-specific contract fields (ignored for Alpaca) | [line 752](../../config/appsettings.sample.json#L752) |
+| `Symbols[0].Exchange` | string | `"SMART"` | — | [line 753](../../config/appsettings.sample.json#L753) |
+| `Symbols[0].Currency` | string | `"USD"` | — | [line 754](../../config/appsettings.sample.json#L754) |
+| `Symbols[0].PrimaryExchange` | string | `"ARCA"` | — | [line 755](../../config/appsettings.sample.json#L755) |
+| `Symbols[1].Symbol` | string | `"AAPL"` | — | [line 760](../../config/appsettings.sample.json#L760) |
+| `Symbols[1].SubscribeTrades` | boolean | `true` | — | [line 761](../../config/appsettings.sample.json#L761) |
+| `Symbols[1].SubscribeDepth` | boolean | `false` | — | [line 762](../../config/appsettings.sample.json#L762) |
+| `Symbols[1].DepthLevels` | integer | `10` | — | [line 763](../../config/appsettings.sample.json#L763) |
+| `Symbols[1].SecurityType` | string | `"STK"` | — | [line 764](../../config/appsettings.sample.json#L764) |
+| `Symbols[1].Exchange` | string | `"SMART"` | — | [line 765](../../config/appsettings.sample.json#L765) |
+| `Symbols[1].Currency` | string | `"USD"` | — | [line 766](../../config/appsettings.sample.json#L766) |
+| `Symbols[1].PrimaryExchange` | string | `"NASDAQ"` | — | [line 767](../../config/appsettings.sample.json#L767) |
+| `Symbols[2].Symbol` | string | `"PCG-PA"` | — | [line 772](../../config/appsettings.sample.json#L772) |
+| `Symbols[2].SubscribeTrades` | boolean | `true` | — | [line 773](../../config/appsettings.sample.json#L773) |
+| `Symbols[2].SubscribeDepth` | boolean | `true` | — | [line 774](../../config/appsettings.sample.json#L774) |
+| `Symbols[2].DepthLevels` | integer | `10` | — | [line 775](../../config/appsettings.sample.json#L775) |
+| `Symbols[2].SecurityType` | string | `"STK"` | — | [line 776](../../config/appsettings.sample.json#L776) |
+| `Symbols[2].Exchange` | string | `"SMART"` | — | [line 777](../../config/appsettings.sample.json#L777) |
+| `Symbols[2].Currency` | string | `"USD"` | — | [line 778](../../config/appsettings.sample.json#L778) |
+| `Symbols[2].PrimaryExchange` | string | `"NYSE"` | — | [line 779](../../config/appsettings.sample.json#L779) |
+| `Symbols[2].LocalSymbol` | string | `"PCG PRA"` | — | [line 780](../../config/appsettings.sample.json#L780) |
 
 ## `Derivatives`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `Derivatives` | object | `object (10 keys)` | Configure options chain tracking for underlyings. This enables automatic discovery and subscription to option contracts near the current price for the specified underlyings. | [line 833](../../config/appsettings.sample.json#L833) |
-| `Derivatives.Enabled` | boolean | `false` | Enable derivatives tracking | [line 835](../../config/appsettings.sample.json#L835) |
-| `Derivatives.Underlyings` | array | `["SPY", "QQQ", "AAPL"]` | Underlying symbols to track options for | [line 838](../../config/appsettings.sample.json#L838) |
-| `Derivatives.MaxDaysToExpiration` | integer | `90` | Only track contracts expiring within this many days (0 = no limit) | [line 841](../../config/appsettings.sample.json#L841) |
-| `Derivatives.StrikeRange` | integer | `20` | Number of strikes above and below ATM to track (0 = all) | [line 844](../../config/appsettings.sample.json#L844) |
-| `Derivatives.CaptureGreeks` | boolean | `true` | Capture greeks (delta, gamma, theta, vega, rho, IV) | [line 847](../../config/appsettings.sample.json#L847) |
-| `Derivatives.CaptureChainSnapshots` | boolean | `false` | Capture periodic chain snapshots | [line 850](../../config/appsettings.sample.json#L850) |
-| `Derivatives.ChainSnapshotIntervalSeconds` | integer | `300` | Interval between chain snapshots in seconds (300 = 5 min) | [line 853](../../config/appsettings.sample.json#L853) |
-| `Derivatives.CaptureOpenInterest` | boolean | `true` | Capture daily open interest updates | [line 856](../../config/appsettings.sample.json#L856) |
-| `Derivatives.ExpirationFilter` | array | `["Weekly", "Monthly"]` | Filter by expiration type: "Weekly", "Monthly", "Quarterly", "LEAPS", "All" | [line 859](../../config/appsettings.sample.json#L859) |
-| `Derivatives.IndexOptions` | object | `object (5 keys)` | Index options (European-style, cash-settled) | [line 862](../../config/appsettings.sample.json#L862) |
-| `Derivatives.IndexOptions.Enabled` | boolean | `false` | — | [line 863](../../config/appsettings.sample.json#L863) |
-| `Derivatives.IndexOptions.Indices` | array | `["SPX", "NDX", "RUT", "VIX"]` | — | [line 864](../../config/appsettings.sample.json#L864) |
-| `Derivatives.IndexOptions.IncludeWeeklies` | boolean | `true` | — | [line 865](../../config/appsettings.sample.json#L865) |
-| `Derivatives.IndexOptions.IncludeAmSettled` | boolean | `true` | — | [line 866](../../config/appsettings.sample.json#L866) |
-| `Derivatives.IndexOptions.IncludePmSettled` | boolean | `true` | — | [line 867](../../config/appsettings.sample.json#L867) |
+| `Derivatives` | object | `object (10 keys)` | Configure options chain tracking for underlyings. This enables automatic discovery and subscription to option contracts near the current price for the specified underlyings. | [line 836](../../config/appsettings.sample.json#L836) |
+| `Derivatives.Enabled` | boolean | `false` | Enable derivatives tracking | [line 838](../../config/appsettings.sample.json#L838) |
+| `Derivatives.Underlyings` | array | `["SPY", "QQQ", "AAPL"]` | Underlying symbols to track options for | [line 841](../../config/appsettings.sample.json#L841) |
+| `Derivatives.MaxDaysToExpiration` | integer | `90` | Only track contracts expiring within this many days (0 = no limit) | [line 844](../../config/appsettings.sample.json#L844) |
+| `Derivatives.StrikeRange` | integer | `20` | Number of strikes above and below ATM to track (0 = all) | [line 847](../../config/appsettings.sample.json#L847) |
+| `Derivatives.CaptureGreeks` | boolean | `true` | Capture greeks (delta, gamma, theta, vega, rho, IV) | [line 850](../../config/appsettings.sample.json#L850) |
+| `Derivatives.CaptureChainSnapshots` | boolean | `false` | Capture periodic chain snapshots | [line 853](../../config/appsettings.sample.json#L853) |
+| `Derivatives.ChainSnapshotIntervalSeconds` | integer | `300` | Interval between chain snapshots in seconds (300 = 5 min) | [line 856](../../config/appsettings.sample.json#L856) |
+| `Derivatives.CaptureOpenInterest` | boolean | `true` | Capture daily open interest updates | [line 859](../../config/appsettings.sample.json#L859) |
+| `Derivatives.ExpirationFilter` | array | `["Weekly", "Monthly"]` | Filter by expiration type: "Weekly", "Monthly", "Quarterly", "LEAPS", "All" | [line 862](../../config/appsettings.sample.json#L862) |
+| `Derivatives.IndexOptions` | object | `object (5 keys)` | Index options (European-style, cash-settled) | [line 865](../../config/appsettings.sample.json#L865) |
+| `Derivatives.IndexOptions.Enabled` | boolean | `false` | — | [line 866](../../config/appsettings.sample.json#L866) |
+| `Derivatives.IndexOptions.Indices` | array | `["SPX", "NDX", "RUT", "VIX"]` | — | [line 867](../../config/appsettings.sample.json#L867) |
+| `Derivatives.IndexOptions.IncludeWeeklies` | boolean | `true` | — | [line 868](../../config/appsettings.sample.json#L868) |
+| `Derivatives.IndexOptions.IncludeAmSettled` | boolean | `true` | — | [line 869](../../config/appsettings.sample.json#L869) |
+| `Derivatives.IndexOptions.IncludePmSettled` | boolean | `true` | — | [line 870](../../config/appsettings.sample.json#L870) |
 
 ## `Settings`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `Settings` | object | `object (18 keys)` | Settings specific to the Windows desktop application. These control the connection to the core Meridian service. | [line 876](../../config/appsettings.sample.json#L876) |
-| `Settings.Theme` | string | `"System"` | Theme: "System", "Light", or "Dark" | [line 878](../../config/appsettings.sample.json#L878) |
-| `Settings.AccentColor` | string | `"System"` | Accent color: "System" or a hex color (e.g., "#0078D4") | [line 881](../../config/appsettings.sample.json#L881) |
-| `Settings.CompactMode` | boolean | `false` | Use compact mode for UI elements | [line 884](../../config/appsettings.sample.json#L884) |
-| `Settings.NotificationsEnabled` | boolean | `true` | Enable Windows toast notifications | [line 887](../../config/appsettings.sample.json#L887) |
-| `Settings.NotifyConnectionStatus` | boolean | `true` | Notification types | [line 890](../../config/appsettings.sample.json#L890) |
-| `Settings.NotifyErrors` | boolean | `true` | — | [line 891](../../config/appsettings.sample.json#L891) |
-| `Settings.NotifyBackfillComplete` | boolean | `true` | — | [line 892](../../config/appsettings.sample.json#L892) |
-| `Settings.NotifyDataGaps` | boolean | `true` | — | [line 893](../../config/appsettings.sample.json#L893) |
-| `Settings.NotifyStorageWarnings` | boolean | `true` | — | [line 894](../../config/appsettings.sample.json#L894) |
-| `Settings.QuietHoursEnabled` | boolean | `false` | Quiet hours for notifications | [line 897](../../config/appsettings.sample.json#L897) |
-| `Settings.QuietHoursStart` | string | `"22:00"` | — | [line 898](../../config/appsettings.sample.json#L898) |
-| `Settings.QuietHoursEnd` | string | `"07:00"` | — | [line 899](../../config/appsettings.sample.json#L899) |
-| `Settings.AutoReconnectEnabled` | boolean | `true` | Auto-reconnection settings | [line 902](../../config/appsettings.sample.json#L902) |
-| `Settings.MaxReconnectAttempts` | integer | `10` | — | [line 903](../../config/appsettings.sample.json#L903) |
-| `Settings.StatusRefreshIntervalSeconds` | integer | `2` | Status refresh interval in seconds | [line 906](../../config/appsettings.sample.json#L906) |
-| `Settings.ServiceUrl` | string | `"http://localhost:8080"` | URL of the Meridian service Change this if running the service on a different host or port | [line 914](../../config/appsettings.sample.json#L914) |
-| `Settings.ServiceTimeoutSeconds` | integer | `30` | Timeout in seconds for API requests to the service | [line 917](../../config/appsettings.sample.json#L917) |
-| `Settings.BackfillTimeoutMinutes` | integer | `60` | Timeout in minutes for long-running backfill operations | [line 920](../../config/appsettings.sample.json#L920) |
+| `Settings` | object | `object (18 keys)` | Settings specific to the Windows desktop application. These control the connection to the core Meridian service. | [line 879](../../config/appsettings.sample.json#L879) |
+| `Settings.Theme` | string | `"System"` | Theme: "System", "Light", or "Dark" | [line 881](../../config/appsettings.sample.json#L881) |
+| `Settings.AccentColor` | string | `"System"` | Accent color: "System" or a hex color (e.g., "#0078D4") | [line 884](../../config/appsettings.sample.json#L884) |
+| `Settings.CompactMode` | boolean | `false` | Use compact mode for UI elements | [line 887](../../config/appsettings.sample.json#L887) |
+| `Settings.NotificationsEnabled` | boolean | `true` | Enable Windows toast notifications | [line 890](../../config/appsettings.sample.json#L890) |
+| `Settings.NotifyConnectionStatus` | boolean | `true` | Notification types | [line 893](../../config/appsettings.sample.json#L893) |
+| `Settings.NotifyErrors` | boolean | `true` | — | [line 894](../../config/appsettings.sample.json#L894) |
+| `Settings.NotifyBackfillComplete` | boolean | `true` | — | [line 895](../../config/appsettings.sample.json#L895) |
+| `Settings.NotifyDataGaps` | boolean | `true` | — | [line 896](../../config/appsettings.sample.json#L896) |
+| `Settings.NotifyStorageWarnings` | boolean | `true` | — | [line 897](../../config/appsettings.sample.json#L897) |
+| `Settings.QuietHoursEnabled` | boolean | `false` | Quiet hours for notifications | [line 900](../../config/appsettings.sample.json#L900) |
+| `Settings.QuietHoursStart` | string | `"22:00"` | — | [line 901](../../config/appsettings.sample.json#L901) |
+| `Settings.QuietHoursEnd` | string | `"07:00"` | — | [line 902](../../config/appsettings.sample.json#L902) |
+| `Settings.AutoReconnectEnabled` | boolean | `true` | Auto-reconnection settings | [line 905](../../config/appsettings.sample.json#L905) |
+| `Settings.MaxReconnectAttempts` | integer | `10` | — | [line 906](../../config/appsettings.sample.json#L906) |
+| `Settings.StatusRefreshIntervalSeconds` | integer | `2` | Status refresh interval in seconds | [line 909](../../config/appsettings.sample.json#L909) |
+| `Settings.ServiceUrl` | string | `"http://localhost:8080"` | URL of the Meridian service Change this if running the service on a different host or port | [line 917](../../config/appsettings.sample.json#L917) |
+| `Settings.ServiceTimeoutSeconds` | integer | `30` | Timeout in seconds for API requests to the service | [line 920](../../config/appsettings.sample.json#L920) |
+| `Settings.BackfillTimeoutMinutes` | integer | `60` | Timeout in minutes for long-running backfill operations | [line 923](../../config/appsettings.sample.json#L923) |
 
 ## `Canonicalization`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `Canonicalization` | object | `object (5 keys)` | See: docs/architecture/deterministic-canonicalization.md | [line 931](../../config/appsettings.sample.json#L931) |
-| `Canonicalization.Enabled` | boolean | `false` | Master switch - set true to enable canonicalization pipeline | [line 933](../../config/appsettings.sample.json#L933) |
-| `Canonicalization.Version` | integer | `1` | Mapping version stamped on enriched events. Bump when mapping tables change. | [line 936](../../config/appsettings.sample.json#L936) |
-| `Canonicalization.PilotSymbols` | array | `[]` | Pilot mode: canonicalize only these symbols. Empty/null = all symbols. Use for incremental rollout validation before full enablement. | [line 940](../../config/appsettings.sample.json#L940) |
-| `Canonicalization.EnableDualWrite` | boolean | `false` | Dual-write: persist both raw and enriched events for parity validation. Doubles write volume; use only during Phase 2 validation. | [line 944](../../config/appsettings.sample.json#L944) |
-| `Canonicalization.UnresolvedAlertThresholdPercent` | number | `0.1` | Alert threshold (%) for unresolved mapping rate per provider. | [line 947](../../config/appsettings.sample.json#L947) |
+| `Canonicalization` | object | `object (5 keys)` | See: docs/architecture/deterministic-canonicalization.md | [line 934](../../config/appsettings.sample.json#L934) |
+| `Canonicalization.Enabled` | boolean | `false` | Master switch - set true to enable canonicalization pipeline | [line 936](../../config/appsettings.sample.json#L936) |
+| `Canonicalization.Version` | integer | `1` | Mapping version stamped on enriched events. Bump when mapping tables change. | [line 939](../../config/appsettings.sample.json#L939) |
+| `Canonicalization.PilotSymbols` | array | `[]` | Pilot mode: canonicalize only these symbols. Empty/null = all symbols. Use for incremental rollout validation before full enablement. | [line 943](../../config/appsettings.sample.json#L943) |
+| `Canonicalization.EnableDualWrite` | boolean | `false` | Dual-write: persist both raw and enriched events for parity validation. Doubles write volume; use only during Phase 2 validation. | [line 947](../../config/appsettings.sample.json#L947) |
+| `Canonicalization.UnresolvedAlertThresholdPercent` | number | `0.1` | Alert threshold (%) for unresolved mapping rate per provider. | [line 950](../../config/appsettings.sample.json#L950) |
 
 ## `Serilog`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `Serilog` | object | `object (2 keys)` | — | [line 957](../../config/appsettings.sample.json#L957) |
-| `Serilog.MinimumLevel` | object | `object (2 keys)` | — | [line 958](../../config/appsettings.sample.json#L958) |
-| `Serilog.MinimumLevel.Default` | string | `"Information"` | — | [line 959](../../config/appsettings.sample.json#L959) |
-| `Serilog.MinimumLevel.Override` | object | `object (2 keys)` | — | [line 960](../../config/appsettings.sample.json#L960) |
-| `Serilog.MinimumLevel.Override.Microsoft` | string | `"Warning"` | — | [line 961](../../config/appsettings.sample.json#L961) |
-| `Serilog.MinimumLevel.Override.System` | string | `"Warning"` | — | [line 962](../../config/appsettings.sample.json#L962) |
-| `Serilog.WriteTo` | array | `array (2 items; fields below)` | — | [line 965](../../config/appsettings.sample.json#L965) |
-| `Serilog.WriteTo[0].Name` | string | `"Console"` | — | [line 967](../../config/appsettings.sample.json#L967) |
-| `Serilog.WriteTo[0].Args` | object | `object (1 keys)` | — | [line 968](../../config/appsettings.sample.json#L968) |
-| `Serilog.WriteTo[0].Args.outputTemplate` | string | `"[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"` | — | [line 969](../../config/appsettings.sample.json#L969) |
-| `Serilog.WriteTo[1].Name` | string | `"File"` | — | [line 973](../../config/appsettings.sample.json#L973) |
-| `Serilog.WriteTo[1].Args` | object | `object (5 keys)` | — | [line 974](../../config/appsettings.sample.json#L974) |
-| `Serilog.WriteTo[1].Args.path` | string | `"data/_logs/meridian-.log"` | — | [line 975](../../config/appsettings.sample.json#L975) |
-| `Serilog.WriteTo[1].Args.rollingInterval` | string | `"Day"` | — | [line 976](../../config/appsettings.sample.json#L976) |
-| `Serilog.WriteTo[1].Args.retainedFileCountLimit` | integer | `30` | — | [line 977](../../config/appsettings.sample.json#L977) |
-| `Serilog.WriteTo[1].Args.fileSizeLimitBytes` | integer | `16777216` | — | [line 978](../../config/appsettings.sample.json#L978) |
-| `Serilog.WriteTo[1].Args.rollOnFileSizeLimit` | boolean | `true` | — | [line 979](../../config/appsettings.sample.json#L979) |
+| `Serilog` | object | `object (2 keys)` | — | [line 960](../../config/appsettings.sample.json#L960) |
+| `Serilog.MinimumLevel` | object | `object (2 keys)` | — | [line 961](../../config/appsettings.sample.json#L961) |
+| `Serilog.MinimumLevel.Default` | string | `"Information"` | — | [line 962](../../config/appsettings.sample.json#L962) |
+| `Serilog.MinimumLevel.Override` | object | `object (2 keys)` | — | [line 963](../../config/appsettings.sample.json#L963) |
+| `Serilog.MinimumLevel.Override.Microsoft` | string | `"Warning"` | — | [line 964](../../config/appsettings.sample.json#L964) |
+| `Serilog.MinimumLevel.Override.System` | string | `"Warning"` | — | [line 965](../../config/appsettings.sample.json#L965) |
+| `Serilog.WriteTo` | array | `array (2 items; fields below)` | — | [line 968](../../config/appsettings.sample.json#L968) |
+| `Serilog.WriteTo[0].Name` | string | `"Console"` | — | [line 970](../../config/appsettings.sample.json#L970) |
+| `Serilog.WriteTo[0].Args` | object | `object (1 keys)` | — | [line 971](../../config/appsettings.sample.json#L971) |
+| `Serilog.WriteTo[0].Args.outputTemplate` | string | `"[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"` | — | [line 972](../../config/appsettings.sample.json#L972) |
+| `Serilog.WriteTo[1].Name` | string | `"File"` | — | [line 976](../../config/appsettings.sample.json#L976) |
+| `Serilog.WriteTo[1].Args` | object | `object (5 keys)` | — | [line 977](../../config/appsettings.sample.json#L977) |
+| `Serilog.WriteTo[1].Args.path` | string | `"data/_logs/meridian-.log"` | — | [line 978](../../config/appsettings.sample.json#L978) |
+| `Serilog.WriteTo[1].Args.rollingInterval` | string | `"Day"` | — | [line 979](../../config/appsettings.sample.json#L979) |
+| `Serilog.WriteTo[1].Args.retainedFileCountLimit` | integer | `30` | — | [line 980](../../config/appsettings.sample.json#L980) |
+| `Serilog.WriteTo[1].Args.fileSizeLimitBytes` | integer | `16777216` | — | [line 981](../../config/appsettings.sample.json#L981) |
+| `Serilog.WriteTo[1].Args.rollOnFileSizeLimit` | boolean | `true` | — | [line 982](../../config/appsettings.sample.json#L982) |
 
 ## `ProviderQuotas`
 
 | Key | Sample JSON type | Sample value | Source comment | Source |
 | --- | --- | --- | --- | --- |
-| `ProviderQuotas` | object | `object (2 keys)` | Restart-required vendor account declarations; no credential values belong here. Capabilities sharing a credential share these limits. Set actual paid account limits explicitly. | [line 987](../../config/appsettings.sample.json#L987) |
-| `ProviderQuotas.TwelveData` | object | `object (4 keys)` | Basic: 8 credits/minute and 800 credits per UTC day. Fundamentals endpoints each cost 20. FundamentalsEntitled must be explicit for Grow/Venture access; more capacity alone grants none. Set NoDailyLimit only for an account whose vendor plan has no daily limit. | [line 991](../../config/appsettings.sample.json#L991) |
-| `ProviderQuotas.TwelveData.CreditsPerMinute` | integer | `8` | — | [line 992](../../config/appsettings.sample.json#L992) |
-| `ProviderQuotas.TwelveData.DailyCredits` | integer | `800` | — | [line 993](../../config/appsettings.sample.json#L993) |
-| `ProviderQuotas.TwelveData.FundamentalsEntitled` | boolean | `false` | — | [line 994](../../config/appsettings.sample.json#L994) |
-| `ProviderQuotas.TwelveData.NoDailyLimit` | boolean | `false` | — | [line 995](../../config/appsettings.sample.json#L995) |
-| `ProviderQuotas.AlphaVantage` | object | `object (3 keys)` | Free defaults. The daily limit is conservative rolling 24 hours; no vendor reset is assumed. | [line 998](../../config/appsettings.sample.json#L998) |
-| `ProviderQuotas.AlphaVantage.RequestsPerMinute` | integer | `5` | — | [line 999](../../config/appsettings.sample.json#L999) |
-| `ProviderQuotas.AlphaVantage.DailyRequests` | integer | `25` | — | [line 1000](../../config/appsettings.sample.json#L1000) |
-| `ProviderQuotas.AlphaVantage.NoDailyLimit` | boolean | `false` | — | [line 1001](../../config/appsettings.sample.json#L1001) |
+| `ProviderQuotas` | object | `object (2 keys)` | Restart-required vendor account declarations; no credential values belong here. Capabilities sharing a credential share these limits. Set actual paid account limits explicitly. | [line 990](../../config/appsettings.sample.json#L990) |
+| `ProviderQuotas.TwelveData` | object | `object (4 keys)` | Basic: 8 credits/minute and 800 credits per UTC day. Fundamentals endpoints each cost 20. FundamentalsEntitled must be explicit for Grow/Venture access; more capacity alone grants none. Set NoDailyLimit only for an account whose vendor plan has no daily limit. | [line 994](../../config/appsettings.sample.json#L994) |
+| `ProviderQuotas.TwelveData.CreditsPerMinute` | integer | `8` | — | [line 995](../../config/appsettings.sample.json#L995) |
+| `ProviderQuotas.TwelveData.DailyCredits` | integer | `800` | — | [line 996](../../config/appsettings.sample.json#L996) |
+| `ProviderQuotas.TwelveData.FundamentalsEntitled` | boolean | `false` | — | [line 997](../../config/appsettings.sample.json#L997) |
+| `ProviderQuotas.TwelveData.NoDailyLimit` | boolean | `false` | — | [line 998](../../config/appsettings.sample.json#L998) |
+| `ProviderQuotas.AlphaVantage` | object | `object (3 keys)` | Free defaults. The daily limit is conservative rolling 24 hours; no vendor reset is assumed. | [line 1001](../../config/appsettings.sample.json#L1001) |
+| `ProviderQuotas.AlphaVantage.RequestsPerMinute` | integer | `5` | — | [line 1002](../../config/appsettings.sample.json#L1002) |
+| `ProviderQuotas.AlphaVantage.DailyRequests` | integer | `25` | — | [line 1003](../../config/appsettings.sample.json#L1003) |
+| `ProviderQuotas.AlphaVantage.NoDailyLimit` | boolean | `false` | — | [line 1004](../../config/appsettings.sample.json#L1004) |

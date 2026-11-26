@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityAssetClassValidator
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.ISecurityAssetClassValidator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:15](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L15).
+
+Defines validation rules for one supported Security Master asset class.
+
+```csharp
+public interface ISecurityAssetClassValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string AssetClass { get; }</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:17](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L17) |  |
+| <code>IReadOnlyList&lt;SecurityValidationIssueDto&gt; Validate(SecurityValidationContext context);</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:18](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L18) |  |
+
+## ISecurityValidationService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.ISecurityValidationService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:11](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L11).
+
+Validates individual security records and the Security Master universe.
+
+```csharp
+public interface ISecurityValidationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityValidationReportDto&gt; ValidateSecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:13](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L13) |  |
+| <code>Task&lt;SecurityValidationReportDto&gt; ValidateUniverseAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:14](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L14) |  |
+
 ## ISecurityValidationSnapshotStore
 
 Qualified name: <code>Meridian.Application.SecurityMaster.Validation.ISecurityValidationSnapshotStore</code>. Kind: `interface`.
@@ -934,39 +972,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public string GetSummary();</code> | [src/Meridian.Application/Services/PreflightChecker.cs:784](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L784) | Gets a summary string of the pre-flight results. |
-
-## ServiceCategory
-
-Qualified name: <code>Meridian.Application.Services.ServiceCategory</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Services/ServiceRegistry.cs:17](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L17).
-
-Service categories for organization and discovery.
-
-```csharp
-public enum ServiceCategory : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Setup</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:20](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L20) | Configuration and setup services. |
-| <code>Validation</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:23](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L23) | Validation and preflight check services. |
-| <code>Diagnostics</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:26](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L26) | Diagnostic and error handling services. |
-| <code>Lifecycle</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:29](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L29) | Application lifecycle services. |
-| <code>Data</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:32](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L32) | Data query and manipulation services. |
-| <code>Calendar</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:35](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L35) | Trading calendar services. |
-| <code>Reporting</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:38](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L38) | Reporting and progress display services. |
-
-## ServiceInfo
-
-Qualified name: <code>Meridian.Application.Services.ServiceInfo</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/ServiceRegistry.cs:49](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L49).
-
-Service metadata for discovery and documentation.
-
-```csharp
-public sealed record ServiceInfo(string Name, ServiceCategory Category, string Description, Type ServiceType, bool IsAsync = true);
-```

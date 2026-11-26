@@ -128,7 +128,9 @@ they permit no edits to posted journals. Unmapped historical periods retain expl
 
 `JsonlStorageSink.AppendAsync` acknowledges an event once it is buffered: a failed size-triggered
 flush is logged and left for `FlushAsync` or the periodic flush to retry and report, so a caller
-that retries failed appends cannot write the same event twice.
+that retries failed appends cannot write the same event twice. Every failed write (excluding
+cancellation) is counted in `mdc_sink_write_failures_total{sink="jsonl"}` and the sink's
+`WriteFailures`; `MeridianSinkWriteFailing` alerts on a sustained rise.
 
 JSONL and Parquet sinks retire empty partition buffers after successful flushes. Admission and
 retirement share the buffer lock, so a producer holding an evicted buffer retries admission to

@@ -1490,7 +1490,13 @@ Core workstation host. Do not introduce a second listener or independent monitor
   Reconciliation governance exception classification now lives in
   `Meridian.Strategies.Services.GovernanceExceptionService`. Report-pack generation and NAV
   attribution live in `Meridian.Reporting` rather than Application-local services.
-- `Monitoring/` - application monitoring adapters and status server support. Shared pipeline
+- `Monitoring/` - application monitoring adapters and status server support. `PrometheusMetrics`
+  also exports, on the scrape, pipeline backlog and consumer health (`mdc_pipeline_*`), backfill
+  run outcomes (`mdc_backfill_*`; each run counts into its own `RunScopedEventMetrics`) and
+  data-root disk space (`mdc_disk_*`); `ErrorLogRecorder` feeds `/api/errors` from Error/Fatal
+  log events. `QualityMonitoringPublisher` also feeds the composition's `ProviderLatencyService`
+  from one in sixteen timed trade/quote samples, on its consumer task rather than the publish
+  path. Shared pipeline
   composition records live price/order-book ingress in `DataFreshnessSlaMonitor`, independent of
   storage acceptance and the bounded quality-sample queue. Configured enabled symbols start with
   one freshness threshold of grace; missing first events then violate the SLA. Subscription

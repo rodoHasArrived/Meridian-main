@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AutomatedJournalDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:35](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L35).
+
+Batch of automated economic events (dividends, interest, fees, withholding) to admit into the manual journal workbench queue for the named fund profile.
+
+```csharp
+public sealed record AutomatedJournalDraftIntakeRequest(string FundProfileId, string Currency, IReadOnlyList<AutomatedJournalEvent> Events, string Actor, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null, string? BatchCorrelationId = null);
+```
+
+## AutomatedJournalDraftIntakeResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:100](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L100).
+
+Outcome of an automated journal intake run. Created drafts land in the workbench queue as ManualJournalEntryStatusDto.Draft (or NeedsFix when validation flags them) awaiting human submit/approve; skips are reported, never silent.
+
+```csharp
+public sealed record AutomatedJournalDraftIntakeResult(IReadOnlyList<ManualJournalEntryDraftDto> Created, IReadOnlyList<AutomatedJournalDraftIntakeSkip> Skipped)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int NeedsFixCount =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:105](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L105) | Created drafts that need account-mapping or other fixes before submission. |
+
 ## AutomatedJournalDraftIntakeService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeService</code>. Kind: `class`.
@@ -992,35 +1022,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs:21](../../../../src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs#L21) |  |
-
-## CapitalCallNoticeRecipientBinding
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallNoticeRecipientBinding</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:15](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L15).
-
-Deployment-owned investor-to-recipient mapping; investor IDs are never assumed to be user IDs.
-
-```csharp
-public sealed record CapitalCallNoticeRecipientBinding(string TenantId, string CompanyId, string FundProfileId, string InvestorId, string RecipientPrincipalId, string? ReviewGroupPrincipalId = null);
-```
-
-## CapitalCallNoticeReportingService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallNoticeReportingService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:136](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L136).
-
-Creates a governed Draft notice; approval, release, grants, and delivery use existing Reporting controls.
-
-```csharp
-public sealed class CapitalCallNoticeReportingService(CapitalCallNoticeSourceValidator source, ILedgerJournalStore journals, ReportingRunCommandService reporting, IReportingRunStore? runStore = null, IReportingGovernanceRepository? governance = null, IReportingDeliveryStore? deliveries = null, IReportingAuthoritativeSource? authoritativeSource = null, IReportingReconciliationEvidenceRetentionStore? reconciliationRetention = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string TemplateId = &quot;capital-call-notice&quot;;</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:146](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L146) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;PrivateCapitalNoticeSummaryDto&gt;&gt; ReadNoticeSummariesAsync(PrivateCapitalScopeDto scope, ReportAccessQueryContext access, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:150](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L150) | Projects retained notice associations; callers cannot attach an arbitrary reporting run to a call. |
-| <code>public async Task&lt;ReportingRunResultDto&gt; GenerateAsync(PrivateCapitalScopeDto scope, string callId, string investorId, Guid operationId, string actor, ReportAccessQueryContext access, ReportingGovernanceCallerContext caller, string? commitmentId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:206](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L206) |  |

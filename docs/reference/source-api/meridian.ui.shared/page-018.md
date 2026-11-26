@@ -6,6 +6,56 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackDeliveryArtifactContent
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackDeliveryArtifactContent</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:19](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L19).
+
+```csharp
+public sealed record ReportPackDeliveryArtifactContent(string ArtifactName, string ContentType, byte[] Content);
+```
+
+## ReportPackDeliveryService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackDeliveryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:666](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L666).
+
+Coordinates report-pack delivery attempts, retained packages, and artifact access.
+
+```csharp
+public sealed partial class ReportPackDeliveryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportPackDeliveryService(ReportPackWorkflowService workflowService, IReportPackDeliveryRecordStore? store = null);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:675](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L675) |  |
+| <code>public IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; ListAttempts(int limit = 100);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:685](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L685) |  |
+| <code>public IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; GetHistory(Guid reportId, int limit = 100);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:698](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L698) |  |
+| <code>public ReportPackDeliveryPackageDto GetPackage(Guid reportId, Guid attemptId, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:711](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L711) |  |
+| <code>public ReportPackDeliveryPackageDto GetPortalPackage(string packageId, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:720](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L720) |  |
+| <code>public ReportPackDeliveryArtifactContent GetArtifact(Guid reportId, Guid attemptId, string artifactName, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:741](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L741) |  |
+| <code>public ReportPackDeliveryAttemptDto Deliver(Guid reportId, ReportPackDeliveryRequestDto request, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:784](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L784) |  |
+| <code>public ReportPackDeliveryAttemptDto? DeliverLatestForTemplate(string templateId, ReportingScheduleDeliveryTargetDto target, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:803](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L803) |  |
+| <code>public ReportPackDeliveryAttemptDto DeliverReportingRun(ReportingOutputManifest manifest, ReportingScheduleDeliveryTargetDto target, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:838](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L838) |  |
+| <code>public ReportPackDeliveryAttemptDto RecordFailure(Guid reportId, ReportPackDeliveryFailureRequestDto request, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:892](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L892) |  |
+| <code>public static IReadOnlyList&lt;string&gt; ValidateDeliverablePackage(ReportPackDeliveryAttemptDto? attempt);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:912](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L912) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.Evidence.cs:6](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.Evidence.cs#L6).
+
+```csharp
+public sealed partial class ReportPackDeliveryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.Guards.cs:6](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.Guards.cs#L6).
+
+```csharp
+public sealed partial class ReportPackDeliveryService
+```
+
 ## ReportPackDeliveryStoreOptions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackDeliveryStoreOptions</code>. Kind: `record`.
@@ -903,40 +953,3 @@ Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Tru
 ```csharp
 public sealed partial class SecurityMasterWorkbenchQueryService
 ```
-
-## SensitiveActionPolicyEngine
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SensitiveActionPolicyEngine</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:34](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L34).
-
-Evaluates sensitive-action policy requirements from the actor, role, MFA, and approval context.
-
-```csharp
-public sealed class SensitiveActionPolicyEngine
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PolicyDecision Evaluate(SensitiveActionType action, AccessContext context);</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:36](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L36) |  |
-
-## SensitiveActionType
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SensitiveActionType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:10](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L10).
-
-```csharp
-public enum SensitiveActionType
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>RuleEdit</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:12](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L12) |  |
-| <code>BreakClosure</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:13](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L13) |  |
-| <code>PaymentRelease</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:14](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L14) |  |
-| <code>OverrideApproval</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:15](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L15) |  |
