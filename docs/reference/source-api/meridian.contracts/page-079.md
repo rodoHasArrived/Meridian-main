@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunPromotionSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:156](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L156).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:160](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L160).
 
 Shared promotion summary used by Strategy, Trading, and Accounting workflows.
 
@@ -22,13 +22,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public DateTimeOffset? PromotedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:175](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L175) | Timestamp from the durable promotion decision, when one exists. This remains outside the primary constructor so established constructor and deconstruction signatures stay stable. |
+| <code>public DateTimeOffset? PromotedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:179](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L179) | Timestamp from the durable promotion decision, when one exists. This remains outside the primary constructor so established constructor and deconstruction signatures stay stable. |
 
 ## StrategyRunReplayProvenanceDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunReplayProvenanceDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:505](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L505).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:509](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L509).
 
 ```csharp
 public sealed record StrategyRunReplayProvenanceDto(IReadOnlyList<StrategyRunReplaySourceCountDto> SourceMix, IReadOnlyList<StrategyRunReplayRevisionDto> Revisions, string? SourceMixHash, string? CompletedInputHashSha256)
@@ -38,13 +38,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;Meridian.Contracts.Operations.MarketDataQualityWarningDto&gt;? DataQualityWarnings { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:512](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L512) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;Meridian.Contracts.Operations.MarketDataQualityWarningDto&gt;? DataQualityWarnings { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:516](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L516) |  |
 
 ## StrategyRunReplayRevisionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunReplayRevisionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:517](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L517).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:521](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L521).
 
 ```csharp
 public sealed record StrategyRunReplayRevisionDto(string RevisionId, string ContentHash, string ServingProvider, string Instrument, string Granularity);
@@ -54,7 +54,7 @@ public sealed record StrategyRunReplayRevisionDto(string RevisionId, string Cont
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunReplaySourceCountDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:515](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L515).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:519](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L519).
 
 ```csharp
 public sealed record StrategyRunReplaySourceCountDto(string Symbol, string Source, long Bars);

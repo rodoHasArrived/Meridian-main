@@ -38,7 +38,7 @@ public sealed record RevokePreparerAttestationRequestDto(Guid CommandId, Guid Re
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunAttributionSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:998](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L998).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1010](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1010).
 
 Complete attribution breakdown for one run.
 
@@ -50,7 +50,7 @@ public sealed record RunAttributionSummary(string RunId, StrategyRunMode Mode, d
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunCashFlowSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1045](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1045).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1057](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1057).
 
 Cash-flow projection summary for a strategy run. Includes both the raw historical entries and a time-bucketed cash ladder computed by the F# CashLadder.build module.
 

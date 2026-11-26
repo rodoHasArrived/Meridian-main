@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1185](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1185).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1190](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1190).
 
 Typed payload returned by GET /api/workstation/data and GET /api/workstation/data-operations.
 
@@ -22,7 +22,7 @@ public sealed record WorkstationDataPayload(IReadOnlyList<WorkstationMetricCard>
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataProviderDiagnostic</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1115](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1115).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1120](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1120).
 
 Compact provider diagnostic row embedded in the Data workspace provider center.
 
@@ -34,7 +34,7 @@ public sealed record WorkstationDataProviderDiagnostic(string Id, string Label, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataProviderRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1137](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1137).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1142](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1142).
 
 Provider-center row returned by the Data workspace bootstrap payload.
 
@@ -46,13 +46,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Provider =&gt; …;</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1153](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1153) |  |
+| <code>public string Provider =&gt; …;</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1158](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1158) |  |
 
 ## WorkstationDataProviderRoutingSummary
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataProviderRoutingSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1125](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1125).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1130](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1130).
 
 Compact routing summary embedded in a Data workspace provider row.
 

@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetPackCoverageDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1065](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1065).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1070](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1070).
 
 Shared registry contract for an asset pack exposed by the multi-asset coverage endpoint.
 
@@ -22,14 +22,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;AssetPackRegistryValidationIssue&gt; RegistryValidationIssues { get; init; } = RegistryValidationIssues??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1087](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1087) |  |
-| <code>public IReadOnlyList&lt;string&gt; PlannedAssetClasses { get; init; } = PlannedAssetClasses??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1089](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1089) |  |
+| <code>public IReadOnlyList&lt;AssetPackRegistryValidationIssue&gt; RegistryValidationIssues { get; init; } = RegistryValidationIssues??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1092](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1092) |  |
+| <code>public IReadOnlyList&lt;string&gt; PlannedAssetClasses { get; init; } = PlannedAssetClasses??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1094](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1094) |  |
 
 ## MultiAssetReadinessBlockerDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetReadinessBlockerDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1027](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1027).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1032](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1032).
 
 Readiness blocker for a single asset class.
 

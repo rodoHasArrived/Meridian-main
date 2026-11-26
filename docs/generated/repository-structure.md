@@ -8902,6 +8902,7 @@ Meridian-main
 │   │   │   ├── CatalogSyncSink.cs
 │   │   │   ├── CompositeSink.cs
 │   │   │   ├── JsonlStorageSink.cs
+│   │   │   ├── ParquetStorageSink.Compaction.cs
 │   │   │   └── ParquetStorageSink.cs
 │   │   ├── Store
 │   │   │   ├── CompositeMarketDataStore.cs
@@ -8967,6 +8968,7 @@ Meridian-main
 │   │   │   ├── IBacktestStrategyLiveSource.cs
 │   │   │   ├── ILiveOrderOutcomeObserver.cs
 │   │   │   ├── LivePortfolioObservation.cs
+│   │   │   ├── LiveRunBook.cs
 │   │   │   ├── LiveRunMetricsTracker.cs
 │   │   │   ├── LiveStrategyBase.cs
 │   │   │   ├── LiveStrategyCatalog.cs
@@ -13591,6 +13593,7 @@ Meridian-main
 │   │   │   │   ├── QuickSetupAtomicSaveTests.cs
 │   │   │   │   └── RuntimeDiagnosticRedactorTests.cs
 │   │   │   ├── Subscriptions
+│   │   │   │   ├── DepthAutoResubscribeTests.cs
 │   │   │   │   ├── PortfolioImportReliabilityTests.cs
 │   │   │   │   ├── PortfolioImportRunTests.cs
 │   │   │   │   ├── SchedulingServiceReliabilityTests.cs
@@ -13820,6 +13823,7 @@ Meridian-main
 │   │   │   │   ├── OptionDataCollectorTests.cs
 │   │   │   │   ├── QuoteCollectorTests.cs
 │   │   │   │   ├── SessionStatsCollectorTests.cs
+│   │   │   │   ├── TradeAggressorInferenceTests.cs
 │   │   │   │   └── TradeDataCollectorTests.cs
 │   │   │   ├── Models
 │   │   │   │   ├── AdjustedHistoricalBarTests.cs
@@ -13967,6 +13971,7 @@ Meridian-main
 │   │   │   ├── PaperTradingPortfolioLotSelectionTests.cs
 │   │   │   ├── PaperTradingPortfolioLotSnapshotTests.cs
 │   │   │   ├── PaperTradingPortfolioMultiplierTests.cs
+│   │   │   ├── PaperTradingPortfolioPositionPnlTests.cs
 │   │   │   ├── PaperTradingPortfolioTests.cs
 │   │   │   ├── PaperTradingPortfolioVariationMarginTests.cs
 │   │   │   ├── PortfolioStatePositionTrackerTests.cs
@@ -14266,6 +14271,7 @@ Meridian-main
 │   │   │   │   ├── IBBrokerageGatewayTests.RecoveryScope.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.SessionFences.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.SessionRaces.cs
+│   │   │   │   ├── IBCallbackRouterTickerLifecycleTests.cs
 │   │   │   │   ├── IBDataServicesTests.cs
 │   │   │   │   ├── IBHistoricalProviderContractTests.cs
 │   │   │   │   ├── IBMarketDataClientContractTests.cs
@@ -15291,6 +15297,7 @@ Meridian-main
 │   │   │   ├── FileReconciliationBreakQueueRepository.BookReceiptReversalTests.cs
 │   │   │   ├── GovernanceExceptionServiceTests.cs
 │   │   │   ├── LedgerReadServiceTests.cs
+│   │   │   ├── LiveRunBookTests.cs
 │   │   │   ├── LiveRunMetricsTrackerTests.cs
 │   │   │   ├── LiveStrategyBaseTests.cs
 │   │   │   ├── LiveStrategyCatalogFallbackTests.cs
@@ -15302,6 +15309,7 @@ Meridian-main
 │   │   │   ├── LiveTradingEngineTests.FinancingCoverage.cs
 │   │   │   ├── LiveTradingEngineTests.GovernedRehearsal.cs
 │   │   │   ├── LiveTradingEngineTests.PromotionLedgerPosting.cs
+│   │   │   ├── LiveTradingEngineTests.RunEquity.cs
 │   │   │   ├── LiveTradingEngineTests.StopFillDrain.cs
 │   │   │   ├── MovingAverageParityTests.cs
 │   │   │   ├── PaperStrategyAccountingSnapshotTests.cs
@@ -16076,6 +16084,7 @@ Meridian-main
 │   │   │   ├── AdminMaintenanceServiceTests.cs
 │   │   │   ├── AppLifecycleDataRootTests.cs
 │   │   │   ├── AppServiceRegistrationTests.cs
+│   │   │   ├── ArchiveHealthServiceTests.cs
 │   │   │   ├── AsyncHandlerGuardTests.cs
 │   │   │   ├── BackendServiceManagerTests.cs
 │   │   │   ├── BackfillPresentationServiceTests.cs
