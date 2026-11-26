@@ -192,7 +192,7 @@ public sealed partial class FreshHostAccountingRehearsalTests
         records.Sum(record => record.Entry.Lines.Where(line => line.Account.Name == "Cash")
             .Sum(line => line.Debit - line.Credit)).Should().Be(98979m);
         var lots = await host.Journals.ListOpenTaxLotsAsync(scope.Context.LedgerBookId,
-            new LedgerAccount("Securities", LedgerAccountType.Asset, Symbol, scope.AccountId.ToString("D")), ct);
+            new LedgerAccount("Securities", LedgerAccountType.Asset, Symbol, scope.AccountId.ToString("D"), scope.SecurityId), ct);
         lots.Should().ContainSingle();
         lots[0].OpenQuantity.Should().Be(10m);
         lots[0].ToOpenLot().OpenFunctionalCostBasis.Should().Be(1020m);

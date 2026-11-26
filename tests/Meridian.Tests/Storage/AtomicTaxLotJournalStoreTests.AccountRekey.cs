@@ -286,11 +286,11 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var book = new LedgerBookRecord(ledgerBookId, "fund-rekey", Guid.NewGuid(), FundStructureNodeKindDto.Fund,
             "Re-key Primary Book", "USD", openedAt, openedAt);
         await database.JournalStore.SaveLedgerBookAsync(book);
-        await database.JournalStore.SavePeriodAsync(RekeyPeriod(ledgerBookId, periodId, version: 0), expectedVersion: 0);
+        var savedPeriod = await database.JournalStore.SavePeriodAsync(RekeyPeriod(ledgerBookId, periodId, version: 0), expectedVersion: 0);
         var authority = await database.SeedLotReferenceAuthorityAsync(ledgerBookId, TestSecurityId, TestBookPositionId);
 
         // A holding booked before F2: its acquisition journal and lot are on the ticker-keyed account.
-        var acquisition = BuildAcquisitionCommand(ledgerBookId, periodId, expectedPeriodVersion: 0,
+        var acquisition = BuildAcquisitionCommand(ledgerBookId, periodId, expectedPeriodVersion: savedPeriod.Version,
             idempotencyKey: "atomic-acquisition:legacy-ticker");
         var entry = acquisition.Journal.Entry;
         var legacyLot = acquisition.AcquisitionLot! with { Account = LegacyRekeyAccount };
@@ -312,7 +312,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             {
                 Entry = new JournalEntry(entry.JournalEntryId, entry.Timestamp, entry.Description,
                     [RebuildLine(entry.Lines[0], LegacyRekeyAccount, entry.Lines[0].Debit, entry.Lines[0].Credit), entry.Lines[1]],
-                    entry.Metadata with { Symbol = RekeyTicker })
+                    entry.Metadata with { Symbol = RekeyTicker, Tags = RekeyLineageTags() })
             }
         }).WithComputedFingerprint();
         await database.JournalStore.AppendAssetPostingAsync(acquisition);
@@ -399,9 +399,22 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         => new(bookId, "fund-rekey", Guid.NewGuid(), FundStructureNodeKindDto.Fund, "Re-key Primary Book", "USD",
             RekeyAt.AddDays(-30), RekeyAt.AddDays(-30));
 
+    // Re-keyed accounts carry the ticker as a display symbol, so the period posting guard requires a
+    // Security Master ledger mapping tied to that symbol or SecurityId; the mapping names the SecurityId.
+    private static Dictionary<string, string> RekeyLineageTags()
+    {
+        var provenance = $"security-master:{TestSecurityId:N};snapshot:test-source-hash;approved:true";
+        return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["securityMasterProvenance"] = provenance,
+            ["securityMasterLineage"] =
+                $"{RekeyTicker}:{TestSecurityId:N}:ledger-map:investment-lots-{TestSecurityId:N}:sm-approval:lot-controller:security-status:active:{provenance}"
+        };
+    }
+
     private static LedgerSecurityKeyRekeyApproval RekeyApproval()
     {
-        var tags = SecurityMasterLineageTags(TestSecurityId);
+        var tags = RekeyLineageTags();
         return new LedgerSecurityKeyRekeyApproval(
             new LedgerAdjustmentApprovalMetadataDto("approval-rekey-1", LedgerAdjustmentApprovalStatusDto.Approved,
                 "fund-controller", RekeyAt.AddHours(-1), "security-key-rekey", GovernanceCaseId: "F2-rekey"),

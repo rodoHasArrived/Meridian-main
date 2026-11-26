@@ -35,7 +35,9 @@ public sealed partial class AutomatedPostingGrantTests
         };
         var workspace = scope.Workspace with { ChartOfAccounts = chart };
         await database.AccountingConfigurationStore.SaveAsync(workspace);
-        var carrying = new LedgerAccount("Securities", LedgerAccountType.Asset, "AAPL", AccountId);
+        // Fills post to the SecurityId-keyed carrying account (Security Master review F2); the FIFO policy
+        // and the lot reads use that same account, with the ticker kept as its display symbol.
+        var carrying = new LedgerAccount("Securities", LedgerAccountType.Asset, "AAPL", AccountId, securityId);
         await database.JournalStore.SaveTaxLotPolicyAsync(new LedgerAccountTaxLotPolicyRecord(Guid.NewGuid(),
             scope.Reference.LedgerBookId, carrying, LedgerTaxLotReliefMethod.Fifo, "fifo-v1", new(2026, 5, 1), Timestamp, Timestamp));
         var config = Substitute.For<IAccountingConfigurationService>();
