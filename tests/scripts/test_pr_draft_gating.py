@@ -16,7 +16,7 @@ DRAFT_SKIPPING = {
     "codeql.yml": ["analyze"],
     "ci.yml": ["secret-scan"],
     "windows-desktop-build.yml": ["desktop"],
-    "roadmap-source-docs.yml": ["scope-gate"],
+    "roadmap-source-docs.yml": ["schema"],
 }
 
 

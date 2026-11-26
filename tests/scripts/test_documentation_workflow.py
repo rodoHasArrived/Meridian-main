@@ -185,14 +185,12 @@ class DocumentationWorkflowTests(unittest.TestCase):
                       if step.get("uses", "").startswith("actions/upload-artifact@"))
         self.assertEqual(set(lane["artifacts"]), set(upload["with"]["path"].splitlines()))
 
-    def test_roadmap_keeps_schema_and_phase_validation_and_manual_standalone_generation(self) -> None:
+    def test_roadmap_keeps_schema_validation_and_manual_standalone_generation(self) -> None:
         workflow = yaml.load(
             (REPO_ROOT / ".github/workflows/roadmap-source-docs.yml").read_text(),
             Loader=yaml.BaseLoader,
         )
-        self.assertIn("Enforce phase scope", [
-            step.get("name") for step in workflow["jobs"]["scope-gate"]["steps"]
-        ])
+        self.assertEqual(set(workflow["jobs"]), {"schema"})
         steps = workflow["jobs"]["schema"]["steps"]
         for name in ("Validate roadmap registry", "Validate source READMEs", "Scan source TODOs"):
             self.assertNotIn("if", next(step for step in steps if step.get("name") == name))
@@ -209,30 +207,21 @@ class DocumentationWorkflowTests(unittest.TestCase):
             self.assertNotIn("paths-ignore", events[event] or {})
         self.assertNotIn("branches", events["pull_request"] or {})
 
-    def test_phase_metadata_changes_retrigger_the_trusted_scope_gate(self) -> None:
+    def test_retired_phase_scope_gate_leaves_no_metadata_triggers(self) -> None:
         workflow = yaml.load(
             (REPO_ROOT / ".github/workflows/roadmap-source-docs.yml").read_text(),
             Loader=yaml.BaseLoader,
         )
         event = workflow["on"]["pull_request"]
-        self.assertEqual(
-            {"opened", "synchronize", "reopened", "ready_for_review", "edited", "labeled", "unlabeled"},
-            set(event["types"]),
-        )
+        # Body and label edits only mattered to the retired phase scope gate.
+        self.assertEqual({"opened", "synchronize", "reopened", "ready_for_review"}, set(event["types"]))
         self.assertEqual(event["paths"], workflow["on"]["push"]["paths"])
         self.assertEqual(workflow["permissions"], {"contents": "read"})
-        steps = workflow["jobs"]["scope-gate"]["steps"]
-        trusted = next(step for step in steps if step.get("name") == "Checkout trusted phase gate script")
-        self.assertEqual(trusted["with"]["ref"], "${{ github.event.pull_request.base.sha || github.sha }}")
-        self.assertEqual(trusted["with"]["persist-credentials"], "false")
-        gate = next(step for step in steps if step.get("name") == "Enforce phase scope")
-        self.assertEqual(gate["if"], "${{ github.event_name != 'push' && github.actor != 'dependabot[bot]' }}")
-        self.assertEqual(gate["env"]["PR_BODY"], "${{ github.event.pull_request.body }}")
-        self.assertEqual(gate["env"]["PR_LABELS"], "${{ join(github.event.pull_request.labels.*.name, ',') }}")
-        self.assertIn("python3 .trusted-base/tools/roadmap/enforce_phase_scope.py", gate["run"])
-        self.assertIn('--pr-body "$PR_BODY"', gate["run"])
-        self.assertIn('--labels "$PR_LABELS"', gate["run"])
-        self.assertNotIn("continue-on-error", gate)
+        self.assertNotIn("scope-gate", workflow["jobs"])
+        self.assertFalse((REPO_ROOT / "tools/roadmap/enforce_phase_scope.py").exists())
+        manual = (REPO_ROOT / ".github/workflows/roadmap-tools-manual.yml").read_text()
+        self.assertNotIn("enforce_phase_scope", manual)
+        self.assertNotIn("enforce-phase-scope", manual)
 
     def test_canonical_lane_fails_for_generation_failure_or_freshness_drift(self) -> None:
         # Run the actual shell orchestrator with inert tools. This proves a failed

@@ -13,8 +13,6 @@ This folder contains scripts that help keep roadmap work scoped, valid, and repr
 - `render_roadmap_docs.py`  
   Normalizes roadmap YAML into deterministic output (stable ordering/formatting), useful for repeatable automation outputs.
 
-- `enforce_phase_scope.py`  
-  Enforces roadmap PR phase boundaries (for example PR0, PR1, ...), based on declared phase and changed file paths.
 
 ## Common commands
 
@@ -32,9 +30,6 @@ python3 tools/roadmap/validate_roadmap.py --roadmap docs/roadmap/data/roadmap-it
 
 # Render deterministic roadmap output
 python3 tools/roadmap/render_roadmap_docs.py docs/roadmap/data/roadmap-items.yml /tmp/roadmap.normalized.yml
-
-# Check phase scope locally against current branch diff
-python3 tools/roadmap/enforce_phase_scope.py --phase PR1 --base-ref origin/main --head-ref HEAD
 ```
 
 ## When to use these scripts
@@ -46,7 +41,6 @@ attempt to repair malformed input.
 
 - You changed roadmap governance docs or workflow policy.
 - You edited `docs/roadmap/data/roadmap-items.yml`.
-- You need to confirm a PR only touches files allowed for its declared phase.
 
 ## Related documentation
 

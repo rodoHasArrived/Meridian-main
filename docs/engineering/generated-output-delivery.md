@@ -2,7 +2,7 @@
 
 **Status:** active; CI governance changes require human review before merge
 **Owner:** core-team
-**Reviewed:** 2026-11-14
+**Reviewed:** 2026-11-26
 
 Commit authored inputs and the generated documentation that needs review. CI generates mechanical
 inventories and compiler output at the tested revision; contributors do not commit those files.
@@ -16,6 +16,8 @@ authority and cannot encompass handwritten blocks or reviewed baselines.
 | Other declared operational status reports, handoff packets, TODO scans and workflow validation reports | CI artifacts; mechanical inventories. Exact files are listed in `delivery.ci_files`, not a directory wildcard. |
 | `database/manifest/contracts.json` | CI artifact; source catalog with file fingerprints. Schema-control still compares reviewed database docs, dependencies, physical manifests and policy findings. Structural diffs reconstruct the contract baseline from pinned base source. |
 | `docs/{source,roadmap}/generated/MANIFEST.json` | CI artifacts; mechanical registry/output digests. |
+| `docs/generated/repository-structure.md` | CI artifact; a mechanical tree of every tracked path, so almost every PR touched it and it was the most common merge-conflict surface between parallel PRs. |
+| `docs/reference/source-api/` | CI artifact tree; public C# declaration pages regenerated from `src/`, so any public signature change rewrote them and they conflicted between parallel source PRs. |
 | Dashboard `ui-api-routes.generated.ts` and `workspace-catalog.generated.ts` | Generated on npm installation and before development, build and validation commands; included in CI evidence. |
 | `src/Meridian.Ui/wwwroot/workstation/` | Build artifact; the browser lane validates emitted entrypoints/assets, and the hosted `verify-dotnet` job builds and validates its own same-run bundle before project evaluation. Packaging builds from source. The canonical served path is unchanged. |
 | Actual source fingerprints | `artifacts/docs/source-hashes.json`; informational evidence, never acceptance of a review baseline. |

@@ -1,11 +1,11 @@
 {
   "total_files": 1293,
-  "orphaned_count": 379,
+  "orphaned_count": 380,
   "no_heading_count": 231,
   "stale_count": 0,
-  "todo_count": 303,
+  "todo_count": 304,
   "health_score": 86,
-  "signal_digest": "sha256:7d3fb2ddc0a5debb95c79bdf9cb2e4a41ac2c94bb6da99e9e9a795d3aa0d5278",
+  "signal_digest": "sha256:98004e6eb1514d4eaf73fdc526c65386fc6f9ef5ac412f933ec69b2e57172a9d",
   "orphaned_files": [
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
@@ -347,6 +347,7 @@
     "docs/generated/interfaces.md",
     "docs/generated/project-dependencies.md",
     "docs/generated/provider-registry.md",
+    "docs/generated/repository-structure.md",
     "docs/product/adversarial-program-review-2026-08-25.md",
     "docs/roadmap/generated-doc-policy.md",
     "docs/roadmap/roadmap-governance.md",
@@ -5896,7 +5897,7 @@
     {
       "path": "docs/roadmap/roadmap-governance.md",
       "has_heading": true,
-      "todo_count": 0,
+      "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },

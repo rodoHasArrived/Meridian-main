@@ -21,7 +21,6 @@ OUTPUTS = (
     "docs/ai/generated/repo-navigation.json",
     "docs/ai/generated/repo-navigation.md",
     "docs/ai/generated/recent-changes.md",
-    "docs/generated/repository-structure.md",
     "docs/generated/workflows-overview.md",
     "docs/status/doc-health-dashboard.json",
     "docs/status/doc-health-dashboard.md",
