@@ -117,6 +117,7 @@ public static partial class WorkstationEndpoints
         // Governed Security Master write surface lives under /api/security-master (not /api/workstation),
         // so it maps its own tenant-scoped group directly on the app.
         MapSecurityMasterWorkbenchEndpoints(app, jsonOptions);
+        MapSecurityRateRepairEndpoints(app, jsonOptions);
 
         MapAssetMarketValuationEndpoints(group, jsonOptions);
         MapStreamEndpoints(group, jsonOptions);

@@ -604,6 +604,15 @@
       "sha256": "1ffd0947e38c3e2a594a899667852af30e6a187a28c617e9dc8f8b002e658de6"
     },
     {
+      "filename": "070_rate_repair_governance.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 70,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/070_rate_repair_governance.sql",
+      "schema": "security_master",
+      "sha256": "84e2f3bd803420c98dbf6d2ef1317121e4841e01b5e49ae213535d6adb357872"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1811,7 +1820,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "d2ce8d0f39c6c190ebef5667af37e99964fffcba31553c6678fb82d5f6d3e1b1",
+  "fingerprint": "25bf316f6b26781b02ac7370cbf90f99ffbebc9001f2590a6ef6110ed693e977",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -2073,9 +2082,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 201,
+    "files": 202,
     "migration_sets": 11,
-    "waivers": 59,
+    "waivers": 60,
     "warnings": 0
   },
   "waivers": [
@@ -2483,6 +2492,13 @@
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/066_corporate_action_cash_dividend_attestations.sql",
       "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers on the newly created bounded cash-dividend declaration history, reservations, event aliases, postings and attestation receipts. No TRUNCATE command or data removal is executed. UPDATE and DELETE guards remain intact. The real PostgreSQL native-post regression attempts UPDATE, DELETE and raw TRUNCATE CASCADE after a successful posting, requires SQLSTATE 55000 from the rejection triggers, and checks that every original row remains unchanged. This exception covers only this migration's truncation-rejection trigger declarations.",
       "review_after": "2027-05-12",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/070_rate_repair_governance.sql",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the frozen rate-repair manifests and retained execution progress. No TRUNCATE command or data removal is executed. Preserve these guards; this exception authorizes neither truncation nor a history-removing downgrade. These statements were authored inside 069_rate_repair_governance.sql in the unmerged security-pack change, whose 2026-11-14 AI schema/storage review applied to that text; they were moved unchanged into this file when the revision review-context columns were split into 069. On 2026-11-26 this file was applied through the migration runner to a disposable local PostgreSQL 16 database and exercised by the repository's rate-repair PostgreSQL tests. Full migration-catalog verification and repository-owner merge authority remain separate.",
+      "review_after": "2027-05-25",
       "rule_id": "migration-truncate"
     },
     {

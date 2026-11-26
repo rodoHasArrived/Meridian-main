@@ -1030,6 +1030,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterWor
 public static partial class WorkstationEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityRateRepairs.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityRateRepairs.cs#L13).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityReadRegistration.cs:48](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityReadRegistration.cs#L48).
 
 ```csharp
@@ -1163,6 +1169,24 @@ Declared public members:
 | <code>public WorkstationFundScopeTenantAccessor(IHttpContextAccessor httpContextAccessor);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:110](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L110) |  |
 | <code>public string? ResolveCallerTenant();</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:116](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L116) |  |
 
+## WorkstationRateRepairEvidenceResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationRateRepairEvidenceResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationRateRepairEvidenceResolver.cs:10](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationRateRepairEvidenceResolver.cs#L10).
+
+HTTP tenant-scoped adapter: resolves owned retained document bytes and derives their repair evidence identity on the server.
+
+```csharp
+public sealed class WorkstationRateRepairEvidenceResolver(IEvidenceArtifactStore artifacts, IWorkstationTenantContextAccessor contextAccessor) : ISecurityRateRepairEvidenceResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;SecurityRateRepairEvidence&gt; ResolveAsync(string evidenceId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationRateRepairEvidenceResolver.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationRateRepairEvidenceResolver.cs#L13) |  |
+
 ## WorkstationTenantCompanyScopeEndpointFilters
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationTenantCompanyScopeEndpointFilters</code>. Kind: `class`.
@@ -1229,22 +1253,3 @@ Marks endpoints that require an authenticated workstation tenant scope.
 ```csharp
 public sealed class WorkstationTenantScopeMetadata;
 ```
-
-## AccountCashForecastEvidenceAdapter
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastEvidenceAdapter</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L37).
-
-Exact supported source economics and accepted review, scoped to a single account/book.
-
-```csharp
-public sealed class AccountCashForecastEvidenceAdapter(IEvidenceArtifactStore store)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task VerifyMonitoringAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:47](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L47) |  |
-| <code>public async Task VerifyAsync(AccountCashForecastRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:71](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L71) |  |

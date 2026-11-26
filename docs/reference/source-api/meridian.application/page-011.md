@@ -6,6 +6,158 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterWorkbenchCommandService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterWorkbenchCommandService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:37](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L37).
+
+Phase 2 governed write surface for the Security Master Passport Workbench. UpdateSecurityFieldAsync — justification-gated operator field edits staged as overlay annotations in IOperatorOverridesStore. The passport-displayed security version is an optimistic-concurrency staleness guard (a stale ExpectedVersion surfaces as SecurityMasterConcurrencyException → HTTP 409). Overlay edits are deliberately NOT appended to the economic event stream: that stream is replayed verbatim to rebuild the passport, so a partial field-edit payload would corrupt the economic definition. ResolveSourceConflictAsync — scored by the conflict-authority policy, enforces acknowledged deviation, and closes the underlying conflict via ISecurityMasterConflictService with an atomic open→resolved transition; a concurrent duplicate resolution surfaces as SecurityMasterConcurrencyException rather than silently overwriting the first operator&#x27;s winner. SubmitForApprovalAsync / ApproveRevisionAsync — route through the IOperationsContinuityWorkflowService approval gate and advance the durable ISecurityMasterRevisionStore lifecycle (Draft → Submitted → Approved) with compare-and-set transitions. PublishRevisionAsync — refuses to publish unless the revision is durably Approved, fans out to the ordered ISecurityMasterRevisionPublishedHandler seam (Phase 3 supplies handlers), and surfaces any handler failure (SecurityMasterPublishFailedException) leaving the revision Approved for an idempotent retry; only an all-success fan-out transitions the revision to Published.
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkbenchCommandService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterWorkbenchCommandService(ISecurityMasterEventStore eventStore, IOperatorOverridesStore overrides, ISecurityMasterConflictAuthorityPolicy conflictPolicy, ISecurityMasterConflictService conflictService, ISecurityMasterWorkbenchQueryService queryService, IOperationsContinuityWorkflowService approvalWorkflow, ISecurityMasterRevisionStore revisions, IPeriodAwareRestatementResolver restatementResolver, IAffectedLedgerBookResolver affectedLedgerBookResolver, IEnumerable&lt;ISecurityMasterRevisionPublishedHandler&gt; handlers, ILogger&lt;SecurityMasterWorkbenchCommandService&gt; logger, ISecurityFieldProvenanceStore? fieldProvenance = null, ISecurityMasterStore? projectionStore = null, Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null, ISecurityMasterGovernanceRequirements? governanceRequirements = null, ISecurityMasterImpactPreviewService? impactPreview = null, ISecurityMasterImpactScopeAccessor? impactScope = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:66](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L66) |  |
+| <code>public Task&lt;SecurityMasterEditResultDto&gt; UpdateSecurityFieldAsync(UpdateSecurityFieldRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:113](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L113) |  |
+| <code>public async Task&lt;SecurityMasterConflictResolutionDto&gt; ResolveSourceConflictAtCurrentVersionAsync(ResolveSourceConflictRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:406](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L406) |  |
+| <code>public async Task&lt;SecurityMasterConflictResolutionDto&gt; ResolveSourceConflictAsync(ResolveSourceConflictRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:414](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L414) |  |
+| <code>public async Task&lt;SecurityMasterEditResultDto&gt; SubmitForApprovalAsync(SubmitSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:503](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L503) |  |
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Discard.cs:14](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Discard.cs#L14).
+
+Discard seam of the workbench command service: the TERMINAL path for staged revisions, including bound-workflow retirement, overlay-ownership resolution, superseded-sibling terminalization, and the compensating re-discard reconciliation for incomplete withdrawals.
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchCommandService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;SecurityMasterEditResultDto&gt; DiscardRevisionAsync(DiscardSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Discard.cs:16](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Discard.cs#L16) |  |
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.FieldBase.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.FieldBase.cs#L10).
+
+Remediation slice 2: a field-edit draft records the canonical base it was drafted against, and publish surfaces a stale proposal as itself along with the canonical-merge outcome.
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchCommandService
+```
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.ImpactPreview.cs:7](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.ImpactPreview.cs#L7).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchCommandService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;SecurityMasterEditResultDto&gt; ApproveRevisionAsync(ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.ImpactPreview.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.ImpactPreview.cs#L13) |  |
+| <code>public async Task&lt;SecurityMasterPublishResultDto&gt; PublishRevisionAsync(PublishSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.ImpactPreview.cs:43](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.ImpactPreview.cs#L43) |  |
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.IndependentReview.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.IndependentReview.cs#L12).
+
+SecurityMasterWorkbenchOptions.RequireIndependentReviewer checks for governed field-edit revisions. Submission already refuses a reviewer equal to the submitter; with the requirement in force (its setting on, or the Institutional governance profile, as ISecurityMasterGovernanceRequirements reports), the drafter cannot be named as reviewer, and the submitter cannot approve.
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchCommandService
+```
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Mutations.cs:6](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Mutations.cs#L6).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchCommandService
+```
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Overrides.cs:14](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Overrides.cs#L14).
+
+Operator-override seam of the workbench command service: the security-level override approval decision (gated wrapper + under-gate core with the per-key governance scan), the gate-held generic overrides patch, and the governed legacy decision route.
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchCommandService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;OperatorOverridesDto&gt; PatchOperatorOverridesAsync(Guid securityId, OperatorOverridesPatchRequest request, string updatedBy, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Overrides.cs:139](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Overrides.cs#L139) |  |
+| <code>public async Task&lt;OperatorOverridesDto&gt; RecordOperatorOverrideDecisionAsync(Guid securityId, OperatorOverrideDecision decision, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Overrides.cs:182](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Overrides.cs#L182) |  |
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.ProfileFieldValidation.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.ProfileFieldValidation.cs#L13).
+
+Static profile-field validation and effective-overlay layering helpers for SecurityMasterWorkbenchCommandService: resolving EFFECTIVE profile dates across staged override layers, reconstructing the post-approval profileFields object, coercing string-staged overrides to declared field types, and enforcing pinned-profile type/range rules.
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchCommandService
+```
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.RateRepair.cs:11](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.RateRepair.cs#L11).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMasterRateRepairDraftWriter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;SecurityMasterEditResultDto&gt; StageRateRepairAsync(UpdateSecurityFieldRequest request, SecurityMasterRevisionDraftContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.RateRepair.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.RateRepair.cs#L13) |  |
+
+## SecurityMasterWorkbenchOptions
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterWorkbenchOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:33](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L33).
+
+Runtime configuration for the Security Master Passport Workbench governed-write surface. Use Microsoft.Extensions.Options.IOptionsMonitor{TOptions} so the source-precedence ladder hot-reloads.
+
+```csharp
+public sealed class SecurityMasterWorkbenchOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SectionName = &quot;SecurityMasterWorkbench&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:35](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L35) |  |
+| <code>public List&lt;string&gt; SourcePrecedence { get; init; } = [];</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:44](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L44) | Source precedence ladder, highest authority first, using real source-system identifiers. The first non-operator entry is treated as the golden-copy source unless GoldenCopySource is set explicitly. Empty by default: until this is bound from configuration with the deployment&#x27;s real source systems, the policy applies no presumptive ranking and falls through to freshness then confidence, so a placeholder ladder can never reverse the actual golden copy. |
+| <code>public string? GoldenCopySource { get; init; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:47](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L47) | Explicit golden-copy source; when null it is derived from SourcePrecedence. |
+| <code>public SecurityMasterGovernanceProfile GovernanceProfile { get; init; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:74](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L74) | The governance profile this deployment declares. Default SecurityMasterGovernanceProfile.Standard. The effective profile is SecurityMasterGovernanceProfile.Institutional when this says so or when the host is a production composition (ProductionServiceRegistrationPolicy.IsProductionComposition). |
+| <code>public bool RequireIndependentReviewer { get; init; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:86](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L86) | When true, a governed field-edit revision cannot be reviewed by the actor who drafted it or approved by the actor who submitted it (submission already refuses a reviewer equal to the submitter). The code default stays false because the supported local workstation is single-operator and one actor could then never approve anything; the sample configuration turns it on, and the Institutional GovernanceProfile forces it on. Read at each submit and approve, so it hot-reloads. Revisions submitted before the drafter check existed are not rechecked against their drafter, whose identity a submitted revision no longer carries. |
+| <code>public bool RequireIndependentProfileApprover { get; init; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:95](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L95) | When true, approving an asset-profile version is refused if the approver is an actor who drafted it. The code default stays false for the same single-operator reason as RequireIndependentReviewer; the Institutional GovernanceProfile forces it on. Separate from RequireIndependentReviewer, which governs field-edit revisions. A legacy draft without a recorded drafter is checked against its recorded author. |
+| <code>public int MaxBulkResolveBatch { get; init; } = 200;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:98](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L98) | Maximum number of conflicts a single bulk-resolve request may carry. |
+| <code>public bool RequireGovernedTermAmendments { get; init; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:110](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L110) | When true, the DIRECT term-amendment endpoints — the generic amend route, the bespoke preferred/convertible equity PATCH routes, and the legacy /equities/{securityId}/preferred-terms alias — are refused with guidance to use the governed workbench Draft → Submitted → Approved → Published path, so every operator term correction passes maker-checker before it reaches the golden record. The code default stays false: the supported local workstation is single-operator, where a governed edit could never be approved. The Institutional GovernanceProfile forces it on. Governed publication and provider/system ingest use separate typed write paths this does not block. |
+
+## SecurityMasterWriteAuthority
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterWriteAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs:9](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs#L9).
+
+Source-system identifiers that name an operator surface rather than a provider or system feed. The system-ingest path (ISecurityMasterAmender) refuses them so operator edits stay on the operator-direct path (governed by SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments) or the governed publication path.
+
+```csharp
+public static class SecurityMasterWriteAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string WorkbenchSourceSystem = &quot;operator-workbench&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs#L12) | Source system the governed workbench publication stamps on its merged amendment. |
+| <code>public const string DesktopEditorSourceSystem = &quot;WPF-UI&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs#L15) | Source system the WPF Security Master editor stamps on a direct amendment. |
+| <code>public const string WorkstationHttpSourceSystem = &quot;workstation-http&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs#L18) | Source system the workstation HTTP surface stamps on writes it originates. |
+| <code>public static bool IsOperatorSourceSystem(string? sourceSystem) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs:28](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs#L28) | True when sourceSystem names an operator surface. |
+
 ## SecurityMasterWriteRefusedException
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterWriteRefusedException</code>. Kind: `class`.
@@ -69,6 +221,130 @@ Enum declarations:
 | <code>KeptNewer</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:106](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L106) | The cache already held a newer version; the durable read did not downgrade it. |
 | <code>Evicted</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:109](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L109) | The durable store no longer holds the security; the cached entry was evicted. |
 | <code>NotFound</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:112](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L112) | Neither the durable store nor the cache holds the security. |
+
+## SecurityRateRepairActor
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityRateRepairActor</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityRateRepairService.cs:11](../../../../src/Meridian.Application/SecurityMaster/SecurityRateRepairService.cs#L11).
+
+```csharp
+public sealed record SecurityRateRepairActor(string TenantId, string? CompanyId, string Actor, bool CanModify);
+```
+
+## SecurityRateRepairConflictException
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityRateRepairConflictException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityRateRepairStore.cs:36](../../../../src/Meridian.Application/SecurityMaster/ISecurityRateRepairStore.cs#L36).
+
+```csharp
+public sealed class SecurityRateRepairConflictException(string message) : InvalidOperationException(message);
+```
+
+## SecurityRateRepairEvidence
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityRateRepairEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityRateRepairStore.cs:28](../../../../src/Meridian.Application/SecurityMaster/ISecurityRateRepairStore.cs#L28).
+
+```csharp
+public sealed record SecurityRateRepairEvidence(string EvidenceId, string ContentSha256);
+```
+
+## SecurityRateRepairFrozenItem
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityRateRepairFrozenItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityRateRepairStore.cs:5](../../../../src/Meridian.Application/SecurityMaster/ISecurityRateRepairStore.cs#L5).
+
+```csharp
+public sealed record SecurityRateRepairFrozenItem(Guid SecurityId, long BaseVersion, string DisplayName, string AssetClass, string? RawValue);
+```
+
+## SecurityRateRepairManifest
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityRateRepairManifest</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityRateRepairStore.cs:6](../../../../src/Meridian.Application/SecurityMaster/ISecurityRateRepairStore.cs#L6).
+
+```csharp
+public sealed record SecurityRateRepairManifest(string TenantId, string? CompanyId, string Maker, DateTimeOffset CreatedAt, string CommandSha256, string EvidenceSha256, CreateSecurityRateRepairBatchRequest Request, IReadOnlyList<SecurityRateRepairFrozenItem> Items);
+```
+
+## SecurityRateRepairProgress
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityRateRepairProgress</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityRateRepairStore.cs:10](../../../../src/Meridian.Application/SecurityMaster/ISecurityRateRepairStore.cs#L10).
+
+```csharp
+public sealed record SecurityRateRepairProgress(Guid SecurityId, string State, Guid WorkflowId, Guid? RevisionId = null, string? ImpactReceiptId = null, string? ApprovalReceiptId = null, string? ErrorCode = null, string? Error = null, string? SubmittedBy = null, string? AssignedReviewer = null);
+```
+
+## SecurityRateRepairRetainedBatch
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityRateRepairRetainedBatch</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityRateRepairStore.cs:14](../../../../src/Meridian.Application/SecurityMaster/ISecurityRateRepairStore.cs#L14).
+
+```csharp
+public sealed record SecurityRateRepairRetainedBatch(SecurityRateRepairManifest Manifest, long Version, IReadOnlyList<SecurityRateRepairProgress> Items);
+```
+
+## SecurityRateRepairService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityRateRepairService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityRateRepairService.Commands.cs:6](../../../../src/Meridian.Application/SecurityMaster/SecurityRateRepairService.Commands.cs#L6).
+
+```csharp
+public sealed partial class SecurityRateRepairService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;SecurityRateRepairBatchDto&gt; ExecuteAsync(Guid batchId, string command, SecurityRateRepairBatchCommandRequest request, SecurityRateRepairActor actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityRateRepairService.Commands.cs:8](../../../../src/Meridian.Application/SecurityMaster/SecurityRateRepairService.Commands.cs#L8) |  |
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityRateRepairService.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityRateRepairService.cs#L13).
+
+```csharp
+public sealed partial class SecurityRateRepairService(ISecurityRateRepairStore store, ISecurityMasterQueryService query, ISecurityMasterStore securities, ISecurityMasterRevisionStore revisions, ISecurityMasterWorkbenchCommandService workbench, IOperationsContinuityWorkflowService workflows, ISecurityRateRepairEvidenceResolver evidence, ISecurityMasterImpactPreviewService impacts, ILedgerJournalStore ledger, ISecurityFieldProvenanceStore? fieldProvenance = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;SecurityRateRepairDiscoveryDto&gt; DiscoverAsync(SecurityRateRepairActor actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityRateRepairService.cs:22](../../../../src/Meridian.Application/SecurityMaster/SecurityRateRepairService.cs#L22) |  |
+| <code>public async Task&lt;SecurityRateRepairDiscoveryDto&gt; DiscoverPageAsync(SecurityRateRepairActor actor, int skip, int pageSize, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityRateRepairService.cs:25](../../../../src/Meridian.Application/SecurityMaster/SecurityRateRepairService.cs#L25) |  |
+| <code>public async Task&lt;SecurityRateRepairBatchDto&gt; CreateAsync(CreateSecurityRateRepairBatchRequest request, SecurityRateRepairActor actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityRateRepairService.cs:62](../../../../src/Meridian.Application/SecurityMaster/SecurityRateRepairService.cs#L62) |  |
+| <code>public async Task&lt;SecurityRateRepairBatchDto?&gt; GetAsync(Guid batchId, SecurityRateRepairActor actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityRateRepairService.cs:102](../../../../src/Meridian.Application/SecurityMaster/SecurityRateRepairService.cs#L102) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SecurityRateRepairBatchDto&gt;&gt; ListAsync(SecurityRateRepairActor actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityRateRepairService.cs:109](../../../../src/Meridian.Application/SecurityMaster/SecurityRateRepairService.cs#L109) |  |
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityRateRepairService.Discovery.cs:7](../../../../src/Meridian.Application/SecurityMaster/SecurityRateRepairService.Discovery.cs#L7).
+
+```csharp
+public sealed partial class SecurityRateRepairService
+```
+
+## SecurityRateRepairWorkflowAuthority
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityRateRepairWorkflowAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityRateRepairWorkflowAuthority.cs:7](../../../../src/Meridian.Application/SecurityMaster/SecurityRateRepairWorkflowAuthority.cs#L7).
+
+```csharp
+public sealed class SecurityRateRepairWorkflowAuthority(ISecurityMasterRevisionStore revisions, ISecurityRateRepairStore batches, ISecurityMasterImpactScopeAccessor scopeAccessor, ILedgerJournalStore ledger) : ISecurityMasterRevisionWorkflowAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;SecurityMasterRevisionWorkflowAuthority?&gt; ResolveAsync(Guid revisionId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityRateRepairWorkflowAuthority.cs:11](../../../../src/Meridian.Application/SecurityMaster/SecurityRateRepairWorkflowAuthority.cs#L11) |  |
 
 ## SecurityResolver
 
@@ -752,229 +1028,4 @@ Summary of all validation results.
 
 ```csharp
 public sealed record ValidationSummary(IReadOnlyList<ValidationResult> Results, bool AllValid, IReadOnlyList<string> Warnings);
-```
-
-## DailySummary
-
-Qualified name: <code>Meridian.Application.Services.DailySummary</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:719](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L719).
-
-Daily summary data structure.
-
-```csharp
-public sealed class DailySummary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateTimeOffset GeneratedAt { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:721](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L721) |  |
-| <code>public DateOnly Date { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:722](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L722) |  |
-| <code>public string MarketStatus { get; init; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:723](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L723) |  |
-| <code>public bool IsHalfDay { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:724](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L724) |  |
-| <code>public long TotalEventsPublished { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:727](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L727) |  |
-| <code>public long TotalEventsConsumed { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:728](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L728) |  |
-| <code>public long TotalEventsDropped { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:729](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L729) |  |
-| <code>public long PeakQueueSize { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:730](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L730) |  |
-| <code>public double AverageProcessingTimeUs { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:731](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L731) |  |
-| <code>public int StaleSymbolCount { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:734](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L734) |  |
-| <code>public string[] StaleSymbols { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:735](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L735) |  |
-| <code>public string SystemHealthStatus { get; init; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:738](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L738) |  |
-| <code>public int WarningCount { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:739](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L739) |  |
-| <code>public string[] Warnings { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:740](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L740) |  |
-| <code>public double MemoryUsageMb { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:743](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L743) |  |
-| <code>public GcStats GcCollections { get; init; } = new ();</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:744](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L744) |  |
-
-## DailySummaryResult
-
-Qualified name: <code>Meridian.Application.Services.DailySummaryResult</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:760](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L760).
-
-Result of a daily summary send operation.
-
-```csharp
-public readonly record struct DailySummaryResult(bool Success, DailySummary Summary, IReadOnlyList<WebhookDeliveryResult> DeliveryResults, DateTimeOffset SentAt, string? ErrorMessage);
-```
-
-## DailySummaryWebhook
-
-Qualified name: <code>Meridian.Application.Services.DailySummaryWebhook</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:27](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L27).
-
-Sends end-of-day summary digests via webhook to external services. Supports Slack, Discord, Microsoft Teams, and generic JSON webhooks.
-
-```csharp
-public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public event Action&lt;DailySummaryResult&gt;? OnSummarySent;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:47](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L47) | Event raised when a summary is sent successfully. |
-| <code>public event Action&lt;DailySummaryResult&gt;? OnSummaryFailed;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:52](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L52) | Event raised when a summary fails to send. |
-| <code>public DailySummaryWebhook(DailySummaryWebhookConfig config, TradingCalendar? tradingCalendar = null, TimeProvider? timeProvider = null) : this(config, tradingCalendar, timeProvider, null);</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:54](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L54) |  |
-| <code>public void RegisterStatisticsProviders(Func&lt;PipelineStatistics&gt;? pipelineStats = null, Func&lt;IReadOnlyList&lt;StaleDataAlert&gt;&gt;? staleSymbols = null, Func&lt;SystemHealthSnapshot&gt;? healthSnapshot = null);</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:88](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L88) | Registers statistics providers for inclusion in the summary. |
-| <code>public async Task&lt;DailySummaryResult&gt; SendSummaryAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:101](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L101) | Sends a daily summary immediately to all configured webhooks. |
-| <code>public async Task&lt;IReadOnlyList&lt;WebhookDeliveryResult&gt;&gt; SendMessageAsync(string message, string? title = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:159](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L159) | Sends a custom message to all configured webhooks. |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:606](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L606) |  |
-
-## DailySummaryWebhookConfig
-
-Qualified name: <code>Meridian.Application.Services.DailySummaryWebhookConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:638](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L638).
-
-Configuration for daily summary webhooks.
-
-```csharp
-public sealed record DailySummaryWebhookConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WebhookConfig[]? Webhooks { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:643](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L643) | List of webhook endpoints to send summaries to. |
-| <code>public bool EnableScheduledSummary { get; init; } = true;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:648](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L648) | Whether to enable scheduled daily summaries. |
-| <code>public string ScheduledTime { get; init; } = &quot;16:30&quot;;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:654](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L654) | Time to send the daily summary (ET timezone). Format: &quot;HH:mm&quot; Default: &quot;16:30&quot; (4:30 PM ET, after market close) |
-| <code>public int RetryCount { get; init; } = 3;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:659](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L659) | Number of retry attempts for failed deliveries. |
-| <code>public int TimeoutSeconds { get; init; } = 30;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:664](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L664) | HTTP request timeout in seconds. |
-
-## DataSourceSelection
-
-Qualified name: <code>Meridian.Application.Services.DataSourceSelection</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/ConfigurationWizard.cs:340](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L340).
-
-Data source selection from wizard.
-
-```csharp
-public sealed class DataSourceSelection
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DataSourceKind DataSource { get; set; } = DataSourceKind.IB;</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:342](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L342) |  |
-| <code>public AlpacaOptions? Alpaca { get; set; }</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:343](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L343) |  |
-| <code>public PolygonOptions? Polygon { get; set; }</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:344](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L344) |  |
-| <code>public IBOptions? IB { get; set; }</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:345](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L345) |  |
-| <code>public IBClientPortalOptions? IBClientPortal { get; set; }</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:346](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L346) |  |
-
-## DryRunOptions
-
-Qualified name: <code>Meridian.Application.Services.DryRunOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/DryRunService.cs:525](../../../../src/Meridian.Application/Services/DryRunService.cs#L525).
-
-Options for dry-run validation.
-
-```csharp
-public sealed record DryRunOptions(bool ValidateConfiguration = true, bool ValidateFileSystem = true, bool ValidateConnectivity = true, bool ValidateProviders = true, bool ValidateSymbols = true, bool ValidateResources = true);
-```
-
-## DryRunResult
-
-Qualified name: <code>Meridian.Application.Services.DryRunResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/DryRunService.cs:537](../../../../src/Meridian.Application/Services/DryRunService.cs#L537).
-
-Result of dry-run validation.
-
-```csharp
-public sealed class DryRunResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool OverallSuccess { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:539](../../../../src/Meridian.Application/Services/DryRunService.cs#L539) |  |
-| <code>public DateTimeOffset StartTime { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:540](../../../../src/Meridian.Application/Services/DryRunService.cs#L540) |  |
-| <code>public DateTimeOffset EndTime { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:541](../../../../src/Meridian.Application/Services/DryRunService.cs#L541) |  |
-| <code>public long DurationMs { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:542](../../../../src/Meridian.Application/Services/DryRunService.cs#L542) |  |
-| <code>public DryRunOptions? Options { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:543](../../../../src/Meridian.Application/Services/DryRunService.cs#L543) |  |
-| <code>public ValidationSection? ConfigurationValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:545](../../../../src/Meridian.Application/Services/DryRunService.cs#L545) |  |
-| <code>public ValidationSection? FileSystemValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:546](../../../../src/Meridian.Application/Services/DryRunService.cs#L546) |  |
-| <code>public ValidationSection? ConnectivityValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:547](../../../../src/Meridian.Application/Services/DryRunService.cs#L547) |  |
-| <code>public ValidationSection? ProviderValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:548](../../../../src/Meridian.Application/Services/DryRunService.cs#L548) |  |
-| <code>public ValidationSection? SymbolValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:549](../../../../src/Meridian.Application/Services/DryRunService.cs#L549) |  |
-| <code>public ValidationSection? ResourceValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:550](../../../../src/Meridian.Application/Services/DryRunService.cs#L550) |  |
-| <code>public ValidationSection? CredentialAuthValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:551](../../../../src/Meridian.Application/Services/DryRunService.cs#L551) |  |
-
-## DryRunService
-
-Qualified name: <code>Meridian.Application.Services.DryRunService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/DryRunService.cs:13](../../../../src/Meridian.Application/Services/DryRunService.cs#L13).
-
-Service for dry-run validation of configuration and operations. Implements QW-93: Dry Run Mode.
-
-```csharp
-public sealed class DryRunService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool IsDryRunMode { get; private set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:20](../../../../src/Meridian.Application/Services/DryRunService.cs#L20) | Global flag indicating if the application is in dry-run mode. |
-| <code>public static void EnableDryRunMode();</code> | [src/Meridian.Application/Services/DryRunService.cs:25](../../../../src/Meridian.Application/Services/DryRunService.cs#L25) | Enables dry-run mode globally. |
-| <code>public async Task&lt;DryRunResult&gt; ValidateAsync(AppConfig config, DryRunOptions options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/DryRunService.cs:33](../../../../src/Meridian.Application/Services/DryRunService.cs#L33) | Performs a comprehensive dry-run validation. |
-| <code>public string GenerateReport(DryRunResult result);</code> | [src/Meridian.Application/Services/DryRunService.cs:101](../../../../src/Meridian.Application/Services/DryRunService.cs#L101) | Generates a human-readable dry-run report. |
-
-## ExecutionSimulationOrchestrator
-
-Qualified name: <code>Meridian.Application.Services.ExecutionSimulationOrchestrator</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:50](../../../../src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs#L50).
-
-Replays historical market data through execution simulation and produces fill results.
-
-```csharp
-public sealed class ExecutionSimulationOrchestrator(HistoricalDataQueryService queryService) : IExecutionSimulationOrchestrator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;ExecutionSimulationResult&gt; RunAsync(ExecutionSimulationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:58](../../../../src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs#L58) |  |
-
-## ExecutionSimulationRequest
-
-Qualified name: <code>Meridian.Application.Services.ExecutionSimulationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:7](../../../../src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs#L7).
-
-```csharp
-public sealed record ExecutionSimulationRequest(IReadOnlyList<string> Symbols, DateOnly? FromDate, DateOnly? ToDate, TimeOnly? WindowStart, TimeOnly? WindowEnd, bool DryRun, string OutputDirectory);
-```
-
-## ExecutionSimulationResult
-
-Qualified name: <code>Meridian.Application.Services.ExecutionSimulationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:16](../../../../src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs#L16).
-
-```csharp
-public sealed record ExecutionSimulationResult(string OutputDirectory, int SymbolsProcessed, int EventCount, bool DryRun);
-```
-
-## FirstTimeConfigOptions
-
-Qualified name: <code>Meridian.Application.Services.FirstTimeConfigOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:955](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L955).
-
-Options for first-time configuration generation.
-
-```csharp
-public sealed record FirstTimeConfigOptions(UseCase UseCase = UseCase.Development, SymbolPreset SymbolPreset = SymbolPreset.USMajorIndices, bool EnableBackfill = true, bool EnableCompression = true);
 ```

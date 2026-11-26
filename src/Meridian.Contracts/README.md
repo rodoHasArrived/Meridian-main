@@ -38,6 +38,11 @@ its default is omitted so retained legacy payloads remain unknown without rewrit
 requests reject unavailable sets; partial adjusted OHLC never borrows primary components. See
 [historical provider price bases](../../docs/development/provider-implementation.md#historical-price-bases).
 
+`SecurityRateRepairDtos` describe paged rate-unit repair discovery (candidates, blockers, scan
+issues and continuation), the frozen batch request with its accounting scope and evidence cohort,
+versioned batch commands and per-item outcomes. Action flags describe what the server currently
+permits; they never grant authority beyond the server's own checks.
+
 `SecurityMasterImpactPreviewReceipt` and its companions describe retained edit-impact evidence:
 tenant/company scope, exact revision and canonical version, previous and proposed terms, book
 coverage with an explicit `Complete`/`Partial`/`Unavailable` completeness, periods, report impact,

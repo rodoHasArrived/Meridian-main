@@ -802,6 +802,7 @@ public static class WorkstationServiceCollectionExtensions
         // policy over it on its operator-direct path, the command service reads independent review
         // from it, and the routes consult it so they can refuse before reading the request's security.
         services.AddSecurityMasterGovernanceRequirements();
+        services.AddSecurityMasterOperatorWorkflows();
         // Phase 3 period-aware propagation: the ledger accounting-period status is the lock
         // authority (default-deny → HardClosed when indeterminate). The restatement resolver routes a
         // closed-period edit into a governed restatement proposal rather than a silent mutation; the

@@ -11,6 +11,14 @@ last_reviewed: 2026-11-25
 
 # src/Meridian.Ui/dashboard
 
+The existing Accounting Security Master route opens governed rate-unit repair on demand
+(`?rateRepair=queue`): paged live discovery exposes source gaps, compatible evidence cohorts preserve
+exact scalar strings, and freeze/stage/submit/review/publish are separate real server commands with
+no development fallback. History navigation cannot apply a late acknowledgement to another selected
+batch. Each approval requires inspection of the matching retained impact receipt; server
+assignment/version/action refusals remain visible. No AI suggestion or automatic publication is
+added. See the [operator procedure](../../../docs/operators/security-master-repairs-and-evidence.md).
+
 The Security Master passport editor requires an explicit fund profile before staging a draft and
 freezes it with the draft. It can create a retained impact receipt for the working revision and
 shows its books, periods, before/after projections and typed gaps. Approve and Publish stay disabled
