@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Core.Exceptions;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -230,23 +231,37 @@ public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataPro
             if (!TryGetValue(row, columns, "Date", out string? dateStr) || !ProviderDateParsing.TryParseProviderDate(dateStr, out var date))
                 return null;
 
-            var open = GetDecimalValue(row, columns, "Open") ?? GetDecimalValue(row, columns, "Adj. Open");
-            var high = GetDecimalValue(row, columns, "High") ?? GetDecimalValue(row, columns, "Adj. High");
-            var low = GetDecimalValue(row, columns, "Low") ?? GetDecimalValue(row, columns, "Adj. Low");
-            var close = GetDecimalValue(row, columns, "Close") ?? GetDecimalValue(row, columns, "Adj. Close");
-            var volume = GetLongValue(row, columns, "Volume") ?? GetLongValue(row, columns, "Adj. Volume");
-
-            if (open is null || high is null || low is null || close is null)
-                return null;
-
-            if (!IsValidOhlc(open.Value, high.Value, low.Value, close.Value))
-                return null;
-
+            var open = GetDecimalValue(row, columns, "Open");
+            var high = GetDecimalValue(row, columns, "High");
+            var low = GetDecimalValue(row, columns, "Low");
+            var close = GetDecimalValue(row, columns, "Close");
+            var volume = GetLongValue(row, columns, "Volume");
             var adjOpen = GetDecimalValue(row, columns, "Adj. Open");
             var adjHigh = GetDecimalValue(row, columns, "Adj. High");
             var adjLow = GetDecimalValue(row, columns, "Adj. Low");
             var adjClose = GetDecimalValue(row, columns, "Adj. Close");
             var adjVolume = GetLongValue(row, columns, "Adj. Volume");
+
+            if (open is null || high is null || low is null || close is null)
+            {
+                if (adjOpen is null || adjHigh is null || adjLow is null || adjClose is null)
+                {
+                    throw new DataProviderException(
+                        $"Nasdaq Data Link returned no complete OHLC price set for {symbol} on {date}.",
+                        provider: Name, symbol: symbol);
+                }
+
+                // Select the complete alternative set atomically. Combining individual
+                // ordinary and adjusted fields can fabricate a candle in mixed bases.
+                open = adjOpen;
+                high = adjHigh;
+                low = adjLow;
+                close = adjClose;
+                volume = adjVolume;
+            }
+
+            if (!IsValidOhlc(open.Value, high.Value, low.Value, close.Value))
+                return null;
 
             var dividend = GetDecimalValue(row, columns, "Ex-Dividend");
             var splitRatio = GetDecimalValue(row, columns, "Split Ratio");
@@ -267,8 +282,16 @@ public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataPro
                 AdjustedClose: adjClose,
                 AdjustedVolume: adjVolume,
                 SplitFactor: splitRatio != 1m ? splitRatio : null,
-                DividendAmount: dividend > 0 ? dividend : null
+                DividendAmount: dividend > 0 ? dividend : null,
+                // This adapter accepts arbitrary databases. Column names alone cannot
+                // establish the dataset's adjustment methodology or raw availability.
+                PriceBasis: HistoricalPriceBasis.Unknown,
+                AdjustedPriceBasis: HistoricalPriceBasis.Unknown
             );
+        }
+        catch (DataProviderException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

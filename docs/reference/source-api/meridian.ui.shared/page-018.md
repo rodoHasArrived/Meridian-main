@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackDeliveryStoreOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackDeliveryStoreOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:17](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L17).
+
+```csharp
+public sealed record ReportPackDeliveryStoreOptions(string SnapshotPath);
+```
+
 ## ReportPackProvenanceResolver
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackProvenanceResolver</code>. Kind: `class`.
@@ -930,13 +940,3 @@ Enum declarations:
 | <code>BreakClosure</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:13](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L13) |  |
 | <code>PaymentRelease</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:14](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L14) |  |
 | <code>OverrideApproval</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:15](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L15) |  |
-
-## SettlementInstruction
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SettlementInstruction</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:37](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L37).
-
-```csharp
-public sealed record SettlementInstruction(string InstructionId, string AccountId, string Currency, decimal GrossAmount, DateOnly TradeDate, DateOnly SettlementDate, DateTimeOffset CutoffAt, string Status);
-```

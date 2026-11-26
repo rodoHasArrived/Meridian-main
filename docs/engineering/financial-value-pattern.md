@@ -20,6 +20,12 @@ only when the source establishes that condition. Conditions must come from sourc
 assessment, never from the presence of a value. Omitted conditions render **Unavailable**
 with an explanation. Mark eligibility is not reconciliation or accounting approval.
 
+`FinancialValueConditionGroup` can explain missing condition evidence once for a bounded table or
+comparison. Each affected value keeps its condition in its accessible name, its own reason and its
+matching passport. Other conditions stay visible per value. Enable the group notice only when that
+scope contains values without condition evidence; the notice must not imply that known conditions
+are missing or that values are verified.
+
 A passport requires an exact `LedgerAmountSelection` identifying retained subject, fund,
 book, period, amount, and currency. The displayed value and currency must match the selection
 before a trigger is enabled; the existing shared proof drawer revalidates returned scope and

@@ -24,7 +24,7 @@ namespace Meridian.Storage.Store;
 /// sink, so there is no mutation posture to declare here (#2697).
 /// </para>
 /// </summary>
-public sealed class JsonlMarketDataStore : IMarketDataStore
+public sealed partial class JsonlMarketDataStore : IMarketDataStore
 {
     private static readonly ILogger Log = LoggingSetup.ForContext<JsonlMarketDataStore>();
 

@@ -1,11 +1,11 @@
 {
-  "total_files": 1290,
+  "total_files": 1291,
   "orphaned_count": 379,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 86,
-  "signal_digest": "sha256:fdfd1375c8bbd17ec53d288f650d32d1f4b07d9fcad306a2c416634f3c057347",
+  "signal_digest": "sha256:348d1f10e1700d8729a5be1bfcfc58a3dc8ba0b7cf892d56db440c0c527b5474",
   "orphaned_files": [
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
@@ -2674,6 +2674,13 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/plans/governed-strategy-oms-execution-plan.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/plans/intercompany-entity-controls.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2695,7 +2702,7 @@
       "stale": false
     },
     {
-      "path": "docs/engineering/plans/security-master-class-plumbing-codegen.md",
+      "path": "docs/engineering/plans/security-master-integrity-implementation-plan.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

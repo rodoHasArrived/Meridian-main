@@ -27,13 +27,13 @@ internal sealed class CanonicalReplayCapture : IAsyncDisposable
         var hasBars = false;
         await foreach (var item in MultiSymbolMergeEnumerator.MergeAsync(streams, ct, symbolOrder).ConfigureAwait(false))
         {
-            if (item.Payload is not HistoricalBar { IsAdjusted: false })
-                throw new InvalidOperationException("RawPricesWithCanonicalEvents requires explicitly unadjusted historical bars; adjusted, unknown-basis, and non-bar events are unsupported.");
+            if (item.Payload is not HistoricalBar { PriceBasis: HistoricalPriceBasis.Raw })
+                throw new InvalidOperationException("RawPricesWithCanonicalEvents requires explicitly unadjusted historical bars with PriceBasis.Raw; adjusted, unknown-basis, and non-bar events are unsupported.");
             hasBars = true;
             await writer.WriteLineAsync(JsonSerializer.Serialize(item, MarketDataJsonContext.HighPerformanceOptions).AsMemory(), ct).ConfigureAwait(false);
         }
         if (!hasBars)
-            throw new InvalidOperationException("Canonical raw-price replay requires at least one explicitly unadjusted historical bar.");
+            throw new InvalidOperationException("Canonical raw-price replay requires at least one explicitly unadjusted historical bar with PriceBasis.Raw.");
     }
 
     public IAsyncEnumerable<MarketEvent> ReadAsync(CancellationToken ct) => BacktestEngine.ReadCapturedSnapshotAsync(_path, ct);

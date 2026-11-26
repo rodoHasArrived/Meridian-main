@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MaintenanceServiceStatus
+
+Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceServiceStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs:76](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs#L76).
+
+Status of the maintenance service.
+
+```csharp
+public sealed record MaintenanceServiceStatus(bool IsRunning, int QueuedExecutions, MaintenanceExecution? CurrentExecution, DateTimeOffset? NextScheduledExecution, int ActiveSchedules, long TotalExecutionsToday, TimeSpan Uptime);
+```
+
+## MaintenanceStatistics
+
+Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceStatistics</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:625](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L625).
+
+Statistics summary for archive maintenance.
+
+```csharp
+public sealed record MaintenanceStatistics(DateTimeOffset GeneratedAt, int TotalSchedules, int EnabledSchedules, int DisabledSchedules, int TotalExecutions, int SuccessfulExecutions, int FailedExecutions, int ExecutionsLast24Hours, int ExecutionsLast7Days, long TotalBytesProcessed, long TotalBytesSaved, int TotalIssuesFound, int TotalIssuesResolved, TimeSpan AverageExecutionDuration, DateTimeOffset? LastExecutionAt, DateTimeOffset? NextScheduledExecution);
+```
+
 ## MaintenanceTaskOptions
 
 Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceTaskOptions</code>. Kind: `class`.
@@ -1178,23 +1202,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public string Code { get; } = code;</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:22](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L22) |  |
-
-## RetainedDataQueryManifest
-
-Qualified name: <code>Meridian.Storage.Query.RetainedDataQueryManifest</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:25](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L25).
-
-```csharp
-public sealed record RetainedDataQueryManifest(int Version, string ExecutionId, string OwnerHash, string Sql, string SqlSha256, string[] Columns, string[] ColumnTypes, long RowCount, long ByteCount, string RowsSha256, DateTimeOffset ExecutedAt, DateTimeOffset ExpiresAt);
-```
-
-## RetainedDataQuerySnapshot
-
-Qualified name: <code>Meridian.Storage.Query.RetainedDataQuerySnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:28](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L28).
-
-```csharp
-public sealed record RetainedDataQuerySnapshot(RetainedDataQueryManifest Manifest, IReadOnlyList<string?[]> Rows);
-```

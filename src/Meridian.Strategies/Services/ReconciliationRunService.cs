@@ -78,15 +78,36 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
     }
 
-    public async Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, CancellationToken ct = default)
+    public Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, CancellationToken ct = default)
+        => RunCoreAsync(request, scope: null, ct);
+
+    public Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, StrategyRunReadScope scope, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return RunCoreAsync(request, scope, ct);
+    }
+
+    private async Task<ReconciliationRunDetail?> RunCoreAsync(ReconciliationRunRequest request, StrategyRunReadScope? scope, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var runDetail = await _runReadService.GetRunDetailAsync(request.RunId, ct).ConfigureAwait(false);
+        var runDetail = scope is null
+            ? await _runReadService.GetRunDetailAsync(request.RunId, ct).ConfigureAwait(false)
+            : await _runReadService.GetRunDetailAsync(request.RunId, scope, ct).ConfigureAwait(false);
         if (runDetail is null)
         {
             return null;
         }
+
+        // Ask the existing retained-ledger reader for the portfolio's economic cut. A process
+        // completion timestamp and the last posting time are not independent snapshot clocks.
+        if (runDetail.Portfolio is { } portfolioCut)
+            runDetail = runDetail with
+            {
+                Ledger = scope is null
+                    ? await _runReadService.GetLedgerSummaryAsync(request.RunId, portfolioCut.AsOf, ct).ConfigureAwait(false)
+                    : await _runReadService.GetLedgerSummaryAsync(request.RunId, portfolioCut.AsOf, scope, ct).ConfigureAwait(false)
+            };
 
         var normalizedInputs = new ReconciliationNormalizedInputs(
             Portfolio: _portfolioAdapter.Adapt(runDetail),
@@ -143,19 +164,25 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                 continue;
             }
 
+            var balancePopulationReason = result.CheckId is "cash-balance" or "net-equity" or "bank-net-vs-ledger-cash"
+                ? normalizedInputs.Ledger?.BalanceComparisonUnavailableReason : null;
             breaks.Add(new ReconciliationBreakDto(
                 result.CheckId,
                 result.Label,
-                MapCategory(result.Category, result.MissingSource, result.CheckId, result.ExpectedSource, result.ActualSource),
+                balancePopulationReason is null
+                    ? MapCategory(result.Category, result.MissingSource, result.CheckId, result.ExpectedSource, result.ActualSource)
+                    : ReconciliationBreakCategory.ClassificationGap,
                 MapStatus(result.Status, result.Category),
-                result.MissingSource,
+                balancePopulationReason is null ? result.MissingSource : "account-stock-population",
                 result.HasExpectedAmount ? result.ExpectedAmount : null,
                 result.HasActualAmount ? result.ActualAmount : null,
                 result.Variance,
                 MapSeverity(result.Severity),
-                result.Reason,
+                balancePopulationReason ?? result.Reason,
                 result.HasExpectedAsOf ? result.ExpectedAsOf : null,
-                result.HasActualAsOf ? result.ActualAsOf : null)
+                result.HasActualAsOf ? result.ActualAsOf : null,
+                Measures: balancePopulationReason is null ? null :
+                    [new(ReconciliationBreakMeasureKindDto.Value, null, null, null, null, "unknown", balancePopulationReason)])
             {
                 FirstObservedAt = observedAt,
                 LogicalBreakIdentity = logicalBreakIdentity,
@@ -163,6 +190,24 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                 SourceScope = sourceScope,
                 CorrelationKeys = correlationKeys
             });
+        }
+
+        foreach (var check in _projectionService.BuildPositionChecks(normalizedInputs, request))
+        {
+            var measure = check.Measure;
+            var identity = ReconciliationLogicalBreakIdentity.Create(check.CheckId, null, check.SourceScope, correlationKeys);
+            if (check.IsMatch)
+                matches.Add(new ReconciliationMatchDto(check.CheckId, check.Label, "portfolio", "ledger",
+                    measure.Expected, measure.Actual, measure.Variance ?? 0m, normalizedInputs.Portfolio?.AsOf, normalizedInputs.Ledger?.AsOf)
+                { Measures = [measure], SourceScope = check.SourceScope, LogicalBreakIdentity = identity, CorrelationKeys = correlationKeys });
+            else
+                breaks.Add(new ReconciliationBreakDto(check.CheckId, check.Label,
+                    measure.UnavailableReason is not null ? ReconciliationBreakCategory.ClassificationGap : ReconciliationBreakCategory.AmountMismatch,
+                    ReconciliationBreakStatus.Open, measure.UnavailableReason is not null ? "position-evidence" : string.Empty,
+                    measure.Expected, measure.Actual, measure.Variance ?? 0m, ReconciliationBreakSeverity.High,
+                    measure.UnavailableReason ?? $"{measure.Kind} differs beyond absolute tolerance {measure.Tolerance} {measure.Unit}.",
+                    normalizedInputs.Portfolio?.AsOf, normalizedInputs.Ledger?.AsOf, Measures: [measure])
+                { FirstObservedAt = observedAt, SourceScope = check.SourceScope, LogicalBreakIdentity = identity, CorrelationKeys = correlationKeys });
         }
 
         var securityCoverageIssues = await BuildSecurityCoverageIssuesAsync(runDetail, request.RunId, ct).ConfigureAwait(false);
@@ -212,11 +257,33 @@ public sealed class ReconciliationRunService : IReconciliationRunService
     public Task<ReconciliationRunDetail?> GetByIdAsync(string reconciliationRunId, CancellationToken ct = default) =>
         _repository.GetByIdAsync(reconciliationRunId, ct);
 
+    public async Task<ReconciliationRunDetail?> GetByIdAsync(string reconciliationRunId, StrategyRunReadScope scope, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        var detail = await _repository.GetByIdAsync(reconciliationRunId, ct).ConfigureAwait(false);
+        return detail is not null && await _runReadService.IsRunAccessibleAsync(detail.Summary.RunId, scope, ct).ConfigureAwait(false)
+            ? detail : null;
+    }
+
     public Task<ReconciliationRunDetail?> GetLatestForRunAsync(string runId, CancellationToken ct = default) =>
         _repository.GetLatestForRunAsync(runId, ct);
 
+    public async Task<ReconciliationRunDetail?> GetLatestForRunAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return await _runReadService.IsRunAccessibleAsync(runId, scope, ct).ConfigureAwait(false)
+            ? await _repository.GetLatestForRunAsync(runId, ct).ConfigureAwait(false) : null;
+    }
+
     public Task<IReadOnlyList<ReconciliationRunSummary>> GetHistoryForRunAsync(string runId, CancellationToken ct = default) =>
         _repository.GetHistoryForRunAsync(runId, ct);
+
+    public async Task<IReadOnlyList<ReconciliationRunSummary>> GetHistoryForRunAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return await _runReadService.IsRunAccessibleAsync(runId, scope, ct).ConfigureAwait(false)
+            ? await _repository.GetHistoryForRunAsync(runId, ct).ConfigureAwait(false) : [];
+    }
 
     private static ReconciliationBreakCategory MapCategory(
         string category,
@@ -343,7 +410,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         if (detail.Portfolio is not null)
         {
             issues.AddRange(
-                detail.Portfolio.Positions
+                EnumeratePortfolioSecurityPositions(detail.Portfolio)
                     .Where(static position =>
                         !string.IsNullOrWhiteSpace(position.Symbol) &&
                         position.Security is null)
@@ -379,8 +446,13 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             foreach (var scope in EnumerateSecurityScopes(detail))
             {
                 ct.ThrowIfCancellationRequested();
-                var validation = await _securityValidationGate
-                    .ValidateSymbolAsync(
+                if (scope.HasRetainedIdentityAuthority && (scope.SecurityId is null || scope.SecurityId == Guid.Empty))
+                    continue;
+                var validation = scope.HasRetainedIdentityAuthority
+                    ? await _securityValidationGate.ValidateSecurityAsync(scope.SecurityId!.Value,
+                        SecurityValidationWorkflowDto.ReconciliationBreakIntake, workflowReference: runId,
+                        actor: "reconciliation-run-service", persistSnapshot: false, symbol: scope.Symbol, ct: ct).ConfigureAwait(false)
+                    : await _securityValidationGate.ValidateSymbolAsync(
                         scope.Symbol,
                         SecurityValidationWorkflowDto.ReconciliationBreakIntake,
                         workflowReference: runId,
@@ -408,15 +480,27 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             .ToArray();
     }
 
-    private static IEnumerable<(string Source, string Symbol, string? AccountName)> EnumerateSecurityScopes(StrategyRunDetail detail)
+    private static IEnumerable<PortfolioPositionSummary> EnumeratePortfolioSecurityPositions(PortfolioSummary portfolio)
+        => portfolio.HasRetainedAccountingPositionPopulation
+            ? portfolio.Positions.Where(position => portfolio.AccountingPositions.Any(row =>
+                string.Equals(row.Symbol, position.Symbol, StringComparison.OrdinalIgnoreCase)))
+            : portfolio.Positions;
+
+    private static IEnumerable<(string Source, string Symbol, string? AccountName, Guid? SecurityId, bool HasRetainedIdentityAuthority)> EnumerateSecurityScopes(StrategyRunDetail detail)
     {
         if (detail.Portfolio is not null)
         {
-            foreach (var position in detail.Portfolio.Positions)
+            if (detail.Portfolio.HasRetainedAccountingPositionPopulation)
             {
-                if (!string.IsNullOrWhiteSpace(position.Symbol))
+                foreach (var position in detail.Portfolio.AccountingPositions.Where(static position => !string.IsNullOrWhiteSpace(position.Symbol)))
+                    yield return ("portfolio", position.Symbol.Trim().ToUpperInvariant(), null, position.SecurityId, true);
+            }
+            else
+            {
+                foreach (var position in detail.Portfolio.Positions)
                 {
-                    yield return ("portfolio", position.Symbol.Trim().ToUpperInvariant(), null);
+                    if (!string.IsNullOrWhiteSpace(position.Symbol))
+                        yield return ("portfolio", position.Symbol.Trim().ToUpperInvariant(), null, null, false);
                 }
             }
         }
@@ -427,7 +511,13 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             {
                 if (!string.IsNullOrWhiteSpace(line.Symbol))
                 {
-                    yield return ("ledger", line.Symbol!.Trim().ToUpperInvariant(), line.AccountName);
+                    var native = detail.Ledger.AccountingPositions.Where(position =>
+                        (position.QuantityUnit is not null || position.Multiplier is not null)
+                        && string.Equals(position.Symbol, line.Symbol, StringComparison.OrdinalIgnoreCase)
+                        && string.Equals(position.FinancialAccountId, line.FinancialAccountId, StringComparison.OrdinalIgnoreCase)).ToArray();
+                    var ids = native.Select(static position => position.SecurityId).Distinct().ToArray();
+                    yield return ("ledger", line.Symbol!.Trim().ToUpperInvariant(), line.AccountName,
+                        ids.Length == 1 ? ids[0] : null, native.Length > 0);
                 }
             }
         }
@@ -477,7 +567,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
 
         if (detail.Portfolio is not null)
         {
-            foreach (var position in detail.Portfolio.Positions)
+            foreach (var position in EnumeratePortfolioSecurityPositions(detail.Portfolio))
             {
                 if (position.Security is not null &&
                     !string.IsNullOrWhiteSpace(position.Symbol) &&

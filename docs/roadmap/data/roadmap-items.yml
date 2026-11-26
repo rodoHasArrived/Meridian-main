@@ -55,11 +55,11 @@ items:
     workspace:
       - Data
     owner_lane: Data Confidence and Validation
-    status: planned
-    health: yellow
+    status: in_progress
+    health: on_track
     priority: low
-    evidence_posture: planned_evidence
-    status_note: No alignment execution or preview service is wired into the host. Both routes answer 501 and create nothing; the WPF Time Series Alignment page disables its run action and says alignment is unavailable once the host reports the 501. The browser workstation has no alignment screen.
+    evidence_posture: in_progress
+    status_note: Shared alignment routes compute retained archive rows and provider differences. WPF previews and exports the results. Browser adoption remains sequenced under W8-WPF-PARITY-001.
     decision_ids: []
     pr_references: []
     exit_criteria:
@@ -68,6 +68,8 @@ items:
       - Preview estimates are computed from the stored data, not fabricated.
       - Browser and WPF surfaces consume the same alignment routes, or the browser gap is sequenced under W8-WPF-PARITY-001.
     source_modules:
+      - SRC-CONTRACTS
+      - SRC-STORAGE
       - SRC-UI-SHARED
       - SRC-UI-SERVICES
       - SRC-WPF
@@ -76,13 +78,15 @@ items:
     evidence:
       - type: source
         path: src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/TimeSeriesAlignmentEndpointsTests.cs
       - type: source
         path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
       - type: source
         path: src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs
       - type: test
         path: tests/Meridian.Wpf.Tests/ViewModels/TimeSeriesAlignmentViewModelTests.cs
-    last_reviewed: 2026-11-19
+    last_reviewed: 2026-11-20
 
   - id: W1-DATA-DEDUP-001
     title: Archive deduplication maintenance task

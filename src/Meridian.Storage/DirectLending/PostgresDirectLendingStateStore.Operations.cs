@@ -542,6 +542,9 @@ public sealed partial class PostgresDirectLendingStateStore
         {
             if (committed.LoanId != run.LoanId)
                 throw new InvalidOperationException("Reconciliation run identity belongs to another loan.");
+            if (!LoanReconciliationEvidence.SameRequest(committed, run))
+                throw new DirectLendingCommandException(new(DirectLendingErrorCode.ConcurrencyConflict,
+                    "The reconciliation identity belongs to a different tolerance command."));
             await EnqueueAssetPublicationAsync(connection, transaction, committed.LoanId, "reconciliation", committed.ReconciliationRunId, ct).ConfigureAwait(false);
             await transaction.CommitAsync(ct).ConfigureAwait(false);
             return committed;
@@ -581,14 +584,16 @@ public sealed partial class PostgresDirectLendingStateStore
                     projection_run_id,
                     requested_at,
                     completed_at,
-                    status)
+                    status,
+                    evidence_json)
                 values (
                     @reconciliation_run_id,
                     @loan_id,
                     @projection_run_id,
                     @requested_at,
                     @completed_at,
-                    @status)
+                    @status,
+                    cast(@evidence_json as jsonb))
                 on conflict (reconciliation_run_id) do update
                 set projection_run_id = excluded.projection_run_id,
                     requested_at = excluded.requested_at,
@@ -601,6 +606,7 @@ public sealed partial class PostgresDirectLendingStateStore
             insert.Parameters.AddWithValue("requested_at", run.RequestedAt.UtcDateTime);
             insert.Parameters.AddWithValue("completed_at", (object?)run.CompletedAt?.UtcDateTime ?? DBNull.Value);
             insert.Parameters.AddWithValue("status", run.Status);
+            insert.Parameters.AddWithValue("evidence_json", LoanReconciliationEvidence.Serialize(run));
             await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
 
@@ -625,7 +631,8 @@ public sealed partial class PostgresDirectLendingStateStore
                     match_rule,
                     tolerance_json,
                     notes,
-                    created_at)
+                    created_at,
+                    evidence_json)
                 values (
                     @reconciliation_result_id,
                     @reconciliation_run_id,
@@ -641,7 +648,8 @@ public sealed partial class PostgresDirectLendingStateStore
                     @match_rule,
                     cast(@tolerance_json as jsonb),
                     @notes,
-                    now());
+                    @created_at,
+                    cast(@evidence_json as jsonb));
                 """;
             insert.Parameters.AddWithValue("reconciliation_result_id", result.ReconciliationResultId);
             insert.Parameters.AddWithValue("reconciliation_run_id", result.ReconciliationRunId);
@@ -657,6 +665,8 @@ public sealed partial class PostgresDirectLendingStateStore
             insert.Parameters.AddWithValue("match_rule", (object?)result.MatchRule ?? DBNull.Value);
             insert.Parameters.AddWithValue("tolerance_json", result.ToleranceJson ?? "null");
             insert.Parameters.AddWithValue("notes", result.Notes.ToArray());
+            insert.Parameters.AddWithValue("created_at", result.CreatedAt.UtcDateTime);
+            insert.Parameters.AddWithValue("evidence_json", LoanReconciliationEvidence.Serialize(result));
             await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
 
@@ -715,7 +725,8 @@ public sealed partial class PostgresDirectLendingStateStore
                    projection_run_id,
                    requested_at,
                    completed_at,
-                   status
+                   status,
+                   evidence_json::text
             from {Qualified("reconciliation_run")}
             where loan_id = @loan_id
             order by requested_at desc;
@@ -726,13 +737,13 @@ public sealed partial class PostgresDirectLendingStateStore
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
         {
-            results.Add(new ReconciliationRunDto(
+            results.Add(LoanReconciliationEvidence.Restore(new ReconciliationRunDto(
                 reader.GetGuid(0),
                 reader.GetGuid(1),
                 reader.IsDBNull(2) ? null : reader.GetGuid(2),
                 new DateTimeOffset(reader.GetDateTime(3), TimeSpan.Zero),
                 reader.IsDBNull(4) ? null : new DateTimeOffset(reader.GetDateTime(4), TimeSpan.Zero),
-                reader.GetString(5)));
+                reader.GetString(5)), reader.IsDBNull(6) ? null : reader.GetString(6)));
         }
 
         return results;
@@ -758,7 +769,8 @@ public sealed partial class PostgresDirectLendingStateStore
                    match_rule,
                    tolerance_json::text,
                    notes,
-                   created_at
+                   created_at,
+                   evidence_json::text
             from {Qualified("reconciliation_result")}
             where reconciliation_run_id = @reconciliation_run_id
             order by created_at, reconciliation_result_id;
@@ -769,7 +781,7 @@ public sealed partial class PostgresDirectLendingStateStore
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
         {
-            results.Add(new ReconciliationResultDto(
+            results.Add(LoanReconciliationEvidence.Restore(new ReconciliationResultDto(
                 reader.GetGuid(0),
                 reader.GetGuid(1),
                 reader.GetGuid(2),
@@ -784,7 +796,7 @@ public sealed partial class PostgresDirectLendingStateStore
                 reader.IsDBNull(11) ? null : reader.GetString(11),
                 NormalizeJsonText(reader.IsDBNull(12) ? null : reader.GetString(12)),
                 reader.IsDBNull(13) ? [] : reader.GetFieldValue<string[]>(13),
-                new DateTimeOffset(reader.GetDateTime(14), TimeSpan.Zero)));
+                new DateTimeOffset(reader.GetDateTime(14), TimeSpan.Zero)), reader.IsDBNull(15) ? null : reader.GetString(15)));
         }
 
         return results;

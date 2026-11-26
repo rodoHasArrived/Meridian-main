@@ -24,7 +24,7 @@ Snapshot date: 2026-11-25
 | ID | Title | Status | Health | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |
 | W1-DATA-001 | Provider trust gate and data confidence baseline | done | green | critical | Data Confidence and Validation |
-| W1-DATA-ALIGN-001 | Time-series alignment execution service | planned | yellow | low | Data Confidence and Validation |
+| W1-DATA-ALIGN-001 | Time-series alignment execution service | in_progress | on_track | low | Data Confidence and Validation |
 | W1-DATA-DEDUP-001 | Archive deduplication maintenance task | planned | yellow | low | Data Confidence and Validation |
 | W1-DATA-PROVCFG-001 | Provider configuration, connection templates and quota-aware backfill | in_progress | green | medium | Data Confidence and Validation |
 | W2-PROMO-001 | Paper promotion evidence and operator acceptance | done | green | high | Execution and Fund Accounts |
@@ -74,9 +74,8 @@ Snapshot date: 2026-11-25
 | W11-COVER-001 | Verified Coverage measurement and operator surface | planned | green | high | Accounting and Ledger |
 | W11-STAKE-001 | Governed stakeholder verification access on delivered packages | planned | green | medium | Platform Security and Governance |
 | W11-SHADOW-001 | Shadow-mode onboarding with opening-balance reconciliation | in_progress | green | medium | Data Confidence and Validation |
-| W11-PACK-001 | Runtime contract-pack governance for profile-backed Security Master classes | planned | green | medium | Accounting and Ledger |
+| W11-PACK-001 | Governed contract-pack lifecycle on the Security Master asset-class registry | planned | green | medium | Accounting and Ledger |
 | W11-EXEC-001 | Trading and Execution bounded-context ownership | planned | green | low | Execution and Fund Accounts |
-| W11-PACK-002 | Generated Security Master class plumbing from one declaration | accepted | green | medium | Accounting and Ledger |
 | W12-BOOK-001 | Accounting book, basis, and FX control workbench | planned | green | medium | Accounting and Ledger |
 | W12-CAPITAL-001 | Governed investor capital and allocation lifecycle | in_progress | green | medium | Accounting and Ledger |
 | W12-CREDIT-001 | DirectLoan operations and evidence reconciliation | planned | green | medium | Accounting and Ledger |
