@@ -46,7 +46,8 @@ def build_compact_navigation_block(structure_source: str) -> str:
             "",
             "- `docs/ai/navigation/README.md` for the generated repo-navigation workflow.",
             "- `docs/ai/generated/repo-navigation.md` for subsystem routing and entrypoints.",
-            f"- `{structure_source}` for the full generated repository tree.",
+            f"- `{structure_source}` for the full generated repository tree (CI-built; not committed. Run",
+            "  `python build/python/cli/buildctl.py regen --fix --docs-only` to create it locally).",
             "- `docs/ai/agents/README.md` for agent catalogs.",
             "- `docs/ai/skills/README.md` for skill catalogs and validation commands.",
         ]

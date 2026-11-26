@@ -131,7 +131,7 @@ Do not embed a static repository tree here. Use the generated navigation sources
 - [`../navigation/README.md`](../navigation/README.md) for assistant routing.
 - [`../generated/repo-navigation.md`](../generated/repo-navigation.md) for the current readable repo map.
 - [`../generated/repo-navigation.json`](../generated/repo-navigation.json) for MCP and automation consumers.
-- [`../../../docs/generated/repository-structure.md`](../../../docs/generated/repository-structure.md) only when a literal tree snapshot is required.
+- `docs/generated/repository-structure.md` only when a literal tree snapshot is required (CI-built; run `python build/python/cli/buildctl.py regen --fix --docs-only` to create it locally).
 
 When the repo layout changes, update the generated navigation or structure sources through the docs automation rather than copying a tree into this Copilot-specific guide.
 
