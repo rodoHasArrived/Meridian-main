@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Meridian.Backtesting.Sdk;
 
@@ -45,6 +46,19 @@ public sealed record ExecutionRealismDescriptor(
     string? DefaultBrokerageAccountId = null,
     bool PopulateAssetEventsFromSecurityMaster = false)
 {
+    /// <summary>Absent/default mode preserves canonical fingerprints created before canonical settlement was added.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public BacktestCorporateActionMode CorporateActionMode { get; init; } = BacktestCorporateActionMode.Legacy;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? CorporateActionSnapshotHash { get; init; }
+
+    /// <summary>Resolved replay bar distribution for a completed run.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SourceMixHash { get; init; }
+
+    /// <summary>Null preserves the canonical fingerprint of descriptors retained before this option existed.</summary>
+    public bool? ApplyStoredCorporateActions { get; init; }
+
     /// <summary>
     /// Field-order-stable canonical form used for hashing and for human-readable disclosure.
     /// Each field is emitted with its name so that adding a field in a future revision cannot
@@ -68,6 +82,8 @@ public sealed record ExecutionRealismDescriptor(
         Append(builder, nameof(MarketImpactCoefficient), Canonical(MarketImpactCoefficient));
         Append(builder, nameof(OrderBookQueueAheadFraction), Canonical(OrderBookQueueAheadFraction));
         Append(builder, nameof(AdjustForCorporateActions), AdjustForCorporateActions ? "true" : "false");
+        if (ApplyStoredCorporateActions is { } applyStored)
+            Append(builder, nameof(ApplyStoredCorporateActions), applyStored ? "true" : "false");
         Append(builder, nameof(RiskFreeRate), RiskFreeRate.ToString("R", CultureInfo.InvariantCulture));
         // Financing and the rate series feed interest accrual, short rebates, Sharpe, and Sortino.
         // Omitting them let two runs with materially different P&L and risk metrics hash alike -
@@ -93,6 +109,13 @@ public sealed record ExecutionRealismDescriptor(
         {
             Append(builder, nameof(PopulateAssetEventsFromSecurityMaster), "true");
         }
+
+        if (CorporateActionMode != BacktestCorporateActionMode.Legacy)
+            Append(builder, nameof(CorporateActionMode), CorporateActionMode.ToString());
+        if (CorporateActionSnapshotHash is not null)
+            Append(builder, nameof(CorporateActionSnapshotHash), CorporateActionSnapshotHash);
+        if (SourceMixHash is not null)
+            Append(builder, nameof(SourceMixHash), SourceMixHash);
 
         return builder.ToString();
     }

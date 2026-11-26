@@ -120,9 +120,9 @@ public sealed record PortfolioCashLadderDto(
 
 /// <summary>Query parameters for the portfolio cash ladder read model.</summary>
 /// <remarks>
-/// <see cref="EngineVersion"/> selects a retained ladder engine for explicit historical replay.
-/// Null uses the current engine; <c>portfolio-cash-ladder-v1</c> replays the legacy engine; any
-/// other value returns a blocked ladder that reports the unsupported version.
+/// <see cref="EngineVersion"/> names the ladder engine the caller expects. Null or the current
+/// version uses the current engine; any other value, including the retired
+/// <c>portfolio-cash-ladder-v1</c>, returns a blocked ladder that reports the unsupported version.
 /// </remarks>
 public sealed record PortfolioCashLadderQuery(
     string? ScenarioId = null,
@@ -155,6 +155,16 @@ public interface IPortfolioHoldingsSource
 public interface IPortfolioCashBalanceProvider
 {
     Task<IReadOnlyList<PortfolioCashBalanceDto>> GetCashBalancesAsync(CancellationToken ct = default);
+}
+
+/// <summary>
+/// Supplies opening cash balances as they stood at the end of an earlier day, so the ladder can be
+/// rebuilt as of a prior period end for comparison. Optional: a provider that cannot read history
+/// does not implement it, and the comparison says so rather than reusing today's cash.
+/// </summary>
+public interface IPortfolioCashBalanceHistoryProvider
+{
+    Task<IReadOnlyList<PortfolioCashBalanceDto>> GetCashBalancesAsOfAsync(DateOnly asOf, CancellationToken ct = default);
 }
 
 /// <summary>Supplies dated capital activity (investor schedule, expense accruals) for the ladder.</summary>

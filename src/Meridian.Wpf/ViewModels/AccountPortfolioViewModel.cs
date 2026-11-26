@@ -36,7 +36,6 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
                 Positions.Clear();
                 SelectedPosition = null;
                 OnPropertyChanged(nameof(CanRefreshAccount));
-                OnPropertyChanged(nameof(RefreshTooltip));
                 RefreshCommand.NotifyCanExecuteChanged();
                 UpdatePositionsPresentation();
             }
@@ -124,7 +123,6 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
             if (SetProperty(ref _isRefreshing, value))
             {
                 OnPropertyChanged(nameof(CanRefreshAccount));
-                OnPropertyChanged(nameof(RefreshTooltip));
                 RefreshCommand.NotifyCanExecuteChanged();
                 UpdatePositionsPresentation();
             }
@@ -190,21 +188,6 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
     public bool HasSelectedPosition => SelectedPosition is not null;
 
     public bool CanRefreshAccount => CanRefreshAccountForState(AccountId, IsRefreshing);
-
-    public string RefreshTooltip
-    {
-        get
-        {
-            if (IsRefreshing)
-            {
-                return "Account refresh is already running.";
-            }
-
-            return CanRefreshAccount
-                ? $"Refresh retained account snapshot for {AccountId}."
-                : "Select an account before refreshing account positions.";
-        }
-    }
 
     public bool CanOpenSelectedSecurity => !string.IsNullOrWhiteSpace(SelectedPosition?.Symbol);
 
@@ -448,7 +431,6 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
         OnPropertyChanged(nameof(IsPositionsEmptyStateVisible));
         OnPropertyChanged(nameof(PositionActionStateTitle));
         OnPropertyChanged(nameof(PositionActionStateDetail));
-        OnPropertyChanged(nameof(RefreshTooltip));
     }
 
     private void RaiseSelectedPositionStateChanged()

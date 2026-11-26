@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-11-02
+**Reviewed:** 2026-11-25
 
 ## Purpose and Scope
 
@@ -20,7 +20,7 @@ parts, each deployed to every node before the next one's gates are checked:
 Success means that every node, WPF desktops included, runs 5a before 5b-2's first declaring write,
 that every gate below returned its expected result in each environment, and that each result is in
 the deployment change record. The source design is the
-[extensibility review](../architecture/security-master-extensibility-review.md) (priority 5,
+[extensibility review](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/architecture/security-master-extensibility-review.md) (priority 5,
 increment 5), with [ADR-024](../adr/024-terms-payload-format-and-version-policy.md#applications)
 and [ADR-025](../adr/025-contractual-schedule-kernel.md#applications).
 
@@ -82,7 +82,7 @@ This source change does not establish that the fleet rollout has occurred.
 
 Run AQ1 (stored securities) and AQ2 (retained amortization instruction snapshots) exactly as
 written in the
-[5a-0 resolution pass](../architecture/security-master-extensibility-review.md#resolution-pass--2026-10-28-priority-5-increment-5a-0-amortization-refuses-declared-schedule-conventions)
+[5a-0 resolution pass](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/architecture/security-master-extensibility-review.md#resolution-pass--2026-10-28-priority-5-increment-5a-0-amortization-refuses-declared-schedule-conventions)
 of the extensibility review. Both are expected to find nothing. Record the counts, the database
 and schemas, the timestamp and the operator. A hit is remediated before the deploy, while the
 running build can still read and reverse it. 5a is built on 5a-0, so these results also cover 5a.
@@ -661,4 +661,24 @@ StructuredNote. Deploy readers of these versions before publishing a declaration
 replacement raises the row's stamp; old stamped stray keys remain inert through unrelated amendments.
 The economic `rateConvention` module restores that stamp on an economic-only replay. Absent modules
 leave historical economic bytes unchanged. These version advances do not enable authoring the
-calculation-only `cashFlowContract` companion or swap leg convention blocks.
+calculation-only `cashFlowContract` companion. The bounded vanilla IRS authoring increment below
+separately permits reviewed leg convention blocks.
+
+## Bounded CD version 6 and vanilla IRS follow-on
+
+The CD profile adds optional version-6 issue/start date, principal and payment frequency and a
+version-6 calculation context for `fixed-bullet-actual365-v1`. The storage stamp floor remains 1;
+this does not activate every old CD or rewrite historical calculations. Confirm that older CDs still
+capture/replay version-5 analysis and declared version-6 CDs cannot fall back after strict-profile
+refusal. Before publishing the new fields, inventory every reader, writer and calculation consumer
+against the release's actual startup capability lines. Deploy matching readers first, then route explicit
+governed full-term review to capable writers. Older-stamp residue must be cleared or included in
+an explicit version-6 reviewed replacement. Existing Bond/StructuredCredit version-5 replay remains
+the compatibility baseline. Do not raise a fleet floor merely because the new build is available.
+
+Swap stays version 4/read 4/floor 1. Optional `calculationProfile: vanilla-irs-v1` selects the same
+shared contractual engine after its exact two-leg shape and dated fixing/forward evidence pass.
+Reviewed authoring permits the existing leg conventions only within that bounded shape. Omitted
+profile requests retain their previous behavior. The generic `cashFlowContract` companion remains
+readable-only, and no posting gate changes. A rollout must retain old request/receipt replay proof
+and explicitly test new authoring and refusals before operational use.

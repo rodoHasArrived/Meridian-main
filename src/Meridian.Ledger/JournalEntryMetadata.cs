@@ -30,6 +30,10 @@ public sealed record JournalEntryMetadata(
     IReadOnlyDictionary<string, string>? Tags = null,
     IReadOnlyList<JournalEvidenceReference>? EvidenceReferences = null)
 {
+    /// <summary>Immutable native preparer decision; never ordinary approval or independent review.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.AssetOperations.AssetAccountingPreparerAttestationDto? PreparerAttestation { get; init; }
+
     public IReadOnlyList<JournalEvidenceReference> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
 

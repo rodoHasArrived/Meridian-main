@@ -27,7 +27,6 @@
                         <TextBlock Text="{Binding SummaryText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,12,0,0" />
                         <TextBlock Text="{Binding GeneratedAtText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,4,0,0" />
                     </StackPanel>
-                    <Button Grid.Column="1" Content="Refresh" Command="{Binding RefreshCommand}" Padding="18,8" VerticalAlignment="Top" />
                 </Grid>
             </Border>
 

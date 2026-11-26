@@ -599,21 +599,8 @@ public sealed class HostStartup : IAsyncDisposable
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await LedgerStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
-                .ConfigureAwait(false);
-            await SecurityMasterStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
-                .ConfigureAwait(false);
-            await DirectLendingStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
-                .ConfigureAwait(false);
-            await AssetOperationsStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
-                .ConfigureAwait(false);
-            await FundAccountsStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
-                .ConfigureAwait(false);
-            await FundStructureStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
-                .ConfigureAwait(false);
-            await BankingStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
-                .ConfigureAwait(false);
-            await MoneyMarketStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
+            await _serviceProvider.GetRequiredService<DatabaseStartupPlan>()
+                .EnsureReadyAsync(_serviceProvider, cancellationToken)
                 .ConfigureAwait(false);
         }
 

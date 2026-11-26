@@ -9,7 +9,7 @@ import type {
   QualityDashboardResponse,
   QualityProviderFreshnessResponse
 } from "@/types";
-import { formatCount } from "@/lib/format";
+import { formatCount, formatDecimal } from "@/lib/format";
 
 export type QualityDashboardFetcher = typeof getQualityDashboard;
 
@@ -66,7 +66,7 @@ export function scoreTone(score: number): QualityTone {
 }
 
 function formatScore(score: number | null): string {
-  return score === null ? "Unavailable" : `${score.toFixed(1)}`;
+  return score === null ? "Unavailable" : formatDecimal(score, 1);
 }
 
 function statusTone(status: QualityCompositeSymbolResponse["status"]): QualityTone {

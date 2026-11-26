@@ -105,20 +105,31 @@ public sealed class BackfillService
     /// <summary>
     /// Starts a new backfill operation using the real API.
     /// </summary>
-    public async Task StartBackfillAsync(
+    public Task StartBackfillAsync(
         string[] symbols,
         string provider,
         DateTime fromDate,
         DateTime toDate,
         string granularity = "Daily",
-        Action<BackfillProgress>? progressCallback = null, CancellationToken ct = default)
+        Action<BackfillProgress>? progressCallback = null, CancellationToken ct = default) =>
+        StartBackfillAsync(symbols, provider, fromDate, toDate, granularity, resumeFromCheckpoint: false, progressCallback, ct);
+
+    public async Task StartBackfillAsync(
+        string[] symbols,
+        string provider,
+        DateTime fromDate,
+        DateTime toDate,
+        string granularity,
+        bool resumeFromCheckpoint,
+        Action<BackfillProgress>? progressCallback = null,
+        CancellationToken ct = default)
     {
         if (IsRunning)
         {
             throw new InvalidOperationException("A backfill operation is already running");
         }
 
-        _cancellationTokenSource = new CancellationTokenSource();
+        _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(ct);
         _startTime = DateTime.UtcNow;
         _totalBarsDownloaded = 0;
 
@@ -149,7 +160,8 @@ public sealed class BackfillService
 
         try
         {
-            await RunBackfillAsync(symbols, provider, fromDate, toDate, granularity, progressCallback, _cancellationTokenSource.Token);
+            await RunBackfillAsync(symbols, provider, fromDate, toDate, granularity, resumeFromCheckpoint,
+                progressCallback, _cancellationTokenSource.Token);
 
             _currentProgress.Status = BackfillJobStatus.Completed;
             _currentProgress.CompletedAt = DateTime.UtcNow;
@@ -230,6 +242,7 @@ public sealed class BackfillService
         DateTime fromDate,
         DateTime toDate,
         string granularity,
+        bool resumeFromCheckpoint,
         Action<BackfillProgress>? progressCallback,
         CancellationToken cancellationToken)
     {
@@ -248,6 +261,7 @@ public sealed class BackfillService
             fromStr,
             toStr,
             granularity,
+            resumeFromCheckpoint,
             cancellationToken);
 
         if (result == null)
@@ -613,7 +627,7 @@ public sealed class BackfillService
         return bars.OrderBy(b => b.SessionDate).ToList();
     }
 
-    private static async Task<List<HistoricalBar>> ParseBarsFromFileAsync(
+    internal static async Task<List<HistoricalBar>> ParseBarsFromFileAsync(
         string filePath,
         string symbol,
         DateOnly fromDate,
@@ -673,6 +687,30 @@ public sealed class BackfillService
 
                     var volume = root.TryGetProperty("Volume", out var v) && v.TryGetInt64(out var vol) ? vol : 0L;
                     var source = root.TryGetProperty("Source", out var src) ? src.GetString() ?? "storage" : "storage";
+                    if (root.EnumerateObject().Count(property => property.Name.Equals("PriceBasis", StringComparison.OrdinalIgnoreCase)) > 1 ||
+                        root.EnumerateObject().Count(property => property.Name.Equals("IsAdjusted", StringComparison.OrdinalIgnoreCase)) > 1)
+                        continue;
+                    var priceBasis = HistoricalPriceBasis.Unknown;
+                    if (root.TryGetProperty("PriceBasis", out var basis) || root.TryGetProperty("priceBasis", out basis))
+                    {
+                        if (basis.ValueKind == System.Text.Json.JsonValueKind.Number && basis.TryGetInt32(out var numericBasis))
+                            priceBasis = (HistoricalPriceBasis)numericBasis;
+                        else if (!HistoricalPriceBasisValues.TryParse(basis.GetString(), out priceBasis))
+                            continue;
+                        if (!Enum.IsDefined(priceBasis))
+                            continue;
+                    }
+                    bool? isAdjusted = null;
+                    if (root.TryGetProperty("IsAdjusted", out var adjusted) || root.TryGetProperty("isAdjusted", out adjusted))
+                    {
+                        isAdjusted = adjusted.ValueKind switch
+                        {
+                            System.Text.Json.JsonValueKind.True => true,
+                            System.Text.Json.JsonValueKind.False => false,
+                            System.Text.Json.JsonValueKind.Null => null,
+                            _ => throw new System.Text.Json.JsonException("Invalid historical adjustment flag.")
+                        };
+                    }
 
                     bars.Add(new HistoricalBar(
                         Symbol: symbol,
@@ -683,7 +721,9 @@ public sealed class BackfillService
                         Close: close,
                         Volume: volume,
                         Source: source,
-                        SequenceNumber: seq++));
+                        SequenceNumber: seq++,
+                        IsAdjusted: isAdjusted,
+                        PriceBasis: priceBasis));
                 }
                 catch
                 {
@@ -748,7 +788,9 @@ public sealed class BackfillService
             checkpoint.FromDate,
             checkpoint.ToDate,
             "Daily",
-            progressCallback);
+            resumeFromCheckpoint: true,
+            progressCallback,
+            ct);
     }
 
     /// <summary>

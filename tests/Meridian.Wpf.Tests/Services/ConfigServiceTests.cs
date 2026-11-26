@@ -26,13 +26,12 @@ public sealed class ConfigServiceTests
     public void IsInitialized_BeforeInitialization_ShouldReturnFalse()
     {
         // Arrange
-        var service = ConfigService.Instance;
+        var service = new ConfigService();
 
-        // Act
-        var isInitialized = service.IsInitialized;
-
-        // Assert - This may vary depending on when the test runs
-        // In a fresh instance, it should be false until InitializeAsync is called
+        service.IsInitialized.Should().BeFalse();
+        Action readRoot = () => _ = service.ConfiguredDataRoot;
+        readRoot.Should().Throw<InvalidOperationException>()
+            .WithMessage("*Initialize*asynchronously*");
     }
 
     [Fact]
@@ -46,6 +45,7 @@ public sealed class ConfigServiceTests
 
         // Assert
         service.IsInitialized.Should().BeTrue("service should be initialized after InitializeAsync");
+        service.ConfiguredDataRoot.Should().Be(service.ResolveDataRoot(await service.LoadConfigAsync()));
     }
 
     [Fact]
@@ -59,6 +59,18 @@ public sealed class ConfigServiceTests
 
         // Assert
         configPath.Should().NotBeNullOrEmpty("ConfigPath should return a valid path");
+    }
+
+    [Fact]
+    public async Task ConfiguredDataRoot_DoesNotReopenConfigurationAfterStartup()
+    {
+        var service = new ConfigService();
+        await service.InitializeAsync();
+        var configuredRoot = service.ConfiguredDataRoot;
+        using var lockedConfig = new FileStream(service.ConfigPath, FileMode.Open, FileAccess.Read, FileShare.None);
+
+        service.ConfiguredDataRoot.Should().Be(configuredRoot,
+            "synchronous DI factories must use the startup snapshot even while the config file is unavailable");
     }
 
     [Fact]

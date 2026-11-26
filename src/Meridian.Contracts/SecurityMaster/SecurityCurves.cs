@@ -10,10 +10,10 @@ namespace Meridian.Contracts.SecurityMaster;
 [JsonConverter(typeof(JsonStringEnumConverter<SecurityCurveKind>))]
 public enum SecurityCurveKind
 {
-    /// <summary>Discount factors in (0, 1] that never rise with time; a pillar on the as-of date is 1.</summary>
+    /// <summary>Positive discount factors; legacy policy additionally requires (0, 1] and nonincreasing pillars. At as-of the factor is 1.</summary>
     Discount,
 
-    /// <summary>Projected annual fixings of one floating-rate index, stored as non-negative fractions (0.04, never 4).</summary>
+    /// <summary>Projected annual fixings stored as fractions (0.04, never 4); signed values require an explicit SignedRates definition.</summary>
     Forward,
 
     /// <summary>Projected levels of one inflation index; always positive.</summary>
@@ -34,12 +34,20 @@ public enum SecurityCurveInterpolation
     Linear
 }
 
+/// <summary>Write-once admission policy. Legacy definitions retain nonnegative-rate restrictions.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<SecurityCurveRatePolicy>))]
+public enum SecurityCurveRatePolicy { LegacyNonNegative, SignedRates }
+
 /// <summary>
 /// One dated pillar. <paramref name="Value"/> is a discount factor (Discount), an annual rate as a
 /// FRACTION (Forward: 0.04, never 4) or an index level (Inflation). <paramref name="Tenor"/> is a
 /// label such as <c>3M</c>; the date is authoritative.
 /// </summary>
-public sealed record SecurityCurvePointDto(DateOnly Date, decimal Value, string? Tenor = null);
+public sealed record SecurityCurvePointDto(DateOnly Date, decimal Value, string? Tenor = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public SecurityRatePointEvidenceDto? RateEvidence { get; init; }
+}
 
 /// <summary>The write-once identity of a stored curve.</summary>
 public sealed record SecurityCurveDefinitionDto(
@@ -54,7 +62,11 @@ public sealed record SecurityCurveDefinitionDto(
     string Source,
     string? Description,
     string CreatedBy,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public SecurityCurveRatePolicy RatePolicy { get; init; }
+}
 
 /// <summary>
 /// One immutable published version of a curve. <paramref name="AsOf"/> is the economic date the
@@ -86,7 +98,11 @@ public sealed record DefineSecurityCurveRequest(
     SecurityCurveInterpolation Interpolation,
     string Source,
     string? Description,
-    string? CreatedBy = null);
+    string? CreatedBy = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public SecurityCurveRatePolicy RatePolicy { get; init; }
+}
 
 /// <summary>Publishes the points of a curve as of an economic date. Identical content for the same curve and as-of returns the retained version.</summary>
 public sealed record PublishSecurityCurveVersionRequest(
@@ -143,6 +159,8 @@ public static class SecurityCurveRules
             throw new ArgumentException("A curve kind must be Discount, Forward or Inflation.", nameof(request));
         if (!Enum.IsDefined(request.Interpolation))
             throw new ArgumentException("A curve interpolation must be a declared method.", nameof(request));
+        if (!Enum.IsDefined(request.RatePolicy))
+            throw new ArgumentException("A curve rate policy must be explicitly supported.", nameof(request));
 
         var currency = RequireCurrency(request.Currency);
         var indexName = NormalizeOptional(request.IndexName);
@@ -171,6 +189,8 @@ public static class SecurityCurveRules
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(definition);
+        if (!Enum.IsDefined(definition.RatePolicy))
+            throw new ArgumentException("The retained curve rate policy is unsupported.", nameof(definition));
         if (request.CurveId != definition.CurveId)
             throw new ArgumentException("A version is published to the curve it names.", nameof(request));
         if (request.Points is not { Count: > 0 })
@@ -197,12 +217,12 @@ public static class SecurityCurveRules
                 throw new ArgumentException($"Every point is dated on or after the as-of date; {point.Date:yyyy-MM-dd} precedes {request.AsOf:yyyy-MM-dd}.", nameof(request));
             if (point.Tenor is not null && !tenors.Add(point.Tenor))
                 throw new ArgumentException($"A tenor label names one point; '{point.Tenor}' appears twice.", nameof(request));
-            RequireValueForKind(definition.Kind, point, request.AsOf);
+            RequireValueForKind(definition.Kind, point, request.AsOf, definition.RatePolicy);
         }
 
         // A discount factor that rises from one pillar to the next encodes a negative forward rate,
         // the same thing a factor above 1 does, so both are refused by the one rule.
-        if (definition.Kind == SecurityCurveKind.Discount)
+        if (definition.Kind == SecurityCurveKind.Discount && definition.RatePolicy == SecurityCurveRatePolicy.LegacyNonNegative)
         {
             for (var i = 1; i < points.Count; i++)
             {
@@ -237,6 +257,10 @@ public static class SecurityCurveRules
                 .Append(point.Value.ToString("G29", CultureInfo.InvariantCulture));
             if (NormalizeOptional(point.Tenor) is { } tenor)
                 builder.Append('@').Append(tenor);
+            // Existing curves keep exactly the same canonical bytes and hashes. New typed-rate
+            // pillars bind their raw observation and reviewed construction into the immutable hash.
+            if (point.RateEvidence is { } evidence)
+                builder.Append("|rate-evidence:").Append(System.Text.Json.JsonSerializer.Serialize(evidence));
         }
 
         return Sha256Digest.ComputeUtf8(builder.ToString());
@@ -337,22 +361,24 @@ public static class SecurityCurveRules
             $"{version.CurveKey} v{version.Version} {hashPrefix}");
     }
 
-    private static void RequireValueForKind(SecurityCurveKind kind, SecurityCurvePointDto point, DateOnly asOf)
+    private static void RequireValueForKind(SecurityCurveKind kind, SecurityCurvePointDto point, DateOnly asOf, SecurityCurveRatePolicy policy)
     {
         switch (kind)
         {
             case SecurityCurveKind.Discount:
-                if (point.Value is <= 0m or > 1m)
-                    throw new ArgumentException($"A discount factor lies in (0, 1]; {point.Date:yyyy-MM-dd} carries {point.Value}.", nameof(point));
+                if (point.Value <= 0m || policy == SecurityCurveRatePolicy.LegacyNonNegative && point.Value > 1m)
+                    throw new ArgumentException(policy == SecurityCurveRatePolicy.LegacyNonNegative
+                        ? $"A discount factor lies in (0, 1]; {point.Date:yyyy-MM-dd} carries {point.Value}."
+                        : $"A signed-rate discount factor must be strictly positive; {point.Date:yyyy-MM-dd} carries {point.Value}.", nameof(point));
                 if (point.Date == asOf && point.Value != 1m)
                     throw new ArgumentException("The discount factor on the as-of date is 1.", nameof(point));
                 break;
             case SecurityCurveKind.Forward:
-                if (Math.Abs(point.Value) > 1m)
+                if (policy == SecurityCurveRatePolicy.LegacyNonNegative && Math.Abs(point.Value) > 1m)
                     throw new ArgumentException($"Rates are stored as fractions; publish 0.04, not 4 ({point.Date:yyyy-MM-dd} carries {point.Value}).", nameof(point));
                 // The cash-flow projection floors every rate at zero, so a stored negative fixing
                 // would value a zero-floored leg while the curve claims otherwise.
-                if (point.Value < 0m)
+                if (policy == SecurityCurveRatePolicy.LegacyNonNegative && point.Value < 0m)
                     throw new ArgumentException(
                         $"A forward rate is not negative: the cash-flow projection floors every rate at zero, so a stored negative curve would silently value a zero-floored leg ({point.Date:yyyy-MM-dd} carries {point.Value}).",
                         nameof(point));

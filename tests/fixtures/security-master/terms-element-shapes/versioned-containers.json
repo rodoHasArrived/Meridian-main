@@ -1397,6 +1397,142 @@
           "underlyingRole": null
         }
       ]
+    },
+    {
+      "path": "Bond.bondWorkflow",
+      "containerSince": 5,
+      "members": [
+        {
+          "key": "floatingMethod",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [
+            "Simple",
+            "CompoundedOvernight"
+          ],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "fixingCalendarId",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "lookbackBusinessDays",
+          "type": "Integer",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "observationMethod",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [
+            "LookbackWithoutShift",
+            "ObservationShift"
+          ],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "observationWeighting",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [
+            "ObservationPeriod",
+            "InterestPeriod"
+          ],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "lockoutBusinessDays",
+          "type": "Integer",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "lagMonths",
+          "type": "Integer",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "interpolateMonthly",
+          "type": "Boolean",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "couponFloorRatio",
+          "type": "Decimal",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "redemptionFloorRatio",
+          "type": "Decimal",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "exCouponBusinessDays",
+          "type": "Integer",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        }
+      ]
     }
   ]
 }

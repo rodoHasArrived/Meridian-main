@@ -9,7 +9,25 @@ import { formatGridSigned as formatSigned } from "./gridFormat";
 import { useThemeRowHeight } from "./useThemeRowHeight";
 
 const isNumber = (v) => typeof v === "number" && Number.isFinite(v);
-const sumColumn = (rows, key) => rows.every((row) => isNumber(row[key])) ? rows.reduce((total, row) => total + row[key], 0) : null;
+// Edits and decimal wire values arrive as strings. Accept the same finite
+// amounts without allowing Number(null), Number("") or booleans to prove zero.
+const decimal = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/;
+function amountNumber(value) {
+  if (isNumber(value)) return value;
+  if (typeof value !== "string" || !decimal.test(value.trim())) return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+function sumColumn(rows, key) {
+  let total = 0;
+  for (const row of rows) {
+    const value = amountNumber(row[key]);
+    if (value === null) return null;
+    total += value;
+    if (!Number.isFinite(total)) return null;
+  }
+  return total;
+}
 
 export const CELL_FORMATS = {
   text: (v) => (v === null || v === undefined || v === "" ? "\u2014" : String(v)),
@@ -150,15 +168,16 @@ export function gridProof(proof, rows) {
   if (!proof) return null;
   if (proof.type === "balance") {
     const d = sumColumn(rows, proof.debit), c = sumColumn(rows, proof.credit);
-    if (!rows.length || d === null || c === null) return { ok: false, label: proof.label || "\u03A3 debit = \u03A3 credit", text: "Incomplete evidence" };
+    if (!rows.length || d === null || c === null || !Number.isFinite(d - c)) return { ok: false, label: proof.label || "\u03A3 debit = \u03A3 credit", text: "Incomplete evidence" };
     const out = Math.round((d - c) * 100) / 100;
+    if (!Number.isFinite(out)) return { ok: false, label: proof.label || "\u03A3 debit = \u03A3 credit", text: "Incomplete evidence" };
     return { ok: out === 0, label: proof.label || "\u03A3 debit = \u03A3 credit",
       text: out === 0 ? `Balanced \u00B7 ${formatSigned(d, { style: "accounting" })}` : `Out by ${formatSigned(out, { style: "accounting" })}` };
   }
   if (proof.type === "sum") {
     const s = sumColumn(rows, proof.column);
     const exp = proof.expected;
-    if (!rows.length || s === null || exp !== undefined && !isNumber(exp)) return { ok: false, label: proof.label || `\u03A3 ${proof.column}`, text: "Incomplete evidence" };
+    if (!rows.length || s === null || exp !== undefined && (!isNumber(exp) || !Number.isFinite(s - exp))) return { ok: false, label: proof.label || `\u03A3 ${proof.column}`, text: "Incomplete evidence" };
     const ok = exp === undefined || Math.round((s - exp) * 100) / 100 === 0;
     return { ok, label: proof.label || `\u03A3 ${proof.column}`,
       text: ok ? formatSigned(s, { style: "accounting" }) : `${formatSigned(s, { style: "accounting" })} \u00B7 out by ${formatSigned(s - exp, { style: "accounting" })}` };

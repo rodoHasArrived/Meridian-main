@@ -13,6 +13,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
 
     private async Task ValidateCurrentConsolidationDraftAsync(ManualJournalEntryDraftDto draft, CancellationToken ct)
     {
+        await ValidateCurrentIntercompanyDraftAsync(draft, ct).ConfigureAwait(false);
         if (!IsConsolidationDraft(draft))
             return;
         if (string.IsNullOrWhiteSpace(draft.ConsolidationEvidenceJson) ||

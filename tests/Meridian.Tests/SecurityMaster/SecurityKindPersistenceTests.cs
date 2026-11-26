@@ -1,4 +1,6 @@
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.FSharp.Domain;
@@ -123,7 +125,7 @@ public sealed class SecurityKindPersistenceTests
             for (var m = 0; m < members.Length; m++)
             {
                 var path = $"{termFields[f].Name}.{members[m].Name}";
-                var sample = NewValueFor(members[m].PropertyType, memberValues[m]);
+                var sample = NewValueFor(members[m].PropertyType, memberValues[m], path);
                 if (sample is null)
                 {
                     notWalked.Add(path);
@@ -246,10 +248,36 @@ public sealed class SecurityKindPersistenceTests
     }
 
     private static SecurityMasterRecord DecodedTwin(string assetClass)
-        => SecurityMasterMapping.ToRecord(SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(
-            assetClass,
-            SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
-                assetClass, SecurityAssetTermsSchemaRoundTripTests.FullPayloads[assetClass])));
+    {
+        var payload = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            assetClass, SecurityAssetTermsSchemaRoundTripTests.FullPayloads[assetClass]);
+        if (assetClass == "Bond")
+        {
+            // The legacy schema twin intentionally leaves newer optional modules absent. This
+            // walker needs every v5 workflow member present so each can be changed independently
+            // and carried through the real codec, including explicit zero and false values.
+            var terms = JsonNode.Parse(payload.GetRawText())!.AsObject();
+            terms["assetClassTermsVersion"] = 5;
+            terms["bondWorkflow"] = JsonSerializer.SerializeToNode(new
+            {
+                floatingMethod = "CompoundedOvernight",
+                fixingCalendarId = "USNY",
+                lookbackBusinessDays = 2,
+                observationMethod = "ObservationShift",
+                observationWeighting = "InterestPeriod",
+                lockoutBusinessDays = 0,
+                lagMonths = 3,
+                interpolateMonthly = false,
+                couponFloorRatio = 0m,
+                redemptionFloorRatio = 1m,
+                exCouponBusinessDays = 0
+            });
+            payload = JsonSerializer.SerializeToElement(terms);
+        }
+
+        return SecurityMasterMapping.ToRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, payload));
+    }
 
     /// <summary>The member's value after the record is written to a flat row and read back.</summary>
     private static object? RoundTrip(
@@ -286,8 +314,27 @@ public sealed class SecurityKindPersistenceTests
         => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(FSharpList<>);
 
     /// <summary>A value of the member's type that differs from the one it holds, when one can be built.</summary>
-    private static FSharpOption<object>? NewValueFor(Type memberType, object? current)
+    private static FSharpOption<object>? NewValueFor(Type memberType, object? current, string path)
     {
+        // Unlike open text members, these conventions accept only their declared vocabulary.
+        // Mutate to another admitted spelling so persistence is tested without bypassing admission.
+        string[]? permitted = path switch
+        {
+            "Workflow.FloatingMethod" => ["Simple", "CompoundedOvernight"],
+            "Workflow.ObservationMethod" => ["LookbackWithoutShift", "ObservationShift"],
+            "Workflow.ObservationWeighting" => ["ObservationPeriod", "InterestPeriod"],
+            _ => null
+        };
+        if (permitted is not null)
+        {
+            foreach (var text in permitted)
+            {
+                var candidate = FSharpOption<string>.Some(text);
+                if (!Equals(candidate, current))
+                    return FSharpOption<object>.Some(candidate);
+            }
+        }
+
         foreach (var variant in new[] { 0, 1 })
         {
             var candidate = Build(memberType, variant, member: true);

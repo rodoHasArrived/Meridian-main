@@ -146,8 +146,7 @@ For AI tooling, Codex skill, Codex catalog, prompt, docs automation, or assistan
 - Advisory: `make ai-audit*`, `make ai-report`, `make ai-docs-freshness`,
   `make ai-docs-drift`, `make ai-docs-sync-report`, `make ai-arch-check-summary`,
   `make ai-arch-check-json`.
-- Maintenance/reporting: `make ai-maintenance-light`, `make ai-maintenance-full`,
-  `make ai-docs-archive`, `make ai-docs-archive-execute`.
+- Maintenance/reporting: `make ai-maintenance-light`, `make ai-maintenance-full`.
 
 ## Final Response Shape
 

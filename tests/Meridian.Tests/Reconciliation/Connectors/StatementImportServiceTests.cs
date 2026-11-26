@@ -13,7 +13,7 @@ using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Alpaca;
 using Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Ofx;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Tests.TestHelpers;
 using Xunit;
 
@@ -27,6 +27,107 @@ namespace Meridian.Tests.Reconciliation.Connectors;
 /// </summary>
 public sealed class StatementImportServiceTests : IDisposable
 {
+    [Fact]
+    public async Task ReviewedImport_retains_scoped_rows_exclusion_reasons_and_repeat_outcomes()
+    {
+        var request = CommitRequest(FixtureDocument("csv-mixed-kinds.csv")) with { TenantId = "tenant-review", CompanyId = "company-review" };
+        var preview = await _service.PreviewReviewAsync(request);
+        preview.ReviewId.Should().StartWith("sir-");
+        preview.Rows.Should().HaveCount(preview.RecordCount);
+        preview.Rows.Should().OnlyContain(row => row.SourceRowNumber == null && row.Record.QuantityExact != null);
+        var excluded = preview.Rows.First();
+        var commit = request with
+        {
+            ReviewId = preview.ReviewId,
+            RowDispositions = [new(excluded.RowId, "Exclude", "Retained duplicate source activity.")]
+        };
+
+        var result = await _service.CommitAsync(commit);
+        var replay = await _service.CommitAsync(commit);
+
+        result.RecordCount.Should().Be(preview.RecordCount - 1);
+        result.RowOutcomes.Should().HaveCount(preview.RecordCount);
+        result.RowOutcomes.Single(row => row.RowId == excluded.RowId).Should().Match<StatementImportRowOutcomeDto>(
+            row => row.Status == "Excluded" && row.Reason == "Retained duplicate source activity.");
+        replay.Duplicate.Should().BeTrue();
+        replay.RowOutcomes.Should().BeEquivalentTo(result.RowOutcomes);
+        (await _service.GetReviewAsync(preview.ReviewId!, "another-tenant", "company-review")).Should().BeNull();
+        var review = (await _service.GetReviewAsync(preview.ReviewId!, "tenant-review", "company-review"))!;
+        var page = await _service.GetReviewOutcomesAsync(review, 1, 1);
+        page!.TotalRows.Should().Be(preview.RecordCount);
+        page.RowOutcomes.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task ReviewedImport_refuses_changed_scope_unknown_rows_missing_reason_and_changed_decisions()
+    {
+        var request = CommitRequest(FixtureDocument("csv-mixed-kinds.csv")) with { TenantId = "tenant-review", CompanyId = "company-review" };
+        var preview = await _service.PreviewReviewAsync(request);
+        var reviewed = request with { ReviewId = preview.ReviewId };
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.ValidateReviewedCommitAsync(reviewed with { PeriodEnd = new DateOnly(2026, 7, 1) }));
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(reviewed with
+        { RowDispositions = [new("unknown", "Exclude", "Duplicate")] }));
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(reviewed with
+        { RowDispositions = [new(preview.Rows[0].RowId, "Exclude", " ")] }));
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(reviewed with
+        { RowDispositions = [new(preview.Rows[0].RowId, "AcceptAsBreak", "Investigate")] }));
+        await _service.CommitAsync(reviewed);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CommitAsync(reviewed with
+        { RowDispositions = [new(preview.Rows[0].RowId, "Exclude", "Changed after confirmation")] }));
+    }
+
+    [Fact]
+    public async Task Review_rows_remain_scoped_and_page_bounds_are_explicit()
+    {
+        var request = CommitRequest(FixtureDocument("csv-mixed-kinds.csv")) with { TenantId = "tenant-review", CompanyId = "company-review" };
+        var preview = await _service.PreviewReviewAsync(request);
+        var review = (await _service.GetReviewAsync(preview.ReviewId!, "tenant-review", "company-review"))!;
+        var page = StatementImportService.ReviewRows(review, 1, 2);
+        page.Rows.Should().HaveCount(2);
+        page.TotalRows.Should().Be(preview.RecordCount);
+        page.Rows[0].NormalizedIndex.Should().Be(1);
+        Assert.Throws<InvalidDataException>(() => StatementImportService.ReviewRows(review, -1, 100));
+        Assert.Throws<InvalidDataException>(() => StatementImportService.ReviewRows(review, 0, 201));
+    }
+
+    [Fact]
+    public async Task ReviewedImport_pages_all_outcomes_and_rejects_corrupted_row_order()
+    {
+        var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency\n"
+            + string.Join('\n', Enumerable.Range(0, 151).Select(index => $"FUND-A,STK{index},1,10,0,position,2026-06-30,USD"));
+        var request = CommitRequest(new StatementSourceDocument("many.csv", Encoding.UTF8.GetBytes(csv))) with
+        { TenantId = "tenant-review", CompanyId = "company-review" };
+        var preview = await _service.PreviewReviewAsync(request);
+        preview.TotalRows.Should().Be(151);
+        preview.Rows.Should().HaveCount(100);
+        var result = await _service.CommitAsync(request with { ReviewId = preview.ReviewId });
+        result.TotalRows.Should().Be(151);
+        result.RowOutcomes.Should().HaveCount(100);
+        var review = (await _service.GetReviewAsync(preview.ReviewId!, "tenant-review", "company-review"))!;
+        (await _service.GetReviewOutcomesAsync(review, 100, 100))!.RowOutcomes.Should().HaveCount(51);
+
+        var path = Path.Combine(_root, "reconciliation", "statement-import-reviews", preview.ReviewId + ".preview.json");
+        var corrupted = JsonNode.Parse(await File.ReadAllTextAsync(path))!;
+        corrupted["rows"]![0]!["normalizedIndex"] = 1;
+        await File.WriteAllTextAsync(path, corrupted.ToJsonString());
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.GetReviewAsync(preview.ReviewId!, "tenant-review", "company-review"));
+    }
+
+    [Fact]
+    public async Task ReviewedImport_supplementary_financial_evidence_cannot_be_excluded_without_row_mapping()
+    {
+        var request = CommitRequest(RichAlpacaDocument("USD"), externalAccountId: "PA3ALPACA01") with
+        { TenantId = "tenant-review", CompanyId = "company-review" };
+        var preview = await _service.PreviewReviewAsync(request);
+        preview.Rows.Should().NotBeEmpty();
+        preview.Rows.Should().OnlyContain(row => !row.CanExclude);
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(request with
+        {
+            ReviewId = preview.ReviewId,
+            RowDispositions = [new(preview.Rows[0].RowId, "Exclude", "Would orphan supplemental evidence")]
+        }));
+    }
+
     private readonly string _root = StatementConnectorTestData.CreateTempRoot("mdc_stmt_import_svc");
     private readonly StatementMappingProfileCatalog _catalog;
     private readonly StatementConnectorRegistry _registry;
@@ -83,6 +184,57 @@ public sealed class StatementImportServiceTests : IDisposable
 
     private static StatementSourceDocument FixtureDocument(string fileName, string? mappingProfileId = null)
         => new(fileName, StatementConnectorTestData.ReadFixture(fileName), mappingProfileId);
+
+    [Theory]
+    [InlineData("FUND-A,SPY,1,10,-10,trade,2026-06-02,\"USD", "CSV_INVALID_SYNTAX")]
+    [InlineData("FUND-A,SP\"Y\",1,10,-10,trade,2026-06-02,USD", "CSV_INVALID_SYNTAX")]
+    [InlineData("FUND-A,\"SPY\"junk,1,10,-10,trade,2026-06-02,USD", "CSV_INVALID_SYNTAX")]
+    [InlineData("FUND-A,SPY,1,10,-10,trade,2026-06-02,USD,discarded", "COLUMN_COUNT_MISMATCH")]
+    [InlineData("FUND-A,SPY,1,10,-10,trade,2026-06-02", "COLUMN_COUNT_MISMATCH")]
+    [InlineData("FUND-A,SP\0Y,1,10,-10,trade,2026-06-02,USD", "CSV_INVALID_SYNTAX")]
+    public async Task CsvMalformedTail_BlocksWholeImportThenAllowsCorrectedReplay(string malformedRow, string code)
+    {
+        const string header = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency\n";
+        const string firstRow = "FUND-A,AAPL,1,10,-10,trade,2026-06-01,USD\n";
+        var document = new StatementSourceDocument("malformed-tail.csv", Encoding.UTF8.GetBytes(header + firstRow + malformedRow + "\n"));
+
+        var preview = await _service.PreviewAsync(document, "csv-mapped");
+        preview.Status.Should().Be("NeedsAttention");
+        var validation = await _service.ValidateAsync(document, "csv-mapped");
+        validation.IsValid.Should().BeFalse();
+        validation.Errors.Should().Contain(error => error.Contains(code, StringComparison.Ordinal));
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document)));
+        (await _workflow.ListImportsAsync()).Should().BeEmpty("the valid prefix cannot make a refused tail complete");
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+
+        var corrected = document with { Content = Encoding.UTF8.GetBytes(header + firstRow + "FUND-A,SPY,1,10,-10,trade,2026-06-02,USD\n") };
+        var result = await _service.CommitAsync(CommitRequest(corrected));
+        var retainedSource = await File.ReadAllBytesAsync(Path.Combine(_root, result.RetainedSourcePath));
+        retainedSource.Should().Equal(corrected.Content.ToArray());
+        var import = (await _workflow.ListImportsAsync()).Should().ContainSingle().Which;
+        import.SourceFileHash.Should().Be(Sha256Digest.Compute(retainedSource));
+        import.NormalizedRowCount.Should().Be(2);
+
+        var restarted = new StatementImportService(_registry,
+            new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root)), _workflow, _root);
+        var duplicate = await restarted.CommitAsync(CommitRequest(corrected));
+        duplicate.Duplicate.Should().BeTrue();
+        duplicate.RunId.Should().Be(result.RunId);
+        (await _workflow.ListImportsAsync()).Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task CsvMalformedHeader_IsAValidationFailureWithoutThrowingOrRetention()
+    {
+        var document = new StatementSourceDocument("bad-header.csv", Encoding.UTF8.GetBytes(
+            "\"account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency\n" +
+            "FUND-A,SPY,1,10,-10,trade,2026-06-02,USD\n"));
+
+        (await _service.ValidateAsync(document, "csv-mapped")).IsValid.Should().BeFalse();
+        (await _service.PreviewAsync(document, "csv-mapped")).Status.Should().Be("NeedsAttention");
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document)));
+        (await _workflow.ListImportsAsync()).Should().BeEmpty();
+    }
 
     [Theory]
     [InlineData("commission", "1,25")]

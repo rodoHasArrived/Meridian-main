@@ -1,3 +1,4 @@
+using Meridian.Application.ProviderRouting;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
@@ -51,6 +52,10 @@ public static class ProviderConnectionEndpoints
                     : await service.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(rows, jsonOptions);
             }
+            catch (ProviderRuntimeCredentialQuiescenceException error)
+            {
+                return Results.Conflict(new { code = "ProviderCredentialMaintenanceRequired", error = error.Message });
+            }
             catch (UnauthorizedAccessException)
             {
                 return EndpointHelpers.Forbidden();
@@ -78,13 +83,17 @@ public static class ProviderConnectionEndpoints
 
             try
             {
-                var selectedService = ResolveConnectionService(context, providerId, service);
+                var selectedService = ResolveConnectionService(context, providerId, service, actor);
                 var result = await selectedService.SaveCredentialsAsync(providerId, request with { RequestedBy = actor }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ProviderCredentialValidationException ex)
             {
                 return Results.BadRequest(new { error = ex.Message, unknownFields = ex.UnknownFields });
+            }
+            catch (ProviderRuntimeCredentialQuiescenceException error)
+            {
+                return Results.Conflict(new { code = "ProviderCredentialMaintenanceRequired", error = error.Message });
             }
             catch (UnauthorizedAccessException)
             {
@@ -103,6 +112,38 @@ public static class ProviderConnectionEndpoints
         .Produces<ProviderCredentialMutationResultDto>(StatusCodes.Status200OK)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
+        group.MapPost(UiApiRoutes.ProviderCredentialVerifyDraft, async (
+            string providerId,
+            ProviderCredentialDraftRequestDto request,
+            HttpContext context,
+            ProviderConnectionLifecycleService service) =>
+        {
+            if (!HasManageCredentialsPermission(context) || !EndpointAuthorization.TryResolveActor(context, out _))
+                return EndpointHelpers.Forbidden();
+
+            try
+            {
+                var selected = ResolveConnectionService(context, providerId, service);
+                var result = await selected.VerifyDraftAsync(providerId, request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return EndpointHelpers.Forbidden();
+            }
+            catch (InvalidDataException)
+            {
+                return Results.BadRequest(new { error = "Credential request does not match retained connection ownership." });
+            }
+            catch (ArgumentException)
+            {
+                return Results.NotFound(new { error = "Provider is not credential-managed." });
+            }
+        })
+        .WithName("VerifyDraftProviderConnection").RequirePermission(UserPermission.ManageCredentials)
+        .Produces<ProviderCredentialDraftVerificationResultDto>(StatusCodes.Status200OK)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         group.MapPost(UiApiRoutes.ProviderCredentialVerify, async (
             string providerId,
             HttpContext context,
@@ -118,6 +159,10 @@ public static class ProviderConnectionEndpoints
                 var selectedService = ResolveConnectionService(context, providerId, service);
                 var result = await selectedService.VerifyAsync(providerId, context.RequestAborted, actor).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
+            }
+            catch (ProviderRuntimeCredentialQuiescenceException error)
+            {
+                return Results.Conflict(new { code = "ProviderCredentialMaintenanceRequired", error = error.Message });
             }
             catch (UnauthorizedAccessException)
             {
@@ -149,6 +194,10 @@ public static class ProviderConnectionEndpoints
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
+            catch (ProviderRuntimeCredentialQuiescenceException error)
+            {
+                return Results.Conflict(new { code = "ProviderCredentialMaintenanceRequired", error = error.Message });
+            }
             catch (UnauthorizedAccessException)
             {
                 return EndpointHelpers.Forbidden();
@@ -163,9 +212,18 @@ public static class ProviderConnectionEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 
-    private static ProviderConnectionLifecycleService ResolveConnectionService(HttpContext context, string providerId, ProviderConnectionLifecycleService service)
+    internal static ProviderConnectionLifecycleService ResolveConnectionService(HttpContext context, string providerId,
+        ProviderConnectionLifecycleService service, string? templateActor = null)
     {
         var connectionId = ReadConnectionId(context);
+        if (context.Request.Query.TryGetValue("templateSetupId", out var setupIds))
+        {
+            var owner = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (templateActor is null || connectionId is not null || !owner.HasTenantScope || setupIds.Count != 1 ||
+                !Guid.TryParse(setupIds[0], out var setupId) || !EndpointAuthorization.HasPermission(context, ProviderConnectionTemplateEndpoints.Permissions))
+                throw new UnauthorizedAccessException("The provider setup draft is unavailable.");
+            return service.ForTemplateSetup(setupId, owner.TenantId!, templateActor, providerId);
+        }
         if (connectionId is null)
             return service;
         var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);

@@ -5,6 +5,8 @@ using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Alpaca;
+using Meridian.Infrastructure.Adapters.AlphaVantage;
+using Meridian.Infrastructure.Adapters.TwelveData;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.NYSE;
 using Meridian.Infrastructure.Adapters.Polygon;
@@ -40,6 +42,16 @@ public sealed partial class ProviderFactory
             .AddInMemoryCollection(configuredValues.Select(value =>
                 new KeyValuePair<string, string?>(value.Name, credentials.Get(value.Name))))
             .Build();
+        // These adapters share the typed account declaration with factory-created history and
+        // search, even when a caller supplied an AppConfig separately from host IConfiguration.
+        if (typeof(TProvider) == typeof(TwelveDataCorporateActionProvider))
+            return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration, credentials,
+                _config.ProviderQuotas?.TwelveData ?? new TwelveDataQuotaConfig(),
+                BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "twelvedata"));
+        if (typeof(TProvider) == typeof(AlphaVantageCorporateActionProvider))
+            return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration, credentials,
+                _config.ProviderQuotas?.AlphaVantage ?? new AlphaVantageQuotaConfig(),
+                BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "alphavantage"));
         return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration, credentials);
     }
 
@@ -113,7 +125,7 @@ public sealed partial class ProviderFactory
     internal IMarketDataClient CreateAlpacaStreamingClient() => new AlpacaMarketDataClient(
         Services.GetRequiredService<TradeDataCollector>(),
         Services.GetRequiredService<QuoteCollector>(),
-        ResolveAlpacaOptions());
+        ResolveAlpacaOptions(), ProviderValidationProfile.Resolve(_config.Backfill, "alpaca"));
 
     private AlpacaOptions ResolveAlpacaOptions() => ResolveAlpacaOptions(out _);
 
@@ -150,20 +162,26 @@ public sealed partial class ProviderFactory
             Services.GetRequiredService<TradeDataCollector>(),
             Services.GetRequiredService<QuoteCollector>(),
             options: (_config.Polygon ?? new PolygonOptions()) with { ApiKey = credentials.Get("POLYGON_API_KEY") ?? string.Empty },
-            reconnectionMetrics: Services.GetService<IReconnectionMetrics>());
+            reconnectionMetrics: Services.GetService<IReconnectionMetrics>(),
+            validationProfile: ProviderValidationProfile.Resolve(_config.Backfill, "polygon"));
     }
 
-    internal IMarketDataClient CreateNyseStreamingClient() => new NyseMarketDataClient(
-        Services.GetRequiredService<TradeDataCollector>(),
-        Services.GetRequiredService<MarketDepthCollector>(),
-        Services.GetRequiredService<QuoteCollector>(),
-        Services.GetRequiredService<IHttpClientFactory>(),
-        Services.GetService<NYSEOptions>());
+    internal IMarketDataClient CreateNyseStreamingClient()
+    {
+        NyseCredentialAccessPolicy.EnsureAccessAllowed(Services);
+        return new NyseMarketDataClient(
+            Services.GetRequiredService<TradeDataCollector>(),
+            Services.GetRequiredService<MarketDepthCollector>(),
+            Services.GetRequiredService<QuoteCollector>(),
+            Services.GetRequiredService<IHttpClientFactory>(),
+            Services.GetService<NYSEOptions>());
+    }
 
     internal IMarketDataClient CreateRobinhoodStreamingClient() => new RobinhoodMarketDataClient(
         Services.GetRequiredService<IHttpClientFactory>(),
         Services.GetRequiredService<QuoteCollector>(),
-        Services.GetRequiredService<ILogger<RobinhoodMarketDataClient>>(), GetRobinhoodAccessToken());
+        Services.GetRequiredService<ILogger<RobinhoodMarketDataClient>>(), GetRobinhoodAccessToken(),
+        ProviderValidationProfile.Resolve(_config.Backfill, "robinhood"));
 
     internal IMarketDataClient CreateSyntheticStreamingClient() => new SyntheticMarketDataClient(
         Services.GetRequiredService<IMarketEventPublisher>(), _config.Synthetic);
@@ -176,9 +194,9 @@ public sealed partial class ProviderFactory
     internal IOptionsChainProvider CreateAlpacaOptionsProvider()
     {
         var options = ResolveAlpacaOptions(out var context);
-        return new AlpacaOptionsChainProvider(Services.GetRequiredService<IHttpClientFactory>(),
+        return ProviderRuntimeProvenance.Attach(new AlpacaOptionsChainProvider(Services.GetRequiredService<IHttpClientFactory>(),
             options.KeyId, options.SecretKey, log: _log,
-            useSandbox: SelectedAlpacaReferenceEnvironment(context));
+            useSandbox: SelectedAlpacaReferenceEnvironment(context)), context);
     }
 
     /// <summary>
@@ -209,13 +227,17 @@ public sealed partial class ProviderFactory
     {
         var credentials = CreateCredentialContext<PolygonMarketDataClient>(
             ("POLYGON_API_KEY", FirstNonBlank(_config.Polygon?.ApiKey, _config.Backfill?.Providers?.Polygon?.ApiKey)));
-        return new PolygonOptionsChainProvider(Services.GetRequiredService<IHttpClientFactory>(),
-            credentials.Get("POLYGON_API_KEY") ?? string.Empty, log: _log);
+        return ProviderRuntimeProvenance.Attach(new PolygonOptionsChainProvider(Services.GetRequiredService<IHttpClientFactory>(),
+            credentials.Get("POLYGON_API_KEY") ?? string.Empty, log: _log), credentials);
     }
 
-    internal IOptionsChainProvider CreateRobinhoodOptionsProvider() => new RobinhoodOptionsChainProvider(
-        Services.GetRequiredService<IHttpClientFactory>(),
-        Services.GetRequiredService<ILogger<RobinhoodOptionsChainProvider>>(), GetRobinhoodAccessToken());
+    internal IOptionsChainProvider CreateRobinhoodOptionsProvider()
+    {
+        var credentials = CreateCredentialContext<RobinhoodHistoricalDataProvider>();
+        return ProviderRuntimeProvenance.Attach(new RobinhoodOptionsChainProvider(
+            Services.GetRequiredService<IHttpClientFactory>(),
+            Services.GetRequiredService<ILogger<RobinhoodOptionsChainProvider>>(), credentials.Get("ROBINHOOD_ACCESS_TOKEN") ?? string.Empty), credentials);
+    }
 
     internal IBrokerageGateway CreateIbBrokerageGateway() => new IBBrokerageGateway(
         _config.IB ?? new IBOptions(), Services.GetRequiredService<ILogger<IBBrokerageGateway>>());

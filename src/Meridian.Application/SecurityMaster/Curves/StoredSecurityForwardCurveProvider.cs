@@ -35,6 +35,11 @@ public sealed class StoredSecurityForwardCurveProvider : ISecurityForwardCurvePr
         }
 
         var definitions = await _store.ListDefinitionsAsync(SecurityCurveKind.Forward, indexName: indexName.Trim(), ct: ct).ConfigureAwait(false);
+        // Signed curves belong to the explicit workflow model. Merely publishing one must not
+        // change a legacy projection's curve selection or revive its historical zero-floor path.
+        var signedPins = context.Curves?.Where(pin => string.Equals(pin.Role, "Forward:" + indexName.Trim(), StringComparison.OrdinalIgnoreCase)).ToArray() ?? [];
+        if (signedPins.Length == 0)
+            definitions = definitions.Where(definition => definition.RatePolicy == SecurityCurveRatePolicy.LegacyNonNegative).ToArray();
         if (definitions.Count == 0)
         {
             return null;
@@ -56,7 +61,7 @@ public sealed class StoredSecurityForwardCurveProvider : ISecurityForwardCurvePr
         var definition = pins.Length == 1
             ? definitions.SingleOrDefault(candidate => candidate.CurveId == pins[0].CurveId)
             : definitions[0];
-        if (definition is null)
+        if (definition is null || definition.RatePolicy != SecurityCurveRatePolicy.LegacyNonNegative)
             return null;
         var version = pins.Length == 1
             ? await _store.GetVersionByIdAsync(definition.CurveId, pins[0].CurveVersionId, ct).ConfigureAwait(false)

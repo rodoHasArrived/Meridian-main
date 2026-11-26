@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ErrorNotice } from "@/components/ui/error-notice";
 import { RegionErrorBoundary, RegionErrorState } from "@/components/ui/error-boundary";
 import type { RequestLifecyclePhase } from "@/hooks/use-request-lifecycle";
 import { cn } from "@/lib/utils";
@@ -40,6 +41,11 @@ export interface AsyncRegionProps {
   /** Error text/flag. Replaces content only while there is no data to fall back to. */
   error?: string | null;
   /**
+   * The caught failure itself. When given, the error slot is the shared {@link ErrorNotice}:
+   * plain reason, Retry only when it can help, and request facts under "Technical details".
+   */
+  errorSource?: unknown;
+  /**
    * Whether resolved data already exists. Gates first-load skeletons and
    * error-state takeover: while true, background refreshes and transient errors
    * never blank the region.
@@ -58,8 +64,8 @@ function isLoadingState(phase: RequestLifecyclePhase | undefined, loading: boole
   return loading === true || phase === "running";
 }
 
-function isErrorState(phase: RequestLifecyclePhase | undefined, error: string | null | undefined): boolean {
-  return Boolean(error) || phase === "failed";
+function isErrorState(phase: RequestLifecyclePhase | undefined, error: string | null | undefined, errorSource: unknown): boolean {
+  return Boolean(error) || Boolean(errorSource) || phase === "failed";
 }
 
 export function AsyncRegion({
@@ -68,6 +74,7 @@ export function AsyncRegion({
   phase,
   loading,
   error,
+  errorSource,
   hasData = false,
   empty,
   onRetry,
@@ -75,7 +82,7 @@ export function AsyncRegion({
   className
 }: AsyncRegionProps) {
   const busy = isLoadingState(phase, loading);
-  const failed = isErrorState(phase, error);
+  const failed = isErrorState(phase, error, errorSource);
 
   // First load: no data yet and a request is running — stand in with the shape.
   if (busy && !hasData) {
@@ -92,10 +99,14 @@ export function AsyncRegion({
   if (failed && !hasData) {
     return (
       <div className={className}>
-        <RegionErrorState
-          message={typeof error === "string" && error ? error : `${capitalize(label)} could not be loaded.`}
-          onRetry={onRetry}
-        />
+        {errorSource ? (
+          <ErrorNotice error={errorSource} title={`${capitalize(label)} could not be loaded.`} onRetry={onRetry} />
+        ) : (
+          <RegionErrorState
+            message={typeof error === "string" && error ? error : `${capitalize(label)} could not be loaded.`}
+            onRetry={onRetry}
+          />
+        )}
       </div>
     );
   }

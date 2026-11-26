@@ -136,6 +136,41 @@ public sealed record CanonicalStatementRow(
 
     /// <summary>The broker/custodian transaction identifier, used for exact transaction matching.</summary>
     public string? ExternalTransactionId { get; init; }
+
+    /// <summary>
+    /// Custodian-stated market value of a holding, when the source states it. Required for bonds,
+    /// whose quantity is face and whose price is quoted per 100 face, so quantity x price is not
+    /// value. Omitted from serialized rows when absent so retained imports keep their content.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? MarketValue { get; init; }
+
+    /// <summary>
+    /// Custodian-stated accrued interest on a holding (absolute amount in <see cref="Currency"/>),
+    /// reconciled against Meridian's accrued interest receivable. Null when the source states none.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? AccruedInterest { get; init; }
+
+    /// <summary>The source payment identity linked by a retained reversal.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? RelatedTransactionId { get; init; }
+
+    /// <summary>Explicit canonical instrument identity supplied by the source mapping.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SecurityId { get; init; }
+
+    /// <summary>Source allocation JSON; every positive leg identifies one obligation or projected flow.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ReceiptAllocations { get; init; }
+
+    /// <summary>Source identity for a payment allocated to one obligation.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ObligationKey { get; init; }
+
+    /// <summary>Accepted projected flow identity for a payment allocated to one obligation.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? ProjectedCashFlowId { get; init; }
 }
 
 public sealed record ReconciliationCase(

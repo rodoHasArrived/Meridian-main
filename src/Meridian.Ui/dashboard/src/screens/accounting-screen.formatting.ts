@@ -1,4 +1,4 @@
-import { formatCurrency as formatCurrencyAmount, formatPrefixedCurrency, formatSignedCurrency as formatSignedCurrencyAmount, pluralizeCount, formatUtcTimestamp } from "@/lib/format";
+import { formatNumber, pluralizeCount, formatTimestamp, formatUtcDate } from "@/lib/format";
 
 export function formatCount(count: number, singular: string): string {
   return pluralizeCount(count, singular);
@@ -17,30 +17,8 @@ export function formatBytes(value: number): string {
     unitIndex += 1;
   }
 
-  const formatted = size >= 10 || unitIndex === 0
-    ? size.toFixed(0)
-    : size.toFixed(1).replace(/\.0$/, "");
+  const formatted = formatNumber(size, { maximumFractionDigits: size >= 10 || unitIndex === 0 ? 0 : 1 });
   return `${formatted} ${units[unitIndex]}`;
-}
-
-export function formatCurrency(value: number) {
-  return formatPrefixedCurrency(value);
-}
-
-export function formatCurrencyWithCode(value: number, currency: string, signed = false): string {
-  const code = currency.trim().toUpperCase();
-  const normalizedValue = value === 0 ? 0 : value;
-  const amount = formatCurrencyAmount(normalizedValue, { currency: code || "USD", minimumFractionDigits: signed && normalizedValue !== 0 ? 2 : 0 });
-  const prefix = signed && value > 0 && Number.isFinite(value) ? "+" : "";
-  return code && !amount.includes(code) ? `${prefix}${amount} ${code}` : `${prefix}${amount}`;
-}
-
-export function formatCurrencyForCode(value: number, currency: string): string {
-  return formatCurrencyAmount(value, { currency, minimumFractionDigits: 0 });
-}
-
-export function formatSignedCurrency(value: number): string {
-  return formatSignedCurrencyAmount(value, { minimumFractionDigits: 2, zeroLabel: "$0" });
 }
 
 export function formatDateTimeLabel(value: string | null | undefined): string {
@@ -53,7 +31,27 @@ export function formatDateTimeLabel(value: string | null | undefined): string {
     return value;
   }
 
-  return formatUtcTimestamp(date);
+  return formatTimestamp(date);
+}
+
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+const MIDNIGHT_UTC = /^\d{4}-\d{2}-\d{2}T00:00(?::00(?:\.0+)?)?(?:Z|\+00:00)$/;
+
+/**
+ * An accounting date as a date. Effective, posting and period dates arrive date-only or as UTC
+ * midnight; printing those with "00:00 UTC" invents a time nobody recorded. Anything carrying a
+ * real time keeps the timestamp format.
+ */
+export function formatAccountingDate(value: string | null | undefined): string {
+  if (!value) {
+    return "Not recorded";
+  }
+  const trimmed = value.trim();
+  if (DATE_ONLY.test(trimmed) || MIDNIGHT_UTC.test(trimmed)) {
+    const date = new Date(`${trimmed.slice(0, 10)}T00:00:00Z`);
+    return Number.isNaN(date.getTime()) ? value : formatUtcDate(date);
+  }
+  return formatDateTimeLabel(value);
 }
 
 export function formatDateOnly(value: string): string {

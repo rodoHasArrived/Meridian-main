@@ -125,24 +125,41 @@ public sealed class PaperTradingPortfolioBasisParityTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task NativePaydown_ApportionsTheExactRemainingBasisAcrossLots(bool shortPosition)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task NativePaydown_PreservesCompatibilityBasisAndRefusesUnprovenLedgerEconomics(bool shortPosition, bool withLedger)
     {
-        var ledger = new Meridian.Ledger.Ledger();
+        var ledger = withLedger ? new Meridian.Ledger.Ledger() : null;
         var portfolio = new PaperTradingPortfolio(10m, ledger, Adjuster(Action("PrincipalPaydown", distributionRatio: 0.4m)));
         var openingSide = shortPosition ? OrderSide.Sell : OrderSide.Buy;
         var closingSide = shortPosition ? OrderSide.Buy : OrderSide.Sell;
         portfolio.ApplyFill(Fill(openingSide, 1m, 1m, 0));
         portfolio.ApplyFill(Fill(openingSide, 1m, 2m, 1));
 
+        if (ledger is not null)
+        {
+            var originalLots = portfolio.GetPositionLots("BASIS");
+            var originalCash = portfolio.Cash;
+            var originalCount = ledger.JournalEntryCount;
+            await Assert.ThrowsAsync<InvalidOperationException>(() => portfolio.ApplyCorporateActionsAsync("BASIS", OpenedAt));
+            portfolio.GetPositionLots("BASIS").Should().BeEquivalentTo(originalLots);
+            portfolio.Cash.Should().Be(originalCash);
+            ledger.JournalEntryCount.Should().Be(originalCount);
+            Balance(ledger, shortPosition).Should().Be(shortPosition ? -3m : 3m);
+            portfolio.CheckLedgerIntegrity().Should().BeEmpty();
+            return;
+        }
+
+        // The calculation-only compatibility path retains the exact basis reduction without
+        // claiming that a quote-only adjustment supplies cash or an accounting journal.
         await portfolio.ApplyCorporateActionsAsync("BASIS", OpenedAt);
+        portfolio.Positions["BASIS"].AverageCostBasis.Should().Be(1.1m);
         portfolio.ApplyFill(Fill(closingSide, 1m, 1m, 2));
         portfolio.ApplyFill(Fill(closingSide, 1m, 1m, 3));
-
-        // This compatibility projection does not post the separate paydown journal.
-        Balance(ledger, shortPosition).Should().Be(shortPosition ? -0.8m : 0.8m);
         portfolio.RealisedPnl.Should().Be(shortPosition ? 0.2m : -0.2m);
+        portfolio.GetPositionLots("BASIS").Should().BeEmpty();
     }
 
     [Fact]
@@ -160,24 +177,38 @@ public sealed class PaperTradingPortfolioBasisParityTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task NativeSplitThenPaydown_ReducesRetainedTotalWithoutRebuildingTheUnitQuote(bool shortPosition)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task NativeSplitThenPaydown_PreservesExactCompatibilityBasisAndRefusesUnprovenLedgerEconomics(bool shortPosition, bool withLedger)
     {
         const decimal openingBasis = 1.0000000000000000000000000001m;
-        var ledger = new Meridian.Ledger.Ledger();
+        var ledger = withLedger ? new Meridian.Ledger.Ledger() : null;
         var adjuster = Adjuster(Action("StockSplit", splitRatio: 3m),
             Action("PrincipalPaydown", distributionRatio: 0.1m, day: 7));
         var portfolio = new PaperTradingPortfolio(2m, ledger, adjuster);
         portfolio.ApplyFill(Fill(shortPosition ? OrderSide.Sell : OrderSide.Buy, 1m, openingBasis, 0));
 
+        if (ledger is not null)
+        {
+            var originalLots = portfolio.GetPositionLots("BASIS");
+            var originalCash = portfolio.Cash;
+            var originalCount = ledger.JournalEntryCount;
+            await Assert.ThrowsAsync<InvalidOperationException>(() => portfolio.ApplyCorporateActionsAsync("BASIS", OpenedAt));
+            portfolio.GetPositionLots("BASIS").Should().BeEquivalentTo(originalLots);
+            portfolio.Cash.Should().Be(originalCash);
+            ledger.JournalEntryCount.Should().Be(originalCount);
+            Balance(ledger, shortPosition).Should().Be(shortPosition ? -openingBasis : openingBasis);
+            portfolio.CheckLedgerIntegrity().Should().BeEmpty();
+            return;
+        }
+
         await portfolio.ApplyCorporateActionsAsync("BASIS", OpenedAt);
         portfolio.ApplyFill(Fill(shortPosition ? OrderSide.Buy : OrderSide.Sell, 3m, 1m, 1));
 
-        var account = shortPosition ? LedgerAccounts.ShortSecuritiesPayable("BASIS") : LedgerAccounts.Securities("BASIS");
-        var relieved = ledger.Journal.SelectMany(entry => entry.Lines).Where(line => line.Account == account)
-            .Sum(line => shortPosition ? line.Debit : line.Credit);
-        relieved.Should().Be(openingBasis - 0.3m);
+        var retainedBasis = openingBasis - 0.3m;
+        portfolio.RealisedPnl.Should().Be(shortPosition ? retainedBasis - 3m : 3m - retainedBasis);
         portfolio.GetPositionLots("BASIS").Should().BeEmpty();
     }
 

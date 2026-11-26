@@ -1,5 +1,5 @@
 using System.Threading;
-using System.Timers;
+using Meridian.Ui.Services.Contracts;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -8,24 +8,24 @@ namespace Meridian.Ui.Services;
 /// <summary>
 /// Background service that automatically refreshes OAuth tokens before they expire.
 /// Monitors credential metadata and proactively refreshes tokens based on configured thresholds.
+/// Construct it with the host's real <see cref="ICredentialService"/>; the shared no-op
+/// <see cref="CredentialService"/> never yields a token to refresh.
 /// </summary>
 public sealed class OAuthRefreshService : IDisposable
 {
-    private static readonly Lazy<OAuthRefreshService> _instance = new(() => new OAuthRefreshService());
+    private const string RefreshTokenSuffix = ".refresh";
     private static readonly TimeSpan WrapperFailureLogThrottleWindow = TimeSpan.FromMinutes(1);
-    /// <summary>
-    /// Gets the singleton instance of the OAuth refresh service.
-    /// </summary>
-    public static OAuthRefreshService Instance => _instance.Value;
 
-    private readonly CredentialService _credentialService;
+    private readonly ICredentialService _credentialService;
     private readonly ILogger<OAuthRefreshService> _logger;
-    private readonly System.Timers.Timer _refreshTimer;
-    private readonly System.Timers.Timer _expirationCheckTimer;
+    private readonly object _lifecycleSync = new();
+    private readonly object _refreshSync = new();
+    private readonly Dictionary<string, TaskCompletionSource<bool>> _refreshes = new(StringComparer.Ordinal);
     private readonly Dictionary<string, DateTime> _lastWrapperFailureLogByOperation = new(StringComparer.Ordinal);
     private readonly object _wrapperFailureSync = new();
     private int _wrapperFailureCount;
-    private bool _isRunning;
+    private (CancellationTokenSource Cancellation, Task Loop)? _schedule;
+    private Task _stopping = Task.CompletedTask;
     private bool _disposed;
 
     /// <summary>
@@ -62,24 +62,11 @@ public sealed class OAuthRefreshService : IDisposable
     /// </summary>
     public int WrapperFailureCount => Volatile.Read(ref _wrapperFailureCount);
 
-    private OAuthRefreshService()
-        : this(CredentialService.Instance)
-    {
-    }
-
-    internal OAuthRefreshService(CredentialService credentialService, ILogger<OAuthRefreshService>? logger = null)
+    public OAuthRefreshService(ICredentialService credentialService, ILogger<OAuthRefreshService>? logger = null)
     {
         ArgumentNullException.ThrowIfNull(credentialService);
         _credentialService = credentialService;
         _logger = logger ?? NullLogger<OAuthRefreshService>.Instance;
-
-        _refreshTimer = new System.Timers.Timer(CheckIntervalMs);
-        _refreshTimer.Elapsed += OnRefreshTimerElapsed;
-        _refreshTimer.AutoReset = true;
-
-        _expirationCheckTimer = new System.Timers.Timer(CheckIntervalMs);
-        _expirationCheckTimer.Elapsed += OnExpirationCheckElapsed;
-        _expirationCheckTimer.AutoReset = true;
 
         // Subscribe to credential service events
         _credentialService.CredentialExpiring += OnCredentialExpiring;
@@ -90,25 +77,75 @@ public sealed class OAuthRefreshService : IDisposable
     /// </summary>
     public void Start()
     {
-        if (_isRunning)
-            return;
+        lock (_lifecycleSync)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_schedule is not null)
+                return;
 
-        _isRunning = true;
-        _refreshTimer.Start();
-        _expirationCheckTimer.Start();
-
-        // Perform initial check
-        _ = CheckAndRefreshTokensAsync();
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(CheckIntervalMs);
+            var interval = TimeSpan.FromMilliseconds(CheckIntervalMs);
+            var cancellation = new CancellationTokenSource();
+            var previous = _stopping;
+            _schedule = (cancellation, Task.Run(() => RunScheduledChecksAsync(previous, interval, cancellation.Token)));
+        }
     }
 
     /// <summary>
     /// Stops the automatic OAuth token refresh service.
     /// </summary>
-    public void Stop()
+    public void Stop() => _ = StopAsync();
+
+    /// <summary>Stops scheduled checks and waits for their current work to finish.</summary>
+    public Task StopAsync()
     {
-        _isRunning = false;
-        _refreshTimer.Stop();
-        _expirationCheckTimer.Stop();
+        lock (_lifecycleSync)
+        {
+            if (_schedule is { } schedule)
+            {
+                _schedule = null;
+                _stopping = StopScheduleAsync(schedule.Cancellation, schedule.Loop);
+            }
+            return _stopping;
+        }
+    }
+
+    private async Task StopScheduleAsync(CancellationTokenSource cancellation, Task loop)
+    {
+        using (cancellation)
+        {
+            try
+            {
+                await cancellation.CancelAsync().ConfigureAwait(false);
+            }
+            catch (AggregateException ex)
+            {
+                RecordWrapperFailure(nameof(StopAsync), ex);
+            }
+            await loop.ConfigureAwait(false);
+        }
+    }
+
+    private async Task RunScheduledChecksAsync(Task previous, TimeSpan interval, CancellationToken ct)
+    {
+        try
+        {
+            await previous.ConfigureAwait(false);
+            using var timer = new PeriodicTimer(interval);
+            await SafeCheckAndRefreshTokensAsync(ct).ConfigureAwait(false);
+            while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false))
+            {
+                await SafeCheckAndRefreshTokensAsync(ct).ConfigureAwait(false);
+                await SafeCheckExpiringTokensAsync(ct).ConfigureAwait(false);
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            RecordWrapperFailure(nameof(RunScheduledChecksAsync), ex);
+        }
     }
 
     /// <summary>
@@ -121,7 +158,9 @@ public sealed class OAuthRefreshService : IDisposable
 
         foreach (var cred in credentials.Where(c => c.IsOAuthToken))
         {
-            var providerId = cred.Resource.Replace($"{CredentialService.OAuthTokenResource}.", "");
+            if (!TryGetProviderId(cred.Resource, out var providerId))
+                continue;
+
             var now = DateTime.UtcNow;
             var isExpired = cred.ExpiresAt.HasValue && cred.ExpiresAt.Value <= now;
             var isExpiringSoon = cred.ExpiresAt.HasValue &&
@@ -153,31 +192,77 @@ public sealed class OAuthRefreshService : IDisposable
     /// <summary>
     /// Manually triggers a refresh for a specific provider.
     /// </summary>
-    public async Task<bool> RefreshTokenAsync(string providerId, CancellationToken ct = default)
+    public Task<bool> RefreshTokenAsync(string providerId, CancellationToken ct = default)
+        => RefreshOnceAsync(providerId, scheduledResource: null, ct);
+
+    private Task<bool> RefreshOnceAsync(string providerId, string? scheduledResource, CancellationToken ct)
     {
+        if (ct.IsCancellationRequested)
+            return Task.FromCanceled<bool>(ct);
+        if (string.IsNullOrWhiteSpace(providerId))
+            return Task.FromResult(false);
+
+        TaskCompletionSource<bool> completion;
+        lock (_refreshSync)
+        {
+            if (_refreshes.TryGetValue(providerId, out var inFlight))
+                return inFlight.Task.WaitAsync(ct);
+
+            // A slow earlier provider may have delayed this scan while a manual request
+            // completed. Recheck the current expiry before starting another request.
+            if (scheduledResource is not null && _credentialService.GetMetadata(scheduledResource) is { } current &&
+                (!current.AutoRefreshEnabled || !IsRefreshDue(current.ExpiresAt)))
+                return Task.FromResult(false);
+
+            completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _refreshes.Add(providerId, completion);
+        }
+
+        _ = CompleteRefreshAsync(providerId, completion, ct);
+        return completion.Task;
+    }
+
+    private async Task CompleteRefreshAsync(string providerId, TaskCompletionSource<bool> completion, CancellationToken ct)
+    {
+        var success = false;
+        OperationCanceledException? cancellation = null;
         try
         {
-            ct.ThrowIfCancellationRequested();
-            var result = await _credentialService.RefreshOAuthTokenAsync(providerId, ct);
-            if (result.Success)
+            success = (await _credentialService.RefreshOAuthTokenAsync(providerId, ct).ConfigureAwait(false)).Success;
+        }
+        catch (OperationCanceledException ex)
+        {
+            cancellation = ex;
+        }
+        catch (Exception)
+        {
+            // Provider errors can contain credentials or raw response bodies.
+        }
+
+        try
+        {
+            if (cancellation is null)
             {
-                TokenRefreshed?.Invoke(this, new TokenRefreshEventArgs(providerId, DateTime.UtcNow));
+                if (success)
+                    TokenRefreshed?.Invoke(this, new TokenRefreshEventArgs(providerId, DateTime.UtcNow));
+                else
+                    TokenRefreshFailed?.Invoke(this, new TokenRefreshFailedEventArgs(providerId, "OAuth token refresh failed."));
             }
-            else
-            {
-                TokenRefreshFailed?.Invoke(this, new TokenRefreshFailedEventArgs(providerId, "Refresh failed"));
-            }
-            return result.Success;
         }
         catch (Exception ex)
         {
-            if (ex is OperationCanceledException)
+            RecordWrapperFailure(nameof(RefreshTokenAsync), ex);
+        }
+        finally
+        {
+            lock (_refreshSync)
             {
-                throw;
+                _refreshes.Remove(providerId);
+                if (cancellation is not null)
+                    completion.TrySetCanceled(cancellation.CancellationToken);
+                else
+                    completion.TrySetResult(success);
             }
-
-            TokenRefreshFailed?.Invoke(this, new TokenRefreshFailedEventArgs(providerId, ex.Message));
-            return false;
         }
     }
 
@@ -186,20 +271,8 @@ public sealed class OAuthRefreshService : IDisposable
     /// </summary>
     public async Task SetAutoRefreshAsync(string providerId, bool enabled, CancellationToken ct = default)
     {
-        var resource = $"{CredentialService.OAuthTokenResource}.{providerId}";
+        var resource = $"{_credentialService.OAuthTokenResourcePrefix}.{providerId}";
         await _credentialService.UpdateMetadataAsync(resource, m => m.AutoRefreshEnabled = enabled, ct);
-    }
-
-    private void OnRefreshTimerElapsed(object? sender, ElapsedEventArgs e)
-    {
-        // Fire-and-forget the async work, with proper exception handling in the async method
-        _ = SafeCheckAndRefreshTokensAsync();
-    }
-
-    private void OnExpirationCheckElapsed(object? sender, ElapsedEventArgs e)
-    {
-        // Fire-and-forget the async work, with proper exception handling in the async method
-        _ = SafeCheckExpiringTokensAsync();
     }
 
     private async Task SafeCheckAndRefreshTokensAsync(CancellationToken ct = default)
@@ -296,37 +369,13 @@ public sealed class OAuthRefreshService : IDisposable
         foreach (var token in oauthTokens)
         {
             ct.ThrowIfCancellationRequested();
-            if (!token.CanAutoRefresh || !token.ExpiresAt.HasValue)
-                continue;
-
-            var remaining = token.ExpiresAt.Value - DateTime.UtcNow;
-            if (remaining.TotalMinutes <= RefreshThresholdMinutes && remaining.TotalSeconds > 0)
-            {
-                var providerId = token.Resource.Replace($"{CredentialService.OAuthTokenResource}.", "");
-                try
-                {
-                    var result = await _credentialService.RefreshOAuthTokenAsync(providerId, ct);
-                    if (result.Success)
-                    {
-                        TokenRefreshed?.Invoke(this, new TokenRefreshEventArgs(providerId, DateTime.UtcNow));
-                    }
-                    else
-                    {
-                        TokenRefreshFailed?.Invoke(this, new TokenRefreshFailedEventArgs(providerId, "Refresh request failed"));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    if (ex is OperationCanceledException)
-                    {
-                        throw;
-                    }
-
-                    TokenRefreshFailed?.Invoke(this, new TokenRefreshFailedEventArgs(providerId, ex.Message));
-                }
-            }
+            if (token.CanAutoRefresh && IsRefreshDue(token.ExpiresAt) && TryGetProviderId(token.Resource, out var providerId))
+                await RefreshOnceAsync(providerId, token.Resource, ct).ConfigureAwait(false);
         }
     }
+
+    private bool IsRefreshDue(DateTime? expiresAt)
+        => expiresAt is { } expiry && (expiry - DateTime.UtcNow).TotalMinutes <= RefreshThresholdMinutes;
 
     private Task CheckExpiringTokensAsync(CancellationToken ct = default)
     {
@@ -343,9 +392,9 @@ public sealed class OAuthRefreshService : IDisposable
             var remaining = token.ExpiresAt.Value - DateTime.UtcNow;
 
             // Warn about tokens expiring in less than 1 hour that can't auto-refresh
-            if (remaining.TotalHours <= 1 && remaining.TotalSeconds > 0 && !token.CanAutoRefresh)
+            if (remaining.TotalHours <= 1 && remaining.TotalSeconds > 0 && !token.CanAutoRefresh
+                && TryGetProviderId(token.Resource, out var providerId))
             {
-                var providerId = token.Resource.Replace($"{CredentialService.OAuthTokenResource}.", "");
                 TokenExpirationWarning?.Invoke(this, new TokenExpirationWarningEventArgs(
                     providerId,
                     token.ExpiresAt.Value,
@@ -359,9 +408,8 @@ public sealed class OAuthRefreshService : IDisposable
     private void OnCredentialExpiring(object? sender, CredentialExpirationEventArgs e)
     {
         // Handle credential expiration notifications from the credential service
-        if (e.Resource.Contains(CredentialService.OAuthTokenResource))
+        if (TryGetProviderId(e.Resource, out var providerId))
         {
-            var providerId = e.Resource.Replace($"{CredentialService.OAuthTokenResource}.", "");
             var metadata = _credentialService.GetMetadata(e.Resource);
 
             TokenExpirationWarning?.Invoke(this, new TokenExpirationWarningEventArgs(
@@ -371,15 +419,35 @@ public sealed class OAuthRefreshService : IDisposable
         }
     }
 
+    /// <summary>
+    /// Maps a stored OAuth token resource (<c>{prefix}.{providerId}</c>) to its provider id.
+    /// Resources outside the prefix and companion refresh-token entries are not tokens to manage.
+    /// </summary>
+    private bool TryGetProviderId(string resource, out string providerId)
+    {
+        providerId = string.Empty;
+        var prefix = _credentialService.OAuthTokenResourcePrefix + ".";
+        if (string.IsNullOrEmpty(resource)
+            || !resource.StartsWith(prefix, StringComparison.Ordinal)
+            || resource.EndsWith(RefreshTokenSuffix, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        providerId = resource[prefix.Length..];
+        return providerId.Length > 0;
+    }
+
     public void Dispose()
     {
-        if (_disposed)
-            return;
+        lock (_lifecycleSync)
+        {
+            if (_disposed)
+                return;
+            _disposed = true;
+        }
 
-        _disposed = true;
         Stop();
-        _refreshTimer.Dispose();
-        _expirationCheckTimer.Dispose();
         _credentialService.CredentialExpiring -= OnCredentialExpiring;
     }
 }

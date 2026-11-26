@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "23 8 * * 1"
   workflow_dispatch:
+    inputs:
+      release_version:
+        description: Release version whose reviewed architecture envelope to inspect.
+        type: string
+        default: 0.1.0-rc.2
 
 permissions:
   contents: read
@@ -32,12 +37,20 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python build/scripts/ci/release-readiness.py collect-runners --output artifacts/release-readiness/runners.json
+      # Production Certification, nightly verify-full and signed rehearsals fail outside any tag
+      # run; report their latest main results here so a blocker shows up before tagging.
+      - name: Observe latest certification, nightly and rehearsal results
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python build/scripts/ci/release-readiness.py collect-signals --output artifacts/release-readiness/signals.json
       - name: Retain actual runner observations
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-runner-readiness-${{ github.run_id }}-${{ github.run_attempt }}
-          path: artifacts/release-readiness/runners.json
+          path: |
+            artifacts/release-readiness/runners.json
+            artifacts/release-readiness/signals.json
           if-no-files-found: error
           retention-days: 90
 
@@ -93,6 +106,7 @@ jobs:
         if: always()
         env:
           CERT_WARNING_DAYS: ${{ vars.MDC_SIGNING_CERT_WARNING_DAYS || '30' }}
+          RELEASE_VERSION: ${{ inputs.release_version || vars.MDC_RELEASE_REHEARSAL_VERSION || '0.1.0-rc.2' }}
         run: python build/scripts/ci/release-readiness.py summary --warning-days "$CERT_WARNING_DAYS" --output artifacts/release-readiness/report.json
       - name: Retain prerequisite report
         if: always()

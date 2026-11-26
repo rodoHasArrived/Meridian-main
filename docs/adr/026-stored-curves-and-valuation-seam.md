@@ -226,7 +226,7 @@ This command verifies referenced files and directories exist; it does not valida
 
 - [Market Curve](../domain/market-curve.md)
 - [ADR-025: Contractual Schedule Kernel and Business-Day Calendar Seam](025-contractual-schedule-kernel.md)
-- [Security Master extensibility review](../architecture/security-master-extensibility-review.md) (finding G4)
+- [Security Master extensibility review](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/architecture/security-master-extensibility-review.md) (finding G4)
 - [Meridian domain model](../architecture/meridian-domain-model.md)
 
 ---

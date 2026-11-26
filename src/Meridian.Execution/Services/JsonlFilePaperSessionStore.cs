@@ -21,6 +21,7 @@ namespace Meridian.Execution.Services;
 ///       fills.applied.jsonl  — idempotent apply acknowledgements
 ///       orders.jsonl         — one OrderState JSON object per line (append-only)
 ///       settlements.jsonl    — one daily variation-margin settlement per line (append-only)
+///       journal-batches/     — immutable, crash-atomic journal effect receipts
 /// </code>
 /// Atomic writes for <c>session.json</c> use write-to-temp-then-rename semantics
 /// to guard against partial writes on crash. JSONL appends are serialised per base
@@ -28,7 +29,7 @@ namespace Meridian.Execution.Services;
 /// Exactly one process may write a base directory; cross-process transactional locking
 /// is intentionally outside this local-file store's contract.
 /// </summary>
-public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
+public sealed partial class JsonlFilePaperSessionStore : IPaperSessionStore
 {
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> AppendLocks =
         new(StringComparer.OrdinalIgnoreCase);
@@ -105,6 +106,7 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
             {
                 return new PaperSessionFillAppendResult(
                     string.Equals(existing.CanonicalHash, record.CanonicalHash, StringComparison.Ordinal)
+                    && existing.HasSameAccountingProvenance(record)
                         ? PaperSessionFillAppendStatus.ExistingSame
                         : PaperSessionFillAppendStatus.Conflict,
                     existing.CanonicalHash);
@@ -469,7 +471,8 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
 
             if (byId.TryGetValue(record.FillId, out var duplicate))
             {
-                if (!string.Equals(duplicate.CanonicalHash, record.CanonicalHash, StringComparison.Ordinal))
+                if (!string.Equals(duplicate.CanonicalHash, record.CanonicalHash, StringComparison.Ordinal)
+                    || !duplicate.HasSameAccountingProvenance(record))
                 {
                     throw new InvalidDataException(
                         $"Paper-session FillId '{record.FillId:D}' has conflicting durable records.");
@@ -630,7 +633,7 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
             }
             catch (JsonException ex)
             {
-                logger.LogWarning(ex, "Skipping corrupt JSONL record in {Path}", path);
+                logger.LogWarning("Skipping corrupt paper-session JSONL record ({FailureType}).", ex.GetType().Name);
             }
         }
 

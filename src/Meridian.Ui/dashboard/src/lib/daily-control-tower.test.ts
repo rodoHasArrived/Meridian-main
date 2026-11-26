@@ -2,10 +2,15 @@ import { describe, expect, it } from "vitest";
 import { buildAppShellViewState, type AppShellWorkspacePayload } from "@/app-shell.view-model";
 import {
   buildDailyControlTowerModel,
+  buildTodayQueueRows,
+  describeTodayQueueRank,
   buildWorkspaceAttentionCounts,
   dailyControlTowerProofPassportLabels,
-  selectDailyControlTowerQueueItems
+  selectDailyControlTowerQueueItems,
+  type DailyControlTowerFocusRow,
+  describeFocus
 } from "@/lib/daily-control-tower";
+import type { OperatorTriageItem } from "@/lib/operator-inbox-triage";
 import { normalizeWorkspacePath } from "@/lib/workspace";
 import type { DataWorkspaceResponse, TradingWorkspaceResponse } from "@/types";
 
@@ -107,33 +112,10 @@ describe("daily control tower model", () => {
     expect(model.leadingRow?.item.label).toBe("Brokerage sync failed");
     expect(model.ownerLabel).toBe(model.leadingRow?.item.workspaceLabel);
     expect(model.nextActionHref).toBe(model.leadingRow?.item.route);
-    expect(model.driverItems).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        id: "continuity",
-        label: "Continuity source",
-        value: "Daily Control Tower",
-        detail: expect.stringContaining("Source route: /."),
-        badgeVariant: "danger"
-      }),
-      expect.objectContaining({
-        id: "queue",
-        label: "Finance queue",
-        value: "1 blocked / 2 review",
-        badgeVariant: "danger"
-      }),
-      expect.objectContaining({
-        id: "trust",
-        label: "Trust posture",
-        value: "3 need attention",
-        badgeVariant: "warning"
-      }),
-      expect.objectContaining({
-        id: "proof",
-        label: "Evidence events",
-        value: "3 retained",
-        badgeVariant: "success"
-      })
-    ]));
+    // Phase 1 (B7): the model carries only what Today renders.
+    expect(model).not.toHaveProperty("driverItems");
+    expect(model).not.toHaveProperty("linkedContextItems");
+    expect(model).not.toHaveProperty("evidenceTimelineItems");
     expect(model.queueRows.map((row) => row.item.label)).toEqual([
       "Report pack approval waiting",
       "Alpaca provider warning",
@@ -232,6 +214,71 @@ describe("daily control tower model", () => {
       operatorFocusItems: []
     });
 
-    expect(attention).toEqual({ total: 1, byWorkspace: { accounting: 1 } });
+    expect(attention).toMatchObject({ total: 1, byWorkspace: { accounting: 1 } });
+  });
+});
+
+describe("buildTodayQueueRows", () => {
+  const focus = (id: string, tone: DailyControlTowerFocusRow["item"]["tone"], timestampIso: string | null): DailyControlTowerFocusRow => ({
+    item: { id, label: id, detail: `${id} detail`, route: "/accounting", workspaceLabel: "Accounting", actionLabel: "Open", tone, ariaLabel: id },
+    statusLabel: tone,
+    outputLabel: "Accounting record or close evidence",
+    badgeVariant: "outline",
+    proof: timestampIso ? { id, label: id, detail: "", route: "/accounting", workspaceLabel: "Accounting", timestampLabel: "", timestampIso, tone, ariaLabel: id } : null,
+    proofPassportItems: [],
+    proofPassportSummary: ""
+  });
+  const inbox = (workItemId: string, tone: OperatorTriageItem["tone"], createdAt: string): OperatorTriageItem => ({
+    workItemId, label: workItemId, detail: "", workspace: null, targetRoute: null, tone, createdAt, ownerId: null, dueAt: null,
+    version: 1, sourceVersion: null, acknowledgedAt: null, snoozedUntil: null,
+    capabilities: { canAssign: true, canAcknowledge: true, canSnooze: true, canUnsnooze: false, disabledReason: null }, activity: []
+  });
+
+  it("orders by severity, then oldest first, then source rank with workspace signals first", () => {
+    const rows = buildTodayQueueRows(
+      [focus("ws-review-undated", "review", null), focus("ws-blocked", "blocked", "2026-05-14T20:00:00Z"), focus("ws-review-old", "review", "2026-05-14T10:00:00Z")],
+      [inbox("in-warning", "Warning", "2026-05-14T12:00:00Z"), inbox("in-critical", "Critical", "2026-05-14T21:00:00Z"), inbox("in-info", "Info", "2026-05-14T09:00:00Z"), inbox("in-tie", "Warning", "2026-05-14T10:00:00Z")]
+    );
+    expect(rows.map((row) => row.key)).toEqual([
+      "workspace:ws-blocked",
+      "inbox:in-critical",
+      "workspace:ws-review-old",
+      "inbox:in-tie",
+      "inbox:in-warning",
+      "workspace:ws-review-undated",
+      "inbox:in-info"
+    ]);
+    expect(rows.find((row) => row.id === "in-info")).toMatchObject({ source: "inbox", sourceLabel: "Shared inbox", workspaceLabel: "Unspecified" });
+    expect(rows.find((row) => row.id === "ws-blocked")).toMatchObject({ source: "workspace", sourceLabel: "Workspace signal", observedAt: "2026-05-14T20:00:00Z" });
+  });
+
+  it("says why each row is ranked where it is, by the same keys the queue sorts on", () => {
+    const rows = buildTodayQueueRows(
+      [focus("ws-review-undated", "review", null), focus("ws-blocked", "blocked", "2026-05-14T20:00:00Z"), focus("ws-review-old", "review", "2026-05-14T10:00:00Z")],
+      [inbox("in-warning", "Warning", "2026-05-14T12:00:00Z"), inbox("in-critical", "Critical", "2026-05-14T21:00:00Z"), inbox("in-tie", "Warning", "2026-05-14T10:00:00Z")]
+    );
+    expect(describeTodayQueueRank(rows, "workspace:ws-blocked")).toBe("Ranked 1 of 6. Sorted by severity (blocked), then oldest first: the oldest of 2 blocked items.");
+    expect(describeTodayQueueRank(rows, "inbox:in-critical")).toBe("Ranked 2 of 6. Sorted by severity (blocked), then oldest first: 2nd oldest of 2 blocked items.");
+    expect(describeTodayQueueRank(rows, "workspace:ws-review-undated")).toBe("Ranked 6 of 6. Sorted by severity (needs action), then oldest first: no observed time, so it follows timed items in its source's order.");
+    expect(describeTodayQueueRank(rows, "inbox:missing")).toBeNull();
+  });
+
+  it("ranks overdue items first, then severity and age within each group (frozen clock)", () => {
+    const now = Date.parse("2026-05-20T12:00:00Z");
+    const overdueInfo = { ...inbox("in-info-late", "Info", "2026-05-14T09:00:00Z"), dueAt: "2026-05-17" };
+    const dueLater = { ...inbox("in-critical-later", "Critical", "2026-05-14T08:00:00Z"), dueAt: "2026-05-28" };
+    const rows = buildTodayQueueRows([focus("ws-blocked", "blocked", "2026-05-14T20:00:00Z")], [overdueInfo, dueLater], undefined, now);
+    expect(rows.map((row) => row.key)).toEqual(["inbox:in-info-late", "inbox:in-critical-later", "workspace:ws-blocked"]);
+    expect(describeTodayQueueRank(rows, "inbox:in-info-late", now)).toBe("Ranked 1 of 3. Overdue 3 days; overdue items rank first, then by severity (informational), then oldest first: the only informational item.");
+    expect(describeTodayQueueRank(rows, "workspace:ws-blocked", now)).toBe("Ranked 3 of 3. After the overdue items, sorted by severity (blocked), then oldest first: 2nd oldest of 2 blocked items.");
+  });
+
+  it("writes the selected item's summary as a sentence, not comma-joined labels", () => {
+    expect(describeFocus("Cash variance needs review", "blocked", "Accounting record or close evidence", null)).toBe(
+      "Cash variance needs review. It is blocked and affects the accounting record or close evidence. No timestamped evidence is linked yet."
+    );
+    expect(describeFocus("NAV pack", "ready", "Reporting package or evidence", "Jun 1, 2026, 12:00 UTC")).toBe(
+      "NAV pack. It is ready and affects the reporting package or evidence. Latest evidence: Jun 1, 2026, 12:00 UTC."
+    );
   });
 });

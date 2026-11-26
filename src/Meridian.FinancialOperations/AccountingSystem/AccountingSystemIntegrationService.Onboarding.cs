@@ -26,7 +26,9 @@ public sealed partial class AccountingSystemIntegrationService
     /// <summary>Lists only already-retained exact import and certified mapping choices.</summary>
     public IReadOnlyList<OnboardingSourceSelectionDto> GetRetainedOnboardingSelections(
         string fundProfileId, Guid ledgerBookId, string tenantId, string companyId)
-        => _latestImports.Values.Where(import => import.Summary.LedgerBookId == ledgerBookId
+    {
+        RefreshRetainedState();
+        return _latestImports.Values.Where(import => import.Summary.LedgerBookId == ledgerBookId
                 && string.Equals(import.Summary.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)
                 && string.Equals(import.Summary.TenantId, tenantId, StringComparison.OrdinalIgnoreCase)
                 && string.Equals(import.Summary.CompanyId, companyId, StringComparison.OrdinalIgnoreCase))
@@ -37,6 +39,21 @@ public sealed partial class AccountingSystemIntegrationService
                     GetOnboardingMappingVersion(mapping.Profile))))
             .OrderBy(choice => choice.AsOfDate).ThenBy(choice => choice.ProviderId, StringComparer.Ordinal)
             .ThenBy(choice => choice.MappingProfileId, StringComparer.Ordinal).ToArray();
+    }
+
+    /// <summary>
+    /// Returns an isolated copy of the exact retained external GL import, or null. It never invokes a provider,
+    /// so shadow onboarding can read the incumbent's opening trial balance without changing any source.
+    /// </summary>
+    public AccountingSystemImportDetailDto? GetRetainedImport(
+        string providerId, string importId, string fundProfileId, Guid ledgerBookId, string tenantId, string companyId)
+    {
+        RefreshRetainedState();
+        if (!_latestImports.TryGetValue(ImportKey(providerId, fundProfileId, ledgerBookId, tenantId, companyId), out var retained)
+            || !string.Equals(retained.Summary.ImportId, importId, StringComparison.Ordinal))
+            return null;
+        return JsonSerializer.Deserialize<AccountingSystemImportDetailDto>(JsonSerializer.Serialize(retained, JsonOptions), JsonOptions);
+    }
 
     /// <summary>Content version of a mapping, independent of dictionary enumeration order.</summary>
     public static string GetOnboardingMappingVersion(ExternalGlMappingProfileDto profile)
@@ -58,6 +75,7 @@ public sealed partial class AccountingSystemIntegrationService
         string tenantId, string companyId, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        RefreshRetainedState();
         var key = ImportKey(providerId, fundProfileId, ledgerBookId, tenantId, companyId);
         if (_ledgerJournalStore is null || !_latestImports.TryGetValue(key, out var retained)
             || !string.Equals(retained.Summary.ImportId, importId, StringComparison.Ordinal)

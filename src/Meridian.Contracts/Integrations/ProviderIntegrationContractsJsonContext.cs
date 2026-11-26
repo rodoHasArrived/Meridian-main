@@ -70,6 +70,8 @@ namespace Meridian.Contracts.Integrations;
 [JsonSerializable(typeof(IReadOnlyList<ProviderIntegrationStagingCapabilitySummaryDto>))]
 [JsonSerializable(typeof(ProviderIntegrationStagingReviewDto))]
 [JsonSerializable(typeof(ProviderIntegrationIdentityCandidateDto))]
+[JsonSerializable(typeof(ProviderIntegrationIdentityDecisionDto))]
+[JsonSerializable(typeof(ProviderIntegrationIdentityResolutionRequestDto))]
 [JsonSerializable(typeof(IReadOnlyList<ProviderIntegrationIdentityCandidateDto>))]
 [JsonSerializable(typeof(ProviderIntegrationStagingIdentityResolutionRowDto))]
 [JsonSerializable(typeof(IReadOnlyList<ProviderIntegrationStagingIdentityResolutionRowDto>))]

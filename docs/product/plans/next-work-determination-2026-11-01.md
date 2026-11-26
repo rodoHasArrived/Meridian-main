@@ -7,7 +7,7 @@
 **Reviewed:** 2026-11-01
 **Baseline:** `origin/main` at `7ca57b629b1cf40d2429438ecdf204cab3f57d82` (2026-11-01 11:58 UTC)
 **Supersedes:** the ranking carried by the
-[2026-10-27 determination](next-work-determination-2026-10-27.md), whose bar is **not** met —
+[2026-10-27 determination](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/next-work-determination-2026-10-27.md), whose bar is **not** met —
 `v0.1.0-rc.2` is not tagged and the signing secrets have not been refused.
 **Method:** read the `Meridian CI`, `CI` and `Production Certification` `push` run history on
 `main` by `head_sha`; read all nine job conclusions of `Meridian CI` run 41304234618 on the baseline head

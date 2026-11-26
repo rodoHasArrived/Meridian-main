@@ -464,7 +464,7 @@ public sealed class SecurityMasterDataQualityServiceTests
     // ── Terms payload format (ADR-024 decision 5) ───────────────────────────
 
     [Fact]
-    public async Task RunQualityChecksAsync_FlagsUntaggedTermsPayload_NamingTheInferredFamily()
+    public async Task RunQualityChecksAsync_FlagsUntaggedTermsPayload_AsARegression_WithoutInferringAFamily()
     {
         var (sut, store) = BuildSut();
         var untagged = MakeSecurity(Guid.NewGuid(), "Bond", currency: "USD",
@@ -478,11 +478,14 @@ public sealed class SecurityMasterDataQualityServiceTests
         violation.Category.Should().Be(DataQualityRuleCategory.TaxonomyCheck);
         violation.Severity.Should().Be(DataQualityRuleSeverity.Warning);
         violation.FieldPath.Should().Be("assetSpecificTerms.termsFormat");
-        violation.Message.Should().Contain("'flat'");
+        // ADR-024 amendment 2026-11-13 step 5: TX003 is a regression monitor; live code never infers
+        // the family, so the finding names none.
+        violation.Message.Should().Contain("no longer infer").And.Contain("068")
+            .And.NotContain("'flat'").And.NotContain("shape rule infers");
     }
 
     [Fact]
-    public async Task RunQualityChecksAsync_UntaggedProfileEnvelope_InfersCustomProfile()
+    public async Task RunQualityChecksAsync_UntaggedProfileEnvelope_IsFlagged_WithoutInferringAFamily()
     {
         var (sut, store) = BuildSut();
         var untagged = MakeSecurity(Guid.NewGuid(), "CustomAsset", currency: "USD",
@@ -492,7 +495,7 @@ public sealed class SecurityMasterDataQualityServiceTests
         var report = await sut.RunQualityChecksAsync();
 
         report.Violations.Should().ContainSingle(v => v.RuleId == "TX003")
-            .Which.Message.Should().Contain("'customProfile'");
+            .Which.Message.Should().NotContain("'customProfile'");
     }
 
     [Fact]

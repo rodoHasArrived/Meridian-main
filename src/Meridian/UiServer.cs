@@ -206,6 +206,21 @@ public sealed class UiServer : IAsyncDisposable
 
                 var postingContext = tradeFillPostingOptions.BuildContext();
                 var tradeFillStoreRoot = Path.Combine(resolvedDataRoot, "execution", "trade-fill-ledger");
+                if (tradeFillPostingOptions.CanonicalAccounting is { } canonicalAccounting)
+                {
+                    if (canonicalAccounting.Grant is null)
+                        throw new InvalidOperationException("Canonical fill accounting requires an operator-activated exact posting grant.");
+                    builder.Services.AddSingleton<IAutomatedTradeFillAccountingService>(sp =>
+                        new AutomatedTradeFillAccountingService(canonicalAccounting,
+                            Path.Combine(tradeFillStoreRoot, "accounting-intents"),
+                            sp.GetRequiredService<ILedgerJournalStore>(),
+                            sp.GetRequiredService<IAtomicTaxLotJournalStore>(),
+                            sp.GetRequiredService<IGovernedLedgerPostingTarget>(),
+                            sp.GetRequiredService<Meridian.Contracts.Ledger.IConfiguredLedgerAccountResolver>(),
+                            sp.GetRequiredService<Meridian.Contracts.Ledger.IAccountingAutomaticPostingPolicyValidator>(),
+                            sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                            sp.GetRequiredService<Meridian.Contracts.AssetOperations.IAssetOperationsQueryService>()));
+                }
                 builder.Services.AddTradeFillLedgerPosting(
                     postingContext,
                     sp => new GovernedTradeFillLedgerPostingTarget(
@@ -224,6 +239,11 @@ public sealed class UiServer : IAsyncDisposable
                         options.DrainTimeout = tradeFillPostingOptions.DrainTimeout;
                         options.CancellationTimeout = tradeFillPostingOptions.CancellationTimeout;
                     });
+                builder.Services.AddSingleton(sp => new PaperFinancingPostingService(
+                    tradeFillStoreRoot, postingContext,
+                    sp.GetRequiredService<ITradeFillLedgerPostingTarget>(),
+                    sp.GetRequiredService<ILedgerJournalStore>().GetPeriodAsync,
+                    sp.GetRequiredService<ILedgerJournalStore>().GetLedgerBookAsync));
             }
 
             builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));
@@ -245,6 +265,7 @@ public sealed class UiServer : IAsyncDisposable
                 if (!string.IsNullOrWhiteSpace(
                         Environment.GetEnvironmentVariable(LifecycleSupervisorBridgeHostedService.PipeEnvironmentVariable)))
                 {
+                    builder.Services.AddSingleton<RuntimeSupervisorConnection>();
                     builder.Services.AddHostedService<LifecycleSupervisorBridgeHostedService>();
                 }
 
@@ -280,11 +301,15 @@ public sealed class UiServer : IAsyncDisposable
                     sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
             builder.Services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(resolvedDataRoot, "execution", "audit")));
             builder.Services.AddSingleton<ExecutionAuditTrailService>();
+            builder.Services.AddSingleton<Meridian.Execution.Sdk.IRiskControlAuditWriter>(sp =>
+                sp.GetRequiredService<ExecutionAuditTrailService>());
             builder.Services.AddSingleton(new ExecutionOperatorControlOptions(
                 Path.Combine(resolvedDataRoot, "execution", "controls"),
                 FailClosedOnMissingOrCorruptSnapshot:
                     ProductionServiceRegistrationPolicy.IsProductionComposition(builder.Services)));
             builder.Services.AddSingleton<ExecutionOperatorControlService>();
+            builder.Services.AddSingleton<Meridian.Execution.Sdk.IRiskCircuitBreakerControl>(sp =>
+                sp.GetRequiredService<ExecutionOperatorControlService>());
             // Governed-approval queue snapshots belong under the writable data root; the
             // queue's AppContext.BaseDirectory default is read-only in installed deployments.
             builder.Services.AddSingleton(new RiskEscalationQueueOptions(
@@ -299,6 +324,12 @@ public sealed class UiServer : IAsyncDisposable
                         ? Path.Combine(resolvedDataRoot, "execution", "sessions")
                         : paperSessionBaseDirectory,
                     sp.GetRequiredService<ILogger<JsonlFilePaperSessionStore>>()));
+            builder.Services.AddSingleton<ResolvePaperAccountCurrency>(sp => async (accountId, ct) =>
+            {
+                var source = sp.GetService<Meridian.PortfolioRecords.Accounts.IAccountQueryService>();
+                var account = source is null ? null : await source.GetAccountAsync(accountId, ct).ConfigureAwait(false);
+                return account is { IsActive: true } ? account.BaseCurrency : null;
+            });
             builder.Services.AddSingleton<PaperSessionPersistenceService>();
             // Daily variation-margin settlement of paper futures; off unless
             // "PaperTrading:FuturesSettlement:Enabled" is true and a mark price source is registered.
@@ -326,6 +357,8 @@ public sealed class UiServer : IAsyncDisposable
             var usesPaperGateway = !brokerageConfiguration.LiveExecutionEnabled
                 || string.IsNullOrWhiteSpace(brokerageConfiguration.Gateway)
                 || string.Equals(brokerageConfiguration.Gateway, "paper", StringComparison.OrdinalIgnoreCase);
+            if (!usesPaperGateway && tradeFillPostingOptions.Enabled && tradeFillPostingOptions.CanonicalAccounting is not null)
+                throw new InvalidOperationException("Canonical fill accounting supports the in-process synthetic paper gateway only.");
             builder.Services.AddSingleton(
                 builder.Configuration.GetSection(Meridian.Execution.Adapters.PaperTradingGatewayOptions.SectionKey)
                     .Get<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()
@@ -344,6 +377,7 @@ public sealed class UiServer : IAsyncDisposable
                 CancelAllMaxConcurrency = configuredOrderManagement.CancelAllMaxConcurrency,
                 CancelAllInFlightSettleTimeout = configuredOrderManagement.CancelAllInFlightSettleTimeout,
                 ExecutionSubscriberDrainTimeout = configuredOrderManagement.ExecutionSubscriberDrainTimeout,
+                PaperIntentScope = configuredOrderManagement.PaperIntentScope,
                 RequireProductionSafetyDependencies =
                     ProductionServiceRegistrationPolicy.IsProductionComposition(builder.Services)
             });
@@ -363,7 +397,20 @@ public sealed class UiServer : IAsyncDisposable
             }
             if (usesPaperGateway)
             {
-                builder.Services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
+                builder.Services.AddSingleton<PaperTradingPortfolio>(sp => tradeFillPostingOptions.Enabled && tradeFillPostingOptions.CanonicalAccounting is { } canonical
+                    ? CanonicalPaperPortfolioBootstrapper.CreatePortfolio(canonical,
+                        sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>())
+                    : new PaperTradingPortfolio(100_000m));
+                if (tradeFillPostingOptions.Enabled && tradeFillPostingOptions.CanonicalAccounting is { } canonicalOptions)
+                {
+                    builder.Services.AddSingleton(sp => new CanonicalPaperPortfolioBootstrapper(canonicalOptions,
+                        tradeFillPostingOptions.BuildContext(), sp.GetRequiredService<PaperTradingPortfolio>(),
+                        sp.GetRequiredService<ILedgerJournalStore>(),
+                        sp.GetRequiredService<Meridian.Contracts.Ledger.IConfiguredLedgerAccountResolver>(),
+                        sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                        sp.GetRequiredService<LedgerPostingConsumer>(), sp.GetRequiredService<ITradeFillHandoffFailureStore>(),
+                        sp.GetRequiredService<Meridian.Execution.PaperMatching.PaperTradingCostOptions>()));
+                }
                 builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
                 // Production IPositionTracker projection over the live portfolio state. Gives the
                 // safety-critical risk rules (PositionLimitRule and other IPositionTracker consumers) a real backing
@@ -380,34 +427,11 @@ public sealed class UiServer : IAsyncDisposable
                 builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<BrokeragePortfolioState>());
                 builder.Services.AddSingleton<IPositionTracker>(sp => sp.GetRequiredService<BrokeragePortfolioState>());
             }
+            // Order routing is fail-closed: the hosted composition requires the pre-trade risk gate and
+            // authoritative portfolio state (live compositions read broker observations; scoped
+            // risk/readiness controls refuse routing while that synchronization is unavailable).
             builder.Services.AddSingleton<IOrderManager>(sp =>
-            {
-                var gateway = sp.GetRequiredService<IExecutionGateway>();
-                var logger = sp.GetRequiredService<ILogger<OrderManagementSystem>>();
-                // Order routing is fail-closed: an OMS without the mandatory pre-trade risk gate is
-                // not a valid host composition in any supported production posture.
-                var risk = sp.GetRequiredService<IRiskValidator>();
-                // Live compositions read broker observations; scoped risk/readiness controls
-                // refuse routing while the corresponding synchronization is unavailable.
-                var portfolio = sp.GetRequiredService<IPortfolioState>();
-                return new OrderManagementSystem(
-                    gateway,
-                    logger,
-                    riskValidator: risk,
-                    securityMasterGate: sp.GetService<ISecurityMasterGate>(),
-                    operatorControls: sp.GetService<ExecutionOperatorControlService>(),
-                    auditTrail: sp.GetService<ExecutionAuditTrailService>(),
-                    portfolioState: portfolio,
-                    sessionPersistence: sp.GetService<PaperSessionPersistenceService>(),
-                    brokerageConfiguration: sp.GetRequiredService<BrokerageConfiguration>(),
-                    liveOrderReadinessGate: sp.GetService<ILiveOrderReadinessGate>(),
-                    options: sp.GetRequiredService<OrderManagementSystemOptions>(),
-                    tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
-                    tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>(),
-                    escalationQueue: sp.GetService<RiskEscalationQueueService>(),
-                    recoveryStore: gateway is IBrokerageGateway
-                        ? sp.GetRequiredService<FileBrokerageOrderRecoveryStore>() : null);
-            });
+                OrderManagementSystemFactory.Create(sp, OrderManagementSystemComposition.HostedWorkstation));
             if (usesPaperGateway)
             {
                 builder.Services.AddSingleton<IExecutionGateway>(sp =>
@@ -416,7 +440,9 @@ public sealed class UiServer : IAsyncDisposable
                         sp.GetService<ISecurityMasterQueryService>(),
                         sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
                         sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>(),
-                        sp.GetRequiredService<Meridian.Execution.PaperMatching.PaperTradingCostOptions>()));
+                        sp.GetRequiredService<Meridian.Execution.PaperMatching.PaperTradingCostOptions>(),
+                        sp.GetService<ISecurityMasterQueryService>(),
+                        sp.GetService<Meridian.Contracts.FixedIncome.IBondAnalyticsService>()));
                 // Resting limit/stop orders re-evaluate when the market event tap records
                 // fresh data for their symbol (W9-PAPER-003 matching loop).
                 builder.Services.AddSingleton<Meridian.Execution.Interfaces.IPaperFillEvaluationTrigger>(sp =>
@@ -948,6 +974,65 @@ public sealed class UiServer : IAsyncDisposable
         return MeridianPathDefaults.ResolveDataRoot(configPath, null);
     }
 
+    /// <summary>
+    /// Free space below which the data-root readiness check reports Degraded. Matches the
+    /// critical disk threshold <c>SystemHealthConfig</c> uses (2 GiB): below it WAL and sink
+    /// writes are close to failing.
+    /// </summary>
+    internal const long DataRootCriticalFreeBytes = 2L * 1024 * 1024 * 1024;
+
+    /// <summary>
+    /// The data-root readiness result. A missing data root is Failing, which makes the host
+    /// NotReady. Low free space is Degraded rather than Failing: the host keeps accepting work
+    /// (reads, recovery and freeing space all still need it), while <c>/readyz</c> and the
+    /// lifecycle state show the condition before writes start failing. When free space cannot
+    /// be measured the check passes on the directory alone, as before.
+    /// </summary>
+    internal static RuntimeReadinessCheckResult EvaluateDataRootReadiness(
+        string dataRoot,
+        Func<string, bool> directoryExists,
+        Func<string, long?> availableFreeBytes,
+        long criticalFreeBytes)
+    {
+        if (!directoryExists(dataRoot))
+            return new RuntimeReadinessCheckResult(LifecycleCheckStatus.Failing, "Data root is unavailable.");
+
+        var freeBytes = availableFreeBytes(dataRoot);
+        if (freeBytes is null)
+            return new RuntimeReadinessCheckResult(LifecycleCheckStatus.Passing, "Data root is available.");
+
+        var freeGb = freeBytes.Value / (1024d * 1024d * 1024d);
+        return freeBytes.Value < criticalFreeBytes
+            ? new RuntimeReadinessCheckResult(
+                LifecycleCheckStatus.Degraded,
+                string.Create(System.Globalization.CultureInfo.InvariantCulture,
+                    $"Data root is available but its volume has only {freeGb:F1} GB free; writes will fail when it fills."))
+            : new RuntimeReadinessCheckResult(
+                LifecycleCheckStatus.Passing,
+                string.Create(System.Globalization.CultureInfo.InvariantCulture, $"Data root is available ({freeGb:F1} GB free)."));
+    }
+
+    private static long? AvailableFreeBytes(string path)
+    {
+        try
+        {
+            // On Unix DriveInfo measures the filesystem containing any path, so passing the data
+            // root itself reports the volume it is mounted on (often not "/"). Windows needs the
+            // drive root.
+            var fullPath = Path.GetFullPath(path);
+            var target = OperatingSystem.IsWindows() ? Path.GetPathRoot(fullPath) : fullPath;
+            if (string.IsNullOrEmpty(target))
+                return null;
+
+            var drive = new DriveInfo(target);
+            return drive.IsReady ? drive.AvailableFreeSpace : null;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            return null;
+        }
+    }
+
     private void AddLifecycleReadinessChecks(
         IServiceCollection services,
         string contentRootPath,
@@ -968,9 +1053,11 @@ public sealed class UiServer : IAsyncDisposable
             "data-root",
             "Data root",
             LifecycleCheckRequirement.Required,
-            _ => ValueTask.FromResult(Directory.Exists(resolvedDataRoot)
-                ? new RuntimeReadinessCheckResult(LifecycleCheckStatus.Passing, "Data root is available.")
-                : new RuntimeReadinessCheckResult(LifecycleCheckStatus.Failing, "Data root is unavailable."))));
+            _ => ValueTask.FromResult(EvaluateDataRootReadiness(
+                resolvedDataRoot,
+                Directory.Exists,
+                AvailableFreeBytes,
+                DataRootCriticalFreeBytes))));
 
         services.AddSingleton<IRuntimeReadinessCheck>(new DelegateRuntimeReadinessCheck(
             "authentication",
@@ -1222,6 +1309,8 @@ public sealed class UiServer : IAsyncDisposable
             await EnsureDatabaseReadinessAsync(ct).ConfigureAwait(false);
             try
             {
+                if (_app.Services.GetService<CanonicalPaperPortfolioBootstrapper>() is { } canonicalPaper)
+                    await canonicalPaper.InitializeAsync(ct).ConfigureAwait(false);
                 _applicationStartBegan = true;
                 await _app.StartAsync(ct);
                 // Providers are otherwise built by dependency-injection factories on first use,
@@ -1316,21 +1405,8 @@ public sealed class UiServer : IAsyncDisposable
                 return;
 
             var readinessStopwatch = Stopwatch.StartNew();
-            await LedgerStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await SecurityMasterStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await DirectLendingStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await AssetOperationsStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await FundAccountsStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await FundStructureStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await BankingStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await MoneyMarketStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
+            await _app.Services.GetRequiredService<DatabaseStartupPlan>()
+                .EnsureReadyAsync(_app.Services, cancellationToken, _logger)
                 .ConfigureAwait(false);
             var reportingStartup = _app.Services.GetService<IReportingMigrationStartup>();
             if (reportingStartup is not null)

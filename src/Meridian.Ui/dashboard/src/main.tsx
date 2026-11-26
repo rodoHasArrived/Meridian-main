@@ -10,6 +10,7 @@ import "@/styles/index.css";
 import "@/styles/workspace-surface.css";
 import "@/styles/command-palette.css";
 import "@/styles/workstation-refinements.css";
+import "@/styles/print.css";
 
 // Select the fixture-only preview before App mounts its data-reading providers.
 // Vite removes the guarded import from production builds.

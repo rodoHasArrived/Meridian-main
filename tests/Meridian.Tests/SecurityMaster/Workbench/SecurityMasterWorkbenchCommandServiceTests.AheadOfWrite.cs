@@ -191,10 +191,10 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
     [Theory]
     [InlineData(0)]
     [InlineData(1)]
-    public async Task UpdateSecurityField_SwapLegsReplacementPopulatingALegBlock_IsRefusedAtSubmission(int legIndex)
+    public async Task UpdateSecurityField_SwapLegsReplacementDeclaringOnlyOneLeg_IsRefusedAtSubmission(int legIndex)
     {
-        // New legs revisions carrying a block can no longer stage, so only revisions staged before the
-        // deploy reach the merge refusal (see the merge-handler tests and the publish drain below).
+        // The vanilla profile requires a complete declaration on both legs. A valid unit on only
+        // one leg cannot stage a partial upgrade of the legacy swap.
         var harness = new Harness(currentVersion: 3);
         harness.SetPassportAssetClass("Swap");
         harness.SetProjectionAssetTerms("Swap", AheadOfWriteFixtures.Parse(AheadOfWriteFixtures.SwapAtWriteVersion));
@@ -203,7 +203,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             SecurityId: SecurityId,
             ExpectedVersion: 3,
             FieldPath: AheadOfWriteFixtures.LegsPath,
-            NewValue: AheadOfWriteFixtures.SwapLegsWith(legIndex, AheadOfWriteFixtures.PopulatedLegBlock),
+            NewValue: AheadOfWriteFixtures.SwapLegsWith(legIndex, """{"couponRateUnit":"Percent"}"""),
             EffectiveFrom: DateTimeOffset.UtcNow,
             Actor: "ops.analyst",
             Justification: "Leg schedule conventions from the confirmation.");
@@ -212,18 +212,16 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             .Should().ThrowAsync<ArgumentException>();
 
         refused.Which.Message.Should().Be(
-            $"{AheadOfWriteFixtures.NotYetWritableReason("Swap", $"legs[{legIndex}].scheduleConventions", sinceVersion: 2, writes: 1)} (Parameter 'request')");
+            "Each leg requires its own declared schedule conventions and rate unit. (Parameter 'request')");
         await AssertNothingStagedAsync(harness);
     }
 
     [Fact]
-    public async Task Publish_InFlightLegsRevisionPopulatingALegBlock_FailsInTheMergeAndStaysApproved()
+    public async Task Publish_InFlightLegsRevisionDeclaringOnlyOneLeg_FailsInTheMergeAndStaysApproved()
     {
-        // The in-flight drain of the 4a deploy notes: a legs revision staged and approved before this
-        // node refused leg blocks cannot publish here. The merge's amendment is refused for the
-        // populated block, the publish fails naming the merge handler, nothing reaches the canonical
-        // record, and the revision stays Approved.
-        var publish = await ApprovedLegsRevisionPublishAsync(AheadOfWriteFixtures.PopulatedLegBlock);
+        // An old approved revision still passes through current canonical admission: one declared
+        // leg cannot silently activate a complete vanilla profile, and a failed merge stays Approved.
+        var publish = await ApprovedLegsRevisionPublishAsync("""{"couponRateUnit":"Percent"}""");
 
         var failed = await publish.Harness.Service.Invoking(s => s.PublishRevisionAsync(publish.Request))
             .Should().ThrowAsync<SecurityMasterPublishFailedException>();
@@ -232,7 +230,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         publish.Amender.Failures.Should().ContainSingle("the merge reached the canonical amend seam exactly once")
             .Which.Should().BeOfType<SecurityMasterWriteRefusedException>()
             .Which.Message.Should().Be(
-                AheadOfWriteFixtures.NotYetWritableReason("Swap", "legs[1].scheduleConventions", sinceVersion: 2, writes: 1));
+                "Each leg requires its own declared schedule conventions and rate unit.");
         (await publish.Revisions.GetAsync(publish.Request.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved);
         publish.Canonical.Appended.Should().BeEmpty();
         publish.Canonical.Upserted.Should().BeEmpty();
@@ -324,6 +322,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         (await revisions.GetAsync(staged.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Published);
         var expected = JsonNode.Parse(ProfileBackedStructuredCreditEnvelope)!.AsObject();
         expected["profileFields"]!["scheduleConventions"] = JsonNode.Parse(EditedProfileConventions);
+        expected[SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.CustomProfile;
         var persisted = canonical.Upserted.Should().ContainSingle("the approved profile edit merges into the canonical terms").Subject;
         JsonNode.DeepEquals(JsonNode.Parse(persisted.AssetSpecificTerms.GetRawText()), expected)
             .Should().BeTrue("the merged envelope persists verbatim, its root scheduleConventions included");
@@ -384,6 +383,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         (await revisions.GetAsync(staged.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Published);
         var expected = envelope.DeepClone().AsObject();
         expected["profileFields"]![fieldPath["assetSpecificTerms.profileFields.".Length..]] = JsonNode.Parse(newValue);
+        expected[SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.CustomProfile;
         var persisted = canonical.Upserted.Should().ContainSingle("the approved profile edit merges into the canonical terms").Subject;
         JsonNode.DeepEquals(JsonNode.Parse(persisted.AssetSpecificTerms.GetRawText()), expected)
             .Should().BeTrue("the merged envelope persists verbatim, its root callSchedule and putSchedule included");

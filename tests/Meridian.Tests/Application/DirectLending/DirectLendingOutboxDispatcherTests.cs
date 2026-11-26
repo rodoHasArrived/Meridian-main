@@ -176,8 +176,82 @@ public sealed class DirectLendingOutboxDispatcherTests
         var act = () => ProcessSingleAsync("loan.drawdown-booked", """{"amount":-1000.00}""");
 
         // No draft is saved; the delivery stays in the outbox for recovery.
-        await act.Should().ThrowAsync<Meridian.Ledger.LedgerValidationException>()
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex => ex.Error.Code == DirectLendingErrorCode.Validation)
             .WithMessage("*loan.drawdown-booked*negative amount*");
+    }
+
+    [Theory]
+    [InlineData("loan.principal-payment-applied", """{"AppliedAmount":1000}""", "Cash", "LoanPrincipal", 1000)]
+    [InlineData("loan.discount-premium-amortized", """{"discountAmort":5}""", "DiscountAmortizationExpense", "LoanDiscount", 5)]
+    [InlineData("loan.discount-premium-amortized", """{"premiumAmort":5}""", "LoanPremium", "PremiumAmortizationIncome", 5)]
+    [InlineData("loan.restructured", """{"principalHaircut":25}""", "RestructuringLoss", "LoanPrincipal", 25)]
+    public async Task ProcessJournalAsync_DraftsEveryCanonicalLoanTemplate(
+        string eventType,
+        string payloadJson,
+        string debitAccount,
+        string creditAccount,
+        int amount)
+    {
+        var savedEntry = await ProcessSingleAsync(eventType, payloadJson);
+
+        savedEntry.Status.Should().Be(JournalEntryStatus.Draft);
+        savedEntry.Lines.Select(line => (line.AccountCode, line.DebitAmount, line.CreditAmount))
+            .Should().Equal((debitAccount, (decimal)amount, 0m), (creditAccount, 0m, (decimal)amount));
+    }
+
+    [Fact]
+    public async Task ProcessJournalAsync_AccrualReversalPreservesCanonicalLineOrder()
+    {
+        var savedEntry = await ProcessSingleAsync("loan.daily-accrual-reversed", """{"interestAmount":10}""");
+
+        // The authoritative projector reverses each existing accrual line in place: the
+        // receivable stays first and income stays second, with their debit/credit sides inverted.
+        savedEntry.Lines.Select(line => (line.AccountCode, line.DebitAmount, line.CreditAmount))
+            .Should().Equal(("AccruedInterestReceivable", 0m, 10m), ("InterestIncome", 10m, 0m));
+    }
+
+    [Theory]
+    [InlineData("pikInterestAmount")]
+    [InlineData("commitmentFeeAmount")]
+    [InlineData("penaltyAmount")]
+    public async Task ProcessJournalAsync_RejectsNegativeAccrualComponentBeforePositiveOnlyFiltering(string component)
+    {
+        var payloadJson = JsonSerializer.Serialize(new Dictionary<string, decimal>
+        {
+            ["interestAmount"] = 10m,
+            [component] = -1m
+        });
+        var act = () => ProcessSingleAsync("loan.daily-accrual-posted", payloadJson);
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex => ex.Error.Code == DirectLendingErrorCode.Validation)
+            .WithMessage("*loan.daily-accrual-posted*negative amount*");
+    }
+
+    [Theory]
+    [InlineData("loan.mixed-payment-applied", "amount")]
+    [InlineData("loan.unapplied-cash-applied", "appliedAmount")]
+    [InlineData("loan.unapplied-cash-refunded", "amount")]
+    public async Task ProcessJournalAsync_RejectsMissingRequiredAmountInsteadOfAcknowledgingDelivery(
+        string eventType,
+        string requiredMember)
+    {
+        var act = () => ProcessSingleAsync(eventType, "{}");
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex => ex.Error.Code == DirectLendingErrorCode.Validation)
+            .WithMessage($"*missing required amount '{requiredMember}'*");
+    }
+
+    [Fact]
+    public async Task ProcessJournalAsync_RejectsUnbalancedPaymentInsteadOfSavingDraft()
+    {
+        var act = () => ProcessSingleAsync(
+            "loan.mixed-payment-applied",
+            """{"amount":100,"resolution":{"excessToPrincipal":99}}""");
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*would not balance*");
     }
 
     private static async Task<JournalEntryDto> ProcessSingleAsync(string eventType, string payloadJson)

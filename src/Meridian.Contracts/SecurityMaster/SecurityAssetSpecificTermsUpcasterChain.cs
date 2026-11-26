@@ -74,7 +74,7 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
     /// </summary>
     public static IReadOnlyList<string> ModulesAddedAfterIdentityGate { get; } =
         ["exercise", "currencyPair", "notional", ProfileEnvelopeModule, "creditProtection", "structuredPayoff", "privateAssetValuation", "listingDetail",
-         "bondCoupon", "principalSchedule", "swapLegs", "loanCovenants", "rateConvention", "contractualRate", "underlyingSwap", "debtClassification", "bondRedemption", "commodityContract", "digitalAsset", "underlyingExposure", "settlement", "classificationDetail", "fundShare", "referenceDataSource", "equityCapital", "trancheContract", "declaredSchedule"];
+         "bondCoupon", "principalSchedule", "swapLegs", "loanCovenants", "rateConvention", "contractualRate", "underlyingSwap", "debtClassification", "bondRedemption", "commodityContract", "digitalAsset", "underlyingExposure", "settlement", "classificationDetail", "fundShare", "referenceDataSource", "equityCapital", "trancheContract", "declaredSchedule", "bondWorkflow"];
 
     /// <summary>
     /// The economic-terms modules the serializer emits that this conversion does not read. Listed
@@ -100,19 +100,6 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
     public static IReadOnlyList<string> EconomicTermsModules { get; } =
         [.. BridgedModules, .. DroppedModules];
 
-    /// <summary>
-    /// The module keys the historical shape rule consults: exactly the modules the economic
-    /// serializer wrote before <see cref="SecurityTermsEnvelope.FormatKey"/> existed. Untagged
-    /// payloads predate the tag, so only these keys can mark one as economic; modules serialized
-    /// later (ADR-027 stage 1 increment 5) never appear untagged and are deliberately not
-    /// consulted — the rule stays frozen with the population it classifies, as does migration
-    /// 042's SQL mirror of it. This list never grows; it retires with the shape rule itself
-    /// (ADR-024 decision 5).
-    /// </summary>
-    public static IReadOnlyList<string> ShapeRuleModules { get; } =
-        ["maturity", "coupon", "payment", "accrual", "discount",
-         "redemption", "call", "auction", "sweep", "financing", "issuer", "equityBehavior", "fund", "structuredProduct"];
-
     public int FromSchemaVersion => EconomicTermsSchema.Current;
 
     public int ToSchemaVersion => AssetSpecificTermsSchema.Legacy;
@@ -136,43 +123,17 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
     }
 
     /// <summary>
-    /// Whether the payload is an economic-terms document. A payload that declares
-    /// <see cref="SecurityTermsEnvelope.FormatKey"/> is classified by that declaration alone, so a
-    /// tagged document never depends on its <c>schemaVersion</c> integer; an untagged payload falls
-    /// back to <see cref="IsEconomicTermsShape"/>.
+    /// Whether the payload is an economic-terms document, by its declared
+    /// <see cref="SecurityTermsEnvelope.FormatKey"/> alone: a tagged document never depends on its
+    /// <c>schemaVersion</c> integer or its shape. An untagged object is refused with
+    /// <see cref="SecurityTermsFormatUndeclaredException"/> (ADR-024 decision 5, amendment 2026-11-13
+    /// step 5); untagged retained terms from event history are classified by
+    /// <see cref="SecurityTermsLegacyEventClassifier"/> during event decoding instead. A non-object is
+    /// not an economic-terms document.
     /// </summary>
     public static bool IsEconomicTermsDocument(JsonElement payload)
-        => SecurityTermsEnvelope.GetDeclaredFormat(payload) is { } declared
-            ? string.Equals(declared, SecurityTermsFormats.Economic, StringComparison.Ordinal)
-            : IsEconomicTermsShape(payload);
-
-    /// <summary>
-    /// The historical shape rule for untagged payloads: an object stamped
-    /// <see cref="EconomicTermsSchema.Current"/> that carries at least one of the
-    /// <see cref="ShapeRuleModules"/> keys. The two payload families share one
-    /// <c>schemaVersion</c> key, so the integer alone cannot tell a v2 economic-terms document from
-    /// a (reserved, never declared) flat v2; the module keys can, because the economic serializer
-    /// always writes them and a flat document never does. Payloads written after
-    /// <see cref="SecurityTermsEnvelope.FormatKey"/> existed declare their family instead.
-    /// </summary>
-    public static bool IsEconomicTermsShape(JsonElement payload)
-    {
-        if (payload.ValueKind != JsonValueKind.Object
-            || SecurityAssetSpecificTermsV0ToCurrentUpcaster.ResolveSchemaVersion(payload) != EconomicTermsSchema.Current)
-        {
-            return false;
-        }
-
-        foreach (var module in ShapeRuleModules)
-        {
-            if (payload.TryGetProperty(module, out _))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
+        => payload.ValueKind == JsonValueKind.Object
+           && string.Equals(SecurityTermsEnvelope.ResolveFormat(payload), SecurityTermsFormats.Economic, StringComparison.Ordinal);
 
     /// <summary>
     /// Whether a flat asset-specific-terms payload was produced by <see cref="Convert"/> — that is,
@@ -309,6 +270,7 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
             accrualConventionsRecoverable: conventionsSince is not null);
 
         var exactDeclaredSchedule = ReadExactDeclaredSchedule(economicTerms, assetClass!);
+        var exactBondWorkflow = ReadExactBondWorkflow(economicTerms, assetClass!);
         var callModule = GetObject(economicTerms, "call");
         IReadOnlyList<JsonElement> callEntries = [];
         IReadOnlyList<JsonElement> putEntries = [];
@@ -341,6 +303,8 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
         using (var writer = new Utf8JsonWriter(buffer))
         {
             var stamp = SecurityAssetClassCatalog.GetStampFloor(assetClass);
+            if (exactBondWorkflow is not null)
+                stamp = Math.Max(stamp, SecurityAssetTermsSchema.Field("Bond", "bondWorkflow")!.SinceTermsVersion);
             if (writeSchedules)
             {
                 stamp = Math.Max(stamp, callScheduleSince!.Value);
@@ -415,6 +379,12 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
             // Structural module fields supersede the scalar compatibility mappings. Only a
             // class-declared flat key may cross this codec boundary.
             var structuralKeys = new HashSet<string>(StringComparer.Ordinal);
+            if (exactBondWorkflow is { } workflow)
+            {
+                writer.WritePropertyName("bondWorkflow");
+                workflow.WriteTo(writer);
+                structuralKeys.Add("bondWorkflow");
+            }
             foreach (var moduleName in StructuralModules)
             {
                 var declarations = economicTerms.EnumerateObject().Where(property => property.NameEquals(moduleName)).ToArray();
@@ -534,7 +504,7 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
     }
 
     private static void EnsureStructuralSummaryAgrees(JsonElement economics, string assetClass,
-        string moduleName, JsonProperty authoritative, IReadOnlyList<FlatTermMapping> mappings)
+        string moduleName, JsonProperty authoritative, IReadOnlyList<SecurityEconomicTermFlattening> mappings)
     {
         foreach (var mapping in mappings.Where(mapping => mapping.FlatKey == authoritative.Name))
         {
@@ -1175,9 +1145,11 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
     /// Two things are deliberately left out. The <c>declaredSchedule</c> module keeps the
     /// existing rule that an empty declared call or put list is filled from the retained
     /// document, because the older <c>call</c> summary module is filled the same way and the two
-    /// must not disagree. And fields the economic document carried before stage 3 keep the old
-    /// fill: historical and hand-shaped documents hold values there that the flat decode does not
-    /// reproduce.
+    /// must not disagree. And fields the economic document carried before stage 3 are not listed
+    /// here: historical and hand-shaped documents hold values there that the flat decode does not
+    /// reproduce, so no per-class list can say which were on the row. The write path settles
+    /// those per document instead, by rebuilding the retained document's own flat row
+    /// (<c>SecurityEconomicDefinitionAdapter.FieldsTheFlatRowCarried</c>).
     /// </para>
     /// </summary>
     public static IReadOnlyList<(string Module, string Field)> FlatAuthoritativeFields(string? assetClass)
@@ -1196,7 +1168,10 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
                                      && mapping.Scale is null
                                      && ModulesAddedAfterIdentityGate.Contains(mapping.Sources[0].Module, StringComparer.Ordinal))
             .Select(static mapping => mapping.Sources[0]);
-        return structural.Concat(copied).Distinct().ToArray();
+        var workflowFields = SecurityAssetClassCatalog.GetOrDefault(assetClass).CarriesBondCouponStructure
+            ? SecurityAssetTermsSchema.ElementFields("Bond", "bondWorkflow").Select(field => ("bondWorkflow", field.Key))
+            : [];
+        return structural.Concat(copied).Concat(workflowFields).Distinct().ToArray();
     }
 
     private static IReadOnlyList<string> StructuralModuleKeys(string assetClass, string module) => (assetClass, module) switch
@@ -1216,7 +1191,7 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
 
     private static IReadOnlyList<string> StructuralKeys(string assetClass) => assetClass switch
     {
-        "Bond" => ["couponType", "couponRate", "floatingIndex", "spreadBps", "capRate", "floorRate", "stepSchedule", "inflationIndex", "inflationBaseIndexValue", "inflationIndexRatio", "dayCount", "principalSchedule"],
+        "Bond" => ["couponType", "couponRate", "floatingIndex", "spreadBps", "capRate", "floorRate", "stepSchedule", "inflationIndex", "inflationBaseIndexValue", "inflationIndexRatio", "dayCount", "principalSchedule", "bondWorkflow"],
         "DirectLoan" => ["principalSchedule", "covenants"],
         "Swap" => ["legs"],
         "CommitmentGuarantee" => ["covenants", "feeRate"],
@@ -1243,7 +1218,7 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
         return fields.Select(static field => field.Key).Where(key => !recoverable.Contains(key)).ToArray();
     }
 
-    private static bool TryGetClassFlattening(string? assetClass, out IReadOnlyList<FlatTermMapping> mappings)
+    private static bool TryGetClassFlattening(string? assetClass, out IReadOnlyList<SecurityEconomicTermFlattening> mappings)
     {
         mappings = [];
         if (string.IsNullOrWhiteSpace(assetClass))
@@ -1265,310 +1240,13 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
         return false;
     }
 
-    /// <summary>
-    /// One flat key and the economic-terms <c>(module, field)</c> sources that feed it, in priority
-    /// order. <see cref="EqualsLabel"/> turns a label into a flag (commercial paper's
-    /// <c>isAssetBacked</c> is carried as <c>issuer.issuerProgram = "AssetBacked"</c>).
-    /// <see cref="Scale"/> multiplies a numeric source on the way back, inverting a unit change the
-    /// upgrade made (a CDS coupon is quoted in basis points but carried as a rate).
-    /// </summary>
-    private sealed record FlatTermMapping(
-        string FlatKey,
-        (string Module, string Field)[] Sources,
-        string? EqualsLabel = null,
-        (string Module, string Field, string Label)[]? LabelFromFlags = null,
-        decimal? Scale = null);
+    private static SecurityEconomicTermFlattening Map(string flatKey, params (string Module, string Field)[] sources)
+        => new(flatKey, sources);
 
-    private static FlatTermMapping Map(string flatKey, params (string Module, string Field)[] sources) => new(flatKey, sources);
-
-    /// <summary>
-    /// The inverse of <see cref="EqualsLabel"/>: the first flag that is <c>true</c> writes its label
-    /// as the flat value; when no flag is set the key is left absent, because the economic document
-    /// does not carry the label itself (a CLO's kind is not recoverable from its IO/PO flags).
-    /// </summary>
-    private static readonly (string Module, string Field) MaturityDate = ("maturity", "maturityDate");
-
-    /// <summary>
-    /// Per-class inverse of <c>SecurityMasterLegacyUpgrade.termsFromKind</c>. Kept beside the
-    /// class-independent bridge so the two are reviewed together; the coverage test asserts every
-    /// target key is declared for its class and that a fully populated v1 record survives
-    /// v1 → economic → v1 at every key listed here.
-    /// </summary>
-    private static readonly IReadOnlyList<(string AssetClass, IReadOnlyList<FlatTermMapping> Mappings)> ClassFlattenings =
-    [
-        ("Equity", [Map("shareClass", ("equityCapital", "shareClass"), ("equityBehavior", "shareClass")), Map("votingRightsCat", ("equityBehavior", "votingRights"))]),
-        // ADR-027 stage 3 (S3-E): the exercise module (and the contract multiplier on
-        // tradingParameters) recovers the strike fields termsFromKind now feeds it from.
-        ("Option",
-        [
-            Map("underlyingId", ("exercise", "underlyingSecurityId")),
-            Map("putCall", ("exercise", "optionRight")),
-            Map("strike", ("exercise", "strikePrice")),
-            Map("expiry", MaturityDate),
-            Map("multiplier", ("tradingParameters", "contractMultiplier")),
-            Map("exerciseStyle", ("exercise", "exerciseStyle")),
-            Map("optChainId", ("listingDetail", "optChainId")),
-            Map("settlementType", ("listingDetail", "settlementType")),
-            Map("isAdjusted", ("listingDetail", "isAdjusted")),
-            Map("lastTradingDt", ("listingDetail", "lastTradingDt"))]),
-        ("Future", [Map("expiry", MaturityDate), Map("multiplier", ("tradingParameters", "contractMultiplier")),
-            Map("rootSymbol", ("listingDetail", "rootSymbol")),
-            Map("contractMonth", ("listingDetail", "contractMonth")),
-            Map("lastTradingDt", ("listingDetail", "lastTradingDt")),
-            Map("firstNoticeDt", ("listingDetail", "firstNoticeDt")),
-            Map("deliveryMonthDt", ("listingDetail", "deliveryMonthDt")),
-            Map("settlementType", ("listingDetail", "settlementType")),
-            Map("deliveryLocationCode", ("listingDetail", "deliveryLocationCode")),
-            Map("isRollTarget", ("listingDetail", "isRollTarget")),
-            Map("rollWindowDays", ("listingDetail", "rollWindowDays"))]),
-        ("FxSpot", [Map("baseCurrency", ("currencyPair", "baseCurrency")), Map("quoteCurrency", ("currencyPair", "quoteCurrency"))]),
-        ("CryptoCurrency", [Map("baseCurrency", ("currencyPair", "baseCurrency")), Map("quoteCurrency", ("currencyPair", "quoteCurrency")),
-            Map("network", ("digitalAsset", "network"))]),
-        ("Commodity", [Map("commodityType", ("commodityContract", "commodityType")),
-            Map("denomination", ("commodityContract", "denomination")), Map("contractSize", ("commodityContract", "contractSize"))]),
-        ("Cfd", [Map("underlyingAssetClass", ("underlyingExposure", "underlyingAssetClass")),
-            Map("underlyingDescription", ("underlyingExposure", "underlyingDescription")), Map("leverage", ("underlyingExposure", "leverage"))]),
-        ("Bond",
-        [
-            Map("maturity", MaturityDate),
-            Map("issueDate", ("maturity", "issueDate")),
-            Map("couponType", ("coupon", "couponType")),
-            Map("couponRate", ("coupon", "couponRate")),
-            Map("dayCount", ("coupon", "dayCount"), ("accrual", "dayCount")),
-            Map("paymentFrequency", ("coupon", "paymentFrequency"), ("payment", "paymentFrequency")),
-            Map("isCallable", ("call", "isCallable")),
-            Map("callDate", ("call", "firstCallDate")),
-            Map("issuerName", ("issuer", "issuerName")),
-            Map("subclass", ("debtClassification", "subclass")),
-            Map("seniority", ("debtClassification", "seniority")),
-            Map("par", ("bondRedemption", "par")),
-            Map("legalFinalMaturity", ("bondRedemption", "legalFinalMaturity")),
-            Map("preRefundDate", ("bondRedemption", "preRefundDate")),
-            Map("mandatoryPutDate", ("bondRedemption", "mandatoryPutDate"))
-        ]),
-        ("Deposit",
-        [
-            Map("depositType", ("issuer", "issuerProgram")),
-            Map("institutionName", ("issuer", "institutionName")),
-            Map("maturity", MaturityDate),
-            Map("interestRate", ("coupon", "couponRate")),
-            Map("dayCount", ("coupon", "dayCount")),
-            Map("isCallable", ("call", "isCallable"))
-        ]),
-        ("MoneyMarketFund",
-        [
-            Map("fundFamily", ("fund", "fundFamily")),
-            Map("sweepEligible", ("fund", "sweepEligible")),
-            Map("weightedAverageMaturityDays", ("fund", "weightedAverageMaturityDays")),
-            Map("liquidityFeeEligible", ("fund", "liquidityFeeEligible"))
-        ]),
-        ("CertificateOfDeposit",
-        [
-            Map("issuerName", ("issuer", "issuerName")),
-            Map("maturity", MaturityDate),
-            Map("couponRate", ("coupon", "couponRate")),
-            Map("callableDate", ("call", "firstCallDate")),
-            Map("dayCount", ("coupon", "dayCount"))
-        ]),
-        ("CommercialPaper",
-        [
-            Map("issuerName", ("issuer", "issuerName")),
-            Map("maturity", MaturityDate),
-            Map("discountRate", ("discount", "discountRate")),
-            Map("dayCount", ("coupon", "dayCount")),
-            new FlatTermMapping("isAssetBacked", [("issuer", "issuerProgram")], EqualsLabel: "AssetBacked")
-        ]),
-        ("TreasuryBill",
-        [
-            Map("maturity", MaturityDate),
-            Map("auctionDate", ("auction", "auctionDate")),
-            Map("cusip", ("issuer", "issuerProgram")),
-            Map("discountRate", ("discount", "discountRate"))
-        ]),
-        ("Repo",
-        [
-            Map("counterparty", ("financing", "counterparty")),
-            Map("startDate", ("financing", "openDate"), ("maturity", "effectiveDate")),
-            Map("endDate", ("financing", "closeDate"), MaturityDate),
-            Map("repoRate", ("discount", "yieldRate")),
-            Map("collateralType", ("financing", "collateralType")),
-            Map("haircut", ("financing", "haircut"))
-        ]),
-        ("CashSweep",
-        [
-            Map("programName", ("sweep", "programName")),
-            Map("sweepVehicleType", ("sweep", "sweepVehicleType")),
-            Map("sweepFrequency", ("sweep", "sweepFrequency")),
-            Map("targetAccountType", ("sweep", "targetAccountType")),
-            Map("yieldRate", ("discount", "yieldRate"))
-        ]),
-        ("OtherSecurity",
-        [
-            Map("category", ("classificationDetail", "category")),
-            Map("subType", ("classificationDetail", "subType")),
-            Map("maturity", MaturityDate),
-            Map("issuerName", ("issuer", "issuerName")),
-            Map("settlementType", ("issuer", "issuerProgram"))
-        ]),
-        ("Swap", [Map("effectiveDate", ("maturity", "effectiveDate")), Map("maturityDate", MaturityDate)]),
-        ("DirectLoan",
-        [
-            Map("borrower", ("issuer", "issuerName")),
-            Map("maturity", MaturityDate),
-            Map("currentCouponRate", ("coupon", "couponRate")),
-            Map("referenceIndex", ("floatingRate", "referenceIndex")),
-            Map("spreadBps", ("floatingRate", "spreadBps")),
-            Map("resetFrequency", ("floatingRate", "resetFrequency")),
-            Map("pricingSource", ("referenceDataSource", "pricingSource"))
-        ]),
-        ("StructuredCredit",
-        [
-            Map("tranche", ("structuredProduct", "trancheClass")),
-            Map("poolId", ("structuredProduct", "poolIdentifier"), ("issuer", "issuerName")),
-            Map("collateralType", ("structuredProduct", "collateralType"), ("issuer", "issuerProgram")),
-            Map("originalFace", ("structuredProduct", "notionalBalance")),
-            Map("currentFactor", ("structuredProduct", "factor")),
-            Map("couponOrIndex", ("coupon", "couponType")),
-            // The trustee-report pointer is evidence lineage on the structured-product module, not a
-            // coupon frequency.
-            Map("factorSchedule", ("structuredProduct", "factorScheduleReference")),
-            Map("maturity", MaturityDate),
-            Map("weightedAverageCoupon", ("structuredProduct", "weightedAvgCoupon")),
-            Map("weightedAverageMaturityMonths", ("structuredProduct", "weightedAvgMaturityMonths")),
-            Map("weightedAverageLoanAgeMonths", ("structuredProduct", "weightedAvgLoanAgeMos")),
-            Map("seniority", ("trancheContract", "seniority")),
-            Map("attachmentPoint", ("trancheContract", "attachmentPoint")),
-            Map("detachmentPoint", ("trancheContract", "detachmentPoint")),
-            Map("reinvestmentPeriodEnd", ("trancheContract", "reinvestmentPeriodEnd")),
-            Map("nonCallPeriodEnd", ("trancheContract", "nonCallPeriodEnd")),
-            new FlatTermMapping(
-                "structuredCreditKind", [("trancheContract", "structuredCreditKind")],
-                LabelFromFlags: [("structuredProduct", "isInterestOnly", "InterestOnly"),
-                    ("structuredProduct", "isPrincipalOnly", "PrincipalOnly")])
-        ]),
-        ("PrivateFundInterest",
-        [
-            Map("gpSponsor", ("issuer", "issuerName"), ("fund", "fundFamily")),
-            Map("strategy", ("issuer", "issuerProgram")),
-            Map("commitment", ("notional", "committedAmount")),
-            Map("fundedAmount", ("notional", "fundedAmount")),
-            Map("unfundedAmount", ("notional", "unfundedAmount")),
-            Map("vintage", ("privateAssetValuation", "vintage")),
-            Map("navDate", ("privateAssetValuation", "navDate")),
-            Map("lockup", ("privateAssetValuation", "lockup"))]),
-        ("PrivateCompanyEquity",
-        [
-            Map("issuer", ("issuer", "issuerName")),
-            Map("shareClass", ("equityCapital", "shareClass"), ("equityBehavior", "shareClass")),
-            Map("round", ("issuer", "issuerProgram")),
-            Map("ownershipPercent", ("privateAssetValuation", "ownershipPercent")),
-            Map("costBasis", ("privateAssetValuation", "costBasis")),
-            Map("latestValuation", ("privateAssetValuation", "latestValuation")),
-            Map("transferRestrictions", ("privateAssetValuation", "transferRestrictions"))]),
-        ("RealEstateHolding", [Map("propertyType", ("issuer", "issuerProgram")), Map("sponsor", ("issuer", "issuerName")),
-            Map("ownershipPercent", ("privateAssetValuation", "ownershipPercent")),
-            Map("addressOrMarket", ("privateAssetValuation", "addressOrMarket")),
-            Map("appraisalValue", ("privateAssetValuation", "appraisalValue")),
-            Map("valuationDate", ("privateAssetValuation", "valuationDate")),
-            Map("debtStack", ("privateAssetValuation", "debtStack"))]),
-        ("CommitmentGuarantee",
-        [
-            Map("counterparty", ("issuer", "issuerName")),
-            Map("beneficiary", ("issuer", "issuerProgram")),
-            Map("collateral", ("financing", "collateralType")),
-            Map("effectiveDate", ("maturity", "effectiveDate")),
-            Map("expiryDate", MaturityDate),
-            Map("committedAmount", ("notional", "committedAmount")),
-            Map("unfundedAmount", ("notional", "unfundedAmount"))
-        ]),
-        ("Warrant",
-        [
-            Map("underlyingId", ("exercise", "underlyingSecurityId")),
-            Map("warrantType", ("exercise", "optionRight")),
-            Map("strike", ("exercise", "strikePrice")),
-            Map("expiry", MaturityDate),
-            Map("multiplier", ("tradingParameters", "contractMultiplier"))
-        ]),
-        ("FxForward",
-        [
-            Map("baseCurrency", ("currencyPair", "baseCurrency")),
-            Map("quoteCurrency", ("currencyPair", "quoteCurrency")),
-            Map("forwardRate", ("currencyPair", "forwardRate")),
-            Map("notional", ("notional", "notional")),
-            Map("tradeDate", ("maturity", "effectiveDate")),
-            Map("valueDate", MaturityDate),
-            Map("settlementType", ("settlement", "settlementType"))
-        ]),
-        ("NonDeliverableForward",
-        [
-            Map("baseCurrency", ("currencyPair", "baseCurrency")),
-            Map("quoteCurrency", ("currencyPair", "quoteCurrency")),
-            Map("settlementCurrency", ("currencyPair", "settlementCurrency")),
-            Map("forwardRate", ("currencyPair", "forwardRate")),
-            Map("notional", ("notional", "notional")),
-            Map("fixingDate", ("maturity", "effectiveDate")),
-            Map("valueDate", MaturityDate),
-            Map("fixingSource", ("referenceDataSource", "fixingSource"))
-        ]),
-        ("CreditDefaultSwap",
-        [
-            Map("effectiveDate", ("maturity", "effectiveDate")),
-            Map("maturityDate", MaturityDate),
-            Map("paymentFrequency", ("coupon", "paymentFrequency")),
-            Map("dayCount", ("coupon", "dayCount")),
-            // The upgrade stores FixedCouponBps / 10000 as coupon.couponRate.
-            new FlatTermMapping("fixedCouponBps", [("coupon", "couponRate")], Scale: 10000m),
-            Map("notional", ("notional", "notional")),
-            Map("referenceEntity", ("creditProtection", "referenceEntity")),
-            Map("referenceObligation", ("creditProtection", "referenceObligation")),
-            Map("protectionSide", ("creditProtection", "protectionSide")),
-            Map("seniority", ("creditProtection", "seniority")),
-            Map("restructuringClause", ("creditProtection", "restructuringClause")),
-            Map("upfrontPoints", ("creditProtection", "upfrontPoints")),
-            Map("recoveryRateAssumption", ("creditProtection", "recoveryRateAssumption")),
-            Map("indexName", ("creditProtection", "indexName"))]),
-        ("Swaption",
-        [
-            Map("payerReceiver", ("exercise", "optionRight")),
-            Map("exerciseStyle", ("exercise", "exerciseStyle")),
-            Map("strikeRate", ("exercise", "strikeRate")),
-            Map("expiry", MaturityDate),
-            Map("underlyingEffectiveDate", ("maturity", "effectiveDate")),
-            Map("notional", ("notional", "notional")),
-            Map("settlementType", ("settlement", "settlementType"))
-        ]),
-        ("CapFloor",
-        [
-            Map("effectiveDate", ("maturity", "effectiveDate")),
-            Map("maturityDate", MaturityDate),
-            // ADR-027 stage 1 increment 6: the floatingRate module (serialized since increment 5)
-            // recovers the flat keys termsFromKind feeds it from.
-            Map("referenceIndex", ("floatingRate", "referenceIndex")),
-            Map("capStrike", ("floatingRate", "capRate")),
-            Map("floorStrike", ("floatingRate", "floorRate")),
-            Map("resetFrequency", ("floatingRate", "resetFrequency")),
-            Map("capFloorType", ("exercise", "optionRight")),
-            Map("premiumAmount", ("exercise", "premiumAmount")),
-            Map("notional", ("notional", "notional"))
-        ]),
-        ("StructuredNote",
-        [
-            Map("maturity", MaturityDate),
-            Map("issueDate", ("maturity", "issueDate")),
-            Map("issuerName", ("issuer", "issuerName")),
-            Map("couponRate", ("coupon", "couponRate")),
-            Map("paymentFrequency", ("coupon", "paymentFrequency")),
-            Map("denomination", ("notional", "denomination")),
-            Map("underlyingDescription", ("structuredPayoff", "underlyingDescription")),
-            Map("principalProtectionPct", ("structuredPayoff", "principalProtectionPct")),
-            Map("participationRate", ("structuredPayoff", "participationRate")),
-            Map("returnCap", ("structuredPayoff", "returnCap")),
-            Map("barrierLevel", ("structuredPayoff", "barrierLevel"))]),
-        ("InvestmentFund", [Map("fundFamily", ("fund", "fundFamily")),
-            Map("fundType", ("fundShare", "fundType")), Map("navCurrency", ("fundShare", "navCurrency")),
-            Map("distributionPolicy", ("fundShare", "distributionPolicy")), Map("isStableNav", ("fundShare", "isStableNav")),
-            Map("pricingSource", ("referenceDataSource", "pricingSource"))])
-    ];
+    private static readonly IReadOnlyList<(string AssetClass, IReadOnlyList<SecurityEconomicTermFlattening> Mappings)> ClassFlattenings =
+        SecurityAssetClassModules.All.Where(static module => module.EconomicFlattenings is not null)
+            .OrderBy(static module => module.EconomicFlatteningOrder)
+            .Select(static module => (module.Descriptor.AssetClass, module.EconomicFlattenings!)).ToArray();
 
     /// <summary>
     /// Opens a flattened payload with its envelope: the flat codec version, the explicit flat format
@@ -1628,16 +1306,18 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
 /// The composed migrate-on-read chain for asset-specific-terms payloads — the single entry point
 /// that turns "whatever version is stored" into a payload current readers accept:
 /// <list type="bullet">
-/// <item><description>unstamped (version 0) → stamped <see cref="AssetSpecificTermsSchema.Legacy"/>
-/// via <see cref="SecurityAssetSpecificTermsV0ToCurrentUpcaster"/>;</description></item>
-/// <item><description>a cross-family economic-terms document (stamped
-/// <see cref="EconomicTermsSchema.Current"/> and carrying economic-terms module keys) → flattened v1
+/// <item><description>a document that declares <see cref="SecurityTermsFormats.Economic"/> → flattened v1
 /// via the lossy <see cref="SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster"/>;</description></item>
-/// <item><description>accepted versions pass through unchanged; unknown future versions — including a
-/// payload stamped with the reserved <see cref="AssetSpecificTermsSchema.ReservedForEconomicTerms"/>
-/// that does not have the economic-terms shape — pass through with their version preserved, so
-/// acceptance stays the guard's decision and newer or misrouted payloads degrade with a precise
-/// diagnostic instead of being silently emptied in the chain.</description></item>
+/// <item><description>a document that declares a flat or custom-profile family → normalized by
+/// <see cref="SecurityAssetSpecificTermsV0ToCurrentUpcaster"/>: an unstamped (version 0) document is
+/// stamped <see cref="AssetSpecificTermsSchema.Legacy"/>, accepted versions pass through unchanged, and
+/// unknown versions — version 2 included, which a declared flat document reads as flat — pass through
+/// with their version preserved, so acceptance stays the guard's decision and the guard diagnoses
+/// them precisely;</description></item>
+/// <item><description>an untagged object → refused with <see cref="SecurityTermsFormatUndeclaredException"/>
+/// (ADR-024 decision 5, amendment 2026-11-13 steps 5 and 6). The dispatch never consults the
+/// <c>schemaVersion</c> integer or the document's shape; the family-explicit overload serves a caller
+/// that knows the family it holds.</description></item>
 /// </list>
 /// </summary>
 public static class SecurityAssetSpecificTermsUpcasterChain
@@ -1659,7 +1339,38 @@ public static class SecurityAssetSpecificTermsUpcasterChain
             ? SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(payload, assetClass)
             : SecurityAssetSpecificTermsV0ToCurrentUpcaster.Normalize(payload);
 
-    /// <summary>Text-input variant; returns <see langword="null"/> when the text is not JSON.</summary>
+    /// <summary>
+    /// Family-explicit variant for a caller that knows which family it holds: a writer of the
+    /// economic document passes <see cref="SecurityTermsFormats.Economic"/> and the object is
+    /// flattened onto <paramref name="assetClass"/>'s keys without consulting the document's tag
+    /// or shape. For any other family, and a non-object payload, a declared tag normalizes exactly as
+    /// <see cref="Normalize(JsonElement, string?)"/>, and an untagged document is normalized as the
+    /// named flat or custom-profile family instead of being refused.
+    /// </summary>
+    public static SecurityAssetSpecificTerms Normalize(JsonElement payload, string? assetClass, string family)
+    {
+        ArgumentNullException.ThrowIfNull(family);
+        if (!SecurityTermsFormats.IsKnown(family))
+        {
+            throw new ArgumentException($"Unknown terms family '{family}'.", nameof(family));
+        }
+
+        if (family == SecurityTermsFormats.Economic && payload.ValueKind == JsonValueKind.Object)
+        {
+            return SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(payload, assetClass);
+        }
+
+        // A declared tag still decides; an untagged document takes the family the caller named.
+        return SecurityTermsEnvelope.GetDeclaredFormat(payload) is not null
+            ? Normalize(payload, assetClass)
+            : SecurityAssetSpecificTermsV0ToCurrentUpcaster.Normalize(payload);
+    }
+
+    /// <summary>
+    /// Text-input variant; returns <see langword="null"/> when the text is not JSON. An untagged object
+    /// is refused with <see cref="SecurityTermsFormatUndeclaredException"/>, as in
+    /// <see cref="Normalize(JsonElement)"/>.
+    /// </summary>
     public static SecurityAssetSpecificTerms? Normalize(string json)
     {
         if (string.IsNullOrWhiteSpace(json))

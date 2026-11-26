@@ -2,6 +2,9 @@ using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.DataIntegration.Historical;
+using Meridian.Storage;
+using Meridian.Ui.Shared.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -173,48 +176,79 @@ public static class HistoricalEndpoints
     {
         var group = app.MapGroup("").WithTags("Alignment");
 
-        // Create alignment
-        group.MapPost(UiApiRoutes.AlignmentCreate, (AlignmentCreateRequest req) =>
-        {
-            var jobId = Guid.NewGuid().ToString("N")[..12];
+        group.MapPost(UiApiRoutes.AlignmentCreate, (
+            TimeSeriesAlignmentRequest request, HttpContext context, [FromServices] StorageOptions? storageOptions)
+                => RunAlignmentAsync(request, storageOptions, jsonOptions, preview: false, context.RequestAborted))
+            .WithName("CreateAlignment").RequirePermission(UserPermission.ViewHistoricalData)
+            .DeclareNonMutating("Computes aligned rows from the archive and returns them to the caller without a host-side write.")
+            .WithMetadata(new RequestSizeLimitAttribute(16 * 1024))
+            .Produces<TimeSeriesAlignmentExecution>()
+            .ProducesProblem(400)
+            .ProducesProblem(409)
+            .ProducesProblem(422)
+            .ProducesProblem(429)
+            .ProducesProblem(503)
+            .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-            return Results.Json(new
-            {
-                jobId,
-                symbols = req.Symbols ?? Array.Empty<string>(),
-                interval = req.Interval ?? "1min",
-                aggregationMethod = req.AggregationMethod ?? "last",
-                gapStrategy = req.GapStrategy ?? "forward_fill",
-                status = "queued",
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
-        })
-        .WithName("CreateAlignment").RequirePermission(UserPermission.ViewHistoricalData)
-        .Produces(200)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
-
-        // Preview alignment
-        group.MapPost(UiApiRoutes.AlignmentPreview, (AlignmentCreateRequest req) =>
-        {
-            var symbols = req.Symbols ?? Array.Empty<string>();
-            var interval = req.Interval ?? "1min";
-
-            return Results.Json(new
-            {
-                symbols,
-                interval,
-                estimatedOutputRows = symbols.Length * 390, // ~390 minutes in trading day
-                supportedIntervals = new[] { "1sec", "5sec", "30sec", "1min", "5min", "15min", "30min", "1hour", "1day" },
-                supportedAggregations = new[] { "last", "first", "mean", "median", "vwap", "ohlc" },
-                supportedGapStrategies = new[] { "forward_fill", "backward_fill", "interpolate", "null", "skip" },
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
-        })
-        .WithName("PreviewAlignment").RequirePermission(UserPermission.ViewHistoricalData)
-        .DeclareNonMutating("Computes and returns an alignment preview from the request body; the sibling CreateAlignment route is what persists one.")
-        .Produces(200)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        group.MapPost(UiApiRoutes.AlignmentPreview, (
+            TimeSeriesAlignmentRequest request, HttpContext context, [FromServices] StorageOptions? storageOptions)
+                => RunAlignmentAsync(request, storageOptions, jsonOptions, preview: true, context.RequestAborted))
+            .WithName("PreviewAlignment").RequirePermission(UserPermission.ViewHistoricalData)
+            .DeclareNonMutating("Computes bounded alignment evidence and sample rows without writing to the host.")
+            .WithMetadata(new RequestSizeLimitAttribute(16 * 1024))
+            .Produces<TimeSeriesAlignmentPreview>()
+            .ProducesProblem(400)
+            .ProducesProblem(422)
+            .ProducesProblem(429)
+            .ProducesProblem(503)
+            .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 
-    private sealed record AlignmentCreateRequest(string[]? Symbols, string? Interval, string? AggregationMethod, string? GapStrategy, DateTime? StartDate, DateTime? EndDate);
+    private static readonly SemaphoreSlim AlignmentSlots = new(2, 2);
+
+    private static async Task<IResult> RunAlignmentAsync(
+        TimeSeriesAlignmentRequest request, StorageOptions? storageOptions, JsonSerializerOptions jsonOptions,
+        bool preview, CancellationToken ct)
+    {
+        if (storageOptions is null)
+            return Results.Problem(statusCode: StatusCodes.Status503ServiceUnavailable, title: "Historical storage is unavailable.");
+        if (!await AlignmentSlots.WaitAsync(0, ct).ConfigureAwait(false))
+            return Results.Problem(statusCode: StatusCodes.Status429TooManyRequests, title: "Alignment capacity is busy.");
+
+        try
+        {
+            var execution = await new TimeSeriesAlignmentEngine(storageOptions).AlignAsync(request, ct).ConfigureAwait(false);
+            if (preview)
+                return Results.Json(new TimeSeriesAlignmentPreview(execution.Summary, execution.Rows.Take(20).ToArray()), jsonOptions);
+
+            if (request.ExpectedContentHash is not null &&
+                !string.Equals(request.ExpectedContentHash, execution.Summary.ContentHash, StringComparison.OrdinalIgnoreCase))
+                return Results.Problem(statusCode: StatusCodes.Status409Conflict, title: "Alignment inputs have changed.",
+                    detail: "Run the preview again before exporting this transformation.");
+            return Results.Json(execution, jsonOptions);
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.Problem(statusCode: StatusCodes.Status400BadRequest, title: "Invalid alignment options.", detail: ex.Message);
+        }
+        catch (InvalidDataException ex)
+        {
+            return Results.Problem(statusCode: StatusCodes.Status422UnprocessableEntity, title: "Alignment could not use the archive.", detail: ex.Message);
+        }
+        catch (OverflowException)
+        {
+            return Results.Problem(statusCode: StatusCodes.Status422UnprocessableEntity, title: "Stored values exceed the alignment numeric range.");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or TimeZoneNotFoundException ||
+                                   ex is OperationCanceledException && !ct.IsCancellationRequested)
+        {
+            return Results.Problem(statusCode: StatusCodes.Status503ServiceUnavailable,
+                title: "The selected archive is temporarily unavailable.",
+                detail: "Close active captures or narrow the selection, then retry.");
+        }
+        finally
+        {
+            AlignmentSlots.Release();
+        }
+    }
 }

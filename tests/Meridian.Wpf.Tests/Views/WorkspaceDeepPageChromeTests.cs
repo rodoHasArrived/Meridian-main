@@ -142,7 +142,8 @@ public sealed class WorkspaceDeepPageChromeTests
         var xaml = File.ReadAllText(absolutePath);
 
         xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
-        xaml.Should().Contain("ProviderHealthInlineRefreshButton");
+        xaml.Should().NotContain("ProviderHealthInlineRefreshButton", "the shell Refresh reloads provider health in place");
+        xaml.Should().NotContain("Refresh_Click");
         xaml.Should().Contain("ProviderManagementCenter");
         xaml.Should().Contain("DenseDataGridControl");
         xaml.Should().Contain("InspectorPanelControl");
@@ -249,7 +250,8 @@ public sealed class WorkspaceDeepPageChromeTests
         xaml.Should().Contain("ClusterStatusSummaryInspector");
         xaml.Should().Contain("ClusterStatusSelectionInspector");
         xaml.Should().Contain("ClusterStatusActionInspector");
-        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+        // The page's own Refresh button, and the disabled-state tooltip it carried, moved to the shell Refresh.
+        xaml.Should().NotContain("ClusterStatusRefreshButton");
     }
 
     [Fact]
@@ -360,7 +362,7 @@ public sealed class WorkspaceDeepPageChromeTests
 
         xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
         xaml.Should().Contain("AccountingConfigureActionStrip");
-        xaml.Should().Contain("AccountingConfigureRefreshButton");
+        xaml.Should().NotContain("AccountingConfigureRefreshButton", "the shell Refresh reloads this page in place");
         xaml.Should().Contain("AccountingConfigureSeedBaselineButton");
         xaml.Should().Contain("AccountingConfigureActivateButton");
         xaml.Should().Contain("AccountingConfigureTabs");

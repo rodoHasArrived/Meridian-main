@@ -97,6 +97,64 @@ public sealed class PaperTradingGatewayTests
     }
 
     [Fact]
+    public async Task SubmitAsync_WhenFillsOutrunTheUpdateConsumer_DeliversEveryFill()
+    {
+        // More fills than the bounded update channel holds (500), with no consumer reading
+        // yet: the overflow must wait for capacity rather than be dropped.
+        const int orderCount = 600;
+        await using var gateway = new PaperTradingGateway(
+            NullLogger<PaperTradingGateway>.Instance,
+            options: new PaperTradingGatewayOptions
+            {
+                AllowScaffoldMarketFills = true,
+                ScaffoldMarketFillPrice = 123.45m
+            });
+
+        var submitted = new HashSet<string>();
+        for (var index = 0; index < orderCount; index++)
+        {
+            submitted.Add((await gateway.SubmitAsync(MarketBuy("SPY", 1))).OrderId);
+        }
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var filled = new HashSet<string>();
+        await foreach (var update in gateway.StreamOrderUpdatesAsync(timeout.Token))
+        {
+            update.Status.Should().Be(Meridian.Execution.Models.OrderStatus.Filled);
+            filled.Add(update.OrderId);
+            if (filled.Count == orderCount)
+            {
+                break;
+            }
+        }
+
+        filled.Should().BeEquivalentTo(submitted, "an order whose fill is dropped stays working forever downstream");
+    }
+
+    [Fact]
+    public async Task DisposeAsync_WhenUpdateChannelIsFullAndUnread_DoesNotHang()
+    {
+        var gateway = new PaperTradingGateway(
+            NullLogger<PaperTradingGateway>.Instance,
+            options: new PaperTradingGatewayOptions
+            {
+                AllowScaffoldMarketFills = true,
+                ScaffoldMarketFillPrice = 123.45m
+            });
+
+        for (var index = 0; index < 520; index++)
+        {
+            await gateway.SubmitAsync(MarketBuy("SPY", 1));
+        }
+
+        var dispose = gateway.DisposeAsync().AsTask();
+        var completed = await Task.WhenAny(dispose, Task.Delay(TimeSpan.FromSeconds(30)));
+
+        completed.Should().BeSameAs(dispose, "emitters parked on a full channel must be released by disposal");
+        await dispose;
+    }
+
+    [Fact]
     public async Task ValidateOrderAsync_RejectsMarketOnCloseBecauseTimingIsNotPreserved()
     {
         await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance);

@@ -33,7 +33,9 @@ public sealed record CustodianPositionLineDto(
     string? SecurityName,
     string? AssetClass,
     bool IsShort,
-    decimal? CostBasis = null);
+    decimal? CostBasis = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? SecurityId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] BondHoldingEconomicsDto? Bond = null);
 
 /// <summary>A single transaction line from a bank statement.</summary>
 public sealed record BankStatementLineDto(
@@ -84,7 +86,8 @@ public sealed record IngestCustodianStatementRequest(
     string? Notes,
     IReadOnlyList<CustodianPositionLineDto> Lines,
     string LoadedBy,
-    bool IsBackfill = false);
+    bool IsBackfill = false,
+    CustodianStatementAuthorityDto? Authority = null);
 
 /// <summary>Request to ingest a bank statement.</summary>
 public sealed record IngestBankStatementRequest(
@@ -108,7 +111,9 @@ public sealed record CustodianStatementBatchDto(
     string SourceFormat,
     int LineCount,
     DateTimeOffset IngestedAt,
-    string LoadedBy);
+    string LoadedBy,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] CustodianStatementAuthorityDto? Authority = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ContentSha256 = null);
 
 /// Metadata for a bank statement batch that was ingested.
 public sealed record BankStatementBatchDto(

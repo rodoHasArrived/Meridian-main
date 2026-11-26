@@ -82,6 +82,45 @@ public sealed class ReportingGovernanceCanonicalValidationTests
     }
 
     [Fact]
+    public async Task Release_RefusesAShadowLedgerBook_BeforeAnyReleaseStateIsEvaluated()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var shadow = new RecordingBookOfRecordGuard(isBookOfRecord: false);
+        var scenario = NewScenario(bookId: ledgerBookId.ToString("D"), bookOfRecordGuard: shadow);
+        var run = await scenario.Service.CreateRunAsync(scenario.Request, scenario.Creator);
+
+        Func<Task> release = async () => await scenario.Service.ReleaseAsync(run.RunId, run.Version, ShadowReleaseEvidence(), scenario.Releaser);
+
+        (await release.Should().ThrowAsync<ReportingGovernanceException>())
+            .WithMessage("*cannot be released as the book of record*")
+            .WithInnerException<ShadowBookNotBookOfRecordException>();
+        shadow.Requests.Should().Equal([("tenant-a", (string?)"company-a", ledgerBookId)]);
+
+        var authoritative = new RecordingBookOfRecordGuard(isBookOfRecord: true);
+        var bookOfRecord = NewScenario(bookId: ledgerBookId.ToString("D"), bookOfRecordGuard: authoritative);
+        var other = await bookOfRecord.Service.CreateRunAsync(bookOfRecord.Request, bookOfRecord.Creator);
+        Func<Task> notApproved = async () => await bookOfRecord.Service.ReleaseAsync(other.RunId, other.Version, ShadowReleaseEvidence(), bookOfRecord.Releaser);
+        (await notApproved.Should().ThrowAsync<ReportingGovernanceException>())
+            .Which.Message.Should().NotContain("book of record", "an authoritative book reaches the ordinary release-state checks");
+        authoritative.Requests.Should().ContainSingle();
+    }
+
+    private static ReportingReleaseEvidence ShadowReleaseEvidence() => new(
+        "manifest-shadow", new string('4', 64), [new ReportingArtifactReference("artifact-shadow", new string('3', 64), 128)], ["evidence-shadow"]);
+
+    private sealed class RecordingBookOfRecordGuard(bool isBookOfRecord) : IBookOfRecordGuard
+    {
+        public List<(string Tenant, string? Company, Guid Book)> Requests { get; } = [];
+
+        public Task<BookOfRecordStatusDto> GetStatusAsync(string tenantId, string? companyId, Guid ledgerBookId, CancellationToken ct = default)
+        {
+            Requests.Add((tenantId, companyId, ledgerBookId));
+            return Task.FromResult(new BookOfRecordStatusDto(ledgerBookId, isBookOfRecord, null, null,
+                isBookOfRecord ? "Authoritative." : "The ledger book is a shadow book in parallel run."));
+        }
+    }
+
+    [Fact]
     public async Task GovernedLifecycle_AllowsReadinessEvaluationBeforeLaterCertifiedSnapshotCapture()
     {
         var scenario = NewScenario(snapshotCapturedAtUtc: Now.AddMinutes(-1));
@@ -384,6 +423,44 @@ public sealed class ReportingGovernanceCanonicalValidationTests
         {
             Directory.Delete(root, recursive: true);
         }
+    }
+
+    [Fact]
+    public async Task Coordinator_SearchRequiresRunAudienceBeforeApplyingTheVisibleLimit()
+    {
+        var repository = new MemoryGovernanceRepository();
+        var template = CoordinatorTemplate();
+        var coordinator = CreateCoordinator(
+            repository,
+            new ReportingRunCertificationService(new VersionedCoordinatorSource(), new CoordinatorReconciliationSource()),
+            new ReportingOrchestrationService(new SingleTemplateCatalog(template), new DeterministicReportingSectionRenderer(), () => Now),
+            new RestartableArtifactStore(Now),
+            new RestartableArtifactCatalog(),
+            new RestartableArtifactAuditStore(),
+            new DeterministicReportingCertifiedArtifactProducer(),
+            template);
+        var scenario = NewScenario();
+        var service = new ReportingGovernanceService(repository, new FixedTimeProvider(Now),
+            prefix => $"{prefix}-{Guid.NewGuid():N}");
+        var hidden = await service.CreateRunAsync(scenario.Request with
+        {
+            RunId = "find-a-private",
+            Access = scenario.Request.Access with
+            {
+                Mode = ReportingGovernanceAccessMode.Private,
+                OwnerPrincipalId = scenario.Creator.ActorId,
+                AllowOwnerAccess = true
+            }
+        }, scenario.Creator);
+        var visible = await service.CreateRunAsync(scenario.Request with
+        {
+            RunId = "find-z-visible",
+            SeriesId = "another-series"
+        }, scenario.Creator);
+        var reader = CoordinatorCaller("search-reader");
+
+        (await coordinator.SearchRunsAsync("find-", limit: 1, reader)).Select(run => run.RunId).Should().Equal(visible.RunId);
+        (await coordinator.SearchRunsAsync(hidden.RunId, limit: 1, reader)).Should().BeEmpty();
     }
 
     [Fact]
@@ -1070,14 +1147,16 @@ public sealed class ReportingGovernanceCanonicalValidationTests
     private static Scenario NewScenario(
         DateTimeOffset? snapshotCapturedAtUtc = null,
         ReportingFinalityDto finality = ReportingFinalityDto.Final,
-        ReportingOutputFormatDto outputFormat = ReportingOutputFormatDto.Pdf)
+        ReportingOutputFormatDto outputFormat = ReportingOutputFormatDto.Pdf,
+        string bookId = "book-a",
+        IBookOfRecordGuard? bookOfRecordGuard = null)
     {
         var scope = new ReportingOperationalScope(
             "tenant-a",
             "organization-a",
             "company-a",
             "fund-a",
-            "book-a",
+            bookId,
             "period-a");
         var parametersJson = CanonicalParametersJson(scope, finality, outputFormat);
         var parametersHash = Convert.ToHexString(SHA256.HashData(
@@ -1122,7 +1201,8 @@ public sealed class ReportingGovernanceCanonicalValidationTests
                 "restatement" => "restatement-1",
                 "report-audit" => $"audit-{Guid.NewGuid():N}",
                 _ => $"{prefix}-{Guid.NewGuid():N}"
-            });
+            },
+            bookOfRecordGuard);
         return new Scenario(
             request,
             service,
@@ -1588,12 +1668,6 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             ReportingJobContract contract,
             CancellationToken cancellationToken) => Task.FromResult(manifest);
 
-        public Task<IReadOnlyList<ReportingOutputManifest>> ExecuteDueSchedulesAsync(
-            IEnumerable<ReportingScheduleContract> schedules,
-            DateTimeOffset nowUtc,
-            CancellationToken cancellationToken) =>
-            Task.FromResult<IReadOnlyList<ReportingOutputManifest>>([]);
-
         public ReportingOutputManifest? GetManifest(string runId) =>
             string.Equals(runId, manifest.RunId, StringComparison.Ordinal) ? manifest : null;
 
@@ -1800,6 +1874,22 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             ValueTask.FromResult<IReadOnlyList<GovernedReportingRun>>(_runs.Values
                 .Where(run => run.Scope.TenantId == tenantId && run.SeriesId == seriesId)
                 .OrderBy(run => run.Revision)
+                .ToArray());
+
+        public ValueTask<IReadOnlyList<string>> FindRunIdsAsync(
+            string tenantId,
+            string companyId,
+            string query,
+            int offset,
+            int limit,
+            CancellationToken cancellationToken = default) =>
+            ValueTask.FromResult<IReadOnlyList<string>>(_runs.Values
+                .Where(run => run.Scope.TenantId == tenantId && run.Scope.CompanyId == companyId &&
+                    run.RunId.StartsWith(query, StringComparison.OrdinalIgnoreCase))
+                .Select(static run => run.RunId)
+                .Order(StringComparer.Ordinal)
+                .Skip(offset)
+                .Take(limit)
                 .ToArray());
 
         public ValueTask AddRunAsync(

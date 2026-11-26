@@ -13,14 +13,16 @@ public static class DefaultInterestCalculator
     /// <summary>
     /// Computes simple interest on a defaulted principal from <paramref name="from"/> (exclusive of
     /// the grace period, handled by the caller) to <paramref name="to"/> under the given day-count
-    /// convention, rounded to 2dp.
+    /// convention, rounded to the minor units of <paramref name="currency"/> (0 for JPY, 3 for BHD),
+    /// or to 2dp when no currency is given.
     /// </summary>
     public static decimal ComputeSimpleInterest(
         decimal principal,
         decimal annualRate,
         DateOnly from,
         DateOnly to,
-        DefaultInterestConvention convention)
+        DefaultInterestConvention convention,
+        string? currency = null)
     {
         if (to <= from || principal <= 0m || annualRate <= 0m)
             return 0m;
@@ -35,7 +37,7 @@ public static class DefaultInterestCalculator
             ? Thirty360Days(from, to)
             : to.DayNumber - from.DayNumber;
 
-        return RoundCurrency(principal * annualRate * dayCount / yearBasis);
+        return Round(principal * annualRate * dayCount / yearBasis, currency);
     }
 
     /// <summary>
@@ -77,7 +79,7 @@ public static class DefaultInterestCalculator
             // The principal that entered default is what remained unfunded at the end of the grace
             // period; funding that arrived within grace cures the shortfall without a default.
             var fundedByGraceEnd = receipts.Where(receipt => receipt.ReceivedDate <= accrualStart).Sum(static receipt => receipt.Amount);
-            var defaultedPrincipal = RoundCurrency(called - fundedByGraceEnd);
+            var defaultedPrincipal = Round(called - fundedByGraceEnd, commitment.Currency);
             if (defaultedPrincipal <= 0m)
                 continue;
 
@@ -96,7 +98,7 @@ public static class DefaultInterestCalculator
             foreach (var receipt in receipts.Where(receipt => receipt.ReceivedDate > accrualStart && receipt.ReceivedDate <= accrualEnd))
             {
                 AddAccrual(accruals, commitment, defaultId, ref accrualIndex, segmentStart, receipt.ReceivedDate, outstanding);
-                outstanding = Math.Max(0m, RoundCurrency(outstanding - receipt.Amount));
+                outstanding = Math.Max(0m, Round(outstanding - receipt.Amount, commitment.Currency));
                 segmentStart = receipt.ReceivedDate;
             }
 
@@ -130,12 +132,13 @@ public static class DefaultInterestCalculator
             commitment.DefaultInterestRateAnnual,
             from,
             to,
-            commitment.DefaultInterestConvention);
+            commitment.DefaultInterestConvention,
+            commitment.Currency);
         if (interest <= 0m)
             return;
 
         accruals.Add(new DefaultInterestAccrual(
-            $"{defaultId}:{accrualIndex++}:{to:yyyyMMdd}",
+            FormattableString.Invariant($"{defaultId}:{accrualIndex++}:{to:yyyyMMdd}"),
             defaultId,
             from,
             to,
@@ -144,6 +147,9 @@ public static class DefaultInterestCalculator
             commitment.DefaultInterestConvention,
             interest));
     }
+
+    private static decimal Round(decimal amount, string? currency)
+        => string.IsNullOrWhiteSpace(currency) ? RoundCurrency(amount) : RoundCurrency(amount, currency);
 
     private static DateOnly? ResolveCureDate(decimal called, IReadOnlyList<CapitalCallFundingReceipt> receipts)
     {

@@ -1,8 +1,13 @@
+using System.Net;
+using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Meridian.Contracts.Credentials;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Wpf.Services;
 using SharedCredentialExpirationEventArgs = Meridian.Ui.Services.CredentialExpirationEventArgs;
+using SharedOAuthRefreshService = Meridian.Ui.Services.OAuthRefreshService;
 
 namespace Meridian.Wpf.Tests.Services;
 
@@ -20,6 +25,9 @@ namespace Meridian.Wpf.Tests.Services;
 /// </remarks>
 public sealed class CredentialServiceTests : IDisposable
 {
+    private const string TradeStationProvider = "tradestation";
+    private const string TradeStationResource = "Meridian.OAuth.tradestation";
+    private const string TradeStationEndpoint = "https://signin.tradestation.com/oauth/token";
     private readonly string _storageDir;
     private readonly string _vaultPath;
     private readonly string _metadataPath;
@@ -50,16 +58,16 @@ public sealed class CredentialServiceTests : IDisposable
         }
     }
 
-    private CredentialService CreateSut()
+    private CredentialService CreateSut(HttpMessageHandler? handler = null)
     {
-        var sut = new CredentialService(_storageDir);
+        var sut = handler is null ? new CredentialService(_storageDir) : new CredentialService(_storageDir, handler);
         _createdServices.Add(sut);
         return sut;
     }
 
-    private async Task<CredentialService> CreateInitializedSutAsync()
+    private async Task<CredentialService> CreateInitializedSutAsync(HttpMessageHandler? handler = null)
     {
-        var sut = CreateSut();
+        var sut = CreateSut(handler);
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         await sut.InitializeAsync(cts.Token);
         return sut;
@@ -507,6 +515,17 @@ public sealed class CredentialServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SharedSeam_OAuthTokenResourcePrefix_MatchesHostResourceNaming()
+    {
+        var sut = await CreateInitializedSutAsync();
+
+        // OAuthRefreshService derives provider ids from this prefix; it must match the
+        // names this host stores tokens under, not the shared no-op default.
+        ((ICredentialService)sut).OAuthTokenResourcePrefix.Should().Be(CredentialService.OAuthTokenResource);
+        CredentialService.OAuthTokenResource.Should().Be("Meridian.OAuth");
+    }
+
+    [Fact]
     public async Task UpdateMetadataAsync_ExpiresBeyondSevenDays_DoesNotRaiseCredentialExpiring()
     {
         var sut = await CreateInitializedSutAsync();
@@ -947,6 +966,280 @@ public sealed class CredentialServiceTests : IDisposable
         metadata.RefreshFailureCount.Should().Be(1, "a failed refresh attempt must be counted");
         metadata.LastRefreshAttemptAt.Should().NotBeNull();
         metadata.LastRefreshAttemptAt.Value.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(1));
+    }
+
+    [Fact]
+    public async Task StartupAndManualRefresh_RotateLegacyCredentialsOnce_AndReopenUsesRotatedPair()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var oldVault = JsonSerializer.SerializeToUtf8Bytes(new Dictionary<string, object>
+        {
+            [TradeStationResource] = new { Username = "oauth", Password = "fixture-original-access" },
+            [TradeStationResource + ".refresh"] = new { Username = "oauth_refresh", Password = "fixture-original-refresh" }
+        });
+        File.WriteAllBytes(_vaultPath, ProtectedData.Protect(oldVault, null, DataProtectionScope.CurrentUser));
+        await File.WriteAllTextAsync(_metadataPath, JsonSerializer.Serialize(new Dictionary<string, CredentialMetadata>
+        {
+            [TradeStationResource] = new()
+            {
+                Resource = TradeStationResource,
+                CredentialType = CredentialType.OAuth2Token,
+                TokenEndpoint = TradeStationEndpoint,
+                ClientId = "fixture-client",
+                ExpiresAt = DateTime.UtcNow.AddMinutes(-1),
+                AutoRefreshEnabled = true
+            }
+        }), timeout.Token);
+
+        var entered = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var handler = new OAuthTestHandler(async (request, ct) =>
+        {
+            request.RequestUri.Should().Be(new Uri(TradeStationEndpoint));
+            request.Method.Should().Be(HttpMethod.Post);
+            entered.TrySetResult(await request.Content!.ReadAsStringAsync(ct));
+            await release.Task.WaitAsync(ct);
+            return TokenResponse("fixture-rotated-access", "fixture-rotated-refresh");
+        });
+        var store = await CreateInitializedSutAsync(handler);
+        using var refresh = new SharedOAuthRefreshService(store);
+        using var siblingHandler = new OAuthTestHandler((_, _) => Task.FromResult(TokenResponse("unexpected")));
+        var sibling = await CreateInitializedSutAsync(siblingHandler);
+        refresh.Start();
+
+        (await entered.Task.WaitAsync(timeout.Token)).Should().Contain("refresh_token=fixture-original-refresh");
+        var manual = refresh.RefreshTokenAsync(TradeStationProvider, timeout.Token);
+        var otherInstance = sibling.RefreshOAuthTokenAsync(TradeStationProvider, timeout.Token);
+        release.TrySetResult();
+        (await manual).Should().BeTrue();
+        (await otherInstance).Should().BeTrue();
+        await refresh.StopAsync().WaitAsync(timeout.Token);
+        handler.Calls.Should().Be(1);
+        siblingHandler.Calls.Should().Be(0);
+
+        using var reopenedHandler = new OAuthTestHandler(async (request, ct) =>
+        {
+            (await request.Content!.ReadAsStringAsync(ct)).Should().Contain("refresh_token=fixture-rotated-refresh");
+            return TokenResponse("fixture-second-access");
+        });
+        var reopened = await CreateInitializedSutAsync(reopenedHandler);
+        reopened.GetOAuthToken(TradeStationProvider).Should().Be("fixture-rotated-access");
+        reopened.GetApiKey(TradeStationResource + ".refresh").Should().Be("fixture-rotated-refresh");
+        reopened.GetMetadata(TradeStationResource)!.ExpiresAt.Should().BeAfter(DateTime.UtcNow);
+        (await reopened.RefreshOAuthTokenAsync(TradeStationProvider, timeout.Token)).Should().BeTrue();
+
+        var secondReopen = await CreateInitializedSutAsync();
+        secondReopen.GetOAuthToken(TradeStationProvider).Should().Be("fixture-second-access");
+        secondReopen.GetApiKey(TradeStationResource + ".refresh").Should().Be("fixture-rotated-refresh");
+    }
+
+    [Fact]
+    public async Task RefreshOAuthTokenAsync_CancellationReachesHttpAndPreservesNewerPair()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        using var cancelled = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cancellationObserved = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var handler = new OAuthTestHandler(async (_, ct) =>
+        {
+            entered.TrySetResult();
+            try
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+                return TokenResponse("unexpected");
+            }
+            finally
+            {
+                cancellationObserved.TrySetResult();
+            }
+        });
+        var store = await CreateInitializedSutAsync(handler);
+        await SaveFixtureAsync(store, "original", timeout.Token);
+        var refresh = store.RefreshOAuthTokenAsync(TradeStationProvider, cancelled.Token);
+        await entered.Task.WaitAsync(timeout.Token);
+
+        var replacement = await CreateInitializedSutAsync();
+        await SaveFixtureAsync(replacement, "replacement", timeout.Token);
+        cancelled.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => refresh);
+
+        cancellationObserved.Task.IsCompletedSuccessfully.Should().BeTrue();
+        await AssertFixturePairAsync("replacement");
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    public async Task RefreshOAuthTokenAsync_LateResponseCannotReplaceNewerOrDeletedCredential(bool success, bool deleted)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var handler = new OAuthTestHandler(async (_, ct) =>
+        {
+            entered.TrySetResult();
+            await release.Task.WaitAsync(ct);
+            return success
+                ? TokenResponse("fixture-stale-access", "fixture-stale-refresh")
+                : new HttpResponseMessage(HttpStatusCode.BadRequest);
+        });
+        var store = await CreateInitializedSutAsync(handler);
+        await SaveFixtureAsync(store, "original", timeout.Token);
+        var refresh = store.RefreshOAuthTokenAsync(TradeStationProvider, timeout.Token);
+        await entered.Task.WaitAsync(timeout.Token);
+
+        var replacement = await CreateInitializedSutAsync();
+        if (deleted)
+            replacement.RemoveCredential(TradeStationResource);
+        else
+            await SaveFixtureAsync(replacement, "replacement", timeout.Token);
+        release.TrySetResult();
+        (await refresh).Should().BeFalse();
+
+        if (deleted)
+        {
+            var reopened = await CreateInitializedSutAsync();
+            reopened.GetOAuthToken(TradeStationProvider).Should().BeNull();
+            reopened.GetApiKey(TradeStationResource + ".refresh").Should().BeNull();
+        }
+        else
+        {
+            await AssertFixturePairAsync("replacement");
+        }
+    }
+
+    [Theory]
+    [InlineData(TradeStationProvider, "http://signin.tradestation.com/oauth/token")]
+    [InlineData(TradeStationProvider, "https://signin.tradestation.com.example.invalid/oauth/token")]
+    [InlineData(TradeStationProvider, "https://signin.tradestation.com:8443/oauth/token")]
+    [InlineData(TradeStationProvider, "https://signin.tradestation.com/another/path")]
+    [InlineData(TradeStationProvider, "https://signin.tradestation.com/oauth/token?other=true")]
+    [InlineData(TradeStationProvider, "https://signin.tradestation.com/oauth/token#fragment")]
+    [InlineData(TradeStationProvider, "https://fake-user@signin.tradestation.com/oauth/token")]
+    [InlineData("unknown-provider", TradeStationEndpoint)]
+    public async Task RefreshOAuthTokenAsync_DeniesDestinationsOutsideProviderPolicy(string providerId, string endpoint)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        using var handler = new OAuthTestHandler((_, _) => Task.FromResult(TokenResponse("unexpected")));
+        var store = await CreateInitializedSutAsync(handler);
+        await store.SaveOAuthTokenAsync(providerId, "fixture-access", "fixture-refresh",
+            DateTime.UtcNow.AddMinutes(2), endpoint, "fixture-client", timeout.Token);
+
+        (await store.RefreshOAuthTokenAsync(providerId, timeout.Token)).Should().BeFalse();
+        handler.Calls.Should().Be(0);
+        store.GetOAuthToken(providerId).Should().Be("fixture-access");
+    }
+
+    [Fact]
+    public async Task RefreshOAuthTokenAsync_DoesNotSendOlderRefreshTokenAfterRawAccessReplacement()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        using var handler = new OAuthTestHandler((_, _) => Task.FromResult(TokenResponse("unexpected")));
+        var store = await CreateInitializedSutAsync(handler);
+        await SaveFixtureAsync(store, "original", timeout.Token);
+        store.SaveCredential(TradeStationResource, "oauth", "fixture-replacement-access");
+
+        (await store.RefreshOAuthTokenAsync(TradeStationProvider, timeout.Token)).Should().BeFalse();
+        handler.Calls.Should().Be(0);
+        store.GetOAuthToken(TradeStationProvider).Should().Be("fixture-replacement-access");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RefreshOAuthTokenAsync_RejectsOversizedOrRedirectResponses(bool redirect)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        using var handler = new OAuthTestHandler((_, _) =>
+        {
+            if (redirect)
+            {
+                var reply = new HttpResponseMessage(HttpStatusCode.TemporaryRedirect);
+                reply.Headers.Location = new Uri("https://redirect.invalid/token");
+                return Task.FromResult(reply);
+            }
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new OversizedOAuthContent() });
+        });
+        var store = await CreateInitializedSutAsync(handler);
+        await SaveFixtureAsync(store, "original", timeout.Token);
+
+        (await store.RefreshOAuthTokenAsync(TradeStationProvider, timeout.Token)).Should().BeFalse();
+        handler.Calls.Should().Be(1);
+        var reopened = await CreateInitializedSutAsync();
+        reopened.GetOAuthToken(TradeStationProvider).Should().Be("fixture-original-access");
+        reopened.GetApiKey(TradeStationResource + ".refresh").Should().Be("fixture-original-refresh");
+        reopened.GetMetadata(TradeStationResource)!.RefreshFailureCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task RefreshOAuthTokenAsync_VaultCommitRefusalKeepsPreviousPairAndReportsFailure()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        using var handler = new OAuthTestHandler((_, _) => Task.FromResult(TokenResponse("fixture-rotated-access", "fixture-rotated-refresh")));
+        var store = await CreateInitializedSutAsync(handler);
+        await SaveFixtureAsync(store, "original", timeout.Token);
+
+        // A retained reader denying delete-sharing prevents an atomic replacement on Windows.
+        using (File.Open(_vaultPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+        {
+            (await store.RefreshOAuthTokenAsync(TradeStationProvider, timeout.Token)).Should().BeFalse();
+        }
+        handler.Calls.Should().Be(1);
+        await AssertFixturePairAsync("original");
+        Directory.GetFiles(_storageDir, "*.tmp").Should().BeEmpty();
+    }
+
+    private async Task AssertFixturePairAsync(string marker)
+    {
+        var reopened = await CreateInitializedSutAsync();
+        reopened.GetOAuthToken(TradeStationProvider).Should().Be($"fixture-{marker}-access");
+        reopened.GetApiKey(TradeStationResource + ".refresh").Should().Be($"fixture-{marker}-refresh");
+        var metadata = reopened.GetMetadata(TradeStationResource)!;
+        metadata.LastRefreshAttemptAt.Should().BeNull();
+        metadata.RefreshFailureCount.Should().Be(0);
+    }
+
+    private static Task SaveFixtureAsync(CredentialService service, string marker, CancellationToken ct)
+        => service.SaveOAuthTokenAsync(TradeStationProvider, $"fixture-{marker}-access", $"fixture-{marker}-refresh",
+            DateTime.UtcNow.AddMinutes(2), TradeStationEndpoint, "fixture-client", ct);
+
+    private static HttpResponseMessage TokenResponse(string access, string? refresh = null)
+    {
+        var fields = new Dictionary<string, object> { ["access_token"] = access, ["expires_in"] = 1200 };
+        if (refresh is not null)
+            fields["refresh_token"] = refresh;
+        return new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(JsonSerializer.Serialize(fields), Encoding.UTF8, "application/json")
+        };
+    }
+
+    private sealed class OAuthTestHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send)
+        : HttpMessageHandler
+    {
+        private int _calls;
+
+        public int Calls => Volatile.Read(ref _calls);
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Interlocked.Increment(ref _calls);
+            return send(request, cancellationToken);
+        }
+    }
+
+    private sealed class OversizedOAuthContent : HttpContent
+    {
+        protected override bool TryComputeLength(out long length)
+        {
+            length = 0;
+            return false;
+        }
+
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
+            => stream.WriteAsync(new byte[65 * 1024]).AsTask();
     }
 
     [Fact]

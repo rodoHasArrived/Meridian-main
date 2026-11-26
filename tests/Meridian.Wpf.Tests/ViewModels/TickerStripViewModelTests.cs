@@ -146,6 +146,32 @@ public sealed class TickerStripViewModelTests
             WpfServices.ConfigService.Instance,
             remoteClient);
 
+    [Fact]
+    public void PollAllSymbolsAsync_DoesNotOverlapAndReleasesGuardAfterCompletion()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var remoteClient = new FakeRemoteWorkstationClient
+            {
+                ResponseGate = gate,
+                Quote = CreateQuotesResponse("SPY", bid: 99m, ask: 101m, sessionLast: 100m)
+            };
+            using var viewModel = CreateViewModel(remoteClient);
+            viewModel.UpdateSymbol("SPY", 99m, 101m, 100m, true);
+
+            var firstPoll = viewModel.PollAllSymbolsAsync();
+            firstPoll.IsCompleted.Should().BeFalse();
+            await viewModel.PollAllSymbolsAsync();
+            remoteClient.GetInvocationCount.Should().Be(1, "a timer tick must not overlap the pending read");
+
+            gate.SetResult();
+            await firstPoll;
+            await viewModel.PollAllSymbolsAsync();
+            remoteClient.GetInvocationCount.Should().Be(2, "completed polling must release its guard");
+        });
+    }
+
     private sealed class FakeRemoteWorkstationClient : IRemoteWorkstationClient
     {
         public string BaseUrl { get; private set; } = "http://remote.test";
@@ -153,6 +179,8 @@ public sealed class TickerStripViewModelTests
         public QuotesResponse? Quote { get; init; }
         public string? LastGetEndpoint { get; private set; }
         public bool LastCancellationWasRequested { get; private set; }
+        public TaskCompletionSource? ResponseGate { get; init; }
+        public int GetInvocationCount { get; private set; }
 
         public void Configure(string serviceUrl, int timeoutSeconds = 30, int backfillTimeoutMinutes = 60)
             => BaseUrl = serviceUrl;
@@ -173,19 +201,22 @@ public sealed class TickerStripViewModelTests
             where T : class
             => Task.FromResult<T?>(null);
 
-        public Task<ApiResponse<T>> GetWithResponseAsync<T>(string endpoint, CancellationToken ct = default)
+        public async Task<ApiResponse<T>> GetWithResponseAsync<T>(string endpoint, CancellationToken ct = default)
             where T : class
         {
             LastGetEndpoint = endpoint;
+            GetInvocationCount++;
             LastCancellationWasRequested = ct.IsCancellationRequested;
             ct.ThrowIfCancellationRequested();
+            if (ResponseGate is not null)
+                await ResponseGate.Task.WaitAsync(ct);
 
             if (!IsSuccess || Quote is null || Quote is not T typedQuote)
             {
-                return Task.FromResult(ApiResponse<T>.Fail("Remote unavailable", statusCode: 503));
+                return ApiResponse<T>.Fail("Remote unavailable", statusCode: 503);
             }
 
-            return Task.FromResult(ApiResponse<T>.Ok(typedQuote));
+            return ApiResponse<T>.Ok(typedQuote);
         }
 
         public Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default)

@@ -12,7 +12,7 @@ namespace Meridian.Storage.AssetOperations;
 public sealed partial class PostgresAssetOperationsProjectionStore :
     IAssetOperationsProjectionStore,
     IInstrumentPositionProjectionStore,
-    IAssetAccountingEventProjectionStore
+    ITransactionalAssetAccountingEventProjectionStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -91,6 +91,8 @@ public sealed partial class PostgresAssetOperationsProjectionStore :
             .BeginTransactionAsync(IsolationLevel.Serializable, ct)
             .ConfigureAwait(false);
 
+        await AcquireSecurityBookEntitlementLocksAsync(connection, transaction, projection.Subject.SecurityId,
+            projection.BookPositions, ct).ConfigureAwait(false);
         await DeleteExistingAsync(connection, transaction, projection.Subject.SecurityId, ct).ConfigureAwait(false);
         await AppendWriteEventAsync(connection, transaction, projection, approval, ct).ConfigureAwait(false);
         await InsertAsync(connection, transaction, "asset_operation_subjects", projection.Subject.SecurityId, "SecurityMaster", projection.Subject.SecurityId.ToString("D"), projection.Subject, ct).ConfigureAwait(false);
@@ -108,7 +110,6 @@ public sealed partial class PostgresAssetOperationsProjectionStore :
         var normalizedPositions = NormalizeTypedProjections(projection);
         var normalizedStates = NormalizeEconomicStates(projection, normalizedPositions);
         foreach (var position in normalizedPositions
-                     .Where(position => InstrumentPositionProjectionRules.ParticipatesInActiveOverlap(position.Status))
                      .OrderBy(ComputeScopeLockKey))
         {
             await AcquirePositionScopeLockAsync(connection, transaction, position, ct).ConfigureAwait(false);

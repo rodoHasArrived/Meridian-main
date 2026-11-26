@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Application.SecurityMaster.CorporateActions;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
@@ -25,6 +26,72 @@ public sealed class CorporateActionOperationsEndpointTests
     private static readonly Guid ProposalId = Guid.Parse("bb390ac9-90e8-474b-9d90-bc5e673a6f75");
     private const string FanOutBlocker =
         "Corporate-action source decisions are read-only until an authoritative service can enumerate every affected tenant/company scope and apply the decision atomically.";
+
+    [Theory]
+    [InlineData(UserPermission.ViewCorporateActions)]
+    [InlineData(UserPermission.PrepareCorporateActionAccounting)]
+    public async Task DeadlineCapture_RequiresElectionOrTermsPermission(UserPermission permissions)
+    {
+        var service = Substitute.For<ICorporateActionOperationsService>();
+        await using var app = await CreateAppAsync(service, permissions);
+        var request = DeadlineRequest();
+        var response = await app.GetTestClient().PostAsJsonAsync($"/api/security-master/corporate-actions/cases/{request.CaseId}/deadlines", request, JsonOptions);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await service.DidNotReceive().AddEvidenceAsync(Arg.Any<AddCorporateActionEvidenceRequestDto>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeadlineCapture_RejectsForeignCompanyBeforeEvidenceCommand()
+    {
+        var service = Substitute.For<ICorporateActionOperationsService>();
+        await using var app = await CreateAppAsync(service, UserPermission.RecordCorporateActionElection);
+        var request = DeadlineRequest() with { CompanyId = "foreign-company" };
+        var response = await app.GetTestClient().PostAsJsonAsync($"/api/security-master/corporate-actions/cases/{request.CaseId}/deadlines", request, JsonOptions);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await service.DidNotReceive().AddEvidenceAsync(Arg.Any<AddCorporateActionEvidenceRequestDto>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GenericEvidenceRoute_CannotBypassDeadlinePermission()
+    {
+        var service = Substitute.For<ICorporateActionOperationsService>();
+        await using var app = await CreateAppAsync(service, UserPermission.PrepareCorporateActionAccounting);
+        var capture = DeadlineRequest();
+        var request = new AddCorporateActionEvidenceRequestDto(capture.CaseId, capture.ExpectedVersion, capture.IdempotencyKey,
+            capture.TenantId, capture.CompanyId, CorporateActionDeadlinePolicy.EvidenceKind, capture.EvidenceReference, "browser",
+            EvidenceHash: capture.EvidenceHash, Description: capture.Rationale,
+            Metadata: JsonSerializer.SerializeToElement(new CorporateActionDeadlineEvidenceDto(1, capture.Deadline), JsonOptions));
+        var response = await app.GetTestClient().PostAsJsonAsync($"/api/security-master/corporate-actions/cases/{capture.CaseId}/evidence", request, JsonOptions);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await service.DidNotReceive().AddEvidenceAsync(Arg.Any<AddCorporateActionEvidenceRequestDto>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeadlineCapture_UsesAuthenticatedActorAndRetainsSourceText()
+    {
+        var service = Substitute.For<ICorporateActionOperationsService>();
+        var processingCase = TermsConfirmedCase();
+        service.AddEvidenceAsync(Arg.Any<AddCorporateActionEvidenceRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(call => new CorporateActionEvidenceMutationResultDto(processingCase,
+                new CorporateActionEvidenceDto(Guid.NewGuid(), processingCase.CaseId, CorporateActionDeadlinePolicy.EvidenceKind,
+                    "document://notice", new string('a', 64), "Reviewed", call.ArgAt<AddCorporateActionEvidenceRequestDto>(0).Metadata,
+                    processingCase.Version + 1, "operations-user", DateTimeOffset.UtcNow), false));
+        await using var app = await CreateAppAsync(service, UserPermission.RecordCorporateActionElection);
+        var request = DeadlineRequest();
+        var response = await app.GetTestClient().PostAsJsonAsync($"/api/security-master/corporate-actions/cases/{request.CaseId}/deadlines", request, JsonOptions);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        await service.Received(1).AddEvidenceAsync(Arg.Is<AddCorporateActionEvidenceRequestDto>(r =>
+            r.Actor == "operations-user" && r.TenantId == "tenant-a" && r.CompanyId == "company-a" &&
+            CorporateActionDeadlinePolicy.Read(r.Metadata).SourceText == request.Deadline.SourceText), Arg.Any<CancellationToken>());
+    }
+
+    private static RecordCorporateActionDeadlineRequestDto DeadlineRequest()
+    {
+        var processingCase = TermsConfirmedCase();
+        return new(processingCase.CaseId, processingCase.Version, "record-deadline", "tenant-a", "company-a",
+            new(Guid.NewGuid(), "IssuerElection", "Fixture issuer", Date: new DateOnly(2026, 11, 12), SourceText: "Election closes 12 November 2026"),
+            "document://issuer-notice", new string('a', 64), "Reviewed the original notice", processingCase.Scope);
+    }
 
     [Fact]
     public async Task Inbox_RemainsReadableButLocksSourceDecisionsUntilAuthoritativeFanOutExists()
@@ -559,6 +626,7 @@ public sealed class CorporateActionOperationsEndpointTests
         builder.WebHost.UseTestServer();
         builder.Services.AddMutationRateLimiter();
         builder.Services.AddSingleton(service);
+        builder.Services.AddSingleton(new CorporateActionCalendarService(service));
         builder.Services.AddSingleton(Substitute.For<ISecurityMasterQueryService>());
         if (scopeFanOut is not null)
         {

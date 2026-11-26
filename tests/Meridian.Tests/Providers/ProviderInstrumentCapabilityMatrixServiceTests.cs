@@ -3,6 +3,8 @@ using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Application.UI;
+using Meridian.Core.Config;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -15,6 +17,70 @@ namespace Meridian.Tests.Providers;
 /// </summary>
 public sealed class ProviderInstrumentCapabilityMatrixServiceTests
 {
+    [Fact]
+    public void GetMatrix_IbkrBondCoverageDoesNotInventStreamingQuotesOrTrades()
+    {
+        var ibkr = new ProviderInstrumentCapabilityMatrixService().GetMatrix().Providers.Single(row => row.ProviderId == "ibkr");
+        var bond = ibkr.Cells.Single(cell => cell.InstrumentType == "Bond");
+        bond.Supported.Should().BeTrue("bond contract and historical coverage remains declared");
+        bond.Backfill.Should().BeTrue();
+        bond.Stream.Should().BeFalse("the detailed streaming profiles do not include bonds");
+        ibkr.FixedIncomeTasks.Should().HaveCount(8);
+        ibkr.FixedIncomeTasks!.Single(task => task.Task == "ExecutableQuotes").AdapterSupport.Should().Be("Unsupported");
+        ibkr.FixedIncomeTasks.Single(task => task.Task == "Trades").AdapterSupport.Should().Be("Unsupported");
+        ibkr.FixedIncomeTasks.Single(task => task.Task == "Terms").AdapterSupport.Should().Be("AdapterDeclared");
+    }
+
+    [Fact]
+    public void GetMatrix_FredRateInputsDoNotClaimPriceOrDiscountFactorAvailability()
+    {
+        var fred = new ProviderInstrumentCapabilityMatrixService().GetMatrix().Providers.Single(row => row.ProviderId == "fred");
+        fred.FixedIncomeTasks!.Single(task => task.Task == "Curves").Detail.Should().Contain("construction method");
+        fred.FixedIncomeTasks.Single(task => task.Task == "Fixings").AdapterSupport.Should().Be("AdapterDeclared");
+        fred.FixedIncomeTasks.Single(task => task.Task == "EvaluatedPrices").AdapterSupport.Should().Be("Unsupported");
+        fred.FixedIncomeTasks.SelectMany(task => task.Connections).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetMatrixForTenant_RetainsOwnedConnectionEvidenceWithoutPromotingGeneralCertification()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"meridian-fi-readiness-{Guid.NewGuid():N}", "appsettings.json");
+        try
+        {
+            var store = new ConfigStore(path);
+            await store.SaveAsync(new AppConfig(ProviderConnections: new ProviderConnectionsConfig(
+                Connections:
+                [
+                    new("ours", "interactive-brokers", "Owned TWS", TenantId: "tenant-a"),
+                    new("theirs", "ibkr", "Private TWS", TenantId: "tenant-b"),
+                    new("legacy", "ibkr", "Legacy TWS"),
+                    new("ambiguous", "ibkr", "Duplicate owned", TenantId: "tenant-a"),
+                    new("ambiguous", "ibkr", "Duplicate foreign", TenantId: "tenant-b")
+                ],
+                Certifications: [new("ours", "Passed", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(30), true, ["Connection is reachable"])])));
+            var service = new ProviderInstrumentCapabilityMatrixService(configStore: store);
+            service.GetMatrix().Providers.SelectMany(row => row.FixedIncomeTasks!).SelectMany(task => task.Connections).Should().BeEmpty();
+            var ibkr = service.GetMatrixForTenant("tenant-a").Providers.Single(row => row.ProviderId == "ibkr");
+            var terms = ibkr.FixedIncomeTasks!.Single(task => task.Task == "Terms");
+            var connection = terms.Connections.Should().ContainSingle().Subject;
+            connection.ConnectionId.Should().Be("ours");
+            connection.ConfigurationState.Should().Be("Configured");
+            connection.EntitlementState.Should().Be("Unknown");
+            connection.FreshnessState.Should().Be("Unknown");
+            connection.VerificationState.Should().Be("live-untested");
+            connection.ObservationAsOf.Should().BeNull();
+            connection.VerifiedAt.Should().BeNull();
+            connection.Evidence.Should().Contain(evidence => evidence.Kind == "ConnectionCertification" && evidence.Detail.Contains("Passed"));
+            connection.Evidence.Should().Contain(evidence => evidence.Kind == "TaskEvidence");
+        }
+        finally
+        {
+            var directory = Path.GetDirectoryName(path)!;
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, recursive: true);
+        }
+    }
+
     [Fact]
     public void GetMatrix_IncludesEveryMarketDataCatalogProviderWithFullInstrumentCoverage()
     {

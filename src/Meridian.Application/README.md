@@ -6,10 +6,373 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.Application
+
+Direct-lending restructuring validates principal relief before mutation and retains the same applied
+amount for servicing principal, drawdown lots, event evidence and the restructuring journal. A stable
+command retry returns committed state; changed terms, dates, reasons or amounts conflict. New events
+retain the original terms-version and servicing-revision evidence for recovery.
+
+The loan event rebuilder covers every accepted credit and lifecycle event, including historical
+in-memory aliases. Recovery applies recorded write-off/amortization amounts, nullable servicer
+observations, collateral identity and original status/terms evidence without reposting journals.
+Exact duplicates have one effect; conflicting or incomplete aggregate histories fail. New amortization
+events retain opening/closing basis, and historical nonzero amortization without basis evidence remains
+explicitly unrecoverable. Focused coverage: `DirectLendingLifecycleReplayTests`,
+`DirectLendingEventRebuilderTests`, `PostgresDirectLendingCommandServiceTests`,
+`DirectLendingRestructuringTests`.
+
+Accounting closes require the historical adapter's explicit raw-price capability. The mark source
+validates its raw basis, positive price, symbol, session window, actual provider/feed and source-record
+digest. Unsupported or incomplete evidence leaves the mark unavailable and lets the registered chain
+try its next provider. The immutable price reference retains these facts through valuation drafts,
+journal metadata and retry fingerprints. Research-bar adjustment settings remain independent.
+Focused coverage: `AccountingCloseMarkPriceSourceTests`, `AlpacaAccountingClosePriceTests`.
+
+Cross-source backfill reconciliation resolves a complete, bounded exchange-session calendar before
+judging provider agreement. Missing leading, interior or trailing sessions block closure even when
+every provider omits the same date. Results retain the calendar identity, range and expected sessions;
+unknown or partial calendar coverage and older receipts without it remain incomplete. A confirmed
+holiday-only window can close with no bars. Focused coverage: `CrossSourceBackfillReconciliationServiceTests`.
+
+Reconnection and automatic gap remediation stamp an opaque repair-operation reference onto their
+backfill request. The historical writer binds that purpose and the assessment known at ingestion
+to its existing flushed batch receipt. Ordinary backfills do not infer historical repair status.
+The live market-event tap captures the same assessment snapshot with the feed-cache update so paper
+fills never attach a quality score fetched later during accounting.
+
+Loan reconciliation now consumes eligible nonvoid incoming receipts and their retained allocations
+once, by currency and due date. Current durable and synthetic allocation aliases share a matcher;
+PRD-115 principal prepayments, prepaid interest and unapplied cash retain their explained dispositions,
+and outgoing refunds cannot satisfy projected receipts. Retained unapplied-cash application events
+consume their original allocation pools once and match on the application date; refunds reduce those
+pools before later applications. Results retain the application and funding evidence without creating
+another cash receipt. Multiple applications can settle one unambiguous projected obligation; an
+exact combined amount takes precedence over a tolerance-only match. Competing obligations and
+arbitrary subsets remain unmatched. Unlinked, insufficient or incompatible funding leaves coverage
+unavailable.
+Optional amount/day tolerances are pinned
+to the retryable command; omitted requests preserve exact matching. Canonical balance comparisons
+use the registered loan account roles, an atomic exact-book journal capture and any pinned configured
+chart revision, including PIK, prepaid-interest and unapplied-cash balances. Missing role, currency or
+book evidence stays unavailable. A changed canonical security reference or incompatible chart history
+cannot hide earlier carrying legs: the comparison reports unavailable with its captured journal IDs.
+Migration `012_direct_lending_reconciliation_evidence.sql` retains
+new request/source evidence across restarts while leaving legacy evidence unknown.
+
+Historical ticker-era retagging preserves `HistoricalBar.PriceBasis`. The daily-close accounting
+source requires an explicit Raw basis and records `basis=Raw` in new evidence references; adjusted
+or unknown latest observations produce an unavailable mark rather than an older raw substitution.
+This guard does not supply the dedicated raw accounting-close capability or expand its provider
+coverage. Legacy `IsAdjusted=false` alone cannot qualify an accounting mark.
+Security Master validation composes one built-in contribution for each of the 32 asset classes
+through `SecurityAssetValidationModules` (`SecurityMaster/Validation/Modules/`). Each class-owned
+factory keeps the rules the class had in `AssetClassValidatorRegistry`; the registry keeps shared
+schema validation, the shared rule types and its public custom-registry constructor. Composition
+refuses a duplicate, missing or mismatched class. `SecurityAssetValidationModuleTests` covers it.
+
+`SecurityMasterMapping.AssetPackCodecs` composes the decode contributions generated from the
+Contracts binding rows, with the handwritten CustomAsset profile decode and Bond's existing
+diagnostic-order hook. It checks exact catalog coverage before dispatch, so a catalog class
+without exactly one decoder fails at type initialization. The mapping keeps its guards, its
+write refusal and read fallback for an unrecognized class, and the generated-code check in
+`SecurityFlatCodecGenerationTests`. The F# writer and replay behavior are unchanged.
+
+Corporate-action ingest forwards specialized source terms and the provider's original JSON
+record into durable source proposals. Exact raw-text digests are checked before recording; source
+versions remain idempotent across JSON formatting changes without replacing the first retained
+payload. Amendments retain earlier versions. Providers can preserve unknown upstream currency,
+and fetch outcomes retain explicit endpoint/type coverage. These observations remain review-only;
+source agreement does not accept a canonical event or authorize accounting.
+
+`SecurityMaster/Valuation/AssetPositionMarketValuationService` adapts an owned book's exact dated
+instrument-position projection to registered valuation models. It resolves retained-only dated
+Security Master terms, validates their economic window, checks position/state identity and all
+book/policy/account/currency boundaries, and replays the exact golden-copy receipt for quoted
+prices. Stale or mismatched evidence blocks amounts. Supported long holder share/unit conventions
+and original-face DCF delegate to existing kernels; any retained current factor is reconciled with
+the model amount even when current face is absent. Multiplier/notional and ambiguous signed
+conventions require dedicated adapters. DCF dirty values withhold P/L without a compatible
+carrying/accrual basis. The comparison is market value less retained carrying amount, separate
+from posted ledger, realized, tax-cost or total-return P/L. `KnownAt` is refused because projection
+history does not certify historical transaction visibility. Tests: `AssetPositionMarketValuationServiceTests`.
+
+Native intercompany legal rules validate structured declarations without turning them into accrual
+or settlement calculations. The shared preview reuses schedule/day-count/calendar kernels for
+dates only. The separate pure `IntercompanyAccrualPreviewService` (ADR-028) reuses the same schedule
+mapping and day-count kernel to calculate fixed-rate simple loan interest over server-resolved
+revisions and principal; it reads no ledger and authorizes no journal. An explicit evidence-bound external-review attestation lets the preparing operator
+record external legal review while ordinary independent review remains available; legal lifecycle
+revisions retain the same separate audit facts. See
+[terms and review boundaries](../../docs/domain/intercompany-agreements.md).
+
+`IntercompanyFeeAccrualPreviewService` is the pure calculator for fixed management fees under rule
+`intercompany-fee-v1`: per-period fees prorate by covered days, per-annum fees by the declared day count.
+See [governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
+`IntercompanyAccrualPreviewService` computes floating slices under rule `intercompany-accrual-v2` from
+the approved fixing of each period plus the spread, and refuses a window with a missing fixing.
+`IntercompanyRateFixingRules` and `IntercompanyRateFixingService` own maker-checker fixing history;
+`IntercompanyEntityServiceRegistration` composes its PostgreSQL or file store. See
+[floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
+`IntercompanyAccrualPreviewService` compounds at each schedule period start on posted accrued interest under
+rule `intercompany-accrual-v3`, refusing uncovered earlier days and multi-period windows. See
+[periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
+
+Structured decimal normalization preserves representable declarations when canonical formatting
+uses an exponent. Retrying an externally reviewed lifecycle append repairs an interrupted local
+profile projection from the latest retained revision while holding the history read lease.
+
+Shared `ConfigStore` saves retain a host-lifetime activation record containing only field names,
+impact classes and timestamps. Symbol changes are `Live`, streaming provider selection/options
+require `ReconnectProvider`, and construction-time settings conservatively require `RestartHost`.
+The current runtime cannot rebuild providers in process, so pending provider reconnects also expose
+`RequiresRestart=true`; clients must not imply that a connection retry applies new provider options.
+Later live saves retain outstanding restart/reconnect changes; reverting a field to its host baseline
+clears that field's pending state. The journal stores value hashes rather than configuration values.
+After a durable save, `ConfigStore` offers changed settings to local runtime appliers attached to
+the file. Each managed save, including template publication and verified Alpaca feed changes,
+records a distinct revision ID and SHA-256 digest beside the configuration. Only a committed
+receipt matching the current file can carry collector evidence for the `DataSources` section.
+The collector's file watcher reconciles the latest saved document under the same lease as
+configuration writers.
+It records the revision, collector instance, application time, and typed setting paths and
+outcomes. The journal retains the current revision only and stores no configuration values.
+A stopped collector, an externally edited file, or an interrupted receipt yields unknown
+application status. Unacknowledged provider paths carry forward until the collector confirms
+them. A deferred or failed application leaves the saved file intact.
+
+`ProviderConfigReconciler` can apply failover rule thresholds, backup order among providers with
+a live client, the health-check interval and source enable/disable live. Settings the streaming
+runtime ignores are reported as `NoRuntimeEffect`. `CrossProviderPolicyApplier` applies
+`DataQuality.CrossProvider` tolerances to the local `CrossProviderComparisonService`. The collector
+also publishes its coordinator to `StreamingFailoverRegistry.Process` and honours
+`Sources[*].Enabled = false` at startup. A single-source collector acknowledges source toggles
+as changes to failover eligibility and reports a restart requirement when failover is configured.
+`SaveAsync` now also refuses to overwrite a malformed existing authoritative document.
+Feature-capability override saves record their setting changes after the document is durably saved.
+The effective configuration projection reads declared fields and reports activation impact and
+source. It summarizes dictionaries, leaves additional sections out of the response, and masks
+credentials and free-form text.
+
+Provider routing rejects disabled connections and policy-gated fallbacks consistently across direct
+and scored selection. Catalog metadata placeholders yield to the first concrete capability factory.
+Corporate-action ingest and inbox outcomes distinguish complete empty history from unknown, failed
+and partial coverage; incomplete histories are withheld from proposal staging.
+
+`SymbolSearchService.SearchAuthoritativeAsync` supplies explicit single-provider candidate lookup.
+Provider failures propagate to the discovery surface as unavailable, separately from a successful
+empty search. It never consumes best-effort autocomplete cache entries; swallowed autocomplete
+failures cannot become authoritative candidate evidence. The browser discovery journey currently
+uses Alpaca's fixed-income filter and stages identity evidence for review without approving terms.
+The authoritative request establishes availability directly, without an unrelated tolerant symbol
+health probe. Typed failures preserve missing/rejected credentials, transport, malformed payload,
+incomplete response and throttling distinctions. Unsupported strict decoders fail closed.
+
+Runtime credential selection pins the retained tenant, connection, external account and environment.
+Reusing a removed connection ID cannot retarget a host binding; historical selections without those
+pins require explicit rebinding. Asynchronous runtime application publishes success only while the
+exact selection and owner still match, including intervening selection changes back to the same account.
+Production selection changes, operator credential edits/removal and bound connection deletion/disable
+serialize with runtime application and require `StopAndDrainAsync` authority before mutation. The
+default host has no such authority and refuses these changes with a maintenance conflict. A capable
+host must stop new dispatches, drain in-flight work and dispose captured-key instances. Refusal
+without a drain preserves prior application status; a completed drain or uncertain failure/cancellation
+leaves application pending. Connection IDs are normalized before maintenance admission and persistence.
+Provider-owned conditional OAuth rotation retains its
+scope/generation CAS path so an in-flight refresh can finish while an operator's change drains.
+
+The final production ownership policy also guards every supported configuration writer. Browser,
+CLI and desktop setup refuse literal provider credentials before persistence or backup; interactive
+setup refuses provider-wide validation and raw credential previews. Legacy documents remain readable
+for explicit migration and purge. A secret-free write can proceed after all retained generations are
+reviewed and purged, without deleting owned vault credentials or assigning them to another account.
+
+Provider integration HTTP transport checks streamed response length against a declared
+`Content-Length` after enforcing its byte cap. Truncated bodies fail instead of becoming successful
+partial provider evidence. Synthetic transport tests cover connection-time DNS rebinding, redirects,
+mixed public/private DNS answers, declared and unknown-length oversize bodies and truncated-body retry.
+REST dry runs retain partial HTTP response evidence but refuse mapping or staging for HTTP 206 or
+Content-Range responses. Replay checks retained HTTP completeness across the entire source history,
+so a later format marker or newer mapping cannot promote a known partial capture.
+Reaching the page cap with a continuation cursor also leaves incomplete evidence. Review, identity
+preview and selected-row handoff verify complete retained source capture, exact manifests, conserved
+accepted and quarantined populations, and the full cursor-page chain, including empty terminal pages.
+Selected rows still require their own validation and review. Complete source capture may retain
+quarantined rows outside that selection; whole-run activation still requires every row to validate.
+Missing or unfinished source evidence remains reviewable and blocks promotion; replay refuses partial
+captures before publishing a new run.
+
+Loan portfolio reads include server-decimal maturity buckets by contractual quarter and currency;
+these summarize current principal and do not project repayments. Corporate-action calendar reads
+use the scoped retained date population before pagination and bind cursors to the range revision.
+Deadline capture and CSV import reuse the append-only case evidence lifecycle, source precision,
+predecessor validation, frozen-case checks and durable command replay without changing economics.
+
+`BondHoldingImportService` bridges tenant-scoped raw/mapped integration evidence and retained
+reconciliation handoffs into the account statement authority. It rejects omitted unreviewed rows,
+unresolved identities, mismatched dates/currencies and cost-derived marks. The versioned fixed-income
+workflow template adds explicit terms and nested bond holdings without changing retained v1 manifests.
+Full-snapshot admission verifies completed source counts, quarantine and failed-page evidence.
+Unknown account attribution and unreviewed accepted rows block; an other-account exclusion requires
+exact authenticated identity. A rejected-row replay does not supply a complete corrected statement.
+See [bond import and account workflows](../../docs/operators/bond-workflows.md).
+
+Corporate-action inbox projections read actual election cutoffs only from the retained, versioned `electionCalendar` companion. Staged proposals and durable cases preserve source offsets and evidence; absent or malformed companions remain unavailable and never inherit operational SLA or ex-date deadlines.
+
+Intercompany accounting profiles link to the canonical legal registry through exact approved
+GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
+profiles own operational templates, party-book/account mappings and bounded validity only. Native
+legal line dimensions and accounting-profile dimensions remain separate through storage, review,
+source evidence and both workstations. See [the implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+`IntercompanyEntityServiceRegistration` composes shared agreement/lifecycle, account-binding,
+legacy-attribution and FX authority for CLI and workstation hosts. PostgreSQL registration supplies
+book-control, atomic proposal and consolidation commit boundaries; local file counterparts preserve
+scope and explicit unavailable capabilities. Generic posting delegates validated consolidation to
+its specialized authority instead of reacquiring the same fences. See
+[the staged implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+`IntercompanyEntityServiceRegistration` also composes the advisory `IntercompanyBalanceConfirmationService` over a
+PostgreSQL store (ledger migration `073`) when a ledger database is configured, otherwise an atomic
+file store. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
+`IntercompanyEntityServiceRegistration` also composes the accrual-schedule store: PostgreSQL (ledger
+migration `074`) with a ledger database, otherwise an atomic file store. See [opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
+
+`DirectLendingJournalLines.ForEvent` owns the loan journal templates consumed by both
+`LoanAccountingProjector` and `DirectLendingOutboxDispatcher`. Their trading cash and loan-specific
+account roles resolve through the shared `IChartOfAccounts` registry while preserving historical
+account names, instrument symbols and loan account scope. The outbox produces the same economic
+lines as authoritative posting, including reversal, principal receipt, amortization and restructuring.
+Unknown roles, unbalanced projections, missing required amounts and negative source amounts fail
+before posting or draft creation. Public compatibility line helpers use registry definitions without
+inventing a posting scope; zero-line filtering cannot discard a malformed monetary component.
+
+Loan restructuring uses shared haircut validation against outstanding principal in both the in-memory
+and PostgreSQL command paths. Null means zero; a negative amount or one above outstanding principal
+is rejected before terms, state or history changes. The admitted amount reduces principal and
+drawdown lots using the existing earliest-drawdown policy and supplies the restructuring journal.
+The event retains `appliedPrincipalHaircut`, matching journal amount aliases, and the exact new
+terms version and servicing revision. `DirectLendingEventRebuilder` restores these facts, including
+their recorded timestamps, and rejects inconsistent amounts or projection evidence. Older events
+without embedded revisions use their retained event timestamp. Identical command retries reuse
+the committed restructuring, including after a full haircut; altered requests under the same
+command ID conflict. Restructuring outbox messages use the retained event ID in their duplicate
+key so earlier loan events cannot suppress their publication. Rebuilding state leaves retained
+events and posted journals unchanged.
+
+Backfill diagnostics render date ranges invariantly and encode line breaks in untrusted log fields.
+Provider requests and coverage checkpoints retain the original symbol identities.
+
+Intraday historical-backfill coverage and resume checkpoints follow the date of the bar's start
+in its session timezone. The current US-equity providers default to `America/New_York`; callers
+for other markets can pass `intradaySessionTimeZone` explicitly. A bar ending after UTC midnight
+does not mark the following US trading session as covered. Daily bars retain their declared
+`SessionDate`.
+
+The W14 cash-dividend lane is a separate preparer-attestation path, not an exception inside
+ordinary approval. `CorporateActionCaseAccountingService.CashDividend.cs` composes the retained
+case, exact accounting projection, complete-book entitlement authority and native declaration /
+budget store. It binds the confirmation to the server's entitlement digest and uses the
+`PreparerAttested` case state. Posting requires the producer-owned native lease and the dedicated
+spine posting authority; no ordinary `ApprovalId` or `Approved` lifecycle evidence is manufactured.
+The bounded treatment recognizes a regular mandatory USD dividend on its source ex-date with
+dividend receivable and income, capped at USD 10,000 gross for the complete related event and
+USD 100,000 for the book's source-ex-date calendar month. A book declaration and explicit domain
+grants remain separate, and the runtime feature defaults off. Historical command replay does not
+depend on current write grants; new writes still require them. Ordinary maker-checker behavior
+is unchanged.
+
+`CorporateActionCashDividendEligibilityResolver` derives materiality from every retained long-held
+unit lot in the selected book, including other financial accounts. It compares pre-ex and record-date
+quantities, requires current accepted source terms and reviewed source evidence, and composes the
+existing promoted native rule with active chart accounts. The explicit declaration binds those
+existing accounts to dividend receivable and income; names are not inferred from account paths.
+An explicit record date strictly before the server's current UTC date bounds the completed
+unchanged-holdings window. A unique active canonical ticker must match the retained candidate,
+all holdings and any explicit chart mappings. Complete retained case
+facts must contain no options, elections, custom methodology or unclassified typed metadata.
+Every held account also requires current retained external reconciliation support. Missing canonical
+inventory, source, reconciliation, scope or rule authority excludes the case. Its immutable snapshot
+retains exact source, holdings, reconciliation and rule evidence and stays stable when only the
+preparer-attestation lifecycle stage is appended.
+
+Security asset-profile approval and rollback reject reserved W14 preparer-attestation references
+before changing profile state. Existing actor-separation and governed version checks still apply;
+other opaque reference strings retain their existing validation limits.
+
+Subscription application trims symbol names and keeps the first declaration when names repeat
+case-insensitively. Duplicate declarations are logged; providers receive the trimmed symbol and
+hot reloads preserve the existing subscription instead of failing on a duplicate dictionary key.
+
+`IntercompanyAgreementService` owns tenant-scoped proposals, independent approval, exact-command
+receipts and effective-date selection over the durable agreement store. Retrospective amendments
+preserve posted versions; semantic bases follow effective chronology rather than approval order.
+`PostgresIntercompanyAgreementPostingAuthority` validates pinned references under a structure-store
+lease retained through ledger commit. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+Main composition supplies that authority through a deferred factory, and journal validation and
+transactional writer interfaces resolve to the same durable ledger singleton.
+`IntercompanyAgreementRules` uses the shared optional-text normalizer and SHA-256 helper while
+preserving trimmed optional terms, meaningful internal whitespace and lowercase canonical JSON
+fingerprints for retained commands and reviews.
+
+Provider holding normalization identifies bond-style records through the catalog coupon-structure
+capability, while preserving the legacy FixedIncome wire designation. Fixed-income term validation
+uses the shared versioned term keys for call schedules and schedule conventions.
+
+Observed bond fixings are retained as append-only receipts under `bonds/observed-fixings`, outside
+the bond term codec and forward-curve store. Exact reset dates, source units and raw observations,
+security/version, reviewer and justification remain bound to a content hash. Retrieval-only retries
+return the original receipt. Calculations use explicit receipt IDs; retention never changes a prior
+unpinned calculation or selects a changing latest fixing.
+
+Fixed-income holding imports require explicit original face, current factor, per-100 quotation,
+clean/dirty price and market-value bases, and total accrued interest with matching currencies.
+The mapped record retains exact-string `bondValueReconciliation` evidence (provider value,
+normalized consideration, signed variance and calculation inputs). Template v2 requires reviewed
+currency and explicit coupon units, frequency, day count, calendar, settlement, call schedules and
+factor history; its sample-payment preview uses shared schedule and bond kernels before staging.
+Configured holiday calendars are resolved by the host rather than inferred.
+
+Provider capability matrices separate terms, evaluated prices, executable quotes, trades, curves,
+fixings, factors and lifecycle notices. A configured connection or general certification never
+establishes task entitlement, freshness or verification: missing instrument evidence remains unknown.
+IBKR bond support no longer implies unsupported bond streaming in the detailed adapter profiles.
+
+`PortfolioImportRunService` retains the complete broker snapshot and its content hash before
+subscription changes. Explicit account selection, strict quantities, IB position pagination and
+cash summary retrieval prevent an incomplete population from becoming opening books. Run IDs bind
+the tenant/company, financial account, book, period, source account and command; partial runs resume
+the retained symbol plan, deterministic watchlist and opening-draft receipt after restart. The new
+`/api/portfolio/import-runs` route requires an authenticated human operator and retained account
+ownership. Opening intake supports same-currency, unit-priced equities with observed cash and cost
+basis; unsupported price conventions, missing evidence and mismatched direction fail closed.
+Drafts await the existing submit/approve/post lifecycle; import success never means posted books.
+Canonical acquisition lots require their separate reviewed acquisition/backfill evidence.
+
+`LoanAccountingProjector` retains explicit transaction and functional currency amounts on every
+new lending line (the loan's contractual currency at rate one), preserving them through Security
+Master and dimension enrichment. A different ledger-book functional currency requires a supported
+FX treatment; the durable book guard refuses an unexplained currency mismatch. The source-history
+completeness reader uses `HasAccountingImpact`, which shares the posting kernel so zero-value and
+non-accounting events do not create false missing-journal breaks. Malformed and negative source
+amounts raise validation errors rather than disappearing from the accounting population.
+
+Cash-flow context v5 persists schedule row version 2 with piecewise interest-principal evidence.
+Frozen row-0 and row-1 serializers preserve context v1–v3 and v4 receipt hashes and arithmetic.
+Unsupported model/row combinations refuse replay. Fixed-rate pool accrual reconciles dated source
+factors with typed daily lot history and earns interest through a paydown date before reducing face.
+Consecutive windows subtract cumulative owned coupon targets, including earlier holdings in the
+same coupon. Acquisition quotes retain their explicit par basis; cost-basis relief instead uses
+monetary cost per recorded quantity. Non-face amortization lots are refused, and face-unit deltas
+retain decimal precision until monetary relief. Blocked empty schedules report their blocker.
+The unused whole-coupon posting helper and direct corporate-action poster have been retired;
+historical corporate-action characterizations live only in test fixtures.
 
 The governed Security Master field-edit lifecycle accepts `assetSpecificTerms.rateUnit` on scalar-rate
 classes without schedule anchors. Publishing the approved edit promotes only its declaration,
@@ -28,6 +391,20 @@ Backfill resume depends on verified date coverage: `HistoricalBackfillService` s
 
 Backfill resume checkpoints are written only after the final pipeline flush succeeds, and a flush failure fails the run, so a crash or flush error can no longer skip dates on resume that never reached disk. `PersistentDedupLedger` rolls its cache entry back when the ledger write fails or is cancelled (a retry is no longer dropped as a duplicate) and fsyncs compacted ledgers before the rename. Scheduled catch-up skips an empty window instead of queueing From > To.
 
+`PersistentDedupLedger.CommitDurableAsync` fsyncs committed (version-2) lines before publishing
+them, and syncs the ledger directory on first commit and after each compaction rename, because WAL
+recovery trusts those lines to suppress replay. A failed fsync or directory sync fails the commit
+and leaves the claims pending, so the caller retries instead of publishing unconfirmed entries.
+`BackfillScheduleManager.DeleteScheduleAsync` acknowledges a deletion only once the tombstone rename
+is synced; on a sync failure it renames the schedule back and rethrows, so a retry starts clean.
+Pipeline durability state is split per `PipelineWorkload`: `CompositionOptions.PipelineWorkload` (`Collector` by default, `Backfill` for
+`CompositionOptions.BackfillOnly`) selects `_wal/{collector|backfill}` and
+`_dedup/{collector|backfill}` through `PipelineDurabilityPaths`, so a collector and a backfill can
+share a data root while a second instance of the same workload is refused by the WAL owner lock.
+The collector adopts segments and the ledger left in the legacy shared `_wal/` and `_dedup/`
+locations. `--wal-repair` visits every workload directory (`--workload` selects one) and refuses a
+directory a running process owns.
+
 Backfill runs publish into an `EventPipeline` with `BoundedChannelFullMode.Wait`, so a
 provider that outpaces the JSONL sink is back-pressured instead of silently evicting queued bars.
 
@@ -35,29 +412,61 @@ Storage composition registers the PostgreSQL private-capital authority alongside
 Its banking schema follows `BankingStartup.SchemaVariable`; funding requires retained banking rows
 in the same database as the ledger for atomic source validation. Business workflows remain owned
 by Financial Operations and shared workstation services, rather than this composition layer.
+With a ledger connection string, storage composition also selects `PostgresOnboardingWorkspaceStore`
+for onboarding and shadow-mode workspaces, and `PostgresRecurringJournalStore` for recurring journal
+definitions and occurrence claims, replacing the workstation's file fallbacks.
 
-Bond cash-flow context receipts now use `bond-cash-flow-context-v3`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1 and v2 through their original arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
+Bond cash-flow context receipts now use `bond-cash-flow-context-v5`, retaining fixed-rate interest-principal segments alongside existing declared/floating evidence. Replay dispatches v1–v4 through their original row contracts and arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
 
 Current unsigned Security Master cash-flow readers return `NegativeInterestUnsupported` with no
 schedule when effective interest is negative, after contractual caps and floors. Ledger gates reject
 an entire signed-interest schedule before any period posts. Calculation-only signed-interest
 previews keep their existing signed model; explicit v1/v2 receipt replay retains its original arithmetic.
 
+## Configured direct-lending accounting
+
+Loan journal lines retain their transaction and functional currency through symbol and dimension
+projection. The configured integration slice is opt-in through
+`MERIDIAN_DIRECT_LENDING_LEDGER_BOOK_ID`, `MERIDIAN_DIRECT_LENDING_LEDGER_CHART_MAPPING_REVISION`,
+and `MERIDIAN_DIRECT_LENDING_LEDGER_ACCOUNT_PATHS` (a JSON object mapping economic roles such as
+`LoanPrincipal`, `Cash`, `AccruedInterestReceivable`, and `InterestIncome` to chart paths).
+All three settings are required together. The selected book must be USD, have retained tenant
+ownership, and contain the posting period. Every emitted role must resolve to one active chart
+account of the expected type at the pinned revision. The supported cash account name starts with
+`Cash`, matching the existing statement cash classification. Missing mappings, foreign ownership,
+unsupported currency, and changed configuration block the loan transaction instead of publishing a
+partial state/event/journal. Existing unconfigured deployments retain their period-selection contract;
+this does not enable background lending workers or live-account access.
+
+Statement reconciliation's retained population provider resolves owner-scoped position snapshots
+from the authorized accounting book and retained tenancy. A missing owner partition stays missing;
+it cannot fall back to the legacy unowned run partition. The command and workstation composition
+paths supply the same ledger/tenancy authority to this reader.
+
 `ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. Swap leg conventions are decoded only at or above their declared terms version, preserving inert residue on earlier rows. Currency and convention lookup follow the shared resolver's source and alias ordering; malformed leg rows block calculation before raw and typed rows are paired. Invalid retained economic schedules produce a structured `ContractInputsUnavailable` blocker before calculation or run persistence; unrelated storage and runtime failures still propagate. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root; replay uses the packet's normalized contract without rerunning current source mapping. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
+
+New Security calculation runs may carry a server-stamped W14 draft-check context when the separate
+default-off draft feature is enabled. The store preserves that tenant/company/preparer/origin binding
+and refuses a retry that would reassign it. Older packets omit the nullable context and remain
+ineligible for preparer draft checks; no ledger, approval or posting authority is added.
 
 `ProviderRuntimeCredentialService` owns explicit host defaults and ownership-checked migration
 commands. Host composition supplies the current `ConfigStore` to `StoredProviderCredentialResolver`;
 it revalidates one retained tenant/connection/account/environment under the configuration lease before
-reading the scoped vault. Owned, ambiguous or dangling selections never fall back. Entirely legacy
-families retain their prior policy. Host selection requires provider reconstruction; credential editing
+reading the scoped vault. Owned, ambiguous or dangling selections never fall back.
+`ProviderCredentialOwnershipPolicy` requires explicit ownership in production and packaged/customer
+workstation compositions, including posture declarations added after feature registration. Entirely
+legacy families retain their prior policy only in unflagged development compositions. The generic background
+OAuth helper also refuses activation without an explicit owned scope in these protected compositions;
+its unassigned token vault is not a separate execution fallback. Host selection requires provider reconstruction; credential editing
 does not hot-activate a running collector. See [credential operations](../../docs/operators/provider-credentials.md#explicit-connection-ownership-and-host-selection).
 Legacy setup refuses a retained runtime binding even when its connection or ownership marker is
 missing. `LegacyProviderRuntimeCredentialStore` guards runtimes that do not yet carry trusted
 tenant/connection identity: every vault read and mutation requires readable configuration and an
-entirely legacy provider family under the configuration lease. Owned families remain unavailable to
+entirely legacy provider family under the configuration lease. Production and distributed workstations
+refuse these unowned execution paths even before a family has retained an owner. Owned families remain unavailable to
 these runtimes until tenant-aware selection is implemented; the guard does not choose another owner.
-Atomic legacy sidecar import validates the complete batch under one configuration lease before vault
-mutation. The shared legacy-runtime DI key makes IB Flex remote retrieval opt in to this guard;
+The shared legacy-runtime DI key makes IB Flex remote retrieval opt in to this guard;
 hosts without an authoritative configuration or credential-store service retain file import only.
 
 `SecurityMasterOperationalReadinessService` consumes the asset-pack registry for all class-specific
@@ -80,8 +489,12 @@ resolves only the declaring block's calendars; it never substitutes a common or 
 former Application-side prototype factory (with a common-calendar fallback) was removed. See the
 [contractual schedule rollout](../../docs/domain/contractual-schedule.md#future-expansion-notes)
 for the declared engine and remaining 5b work.
-Cash-flow service composition retains its exact six-argument and calendar-aware seven-argument
-CLR constructors alongside the extended policy and calculation-receipt composition paths.
+Cash-flow service composition no longer accepts the retired whole-coupon bridge. Its remaining
+constructors support calendar, policy and calculation-receipt composition.
+The retired path is `StructuredCashFlowLedgerBridge` and the service's `BuildLedgerPostingsAsync`
+facade. The separate `SecurityMasterAmortizationLedgerBridge` remains: the recurring Bond accrual
+calculation uses it on a scratch ledger to prepare a governed draft, retaining ordinary approval
+and posting controls rather than directly booking a projected schedule.
 
 Freshness monitoring begins with live ingress or collector subscription attempts, not configured symbols in an idle workstation. An unused UI monitor does not publish empty snapshots over an active collector's process-wide metrics. Internal reconciliation retains observed `tradeFill.price` only for the single-currency share movement, never a commission leg or a price inferred from fee-inclusive net cash.
 
@@ -120,12 +533,10 @@ compatibility bridges. Its former interface/result type identities are forwarded
 which retains their legacy namespaces for compiled consumers. Storage composition exposes one aggregate query through the narrow identity,
 trading-parameter and corporate-action interfaces and preserves host-supplied registrations.
 Hosts composing these services directly can call `AddSecurityMasterContractAdapters()` after
-registering their query, resolver and position adjuster to expose the compatibility aliases.
+registering their query service to expose its narrow query contracts.
 Aliases retain the last unkeyed host registration's singleton, scoped or transient lifetime; scoped
-host services are never captured by a singleton compatibility bridge.
-`LivePositionCorporateActionAdjusterAdapter` lets legacy hosts use a canonical adjuster, retaining
-its exact total carrying basis. Existing Application-contract implementers also satisfy the canonical
-adjuster contract. The retained-basis overload avoids rebuilding basis from rounded unit quotes;
+host services are never captured by a singleton alias.
+The retained-basis adjuster overload avoids rebuilding basis from rounded unit quotes;
 a null `AdjustedTotalCostBasis` identifies a legacy result and remains absent from serialized output.
 
 Security Master governed edits now validate and stage the overlay and draft in one PostgreSQL
@@ -204,6 +615,25 @@ StructuredCredit proposal, and returns ready proposals (the exact stamped terms 
 path would persist) ahead of blocked ones (the terms carried over plus the blockers). Records whose
 stored terms cannot be mapped are counted as unreadable and logged, never guessed. The service
 writes nothing; applying a proposal is a governed amendment.
+
+`SecurityMasterClassificationDriftReportService` lists active securities whose latest retained
+event recorded an asset class or family that the current F# `AssetClassRegistry` taxonomy now derives
+differently, grouped by class and stored labels (`POST /api/security-master/classification-drift/report`,
+`AdminMaintenance`). Classification is derived on read, so current projections already carry the
+current labels; retained events are append-only and keep theirs. The report is the evidence of a
+taxonomy revision and writes nothing. `SecurityClassificationTaxonomy` holds the comparison; the
+workstation change history also uses it to label such a change "Taxonomy revision" rather than
+"Classification".
+
+`SecurityMasterProfilePromotionService` builds the CustomAsset promotion report for one
+reclassifying profile. For each active `CustomAsset` pinned to it, it runs the main checks an
+envelope amendment runs under the target class: the classification-metadata check, the target
+decode, the target kind's invariants, asset-pack admission and, when a profile catalog is
+registered, the profile catalog validation. It is not full write-path parity (it uses the
+read-tolerant decode and skips the round-trip guards), so a Ready record can still be refused when
+amended. It writes nothing. On the write path, a write without a terms patch (a common-terms-only
+amendment, or a deactivation) keeps a stored `CustomAsset` class. Any write that carries the pinned
+envelope promotes the record, including an approved workbench field edit and a term-block patch.
 
 Security Master event replay that lacks retained flat terms flattens the economic-terms document onto
 the record's asset class, so carried values land at that class's declared keys. The Postgres
@@ -360,6 +790,10 @@ providers; only entirely legacy provider families retain the store's permitted e
 partial or deliberately removed fields cannot be filled from legacy configuration or another credential
 source. Unmanaged provider types retain their legacy resolver. Storage failures propagate to callers.
 
+Symbol-management composition passes the selected credential resolver to both OpenFIGI clients.
+Hosted mapping, discovery and search resolve that authority for each request, including credential
+rotation and deletion, rather than retaining a configuration or environment key at construction.
+
 The scope-bound `StoredProviderCredentialResolver` constructor accepts an `IScopedProviderCredentialStore`
 and trusted `ProviderCredentialScope`. It resolves only that tenant, connection, external account and
 environment, rejects unmanaged and non-catalog provider types, and never falls back to provider-wide
@@ -370,10 +804,10 @@ mutation route is restricted to unowned provider families. An owned family witho
 binding blocks; supplying the scoped constructor alone does not create ownership or authorize a caller.
 
 `OAuthTokenRefreshService` also accepts trusted `ownershipScope`. Scoped instances load and persist
-only that owner's OAuth tokens, including refresh responses and cache recovery after audit failure,
-and leave unassigned legacy sidecar and interrupted `.migrated` contents alone while restricting
-their Unix permissions to the owner. Scoped initialization refuses a failed or unverified permission
-change rather than continuing with exposed credentials. Initialization is asynchronous in both ownership modes;
+only that owner's OAuth tokens, including refresh responses and cache recovery after audit failure.
+Both ownership modes leave legacy plaintext token and interrupted `.migrated` contents alone (they
+are no longer imported) while restricting their Unix permissions to the owner. Initialization refuses
+a failed or unverified permission change rather than continuing with exposed credentials. Initialization is asynchronous in both ownership modes;
 completed remote rotations commit independently of lifecycle cancellation while preserving scope.
 Default host registration still needs connection ownership propagation before scoped services replace
 the provider-wide OAuth runtime.
@@ -465,6 +899,25 @@ withheld, including when a host supplies a later instance/factory override. Stri
 requires per-loan tenant authority before those workers can be enabled.
 
 Bond cash-flow context overloads resolve retained terms once, honor forward-curve recorded cutoffs, and retain content-addressed calculation receipts under `bonds/calculations`. The passive `GetProjectionBlockerAsync` capability read uses the same current calculation rules on selected terms and cutoffs, retains no receipt, and returns only a typed refusal. Replay reloads immutable inputs and checks calendar hashes rather than substituting current terms. Storage composition shares the durable bond-cutover policy with calculation and accounting orchestration; the ledger composition preserves independent approval and replay. See [bond expansion](../../docs/engineering/plans/bond-capability-expansion.md).
+
+Provider routing previews accept a restricted, read-only proposed configuration: tenant-owned binding
+priority/enabled changes or host backfill provider priority/enabled changes. The effective backfill
+preview reads the active routing snapshot. A proposed preview constructs adapters with the prepared
+credential resolver and disposes them after projecting the order. Daily symbol/date queries disclose that vendor coverage,
+network health and current quota remain unverified; fabricated Synthetic selections and enabled but
+unavailable vendors are explicit. Composite and quota-rotation ordering hold fabricated adapters behind
+observed vendors regardless of numeric priority, retaining explicit Source stamps when real-vendor failure
+requires a synthetic fallback. `BackfillRoutingLint` adds fabricated-fallback warnings to the unified
+configuration pipeline after credential resolution. Focused invariant coverage is in `RoutingPreviewTests`.
+
+The host builds backfill adapters at startup using the active credentials, pacing, and feed settings.
+Provider enablement and priority apply to jobs that start after the operator saves the edit. Each running
+job keeps its chosen route through retries. Scheduled jobs read their ordered provider preferences when
+they begin. Set `Backfill.Jobs.Scheduling.Enabled` to enable the schedule worker on a collector or workstation host.
+
+Workstation backfills and gap repair load the saved daily staleness tolerance when the job starts.
+`HistoricalBackfillService` uses the shared provider profile resolver for both validation and
+per-candidate daily fallback. Deployment-scheduled backfills use the profiles loaded at host startup.
 
 ## Purpose
 
@@ -600,6 +1053,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
   REST dry-run, and quarantine-replay paths all route through it rather than carrying their own
   copies, so a dry run and the replay it predicts coerce a value identically, and the
   operator-visible `transform.*` issue codes have one definition.
+  Identity preview resolves all supplied security identifiers before selecting a match. Conflicting
+  targets block reconciliation; retained operator choices bind the exact source and candidate
+  evidence hash. A changed match or source invalidates the choice without rewriting source data.
   When a workstation endpoint supplies tenant context,
   setup, dry-run, readiness, activation, and monitoring services resolve a tenant-scoped
   provider-integration store before reading or writing manifests, connections, and retained
@@ -662,6 +1118,12 @@ Core workstation host. Do not introduce a second listener or independent monitor
   entries: version 2 confirms sink durability and suppresses WAL replay, while legacy version-1
   entries only suppress live ingress and are replayed (then upgraded) during recovery, keeping
   crash semantics at-least-once — a replayed duplicate is possible, silent loss is not.
+  A dedup-store or dead-letter failure before the WAL append retains the batch and resumes
+  admission at the failing event rather than discarding it; a dead-letter failure is retried
+  three times, after which only that rejected event is dropped. Disposal waits out the final
+  flush timeout after a force-cancel before disposing the sink and WAL.
+  `EventPipelineShutdownParticipant` drains the `DualPathEventPipeline` ring buffers into the
+  slow path before completing it, and reports an incomplete drain as a failed shutdown step.
   Explicit flush waits for completed consumption, which already includes rejected events.
   Rejected batches cannot be counted twice to acknowledge a later valid event before its
   storage append finishes; gated regression cases cover that ordering across separate batches.
@@ -765,6 +1227,11 @@ Core workstation host. Do not introduce a second listener or independent monitor
 - `Backfill/` - historical backfill request orchestration and execution coordination. Shared run
   results and per-symbol validation signals live in `Meridian.Contracts.Backfill`, while durable
   last-run status, checkpoints, and bar-count sidecars live in `Meridian.Storage.Backfill`.
+  `WorkstationBackfillQueue` retains tenant-scoped, one-off submissions in execution history and
+  uses the shared coordinator for due jobs. `BackfillQuotaPlanner` combines the partition plan,
+  historical adapter diagnostics, and host policy. The submission estimate anchors the receipt's
+  request and duration variance. The [operator workflow](../../docs/operators/provider-backfill-operations.md#workstation-quota-and-receipts)
+  describes scheduling, policy configuration, and restart handling.
   Automatic gap-analyzer remediation batches same-provider, same-window symbol gaps into one
   deterministic request and retained execution-history entry; data-quality and quality-alert
   remediation paths remain single-symbol signals. A remediation is retained as completed only after
@@ -1118,6 +1585,28 @@ Core workstation host. Do not introduce a second listener or independent monitor
 
 ## Important workflows
 
+`DatabaseStartupPlan` is the shared, sequential migration plan consumed by executable hosts and
+`UiServer`. Each existing `*Startup` owner declares its initializer and prerequisite in
+`DatabaseStartupStep`; `AddDatabaseStartupPlan` registers the eight core participants without
+opening a database. The final graph rejects duplicate identifiers, missing prerequisites and cycles
+before any initializer runs. Failures and cancellation stop the plan before later participants.
+The existing Ledger → Security Master → Direct Lending → Asset Operations → Fund Accounts →
+Fund Structure → Banking → Money Market sequence remains intact. Headless hosts run the plan after
+the production guard and before tenant cutover/background work; desktop children leave migration
+ownership to their parent. Workstation reporting readiness remains a subsequent host-owned step.
+`DatabaseStartupPlanTests`, `HostStartupLifecycleTests`, and
+`SupportedPostureStartupIntegrationTests` cover the plan and both executable entry paths.
+
+### Market-data feature composition
+
+`ServiceCompositionRoot.AddMarketDataServices` uses one ordered feature plan pairing each
+registration module with its `CompositionOptions` activation predicate. Add a feature in that
+plan rather than maintaining a separate invocation list. Configuration, coordination, storage,
+and ledger stay unconditional; provider routing shares the provider flag. Preserve prerequisite
+ordering and keep canonicalization after pipeline registration. Custom flag combinations retain
+their existing behavior; this plan does not infer or enable additional features. Production
+registration validation and the final-graph startup guard still run after feature registration.
+
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.
 
@@ -1216,7 +1705,7 @@ because it is stored as the wrong JSON kind or under a case-variant key (every r
 `ExerciseStyle` is not `exerciseStyle`; the variant is refused whether or not the canonical key sits
 beside it, because a readable canonical value only means the record loads while the variant is
 dropped without trace) — and, for bonds, coupon structure the canonical codec does
-not read. `ToBondTerms` reads the flat companions (`couponRate`, `floatingIndex`, `spreadBps`, cap/floor,
+not read. `ToBondCouponStructure` reads the flat companions (`couponRate`, `floatingIndex`, `spreadBps`, cap/floor,
 `stepSchedule`, the inflation triple, `dayCount`) ONE COUPON ARM AT A TIME, so a populated companion
 is lost whenever the arm the record resolves to does not read it — a `floatingIndex` beside
 `couponType: "Fixed"` as surely as one with no `couponType` at all — and so are legacy nested
@@ -1299,8 +1788,9 @@ and dispatches to the registered `ISecurityValuationModel` whose kind the reques
 catalog's `DefaultValuationModel` declares; `QuotedPriceValuationModel` composes the golden-copy
 as-of read (retaining a selection receipt, as that read does), reports its staleness verdict as a
 diagnostic and picks the market-value function by the price's quote unit, scaling a percent-of-par
-quote by the same opening outstanding principal used by calculated cash flows. Dated factors
-include only payments through their evidence date; later contractual payments completed before
+quote by the same opening outstanding principal used by calculated cash flows. Dirty quotations
+block with `PriceBasisRequiresNormalization` until settlement-aware clean/dirty normalization is
+reviewed. Dated factors include only payments through their evidence date; later contractual payments completed before
 the valuation date reduce the balance. Without an applicable factor, all completed in-window
 contractual principal payments reduce it; an undated scalar is assumed current and is not reduced
 twice. Payments on the valuation date remain payable, and a future-dated scalar does not apply yet.
@@ -1445,17 +1935,48 @@ factories, and `AutoResubscribePolicy` awaits `SubscriptionOrchestrator.ApplyAsy
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
+## CertificateOfDeposit accrual context and retained terms (2026-11-25)
+
+`SecurityMasterCashFlowService` captures a declared version-6 CertificateOfDeposit under the
+`bond-cash-flow-context-v6` model with its accrual-policy input; undeclared CDs and every
+Bond/StructuredCredit capture keep the version-5 context and bytes. A declared profile that fails the
+strict terms contract is refused instead of using the normalized legacy walk.
+
+`RetainedSecurityTermsReadBoundary` classifies pre-format terms only in an explicit frozen
+calculation view after its retained packet is verified. Original receipt documents, digests and
+outputs stay unchanged. Malformed, duplicate or unsupported format declarations refuse; live Security
+Master reads and new captures keep the strict declared-format contract. This boundary does not turn
+historical residue into a new accrual-profile declaration. An unreadable live input can retain a
+typed blocked audit receipt with empty resolved terms and no cash events. It records unavailable
+calculation evidence, never an inferred format or zero-flow economic result. See
+[recurring journals](../../docs/domain/recurring-journal.md#declared-certificateofdeposit-accrual-profile).
+
+## Vanilla interest-rate swap preview (2026-11-25)
+
+`ContractualCashFlowPreviewService` routes a security preview that names
+`calculationProfile = vanilla-irs-v1` through `SecurityVanillaSwapProfile`; it refuses contract
+overrides and loan subjects for that profile and reports unsupported shapes as
+`VanillaIrsProfileUnsupported`. Asset-pack admission requires a swap that declares leg conventions
+to satisfy the complete profile before it persists. The ordinary cash-flow capability check points a
+blocked swap with declared leg conventions at the preview route. The route is analytical and never
+posts. See [contractual projections](../../docs/domain/contractual-cash-flow-projection.md).
+
 ## Roadmap traceability
 
 <!-- source-roadmap-traceability:begin module=SRC-APP -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `W3-CONT-001` | Research to paper continuity |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
+| `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
@@ -1466,9 +1987,19 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `TODO-SRC-APP-001` | Complete W6 backtesting evidence loop linkage to strategy lineage | done | medium |
 <!-- source-todos:end -->
 
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+`AddIntercompanyEntityServices` registers `PostgresManualJournalEntryDraftStore` (ledger migration 077) and
+`PostgresIntercompanyConfirmationClosePolicyStore` (ledger migration 078) when `MERIDIAN_LEDGER_CONNECTION_STRING`
+is configured, and the file close-policy store otherwise; hosts without a ledger database keep the workstation's
+file draft store. It also registers `IntercompanyConfirmationClosePolicyService` and `IIntercompanyConfirmationCloseGate`.
+The gate is composed whenever the policy store exists, so an active policy fails closed on a host that cannot read
+confirmation status. See [ADR-032](../../docs/adr/032-intercompany-confirmation-close-policy.md).
+
 ## Validation
 
 ```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ServiceCompositionRootTests|FullyQualifiedName~PipelineFeatureRegistrationTests|FullyQualifiedName~ProcessWideHostedServiceRegistrationTests|FullyQualifiedName~ProductionServiceRegistrationPolicyTests|FullyQualifiedName~ProductionRegistrationGuardServiceTests" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PortfolioImportReliabilityTests|FullyQualifiedName~QuickSetupAtomicSaveTests|FullyQualifiedName~SymbolSearchCancellationTests|FullyQualifiedName~BoundedSearchCacheTests|FullyQualifiedName~DailySummaryWebhookDeliveryTests|FullyQualifiedName~SchedulingServiceReliabilityTests"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~SecurityMasterContractAdapterTests|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
@@ -1484,7 +2015,7 @@ infrastructure details when an abstraction already exists.
 ## Related docs
 
 - `docs/architecture/module-map.md`
-- `docs/developer/build-test-run.md`
+- `docs/start/README.md`
 - `docs/source/generated/source-module-index.md`
 
 ### Cash-flow and price readiness

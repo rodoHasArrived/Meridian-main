@@ -64,6 +64,7 @@ internal sealed class OrderBookFillModel(
 
         var allowPartial = order.AllowPartialFills && order.TimeInForce != TimeInForce.FillOrKill;
         var fills = new List<FillEvent>();
+        var commissionOrder = order;
         foreach (var level in executableLevels)
         {
             if (remainingAbsolute == 0)
@@ -82,7 +83,13 @@ internal sealed class OrderBookFillModel(
 
             var signedQuantity = isBuy ? fillQuantity : -fillQuantity;
             var fillPrice = SnapToTick(level.Price, order.Symbol);
-            var commission = commissionModel.Calculate(order.Symbol, signedQuantity, fillPrice);
+            var commission = OrderCommission.CalculateIncrement(commissionModel, commissionOrder, signedQuantity, fillPrice);
+            commissionOrder = commissionOrder with
+            {
+                FilledQuantity = commissionOrder.FilledQuantity + signedQuantity,
+                CommissionCharged = commissionOrder.CommissionCharged + commission,
+                FilledNotional = commissionOrder.FilledNotional + Math.Abs(signedQuantity) * fillPrice
+            };
             fills.Add(new FillEvent(
                 Guid.NewGuid(),
                 order.OrderId,
@@ -116,6 +123,8 @@ internal sealed class OrderBookFillModel(
         var updatedOrder = order with
         {
             FilledQuantity = order.FilledQuantity + totalFilled,
+            CommissionCharged = commissionOrder.CommissionCharged,
+            FilledNotional = commissionOrder.FilledNotional,
             Status = remainingAbsolute == 0 ? OrderStatus.Filled : OrderStatus.PartiallyFilled,
             IsTriggered = triggered
         };

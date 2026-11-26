@@ -206,11 +206,13 @@ public sealed class ConfigServiceBaseTests
             Backfill = new BackfillConfigDto { Providers = new BackfillProvidersConfigDto() }
         };
 
-        var options = new BackfillProviderOptionsDto { Enabled = true, Priority = 5, RateLimitPerMinute = 100, RateLimitPerHour = 5000 };
+        var options = new BackfillProviderOptionsDto { Enabled = true, Priority = 5, TierId = "starter", RateLimitPerMinute = 100 };
         await _sut.SetBackfillProviderOptionsAsync("polygon", options);
 
         _sut.StoredConfig!.Backfill!.Providers!.Polygon.Should().NotBeNull();
         _sut.StoredConfig.Backfill.Providers.Polygon!.Priority.Should().Be(5);
+        _sut.StoredConfig.Backfill.Providers.Polygon!.TierId.Should().Be("starter");
+        _sut.StoredConfig.Backfill.Providers.Polygon!.RateLimitPerMinute.Should().Be(100);
         _sut.SaveCount.Should().Be(1);
     }
 

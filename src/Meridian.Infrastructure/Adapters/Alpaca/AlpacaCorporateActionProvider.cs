@@ -1,9 +1,5 @@
-using System.Buffers;
 using System.Globalization;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
@@ -15,47 +11,63 @@ using Microsoft.Extensions.Logging;
 namespace Meridian.Infrastructure.Adapters.Alpaca;
 
 /// <summary>
-/// Fetches corporate action history (dividends and stock splits) from the Alpaca REST API.
+/// Fetches review-only observations for every documented Alpaca REST corporate-action family.
 /// Implements <see cref="ICorporateActionProvider"/> following the same attribute-based
 /// discovery pattern as <see cref="IHistoricalDataProvider"/> implementations.
 /// </summary>
 /// <remarks>
 /// Uses the Market Data API endpoint
-/// <c>GET https://data.alpaca.markets/v1/corporate-actions?symbols={ticker}&amp;types=cash_dividend,forward_split,reverse_split</c>,
+/// <c>GET https://data.alpaca.markets/v1/corporate-actions</c>,
 /// which accepts Trading API (paper or live) key pairs and returns each action type in its own
 /// group. The retired <c>/v2/corporate_actions/announcements</c> route is not used: it is limited
 /// to 90-day windows and returns its amounts as strings. Requests are authenticated via the
 /// <c>APCA-API-KEY-ID</c> and <c>APCA-API-SECRET-KEY</c> headers read from the environment /
-/// configuration. Stock dividends, spin-offs and mergers are not requested.
+/// configuration. Coverage is bounded by process date, US region and complete data quality.
+/// REST snapshots reveal observed payload revisions, not a complete amendment/deletion stream.
 /// </remarks>
 [DataSource("alpaca-corp-actions", "Alpaca Corporate Actions", DataSourceType.Reference, DataSourceCategory.Broker,
     Priority = 12,
     EnabledByDefault = false,
-    Description = "Cash dividends and stock splits from the Alpaca Market Data corporate-actions endpoint.")]
+    Description = "Review-only observations for all 16 Alpaca Market Data corporate-action families.")]
 [ImplementsAdr("ADR-001", "Corporate action data provider following ICorporateActionProvider contract")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory; never instantiates HttpClient directly")]
 public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProvider
 {
     private const string BaseUrl = "https://data.alpaca.markets";
 
-    // Earlier than the provider's history, so the request always covers all of it.
+    // This is a request boundary, not a claim about the provider's available history.
     private const string HistoryStart = "1990-01-01";
+    private const string Endpoint = BaseUrl + "/v1/corporate-actions";
     private const int PageSize = 1000;
     private const int MaxPages = 50;
 
-    // Group name in the response, in the order results are returned, with the action it carries.
-    private static readonly (string Group, bool IsSplit, string Description)[] ActionGroups =
+    private sealed record ActionGroup(string Type, string Group);
+
+    private static readonly ActionGroup[] ActionGroups =
     [
-        ("cash_dividends", false, "Cash dividend"),
-        ("forward_splits", true, "Forward split"),
-        ("reverse_splits", true, "Reverse split"),
+        new("cash_dividend", "cash_dividends"),
+        new("forward_split", "forward_splits"),
+        new("reverse_split", "reverse_splits"),
+        new("stock_dividend", "stock_dividends"),
+        new("spin_off", "spin_offs"),
+        new("cash_merger", "cash_mergers"),
+        new("stock_merger", "stock_mergers"),
+        new("stock_and_cash_merger", "stock_and_cash_mergers"),
+        new("unit_split", "unit_splits"),
+        new("redemption", "redemptions"),
+        new("name_change", "name_changes"),
+        new("worthless_removal", "worthless_removals"),
+        new("rights_distribution", "rights_distributions"),
+        new("partial_call", "partial_calls"),
+        new("reorganization", "reorganizations"),
+        new("capital_gains_distribution", "capital_gains_distributions"),
     ];
 
     public string ProviderId => "alpaca";
 
-    // Review-only: this adapter reads a different endpoint than the one its earlier acceptance
-    // was granted on, and its output has not yet been compared with a trusted source. Its records
-    // are retained for review and are never applied automatically.
+    // Fixture corroboration does not grant provider release or accounting acceptance. Expanded
+    // endpoint observations remain review-only until the governed release process authorizes
+    // them; ingestion retains evidence and never applies these records automatically.
     public CorporateActionProviderReleaseStatusDto ReleaseStatus =>
         CorporateActionProviderReleaseStatusDto.ReviewOnly;
 
@@ -95,6 +107,8 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
         CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(ticker);
+        ct.ThrowIfCancellationRequested();
+        var through = DateOnly.FromDateTime(DateTime.UtcNow);
 
         var keyId = _credentials is not null ? _credentials.Get("ALPACA_KEY_ID") : _configuration["ALPACA_KEY_ID"]
                     ?? _configuration["APCA_API_KEY_ID"]
@@ -110,7 +124,11 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
         {
             _logger.LogDebug(
                 "Alpaca API credentials not configured; corporate action fetch for {Ticker} skipped.", ticker);
-            return CorporateActionFetchResult.Unavailable("Alpaca API credentials are not configured.");
+            return CorporateActionFetchResult.Unavailable("Alpaca API credentials are not configured.") with
+            {
+                Failures = [new("credentials-missing")],
+                Coverage = BuildCoverage(through, CorporateActionTypeCoverageStatus.Unavailable),
+            };
         }
 
         using var client = _httpClientFactory.CreateClient("alpaca-corp-actions");
@@ -118,7 +136,7 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
         client.DefaultRequestHeaders.TryAddWithoutValidation("APCA-API-KEY-ID", keyId);
         client.DefaultRequestHeaders.TryAddWithoutValidation("APCA-API-SECRET-KEY", secretKey);
 
-        var result = await FetchActionsAsync(client, ticker.Trim(), securityId, ct).ConfigureAwait(false);
+        var result = await FetchActionsAsync(client, ticker.Trim(), securityId, through, ct).ConfigureAwait(false);
 
         _logger.LogDebug(
             "Fetched {Count} corporate action(s) for {Ticker} from Alpaca ({FetchStatus}).",
@@ -131,13 +149,17 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
         HttpClient client,
         string ticker,
         Guid securityId,
+        DateOnly throughDate,
         CancellationToken ct)
     {
-        var through = DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var through = throughDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var baseUrl = $"/v1/corporate-actions?symbols={Uri.EscapeDataString(ticker)}"
-            + $"&types=cash_dividend,forward_split,reverse_split&start={HistoryStart}&end={through}&limit={PageSize}";
+            + $"&types={string.Join(',', ActionGroups.Select(static group => group.Type))}"
+            + $"&start={HistoryStart}&end={through}&limit={PageSize}&region=us&data_quality=complete&sort=asc";
         var byGroup = ActionGroups.ToDictionary(
             static group => group.Group, static _ => new List<CorporateActionCommand>(), StringComparer.Ordinal);
+        var relatedByType = new Dictionary<string, int>(StringComparer.Ordinal);
+        var versionsById = new Dictionary<string, string>(StringComparer.Ordinal);
         var seenPageTokens = new HashSet<string>(StringComparer.Ordinal);
         string? pageToken = null;
 
@@ -152,7 +174,7 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
                 var url = pageToken is null ? baseUrl : $"{baseUrl}&page_token={Uri.EscapeDataString(pageToken)}";
                 using var response = await client.GetAsync(url, ct).ConfigureAwait(false);
 
-                if (!response.IsSuccessStatusCode)
+                if (!response.IsSuccessStatusCode || CorporateActionFetchResult.IsPartialResponse(response))
                 {
                     // A refused request is not an empty history. It is logged where an operator
                     // will see it, and no partial result is returned as if it were complete.
@@ -163,7 +185,8 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
                         statusCode, ticker);
                     return NotComplete(string.Create(
                         CultureInfo.InvariantCulture,
-                        $"Alpaca returned HTTP {statusCode} for page {pagesRead + 1}."));
+                        $"Alpaca returned HTTP {statusCode} for page {pagesRead + 1}."),
+                        CorporateActionFetchResult.FromHttpFailure(response).Failures.Single());
                 }
 
                 await using var jsonStream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
@@ -171,24 +194,66 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
                     .ConfigureAwait(false);
                 if (document.RootElement.ValueKind != JsonValueKind.Object)
                     throw new JsonException("Alpaca corporate-actions response is not an object.");
+                ValidateUniqueProperties(document.RootElement);
 
-                if (document.RootElement.TryGetProperty("corporate_actions", out var groups)
-                    && groups.ValueKind == JsonValueKind.Object)
+                if (!document.RootElement.TryGetProperty("corporate_actions", out var groups)
+                    || groups.ValueKind != JsonValueKind.Object)
+                    throw new JsonException("Missing corporate-action groups.");
                 {
-                    foreach (var (group, isSplit, description) in ActionGroups)
+                    foreach (var property in groups.EnumerateObject())
                     {
-                        if (!groups.TryGetProperty(group, out var actions) || actions.ValueKind != JsonValueKind.Array)
+                        if (!byGroup.ContainsKey(property.Name))
+                            return NotComplete("Alpaca returned an unrequested corporate-action family.",
+                                new("unexpected-event-type"));
+                    }
+
+                    foreach (var group in ActionGroups)
+                    {
+                        if (!groups.TryGetProperty(group.Group, out var actions))
                             continue;
+                        if (actions.ValueKind != JsonValueKind.Array)
+                            throw new JsonException("Invalid corporate-action group.");
 
                         foreach (var payload in actions.EnumerateArray())
                         {
                             var action = payload.Deserialize(AlpacaCorporateActionJsonContext.Default.AlpacaAction);
-                            if (action is not null && MapToCommand(action, payload, securityId, ticker, isSplit, description) is { } command)
-                                byGroup[group].Add(command);
+                            if (action is null)
+                                throw new JsonException("Invalid corporate-action record.");
+                            if (string.IsNullOrWhiteSpace(action.Id)
+                                || !TryDate(action.ProcessDate, out var processDate)
+                                || processDate < new DateOnly(1990, 1, 1) || processDate > throughDate)
+                                return NotComplete("Alpaca returned missing identity or an invalid process date for the requested window.",
+                                    new("invalid-record", Scope: group.Type));
+                            var evidenceHash = ComputePayloadHash(payload);
+                            var version = SourceVersion(evidenceHash, group.Type);
+                            var nativeId = action.Id.Trim();
+                            if (versionsById.TryGetValue(nativeId, out var previousVersion) && previousVersion != version)
+                                return NotComplete("Alpaca returned conflicting revisions of one event within a paged snapshot.",
+                                    new("conflicting-event-revisions", Scope: group.Type));
+                            versionsById[nativeId] = version;
+                            if (IsRelatedSymbolOnly(action, ticker, group.Type)
+                                || IsAdditionalRelatedSymbolOnly(payload, ticker, group.Type))
+                            {
+                                relatedByType[group.Type] = relatedByType.GetValueOrDefault(group.Type) + 1;
+                                continue;
+                            }
+                            if (group.Type == "cash_dividend"
+                                && !string.IsNullOrWhiteSpace(action.SubType)
+                                && action.SubType != "return_of_capital")
+                                return NotComplete("Alpaca returned an unmapped cash-dividend subtype.",
+                                    new("unsupported-event-subtype", Scope: group.Type));
+
+                            if (MapToCommand(action, payload, securityId, ticker, group.Type, evidenceHash) is not { } command)
+                                return NotComplete("Alpaca returned an invalid corporate-action record.",
+                                    new("invalid-record", Scope: group.Type));
+                            byGroup[group.Group].Add(command);
                         }
                     }
                 }
 
+                if (!document.RootElement.TryGetProperty("next_page_token", out var token)
+                    || token.ValueKind is not (JsonValueKind.String or JsonValueKind.Null))
+                    throw new JsonException("Invalid corporate-action pagination token.");
                 pagesRead++;
                 pageToken = document.RootElement.TryGetProperty("next_page_token", out var next)
                     && next.ValueKind == JsonValueKind.String
@@ -219,184 +284,55 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
                 }
             }
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            _logger.LogWarning(ex, "Failed to fetch Alpaca corporate actions for {Ticker}.", ticker);
+            _logger.LogWarning("Failed to fetch Alpaca corporate actions for {Ticker}.", ticker);
 
             // The exception type is reported, not its message, so nothing the provider sent is echoed.
             return NotComplete(string.Create(
                 CultureInfo.InvariantCulture,
-                $"Alpaca request for page {pagesRead + 1} failed ({ex.GetType().Name})."));
+                $"Alpaca request for page {pagesRead + 1} failed ({ex.GetType().Name})."),
+                CorporateActionFetchResult.FromException(ex).Failures.Single());
         }
 
         return CorporateActionFetchResult.Complete(
-            ActionGroups.SelectMany(group => byGroup[group.Group]).ToArray());
-
-        CorporateActionFetchResult NotComplete(string reason) => pagesRead == 0
-            ? CorporateActionFetchResult.Unavailable(reason)
-            : CorporateActionFetchResult.Incomplete(reason, byGroup.Values.Sum(static commands => commands.Count));
-    }
-
-    private CorporateActionCommand? MapToCommand(
-        AlpacaAction action,
-        JsonElement completeProviderPayload,
-        Guid securityId,
-        string ticker,
-        bool isSplit,
-        string description)
-    {
-        // The request names one symbol; a record for any other is not this security's action.
-        if (!string.Equals(action.Symbol?.Trim(), ticker, StringComparison.OrdinalIgnoreCase))
-            return null;
-        if (!DateOnly.TryParseExact(action.ExDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var exDate))
-            return null;
-
-        var recordDate = ParseDate(action.RecordDate);
-        var payableDate = ParseDate(action.PayableDate);
-        string actionType;
-        if (isSplit)
+            ActionGroups.SelectMany(group => byGroup[group.Group])
+                .DistinctBy(static action => (action.SourceEventId, action.SourceEventVersion)).ToArray()) with
         {
-            // A split without both rates cannot be applied, and the rates decide its direction.
-            if (action.OldRate is not > 0m || action.NewRate is not > 0m || action.NewRate == action.OldRate)
-                return null;
-            actionType = action.NewRate < action.OldRate ? "ReverseStockSplit" : "StockSplit";
-        }
-        else
+            Coverage = BuildCoverage(throughDate, CorporateActionTypeCoverageStatus.Complete, byGroup, relatedByType),
+        };
+
+        CorporateActionFetchResult NotComplete(string reason, CorporateActionFetchFailure? failure = null)
         {
-            if (action.Rate is not > 0m)
-                return null;
-            actionType = "Dividend";
-            if (action.Special == true)
-                description = "Special cash dividend";
-        }
-
-        var evidenceHash = ComputePayloadHash(completeProviderPayload);
-        var escapedId = string.IsNullOrWhiteSpace(action.Id)
-            ? null
-            : Uri.EscapeDataString(action.Id.Trim());
-        return new CorporateActionCommand(
-            SecurityId: securityId,
-            ActionType: actionType,
-            ExDate: exDate,
-            RecordDate: recordDate,
-            PayableDate: payableDate,
-            Amount: isSplit ? null : action.Rate,
-            // The endpoint reports a per-share rate without a currency.
-            Currency: null,
-            SplitFromFactor: isSplit ? action.OldRate : null,
-            SplitToFactor: isSplit ? action.NewRate : null,
-            Description: description,
-            SourceProvider: ProviderId,
-            SourceEventId: action.Id,
-            SourceEventVersion: escapedId is null ? null : $"payload-sha256:{evidenceHash}",
-            ObservedAtUtc: DateTimeOffset.UtcNow,
-            EvidenceHash: escapedId is null ? null : evidenceHash,
-            EvidenceReference: escapedId is null
-                ? null
-                : $"alpaca://corporate-actions/announcements/{escapedId}/versions/{evidenceHash}",
-            ReleaseStatus: ReleaseStatus);
-    }
-
-    private static DateOnly? ParseDate(string? value) =>
-        DateOnly.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
-            ? date
-            : null;
-
-    private static string ComputePayloadHash(JsonElement payload)
-    {
-        var buffer = new ArrayBufferWriter<byte>();
-        using (var writer = new Utf8JsonWriter(buffer))
-        {
-            WriteCanonicalPayload(writer, payload);
-        }
-
-        return Sha256Digest.ComputeUtf8(Encoding.UTF8.GetString(buffer.WrittenSpan));
-    }
-
-    private static void WriteCanonicalPayload(Utf8JsonWriter writer, JsonElement element)
-    {
-        switch (element.ValueKind)
-        {
-            case JsonValueKind.Object:
-                writer.WriteStartObject();
-                foreach (var property in element.EnumerateObject()
-                             .OrderBy(static property => property.Name, StringComparer.Ordinal))
-                {
-                    writer.WritePropertyName(property.Name);
-                    WriteCanonicalPayload(writer, property.Value);
-                }
-                writer.WriteEndObject();
-                break;
-            case JsonValueKind.Array:
-                writer.WriteStartArray();
-                foreach (var item in element.EnumerateArray())
-                {
-                    WriteCanonicalPayload(writer, item);
-                }
-                writer.WriteEndArray();
-                break;
-            case JsonValueKind.Number when element.TryGetDecimal(out var value):
-                writer.WriteRawValue(value.ToString("G29", CultureInfo.InvariantCulture));
-                break;
-            case JsonValueKind.Number:
-                writer.WriteRawValue(element.GetRawText());
-                break;
-            case JsonValueKind.String:
-                writer.WriteStringValue(element.GetString());
-                break;
-            case JsonValueKind.True:
-                writer.WriteBooleanValue(true);
-                break;
-            case JsonValueKind.False:
-                writer.WriteBooleanValue(false);
-                break;
-            case JsonValueKind.Null:
-                writer.WriteNullValue();
-                break;
-            default:
-                throw new JsonException("Unsupported Alpaca corporate-action payload token.");
+            var count = byGroup.Values.Sum(static commands => commands.Count);
+            var incomplete = pagesRead > 0 || count > 0;
+            var result = incomplete
+                ? CorporateActionFetchResult.Incomplete(reason, count)
+                : CorporateActionFetchResult.Unavailable(reason);
+            return result with
+            {
+                Failures = failure is null ? result.Failures : [failure],
+                Coverage = BuildCoverage(throughDate, incomplete
+                    ? CorporateActionTypeCoverageStatus.Incomplete : CorporateActionTypeCoverageStatus.Unavailable,
+                    byGroup, relatedByType),
+            };
         }
     }
 
-    // ------------------------------------------------------------------
-    // Internal response model (one record of a Market Data corporate-actions group)
-    // ------------------------------------------------------------------
-
-    private sealed class AlpacaAction
-    {
-        [JsonPropertyName("id")]
-        public string? Id { get; init; }
-
-        [JsonPropertyName("symbol")]
-        public string? Symbol { get; init; }
-
-        [JsonPropertyName("ex_date")]
-        public string? ExDate { get; init; }
-
-        [JsonPropertyName("record_date")]
-        public string? RecordDate { get; init; }
-
-        [JsonPropertyName("payable_date")]
-        public string? PayableDate { get; init; }
-
-        /// <summary>Cash per share, for a cash dividend.</summary>
-        [JsonPropertyName("rate")]
-        public decimal? Rate { get; init; }
-
-        [JsonPropertyName("special")]
-        public bool? Special { get; init; }
-
-        [JsonPropertyName("old_rate")]
-        public decimal? OldRate { get; init; }
-
-        [JsonPropertyName("new_rate")]
-        public decimal? NewRate { get; init; }
-    }
-
-    [JsonSourceGenerationOptions(
-        WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        PropertyNameCaseInsensitive = true)]
-    [JsonSerializable(typeof(AlpacaAction))]
-    private sealed partial class AlpacaCorporateActionJsonContext : JsonSerializerContext;
+    private static CorporateActionFetchCoverage BuildCoverage(
+        DateOnly through,
+        CorporateActionTypeCoverageStatus status,
+        IReadOnlyDictionary<string, List<CorporateActionCommand>>? actions = null,
+        IReadOnlyDictionary<string, int>? related = null)
+        => new(
+            Endpoint, "process_date", DateOnly.ParseExact(HistoryStart, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+            through, "us", "complete",
+            ActionGroups.Select(group => new CorporateActionTypeCoverage(
+                    group.Type, status,
+                    actions?.GetValueOrDefault(group.Group)?.DistinctBy(static action =>
+                        (action.SourceEventId, action.SourceEventVersion)).Count() ?? 0,
+                    related?.GetValueOrDefault(group.Type) ?? 0,
+                    related?.GetValueOrDefault(group.Type) > 0
+                        ? "Recipient-only observations are not actions on the queried source security." : null))
+                .ToArray());
 }

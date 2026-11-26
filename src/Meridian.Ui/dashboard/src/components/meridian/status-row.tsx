@@ -20,6 +20,11 @@ export interface StatusRowProps {
   /** Accessible name of the region. */
   label: string;
   facts: StatusRowFact[];
+  /**
+   * Shell-wide facts the masthead trust strip already names. They are listed under "Details" for
+   * context but never in the one-line summary, so the same issue is not repeated on every page.
+   */
+  contextFacts?: StatusRowFact[];
   /** What the row says when every fact is ready. */
   clearText?: string;
   /** A card-level control that stays beside the row, outside "Details". */
@@ -51,15 +56,22 @@ const dotClasses: Record<StatusSignalTone, string> = {
  * teaches the eye to skip all of them, so ready facts are not listed; the full per-fact breakdown,
  * with each fact's supporting detail and recovery action, is behind "Details". The worst tone and
  * the list of issues come from `summarizeStatusSignals`, the rule the masthead and Today also use.
+ * Shell-wide `contextFacts` appear only under "Details" (UX consolidation P1).
  */
 export function StatusRow({
   label,
   facts,
+  contextFacts = [],
   clearText = "All sources current",
   action,
   className
 }: StatusRowProps) {
   const summary = summarizeStatusSignals(facts);
+  const contextIssueCount = contextFacts.filter((fact) => fact.tone === "review" || fact.tone === "blocked").length;
+  // Page facts are ready but the shell has issues: say only that this page's own sources are
+  // current and where the rest is, rather than "All sources current" over a warning masthead.
+  const clearLabel = contextIssueCount > 0 ? `This page's sources are current · ${contextIssueCount === 1 ? "1 workspace issue" : `${contextIssueCount} workspace issues`} in the trust strip` : clearText;
+  const detailFacts = [...facts, ...contextFacts];
 
   return (
     <section
@@ -76,7 +88,7 @@ export function StatusRow({
               data-testid="status-row-clear"
             >
               <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-              {clearText}
+              {clearLabel}
             </span>
           ) : (
             <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-4 gap-y-0.5" data-testid="status-row-issues">
@@ -107,7 +119,7 @@ export function StatusRow({
         </summary>
         <div className="border-t border-border px-3 py-3">
           <dl className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-2">
-            {facts.map((fact) => (
+            {detailFacts.map((fact) => (
               <div key={fact.id} className="min-w-0 rounded-[2px] border border-border/70 bg-secondary/20 px-3 py-2">
                 <dt className="text-xs font-medium text-muted-foreground">{fact.label}</dt>
                 <dd className="mt-1 min-w-0">

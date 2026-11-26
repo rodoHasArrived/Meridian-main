@@ -14,6 +14,7 @@ public static class BondReferencePagingEndpoints
 {
     public static void MapBondReferencePagingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        jsonOptions = FixedIncomeHttpJson.Options(jsonOptions);
         var group = app.MapGroup(string.Empty).RequireWorkstationTenantScope();
         group.MapGet(UiApiRoutes.ReferenceDataBondIssuerLadderPage, (
             [FromQuery] string issuerName, [FromQuery] int? pageSize, [FromQuery] string? cursor,

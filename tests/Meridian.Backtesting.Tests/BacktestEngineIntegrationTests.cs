@@ -5,8 +5,10 @@ using Meridian.Core.Serialization;
 using Meridian.Backtesting.Engine;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Events;
 using Meridian.Storage;
+using Meridian.Storage.Backfill;
 using Meridian.Storage.Replay;
 using Meridian.Storage.Services;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -57,6 +59,7 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         result.TotalEventsProcessed.Should().Be(0);
         result.Universe.Should().BeEmpty();
         result.Fills.Should().BeEmpty();
+        result.ToResolvedRealismDescriptor().SourceMixHash.Should().BeNull();
     }
 
     // ------------------------------------------------------------------ //
@@ -95,9 +98,118 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         result.Snapshots.Should().HaveCount(4, "one snapshot is taken at end of each of the 4 requested days");
     }
 
+    [Theory]
+    [InlineData(HistoricalPriceBasis.Raw, HistoricalPriceBasis.SplitAdjusted)]
+    [InlineData(HistoricalPriceBasis.SplitAdjusted, HistoricalPriceBasis.Raw)]
+    [InlineData(HistoricalPriceBasis.Unknown, HistoricalPriceBasis.Raw)]
+    [InlineData(HistoricalPriceBasis.Raw, HistoricalPriceBasis.Unknown)]
+    [InlineData(HistoricalPriceBasis.SplitAdjusted, HistoricalPriceBasis.DividendAdjusted)]
+    public async Task RunAsync_MixedHistoricalPriceBasesForOneSymbol_RejectsBeforeConsumingMixedBar(
+        HistoricalPriceBasis firstBasis, HistoricalPriceBasis secondBasis)
+    {
+        var from = new DateOnly(2024, 1, 2);
+        WritePriceBasisBarsJsonl("SPY", from, (100m, firstBasis), (50m, secondBasis));
+        var strategy = new PriceCapturingStrategy();
+        var request = new BacktestRequest(from, from.AddDays(1), Symbols: ["SPY"],
+            DataRoot: _dataRoot, AdjustForCorporateActions: false)
+        {
+            ApplyStoredCorporateActions = false
+        };
+
+        var run = () => _engine.RunAsync(request, strategy);
+
+        await run.Should().ThrowAsync<InvalidOperationException>().WithMessage("*SPY*cannot mix*price bases*");
+        strategy.ReceivedBars.Should().ContainSingle().Which.Close.Should().Be(100m);
+    }
+
+    [Theory]
+    [InlineData(HistoricalPriceBasis.Unknown)]
+    [InlineData(HistoricalPriceBasis.Raw)]
+    [InlineData(HistoricalPriceBasis.SplitAdjusted)]
+    [InlineData(HistoricalPriceBasis.DividendAdjusted)]
+    [InlineData(HistoricalPriceBasis.FullyAdjusted)]
+    public async Task RunAsync_ConsistentHistoricalPriceBasis_AllowsResearchReplay(HistoricalPriceBasis basis)
+    {
+        var from = new DateOnly(2024, 1, 2);
+        WritePriceBasisBarsJsonl("SPY", from, (100m, basis), (100m, basis));
+        var strategy = new PriceCapturingStrategy();
+        var request = new BacktestRequest(from, from.AddDays(1), Symbols: ["SPY"],
+            DataRoot: _dataRoot, AdjustForCorporateActions: false)
+        {
+            ApplyStoredCorporateActions = false
+        };
+
+        var result = await _engine.RunAsync(request, strategy);
+
+        result.TotalEventsProcessed.Should().Be(2);
+        strategy.ReceivedBars.Should().HaveCount(2).And.OnlyContain(bar => bar.PriceBasis == basis && bar.Close == 100m);
+    }
+
+    [Fact]
+    public async Task RunAsync_DifferentHistoricalPriceBasesAcrossSymbols_AllowsResearchReplay()
+    {
+        var from = new DateOnly(2024, 1, 2);
+        WritePriceBasisBarsJsonl("SPY", from, (100m, HistoricalPriceBasis.Raw), (100m, HistoricalPriceBasis.Raw));
+        WritePriceBasisBarsJsonl("QQQ", from, (50m, HistoricalPriceBasis.SplitAdjusted), (50m, HistoricalPriceBasis.SplitAdjusted));
+        var strategy = new PriceCapturingStrategy();
+        var request = new BacktestRequest(from, from.AddDays(1), Symbols: ["SPY", "QQQ"],
+            DataRoot: _dataRoot, AdjustForCorporateActions: false)
+        {
+            ApplyStoredCorporateActions = false
+        };
+
+        var result = await _engine.RunAsync(request, strategy);
+
+        result.TotalEventsProcessed.Should().Be(4);
+        strategy.ReceivedBars.Where(bar => bar.Symbol == "SPY").Should().HaveCount(2)
+            .And.OnlyContain(bar => bar.PriceBasis == HistoricalPriceBasis.Raw);
+        strategy.ReceivedBars.Where(bar => bar.Symbol == "QQQ").Should().HaveCount(2)
+            .And.OnlyContain(bar => bar.PriceBasis == HistoricalPriceBasis.SplitAdjusted);
+    }
+
     // ------------------------------------------------------------------ //
     //  Buy-and-hold order placement                                       //
     // ------------------------------------------------------------------ //
+
+    [Theory]
+    [InlineData(20)]
+    [InlineData(-10)]
+    public async Task RunAsync_ZeroFinancingRates_ProcessesOpenDebitOrShortThroughDayEnd(long quantity)
+    {
+        var from = new DateOnly(2024, 1, 5);
+        WriteBarJsonl("SPY", from, from.AddDays(3), basePrice: 100m);
+        var request = new BacktestRequest(from, from.AddDays(3), Symbols: ["SPY"],
+            InitialCash: 1_000m, DataRoot: _dataRoot, AnnualMarginRate: 0,
+            AnnualShortRebateRate: 0, CommissionKind: BacktestCommissionKind.Free,
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(request, new BuyFirstBarStrategy("SPY", quantity));
+
+        result.Fills.Should().ContainSingle();
+        result.Snapshots.Should().HaveCount(4);
+        result.CashFlows.OfType<MarginInterestCashFlow>().Should().BeEmpty();
+        result.CashFlows.OfType<ShortRebateCashFlow>().Should().BeEmpty();
+        result.Ledger.Journal.Should().OnlyContain(journal => journal.IsBalanced);
+    }
+
+    [Fact]
+    public async Task RunAsync_CashInterestAccruesOnWeekendUsingCalendarDayBasis()
+    {
+        var from = new DateOnly(2024, 1, 5); // Friday through Monday includes both weekend dates.
+        WriteBarJsonl("SPY", from, from.AddDays(3), basePrice: 100m);
+        var request = new BacktestRequest(from, from.AddDays(3), Symbols: ["SPY"],
+            DataRoot: _dataRoot, InitialCash: 1_000m,
+            Accounts: [new FinancialAccount(BacktestDefaults.DefaultBrokerageAccountId, "Test brokerage",
+                FinancialAccountKind.Brokerage, InitialCash: 1_000m,
+                Rules: new FinancialAccountRules(AnnualCashInterestRate: 0.0365))]);
+
+        var result = await _engine.RunAsync(request, new NoOpStrategy());
+
+        result.CashFlows.OfType<CashInterestCashFlow>().Should().HaveCount(4);
+        var expected = Enumerable.Range(0, 4).Aggregate(1_000m, (balance, _) => balance * 1.0001m);
+        result.Metrics.FinalEquity.Should().BeApproximately(expected, 0.00000000001m);
+        result.Snapshots.Select(snapshot => snapshot.Date).Should().Contain(from.AddDays(1)).And.Contain(from.AddDays(2));
+    }
 
     [Fact]
     public async Task RunAsync_BuyAndHoldStrategy_ProducesPositiveEquity()
@@ -139,6 +251,89 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         fill.Symbol.Should().Be("TSLA");
         fill.FilledQuantity.Should().Be(5);
         fill.FillPrice.Should().BeInRange(190m, 215m, "bar midpoint fill should land within the OHLC range");
+    }
+
+    [Fact]
+    public async Task RunAsync_UsesRetainedBackfillRevisionAndDisclosesInteriorGap()
+    {
+        var from = new DateOnly(2024, 7, 3);
+        var missing = new DateOnly(2024, 7, 5);
+        var to = new DateOnly(2024, 7, 8);
+        var bars = new[] { from, to }.Select(static date =>
+        {
+            var bar = new HistoricalBar("SPY", date, 100m, 105m, 95m, 101m, 10_000, "fixture", PriceBasis: HistoricalPriceBasis.Raw);
+            return MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, bar.Source);
+        }).ToArray();
+        var retained = BackfillBatchRevision.Create("composite", "fixture", "default", "SPY", "daily", from, to,
+            "us-equity-sessions-v1", [from, missing, to], [from, to], bars.Select(BackfillBatchRevision.HashRow));
+        var store = new BackfillStatusStore(_dataRoot);
+        await store.Batches.PublishAsync(retained);
+        var root = Path.Combine(_dataRoot, "SPY");
+        Directory.CreateDirectory(root);
+        await File.WriteAllLinesAsync(Path.Combine(root, $"SPY_bars_{from:yyyy-MM-dd}.jsonl"), bars.Concat([bars[0]]).Select(item =>
+            JsonSerializer.Serialize(item with { BackfillRevisionId = retained.Receipt.RevisionId }, MarketDataJsonContext.HighPerformanceOptions)));
+
+        var engine = new BacktestEngine(NullLogger<BacktestEngine>.Instance, new StorageCatalogService(_dataRoot, new StorageOptions()),
+            securityMasterQueryService: null, securityIdentityQueryService: new ListingLookup());
+        var request = new BacktestRequest(From: from, To: to, DataRoot: _dataRoot, Symbols: ["SPY", "MISSING"],
+            AdjustForCorporateActions: false, FillTiming: FillTiming.SameBar);
+
+        var result = await engine.RunAsync(request, new BuyFirstBarStrategy("SPY", 5));
+        result.TotalEventsProcessed.Should().Be(2, "recovery and overlapping imports can leave a repeated stamped row");
+        var coverage = result.EngineMetadata!.InputCoverage!;
+        coverage.RequiredSessionFraction.Should().Be(1m);
+        var spy = coverage.Instruments.Should().ContainSingle(item => item.Instrument == "SPY").Which;
+        spy.Status.Should().Be("Incomplete");
+        spy.ExpectedSessions.Should().Be(3);
+        spy.MissingSessions.Should().Equal(missing);
+        coverage.Instruments.Should().Contain(item => item.Instrument == "MISSING" && item.Status == "Unknown");
+        coverage.Revisions.Should().ContainSingle().Which.RevisionId.Should().Be(retained.Receipt.RevisionId);
+        coverage.SourceMix.Should().Equal(new BacktestSourceCount("SPY", "FIXTURE", 2));
+        result.BiasDisclosure!.Items.Select(static item => item.Title).Should().Contain(["Data incomplete", "Coverage unknown"]);
+        result.Ledger.Journal.SelectMany(static item => item.Metadata.EvidenceReferences)
+            .Should().Contain(evidence => evidence.EvidenceId == retained.Receipt.RevisionId &&
+                                          evidence.ContentHash == retained.Receipt.ContentHash && evidence.SourceSystem == "fixture");
+
+        var normalized = CanonicalBacktestResultNormalizer.FromNative(result);
+        var json = JsonSerializer.Serialize(normalized.EngineMetadata);
+        JsonSerializer.Deserialize<BacktestEngineMetadata>(json)!.InputCoverage.Should().BeEquivalentTo(coverage);
+    }
+
+    [Fact]
+    public async Task RunAsync_SourceMixCountsOnlyReplayedBarsAndResolvesTheCompletedFingerprint()
+    {
+        var from = new DateOnly(2024, 1, 2);
+        var to = from.AddDays(2);
+        WriteBarJsonl("SPY", from.AddDays(-1), from.AddDays(-1), 100m, source: "unused");
+        WriteBarJsonl("SPY", from, from, 100m, source: "alpaca");
+        WriteBarJsonl("SPY", from.AddDays(1), from.AddDays(1), 100m, source: "ALPACA");
+        WriteBarJsonl("SPY", to, to, 100m, source: "polygon");
+        var request = new BacktestRequest(from, to, Symbols: ["SPY"], DataRoot: _dataRoot,
+            AdjustForCorporateActions: false);
+
+        var result = await _engine.RunAsync(request, new NoOpStrategy());
+
+        var coverage = result.EngineMetadata!.InputCoverage!;
+        coverage.SourceMix.Should().Equal(new BacktestSourceCount("SPY", "ALPACA", 2),
+            new BacktestSourceCount("SPY", "POLYGON", 1));
+        var reordered = coverage with { SourceMix = coverage.SourceMix!.Reverse().ToArray() };
+        reordered.SourceMixHash.Should().Be(coverage.SourceMixHash);
+        request.ToRealismDescriptor().SourceMixHash.Should().BeNull();
+        result.ToResolvedRealismDescriptor().SourceMixHash.Should().Be(coverage.SourceMixHash).And.NotBeNull();
+    }
+
+    private sealed class ListingLookup : ISecurityIdentityQueryService
+    {
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue,
+            string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
+        {
+            var effectiveFrom = new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.Zero);
+            return Task.FromResult<SecurityDetailDto?>(identifierValue == "SPY" ? new SecurityDetailDto(
+                Guid.Parse("3a80a6d4-7853-46d8-b0e5-9cde3b0acfee"), "Equity", SecurityStatusDto.Active, "SPY", "USD",
+                JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(new { }),
+                [new SecurityIdentifierDto(SecurityIdentifierKind.ListingId, "SPY:XNAS", true, effectiveFrom)], [], 1, effectiveFrom, null)
+                : null);
+        }
     }
 
     // ------------------------------------------------------------------ //
@@ -326,7 +521,8 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
             Close: 100m,
             Volume: 1_000L,
             Source: "test",
-            SequenceNumber: 1L);
+            SequenceNumber: 1L,
+            PriceBasis: HistoricalPriceBasis.Raw);
         var evt = MarketEvent.HistoricalBar(timestamp, "SPY", bar, "test", 1L);
         var validLine = JsonSerializer.Serialize(
             evt,
@@ -481,6 +677,45 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
 
         result.Fills.Sum(static fill => fill.FilledQuantity).Should().Be(20,
             "the first accepted slice should keep the order pending so remaining quantity can fill later");
+    }
+
+    [Theory]
+    [InlineData(102, 0)]
+    [InlineData(150, 1)]
+    public async Task RunAsync_RejectedBookSlice_DoesNotConsumeCommissionMinimum(decimal initialCash, int acceptedFills)
+    {
+        var date = new DateOnly(2024, 1, 2);
+        var timestamp = new DateTimeOffset(2024, 1, 2, 15, 0, 0, TimeSpan.Zero);
+        var symbolDirectory = Path.Combine(_dataRoot, "SPY");
+        Directory.CreateDirectory(symbolDirectory);
+        var snapshot = new LOBSnapshot(timestamp, "SPY",
+            Bids: [new OrderBookLevel(OrderBookSide.Bid, 0, 99m, 100)],
+            Asks: [new OrderBookLevel(OrderBookSide.Ask, 0, 100m, 100),
+                new OrderBookLevel(OrderBookSide.Ask, 1, 101m, 1)]);
+        var evt = MarketEvent.L2Snapshot(timestamp, "SPY", snapshot, source: "TEST");
+        await File.WriteAllTextAsync(Path.Combine(symbolDirectory, "SPY_l2snapshot_2024-01-02.jsonl"),
+            JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions) + "\n");
+        var account = new FinancialAccount(BacktestDefaults.DefaultBrokerageAccountId,
+            "No margin", FinancialAccountKind.Brokerage, InitialCash: initialCash,
+            Rules: new FinancialAccountRules(AllowMargin: false));
+        var request = new BacktestRequest(date, date, Symbols: ["SPY"], DataRoot: _dataRoot,
+            Accounts: [account], CommissionMinimum: 2m, CommissionRate: 0.005m,
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(request, new BuyOnInitializeStrategy("SPY", 101));
+
+        result.Fills.Should().HaveCount(acceptedFills);
+        if (acceptedFills > 0)
+        {
+            result.Fills.Single().Commission.Should().Be(2m);
+            result.Metrics.TotalCommissions.Should().Be(2m);
+            result.Snapshots.Single().Cash.Should().Be(initialCash - 103m);
+        }
+        else
+        {
+            result.Snapshots.Single().Cash.Should().Be(initialCash,
+                "the only affordable quantity still needs its order's unconsumed minimum fee");
+        }
     }
 
     // ------------------------------------------------------------------ //
@@ -698,6 +933,24 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
     //  JSONL fixture helpers                                              //
     // ------------------------------------------------------------------ //
 
+    private void WritePriceBasisBarsJsonl(string symbol, DateOnly from,
+        params (decimal Price, HistoricalPriceBasis Basis)[] bars)
+    {
+        var symbolDir = Path.Combine(_dataRoot, symbol.ToUpperInvariant());
+        Directory.CreateDirectory(symbolDir);
+        var filePath = Path.Combine(symbolDir, $"{symbol}_bars_{from:yyyy-MM-dd}.jsonl");
+
+        using var writer = new StreamWriter(filePath);
+        for (var index = 0; index < bars.Length; index++)
+        {
+            var (price, basis) = bars[index];
+            var bar = new HistoricalBar(symbol, from.AddDays(index), price, price, price, price, 1_000L,
+                Source: "test", SequenceNumber: index + 1, PriceBasis: basis);
+            var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), symbol, bar, "test", index + 1);
+            writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
+        }
+    }
+
     /// <summary>
     /// Writes a single <see cref="HistoricalBar"/> event with the given <paramref name="timestamp"/>
     /// (preserving its UTC offset) to a JSONL file so the engine can read it back.
@@ -716,7 +969,8 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
             Open: 100m, High: 105m, Low: 95m, Close: 100m,
             Volume: 1_000_000L,
             Source: "test",
-            SequenceNumber: 1L);
+            SequenceNumber: 1L,
+            PriceBasis: HistoricalPriceBasis.Raw);
 
         var evt = MarketEvent.HistoricalBar(timestamp, symbol, bar, "test", 1);
         using var writer = new StreamWriter(filePath);
@@ -736,7 +990,8 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
     /// Writes one <see cref="HistoricalBar"/> per day (from → to inclusive) to a JSONL file
     /// in a per-symbol sub-directory, named in the pattern the UniverseDiscovery scanner expects.
     /// </summary>
-    private void WriteBarJsonl(string symbol, DateOnly from, DateOnly to, decimal basePrice, decimal dailyGain = 0m)
+    private void WriteBarJsonl(string symbol, DateOnly from, DateOnly to, decimal basePrice, decimal dailyGain = 0m,
+        string source = "test")
     {
         var symbolDir = Path.Combine(_dataRoot, symbol.ToUpperInvariant());
         Directory.CreateDirectory(symbolDir);
@@ -760,11 +1015,12 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
                 Low: low,
                 Close: close,
                 Volume: 1_000_000L,
-                Source: "test",
-                SequenceNumber: seq++);
+                Source: source,
+                SequenceNumber: seq++,
+                PriceBasis: HistoricalPriceBasis.Raw);
 
             var ts = bar.ToTimestampUtc();
-            var evt = MarketEvent.HistoricalBar(ts, symbol, bar, "test", seq);
+            var evt = MarketEvent.HistoricalBar(ts, symbol, bar, source, seq);
 
             writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
             date = date.AddDays(1);
@@ -790,7 +1046,8 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
                 Close: bar.Close,
                 Volume: bar.Volume,
                 Source: "test",
-                SequenceNumber: seq++);
+                SequenceNumber: seq++,
+                PriceBasis: HistoricalPriceBasis.Raw);
 
             var ts = payload.ToTimestampUtc();
             var evt = MarketEvent.HistoricalBar(ts, symbol, payload, "test", seq);
@@ -802,6 +1059,19 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
 // ------------------------------------------------------------------ //
 //  Minimal strategy implementations used by the tests above          //
 // ------------------------------------------------------------------ //
+
+file sealed class BuyOnInitializeStrategy(string symbol, long quantity) : IBacktestStrategy
+{
+    public string Name => "BuyOnInitialize";
+    public void Initialize(IBacktestContext ctx) => ctx.PlaceMarketOrder(symbol, quantity);
+    public void OnTrade(Trade trade, IBacktestContext ctx) { }
+    public void OnQuote(BboQuotePayload quote, IBacktestContext ctx) { }
+    public void OnBar(HistoricalBar bar, IBacktestContext ctx) { }
+    public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) { }
+    public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
+    public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
+    public void OnFinished(IBacktestContext ctx) { }
+}
 
 file sealed class NoOpStrategy : IBacktestStrategy
 {
@@ -943,7 +1213,8 @@ file sealed class StubCorporateActionAdjustmentService(decimal factor, Action? o
                 Close: b.Close / factor,
                 Volume: (long)(b.Volume * factor),
                 Source: b.Source,
-                SequenceNumber: b.SequenceNumber))
+                SequenceNumber: b.SequenceNumber,
+                PriceBasis: HistoricalPriceBasis.SplitAdjusted))
             .ToList();
         return Task.FromResult<IReadOnlyList<HistoricalBar>>(adjusted);
     }

@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-01
+**Reviewed:** 2026-11-25
 
 This page is the canonical response procedure for every Meridian alert. Each section below is the
 link target of a Prometheus `runbook_url` annotation and of an `AlertRunbookEntry` in
@@ -197,7 +197,10 @@ rate limit exceeded.
 2. Verify API credentials have not expired — see
    [Provider Credentials and Access](./provider-credentials.md).
 3. Check rate limit counters; a breached limit looks identical to an outage from inside.
-4. Trigger a manual reconnect, or fail over to the backup provider.
+4. Trigger a manual reconnect, or fail over to the backup provider. To take a vendor out of
+   rotation without a restart, disable its data source in the workstation: a running collector
+   excludes it from failover and moves streaming to the next enabled backup (see
+   [Live provider and tolerance changes](#live-provider-and-tolerance-changes)).
 
 **Resolved when:** `mdc_circuit_breaker_state` returns to 0 and `mdc_symbols_circuit_open` reaches
 zero.
@@ -266,6 +269,10 @@ data from the provider.
    establish whether the fault is provider-specific. The symbol segment is required; the route
    does not exist without it.
 4. Trigger a gap-fill backfill if the cause was an outage.
+5. If the discrepancies are expected for the instrument (for example illiquid preferreds), widen
+   that asset class's band under Data → data-quality watch → **Cross-provider tolerances** rather
+   than the global tolerance. Loosening requires a recorded reason and is audited; use **Preview**
+   first to see how many of the last 30 days the draft would have flagged.
 
 ## Freshness SLA Violation
 
@@ -316,6 +323,28 @@ issues.
 2. `GET /api/sla/metrics` for the trend — a slow decline and a step change have different causes.
 3. Evaluate provider health across all active providers, not just the primary.
 
+## Live provider and tolerance changes
+
+Every workstation save reports, per setting, what the running host did with it. The browser
+shows "Applied live", "Provider routing updated live" or "Pending host restart" with the reason
+for each deferred setting; `GET /api/config/changes` returns the same evidence in `lastApply`.
+
+| Change | Running collector | Notes |
+| --- | --- | --- |
+| Failover rule thresholds, latency limit, backup order among providers that already stream | Applied live | Takes effect on the next health evaluation; the active provider is kept. |
+| Health-check interval | Applied live | |
+| Disable or re-enable a source that already has a streaming client | Applied live | Disabling the active provider hands its subscriptions to the next enabled backup. If none can take over, the save says so and a restart is required. |
+| Source priority, name, description, tags, failover timeout, auto-recover | Saved, no runtime effect | The streaming runtime does not read these. |
+| Cross-provider tolerances (`DataQuality.CrossProvider`) | Applied live | Out-of-bounds values are refused at save time. |
+| Provider kind or ID, credentials, endpoints, new rules, removing the rule that drives streaming, `EnableFailover`, symbol mappings | Restart required | |
+
+Failover rules must name configured `DataSources.Sources` IDs; a rule that names an unknown ID is
+refused at save time. A save is confirmed live when the streaming collector runs in the same
+process as the UI server (desktop mode). A separate collector started with `--watch-config` also
+applies these changes when the file changes, but the UI cannot see that process and still reports
+"Pending host restart" for `DataSources` changes; check the collector log for
+`Provider configuration reconciled` instead.
+
 ## Incident Response
 
 **Severity and priority**
@@ -360,10 +389,37 @@ For problems that did not arrive as an alert:
 | Report pack will not release | [Governed Reporting Operations](./governed-reporting-operations.md) |
 | Provider credentials rejected | [Provider Credentials and Access](./provider-credentials.md) |
 | Backfill gaps remain after recovery | [Provider Backfill Operations](./provider-backfill-operations.md) |
+| Need to review what a cancel-all or kill-switch sweep did | [Cancel-all incident review](#cancel-all-incident-review) |
+
+## Cancel-all incident review
+
+Every OMS cancel-all sweep (including kill-switch sweeps) is assigned an incident ID and its
+evidence is retained in the execution audit WAL. Use this when you need to know what a sweep
+actually observed, not what the book looks like now.
+
+1. Open **Trading → Risk** and select the execution fund account. Recent incidents are listed for
+   that account; use the exact-ID lookup for older records.
+2. Review each order's cancellation outcome, observed fills, possible remaining quantity,
+   unconfirmed replacements, and valuation coverage.
+3. Read the result conservatively:
+   - Quantities are historical observations at the recorded time, not current exposure. Confirm
+     current positions separately before acting.
+   - Unknown or missing broker quantities stay unknown; they are never shown as zero.
+   - A completed evidence record does not mean the book was fully cancelled. Incomplete broker
+     coverage remains unresolved.
+   - If the sweep reports `EvidenceRetained=false`, cancellation still ran but retention failed;
+     record the `EvidenceError` in the incident notes.
+4. The view is account-scoped and requires trade-view access. Other accounts and unattributed
+   broker-only orders are excluded from the projection. Reopening an incident never contacts or
+   acts on the broker.
+
+The same data is available from `GET /api/execution/cancel-incidents?fundAccountId=<id>` and
+`GET /api/execution/cancel-incidents/{incidentId}?fundAccountId=<id>`. Implementation details are
+in the [Execution README](../../src/Meridian.Execution/README.md#retained-cancel-all-incidents).
 
 ## Related
 
 - [Service Level Objectives](./service-level-objectives.md) — objectives, thresholds, RTO/RPO.
 - [Failover and Recovery](./failover-and-recovery.md) — recovery procedure and drill evidence.
 - [Operator Preflight Checklist](./preflight-checklist.md) — readiness gate before a release.
-- [Live Execution Controls](../operations/live-execution-controls.md) — execution kill-switch posture.
+- [Live execution manual override routes](../reference/provider-capability-matrix.md#live-execution-manual-override-routes) — execution override and kill-switch routes.

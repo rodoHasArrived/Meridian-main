@@ -2,7 +2,7 @@
 
 **Status:** calculation capability; production terms write activation remains gated
 **Owner:** Security Master / Direct Lending
-**Reviewed:** 2026-10-29
+**Reviewed:** 2026-11-25
 
 The shared `ContractualCashFlowEngine` projects explicit exercise scenarios and deterministic
 prepayments. It reads a versioned calculation contract and request, without accessing the clock,
@@ -31,6 +31,17 @@ stray convention blocks on unstamped or version-1 rows do not change projected r
 Scalar swap projections read leg currencies and conventions from the same retained source and
 supported alias as the shared terms reader. Nonobject leg rows block preview before mapping;
 valid aliases and source precedence are preserved.
+
+The bounded `vanilla-irs-v1` profile now permits reviewed authoring of the existing Swap leg
+conventions, without making the `cashFlowContract` companion writable. Swap remains write/read
+version 4 with floor 1. Preview and retained-run requests may explicitly name `calculationProfile`;
+omitting it preserves the prior route and retained hashes. The profile adapts exactly two stable
+leg IDs into this same engine: opposite fixed/floating directions, one currency, equal positive
+notional and explicit no principal exchange. Each leg declares cadence, day count, schedule
+conventions and Percent/Fraction rate unit; spreads declare basis points. Historical resets require
+dated fixings and future resets pinned forwards; an undated current index rate is insufficient.
+Cross-currency exchanges, notional amortization, PIK, optionality and credit-protection payoffs
+remain refused. This calculation convergence adds no posting authority or global schedule-gate lift.
 
 Existing retained scalar terms are adapted where complete. Missing origination dates are never
 replaced by effective-from dates. Factor-based balances without reconcilable history, custom loan
@@ -98,6 +109,15 @@ temporary file and write-once rename; conflicting identity retries return 409, w
 return the retained packet before looking up live terms or curves. Back up these packets with the
 data root. Hashes establish consistency, not an externally anchored tamper-proof audit chain.
 
+With `SinglePrincipalAttestation:EnableDraftChecks` explicitly enabled, newly retained Security
+runs bind the authenticated tenant, company, preparer and action origin. This optional context is
+omitted from older packets; it is never inferred from a legacy actor string. A W14 draft check
+requires a separately granted human preparer, an explicit version-2 declaration and the exact
+non-postable run/source revision. It remains a preparer assertion with no approval, posting or
+Verified Coverage authority. Direct-lending runs are outside this provider. Disabling the host
+feature preserves historical packets and permits authorized corrective revocation of existing
+assertions; it does not turn an old packet into a newly scoped draft.
+
 This calculation lane does not execute exercises, record actual notices/payments, post forecasts,
 change amortization accounting v1/v2/v3, value optimal exercise/OAS, model behavioral prepayment,
 or calculate deal waterfalls. Those operations retain their existing authorities and gates.
@@ -107,4 +127,6 @@ or calculate deal waterfalls. Those operations retain their existing authorities
 Pure arithmetic, compatibility and replay tests live in `ContractualCashFlowEngineTests` in
 `Meridian.Contracts.UnitTests`. Adapter, cutoff, provider, durable packet and permission tests
 live in `ContractualCashFlowPreviewTests` and `ContractualCashFlowEndpointTests` in `Meridian.Tests`.
+`SecurityVanillaSwapProfileTests` covers signed fixed/floating flows and the bounded profile's
+source, convention, fixing and unsupported-shape refusals.
 Terms-version manifests retain all earlier versions and append only the new companion versions.

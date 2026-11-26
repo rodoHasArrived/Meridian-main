@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Pipeline;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
@@ -526,7 +527,11 @@ public sealed partial class IBBrokerageGateway :
                 position.Position.Description,
                 position.Position.PositionId,
                 position.Currency ?? account.Currency,
-                position.Position.Metadata)).ToArray(),
+                position.Position.Metadata)
+            {
+                AccruedInterest = position.Position.AccruedInterest,
+                ValuationBasis = position.Position.ValuationBasis
+            }).ToArray(),
             DateTimeOffset.UtcNow);
     }
 
@@ -916,7 +921,8 @@ public sealed partial class IBBrokerageGateway :
                 UnrealizedPnl = 0m,
                 AssetClass = IBCanonicalPayloadMapper.MapAssetClass(update.SecurityType, update.Metadata),
                 Metadata = update.Metadata,
-                AccruedInterest = accruedInterest
+                AccruedInterest = accruedInterest,
+                ValuationBasis = BrokeragePositionValuationBasis.CostDerived
             });
     }
 
@@ -1601,14 +1607,14 @@ public sealed partial class IBBrokerageGateway :
             Uri.EscapeDataString(value?.Trim().ToUpperInvariant() ?? string.Empty)));
     }
 
-    private static OptionContractIdentity? TryParseOptionContract(IReadOnlyDictionary<string, string>? metadata)
+    internal static OptionContractIdentity? TryParseOptionContract(IReadOnlyDictionary<string, string>? metadata)
     {
         if (metadata is null)
             return null;
 
         var secType = GetMetadata(metadata, "sec_type");
-        if (!string.Equals(secType, "OPT", StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(secType, "FOP", StringComparison.OrdinalIgnoreCase))
+        if (!ProviderAssetClassCodeCatalog.IsCodeIgnoreCase(
+                secType, SecurityAssetClassNames.Option, ProviderAssetClassCodeProviders.InteractiveBrokers))
         {
             return null;
         }

@@ -6,12 +6,31 @@ module_id: SRC-HOST
 path: src/Meridian
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-27
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian
 
+The live market-event tap snapshots the cached data-quality assessment when updating each trade,
+quote or historical-bar observation used by paper matching. Provider/event identity, assessment
+window, calculation time and threshold follow that observation; posting never retrieves a newer
+assessment. Out-of-window or missing assessments remain unassessed. Historical live observations
+retain their backfill revision reference without claiming repair status from a receipt that may
+still await publication. This metadata does not expand execution or posting authority.
+
+Enabled trade-fill ledger composition also supplies the scope-bound paper financing source
+outbox and governed posting target. The human administrator assessment route uses that same
+book/period authority; absent scope binding or unresolved source delivery fails closed.
+Shared workstation composition owns optional daily reconciliation and scheduled mark-reversal
+draft preparation. These workers retain the ordinary tenant, period and approval controls.
+
 `UiServer` paper composition registers `IOrderGateway` as a read-only view over the OMS paper `IExecutionGateway` (no second paper simulator). The optional StockSharp gateway no longer registers placeholder account-catalog, portfolio or activity sync adapters; the runtime surface reports those as missing.
+
+The opt-in canonical fill-accounting host mode uses a distinct v2 handoff partition, the shared
+durable journal/lot store, and exact operator-delegated synthetic posting authority. It never
+creates a book implicitly or enables a live account. Required chart/policy/security services must
+be available before the v2 consumer starts; legacy handoffs keep their existing replay path.
+Accounting reconciliation and general-ledger interchange reuse the same shared API/service graph.
 
 The browser host can compose the Alpaca brokerage execution portfolio. `BrokeragePortfolioState`
 projects broker observations for the existing portfolio and position-tracker consumers; mandatory
@@ -25,7 +44,8 @@ installed launcher is a thin shim. The supervisor owns dynamic loopback-port sel
 dedicated database and host process identities, data-root separation, readiness polling, shutdown
 deadlines, session receipts, and browser launch. The host owns its cooperative drain and flush
 sequence. Direct host commands remain developer/operator surfaces, not end-user installation
-instructions.
+instructions. The `data-root` readiness check fails when the data root is missing and reports
+Degraded, without leaving service, when its volume has less than 2 GiB free.
 
 ## Purpose
 
@@ -44,6 +64,24 @@ and process-host concerns isolated from domain and application logic.
 - `Properties/` - launch and host metadata.
 
 ## Important workflows
+
+`DemoWorkspaceCli` preserves saved validation profiles and their audit entries in the isolated
+`appsettings.demo.json` when reopening a seeded workspace.
+
+The browser host passes the shared equity session policy, operational journal, quote source and instrument coverage source into its OMS. This is the same admission/retention path used by the execution service registrations. `UiServer` composes the OMS through `OrderManagementSystemFactory` (`HostedWorkstation`), which requires the risk validator, portfolio state and OMS options and wires paper-session persistence and the strategy-run authority source. Read-only shared-host compositions leave execution workers dormant when no gateway is registered. See [execution workflows](../../docs/engineering/execution-workflows.md).
+
+Versioned Designer paper composition resolves the retained scoped design and exact promotion
+review through `DesignerPaperExecution`, then routes typed OMS intents into that run's prepared
+durable session. Strategy observations read only that session's native account receipt and
+defensive marked portfolio; final metrics are captured after fill draining and before verified
+session closure. The host's aggregate paper book does not supply the run's cash or holdings.
+Retained simulated handoffs do not become canonical postings through this bounded execution path.
+
+`UiServer` invokes Application's shared `DatabaseStartupPlan` before its existing optional reporting
+migration gate and before starting hosted services. It retains its successful-readiness cache,
+serialized lifecycle operations, and retry after a pre-host migration failure. Desktop child
+`HostStartup` graphs do not repeat the parent's database migrations. The shared plan validates
+module prerequisites before running the established sequential initialization order.
 
 Use this module when changing host startup, CLI routing, runtime hosting, configuration bootstrap,
 local workstation API process behavior, or production API binding policy.
@@ -146,6 +184,6 @@ Route orchestration changes through `src/Meridian.Application` and shared contra
 
 ## Related docs
 
-- `docs/developer/build-test-run.md`
+- `docs/start/README.md`
 - `docs/architecture/module-map.md`
 - `docs/source/generated/source-module-index.md`

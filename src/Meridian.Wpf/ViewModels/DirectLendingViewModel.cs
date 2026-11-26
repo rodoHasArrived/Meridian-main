@@ -274,7 +274,6 @@ public sealed class DirectLendingViewModel : BindableBase
             {
                 RefreshCommand.NotifyCanExecuteChanged();
                 OnPropertyChanged(nameof(CanRefreshPortfolio));
-                OnPropertyChanged(nameof(RefreshTooltip));
                 OnPropertyChanged(nameof(LoanActionStateDetail));
                 UpdateLoanInspectors();
             }
@@ -296,10 +295,6 @@ public sealed class DirectLendingViewModel : BindableBase
     public bool CanRefreshPortfolio => CanRefreshPortfolioForState(IsRefreshing);
 
     public bool CanPostAccrual => CanPostAccrualForState(SelectedLoan, IsDetailLoading, IsPostingAccrual);
-
-    public string RefreshTooltip => IsRefreshing
-        ? "Portfolio refresh is already running."
-        : "Refresh the direct-lending portfolio from the shared workstation API.";
 
     public string PostAccrualTooltip => BuildPostAccrualTooltip(SelectedLoan, IsDetailLoading, IsPostingAccrual);
 

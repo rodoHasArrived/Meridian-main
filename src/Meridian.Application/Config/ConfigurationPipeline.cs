@@ -260,6 +260,13 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
                         refused.Count);
             }
 
+            // Stage 5.5: Make fabricated-data fallback explicit after credential resolution.
+            foreach (var warning in BackfillRoutingLint.Evaluate(config))
+            {
+                warnings.Add(warning);
+                _log.Warning("Configuration routing lint: {Message}", warning);
+            }
+
             // Stage 6: Validate
             var isValid = validationErrors.Count == 0;
 

@@ -16,8 +16,9 @@ metadata:
 Keep Meridian documentation current, evidence-backed, and scoped to the requested change.
 
 Read `../_shared/project-context.md` before editing.
-For docs changes tied to implementation, coordinate with `meridian-implementation-assurance`; for
-archived or superseded material, coordinate with `meridian-archive-organizer`.
+For docs changes tied to implementation, coordinate with `meridian-implementation-assurance`.
+The repository no longer keeps an `archive/` folder; handle superseded material under Routing
+below.
 
 ## Use When
 
@@ -66,20 +67,20 @@ Non-trigger examples:
 ## Handoffs
 
 - Hand off to `meridian-implementation-assurance` when docs edits are part of a code change that needs build/test evidence.
-- Hand off to `meridian-archive-organizer` when material is superseded, historical, misplaced, or should move under `archive/`.
 - Hand off to `meridian-roadmap-strategist` when the work is delivery sequencing, target-state reconciliation, or roadmap prioritization.
 - Hand off to `meridian-repo-navigation` when the user needs to know which subsystem or documentation area owns a topic before editing.
 
 ## Routing
 
 - Root shims: keep `AGENTS.md` short and point to canonical sources rather than duplicating large sections.
-- Developer workflows: prefer `docs/developer/`, `docs/development/`, and `docs/HELP.md`.
-- Operations and packaging: prefer `docs/operations/`.
-- Status, readiness, and evidence gates: prefer `docs/status/`.
-- Roadmap and planning interpretation: prefer `docs/plans/`.
+- Developer workflows: start in `docs/engineering/` and `docs/start/`; link supporting detail from `docs/development/` and command lookup from `docs/HELP.md`.
+- Operations and packaging: prefer `docs/operators/`.
+- Delivery status: use `docs/roadmap/data/*.yml` and its generated views; release readiness belongs in `docs/product/implementation-todo-list.md`. Keep automation-owned reports at their registered `docs/status/` paths.
+- Plans: use `docs/product/plans/`, `docs/engineering/plans/`, or `docs/engineering/blueprints/` and update the Plans and Blueprints Register.
+- Transitional paths: retain `docs/operations/` and `docs/plans/` only for existing consumers; do not add new durable guidance there or recreate removed `docs/developer/`.
 - Architecture and ownership boundaries: prefer `docs/architecture/`.
 - Generated navigation or AI inventory: prefer `docs/ai/` and the matching build scripts.
-- Deprecated, superseded, or historical material: move or route through `archive/` with traceable references.
+- Deprecated, superseded, or historical material: the repository no longer keeps an `archive/` folder. Delete superseded material (git history retains it) or keep it in place with a status note; historical ADRs still cited by source live in `docs/adr/historical/`.
 
 ## Validation
 

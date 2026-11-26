@@ -48,6 +48,27 @@ class DesignDocumentAdaptationTests(unittest.TestCase):
     def test_current_repository_contract_passes(self) -> None:
         self.assertEqual([], [finding for finding in module.validate(ROOT) if finding.severity == "error"])
 
+    def test_source_evidence_uses_authored_generator_without_requiring_a_mirror(self) -> None:
+        self.assertEqual(
+            "build/scripts/generate-workspace-catalog-ts.py",
+            self.adaptation["source_evidence"]["dashboard_workspace_catalog"],
+        )
+        original_exists = Path.exists
+        mirror = ROOT / "src/Meridian.Ui/dashboard/src/lib/workspace-catalog.generated.ts"
+        with patch.object(Path, "exists", lambda path: path != mirror and original_exists(path)):
+            self.assertEqual([], self.errors())
+
+    def test_rejects_browser_generator_root_order_drift_and_dynamic_order(self) -> None:
+        original_read = module.read_text
+        generator = ROOT / "build/scripts/generate-workspace-catalog-ts.py"
+        original = original_read(generator)
+        swapped = original.replace('    "Trading",\n    "Portfolio",', '    "Portfolio",\n    "Trading",')
+        with patch.object(module, "read_text", side_effect=lambda path: swapped if path == generator else original_read(path)):
+            self.assertTrue(any("dashboard root workspace order drifted" in error for error in self.errors()))
+        dynamic = original.replace("WORKSPACE_NAMES = [", "UNRELATED_NAMES = [") + "\nWORKSPACE_NAMES = load_order()\n"
+        with patch.object(module, "read_text", side_effect=lambda path: dynamic if path == generator else original_read(path)):
+            self.assertTrue(any("cannot inspect dashboard root workspace order" in error for error in self.errors()))
+
     def test_rejects_blanket_research_or_trading_deferral(self) -> None:
         for name in ["Research & Analytics", "Trading & Execution"]:
             with self.subTest(context=name):
@@ -104,6 +125,38 @@ class DesignDocumentAdaptationTests(unittest.TestCase):
         self.assertTrue(any("W13-STRAT-001 must retain planned delivery" in error for error in self.errors(roadmap=roadmap)))
         self.context("Research & Analytics")["runtime_projects"] = ["src/Meridian.Research"]
         self.assertTrue(any("Research & Analytics runtime projects" in error for error in self.errors()))
+
+    def test_in_progress_requires_accepted_progress_decision(self) -> None:
+        roadmap = module.load_data(ROOT / module.ROADMAP_REGISTRY)
+        decisions = module.load_data(ROOT / module.DECISION_REGISTRY)
+        item = next(item for item in roadmap["items"] if item["id"] == "W13-OMS-001")
+        item["status"] = "in_progress"
+        item["evidence_posture"] = "in_progress"
+        progress = next(decision for decision in decisions["decisions"] if decision["id"] == module.PROGRESS_DECISION)
+        progress["status"] = "accepted"
+        self.assertFalse(any("W13-OMS-001" in error for error in self.errors(roadmap=roadmap, decisions=decisions)))
+        progress["status"] = "proposed"
+        self.assertTrue(any(
+            f"W13-OMS-001 can be in_progress only while {module.PROGRESS_DECISION} is accepted" in error
+            for error in self.errors(roadmap=roadmap, decisions=decisions)
+        ))
+        progress["status"] = "accepted"
+        progress["related_roadmap_items"] = [entry for entry in progress["related_roadmap_items"] if entry != "W13-OMS-001"]
+        self.assertTrue(any("W13-OMS-001 can be in_progress only" in error for error in self.errors(roadmap=roadmap, decisions=decisions)))
+
+    def test_accepted_progress_decision_does_not_permit_acceptance_claims(self) -> None:
+        roadmap = module.load_data(ROOT / module.ROADMAP_REGISTRY)
+        decisions = module.load_data(ROOT / module.DECISION_REGISTRY)
+        next(decision for decision in decisions["decisions"] if decision["id"] == module.PROGRESS_DECISION)["status"] = "accepted"
+        item = next(item for item in roadmap["items"] if item["id"] == "W13-STRAT-001")
+        for status, posture in [("ready_for_acceptance", "in_progress"), ("accepted", "complete"), ("in_progress", "complete")]:
+            with self.subTest(status=status, posture=posture):
+                item["status"] = status
+                item["evidence_posture"] = posture
+                self.assertTrue(any(
+                    "W13-STRAT-001 must retain planned delivery" in error
+                    for error in self.errors(roadmap=roadmap, decisions=decisions)
+                ))
 
     def test_rejects_financial_baseline_ceiling_and_stale_charter_reference(self) -> None:
         self.adaptation["product_baseline"]["development_ceiling"] = True

@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-05
+**Reviewed:** 2026-11-23
 **Scope:** Engineering and contributor-facing guidance
 **Review Cadence:** As tooling, workflows, or implementation conventions evolve
 
@@ -64,6 +64,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 | [Documentation Contribution Guide](documentation-contribution-guide.md) | add, review, archive, or reorganize documentation correctly |
 | [Central Package Management](central-package-management.md) | update NuGet dependencies through `Directory.Packages.props` |
 | [F# Decision Rule](fsharp-decision-rule.md) | decide whether a new subsystem should stay in C# or move to F# |
+| [Fund Account Traversal](fund-account-traversal.md) | resolve fund-scoped accounts through ownership edges, filters, access checks, and caching |
 
 ### Providers, Extension Points, And Refactors
 
@@ -71,8 +72,10 @@ For a broader docs map, return to the main [docs index](../README.md).
 | --- | --- |
 | [Provider Implementation Guide](provider-implementation.md) | add or extend streaming, historical, or symbol-search providers |
 | [Rule Evaluation Contract Layer](rule-evaluation-contracts.md) | align kernel outputs to the shared `Score + Reasons + Trace` envelope |
+| [Score Reason Taxonomy](score-reason-taxonomy.md) | pick a canonical reason code when a scoring kernel emits a "why" artifact |
+| [Synthetic Provider Test Harness](synthetic-provider-test-harness.md) | write deterministic provider-family resilience tests with scripted scenarios |
 | [Refactor Map](refactor-map.md) | understand the current dependency-safe refactor opportunities |
-| [Tooling & Workflow Backlog](../../archive/docs/plans/tooling-workflow-backlog.md) | see how the contributor-workflow and automation cleanup themes were delivered (completed and archived; closure record inside) |
+| [Tooling & Workflow Backlog](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/tooling-workflow-backlog.md) | see how the contributor-workflow and automation cleanup themes were delivered (completed and archived; closure record inside) |
 
 ### Desktop And WPF Development
 
@@ -82,6 +85,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 | [Desktop Development Testing Guide](desktop-testing-guide.md) | bootstrap, build, and validate the WPF desktop surface locally |
 | [UI Fixture Mode Guide](ui-fixture-mode-guide.md) | run the desktop UI with deterministic offline data |
 | [Desktop Workflow Automation](desktop-workflow-automation.md) | drive scripted desktop flows, screenshots, and manual-generation workflows |
+| [Desktop Command Surface Migration](desktop-command-surface-migration.md) | see why `scripts/dev/` PowerShell runners, not Make targets, are the canonical desktop automation entry points |
 | [Codex Desktop Workstation Workflow](codex-workflow.md) | use Codex skills, prompt templates, and quality scripts for modular desktop work |
 | [Modular Desktop Architecture](modular-desktop-architecture.md) | keep WPF workspaces reusable, MVVM-aligned, and refactorable |
 | [Desktop Resource Management](desktop-resource-management.md) | apply memory, CPU, I/O, rendering, concurrency, and lifecycle guardrails |
@@ -122,7 +126,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 
 Some topics in this folder have deeper source material outside `docs/development/`:
 
-- [`docs/generated/workflows-overview.md`](../generated/workflows-overview.md) is the generated GitHub Actions workflow inventory. [`docs/status/workflow-manifest.json`](../status/workflow-manifest.json), [`docs/generated/workflow-command-reference.md`](../generated/workflow-command-reference.md), and [`docs/status/workflow-validation-summary.json`](../status/workflow-validation-summary.json) cover workflow command validation.
+- [`docs/generated/workflows-overview.md`](../generated/workflows-overview.md) is the generated GitHub Actions workflow inventory. [`docs/status/workflow-manifest.json`](../status/workflow-manifest.json), [`docs/generated/workflow-command-reference.md`](../generated/workflow-command-reference.md), and `docs/status/workflow-validation-summary.json` (a gitignored local output of `generate-workflow-manifest.py`) cover workflow command validation.
 - [`build/scripts/docs/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/build/scripts/docs/README.md) is the script-level companion to the documentation automation guides.
 - [`scripts/dev/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/scripts/dev) contains the PowerShell runners and workflow catalogs referenced by the desktop workflow guides.
 

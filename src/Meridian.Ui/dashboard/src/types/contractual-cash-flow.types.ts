@@ -47,6 +47,7 @@ export interface ContractualCashFlowRequest {
   prepayments?: CashFlowPrepaymentAssumption[] | null;
   curvePins?: CashFlowCurvePin[] | null;
   engineVersion?: string;
+  calculationProfile?: "vanilla-irs-v1" | null;
 }
 
 export interface CashFlowCalculationBlocker {
@@ -111,6 +112,8 @@ export interface ContractualCashFlowEvidence {
 }
 
 export interface ContractualCashFlowResult {
+  /** Selected fields of the authoritative contract returned with calculated results. */
+  resolvedContract?: { streams: Array<{ streamId: string; prepaymentAllowed: boolean }> } | null;
   events: ContractualCashFlowEvent[];
   exerciseEligibility: CashFlowExerciseEligibility[];
   exerciseCalculations: CashFlowExerciseCalculation[];

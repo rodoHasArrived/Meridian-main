@@ -3,7 +3,7 @@ import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import {
-  assertHealthyScene, compositeColor, contrastRatio, designSystemMatrix, parseCssColor, supportingSmokeResponse
+  assertHealthyScene, compositeColor, contrastRatio, designSystemMatrix, isCanceledApiRequest, parseCssColor, supportingSmokeResponse
 } from "./design-system-smoke-helpers.mjs";
 
 const appearanceKey = "meridian.workstation.appearance.v1";
@@ -22,7 +22,7 @@ function sceneMonitor(page, scene, allowedOrigin) {
     if (new URL(request.url()).origin !== allowedOrigin) scene.unexpectedRequests.push(request.url());
   });
   page.on("requestfailed", request => {
-    if (!scene.closing && request.failure()?.errorText !== "net::ERR_ABORTED") {
+    if (!scene.closing && !isCanceledApiRequest(request)) {
       scene.assetFailures.push(request.url() + ": " + request.failure()?.errorText);
     }
   });
@@ -169,7 +169,7 @@ async function contrastAudit(page, scene, axeSource, report) {
   await settleTransitions(page);
   await page.addScriptTag({ content: axeSource });
   const result = await page.evaluate(async () => {
-    const audit = await window.axe.run(document, { runOnly: { type: "rule", values: ["color-contrast"] } });
+    const audit = await window.axe.run(document, { preload: false, runOnly: { type: "rule", values: ["color-contrast"] } });
     return {
       violations: audit.violations.map(item => ({ id: item.id, nodes: item.nodes.map(node => ({ target: node.target, summary: node.failureSummary })) })),
       incomplete: audit.incomplete.map(item => ({ id: item.id, nodes: item.nodes.length }))
@@ -454,7 +454,7 @@ export async function runExpandedDesignSystemSmoke({ browser, base, backendBase,
           assert.equal(new URL(page.url()).pathname, new URL(base + "/portfolio").pathname, "Canonical Portfolio route");
           await page.getByRole("heading", { name: "Portfolio", level: 1, exact: true }).waitFor();
           await page.getByRole("region", { name: "Portfolio workbench context", exact: true })
-            .getByRole("heading", { name: "Execution-linked holdings", exact: true }).waitFor();
+            .getByRole("heading", { name: "Holdings", exact: true }).waitFor();
         }
         await page.getByText(config.route.ready, { exact: true }).first().waitFor();
         await page.waitForLoadState("networkidle");

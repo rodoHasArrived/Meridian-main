@@ -1,9 +1,10 @@
 import { render, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation, useNavigate } from "react-router-dom";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { axe } from "jest-axe";
 import { WorkspaceTaskWorkbench, type WorkspaceTaskItem } from "./workspace-task-workbench";
+import { backToWorkList, expectNarrowWorkbenchViewport, expectWorkbenchQueueShown, inspectSelection, installViewportMatchMedia } from "@/test/narrow-workbench";
 
 const items: WorkspaceTaskItem[] = [
   { id: "one", title: "First run", description: "Paper evidence", status: "Needs review", href: "/strategy/promotions?runId=one", actionLabel: "Review run", facts: [{ label: "Dataset", value: "FX" }] },
@@ -17,11 +18,16 @@ function LocationProbe() {
 function setup(url = "/strategy?companyId=a&unrelated=keep#evidence", rows = items) {
   return render(<MemoryRouter initialEntries={[url]}><WorkspaceTaskWorkbench title="Retained runs" description="Review retained evidence" items={rows} stateKey="run" /><LocationProbe /></MemoryRouter>);
 }
+// The test viewport is the constrained layout: queue and inspector are shown one at a time.
+beforeEach(() => { expectNarrowWorkbenchViewport(); installViewportMatchMedia(); });
 afterEach(() => vi.unstubAllGlobals());
 
 describe("WorkspaceTaskWorkbench", () => {
-  it("restores explicit selection and preserves scope, hash and destination parameters", () => {
+  it("restores explicit selection and preserves scope, hash and destination parameters", async () => {
+    const user = userEvent.setup();
     setup("/strategy?companyId=a&run=two&unrelated=keep#evidence");
+    expect(screen.getByRole("row", { name: "Second run" })).toHaveAttribute("aria-selected", "true");
+    await inspectSelection(user);
     const panel = screen.getByRole("region", { name: "Second run detail" });
     const link = within(panel).getByRole("link", { name: "Review run: Second run" });
     const url = new URL(link.getAttribute("href")!, "https://local.test");
@@ -36,31 +42,37 @@ describe("WorkspaceTaskWorkbench", () => {
     setup();
     await user.type(screen.getByRole("searchbox"), "absent");
     expect(screen.getByText("No work items match this search.")).toBeInTheDocument();
+    await inspectSelection(user);
     const panel = screen.getByRole("region", { name: "First run detail" });
     expect(within(panel).getByText("Selected item is outside the current results.")).toBeInTheDocument();
     await user.click(within(panel).getByRole("button", { name: "Clear search" }));
+    await backToWorkList(user);
     expect(screen.getByRole("row", { name: "First run" })).toHaveAttribute("aria-selected", "true");
     expect(screen.getByLabelText("Location")).toHaveTextContent("companyId=a&unrelated=keep#evidence");
   });
-  it("retains an unknown explicit selection instead of selecting a different record", () => {
+  it("retains an unknown explicit selection instead of selecting a different record", async () => {
+    const user = userEvent.setup();
     setup("/strategy?run=removed");
-    expect(screen.getByRole("region", { name: "Selection unavailable" })).toHaveTextContent("no longer in the loaded results");
     expect(screen.getByRole("row", { name: "First run" })).not.toHaveAttribute("aria-selected", "true");
+    await inspectSelection(user);
+    expect(screen.getByRole("region", { name: "Selection unavailable" })).toHaveTextContent("no longer in the loaded results");
   });
   it("restores discrete selections with browser history", async () => {
     const user = userEvent.setup();
     setup();
     await user.click(screen.getByRole("row", { name: "Second run" }));
+    await inspectSelection(user);
     expect(screen.getByRole("region", { name: "Second run detail" })).toBeInTheDocument();
+    // History navigation keeps the inspector open and swaps its subject.
     await user.click(screen.getByRole("button", { name: "Go back" }));
     expect(screen.getByRole("region", { name: "First run detail" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Go forward" }));
     expect(screen.getByRole("region", { name: "Second run detail" })).toBeInTheDocument();
   });
   it("switches a constrained workbench on Enter and restores queue focus on Escape", async () => {
-    vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true })));
     const user = userEvent.setup();
     setup();
+    expectWorkbenchQueueShown();
     const row = screen.getByRole("row", { name: "Second run" });
     row.focus();
     await user.keyboard("{Enter}");

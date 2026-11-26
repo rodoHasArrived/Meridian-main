@@ -131,6 +131,13 @@ export interface DenseDataTableProps<T> {
   tableId?: string;
   /** Retains a screen's minimum-width or layout contract inside the shared scroll area. */
   tableClassName?: string;
+  /**
+   * A totals row under the body, keyed by column id; columns without an entry render empty.
+   * Follows the visible columns, so hidden or dropped columns never misalign the totals.
+   */
+  footerCells?: Partial<Record<string, ReactNode>>;
+  /** Accessible name of the totals row, e.g. "Ledger totals". */
+  footerLabel?: string;
   caption?: string | null;
   sort?: DenseDataTableSortState | null;
   onToggleSort?: (columnId: string) => void;
@@ -188,6 +195,8 @@ function DenseDataTableComponent<T>({
   ariaLabel,
   tableId,
   tableClassName,
+  footerCells,
+  footerLabel = "Totals",
   caption,
   sort: controlledSort = null,
   onToggleSort,
@@ -244,6 +253,24 @@ function DenseDataTableComponent<T>({
   // The wrap is itself the scroll viewport (max-height + overflow), so windowing
   // reads and drives its scrollTop directly rather than nesting a second scroller.
   const wrapRef = useRef<HTMLDivElement | null>(null);
+  // A table wider than its card says so: the wrap marks the sides that hold more columns, and
+  // the stylesheet draws an edge shadow there (UX Phase C). Attributes, not state: scrolling
+  // never re-renders the rows.
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap) return undefined;
+    const update = () => {
+      wrap.dataset.overflowLeft = String(wrap.scrollLeft > 1);
+      wrap.dataset.overflowRight = String(wrap.scrollLeft + wrap.clientWidth < wrap.scrollWidth - 1);
+    };
+    update();
+    wrap.addEventListener("scroll", update, { passive: true });
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(update);
+    observer?.observe(wrap);
+    const table = wrap.querySelector("table");
+    if (table) observer?.observe(table);
+    return () => { wrap.removeEventListener("scroll", update); observer?.disconnect(); };
+  }, [rows, columns]);
   const scrollRafRef = useRef<number | null>(null);
   const typeaheadRef = useRef<{ buffer: string; at: number }>({ buffer: "", at: 0 });
 
@@ -407,6 +434,26 @@ function DenseDataTableComponent<T>({
     []
   );
 
+  // Columns clipped at the right edge used to give no sign that more figures sat beyond them.
+  // `data-overflow-end` drives a right-edge fade on the scroll viewport while any column is
+  // still out of view, and clears once the operator has scrolled to the last column.
+  const [overflowEnd, setOverflowEnd] = useState(false);
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const measure = () => setOverflowEnd(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+    measure();
+    el.addEventListener("scroll", measure, { passive: true });
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure);
+    observer?.observe(el);
+    const table = el.querySelector("table");
+    if (table) observer?.observe(table);
+    return () => {
+      el.removeEventListener("scroll", measure);
+      observer?.disconnect();
+    };
+  }, [columns.length, rows.length]);
+
   // Focus a row that was not mounted when navigation targeted it, once the
   // reveal-driven scroll has mounted it into the window.
   useEffect(() => {
@@ -533,6 +580,17 @@ function DenseDataTableComponent<T>({
           </>
         )}
       </tbody>
+      {footerCells && rows.length > 0 ? (
+        <tfoot className="dense-data-table-footer">
+          <tr aria-label={footerLabel}>
+            {columns.map((column) => (
+              <td key={column.id} className={columnCellClassName(column)}>
+                {footerCells[column.id] ?? null}
+              </td>
+            ))}
+          </tr>
+        </tfoot>
+      ) : null}
     </table>
   );
 
@@ -544,6 +602,7 @@ function DenseDataTableComponent<T>({
       tabIndex={!selectableRows ? 0 : undefined}
       data-empty={rows.length === 0 ? "true" : undefined}
       data-density={density}
+      data-overflow-end={overflowEnd ? "true" : undefined}
       ref={wrapRef}
       style={isVirtual ? { maxHeight: viewportHeight } : undefined}
       onScroll={isVirtual ? handleScroll : undefined}

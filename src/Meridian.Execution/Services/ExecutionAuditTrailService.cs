@@ -1,3 +1,4 @@
+using Meridian.Execution.Sdk;
 using System.Text.Json;
 using Meridian.Execution.Serialization;
 using Meridian.Storage.Archival;
@@ -47,18 +48,21 @@ public sealed record ExecutionAuditEntry(
     string? Reason = null,
     /// <summary>Explicit scope for the action (e.g. "AAPL:100" or "run:xyz/symbol:AAPL").</summary>
     string? Scope = null,
-    IReadOnlyDictionary<string, string>? Metadata = null);
+    IReadOnlyDictionary<string, string>? Metadata = null,
+    /// <summary>Structured incident evidence. Public audit feeds must use the account-scoped incident reader.</summary>
+    CancelAllIncidentUpdate? CancelAllEvidence = null);
 
 /// <summary>
 /// Durable execution audit trail backed by the platform WAL.
 /// The payload volume is low compared with market-data paths, so we bias toward
 /// explicit durability and traceability over raw throughput.
 /// </summary>
-public sealed class ExecutionAuditTrailService : IAsyncDisposable
+public sealed partial class ExecutionAuditTrailService : IRiskControlAuditWriter, IAsyncDisposable
 {
     private const string AuditRecordType = "ExecutionAudit";
 
     private readonly WriteAheadLog _wal;
+    private readonly WalSyncMode _syncMode;
     private readonly ILogger<ExecutionAuditTrailService> _logger;
     private readonly int _inMemoryRetention;
     private readonly TimeSpan _inMemoryRetentionWindow;
@@ -156,6 +160,9 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
     private readonly Lock _lock = new();
     private readonly Lock _initializationLock = new();
     private Task? _initializationTask;
+    // Incident reads replay the durable trail, rather than the bounded display cache. Serialize
+    // their snapshot with appends so a read cannot observe an unfinished WAL line.
+    private readonly SemaphoreSlim _persistenceGate = new(1, 1);
 
     public ExecutionAuditTrailService(
         ExecutionAuditTrailOptions? options,
@@ -163,6 +170,7 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
     {
         options ??= ExecutionAuditTrailOptions.Default;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _syncMode = options.SyncMode;
         _inMemoryRetention = Math.Max(100, options.InMemoryRetention);
         _inMemoryRetentionWindow = options.InMemoryRetentionWindow is { } window && window > TimeSpan.Zero
             ? window
@@ -257,6 +265,11 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
     /// <summary>
     /// Appends a new audit entry and returns the persisted record.
     /// </summary>
+    async Task IRiskControlAuditWriter.RecordCircuitBreakerSweepAsync(string outcome, string? actor,
+        string? message, string? reason, CancellationToken ct) =>
+        await RecordAsync("controls", "CircuitBreakerCancelAll", outcome, actor: actor,
+            message: message, reason: reason, ct: ct).ConfigureAwait(false);
+
     public async Task<ExecutionAuditEntry> RecordAsync(
         string category,
         string action,
@@ -300,16 +313,23 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
     public async Task RecordAsync(ExecutionAuditEntry entry, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(entry);
+        if (entry.CancelAllEvidence is not null && !SupportsDurableIncidentEvidence)
+            throw new InvalidOperationException("Cancel-all incident evidence requires EveryWrite execution audit durability.");
         await EnsureInitialisedAsync(ct).ConfigureAwait(false);
 
-        var json = JsonSerializer.Serialize(entry, ExecutionJsonContext.Default.ExecutionAuditEntry);
-        await _wal.AppendAsync(json, AuditRecordType, ct).ConfigureAwait(false);
-
-        lock (_lock)
+        await _persistenceGate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            InsertOrdered(entry);
-            TrimRetainedEntries();
+            var json = JsonSerializer.Serialize(entry, ExecutionJsonContext.Default.ExecutionAuditEntry);
+            await _wal.AppendAsync(json, AuditRecordType, ct).ConfigureAwait(false);
+
+            lock (_lock)
+            {
+                InsertOrdered(entry);
+                TrimRetainedEntries();
+            }
         }
+        finally { _persistenceGate.Release(); }
 
         _logger.LogInformation(
             "Execution audit {AuditId}: {Category}/{Action} {Outcome}",
@@ -318,6 +338,8 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
             entry.Action,
             entry.Outcome);
     }
+
+    internal bool SupportsDurableIncidentEvidence => _syncMode == WalSyncMode.EveryWrite;
 
     public async ValueTask DisposeAsync()
     {

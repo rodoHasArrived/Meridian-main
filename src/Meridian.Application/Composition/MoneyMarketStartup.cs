@@ -6,6 +6,10 @@ namespace Meridian.Application.Composition;
 
 internal static class MoneyMarketStartup
 {
+    // Retain the established migration sequence across every host.
+    internal static DatabaseStartupStep StartupStep { get; } =
+        new("money-market", ["banking"], EnsureDatabaseReadyAsync);
+
     internal const string ConnectionStringVariable = "MERIDIAN_MONEY_MARKET_CONNECTION_STRING";
     internal const string SchemaVariable = "MERIDIAN_MONEY_MARKET_SCHEMA";
     internal const string DefaultSchema = "money_market";

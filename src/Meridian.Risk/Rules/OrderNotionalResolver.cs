@@ -31,7 +31,7 @@ internal static class OrderNotionalResolver
         Func<string, OrderSide, decimal?>? sideAwarePriceLookup = null)
     {
         if (request.Metadata is not null &&
-            request.Metadata.TryGetValue(Meridian.Execution.Services.RiskEscalationQueueService.IncrementalNotionalMetadataKey, out var incrementalRaw) &&
+            request.Metadata.TryGetValue(Meridian.Execution.Services.RiskEscalationMetadata.IncrementalNotionalMetadataKey, out var incrementalRaw) &&
             decimal.TryParse(incrementalRaw, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var incremental) &&
             incremental >= 0m)
         {

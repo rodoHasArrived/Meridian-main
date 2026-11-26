@@ -186,9 +186,12 @@ public abstract class JsonFileSnapshotStore<TSnapshot> where TSnapshot : class
             // Share write/delete so a concurrent AtomicFileWriter replace from another process
             // (write-temp-then-rename) never causes a sharing violation on Windows; the reader
             // keeps the old file content, which is a consistent snapshot.
-            await using var stream = new FileStream(
+            var stream = new FileStream(
                 SnapshotPath, FileMode.Open, FileAccess.Read,
                 FileShare.ReadWrite | FileShare.Delete);
+            // ConfigureAwait on the disposal too: no await on this read path resumes on a
+            // captured context, so a startup caller that must block on it cannot deadlock.
+            await using var streamLease = stream.ConfigureAwait(false);
             snapshot = _typeInfo is not null
                 ? await JsonSerializer.DeserializeAsync(stream, _typeInfo, ct).ConfigureAwait(false)
                 : await JsonSerializer.DeserializeAsync<TSnapshot>(stream, _serializerOptions, ct).ConfigureAwait(false);

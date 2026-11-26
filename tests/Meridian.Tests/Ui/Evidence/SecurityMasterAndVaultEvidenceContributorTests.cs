@@ -49,12 +49,12 @@ public sealed class SecurityMasterAndVaultEvidenceContributorTests
         {
             "report-pack",
             sp => new ReportPackEvidenceContributor(sp),
-            new EvidenceSubjectDto(Guid.NewGuid().ToString("D"), "report-pack", "l", "w", null, "p")
+            new EvidenceSubjectDto("5f0c1b1e-6a3d-4c57-9d3e-2b8f4a7c9e01", "report-pack", "l", "w", null, "p")
         },
         {
             "report-pack-delivery",
             sp => new ReportPackDeliveryEvidenceContributor(sp),
-            new EvidenceSubjectDto(Guid.NewGuid().ToString("D"), "report-pack-delivery", "l", "w", null, "p")
+            new EvidenceSubjectDto("5f0c1b1e-6a3d-4c57-9d3e-2b8f4a7c9e02", "report-pack-delivery", "l", "w", null, "p")
         },
         {
             "provider-trust",
@@ -84,7 +84,7 @@ public sealed class SecurityMasterAndVaultEvidenceContributorTests
         {
             "journal-entry",
             sp => new JournalEntryEvidenceContributor(sp),
-            new EvidenceSubjectDto(Guid.NewGuid().ToString("D"), "journal-entry", "l", "w", null, "p")
+            new EvidenceSubjectDto("5f0c1b1e-6a3d-4c57-9d3e-2b8f4a7c9e03", "journal-entry", "l", "w", null, "p")
         }
     };
 

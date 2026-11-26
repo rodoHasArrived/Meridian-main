@@ -1,4 +1,5 @@
 using Meridian.Application.UI;
+using Meridian.Contracts.Api;
 using Meridian.DataIntegration.Monitoring;
 using Meridian.ProviderSdk;
 using Meridian.Storage.Services;
@@ -13,6 +14,8 @@ public interface IBestOfBreedProviderSelector
     Task<ProviderRouteResult> SelectAsync(ProviderRouteContext context, CancellationToken ct = default);
     Task<ProviderRouteResult> SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default)
         => throw new NotSupportedException("Tenant-scoped provider selection is unavailable.");
+    Task<ProviderRouteResult> PreviewForTenantAsync(ProviderRouteContext context, string tenantId, ProviderRoutingProposedConfig proposed, CancellationToken ct = default)
+        => throw new NotSupportedException("Proposed routing preview is unavailable.");
 }
 
 /// <summary>
@@ -52,10 +55,20 @@ public sealed class BestOfBreedProviderSelector : IBestOfBreedProviderSelector
         return SelectCoreAsync(context, tenantId, ct);
     }
 
-    private async Task<ProviderRouteResult> SelectCoreAsync(ProviderRouteContext context, string? tenantId, CancellationToken ct)
+    public Task<ProviderRouteResult> PreviewForTenantAsync(ProviderRouteContext context, string tenantId,
+        ProviderRoutingProposedConfig proposed, CancellationToken ct = default)
     {
-        var routeResult = tenantId is null ? await _routingService.RouteAsync(context, ct).ConfigureAwait(false) :
-            await _routingService.RouteForTenantAsync(context, tenantId, ct).ConfigureAwait(false);
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        return SelectCoreAsync(context, tenantId, ct, proposed);
+    }
+
+    private async Task<ProviderRouteResult> SelectCoreAsync(ProviderRouteContext context, string? tenantId, CancellationToken ct,
+        ProviderRoutingProposedConfig? proposed = null)
+    {
+        var routeResult = proposed is not null
+            ? await _routingService.PreviewForTenantAsync(context, tenantId!, proposed, ct).ConfigureAwait(false)
+            : tenantId is null ? await _routingService.RouteAsync(context, ct).ConfigureAwait(false) :
+                await _routingService.RouteForTenantAsync(context, tenantId, ct).ConfigureAwait(false);
         if (routeResult.Candidates.Count == 0)
             return routeResult;
 
@@ -113,7 +126,7 @@ public sealed class BestOfBreedProviderSelector : IBestOfBreedProviderSelector
             .ThenBy(static c => c.ConnectionId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        var selected = rankedCandidates.FirstOrDefault(IsSelectable);
+        var selected = rankedCandidates.FirstOrDefault(static candidate => ProviderRouteEligibility.IsSelectable(candidate));
         var gate = selected is null
             ? rankedCandidates.Select(static c => c.PolicyGate).FirstOrDefault(static g => !string.IsNullOrWhiteSpace(g)) ?? routeResult.PolicyGate
             : null;
@@ -122,19 +135,9 @@ public sealed class BestOfBreedProviderSelector : IBestOfBreedProviderSelector
         {
             SelectedDecision = selected,
             Candidates = rankedCandidates,
-            PolicyGate = gate
+            PolicyGate = gate,
+            RequiresManualApproval = selected is null && routeResult.RequiresManualApproval
         };
-    }
-
-    private static bool IsSelectable(ProviderRouteDecision decision)
-    {
-        if (IsPolicyGated(decision))
-            return false;
-
-        if (decision.SafetyMode is ProviderSafetyMode.NoAutomaticFailover or ProviderSafetyMode.SameInstitutionOnly && !decision.IsHealthy)
-            return false;
-
-        return decision.SafetyMode != ProviderSafetyMode.ManualApprovalRequired;
     }
 
     private static bool IsPolicyGated(ProviderRouteDecision decision)

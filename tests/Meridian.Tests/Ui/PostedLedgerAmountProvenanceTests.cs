@@ -9,6 +9,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
@@ -24,6 +25,78 @@ namespace Meridian.Tests.Ui;
 public sealed class PostedLedgerAmountProvenanceTests
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
+
+    [Theory]
+    [InlineData("verified", "complete")]
+    [InlineData("expired", "stale")]
+    [InlineData("missing", "review-required")]
+    public async Task AmountPassport_RetainsExactValueAndDistinguishesEvidenceStates(string condition, string status)
+    {
+        using var fixture = new Fixture();
+        if (condition != "missing")
+        {
+            fixture.SetReferences(await fixture.RetainAsync(fixture.SubjectId, "selected-source",
+                expiresAt: condition == "expired" ? DateTimeOffset.UtcNow.AddDays(-1) : null));
+        }
+        var identity = fixture.PassportIdentity;
+        var route = AmountPassportTestRoutes.PassportRoute(identity);
+        await using var app = await fixture.CreateAppAsync();
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync(route);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Headers.CacheControl!.NoStore.Should().BeTrue();
+        var passport = (await response.Content.ReadFromJsonAsync<AmountPassportDto>(Json))!;
+        passport.Reference.Identity.Should().Be(identity);
+        passport.ExactValue.Should().Be("125");
+        passport.Reference.Currency.Should().Be("USD");
+        passport.Status.Should().Be(status);
+        passport.Permissions.Should().Match<AmountPassportPermissionsDto>(value =>
+            value.View == "allowed" && value.Amend == "read-only" && value.PeriodStatus == "Open");
+        passport.Components.Select(value => value.Component).Should().BeEquivalentTo(
+            ["scope", "source", "calculation", "freshness", "evidence", "history", "permissions"]);
+        if (status == "complete")
+        {
+            passport.Gaps.Should().BeEmpty();
+            var evidence = passport.Evidence.Should().ContainSingle().Subject;
+            (await client.GetAsync(evidence.Href)).StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+        else
+        {
+            passport.Gaps.Should().NotBeEmpty();
+            passport.Evidence.Should().BeEmpty();
+            passport.Freshness.Status.Should().Be(status);
+        }
+    }
+
+    [Fact]
+    public async Task AmountPassport_RejectsForeignCompanyAndChangedDateBasisAndRevision()
+    {
+        using var fixture = new Fixture();
+        await using var app = await fixture.CreateAppAsync();
+        var client = app.GetTestClient();
+        var identity = fixture.PassportIdentity;
+        var mismatches = new[]
+        {
+            identity with { AsOf = "2026-10-02T00:00:00Z" },
+            identity with { Revision = "2" },
+            identity with { Scope = identity.Scope with { Basis = "Tax" } },
+            identity with { Scope = identity.Scope with { EntityId = "foreign-entity" } }
+        };
+        foreach (var mismatch in mismatches)
+        {
+            using var result = await client.GetAsync(AmountPassportTestRoutes.PassportRoute(mismatch));
+            result.StatusCode.Should().Be(HttpStatusCode.Conflict);
+            (await result.Content.ReadAsStringAsync()).Should().NotContain("125");
+        }
+        (await client.GetAsync(AmountPassportTestRoutes.PassportRoute(identity with
+        {
+            Scope = identity.Scope with { CompanyId = "other-company" }
+        }))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await using var denied = await fixture.CreateAppAsync(UserPermission.ViewTrades);
+        (await denied.GetTestClient().GetAsync(AmountPassportTestRoutes.PassportRoute(identity)))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 
     [Fact]
     public async Task RetainedIntakeAndReview_AmountPacketContainsOnlyItsSupportingEvidence()
@@ -323,6 +396,117 @@ public sealed class PostedLedgerAmountProvenanceTests
         (await client.GetAsync(route + "&periodId=" + fixture.Scope.PeriodId)).StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NativeAccountingAttestation_RemainsSeparateFromSourceReadiness(bool sourceReady)
+    {
+        using var fixture = new Fixture();
+        if (sourceReady)
+            fixture.SetReferences(await fixture.RetainAsync(fixture.SubjectId, "selected-source"));
+        fixture.Records[0] = AccountingPreparerAttestationTestData.Attach(fixture.Records[0], fixture.Scope);
+        var native = fixture.Records[0].Entry.Metadata.PreparerAttestation!;
+
+        var packet = await fixture.Service.GetPacketAsync(fixture.SubjectId, fixture.Scope);
+
+        var amount = packet!.LedgerAmount!;
+        amount.Status.Should().Be(sourceReady ? EvidenceStatusDto.Ready : EvidenceStatusDto.ReviewRequired);
+        var disclosure = amount.AccountingPreparerAttestations.Should().ContainSingle().Which;
+        disclosure.Classification.Should().Be(LedgerAmountApprovalClassification.PreparerAttestation);
+        disclosure.AttestationId.Should().Be(native.Receipt.AttestationId);
+        disclosure.SourceScope.Should().Be(fixture.Scope);
+        disclosure.JournalEntryIds.Should().Equal(fixture.Records[0].Entry.JournalEntryId);
+        disclosure.Actor.Should().Be("preparer");
+        disclosure.Disclosure.Should().Be(native.Receipt.Disclosure);
+        disclosure.ValidationIssues.Should().BeEmpty();
+        amount.OrdinaryRecordedApprovalSatisfied.Should().BeFalse();
+        LedgerAmountApprovalClassification.MayCountAsOrdinaryApproval(amount, true).Should().BeFalse();
+        JsonSerializer.Serialize(packet, Json).Should().NotContain("private-retained-operands")
+            .And.NotContain("entitlementSnapshotJson");
+    }
+
+    [Theory]
+    [InlineData("tenant")]
+    [InlineData("company")]
+    [InlineData("book")]
+    [InlineData("period")]
+    [InlineData("event")]
+    [InlineData("actor")]
+    [InlineData("amount")]
+    [InlineData("policy")]
+    [InlineData("fingerprint")]
+    [InlineData("roles")]
+    [InlineData("ordinary-approval")]
+    [InlineData("empty-attestation-id")]
+    public async Task InvalidNativeAccountingContext_IsVisibleUnknownWithoutForeignReceiptDetails(string condition)
+    {
+        using var fixture = new Fixture();
+        fixture.SetReferences(await fixture.RetainAsync(fixture.SubjectId, "selected-source"));
+        var record = AccountingPreparerAttestationTestData.Attach(fixture.Records[0], fixture.Scope);
+        var binding = record.Entry.Metadata.PreparerAttestation!;
+        var receipt = binding.Receipt;
+        binding = condition switch
+        {
+            "tenant" => binding with { TenantId = "foreign-private-tenant" },
+            "company" => binding with { CompanyId = "foreign-private-company" },
+            "book" => binding with { LedgerBookId = Guid.NewGuid() },
+            "period" => binding with { PeriodId = Guid.NewGuid() },
+            "event" => binding with { EventId = Guid.NewGuid() },
+            "actor" => binding with { Receipt = receipt with { AttestedBy = "foreign-private-actor" } },
+            "amount" => binding with { Receipt = receipt with { GrossImpactUsd = 126m } },
+            "policy" => binding with { Receipt = receipt with { PolicyVersion = "future-unknown-policy" } },
+            "fingerprint" => binding with { DraftedCandidateFingerprint = new string('f', 64) },
+            "roles" => binding with { Receipt = receipt with { AccountRoleBinding = receipt.AccountRoleBinding! with { DividendIncomeAccountName = "Other" } } },
+            "empty-attestation-id" => binding with { Receipt = receipt with { AttestationId = Guid.Empty } },
+            _ => binding
+        };
+        var tags = new Dictionary<string, string>(record.Entry.Metadata.Tags!);
+        if (condition == "ordinary-approval")
+            tags["approvalId"] = Guid.NewGuid().ToString("D");
+        fixture.Records[0] = AccountingPreparerAttestationTestData.WithMetadata(record,
+            record.Entry.Metadata with { PreparerAttestation = binding, Tags = tags });
+
+        var amount = (await fixture.Service.GetPacketAsync(fixture.SubjectId, fixture.Scope))!.LedgerAmount!;
+
+        // Source proof retains its existing meaning; an invalid decision cannot upgrade it or ordinary approval.
+        amount.Status.Should().Be(EvidenceStatusDto.Ready);
+        var disclosure = amount.AccountingPreparerAttestations.Should().ContainSingle().Which;
+        disclosure.Classification.Should().Be(LedgerAmountApprovalClassification.Unknown);
+        disclosure.ValidationIssues.Should().NotBeEmpty();
+        disclosure.AttestationId.Should().BeNull();
+        disclosure.Actor.Should().BeNull();
+        amount.OrdinaryRecordedApprovalSatisfied.Should().BeFalse();
+        JsonSerializer.Serialize(amount, Json).Should().NotContain("foreign-private");
+    }
+
+    [Fact]
+    public async Task TagOnlyPreparerClaim_CannotBecomeNativeAttestationOrOrdinaryApproval()
+    {
+        using var fixture = new Fixture();
+        var record = fixture.Records[0];
+        fixture.Records[0] = AccountingPreparerAttestationTestData.WithMetadata(record,
+            record.Entry.Metadata with { Tags = new Dictionary<string, string> { ["decisionKind"] = "PreparerAttestation" } });
+
+        var amount = (await fixture.Service.GetPacketAsync(fixture.SubjectId, fixture.Scope))!.LedgerAmount!;
+
+        amount.AccountingPreparerAttestations.Should().ContainSingle().Which.Classification
+            .Should().Be(LedgerAmountApprovalClassification.Unknown);
+        LedgerAmountApprovalClassification.MayCountAsOrdinaryApproval(amount, true).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task LegacyAmount_DoesNotInventApprovalOrChangeSerializedShape()
+    {
+        using var fixture = new Fixture();
+        var amount = (await fixture.Service.GetPacketAsync(fixture.SubjectId, fixture.Scope))!.LedgerAmount!;
+
+        amount.AccountingPreparerAttestations.Should().BeNull();
+        amount.OrdinaryRecordedApprovalSatisfied.Should().BeNull();
+        JsonSerializer.Serialize(amount, Json).Should().NotContain("accountingPreparerAttestations")
+            .And.NotContain("ordinaryRecordedApprovalSatisfied");
+        LedgerAmountApprovalClassification.MayCountAsOrdinaryApproval(amount, false).Should().BeFalse();
+    }
+
     private sealed class Fixture : IDisposable
     {
         private readonly string _root = Path.Combine(Path.GetTempPath(), "ledger-amount-proof-" + Guid.NewGuid().ToString("N"));
@@ -338,6 +522,9 @@ public sealed class PostedLedgerAmountProvenanceTests
         public string SubjectId => $"{_journalId:D}:{_debitId:D}:debit";
         public string CreditSubjectId => $"{_journalId:D}:{_creditId:D}:credit";
         public string PacketRoute => $"/api/workstation/evidence/subjects/ledger-amount/{SubjectId}/packet?fundProfileId={Scope.FundProfileId}&ledgerBookId={Scope.LedgerBookId:D}&periodId={Scope.PeriodId:D}";
+        public AmountPassportIdentityDto PassportIdentity => new("ledger-amount", SubjectId,
+            new(Scope.TenantId, Scope.CompanyId, "Primary", Scope.FundProfileId, Scope.LedgerBookId, Scope.PeriodId),
+            Records[0].Entry.Timestamp.ToUniversalTime().ToString("O"), "1");
         public FileEvidenceArtifactStore Artifacts { get; }
         public PostedLedgerAmountProvenanceService Service { get; }
         public string? LastManifestPath { get; private set; }
@@ -361,6 +548,9 @@ public sealed class PostedLedgerAmountProvenanceTests
             _journals.Setup(store => store.QueryAsync(It.Is<LedgerJournalEntryQuery>(query =>
                     query.LedgerBookId == Scope.LedgerBookId && query.PeriodId == Scope.PeriodId), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(() => Records);
+            _journals.Setup(store => store.QueryAsync(It.Is<LedgerJournalEntryQuery>(query =>
+                    query.LedgerBookId == Scope.LedgerBookId && query.SourceJournalEntryId == _journalId), It.IsAny<CancellationToken>()))
+                .ReturnsAsync([]);
             Service = new PostedLedgerAmountProvenanceService(_journals.Object, _books.Object, _tenancy.Object, Artifacts);
             SetReferences();
         }

@@ -11,18 +11,56 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Core
 
+Subscription import contracts include an explicit broker-account selection and durable import
+run identity, ownership/book scope, immutable source hash, checkpoints and terminal status.
+Missing broker quantities remain invalid source data rather than implicit zero holdings.
+
+`Config/BackfillProviderCatalog.cs` owns secret-free historical-provider tier presets, conservative
+request ceilings and pure option edits. Provider records retain the declared tier; editor updates
+preserve stored credentials and archive adjustment semantics. Unknown providers (including IB and
+synthetic provenance controls), unknown tiers and rate increases beyond the declared tier cap refuse.
+Catalog options retain each configuration record's defaults. Alpha Vantage runtime construction
+still requires an explicitly enabled provider configuration and a resolved credential; a catalog
+preset alone does not activate it.
+
+`ProviderSearchException` and `ProviderSearchFailure` identify unavailable credentials, transport failures, malformed or
+incomplete responses and throttling for explicit provider lookups. A successful empty search is
+represented by its result rather than a failure category.
+`AppConfig.ProviderQuotas` contains restart-required account quota declarations, without secrets.
+`AppConfig.DataQuality.CrossProvider` (`CrossProviderTolerancePolicy`) holds bounded cross-provider
+tolerances (price/quote/close 0-5%, volume 0-50%, volume `Alert`/`Informational`/`Off`, backfill bars
+to compare, per-asset-class overrides) plus before/after audit; defaults reproduce the historical
+hard-coded thresholds. `FailoverRuleReferences` rejects failover rules naming unconfigured source IDs.
+`ProviderValidationProfile` resolves a canonical provider override first, then a legacy alias, then
+the deployment default. Profile audit entries retain before/after values and identify resets that
+remove an override.
+Twelve Data separates per-minute/daily credits, explicit fundamentals entitlement and explicit
+`NoDailyLimit`; Alpha Vantage declares per-minute/daily request capacity and `NoDailyLimit`.
+The explicit boolean survives configuration and desktop DTO round trips; an omitted nullable cap
+would otherwise be indistinguishable from its default. Infrastructure owns vendor charging and resets.
+The quota editor uses the shared Basic/Grow and Free/Premium 75 tier presets. Paid presets require
+a finite Meridian daily cap up to the minute ceiling multiplied by 1,440. The editor saves physical
+request pacing with the quota and preserves existing entitlements. The shared request budget adopts
+both limits at host startup. Legacy config can still declare custom quotas and `NoDailyLimit`.
+Use `ProviderQuotas.AlphaVantage` for the daily request cap. FRED's adapter owns its pacing.
+
 `Meridian.Core.Currency.CurrencyMinorUnits.GetPrecision` delegates to `Meridian.Contracts.Ledger.CurrencyMinorUnits`, so the ISO 4217 minor-unit table is maintained in one place.
 
 `ProviderConnectionsConfig.RuntimeCredentials` holds optional explicit host defaults keyed by
-canonical provider and retained tenant/connection identity. It is additive and omitted when absent;
+canonical provider and retained tenant/connection/account/environment identity, with an opaque selection ID.
+Application refuses historical unpinned selections until an explicit rebind. It is omitted when absent;
 Application owns validation and resolution. It contains no secrets and confers no verification.
 `OwnershipRequiredProviders` retains the boundary when an owned connection is removed, so even
 deletion before host selection cannot implicitly reactivate provider-wide fallback.
+Schema generation preserves these valid input fields even when conditional serialization omits
+their absent values; compatibility aliases marked always ignored remain excluded.
 
 `IProviderCredentialStore.ReadCredentialRecordAsync` distinguishes a selected empty credential record from proven absence. Compatibility stores conservatively retain an unknown/empty selection; module setup cannot combine its missing fields with ambient credentials.
 
 
 `IO/IAtomicFileWriter.cs` exposes only the atomic operations needed by Infrastructure consumers.
+It offers both directory syncs: best-effort `SyncDirectoryAsync` after a committed step, and
+`SyncDirectoryOrThrowAsync` before an acknowledgement or the removal of the only other copy.
 The concrete durable writer stays in Storage and is supplied through application/host composition.
 `IO/ExclusiveFileLock.cs` is the shared cross-process lock-file primitive: the open
 `FileShare.None` handle is the lock, the file is never deleted, only sharing/lock contention is
@@ -60,6 +98,10 @@ This layer provides low-level reusable infrastructure. It must stay independent 
 - `Diagnostics/` - low-level runtime redaction helpers used by diagnostic bundles, endpoints, and
   shutdown flows without depending on Application services.
 - `Exceptions/` - base exception and error types published under `Meridian.Core.Exceptions`.
+- `Net/PublicNetworkAddress.cs` - the shared classifier for outbound requests to operator- or
+  provider-supplied destinations. It reports loopback, private, carrier-grade NAT, link-local,
+  unique-local, multicast and reserved addresses as blocked; the provider integration transport and
+  the execution-alert webhook both use it.
 - `Serialization/` - source-generated JSON context support published under
   `Meridian.Core.Serialization`.
 - `Pipeline/`, `Scheduling/`, `Services/`, and `Monitoring/` - reusable runtime primitives,
@@ -98,8 +140,9 @@ validation pipeline stages, credential placeholder detection, default config-pat
 environment-variable override handling, configuration-template generation, and debounced config
 file hot-reload watching for Application commands, configuration services, WPF setup flows, and
 shared endpoints.
-Schema generation excludes members marked `JsonIgnore`: those members may remain as in-process
-compatibility aliases, but they are not accepted configuration inputs.
+Schema generation excludes members with `JsonIgnoreCondition.Always`: those members may remain as
+in-process compatibility aliases. Conditional write omission retains the member's input schema,
+including nullable ownership bindings and account quota declarations.
 `DataSourceKindConverter` resolves the ProviderSdk alias map before enum validation, so `ibkr` and
 `interactive-brokers` load as `DataSourceKind.IB`. Unknown providers, unsupported transport modes,
 and undefined numeric values remain configuration errors.
@@ -140,7 +183,9 @@ See the [Security Master extensibility review](../../docs/architecture/security-
 
 `EventPipelinePolicy.CreateChannel` accepts an item-dropped callback so the owning pipeline can count
 evictions. `ConfigJsonSchemaGenerator` declares the sample configuration's `Settings`, `Serilog` and
-`$schema` keys.
+`$schema` keys. It emits string-keyed mutable and read-only dictionaries as JSON objects
+with typed `additionalProperties`, before considering enumerable collection shapes. Nullable
+interface-backed maps accept null, matching serialized provider validation profiles and rollout modes.
 
 ## Diagrams
 
@@ -180,5 +225,5 @@ Do not introduce references from Core to Application, Infrastructure, Domain orc
 ## Related docs
 
 - `docs/architecture/module-map.md`
-- `docs/developer/build-test-run.md`
+- `docs/start/README.md`
 - `docs/source/generated/source-module-index.md`

@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Core.Exceptions;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -36,14 +37,18 @@ public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataPro
     private readonly string _database;
 
     public override string Name => "nasdaq";
+    internal bool IsWikiDataset => string.Equals(_database, "WIKI", StringComparison.Ordinal);
+    internal bool UsesAnonymousFeed => string.IsNullOrWhiteSpace(_apiKey);
     public override string DisplayName => "Nasdaq Data Link (Quandl)";
     public override string Description => "Alternative and financial datasets from Nasdaq Data Link (formerly Quandl).";
     protected override string HttpClientName => HttpClientNames.NasdaqDataLinkHistorical;
 
-    public override int Priority => 30;
-    public override TimeSpan RateLimitDelay => TimeSpan.FromMilliseconds(100);
-    public override int MaxRequestsPerWindow => 50;
-    public override TimeSpan RateLimitWindow => TimeSpan.FromDays(1);
+    public override int Priority => RuntimeOptions?.Priority ?? Meridian.Core.Config.BackfillProviderCatalog.NasdaqPriority;
+    public override TimeSpan RateLimitDelay => RuntimeOptions?.Requests is { } requests
+        ? TimeSpan.FromTicks((RuntimeOptions.Window ?? RateLimitWindow).Ticks / requests)
+        : TimeSpan.FromMilliseconds(100);
+    public override int MaxRequestsPerWindow => RuntimeOptions?.Requests ?? 50;
+    public override TimeSpan RateLimitWindow => RuntimeOptions?.Window ?? TimeSpan.FromDays(1);
 
     /// <summary>
     /// Nasdaq Data Link supports adjusted bars with corporate actions.
@@ -61,8 +66,9 @@ public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataPro
         string? apiKey = null,
         string database = "WIKI",
         HttpClient? httpClient = null,
-        ILogger? log = null)
-        : base(httpClient, log)
+        ILogger? log = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
+        : base(httpClient, log, runtimeOptions: runtimeOptions)
     {
         _apiKey = apiKey;
         _database = database;
@@ -84,7 +90,7 @@ public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataPro
             if (!string.IsNullOrEmpty(_apiKey))
                 url += $"?api_key={_apiKey}";
 
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, "AAPL", "availability", ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
         catch
@@ -225,23 +231,37 @@ public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataPro
             if (!TryGetValue(row, columns, "Date", out string? dateStr) || !ProviderDateParsing.TryParseProviderDate(dateStr, out var date))
                 return null;
 
-            var open = GetDecimalValue(row, columns, "Open") ?? GetDecimalValue(row, columns, "Adj. Open");
-            var high = GetDecimalValue(row, columns, "High") ?? GetDecimalValue(row, columns, "Adj. High");
-            var low = GetDecimalValue(row, columns, "Low") ?? GetDecimalValue(row, columns, "Adj. Low");
-            var close = GetDecimalValue(row, columns, "Close") ?? GetDecimalValue(row, columns, "Adj. Close");
-            var volume = GetLongValue(row, columns, "Volume") ?? GetLongValue(row, columns, "Adj. Volume");
-
-            if (open is null || high is null || low is null || close is null)
-                return null;
-
-            if (!IsValidOhlc(open.Value, high.Value, low.Value, close.Value))
-                return null;
-
+            var open = GetDecimalValue(row, columns, "Open");
+            var high = GetDecimalValue(row, columns, "High");
+            var low = GetDecimalValue(row, columns, "Low");
+            var close = GetDecimalValue(row, columns, "Close");
+            var volume = GetLongValue(row, columns, "Volume");
             var adjOpen = GetDecimalValue(row, columns, "Adj. Open");
             var adjHigh = GetDecimalValue(row, columns, "Adj. High");
             var adjLow = GetDecimalValue(row, columns, "Adj. Low");
             var adjClose = GetDecimalValue(row, columns, "Adj. Close");
             var adjVolume = GetLongValue(row, columns, "Adj. Volume");
+
+            if (open is null || high is null || low is null || close is null)
+            {
+                if (adjOpen is null || adjHigh is null || adjLow is null || adjClose is null)
+                {
+                    throw new DataProviderException(
+                        $"Nasdaq Data Link returned no complete OHLC price set for {symbol} on {date}.",
+                        provider: Name, symbol: symbol);
+                }
+
+                // Select the complete alternative set atomically. Combining individual
+                // ordinary and adjusted fields can fabricate a candle in mixed bases.
+                open = adjOpen;
+                high = adjHigh;
+                low = adjLow;
+                close = adjClose;
+                volume = adjVolume;
+            }
+
+            if (!IsValidOhlc(open.Value, high.Value, low.Value, close.Value))
+                return null;
 
             var dividend = GetDecimalValue(row, columns, "Ex-Dividend");
             var splitRatio = GetDecimalValue(row, columns, "Split Ratio");
@@ -262,8 +282,16 @@ public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataPro
                 AdjustedClose: adjClose,
                 AdjustedVolume: adjVolume,
                 SplitFactor: splitRatio != 1m ? splitRatio : null,
-                DividendAmount: dividend > 0 ? dividend : null
+                DividendAmount: dividend > 0 ? dividend : null,
+                // This adapter accepts arbitrary databases. Column names alone cannot
+                // establish the dataset's adjustment methodology or raw availability.
+                PriceBasis: HistoricalPriceBasis.Unknown,
+                AdjustedPriceBasis: HistoricalPriceBasis.Unknown
             );
+        }
+        catch (DataProviderException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

@@ -50,7 +50,14 @@ public sealed class ConfigService : ConfigServiceBase
     private static readonly Lazy<ConfigService> _instance = new(() => new ConfigService());
 
     private bool _initialized;
+    private string? _configuredDataRoot;
     private Exception? _lastLoadError;
+    private bool _hasUnverifiedLocalChanges;
+
+    public event EventHandler? ConfigurationSaved;
+
+    /// <summary>Local file writes have no authoritative host activation receipt.</summary>
+    public bool HasUnverifiedLocalChanges => Volatile.Read(ref _hasUnverifiedLocalChanges);
 
     public static ConfigService Instance => _instance.Value;
 
@@ -63,14 +70,28 @@ public sealed class ConfigService : ConfigServiceBase
     public string ResolveDataRoot(AppConfigDto? config = null)
         => MeridianPathDefaults.ResolveDataRoot(ConfigPath, config?.DataRoot);
 
-    private ConfigService()
+    internal ConfigService()
     {
     }
 
-    public Task InitializeAsync()
+    /// <summary>
+    /// The asynchronously loaded root used by synchronous DI factories. Startup primes this
+    /// before constructing the host, so resolving a desktop service never reads configuration.
+    /// </summary>
+    public string ConfiguredDataRoot => Volatile.Read(ref _configuredDataRoot)
+        ?? throw new InvalidOperationException("Initialize desktop configuration asynchronously before resolving data services.");
+
+    public async Task InitializeAsync()
     {
+        await FirstRunService.Instance.EnsureConfigurationExistsAsync().ConfigureAwait(false);
+        await LoadConfigCoreAsync(CancellationToken.None).ConfigureAwait(false);
         _initialized = true;
-        return Task.CompletedTask;
+    }
+
+    private AppConfigDto RememberDataRoot(AppConfigDto config)
+    {
+        Volatile.Write(ref _configuredDataRoot, ResolveDataRoot(config));
+        return config;
     }
 
     /// <summary>
@@ -303,22 +324,21 @@ public sealed class ConfigService : ConfigServiceBase
     {
         try
         {
-            await FirstRunService.Instance.EnsureConfigurationExistsAsync().ConfigureAwait(false);
             if (!File.Exists(ConfigPath))
             {
-                return new AppConfigDto();
+                return RememberDataRoot(new AppConfigDto());
             }
 
             var json = await File.ReadAllTextAsync(ConfigPath, ct).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(json))
             {
-                return new AppConfigDto();
+                return RememberDataRoot(new AppConfigDto());
             }
 
             var config = JsonSerializer.Deserialize<AppConfigDto>(json, SharedJsonOptions) ?? new AppConfigDto();
             config.DataRoot = MeridianPathDefaults.ResolveConfiguredDataRootFromJson(json, config.DataRoot);
             _lastLoadError = null;
-            return config;
+            return RememberDataRoot(config);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -328,7 +348,7 @@ public sealed class ConfigService : ConfigServiceBase
         {
             _lastLoadError = ex;
             LogError("Failed to load configuration", ex);
-            return new AppConfigDto();
+            return RememberDataRoot(new AppConfigDto());
         }
     }
 
@@ -347,7 +367,15 @@ public sealed class ConfigService : ConfigServiceBase
                 : config.DataRoot;
 
             var json = JsonSerializer.Serialize(config, SharedJsonOptions);
+            // ConfigServiceBase holds the shared cross-process write lease here. Ordinary
+            // saves must never replace malformed source with LoadConfigCoreAsync defaults.
+            var existingJson = await File.ReadAllTextAsync(ConfigPath, ct).ConfigureAwait(false);
+            Meridian.Ui.Shared.Services.UiConfigurationSaveGuard.ValidateWholeDocumentJson(existingJson, json);
             await FirstRunService.Instance.PersistConfigurationAsync(json, ct).ConfigureAwait(false);
+            RememberDataRoot(config);
+            Volatile.Write(ref _hasUnverifiedLocalChanges, true);
+            try { ConfigurationSaved?.Invoke(this, EventArgs.Empty); }
+            catch (Exception observerError) { LogError("Configuration status refresh failed after a successful save", observerError); }
         }
         catch (Exception ex)
         {

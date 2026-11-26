@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
-import { useDataViewModel, type DataOperationsRouteFocusCardState } from "@/screens/data-screen.view-model";
+import { selectProvidersInUse, summarizeProviderRows, useDataViewModel, type DataOperationsRouteFocusCardState } from "@/screens/data-screen.view-model";
 import { eyebrowClassName } from "@/design-system/label-case";
 import { pluralizeCount } from "@/lib/format";
 import { DesignSystemStatus, worstDesignSystemSeverity } from "@/design-system/status";
@@ -22,18 +22,24 @@ export function DataOverviewHub({
   providerEvidence?: ProviderConnectionRow[];
   connections?: ProviderRoutingConnection[];
 }) {
+  // Health cards, the posture chip and the "Providers healthy" figure above all read the providers
+  // in use, so the figure counts these cards. Catalog entries that are only available to set up
+  // stay on the Providers page.
+  const providersInUse = selectProvidersInUse(vm.providerSection.rows);
+  const availableToSetUp = vm.providerSection.rows.length - providersInUse.length;
+  const providerPosture = summarizeProviderRows(providersInUse);
   const routes = [
     {
       id: "providers",
       title: "Provider connections",
       description: "Review credentials, connection health, routing trust, and recovery actions.",
       href: WORKSTATION_ROUTE_CATALOG.dataProviders,
-      status: `${vm.providerSection.rows.length} configured`
+      status: `${providersInUse.length} in use${availableToSetUp > 0 ? ` · ${availableToSetUp} to set up` : ""}`
     },
     {
       id: "import",
       title: "Import retained files",
-      description: "Choose a governed template and preview a retained source before validation handoff.",
+      description: "Choose a template and preview a retained source before sending it to validation.",
       href: WORKSTATION_ROUTE_CATALOG.dataImport,
       status: pluralizeCount(vm.uploadPanelState.templateOptions.length, "template")
     },
@@ -47,7 +53,7 @@ export function DataOverviewHub({
     {
       id: "exports",
       title: "Export packages",
-      description: "Review retained export records and downstream handoff posture.",
+      description: "Review retained export records and their downstream delivery status.",
       href: WORKSTATION_ROUTE_CATALOG.dataExports,
       status: pluralizeCount(vm.exportSection.rows.length, "package")
     },
@@ -63,7 +69,7 @@ export function DataOverviewHub({
       title: "Evidence workbench",
       description: "Inspect retained documents, request lists, lineage, and completeness.",
       href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
-      status: "Governed"
+      status: "Controlled"
     }
   ];
 
@@ -86,20 +92,20 @@ export function DataOverviewHub({
       <div role="status" className="workspace-task-health">
         <strong>Data operations</strong>
         <DesignSystemStatus status={worstDesignSystemSeverity([
-          ...vm.providerSection.rows.map((provider) => provider.status),
+          ...providersInUse.map((provider) => provider.status),
           degradedPanelCount > 0 ? "action" : "ready",
-          vm.providerSection.rows.length === 0 ? "review" : "ready"
+          providersInUse.length === 0 ? "review" : "ready"
         ])}>
-          {vm.providerSection.statusLabel}{degradedPanelCount > 0 ? ` · ${degradedPanelCount} diagnostics unavailable` : ""}
+          {providerPosture.statusLabel}{degradedPanelCount > 0 ? ` · ${degradedPanelCount} diagnostics unavailable` : ""}
         </DesignSystemStatus>
       </div>
       <section aria-label="Provider health overview" className="space-y-3">
         <h2 className="text-sm font-semibold">Provider health</h2>
-        {vm.providerSection.rows.length === 0 ? (
+        {providersInUse.length === 0 ? (
           <p role="status" className="text-sm text-muted-foreground">No provider evidence is loaded. <Link to={WORKSTATION_ROUTE_CATALOG.dataProviders} className="underline underline-offset-4">Review provider connections</Link>.</p>
         ) : (
           <div className="grid gap-3 lg:grid-cols-2">
-            {vm.providerSection.rows.map((provider) => (
+            {providersInUse.map((provider) => (
               <article key={provider.rowId} aria-label={`${provider.provider} health`} className="min-w-0 border border-border bg-card p-4">
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-sm font-medium">{provider.provider}</h3>
@@ -120,7 +126,7 @@ export function DataOverviewHub({
       </section>
       <ProviderFreshnessChart providers={providerEvidence} />
       <ProviderVerificationTimeline connections={connections} />
-      <WorkspaceTaskWorkbench title="Historical repair jobs" description="Inspect loaded backfill work and its scope before opening the recovery workstream." items={jobs} stateKey="dataJob" emptyText="No historical repair jobs are loaded. Import data or open Backfill queue to review available work." />
+      <WorkspaceTaskWorkbench title="Historical repair jobs" description="Inspect loaded backfill work and its scope before opening the recovery queue." items={jobs} stateKey="dataJob" emptyText="No historical repair jobs are loaded. Import data or open Backfill queue to review available work." />
       <details className="workspace-task-disclosure">
         <summary>Data tools and connections</summary>
         <WorkspaceTaskWorkbench title="Data tasks" description="File intake, providers, exports, and read-only discovery." items={routes.map((route) => ({ ...route, actionLabel: `Open ${route.title}` }))} stateKey="dataTask" />

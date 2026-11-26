@@ -2394,7 +2394,39 @@ public sealed partial class AccountingSystemIntegrationServiceTests
         summary.PostingDisabledReason.Should().Contain("disabled");
         summary.Rows.Should().NotBeEmpty();
         summary.Rows.Should().OnlyContain(row => row.Status == AccountingSystemReconciliationStatusDto.MissingMeridian);
+        summary.Rows.Should().OnlyContain(row => row.ExternalCurrency == "USD" && row.MeridianCurrency == null);
         summary.BreakCount.Should().Be(summary.Rows.Count);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task ReconcileLatestAsync_MissingSourceCurrencies_ExposesNullWithoutPromotingLegacyUsd(string? currency)
+    {
+        var fixture = CreateMatchedQuickBooksFixtureLedgerStore();
+        var book = (await fixture.GetLedgerBookAsync(ExternalGlLedgerBookId))! with { BaseCurrency = currency! };
+        var period = (await fixture.ListPeriodsAsync(ExternalGlLedgerBookId, fundProfileId: "default-fund")).Single();
+        var records = await fixture.GetByPeriodAsync(period.PeriodId);
+        var ledger = new StaticLedgerJournalStore(book, period, records);
+        var provider = new TransformingQuickBooksAccountingProvider(detail => detail with
+        {
+            ChartAccounts = detail.ChartAccounts.Select(account => account with { Currency = currency! }).ToArray(),
+            TrialBalance = detail.TrialBalance.Select(row => row with { Currency = currency! }).ToArray()
+        });
+        var service = new AccountingSystemIntegrationService([provider], ledger);
+        await service.ImportAsync(new AccountingSystemImportRequestDto(
+            "quickbooks-fixture", "default-fund", ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1), PeriodEnd: new DateOnly(2026, 1, 31)));
+
+        var summary = await service.ReconcileLatestAsync("quickbooks-fixture", "default-fund", ExternalGlLedgerBookId);
+
+        summary.Rows.Should().NotBeEmpty();
+        summary.Rows.Should().OnlyContain(row => row.ExternalCurrency == null && row.MeridianCurrency == null);
+        var cash = summary.Rows.Single(row => row.AccountCode == "Assets:Cash:Operating");
+        cash.ExternalDebitExact.Should().Be("248750");
+        cash.MeridianDebitExact.Should().Be("248750");
+        cash.Currency.Should().Be(currency ?? "USD");
+        summary.PostingEnabled.Should().BeFalse();
     }
 
     [Fact]
@@ -2592,7 +2624,10 @@ public sealed partial class AccountingSystemIntegrationServiceTests
         summary.Rows.Should().ContainSingle(row =>
             row.AccountCode == "Assets:Receivable:Subscription" &&
             row.Status == AccountingSystemReconciliationStatusDto.MissingExternal &&
+            row.ExternalCurrency == null && row.MeridianCurrency == "USD" &&
             row.MeridianEvidenceReferences.Contains($"ledger-entry:{receivableLineId:D}"));
+        summary.Rows.Where(row => row.Status == AccountingSystemReconciliationStatusDto.MissingMeridian)
+            .Should().OnlyContain(row => row.ExternalCurrency == "USD" && row.MeridianCurrency == null);
         summary.Rows.Count(row => row.Status == AccountingSystemReconciliationStatusDto.MissingMeridian).Should().Be(2);
         summary.Rows.Count(row => row.Status == AccountingSystemReconciliationStatusDto.Variance).Should().Be(2);
 
@@ -6348,7 +6383,8 @@ public sealed partial class AccountingSystemIntegrationServiceTests
             new QuickBooksFixtureAccountingProvider(),
             new XeroFixtureAccountingProvider(),
             new NetSuiteFixtureAccountingProvider()
-        }.Concat(additionalProviders), ledgerJournalStore);
+        }.Concat(additionalProviders), ledgerJournalStore,
+            ledgerJournalStore is null ? null : new ActualLedgerFixtureSchedule(ledgerJournalStore));
 
     private static LedgerDimensionSetDto FullProductionDimensions(Guid ledgerBookId)
         => new(
@@ -7125,6 +7161,16 @@ public sealed partial class AccountingSystemIntegrationServiceTests
         LedgerAccountingPeriod period,
         IReadOnlyList<LedgerJournalEntryRecord> records) : ILedgerJournalStore
     {
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(LedgerJournalEntryQuery query, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
+                query.LedgerBookId is { } id && id != book.LedgerBookId ? [] : records
+                    .Where(record => query.JournalEntryId is null || record.Entry.JournalEntryId == query.JournalEntryId)
+                    .Where(record => query.EffectiveTo is null || DateOnly.FromDateTime(record.Entry.Timestamp.UtcDateTime) <= query.EffectiveTo)
+                    .ToArray());
+        }
+
         public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
             => throw new NotSupportedException("Static ledger journal store is read-only.");
 
@@ -7253,6 +7299,22 @@ public sealed partial class AccountingSystemIntegrationServiceTests
             SavedRefreshToken = refreshToken;
             return Task.CompletedTask;
         }
+
+        public async Task<string> SaveRefreshTokenAsync(string? refreshToken, QuickBooksOnlineConnection expectedConnection, CancellationToken ct = default)
+        {
+            if (!string.IsNullOrWhiteSpace(refreshToken))
+                await SaveRefreshTokenAsync(refreshToken, ct);
+            return "fake-qbo-generation";
+        }
+
+        public Task RecordConnectionAsync(
+            bool success,
+            string? externalCompanyId,
+            string? error,
+            string? expectedCredentialGeneration,
+            DateTimeOffset? occurredAtUtc = null,
+            CancellationToken ct = default)
+            => RecordConnectionAsync(success, externalCompanyId, error, occurredAtUtc, ct);
 
         public Task RecordConnectionAsync(
             bool success,

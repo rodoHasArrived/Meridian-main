@@ -53,7 +53,7 @@ function inject(): void {
   font-family:var(--font-data,monospace);font-size:12px;}
 .tlt thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;z-index:1;
   background:var(--bg-medium,#EBE8E1);
-  font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;
+  font-family:var(--font-body,inherit);font-size:0.75rem;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;color:var(--text-muted,#606870);
   border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#E2DED5);}
 .tlt thead th:last-child{border-right:none;}
@@ -67,18 +67,18 @@ function inject(): void {
 .tlt tbody tr:hover{background:var(--bg-hover,#EDEFF0);}
 .tlt__date{color:var(--text-secondary,#535C65);}
 .tlt__sym{font-weight:600;color:var(--text-primary,#20252B);}
-.tlt__days{color:var(--text-muted,#606870);font-size:11px;}
+.tlt__days{color:var(--text-muted,#606870);font-size:0.75rem;}
 .tlt__hp{display:inline-flex;align-items:center;gap:5px;border:1px solid;border-radius:var(--radius-chip,2px);
-  padding:2px 7px;font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;
+  padding:2px 7px;font-family:var(--font-body,inherit);font-size:0.75rem;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;white-space:nowrap;line-height:1.3;}
 .tlt__hp--short{background:var(--orange-a10,rgba(152,103,23,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#724D11);}
 .tlt__hp--long{background:var(--blue-a10,rgba(47,100,138,.10));border-color:var(--semantic-info,#2F648A);color:var(--purple-dim,#234B68);}
 .tlt__hp__dot{height:5px;width:5px;border-radius:50%;background:currentColor;flex:0 0 auto;}
-.tlt__pct{font-family:var(--font-data,monospace);font-size:10.5px;margin-left:7px;}
+.tlt__pct{font-family:var(--font-data,monospace);font-size:0.75rem;margin-left:7px;}
 .tlt tfoot td{padding:9px 12px;background:var(--bg-medium,#EBE8E1);font-weight:600;
   border-top:2px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);}
 .tlt tfoot td.tlt--r{text-align:right;}
-.tlt__foot-lbl{font-family:var(--font-body,inherit);font-size:11px;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-secondary,#535C65);}
+.tlt__foot-lbl{font-family:var(--font-body,inherit);font-size:0.75rem;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-secondary,#535C65);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "taxlot");

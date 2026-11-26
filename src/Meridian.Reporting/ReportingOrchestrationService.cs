@@ -7,15 +7,16 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Reporting;
 
+/// <summary>A run cannot render its configured metrics against the resolved dataset.</summary>
+public sealed class ReportWriterMetricValidationException(string message) : InvalidOperationException(message)
+{
+    public const string FailureCode = "report-writer-metric-source";
+}
+
 /// <summary>Executes reporting jobs and exposes retained run manifests and lifecycle operations.</summary>
 public interface IReportingOrchestrationService
 {
     Task<ReportingOutputManifest> ExecuteAsync(ReportingJobContract contract, CancellationToken cancellationToken);
-
-    [Obsolete(
-        "Due-schedule discovery and execution is owned by the host reporting-schedule adapter. Call ExecuteAsync only with its certified ReportingJobContract.",
-        error: false)]
-    Task<IReadOnlyList<ReportingOutputManifest>> ExecuteDueSchedulesAsync(IEnumerable<ReportingScheduleContract> schedules, DateTimeOffset nowUtc, CancellationToken cancellationToken);
     ReportingOutputManifest? GetManifest(string runId);
     ReportingOutputManifest? GetManifest(string tenantId, string runId) =>
         GetManifest(runId) is { OperationalScope: { } scope } manifest
@@ -250,6 +251,20 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                     var template = contract.ResolvedTemplate is null
                         ? catalog.Get(contract.TemplateId, contract.OperationalScope)
                         : catalog.Get(contract.ResolvedTemplate, contract.OperationalScope);
+                    var renderedReportWriterGrids = ReportWriterGridEngine
+                        .RenderGrids(template.ReportWriterGrids, contract.DatasetRows)
+                        .ToImmutableArray();
+                    var invalidBindings = renderedReportWriterGrids
+                        .SelectMany(static grid => grid.ValidationChecks ?? [])
+                        .Where(static check => check.CheckId == ReportWriterGridEngine.MetricSourceCheckId
+                            && check.Status == "Failed")
+                        .Select(static check => check.Detail)
+                        .ToArray();
+                    if (invalidBindings.Length > 0)
+                    {
+                        throw new ReportWriterMetricValidationException(string.Join(" ", invalidBindings));
+                    }
+
                     var artifactDeclarations = ReportingArtifactDeclaration.Build(
                         runId,
                         template,
@@ -261,9 +276,6 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                     var gridArtifacts = artifactDeclarations
                         .Where(static artifact => artifact.Kind == ReportingDeclaredArtifactKind.ReportWriterGrid)
                         .ToArray();
-                    var renderedReportWriterGrids = ReportWriterGridEngine
-                        .RenderGrids(template.ReportWriterGrids, contract.DatasetRows)
-                        .ToImmutableArray();
                     var reportWriterDatasetRowCount = template.ReportWriterGrids is { Count: > 0 }
                         ? contract.DatasetRows?.Count ?? 0
                         : (int?)null;
@@ -339,7 +351,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
 
                     throw;
                 }
-                catch (Exception ex) when (attempt <= contract.MaxRetries)
+                catch (Exception ex) when (attempt <= contract.MaxRetries && ex is not ReportWriterMetricValidationException)
                 {
                     if (contract.DurableOperationId is not null
                         && LoadStoredRun(contract.OperationalScope?.TenantId, runId) is { } committed)
@@ -392,7 +404,12 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                         ImmutableAccessScope: contract.ImmutableAccessScope,
                         CertifiedSnapshot: contract.CertifiedSnapshot,
                         AuthoritativeSource: contract.AuthoritativeSource,
-                        CertifiedDatasetRows: FreezeCertifiedRows(contract));
+                        CertifiedDatasetRows: FreezeCertifiedRows(contract))
+                    {
+                        FailureCode = ex is ReportWriterMetricValidationException
+                            ? ReportWriterMetricValidationException.FailureCode
+                            : null
+                    };
                     PublishManifest(failed);
                     FlushPendingRetryAudits(
                         pendingRetryAudits,
@@ -403,6 +420,10 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                     await ThrowIfRunCreateLeaseLostAsync(createClaimHeartbeat).ConfigureAwait(false);
                     await PersistAsync(failed, cancellationToken, createClaim).ConfigureAwait(false);
                     createClaim = null;
+                    if (ex is ReportWriterMetricValidationException)
+                    {
+                        throw;
+                    }
                     throw new InvalidOperationException($"Reporting run failed after {attempt} attempts.", lastError);
                 }
             }
@@ -450,17 +471,6 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
 
         throw new InvalidOperationException($"Reporting run failed after {contract.MaxRetries + 1} attempts.", lastError);
     }
-
-    [Obsolete(
-        "Due-schedule discovery and execution is owned by the host reporting-schedule adapter. Call ExecuteAsync only with its certified ReportingJobContract.",
-        error: false)]
-    public Task<IReadOnlyList<ReportingOutputManifest>> ExecuteDueSchedulesAsync(
-        IEnumerable<ReportingScheduleContract> schedules,
-        DateTimeOffset nowUtc,
-        CancellationToken cancellationToken) =>
-        Task.FromException<IReadOnlyList<ReportingOutputManifest>>(
-            new NotSupportedException(
-                "Direct due-schedule batch execution is disabled. The host reporting-schedule adapter must acquire the durable schedule lease, certify the run request, and call ExecuteAsync."));
 
     public ReportingOutputManifest? GetManifest(string runId)
     {
@@ -801,6 +811,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
             Artifacts = [],
             AttemptCount = 0,
             FailureReason = null,
+            FailureCode = null,
             ReportWriterGrids = [],
             RenderedReportWriterGrids = [],
             ReportWriterDatasetRowCount = null,

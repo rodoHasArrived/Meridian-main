@@ -117,6 +117,9 @@ public sealed partial class PostgresDirectLendingService : IDirectLendingService
     public async Task<ReconciliationRunDto?> ReconcileAsync(Guid loanId, CancellationToken ct = default, DirectLendingCommandMetadataDto? metadata = null)
         => DirectLendingServiceSupport.RequireSuccess(await _commandService.ReconcileAsync(loanId, metadata, ct).ConfigureAwait(false));
 
+    public async Task<ReconciliationRunDto?> ReconcileAsync(Guid loanId, ReconcileLoanRequest request, CancellationToken ct = default, DirectLendingCommandMetadataDto? metadata = null)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.ReconcileAsync(loanId, request, metadata, ct).ConfigureAwait(false));
+
     public Task<IReadOnlyList<ReconciliationRunDto>> GetReconciliationRunsAsync(Guid loanId, CancellationToken ct = default)
         => _queryService.GetReconciliationRunsAsync(loanId, ct);
 

@@ -1,3 +1,4 @@
+import { TimeText } from "@/components/ui/time-text";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 /**
  * Execution audit trail panel for Trading → Risk.
@@ -9,9 +10,10 @@ import { TableWorkbench } from "@/components/meridian/table-workbench";
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { RefreshCcw, ScrollText } from "lucide-react";
+import { ScrollText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
@@ -22,6 +24,7 @@ import {
   type AuditTrailTone
 } from "@/screens/trading-screen.audit-trail.view-model";
 import type { AuditTrailExplorerResult } from "@/types/execution-audit.types";
+import { ExecutionJourney } from "@/screens/execution-journey";
 
 const AUDIT_LIMIT = 50;
 
@@ -58,7 +61,7 @@ export function ExecutionAuditTrailPanel() {
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="eyebrow-label">Governed actions</div>
+            <div className="eyebrow-label">Controlled actions</div>
             <CardTitle className="flex items-center gap-2">
               <ScrollText className="h-5 w-5 text-primary" />
               Execution audit trail
@@ -68,14 +71,13 @@ export function ExecutionAuditTrailPanel() {
               action-ledger chain position.
             </CardDescription>
           </div>
-          <Button size="sm" variant="outline" onClick={() => void refresh()}>
-            <RefreshCcw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
+          <PanelReload reload={refresh} failed={error !== null} busy={loading} what="the execution audit trail" />
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
+        <ExecutionJourney recent={result} />
         {error ? <StatusBanner tone="danger" title="Audit trail unavailable" detail={error} /> : null}
+        {result?.sourceAvailability?.executionAudit === false ? <StatusBanner tone="warning" title="Execution audit source unavailable" detail="The execution audit service is not configured. Empty results do not establish that no actions occurred." /> : null}
         {vm.truncationNotice ? (
           <StatusBanner tone="warning" title="Results truncated" detail={vm.truncationNotice} />
         ) : null}
@@ -107,7 +109,7 @@ export function ExecutionAuditTrailPanel() {
  onExportAll={!loading && !error && result ? (columns, _search, sort, signal) => exportTableQuery("trading-execution-audit", columns, appliedSearch, sort?.columnId, sort?.direction, signal) : undefined}
  ariaLabel="Execution audit trail entries" emptyText={loading ? "Loading audit trail…" : vm.emptyState}
  filterState={{search:appliedSearch}} onRestoreFilters={(filters)=>{setSearchText(filters.search??"");setAppliedSearch(filters.search??"");}}
- columns={[{id:"column-1",label:"Occurred",className:"whitespace-nowrap",render:(row)=>(<>{row.occurredAt}</>),exportValue:(row)=>row.occurredAt},
+ columns={[{id:"column-1",label:"Occurred",className:"whitespace-nowrap",render:(row)=>(<TimeText value={row.occurredAt} precision="second" fallback="Unavailable" />),exportValue:(row)=>row.occurredAt},
 {id:"column-2",label:"Object",render:(row)=>(<>{row.objectLabel}</>),exportValue:(row)=>row.objectLabel},
 {id:"column-3",label:"Action",render:(row)=>(<>{row.actionLabel}</>),exportValue:(row)=>row.actionLabel},
 {id:"column-4",label:"Outcome",render:(row)=>(<><Badge variant={badgeVariant(row.outcomeTone)}>{row.outcome}</Badge></>),exportValue:(row)=>row.outcome},

@@ -6,11 +6,24 @@
 .table-workbench-disclosure > summary { cursor:pointer; border:1px solid hsl(var(--border)); padding:.35rem .6rem; font-size:.75rem; }
 .table-workbench-menu { position:absolute; right:0; top:100%; z-index:30; min-width:15rem; max-height:24rem; overflow:auto; padding:.75rem; background:hsl(var(--card)); border:1px solid hsl(var(--border)); box-shadow:0 4px 12px hsl(var(--border)); display:grid; gap:.5rem; }
 .table-workbench-menu label { justify-content:flex-start; }
-.table-workbench-count { color:hsl(var(--muted-foreground)); font-size:.75rem; margin-left:auto; white-space:nowrap; }
+.table-workbench-count { color:hsl(var(--muted-foreground)); font-size:.75rem; white-space:nowrap; }
+/* A table with a prose column narrows by wrapping that column, down to a readable minimum, before
+   it drops columns or scrolls. */
+.table-workbench.table-workbench--wrapping .dense-data-table { min-width:100%; }
+.table-workbench .dense-data-table td.table-workbench-cell--wrap,.table-workbench .dense-data-table tbody th.table-workbench-cell--wrap { white-space:normal; min-width:14rem; overflow-wrap:anywhere; }
+/* Presentation tools sit together at the row's end; a one-row table carries two small controls, not five. */
+.table-workbench-tools { display:flex; align-items:center; gap:.4rem; margin-left:auto; }
+.table-workbench-disclosure > summary.table-workbench-more { list-style:none; min-width:2rem; text-align:center; font-size:1rem; line-height:1; padding:.3rem .5rem; }
+.table-workbench-disclosure > summary.table-workbench-more::-webkit-details-marker { display:none; }
+/* Bulk actions appear over the table foot only while rows are selected. */
+.table-workbench-selection { position:sticky; bottom:.5rem; z-index:20; display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; width:fit-content; max-width:100%; margin:.5rem auto 0; padding:.4rem .6rem; background:hsl(var(--card)); border:1px solid hsl(var(--border)); border-radius:var(--radius-card,2px); box-shadow:0 6px 18px hsl(var(--foreground) / .18); }
+.table-workbench-selection-count { font-size:.75rem; font-weight:600; font-variant-numeric:tabular-nums; }
 .table-workbench .dense-data-table-wrap { position:relative; max-width:100%; overflow:auto; background:linear-gradient(to right,hsl(var(--card)) 30%,transparent),linear-gradient(to left,hsl(var(--card)) 30%,transparent),linear-gradient(to right,hsl(var(--border)),transparent),linear-gradient(to left,hsl(var(--border)),transparent); background-position:left center,right center,left center,right center; background-repeat:no-repeat; background-size:2rem 100%,2rem 100%,.5rem 100%,.5rem 100%; background-attachment:local,local,scroll,scroll; }
 .table-workbench .dense-data-table { min-width:max-content; border-collapse:separate; border-spacing:0; }
 .table-workbench .dense-data-table thead { z-index:3; background:hsl(var(--card)); }
 .table-workbench .dense-data-table th:first-child,.table-workbench .dense-data-table td:first-child { position:sticky; left:0; background:hsl(var(--card)); z-index:2; box-shadow:1px 0 hsl(var(--border)); }
+/* The sticky first column keeps the totals row's shade rather than the card background. */
+.table-workbench .dense-data-table .dense-data-table-footer td:first-child { background:var(--ws-surface-subtle); }
 .table-workbench .dense-data-table thead th:first-child { z-index:4; }
 .table-workbench .dense-data-table td { white-space:nowrap; font-family:var(--font-body,sans-serif); font-variant-numeric:tabular-nums; }
 .table-workbench .dense-data-table tbody .text-right .font-mono { font-family:var(--font-body,sans-serif); font-variant-numeric:tabular-nums; }
@@ -21,13 +34,17 @@
 .detail-rail { min-width:0; border-left:1px solid hsl(var(--border)); padding-left:1rem; }
 .detail-rail-header { display:flex; align-items:flex-start; justify-content:space-between; gap:.5rem; }
 .detail-rail-header h3 { font-size:1rem; font-weight:600; }
-.detail-rail-fields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); column-gap:1rem; margin-top:.75rem; }
+/* One key-value layout: label above value, in as many columns as fit at 10rem (160px) each. A
+   rail narrower than two such columns stacks to one, so a value is never squeezed or clipped. */
+.detail-rail-fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(10rem,100%),1fr)); column-gap:1rem; margin-top:.75rem; }
 .detail-rail-fields > div { min-width:0; padding:.45rem 0; border-bottom:1px solid hsl(var(--border)); }
-.detail-rail-fields dt { font-size:.7rem; color:hsl(var(--muted-foreground)); }
-.detail-rail-fields dd { font-size:.8rem; font-variant-numeric:tabular-nums; overflow-wrap:normal; word-break:normal; }
+.detail-rail-fields dt { font-size:.75rem; color:hsl(var(--muted-foreground)); }
+.detail-rail-fields dd { font-size:.8rem; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
 .detail-rail-fields > .detail-rail-field--wide { grid-column:1 / -1; }
-.detail-rail-fields > .detail-rail-field--wide dd { white-space:nowrap; overflow:auto; }
+/* Long text wraps whole; it is not clipped behind a hidden scrollbar. */
+.detail-rail-fields > .detail-rail-field--wide dd { white-space:normal; }
 .detail-rail-fields .detail-rail-field--numeric dd { text-align:right; }
+.detail-rail-fields time { white-space:nowrap; }
 
 .table-workbench-frame { position:relative; min-width:0; }
 .table-workbench-frame::before,.table-workbench-frame::after { content:""; position:absolute; top:0; bottom:0; width:.65rem; z-index:5; pointer-events:none; opacity:0; }
@@ -35,3 +52,13 @@
 .table-workbench-frame::after { right:0; background:linear-gradient(to left,hsl(var(--foreground) / .18),transparent); }
 .table-workbench-frame[data-scroll-left="true"]::before,.table-workbench-frame[data-scroll-right="true"]::after { opacity:1; }
 .table-workbench .dense-data-table tbody td:first-child,.table-workbench .dense-data-table tbody th:first-child { background:inherit; }
+
+/* Dense review queues keep query controls in the row; presentation tools stay inspectable. */
+.table-workbench-toolbar--compact { gap:.4rem; margin-bottom:.35rem; }
+.table-workbench-toolbar--compact .table-workbench-search { flex:1 1 10rem; min-width:8rem; max-width:22rem; }
+.table-workbench-toolbar--compact .table-workbench-search input { flex:1; width:100%; min-width:0; }
+.table-workbench-options { width:min(21rem,calc(100vw - 2rem)); min-width:0; }
+.table-workbench-options fieldset { min-width:0; display:grid; gap:.4rem; border:0; padding:0; margin:0; }
+.table-workbench-options legend { margin-bottom:.4rem; font-weight:600; font-size:.75rem; }
+.table-workbench-options fieldset + fieldset { border-top:1px solid hsl(var(--border)); padding-top:.5rem; }
+.table-workbench-view-notice { font-size:.75rem; color:hsl(var(--muted-foreground)); }

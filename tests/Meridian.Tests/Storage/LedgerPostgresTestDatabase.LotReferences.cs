@@ -16,12 +16,32 @@ internal sealed partial class LedgerPostgresTestDatabase
     private AssetOperationsOptions? _lotPositionOptions;
 
     public PostgresLedgerJournalStore RestartJournalStore() => new(Options,
-        backfillSecurityMaster: () => _lotSecurities, backfillPositions: () => _lotPositions);
+        backfillSecurityMaster: () => _lotSecurities, backfillPositions: () => _lotPositions,
+        postingAuthorities: SyntheticFinancialPostingAuthorities);
+
+    // Historical financial fixtures exercise journal, lot and consolidation invariants, not
+    // entity/agreement onboarding. Dedicated control fixtures explicitly supply real authorities.
+    // This supplies no preflight authority and is never available outside the test assembly.
+    internal static IEnumerable<ILedgerPostingAuthority> SyntheticFinancialPostingAuthorities()
+        => [new SyntheticFinancialAuthority("entity-lifecycle"), new SyntheticFinancialAuthority("intercompany")];
+
+    private sealed record SyntheticFinancialAuthority(string ControlName) : ILedgerPostingAuthority
+    {
+        public Task<IAsyncDisposable> AcquireAsync(IReadOnlyList<LedgerPostingAuthorityContext> contexts, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            foreach (var context in contexts)
+                context.Decisions.Add(new(ControlName, "historical-financial-fixture", true,
+                    "Explicit synthetic prerequisite for a historical financial fixture; real controls are covered separately."));
+            return Task.FromResult<IAsyncDisposable>(EmptyLedgerAuthorityLease.Instance);
+        }
+    }
 
     // Explicit fixture setup, never called by a posting wrapper. Commands must state the versions
     // they reviewed, and later fixture drift is not silently repaired before exercising the store.
     public async Task<LotReferenceAuthority> SeedLotReferenceAuthorityAsync(
-        Guid bookId, Guid securityId, Guid positionId, string currency = "USD", string positionSide = BookPositionSides.Long)
+        Guid bookId, Guid securityId, Guid positionId, string currency = "USD", string positionSide = BookPositionSides.Long, string? financialAccountId = null,
+        string assetClass = "Equity")
     {
         if (_lotSecurities is null)
         {
@@ -39,8 +59,8 @@ internal sealed partial class LedgerPostgresTestDatabase
         var json = JsonSerializer.SerializeToElement(new { });
         var at = DateTimeOffset.Parse("2020-01-01T00:00:00Z");
         var date = new DateOnly(2020, 1, 1);
-        var security = new SecurityProjectionRecord(securityId, "Equity", SecurityStatusDto.Active,
-            "Reference fixture", currency, "ISIN", securityId.ToString("N"), json, json, json, 1, at, null, [], []);
+        var security = new SecurityProjectionRecord(securityId, assetClass, SecurityStatusDto.Active,
+            "Reference fixture", currency, "ISIN", securityId.ToString("N"), json, SecurityTermsEnvelope.StampDeclaredFormat(json), json, 1, at, null, [], []);
         await _lotSecurities.UpsertProjectionAsync(security);
         var eventId = Guid.NewGuid();
         var evidence = new RetainedEvidenceIdentityDto("lot-position", "evidence://lot/position", new string('a', 64),
@@ -48,7 +68,7 @@ internal sealed partial class LedgerPostgresTestDatabase
             at.AddMinutes(2), "preparer", AssetAccountingEvidenceSubjects.Event, eventId.ToString("D"));
         var origin = new EconomicEventReferenceDto(eventId, "Trade", 1, date, at, "custodian", "lot-position-origin")
         { SecurityId = securityId, BookPositionId = positionId, RetainedEvidence = [evidence], EvidenceLinks = [evidence.EvidenceUri] };
-        var role = new InstrumentRoleDto(Guid.NewGuid(), securityId, book.FundProfileId, "Fund", InstrumentRoleKinds.Holder,
+        var role = new InstrumentRoleDto(Guid.NewGuid(), securityId, book.FundProfileId, book.FundStructureNodeKind.ToString(), InstrumentRoleKinds.Holder,
             InstrumentAccountingSides.Debit, InstrumentEconomicSides.Asset, date, OriginEvent: origin,
             EvidenceLinks: [evidence.EvidenceUri])
         { RetainedEvidence = [evidence] };
@@ -57,7 +77,7 @@ internal sealed partial class LedgerPostgresTestDatabase
             book.AccountingPolicyId, book.AccountingPolicyVersion);
         var position = await _lotPositions!.UpsertAsync(role,
             new BookPositionDto(positionId, securityId, role.RoleId, context, positionSide, "Active", date,
-                OriginEvent: origin, EvidenceLinks: [evidence.EvidenceUri])
+                PrimaryAccountId: financialAccountId, OriginEvent: origin, EvidenceLinks: [evidence.EvidenceUri])
             { RetainedEvidence = [evidence] }, null, 0,
             new("reviewer", "evidence://lot/position-approval", "Reviewed fixture position", at.AddMinutes(3)));
         return new(_lotSecurityOptions!, _lotPositionOptions!, _lotSecurities, _lotPositions, security, role, position);

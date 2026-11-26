@@ -204,6 +204,22 @@ describe("CoveredCallScreen", () => {
     vi.useRealTimers();
   });
 
+  it("aborts the pending history request when the screen unmounts", async () => {
+    let rejectHistory!: (reason: unknown) => void;
+    vi.mocked(coveredCallApi.listCoveredCallRuns).mockReturnValueOnce(
+      new Promise((_, reject) => { rejectHistory = reject; })
+    );
+    const { unmount } = renderCoveredCallScreen();
+    const signal = vi.mocked(coveredCallApi.listCoveredCallRuns).mock.calls[0][1];
+    expect(signal).toBeInstanceOf(AbortSignal);
+    expect(signal?.aborted).toBe(false);
+
+    unmount();
+
+    expect(signal?.aborted).toBe(true);
+    await act(async () => rejectHistory(new DOMException("Navigation cancelled", "AbortError")));
+  });
+
   it("renders chain preview rows with keyboard selection and a linked detail panel", async () => {
     renderCoveredCallScreen();
 
@@ -584,7 +600,7 @@ describe("CoveredCallScreen", () => {
     });
 
     expect(firstPosition).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("img", { name: "SPY 505.00 short-call payoff diagram" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "SPY 505.00 short-call payoff diagram" })).toBeInTheDocument();
     expect(screen.getByText("2 x 505.00 call expiring 2024-02-16 - short-call break-even about $507.35")).toBeInTheDocument();
 
     fireEvent.click(secondPosition);
@@ -592,7 +608,7 @@ describe("CoveredCallScreen", () => {
     expect(await screen.findByRole("button", {
       name: "Selected SPY 510.00 call expiring 2024-03-15 payoff diagram"
     })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("img", { name: "SPY 510.00 short-call payoff diagram" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "SPY 510.00 short-call payoff diagram" })).toBeInTheDocument();
     expect(screen.getByText("1 x 510.00 call expiring 2024-03-15 - short-call break-even about $511.90")).toBeInTheDocument();
   });
 

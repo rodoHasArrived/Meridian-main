@@ -49,6 +49,27 @@ public sealed record ProviderRateLimitSnapshotDto(
     [property: JsonPropertyName("resetAt")] DateTimeOffset? ResetAt,
     [property: JsonPropertyName("reason")] string? Reason)
 {
+    /// <summary>Unit of the compatibility request-named counters.</summary>
+    [JsonPropertyName("quotaUnit")]
+    public string QuotaUnit { get; init; } = "requests";
+
+    [JsonPropertyName("dailyUnitsUsed")]
+    public int? DailyUnitsUsed { get; init; }
+
+    [JsonPropertyName("dailyMaximum")]
+    public int? DailyMaximum { get; init; }
+
+    [JsonPropertyName("dailyResetsAt")]
+    public DateTimeOffset? DailyResetsAt { get; init; }
+
+    [JsonPropertyName("dailyResetPolicy")]
+    public string? DailyResetPolicy { get; init; }
+
+    /// <summary>Provider calls admitted by the shared backfill router in the observed window.</summary>
+    public int? BackfillAttemptsInWindow { get; init; }
+
+    public double? BackfillAttemptWindowSeconds { get; init; }
+
     [JsonPropertyName("isThrottled")]
     public bool IsThrottled => IsRateLimited;
 
@@ -70,7 +91,7 @@ public sealed record ProviderRateLimitCapabilitiesDto(
     [property: JsonPropertyName("supportedMarkets")] IReadOnlyList<string> SupportedMarkets);
 
 /// <summary>
-/// Honest response for the legacy history route. Runtime rate-limit history is not retained.
+/// Bounded recent rate-limit events and durable observations grouped by UTC day.
 /// </summary>
 public sealed record ProviderRateLimitHistoryResponse(
     [property: JsonPropertyName("provider")] string Provider,
@@ -78,14 +99,23 @@ public sealed record ProviderRateLimitHistoryResponse(
     [property: JsonPropertyName("history")] IReadOnlyList<ProviderRateLimitEventDto> History,
     [property: JsonPropertyName("timestamp")] DateTimeOffset Timestamp,
     [property: JsonPropertyName("isAvailable")] bool IsAvailable,
-    [property: JsonPropertyName("message")] string Message);
+    [property: JsonPropertyName("message")] string Message)
+{
+    public IReadOnlyList<ProviderRateLimitDailyRollupDto> DailyRollups { get; init; } = [];
+    public bool DailyRollupsAvailable { get; init; }
+}
+
+public sealed record ProviderRateLimitDailyRollupDto(DateOnly DateUtc, long ThrottleCount, long RotationCount);
 
 /// <summary>
-/// Reserved bounded-history event contract for a future durable implementation.
+/// A rate-limit observation or subsequent provider rotation.
 /// </summary>
 public sealed record ProviderRateLimitEventDto(
     [property: JsonPropertyName("timestamp")] DateTimeOffset Timestamp,
     [property: JsonPropertyName("requestsUsed")] int RequestsUsed,
     [property: JsonPropertyName("usageRatio")] double UsageRatio,
     [property: JsonPropertyName("wasRateLimited")] bool WasRateLimited,
-    [property: JsonPropertyName("resetAt")] DateTimeOffset? ResetAt);
+    [property: JsonPropertyName("resetAt")] DateTimeOffset? ResetAt,
+    [property: JsonPropertyName("eventType")] string EventType = "rate-limited",
+    [property: JsonPropertyName("nextProvider")] string? NextProvider = null,
+    [property: JsonPropertyName("httpStatus")] int? HttpStatus = null);

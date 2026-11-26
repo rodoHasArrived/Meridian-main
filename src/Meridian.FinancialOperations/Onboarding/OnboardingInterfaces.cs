@@ -8,6 +8,10 @@ public interface IOnboardingWorkspaceStore
     Task<IReadOnlyList<OnboardingWorkspaceDto>> ListAsync(string tenantId, string companyId, CancellationToken ct = default);
     Task<OnboardingWorkspaceDto?> GetAsync(string tenantId, string companyId, string workspaceId, CancellationToken ct = default);
     Task SaveAsync(OnboardingWorkspaceDto workspace, int? expectedVersion, CancellationToken ct = default);
+
+    /// <summary>Workspaces in the tenant (and company, when given) whose scope selects the ledger book.</summary>
+    Task<IReadOnlyList<OnboardingWorkspaceDto>> ListByLedgerBookAsync(
+        string tenantId, string? companyId, Guid ledgerBookId, CancellationToken ct = default);
 }
 
 /// <summary>Composes existing reconciliation, ledger/NAV, close and evidence services without writes.</summary>

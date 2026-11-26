@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AssetOperations;
@@ -78,7 +79,12 @@ public sealed record ReconciliationRunRequest(
     /// entity are fetched and included as additional reconciliation checks alongside
     /// the portfolio/ledger comparison.
     /// </summary>
-    Guid? BankEntityId = null);
+    Guid? BankEntityId = null)
+{
+    /// <summary>Absolute native units; the original AmountTolerance retains relative-fraction semantics.</summary>
+    public decimal QuantityTolerance { get; init; }
+    public decimal BasisAmountTolerance { get; init; } = 0.01m;
+}
 
 /// <summary>
 /// Summary of a completed reconciliation run.
@@ -125,6 +131,8 @@ public sealed record ReconciliationMatchDto(
     DateTimeOffset? ExpectedAsOf,
     DateTimeOffset? ActualAsOf)
 {
+    public IReadOnlyList<ReconciliationBreakMeasureDto> Measures { get; init; } = [];
+
     /// <summary>Canonical identity of the logical check resolved by this match.</summary>
     public string? LogicalBreakIdentity { get; init; }
 
@@ -453,7 +461,14 @@ public sealed record ReconciliationBreakMeasureDto(
     decimal? Variance,
     decimal? Tolerance,
     string Unit,
-    string? UnavailableReason = null);
+    string? UnavailableReason = null)
+{
+    /// <summary>Invariant decimal text accompanies numeric compatibility fields for precise workstation reads.</summary>
+    public string? ExpectedExact => Expected?.ToString(CultureInfo.InvariantCulture);
+    public string? ActualExact => Actual?.ToString(CultureInfo.InvariantCulture);
+    public string? VarianceExact => Variance?.ToString(CultureInfo.InvariantCulture);
+    public string? ToleranceExact => Tolerance?.ToString(CultureInfo.InvariantCulture);
+}
 
 [JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBreakDispositionDto>))]
 public enum ReconciliationBreakDispositionDto : byte
@@ -582,7 +597,23 @@ public sealed record ReconciliationBreakQueueItem(
     /// <summary>Durable source comparison, distinct from case resolution and approval.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public ReconciliationBreakLineageDto? Lineage { get; init; }
+
+    /// <summary>Caller-specific command availability; projected at the API boundary, never persisted as authority.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<ReconciliationPermittedCommandDto>? PermittedCommands { get; init; }
+
+    /// <summary>Exact retained instrument identity when supplied by the source. Never derived from a symbol.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? InstrumentId { get; init; }
+
+    /// <summary>Invariant exact values for cases without a retained typed comparison.</summary>
+    public string VarianceExact => Variance.ToString(CultureInfo.InvariantCulture);
+    public string? ToleranceBandExact => ToleranceBand?.ToString(CultureInfo.InvariantCulture);
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.Reconciliation.RetainedStatementCaseEvidence? StatementEvidence { get; init; }
 }
+
+public sealed record ReconciliationPermittedCommandDto(string Action, bool Enabled, string? DisabledReason);
 
 /// <summary>
 /// Server-resolved access scope for reconciliation queue reads and mutations. This value is never
@@ -752,6 +783,9 @@ public sealed record ReconciliationBulkCaseworkRequest(
     string? ApprovalReference = null,
     string? SupersedingBreakId = null)
 {
+    /// <summary>Optional guarded versions inspected by the caller. Legacy adapters may omit them.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyDictionary<string, long>? ExpectedVersions { get; init; }
     /// <summary>
     /// Bulk "assign to me": the endpoint replaces <see cref="Assignee"/> with the authenticated
     /// operator, because a client knows its display name but not its login identity. It is cleared
@@ -760,6 +794,14 @@ public sealed record ReconciliationBulkCaseworkRequest(
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool AssignToCurrentOperator { get; init; }
+
+    /// <summary>The durable dry-run action whose eligible rows and exact versions were reviewed.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? PreviewBulkActionId { get; init; }
+
+    /// <summary>Trusted endpoint policy. It is never bound from the request body or included in receipt hashes.</summary>
+    [JsonIgnore]
+    public bool RequireReviewedPreview { get; init; }
 }
 
 public sealed record ReconciliationBulkCaseworkCaseResult(
@@ -768,6 +810,8 @@ public sealed record ReconciliationBulkCaseworkCaseResult(
     bool WouldSucceed,
     string? Error,
     ReconciliationBreakQueueItem? Item);
+
+public sealed record ReconciliationBulkReviewedCaseVersion(string BreakId, long Version);
 
 public sealed record ReconciliationBulkCaseworkResult(
     string BulkActionId,
@@ -778,6 +822,13 @@ public sealed record ReconciliationBulkCaseworkResult(
     int FailedCount,
     IReadOnlyList<ReconciliationBulkCaseworkCaseResult> Results)
 {
+    /// <summary>Protocol supported by a retained, version-bound dry-run receipt.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? ReviewProtocol { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ReconciliationBulkReviewedCaseVersion? ReviewedSuccessor { get; init; }
+
     /// <summary>Canonical hash of the complete admitted bulk request.</summary>
     public string InputHashSha256 { get; init; } = ComputeCompatibilityInputHash(
         BulkActionId,
@@ -1027,7 +1078,12 @@ public sealed record ReviewReconciliationBreakRequest(
     string AssignedTo,
     string ReviewedBy,
     string? ReviewNote = null,
-    string? Team = null);
+    string? Team = null)
+{
+    /// <summary>Optional compatibility extension. Browser casework supplies the version it reviewed.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public long? ExpectedVersion { get; init; }
+}
 
 /// <summary>
 /// Request to resolve or dismiss a break with audit metadata.
@@ -1038,7 +1094,18 @@ public sealed record ResolveReconciliationBreakRequest(
     string ResolvedBy,
     string ResolutionNote,
     string OperatorRationale,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+{
+    /// <summary>Version inspected by the operator for a guarded decision. Legacy adapters may omit it.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public long? ExpectedVersion { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? RootCauseCode { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ResolutionCode { get; init; }
+}
 
 /// <summary>
 /// Canonical schema version metadata for reconciliation ingress/egress payloads.

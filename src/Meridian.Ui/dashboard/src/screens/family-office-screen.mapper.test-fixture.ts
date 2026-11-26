@@ -57,7 +57,7 @@ export function buildFamilyOfficeOverviewFixture(
           edgeId: "edge-trust",
           sourceNodeId: ROOT_ID,
           targetNodeId: TRUST_ID,
-          relationshipType: "Ownership",
+          relationshipType: "Owns",
           ownershipPercent: 60
         }
       ],

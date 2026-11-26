@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using Meridian.Contracts.Integrity;
 using Meridian.Storage.Archival;
+using Meridian.Storage.Interfaces;
 
 namespace Meridian.Storage.Replay;
 
@@ -15,6 +16,8 @@ internal static class JsonlArchiveFiles
 {
     private static readonly StringComparer PathComparer = OperatingSystem.IsWindows()
         ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+    private static readonly HashSet<string> InternalDirectories = new(
+        new CatalogRebuildOptions().ExcludePaths, StringComparer.OrdinalIgnoreCase);
 
     internal static bool IsCanonicalArchivePath(string path) =>
         path.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase) ||
@@ -26,7 +29,9 @@ internal static class JsonlArchiveFiles
 
     internal static IReadOnlyList<string> Enumerate(string root) =>
         Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
-            .Where(IsCanonicalArchivePath)
+            .Where(file => IsCanonicalArchivePath(file) && !Path.GetRelativePath(root, file)
+                .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                .Any(InternalDirectories.Contains))
             .Distinct(PathComparer)
             // Snapshot logical identities before yielding. A scan can observe both names
             // while publication proceeds; filename-level grouping must precede replay.
@@ -166,9 +171,11 @@ internal static class JsonlArchiveFiles
         }
 
         var directory = Path.GetDirectoryName(Path.GetFullPath(sourcePath))!;
-        await AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).ConfigureAwait(false);
+        // Strict: the plain source is deleted next, so the archive's entry must be confirmed durable.
+        await AtomicFileWriter.SyncDirectoryOrThrowAsync(directory, CancellationToken.None).ConfigureAwait(false);
         File.Delete(sourcePath);
         File.Delete(sourcePath + ".sha256");
+        // Best effort: the deletes have committed; a throw would report a finished archive as failed.
         await AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).ConfigureAwait(false);
         return true;
     }

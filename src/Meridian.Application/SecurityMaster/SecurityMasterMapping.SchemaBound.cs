@@ -5,7 +5,7 @@ using Meridian.Contracts.SecurityMaster;
 namespace Meridian.Application.SecurityMaster;
 
 // ADR-027 stage 3 (S3-D): the schema-bound decode reader, and the ledger of the reads that stay
-// outside it. The class ledger (SchemaBoundDecodeClasses) lives beside the decode switch.
+// outside it. The class ledger (SchemaBoundDecodeClasses) follows the composed codec contributions.
 internal static partial class SecurityMasterMapping
 {
     /// <summary>
@@ -18,9 +18,6 @@ internal static partial class SecurityMasterMapping
 
     private const string EnvelopeLessCustomAssetSalvage =
         "read-only salvage of an envelope-less legacy row as OtherSecurity; the CustomAsset schema declares the profile envelope, not the OtherSecurity shape";
-
-    private const string PreferredTermsShapeUndeclared =
-        "the schema declares preferredTerms as an object but registers no inner shape for it";
 
     /// <summary>
     /// ADR-027 stage 3 (S3-D): every read a schema-bound class decode makes OUTSIDE the schema —
@@ -36,18 +33,7 @@ internal static partial class SecurityMasterMapping
     [
         new("CustomAsset", "maturity", SecurityAssetTermFieldType.Date, EnvelopeLessCustomAssetSalvage),
         new("CustomAsset", "issuerName", SecurityAssetTermFieldType.String, EnvelopeLessCustomAssetSalvage),
-        new("CustomAsset", "settlementType", SecurityAssetTermFieldType.String, EnvelopeLessCustomAssetSalvage),
-        new("Equity", "preferredTerms.dividendRate", SecurityAssetTermFieldType.Decimal, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.dividendType", SecurityAssetTermFieldType.String, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.redemptionPrice", SecurityAssetTermFieldType.Decimal, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.redemptionDate", SecurityAssetTermFieldType.Date, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.callableDate", SecurityAssetTermFieldType.Date, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.participationTerms", SecurityAssetTermFieldType.Object, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.participationTerms.participatesInCommonDividends", SecurityAssetTermFieldType.Boolean, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.participationTerms.additionalDividendThreshold", SecurityAssetTermFieldType.Decimal, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.liquidationPreference", SecurityAssetTermFieldType.Object, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.liquidationPreference.kind", SecurityAssetTermFieldType.String, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.liquidationPreference.multiple", SecurityAssetTermFieldType.Decimal, PreferredTermsShapeUndeclared)
+        new("CustomAsset", "settlementType", SecurityAssetTermFieldType.String, EnvelopeLessCustomAssetSalvage)
     ];
 
     private static readonly FrozenSet<(string AssetClass, string Path, SecurityAssetTermFieldType ReadAs)> LedgeredUnboundReads =
@@ -57,8 +43,9 @@ internal static partial class SecurityMasterMapping
     /// The schema-bound view of a submitted or stored terms document for one asset class: each
     /// read verifies, against <see cref="SecurityAssetTermsSchema"/>, that the key is declared
     /// and that its declared type matches the type the codec reads it as. Requiredness stays the
-    /// codec's call — the tolerated absence defaults are ledgered in the S3-B sweep — so this
-    /// binds exactly the facts whose drift would corrupt a decode.
+    /// codec's call — the tolerated absence defaults are declared on the schema fields
+    /// (<see cref="SecurityAssetTermField.AbsentReadDefault"/>) — so this binds exactly the facts
+    /// whose drift would corrupt a decode.
     /// <para>A nested object (<see cref="RequiredObject"/>, <see cref="OptionalObject"/>) is read
     /// through the same view, bound to the inner shape the schema registers for its path
     /// (<see cref="SecurityAssetTermsSchema.ElementFields"/>). The view never hands out the

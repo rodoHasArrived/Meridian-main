@@ -94,7 +94,7 @@ compatibility/security pins when updating the central manifest.
 | Package | Purpose |
 | --- | --- |
 | System.Text.Json | JSON serialization |
-| Newtonsoft.Json | JSON compatibility |
+| Newtonsoft.Json | Runtime transitive JSON dependency via Sharpino and FsPickler.Json; centrally pinned |
 | System.IO.Compression | Gzip compression |
 | Apache.Arrow | Columnar data structures |
 | Npgsql | PostgreSQL access |
@@ -181,12 +181,21 @@ the owning test project determines which packages and runner it uses.
 | TngTech.ArchUnitNET | Architecture tests |
 | TngTech.ArchUnitNET.xUnit | xUnit adapter for architecture tests |
 
+FluentAssertions 8.x package metadata describes open-source and non-commercial use as free, and
+commercial use as requiring a paid license. The [publisher's licensing page](https://xceed.com/products/unit-testing/fluent-assertions/)
+and the restored package's `LICENSE` contain the applicable conditions.
+
 ## Browser and documentation tooling
 
 The dashboard manifest owns React, routing, icons, TypeScript, Vite, Vitest, Playwright, and the
 accessibility/lint tooling. Its lockfile records the resolved graph; use `npm ci` in that package
 for a lockfile-based install. The root Node package separately owns asset/diagram tooling and
 pass-through dashboard scripts. Do not update one package's lockfile to represent changes in the other.
+
+The dashboard's one spreadsheet dependency is `write-excel-file` (MIT, pinned exactly; it depends on
+`fflate`, also MIT). It writes the "Export as shown · XLSX" file from `TableWorkbench`
+(`src/lib/table-export.ts`) and is imported only when an operator exports, so it ships as its own
+lazy chunk and is not part of the initial workstation bundle.
 
 Python documentation tools use their checked-in requirements files, including PyYAML for standard
 YAML parsing. See [Engineering](engineering/README.md#buildtestrun) and

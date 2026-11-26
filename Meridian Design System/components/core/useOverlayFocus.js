@@ -14,7 +14,23 @@
 // e.stopPropagation() after handling so this document-level stack never sees it.
 import React from "react";
 
-const FOCUSABLE = "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])";
+const FOCUSABLE = "button, a[href], area[href], input:not([type='hidden']), select, textarea, summary, [tabindex], [contenteditable='true']";
+
+// A descendant can still expose tabIndex=0 while its section is hidden, inert,
+// disabled by a fieldset, or collapsed. Fixed-position controls remain valid.
+function available(element) {
+  if (!element?.isConnected || element.matches(":disabled")) return false;
+  for (let node = element; node; node = node.parentElement) {
+    if (node.hidden || node.hasAttribute("inert") || node.getAttribute("aria-hidden") === "true") return false;
+    const style = window.getComputedStyle(node);
+    if (style.display === "none" || style.visibility === "hidden" || style.visibility === "collapse" || style.contentVisibility === "hidden") return false;
+    if (node.tagName === "DETAILS" && !node.open) {
+      const summary = Array.from(node.children).find((child) => child.tagName === "SUMMARY");
+      if (!summary?.contains(element)) return false;
+    }
+  }
+  return true;
+}
 
 let scrollLocks = 0;
 let savedOverflow = "";
@@ -28,27 +44,36 @@ function unlockScroll() {
 export function useOverlayFocus(ref, open, panelSelector = null, { scrollLock = true } = {}) {
   React.useEffect(() => {
     if (!open || !ref.current) return;
+    const panel = panelSelector ? ref.current.querySelector(panelSelector) : ref.current;
+    if (!panel || !available(panel)) return;
     const previouslyFocused = document.activeElement;
     if (scrollLock) lockScroll();
-    const panel = panelSelector ? ref.current.querySelector(panelSelector) : ref.current;
-    if (panel) {
-      const first = panel.querySelector(FOCUSABLE);
-      if (first) first.focus();
-    }
+    const candidates = () => Array.from(panel.querySelectorAll(FOCUSABLE)).filter(available);
+    const tabbable = () => candidates().filter((element) => element.tabIndex >= 0);
+    // Negative-tabindex headings may intentionally receive initial focus, but
+    // must never become additional stops in the subsequent Tab cycle.
+    const autofocus = Array.from(panel.querySelectorAll("[autofocus], [data-autofocus]")).find(
+      (element) => element.matches(FOCUSABLE) && available(element)
+    );
+    const retained = panel.contains(document.activeElement) && available(document.activeElement) ? document.activeElement : null;
+    let addedPanelTabIndex = false;
+    const focusPanel = () => {
+      if (!panel.hasAttribute("tabindex")) { panel.setAttribute("tabindex", "-1"); addedPanelTabIndex = true; }
+      panel.focus();
+    };
+    const initial = autofocus || retained || tabbable()[0];
+    if (initial) initial.focus(); else focusPanel();
     const onKeyDown = (e) => {
-      if (e.key !== "Tab" || !panel) return;
-      // getClientRects (not offsetParent) so position:fixed focusables count as visible.
-      const items = Array.from(panel.querySelectorAll(FOCUSABLE)).filter(
-        (el) => !el.disabled && el.getAttribute("aria-hidden") !== "true" && el.getClientRects().length > 0
-      );
-      if (!items.length) { e.preventDefault(); return; }
+      if (e.key !== "Tab" || !available(panel)) return;
+      const items = tabbable();
+      if (!items.length) { e.preventDefault(); focusPanel(); return; }
       const first = items[0];
       const last = items[items.length - 1];
       const active = document.activeElement;
-      if (e.shiftKey && (active === first || !panel.contains(active))) {
+      if (e.shiftKey && (active === first || !items.includes(active))) {
         e.preventDefault();
         last.focus();
-      } else if (!e.shiftKey && (active === last || !panel.contains(active))) {
+      } else if (!e.shiftKey && (active === last || !items.includes(active))) {
         e.preventDefault();
         first.focus();
       }
@@ -57,8 +82,9 @@ export function useOverlayFocus(ref, open, panelSelector = null, { scrollLock = 
     document.addEventListener("keydown", onKeyDown, true);
     return () => {
       document.removeEventListener("keydown", onKeyDown, true);
+      if (addedPanelTabIndex && panel.getAttribute("tabindex") === "-1") panel.removeAttribute("tabindex");
       if (scrollLock) unlockScroll();
-      if (previouslyFocused && previouslyFocused.focus) previouslyFocused.focus();
+      if (available(previouslyFocused) && previouslyFocused.focus) previouslyFocused.focus();
     };
   }, [open, panelSelector]);
 }

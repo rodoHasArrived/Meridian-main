@@ -1,3 +1,0 @@
-# Vendored Windows binary removed: CI installs a checksum-verified actionlint release
-# (see .github/workflows/meridian-ci.yml). Do not commit the executable here.
-actionlint.exe

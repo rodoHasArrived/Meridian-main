@@ -126,15 +126,15 @@ describe("buildFamilyOfficeScreenViewModel", () => {
     expect(vm.panels.find((panel) => panel.id === "unfunded-commitments")?.value).toBe("$250.0K");
     expect(vm.ownershipGraph.nodes.map((node) => node.id)).toEqual(["root-family", "trust-a", "trust-a-private-sleeve"]);
     expect(vm.ownershipGraph.edges.map((edge) => edge.label)).toEqual([
-      "60% ownership from Root Family Office to Trust A",
-      "Trust A private sleeve is held by Trust A"
+      "Root Family Office → Trust A: hierarchy association; legal relationship unrecorded",
+      "Trust A private sleeve is associated with Trust A; legal title unconfirmed"
     ]);
   });
 
   it("selects adjacent graph nodes deterministically for keyboard navigation", () => {
     expect(selectAdjacentFamilyOfficeNode("family-holdco", "next", FAMILY_OFFICE_DEMO_ENTITY_STRUCTURE)).toBe("alpha-trust");
     expect(selectAdjacentFamilyOfficeNode("alpha-trust", "previous", FAMILY_OFFICE_DEMO_ENTITY_STRUCTURE)).toBe("family-holdco");
-    expect(selectAdjacentFamilyOfficeNode("private-funds", "last", FAMILY_OFFICE_DEMO_ENTITY_STRUCTURE)).toBe("real-estate");
+    expect(selectAdjacentFamilyOfficeNode("private-funds", "last", FAMILY_OFFICE_DEMO_ENTITY_STRUCTURE)).toBe(FAMILY_OFFICE_DEMO_ENTITY_STRUCTURE.privateAssets.at(-1)!.assetId);
     expect(selectAdjacentFamilyOfficeNode("missing", "first", FAMILY_OFFICE_DEMO_ENTITY_STRUCTURE)).toBe("family-holdco");
     expect(selectAdjacentFamilyOfficeNode("missing", "first")).toBeNull();
   });

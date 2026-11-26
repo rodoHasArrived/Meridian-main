@@ -16,6 +16,18 @@ namespace Meridian.Contracts.SecurityMaster;
 /// </summary>
 public static class CorporateActionSourceProposalReplayComparer
 {
+    /// <summary>
+    /// Hashes a complete source record without rounding numbers to a CLR numeric type. Property
+    /// order, insignificant whitespace and equivalent numeric spellings do not create revisions.
+    /// </summary>
+    public static string ComputeSourceContentHash(JsonElement payload)
+    {
+        if (payload.ValueKind != JsonValueKind.Object)
+            throw new ArgumentException("A corporate-action source record must be a JSON object.", nameof(payload));
+
+        return Sha256Digest.ComputeUtf8(CanonicalizeJson(payload));
+    }
+
     public static bool HasSameSourcePayload(
         CorporateActionSourceProposalDto existing,
         CorporateActionSourceProposalDto candidate)
@@ -26,6 +38,10 @@ public static class CorporateActionSourceProposalReplayComparer
         return existing.SecurityId == candidate.SecurityId
                && existing.PayloadSchemaVersion == candidate.PayloadSchemaVersion
                && Sha256Digest.FixedEquals(existing.EconomicFingerprint, candidate.EconomicFingerprint)
+               && string.Equals(
+                   CanonicalizeElectionCalendar(existing.ProposedAction.Payload),
+                   CanonicalizeElectionCalendar(candidate.ProposedAction.Payload),
+                   StringComparison.Ordinal)
                && string.Equals(
                    NormalizeLifecycle(existing.ProposedAction.LifecycleState),
                    NormalizeLifecycle(candidate.ProposedAction.LifecycleState),
@@ -41,8 +57,47 @@ public static class CorporateActionSourceProposalReplayComparer
                    existing.ProviderIdentity.EvidenceReference,
                    candidate.ProviderIdentity.EvidenceReference,
                    StringComparison.Ordinal)
+               && HasSameRetainedSourceEvidence(existing.ProposedAction.SourceEvidence, candidate.ProposedAction.SourceEvidence)
                && HasSameDisplayMetadata(existing.DisplayMetadata, candidate.DisplayMetadata);
     }
+
+    private static bool HasSameRetainedSourceEvidence(
+        CorporateActionRetainedSourceEvidenceDto? existing,
+        CorporateActionRetainedSourceEvidenceDto? candidate)
+    {
+        if (existing is null || candidate is null)
+            return existing is null && candidate is null;
+
+        if (!string.Equals(existing.ProviderEventType, candidate.ProviderEventType, StringComparison.Ordinal)
+            || !string.Equals(existing.Schema, candidate.Schema, StringComparison.Ordinal)
+            || string.IsNullOrWhiteSpace(existing.RawPayloadJson)
+            || string.IsNullOrWhiteSpace(candidate.RawPayloadJson)
+            || !Sha256Digest.FixedEquals(Sha256Digest.ComputeUtf8(existing.RawPayloadJson), existing.RawPayloadSha256)
+            || !Sha256Digest.FixedEquals(Sha256Digest.ComputeUtf8(candidate.RawPayloadJson), candidate.RawPayloadSha256))
+            return false;
+
+        // Canonical provider versions ignore JSON formatting. Such a replay keeps the first
+        // retained original text; a changed source fact or missing evidence is never overwritten.
+        try
+        {
+            using var existingDocument = JsonDocument.Parse(existing.RawPayloadJson);
+            using var candidateDocument = JsonDocument.Parse(candidate.RawPayloadJson);
+            return existingDocument.RootElement.ValueKind == JsonValueKind.Object
+                && candidateDocument.RootElement.ValueKind == JsonValueKind.Object
+                && string.Equals(CanonicalizeJson(existingDocument.RootElement),
+                    CanonicalizeJson(candidateDocument.RootElement), StringComparison.Ordinal);
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    private static string? CanonicalizeElectionCalendar(JsonElement? payload)
+        => payload is { ValueKind: JsonValueKind.Object } element
+           && element.TryGetProperty("electionCalendar", out var calendar)
+            ? CanonicalizeJson(calendar)
+            : null;
 
     private static string NormalizeLifecycle(string? value) =>
         string.IsNullOrWhiteSpace(value) ? CorporateActionLifecycleStates.Confirmed : value.Trim();

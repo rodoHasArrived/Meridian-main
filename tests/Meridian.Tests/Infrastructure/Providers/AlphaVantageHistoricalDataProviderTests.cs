@@ -3,6 +3,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Tests.TestHelpers;
@@ -106,7 +107,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
         });
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(response));
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var bars = await provider.GetAdjustedDailyBarsAsync("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 2));
 
@@ -115,6 +116,8 @@ public sealed class AlphaVantageHistoricalDataProviderTests
         bar.High.Should().Be(120m);
         bar.Low.Should().Be(60m);
         bar.Close.Should().Be(100m);
+        bar.PriceBasis.Should().Be(HistoricalPriceBasis.Raw);
+        bar.ToHistoricalBar(preferAdjusted: false).Close.Should().Be(100m);
         bar.AdjustedOpen.Should().Be(decimal.Parse(adjustedOpen, CultureInfo.InvariantCulture));
         bar.AdjustedHigh.Should().Be(decimal.Parse(adjustedHigh, CultureInfo.InvariantCulture));
         bar.AdjustedLow.Should().Be(decimal.Parse(adjustedLow, CultureInfo.InvariantCulture));
@@ -125,6 +128,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
         bar.DividendAmount.Should().Be(expectedDividend == 0m ? null : expectedDividend);
 
         var historicalBar = bar.ToHistoricalBar(preferAdjusted: true);
+        historicalBar.PriceBasis.Should().Be(HistoricalPriceBasis.FullyAdjusted);
         historicalBar.Open.Should().Be(bar.AdjustedOpen);
         historicalBar.High.Should().Be(bar.AdjustedHigh);
         historicalBar.Low.Should().Be(bar.AdjustedLow);
@@ -143,7 +147,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
             return JsonResponse(IntradayResponse);
         });
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
         var from = ParseExchangeTimestamp("2024-01-02 09:35:00");
         var to = ParseExchangeTimestamp("2024-01-02 09:40:00");
 
@@ -180,7 +184,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(EmptyIntradayResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var bars = await provider.GetIntradayBarsAsync("AAPL", "5min", null, null, cts.Token);
 
@@ -193,7 +197,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(RateLimitResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         Func<Task> act = () => provider.GetIntradayBarsAsync("AAPL", "5min", null, null, cts.Token);
 
@@ -208,7 +212,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
         using var handler = new StubHttpMessageHandler(_ =>
             throw new InvalidOperationException("Unsupported intervals should fail before HTTP."));
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         Func<Task> act = () => provider.GetIntradayBarsAsync("AAPL", "2min", null, null, cts.Token);
 
@@ -229,7 +233,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
             return JsonResponse("""{ "Global Quote": { "01. symbol": "AAPL" } }""");
         });
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var available = await provider.IsAvailableAsync(cts.Token);
 
@@ -248,7 +252,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(RateLimitResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var available = await provider.IsAvailableAsync(cts.Token);
 

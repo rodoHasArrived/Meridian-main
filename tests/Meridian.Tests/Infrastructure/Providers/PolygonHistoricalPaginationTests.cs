@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Xunit;
@@ -14,6 +15,52 @@ public sealed class PolygonHistoricalPaginationTests
     private static readonly DateOnly To = new(2026, 1, 5);
     private const string NextPage = "https://api.polygon.io/v3/page?cursor=second";
     private const string ApiKey = "test+key&value";
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SplitAdjustedResponse_CannotBeConvertedToRawOrDividendAdjustedPrices(bool intraday)
+    {
+        using var handler = new SequenceHandler(null, Page(
+            [new { o = 50, h = 55, l = 45, c = 50, v = 2000, t = Timestamp(1) }], adjusted: true));
+        using var http = new HttpClient(handler);
+        using var provider = new PolygonHistoricalDataProvider(ApiKey, http);
+
+        var bars = intraday
+            ? await provider.GetIntradayBarsAsync("AAPL", "1min", From, From)
+            : await provider.GetAdjustedDailyBarsAsync("AAPL", From, From);
+
+        var bar = bars.Should().ContainSingle().Subject;
+        bar.PriceBasis.Should().Be(HistoricalPriceBasis.SplitAdjusted);
+        bar.AdjustedPriceBasis.Should().Be(HistoricalPriceBasis.SplitAdjusted);
+        bar.ToHistoricalBar().Close.Should().Be(50m);
+        bar.ToHistoricalBar(HistoricalPriceBasis.SplitAdjusted).PriceBasis.Should().Be(HistoricalPriceBasis.SplitAdjusted);
+        var raw = () => bar.ToHistoricalBar(preferAdjusted: false);
+        raw.Should().Throw<InvalidOperationException>();
+        var fullyAdjusted = () => bar.ToHistoricalBar(HistoricalPriceBasis.FullyAdjusted);
+        fullyAdjusted.Should().Throw<InvalidOperationException>();
+        handler.Requests.Single().Query.Should().Contain("adjusted=true");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ContradictoryAdjustmentOnContinuation_RefusesTheWholeHistory(bool intraday)
+    {
+        var clock = new AdvancingClock();
+        using var handler = new SequenceHandler(clock,
+            Page([Aggregate(Timestamp(1))], NextPage, adjusted: true),
+            Page([Aggregate(Timestamp(2))], adjusted: false));
+        using var http = new HttpClient(handler);
+        using var provider = new PolygonHistoricalDataProvider(ApiKey, http, timeProvider: clock);
+
+        Func<Task> fetch = intraday
+            ? async () => { await provider.GetIntradayBarsAsync("AAPL", "1min", From, To); }
+        : async () => { await provider.GetAdjustedDailyBarsAsync("AAPL", From, To); };
+
+        await fetch.Should().ThrowAsync<DataProviderException>().WithMessage("*unadjusted*adjusted request*");
+        handler.Requests.Should().HaveCount(2);
+    }
 
     [Theory]
     [InlineData("daily")]
@@ -148,9 +195,11 @@ public sealed class PolygonHistoricalPaginationTests
     public async Task SecondPageHttpFailure_PropagatesTypedFailure(string kind, HttpStatusCode status)
     {
         var clock = new AdvancingClock();
-        using var handler = new SequenceHandler(clock,
-            Page([Row(kind, 1)], NextPage),
-            Response("{}", status));
+        var expectedAttempts = status == HttpStatusCode.InternalServerError ? 5 : 2;
+        var responses = new[] { Page([Row(kind, 1)], NextPage) }
+            .Concat(Enumerable.Range(1, expectedAttempts - 1).Select(_ => Response("{}", status)))
+            .ToArray();
+        using var handler = new SequenceHandler(clock, responses);
         using var http = new HttpClient(handler);
         using var provider = new PolygonHistoricalDataProvider(ApiKey, http, timeProvider: clock);
 
@@ -162,7 +211,9 @@ public sealed class PolygonHistoricalPaginationTests
             await act.Should().ThrowAsync<RateLimitException>();
         else
             await act.Should().ThrowAsync<DataProviderException>();
-        handler.Requests.Should().HaveCount(2);
+        handler.Requests.Should().HaveCount(expectedAttempts,
+            "a retryable continuation failure gets four attempts after the successful first page");
+        handler.Requests.Skip(1).Should().AllSatisfy(uri => uri.Query.Should().Contain("cursor=second"));
     }
 
     [Theory]
@@ -227,8 +278,8 @@ public sealed class PolygonHistoricalPaginationTests
     private static long Timestamp(int day)
         => new DateTimeOffset(From.AddDays(day - 1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero).ToUnixTimeMilliseconds();
 
-    private static HttpResponseMessage Page(object[] results, string? next = null)
-        => Response(JsonSerializer.Serialize(new { status = "OK", results, next_url = next }));
+    private static HttpResponseMessage Page(object[] results, string? next = null, bool? adjusted = null)
+        => Response(JsonSerializer.Serialize(new { status = "OK", results, next_url = next, adjusted }));
 
     private static HttpResponseMessage Response(string json, HttpStatusCode status = HttpStatusCode.OK)
         => new(status) { Content = new StringContent(json, Encoding.UTF8, "application/json") };

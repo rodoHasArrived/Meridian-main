@@ -82,8 +82,8 @@ public sealed partial class StatementReconciliationIntakeAuthority : IStatementR
     private readonly IStatementRunWorkflowService? _statementRuns;
     private readonly IReconciliationApiService? _reconciliation;
     private readonly IReconciliationBreakQueueRepository? _breakQueue;
-    private readonly Meridian.Infrastructure.Reconciliation.ICanonicalStatementStore? _canonicalStatements;
-    private readonly Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore? _matchArtifacts;
+    private readonly Meridian.DataIntegration.Reconciliation.ICanonicalStatementStore? _canonicalStatements;
+    private readonly Meridian.DataIntegration.Reconciliation.IStatementRunMatchArtifactStore? _matchArtifacts;
 
     public StatementReconciliationIntakeAuthority(
         IAccountQueryService? accounts,
@@ -93,8 +93,8 @@ public sealed partial class StatementReconciliationIntakeAuthority : IStatementR
         IStatementRunWorkflowService? statementRuns,
         IReconciliationApiService? reconciliation,
         IReconciliationBreakQueueRepository? breakQueue,
-        Meridian.Infrastructure.Reconciliation.ICanonicalStatementStore? canonicalStatements = null,
-        Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore? matchArtifacts = null,
+        Meridian.DataIntegration.Reconciliation.ICanonicalStatementStore? canonicalStatements = null,
+        Meridian.DataIntegration.Reconciliation.IStatementRunMatchArtifactStore? matchArtifacts = null,
         IStatementRunRecoveryRepository? runRecovery = null)
     {
         _runRecovery = runRecovery;
@@ -301,6 +301,11 @@ public sealed partial class StatementReconciliationIntakeAuthority : IStatementR
                 accountingScope,
                 statementRun.Import.FundAccountId,
                 queueScope);
+            if (sourceBreak.BreakId is { } sourceBreakId
+                && statementRun.ExecutedTolerancePolicy is { } policy
+                && statementRun.MatchArtifactSha256 is { } artifactHash
+                && statementRun.CaseMatchEvidence?.GetValueOrDefault(sourceBreakId) is { } match)
+                item = item with { StatementEvidence = new(statementRun.Import.ImportId, artifactHash, policy, match) };
             await _breakQueue!
                 .CreateIfMissingAsync(queueScope, item, ct)
                 .ConfigureAwait(false);

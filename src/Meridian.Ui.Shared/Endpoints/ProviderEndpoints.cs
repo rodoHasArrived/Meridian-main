@@ -72,12 +72,18 @@ public static class ProviderEndpoints
         };
     }
 
+    private static DataSourceConfig PreserveSourceAlpacaSettings(DataSourceConfig source, AlpacaOptionsDto? requested, DataSourceConfig existing)
+        => source.Provider == DataSourceKind.Alpaca && existing.Provider == DataSourceKind.Alpaca
+            ? source with { Alpaca = requested?.ToDomain(existing.Alpaca) ?? existing.Alpaca }
+            : source;
+
     /// <summary>
     /// Maps all provider and data source API endpoints.
     /// </summary>
     public static void MapProviderEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Providers");
+        group.AddEndpointFilter(new ProviderConfigurationCredentialFilter());
         group.RequireWorkstationTenantScope();
 
         // Get all data sources
@@ -141,21 +147,21 @@ public static class ProviderEndpoints
                 Tags: req.Tags
             );
 
-            await store.UpdateAsync(cfg =>
+            var changeStatus = await store.UpdateWithChangeStatusAsync(cfg =>
             {
                 var dataSources = cfg.DataSources ?? new DataSourcesConfig();
                 var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
 
                 var idx = sources.FindIndex(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
                 if (idx >= 0)
-                    sources[idx] = source;
+                    sources[idx] = PreserveSourceAlpacaSettings(source, req.Alpaca, sources[idx]);
                 else
                     sources.Add(source);
 
                 return cfg with { DataSources = dataSources with { Sources = sources.ToArray() } };
             }, context.RequestAborted);
 
-            return Results.Ok(new { id });
+            return Results.Ok(new { id, changeImpact = ProviderActivation(changeStatus) });
         })
         .WithName("UpsertDataSource").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Creates or updates a data source configuration entry.")
@@ -176,7 +182,7 @@ public static class ProviderEndpoints
                 return authorizationFailure;
             }
 
-            await store.UpdateAsync(cfg =>
+            var changeStatus = await store.UpdateWithChangeStatusAsync(cfg =>
             {
                 var dataSources = cfg.DataSources ?? new DataSourcesConfig();
                 var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
@@ -186,7 +192,7 @@ public static class ProviderEndpoints
                 return cfg with { DataSources = dataSources with { Sources = sources.ToArray() } };
             }, context.RequestAborted);
 
-            return Results.Ok();
+            return Results.Ok(ProviderActivation(changeStatus));
         })
         .WithName("DeleteDataSource").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Removes a data source configuration by ID.")
@@ -207,7 +213,7 @@ public static class ProviderEndpoints
                 return authorizationFailure;
             }
 
-            var outcome = await store.UpdateAsync<IResult?>(cfg =>
+            var (outcome, changeStatus) = await store.UpdateWithChangeStatusAsync<IResult?>(cfg =>
             {
                 var dataSources = cfg.DataSources ?? new DataSourcesConfig();
                 var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
@@ -222,7 +228,7 @@ public static class ProviderEndpoints
                 return (cfg with { DataSources = dataSources with { Sources = sources.ToArray() } }, null);
             }, context.RequestAborted);
 
-            return outcome ?? Results.Ok();
+            return outcome ?? Results.Ok(ProviderActivation(changeStatus));
         })
         .WithName("ToggleDataSource").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Toggles the enabled/disabled state of a data source.")
@@ -243,7 +249,7 @@ public static class ProviderEndpoints
                 return authorizationFailure;
             }
 
-            await store.UpdateAsync(cfg =>
+            var changeStatus = await store.UpdateWithChangeStatusAsync(cfg =>
             {
                 var dataSources = cfg.DataSources ?? new DataSourcesConfig();
 
@@ -251,13 +257,13 @@ public static class ProviderEndpoints
                 {
                     DataSources = dataSources with
                     {
-                        DefaultRealTimeSourceId = req.DefaultRealTimeSourceId,
-                        DefaultHistoricalSourceId = req.DefaultHistoricalSourceId
+                        DefaultRealTimeSourceId = req.UpdateRealTime ? req.DefaultRealTimeSourceId : dataSources.DefaultRealTimeSourceId,
+                        DefaultHistoricalSourceId = req.UpdateHistorical ? req.DefaultHistoricalSourceId : dataSources.DefaultHistoricalSourceId
                     }
                 };
             }, context.RequestAborted);
 
-            return Results.Ok();
+            return Results.Ok(ProviderActivation(changeStatus));
         })
         .WithName("SetDefaultSources").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Sets the default real-time and historical data source IDs.")
@@ -277,7 +283,7 @@ public static class ProviderEndpoints
                 return authorizationFailure;
             }
 
-            await store.UpdateAsync(cfg =>
+            var changeStatus = await store.UpdateWithChangeStatusAsync(cfg =>
             {
                 var dataSources = cfg.DataSources ?? new DataSourcesConfig();
 
@@ -291,7 +297,7 @@ public static class ProviderEndpoints
                 };
             }, context.RequestAborted);
 
-            return Results.Ok();
+            return Results.Ok(ProviderActivation(changeStatus));
         })
         .WithName("UpdateFailoverSettings").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Updates automatic failover settings including timeout and enable/disable.")
@@ -318,6 +324,10 @@ public static class ProviderEndpoints
                 try
                 {
                     result = await setupService.ConfigureForConnectionAsync(req, connectionIds[0]!, tenant.TenantId!, actor, context.RequestAborted).ConfigureAwait(false);
+                }
+                catch (ProviderRuntimeCredentialQuiescenceException error)
+                {
+                    return Results.Conflict(new { code = "ProviderCredentialMaintenanceRequired", error = error.Message });
                 }
                 catch (UnauthorizedAccessException)
                 {
@@ -740,21 +750,21 @@ public static class ProviderEndpoints
                 Tags: req.Tags
             );
 
-            await store.UpdateAsync(cfg =>
+            var changeStatus = await store.UpdateWithChangeStatusAsync(cfg =>
             {
                 var dataSources = cfg.DataSources ?? new DataSourcesConfig();
                 var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
 
                 var idx = sources.FindIndex(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
                 if (idx >= 0)
-                    sources[idx] = source;
+                    sources[idx] = PreserveSourceAlpacaSettings(source, req.Alpaca, sources[idx]);
                 else
                     sources.Add(source);
 
                 return cfg with { DataSources = dataSources with { Sources = sources.ToArray() } };
             }, context.RequestAborted);
 
-            return Results.Ok(new { id });
+            return Results.Ok(new { id, changeImpact = ProviderActivation(changeStatus) });
         })
         .WithName("UpsertDataSourceAlias").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Alias for /api/config/datasources POST for backward compatibility.")
@@ -764,6 +774,9 @@ public static class ProviderEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
+
+    private static object ProviderActivation(Meridian.Contracts.Configuration.ConfigurationChangeStatus status) =>
+        new { status.Revision, status.RuntimeState, status.CollectorAcknowledgement };
 
     private static IReadOnlyList<ProviderStreamStatusResponse>? ToStreamResponses(
         IReadOnlyList<ProviderStreamDiagnostics>? streams)

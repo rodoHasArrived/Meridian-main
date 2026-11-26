@@ -27,7 +27,7 @@ public sealed class SettingsFeatureModule : IDesktopFeatureModule
 {
     private static readonly IReadOnlyList<ShellPageDescriptor> Pages =
     [
-        ShellPageRegistryBuilder.Page<SettingsWorkspaceShellPage>("SettingsShell", "Settings Workspace", "Manage preferences, credentials, diagnostics, services, alerts, and help.", "settings", "Launchpad", "\uE713", 0, ShellNavigationVisibilityTier.Primary, ["settings", "preferences", "workspace", "support"], ["Settings", "Diagnostics", "SystemHealth", "Help"]),
+        ShellPageRegistryBuilder.Page<SettingsWorkspaceShellPage>("SettingsShell", "Settings Workspace", "Pick the setup task you need.", "settings", "Launchpad", "\uE713", 0, ShellNavigationVisibilityTier.Primary, ["settings", "preferences", "workspace", "support"], ["Settings", "Diagnostics", "SystemHealth", "Help"]),
         ShellPageRegistryBuilder.Page<SettingsPage>("Settings", "Settings", "Adjust workstation preferences, connections, and operator defaults.", "settings", "Preferences", "\uE713", 10, ShellNavigationVisibilityTier.Primary, ["preferences", "settings"], ["CredentialManagement", "KeyboardShortcuts", "Help"], ["Preferences"]),
         ShellPageRegistryBuilder.Page<CredentialManagementPage>("CredentialManagement", "Credential management", "Manage provider credentials and validate secure access.", "settings", "Preferences", "\uE72E", 20, ShellNavigationVisibilityTier.Primary, ["credentials", "security"], ["Settings", "AddProviderWizard"]),
         ShellPageRegistryBuilder.Page<SystemHealthPage>("SystemHealth", "System health", "Monitor workstation service health, dependencies, and readiness.", "settings", "Operations", "\uE9D9", 30, ShellNavigationVisibilityTier.Primary, ["health", "system"], ["Diagnostics", "ServiceManager"]),
@@ -84,6 +84,11 @@ public sealed class SettingsFeatureModule : IDesktopFeatureModule
         services.AddTransient<SetupWizardViewModel>();
         services.AddTransient<WorkflowLibraryViewModel>();
         services.AddSingleton<WpfCredentialService>();
+        // OAuth auto-refresh runs against the real DPAPI-backed credential store, not the
+        // shared no-op default. App starts it after desktop activation and stops it on exit.
+        services.AddSingleton(sp => new OAuthRefreshService(
+            sp.GetRequiredService<WpfCredentialService>(),
+            sp.GetService<Microsoft.Extensions.Logging.ILogger<OAuthRefreshService>>()));
         services.AddSingleton<IWorkstationProviderOwnershipApiClient, WorkstationProviderOwnershipApiClient>();
         services.AddSingleton<IWorkstationBondCutoverApiClient, WorkstationBondCutoverApiClient>();
         services.AddTransient<CredentialManagementViewModel>();

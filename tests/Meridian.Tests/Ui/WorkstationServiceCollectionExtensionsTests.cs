@@ -23,15 +23,24 @@ using Microsoft.Extensions.Hosting;
 using NSubstitute;
 using CoreConfigStore = Meridian.Application.UI.ConfigStore;
 using IReportingScheduleStore = Meridian.Reporting.IReportingScheduleStore;
-#pragma warning disable CS0618
-using LegacyReportingScheduleStore = Meridian.Ui.Shared.Services.IReportingScheduleStore;
-#pragma warning restore CS0618
 
 namespace Meridian.Tests.Ui;
 
 [Collection("Sequential")]
 public sealed class WorkstationServiceCollectionExtensionsTests
 {
+    [Fact]
+    public async Task ExecutionWorkflows_ReadOnlyCompositionRemainsDormantWithoutGateway()
+    {
+        var services = CreateMinimalWorkstationServices();
+        services.AddWorkstationSharedServices();
+        await using var provider = services.BuildServiceProvider();
+        provider.GetService<Meridian.Execution.Sdk.IOrderPreviewService>().Should().BeNull();
+        var worker = provider.GetRequiredService<ExecutionWorkflowWorker>();
+        worker.Scope.Should().BeNull();
+        await worker.TickAsync();
+    }
+
     [Fact]
     public void AddUiSharedServices_DefaultProviderCatalog_ResolvesEveryProviderAndAliasExactlyOnce()
     {
@@ -98,7 +107,7 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         services.AddLogging();
         services.AddSingleton(new CoreConfigStore(configPath));
 
-        services.AddWorkstationSharedServices();
+        services.AddWorkstationSharedServices(new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build());
 
         using var provider = services.BuildServiceProvider();
         provider.GetRequiredService<PromotionRecordStoreOptions>().RootDirectory
@@ -380,11 +389,6 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         var canonicalScheduleStore = provider.GetRequiredService<IReportingScheduleStore>();
         canonicalScheduleStore
             .Should().BeOfType<PostgresReportingScheduleStore>();
-#pragma warning disable CS0618
-        var legacyScheduleStore = provider.GetRequiredService<LegacyReportingScheduleStore>();
-#pragma warning restore CS0618
-        legacyScheduleStore.Should().NotBeSameAs(canonicalScheduleStore);
-        legacyScheduleStore.Should().BeAssignableTo<IReportingScheduleStore>();
         provider.GetService<IReportPackWorkflowRecordStore>().Should().BeNull();
         provider.GetService<IReportPackDeliveryRecordStore>().Should().BeNull();
         var capability = provider.GetRequiredService<IReportingDeploymentReadinessService>()

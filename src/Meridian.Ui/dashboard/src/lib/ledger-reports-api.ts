@@ -1,4 +1,4 @@
-import { apiGetJson } from "@/lib/api";
+import { apiGetJson, apiPostBlob, type ApiRequestOptions } from "@/lib/api";
 import { UI_API_ROUTES } from "@/lib/ui-api-routes.generated";
 import {
   WORKSTATION_API_ENDPOINTS,
@@ -25,12 +25,12 @@ import type {
  * ratchet; follows the `reporting-governance-api.ts` domain-module pattern.
  */
 
-export function getLedgerBooks() {
-  return apiGetJson<LedgerBook[]>(WORKSTATION_API_ENDPOINTS.ledgerBooks);
+export function getLedgerBooks(options?: ApiRequestOptions) {
+  return apiGetJson<LedgerBook[]>(WORKSTATION_API_ENDPOINTS.ledgerBooks, options);
 }
 
-export function getLedgerPeriods(query: { ledgerBookId?: string | null; status?: string | null } = {}) {
-  return apiGetJson<LedgerPeriod[]>(ledgerPeriodsEndpoint(query));
+export function getLedgerPeriods(query: { ledgerBookId?: string | null; status?: string | null } = {}, options?: ApiRequestOptions) {
+  return apiGetJson<LedgerPeriod[]>(ledgerPeriodsEndpoint(query), options);
 }
 
 export function getLedgerPeriodTrialBalance(periodId: string) {
@@ -41,8 +41,13 @@ export function getLedgerPeriodPnlSummary(periodId: string) {
   return apiGetJson<LedgerPeriodPnlSummary>(ledgerPeriodPnlSummaryEndpoint(periodId));
 }
 
-export function getLedgerPeriodJournalEntries(periodId: string) {
-  return apiGetJson<LedgerPostedJournalEntry[]>(ledgerPeriodJournalEntriesEndpoint(periodId));
+export function getLedgerPeriodJournalEntries(periodId: string, query: { instrumentId?: string | null; accountId?: string | null } = {}, options: ApiRequestOptions = {}) {
+  return apiGetJson<LedgerPostedJournalEntry[]>(ledgerPeriodJournalEntriesEndpoint(periodId, query), options);
+}
+
+/** Complete, balanced journals for the selected period; table search/column filters do not apply. */
+export function exportLedgerPeriodJournalCsv(periodId: string, options: ApiRequestOptions = {}) {
+  return apiPostBlob(routeWithParam(UI_API_ROUTES.LedgerPeriodJournalExport, "periodId", periodId), { format: "csv" }, options);
 }
 
 export interface LedgerAccountRunningBalanceQuery {
@@ -90,4 +95,13 @@ export function getLedgerPeriodAccountRunningBalance(
   query: LedgerAccountRunningBalanceQuery
 ) {
   return apiGetJson<LedgerAccountRunningBalance>(ledgerPeriodAccountRunningBalanceEndpoint(periodId, query));
+}
+
+/**
+ * Journal entries one ledger book posted from a fill or an order, matched on the identifiers the
+ * postings recorded. Exactly one of fillId or orderId.
+ */
+export function getExecutionJournalEntries(ledgerBookId: string, source: { fillId: string } | { orderId: string }, options: ApiRequestOptions = {}) {
+  const params = new URLSearchParams("fillId" in source ? { fillId: source.fillId } : { orderId: source.orderId });
+  return apiGetJson<LedgerPostedJournalEntry[]>(`/api/ledger/books/${encodeURIComponent(ledgerBookId)}/execution-journal-entries?${params}`, { ...options, allowDevelopmentFallback: false });
 }

@@ -2,13 +2,17 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-31
+**Reviewed:** 2026-11-11
 
 Use this reference to identify the shared provider contracts implemented in Meridian and the
 boundaries of their runtime exposure. The matrix covers all 22 direct folders under
 [`src/Meridian.Infrastructure/Adapters/`](../../src/Meridian.Infrastructure/Adapters/).
 The source and test definitions were inspected at `fcd72ec33307770b3f432e48daaf22bff25c2f8f`;
 this review does not establish a successful live-provider session or operator acceptance.
+
+Alpaca's corporate-action scope was expanded on 2026-11-23 to all 16 documented Market Data
+REST families. The retained-evidence and coverage boundary is described in the
+[corporate-action coverage guide](../testing/alpaca-corporate-action-coverage.md).
 
 Evidence note: where a `complete` row rests on offline, mock, simulator, or fixture tests (no dated live run), read it as **synthetic-verified** in the [solo-developer evidence labels](../ai/solo-developer-workflow.md#provider-evidence-labels), not **live-verified**. `complete` here does not claim compatibility with the live provider; absent a recorded live run, the live status is `live-untested`.
 
@@ -48,7 +52,7 @@ currently enabled.
 
 | Adapter folder (provider ID) | Streaming | Historical | Search | Options | Corporate actions | Brokerage | Capability boundary |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `Alpaca` (`alpaca`) | Yes | Yes | Yes | Yes | Yes | Yes | Feed, asset class, credentials, and paper/live environment are separately selected; corporate actions cover dividend/split announcements. |
+| `Alpaca` (`alpaca`) | Yes | Yes | Yes | Yes | Yes | Yes | Feed, asset class, credentials, and paper/live environment are separately selected; all 16 Market Data corporate-action families are mapped to review-only observations with bounded coverage and retained raw evidence. |
 | `AlphaVantage` (`alphavantage`) | — | Yes | Yes | — | Yes | — | Credential/enable-gated history and keyword search; adjusted-daily dividend/split projection is review-only. |
 | `Core` | — | — | — | — | — | — | Shared factories, contracts, pacing, and orchestration; not an independent provider family. |
 | `Edgar` (`edgar`) | — | — | Yes | — | — | — | SEC company/ticker discovery; filing and Security Master ingestion use separate contracts. |
@@ -96,6 +100,10 @@ currently enabled.
   codes. Use [Provider Backfill Operations](../operators/provider-backfill-operations.md) for
   ordering, checkpoints, fallback, and coverage evidence. An empty result alone does not establish
   complete historical coverage or the absence of corporate actions.
+- TwelveData daily history splits long ranges into bounded overlapping date windows and merges
+  identical boundary observations. Conflicting observations or a later-window failure refuse the
+  accumulated result. Vendor error bodies distinguish credential/entitlement and quota failures
+  from supported no-data or unknown-symbol responses; an HTTP 200 alone does not establish success.
 
 ### Interfaces outside the six shared contracts
 
@@ -113,8 +121,10 @@ These implemented paths explain why a family can have useful behavior beside a *
 
 ### Corporate-action release and acceptance
 
-The six on-demand corporate-action adapters above implement dividend/split retrieval or projection;
-this does not imply support for every corporate-action type or permission to apply an observation.
+Alpaca maps all 16 documented `v1/corporate-actions` families, including multi-security allocations
+and separate capital-gain components. The other five on-demand adapters implement dividend/split
+retrieval or projection. Each adapter's coverage remains specific to its endpoint and request;
+retrieval does not authorize applying an observation.
 Their declared release statuses are:
 
 | Provider(s) | `CorporateActionProviderReleaseStatusDto` | Acceptance implication |
@@ -127,6 +137,24 @@ raise their release status through command content.
 [`CorporateActionOperationsServiceTests`](../../tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsServiceTests.cs)
 checks that acceptance fails closed for a review-only provider release. Missing credentials,
 endpoint failures, or partial responses must not be interpreted as verified absence of actions.
+
+Use `ICorporateActionProvider.FetchWithOutcomeAsync` when coverage matters. The six adapters return
+`Complete`, `Partial` or `Failed` within their supported endpoint/dataset scope, with usable
+observations and safe failure codes, actual HTTP status and retry metadata when available. Ingest
+and inbox read models expose per-provider `FetchOutcomes` and warnings for incomplete coverage.
+Legacy providers implementing only the collection API have `Unknown` coverage; an empty
+`FetchAsync` result never establishes absence of actions. Caller cancellation propagates, while
+internal timeouts remain explicit failures. These outcomes do not change release status or
+establish live verification. Synthetic regression cases are in
+[`CorporateActionFetchOutcomeTests`](../../tests/Meridian.Tests/Infrastructure/Providers/CorporateActionFetchOutcomeTests.cs)
+and [`AlpacaCorporateActionProviderTests`](../../tests/Meridian.Tests/Infrastructure/Providers/AlpacaCorporateActionProviderTests.cs).
+
+Alpaca additionally returns the per-family coverage, processing-date interval, region and data-quality
+filter. Its incomplete/unavailable query results withhold all observations. Observed amendments retain
+native identity, family, mapping version and lossless canonical source content; the original JSON
+record and raw digest survive durable staging. REST does not provide cancellation tombstones or a
+complete mutation history. Unresolved successor identities, economic dates and cash-rate bases remain
+explicit source-review work. All families remain `ReviewOnly`, with live compatibility `live-untested`.
 
 ### Brokerage and Interactive Brokers runtime
 

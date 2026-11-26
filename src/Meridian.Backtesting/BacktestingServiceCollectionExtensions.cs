@@ -4,6 +4,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Storage;
+using Meridian.Storage.Ledger;
 using Meridian.Storage.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -41,6 +42,9 @@ public static class BacktestingServiceCollectionExtensions
             {
                 var storageOptions = new StorageOptions { RootPath = request.DataRoot };
                 var catalogService = new StorageCatalogService(request.DataRoot, storageOptions);
+                var aggregate = sp.GetService<ISecurityMasterQueryService>();
+                var identity = sp.GetService<ISecurityIdentityQueryService>() ?? aggregate;
+                var actions = sp.GetService<ISecurityCorporateActionsQueryService>() ?? aggregate;
                 return new BacktestEngine(
                     sp.GetRequiredService<ILogger<BacktestEngine>>(),
                     catalogService,
@@ -48,9 +52,16 @@ public static class BacktestingServiceCollectionExtensions
                         ?? sp.GetService<ISecurityMasterQueryService>(),
                     sp.GetService<ICorporateActionAdjustmentService>() ?? CreateSecurityMasterAdjustment(sp),
                     sp.GetService<IBacktestPreflightService>(),
-                    sp.GetService<ISecurityIdentityQueryService>()
-                        ?? sp.GetService<ISecurityMasterQueryService>(),
-                    sp.GetService<IBacktestAssetEventSource>() ?? CreateSecurityMasterAssetEventSource(sp));
+                    identity,
+                    sp.GetService<IBacktestAssetEventSource>() ?? CreateSecurityMasterAssetEventSource(sp))
+                {
+                    CanonicalCorporateActionQueries = actions,
+                    LedgerJournals = sp.GetService<ILedgerJournalLogFactory>(),
+                    AssetEventSource = sp.GetService<IBacktestAssetEventSource>() ??
+                        (identity is not null && actions is not null
+                            ? new SecurityMasterBacktestAssetEventSource(identity, actions, aggregate)
+                            : null)
+                };
             }
 
             return CreateEngine;

@@ -196,6 +196,36 @@ public sealed class StrategyRunLedgerViewModelTests
     }
 
     [Fact]
+    public void SelectedAsOfDate_FiltersHistoricalEvidenceAndClearRestoresCompleteRun()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var store = new Meridian.Strategies.Storage.StrategyRunStore();
+            var run = StrategyRunWorkspaceTestData.BuildRun("run-ledger-date-filter");
+            await store.RecordRunAsync(run);
+            var workspaceService = new StrategyRunWorkspaceService(store,
+                new Meridian.Strategies.Services.PortfolioReadService(),
+                new Meridian.Strategies.Services.LedgerReadService());
+            var viewModel = new StrategyRunLedgerViewModel(workspaceService, NavigationService.Instance);
+            viewModel.Parameter = run.RunId;
+            await viewModel.CurrentLoadTask;
+            var retainedCount = viewModel.Journal.Count;
+            retainedCount.Should().BeGreaterThan(0);
+
+            viewModel.SelectedAsOfDate = new DateTime(2020, 1, 1);
+            await viewModel.CurrentLoadTask;
+            viewModel.Journal.Should().BeEmpty();
+            viewModel.TrialBalance.Should().BeEmpty();
+            viewModel.AsOfText.Should().Contain("UTC");
+
+            viewModel.SelectedAsOfDate = null;
+            await viewModel.CurrentLoadTask;
+            viewModel.Journal.Should().HaveCount(retainedCount);
+            viewModel.TrialBalance.Should().NotBeEmpty();
+        });
+    }
+
+    [Fact]
     public void RunLedgerPageSource_UsesCompactDenseTablesAndSelectionInspector()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\RunLedgerPage.xaml"));

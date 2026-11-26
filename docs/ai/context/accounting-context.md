@@ -2,7 +2,7 @@
 
 **Status:** active AI context pack  
 **Owner:** core-team  
-**Reviewed:** 2026-10-07
+**Reviewed:** 2026-11-23
 
 ## Meridian Accounting Rules
 
@@ -14,6 +14,16 @@
 - Balances must reconcile to source evidence, external statements, or approved operational explanations.
 - Accounting UI must expose validation state, source, approval state, and audit trail before commit.
 - Generated code must not silently create accounting records from unverified market data.
+- Historical accounting marks require an explicitly raw source. Retain the actual provider, feed,
+  symbol, session, price basis and source-record digest through valuation evidence and journal
+  fingerprints. A provider's generic or adjusted research bars do not establish that capability.
+- Provider agreement establishes backfill completeness only against an independently resolved,
+  bounded exchange-session calendar. Common missing sessions block closure; an unknown calendar
+  means unknown coverage, while a confirmed holiday-only window can contain no observations.
+- Lending recovery consumes retained applied amounts, original event/revision dates and original
+  terms evidence. Require contiguous aggregate history, collapse exact duplicate deliveries and
+  reject conflicting identities or amounts. Missing historical amortization basis requires explicit
+  evidence; do not infer it from current terms or recompute old amounts using today's clock.
 - Ledger writes must fail closed when required source evidence, reviewer state, period posture, idempotency key, or version/concurrency guard is missing.
 - Governed production stores reject standalone tax-lot saves even with complete acquisition facts. Journal-backed mutations use `IAtomicTaxLotJournalStore`; retained legacy facts use reviewed backfill. Direct saves remain an explicit compatibility-store operation.
 - Supported canonical corporate actions bind reviewed predecessor/successor identities and commit lot mutations with the journal in one transaction. Retain original acquisition facts separately from current carrying basis and preserve source-action lineage after disposal; see the [lot convergence blueprint](../../engineering/blueprints/security-lot-convergence-blueprint.md) for treatments and remaining gates.
@@ -27,13 +37,24 @@
 External GL provider work also follows [External GL Providers](../../operators/external-gl-providers.md).
 Xero and NetSuite credentialed imports remain external evidence. Their provider-owned
 export checks require current connection/import scope and exact retained human control
-references; a certified review artifact still cannot post externally.
+references. Use the exact journal export workflow for provider posting. It freezes the certified
+mapping, source checkpoint and journal line IDs, then commits approval and the outbox together.
+Recover ambiguous submissions by querying the retained provider key. Keep Meridian authoritative
+and gate final close and reports only on a book's explicit confirmation policy.
 
 Load this context before generating or reviewing code for ledgers, journal entries, capital accounts, close workflows, reconciliation postings, reports with accounting balances, or audit evidence involving accounting records.
 
 Consolidation work loads [Intercompany Consolidation](../../domain/intercompany-consolidation.md).
-The first slice uses two direct 100% entities in one currency; only posted reviewed eliminations
-enter actual consolidated figures. The existing summed ledger/WPF views remain gross.
+The exact book policy retains v1 behavior or selects v2 stable-role/N-entity matching, v3 governed
+whole-trial-balance FX translation, or v4 separately enabled income elimination. Only posted reviewed
+eliminations enter actual consolidated figures. Legacy summed views remain gross. New book controls
+are enforced immediately; existing books warn until audited migration activation. Missing historical
+lifecycle, agreement, account or currency evidence is unresolved, never inferred from current state.
+Load [Intercompany Agreements and Entity Lifecycle](../../domain/intercompany-agreements-and-entity-lifecycle.md)
+and the [implementation sequence](../../engineering/plans/intercompany-entity-controls.md) before
+changing these shared seams. Preserve independently reviewed legacy-attribution sidecars, exact
+source digests and retained v1 evidence. File-based local/demo state does not establish PostgreSQL
+transactional authority or Windows desktop verification.
 
 ## Review Checklist
 

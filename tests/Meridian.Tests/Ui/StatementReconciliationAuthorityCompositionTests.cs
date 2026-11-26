@@ -3,7 +3,7 @@ using Meridian.Application.Composition;
 using Meridian.Documents;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Reporting;
 using Meridian.Storage.Reporting;
 using Meridian.Ui.Shared.Evidence;

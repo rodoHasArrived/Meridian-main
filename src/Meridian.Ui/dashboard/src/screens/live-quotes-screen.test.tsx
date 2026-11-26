@@ -674,7 +674,7 @@ describe("buildLiveQuotesMarketViewModel", () => {
     expect(formatMarketPrice(null)).toBe(LIVE_QUOTES_EMPTY_VALUE);
     expect(formatMarketSize(undefined)).toBe(LIVE_QUOTES_EMPTY_VALUE);
     expect(formatMarketTime("not-a-date")).toBe(LIVE_QUOTES_EMPTY_VALUE);
-    expect(formatMarketTime("2026-05-08T15:00:00.123Z")).toBe("15:00:00.123 UTC");
+    expect(formatMarketTime("2026-05-08T15:00:00.123Z")).toBe("May 8, 2026, 15:00:00.123 UTC");
 
     const vm = buildLiveQuotesMarketViewModel({
       activeSymbol: "AAPL",
@@ -722,7 +722,7 @@ describe("buildLiveQuotesMarketViewModel", () => {
       changeLabel: "+1.06 (+0.57%)",
       changeAriaLabel: "Day change +1.06 (+0.57%)",
       changeTone: "positive",
-      description: "Session 2026-05-08 quote evidence from 13:30:00.000 UTC to 14:59:59.000 UTC."
+      description: "Session 2026-05-08 quote evidence from May 8, 2026, 13:30:00.000 UTC to May 8, 2026, 14:59:59.000 UTC."
     });
     expect(sessionStats?.stats.map((stat) => [stat.label, stat.value])).toEqual([
       ["Open", "187.00"],
@@ -798,7 +798,7 @@ describe("buildLiveQuotesMarketViewModel", () => {
       venueLabel: "NASDAQ"
     });
     expect(vm.venueLabel).toBe("NASDAQ");
-    expect(vm.lastUpdateLabel).toBe("15:00:00.000 UTC");
+    expect(vm.lastUpdateLabel).toBe("May 8, 2026, 15:00:00.000 UTC");
   });
 
   it("keeps recent-trade row selection and detail state in the view model", () => {
@@ -843,7 +843,7 @@ describe("buildLiveQuotesMarketViewModel", () => {
       "Timestamp"
     ]);
     expect(vm.selectedTradeDetail?.fields.find((field) => field.label === "Timestamp")?.value)
-      .toBe("15:00:01.000 UTC");
+      .toBe("May 8, 2026, 15:00:01.000 UTC");
   });
 
   it("derives BBO, depth, quote metrics, and chart labels for the view", () => {
@@ -906,13 +906,13 @@ describe("buildLiveQuotesMarketViewModel", () => {
       fields: expect.arrayContaining([
         { label: "Venue", value: "NASDAQ" },
         { label: "Sequence", value: "42" },
-        { label: "Timestamp", value: "15:00:00.000 UTC" }
+        { label: "Timestamp", value: "May 8, 2026, 15:00:00.000 UTC" }
       ])
     });
     expect(vm.tradeDisplayRows[0]).toMatchObject({
       aggressorLabel: "Sell",
       aggressorTone: "negative",
-      timeLabel: "15:00:00.000 UTC"
+      timeLabel: "May 8, 2026, 15:00:00.000 UTC"
     });
     expect(vm.priceChart).toMatchObject({
       title: "AAPL prints over 1s",
@@ -1092,17 +1092,17 @@ describe("buildLiveQuoteRefreshCommand", () => {
   it("hides refresh until a symbol is active and disables during refresh", () => {
     expect(buildLiveQuoteRefreshCommand(null, false)).toBeNull();
     expect(buildLiveQuoteRefreshCommand("AAPL", false)).toMatchObject({
-      label: "Refresh",
-      ariaLabel: "Refresh live data for AAPL",
+      label: "Fetch latest",
+      ariaLabel: "Fetch latest live data for AAPL",
       disabled: false,
       disabledReason: null,
       busy: false
     });
     expect(buildLiveQuoteRefreshCommand("AAPL", true)).toMatchObject({
-      label: "Refreshing",
-      ariaLabel: "Refreshing live data for AAPL",
+      label: "Fetching",
+      ariaLabel: "Fetching latest live data for AAPL",
       disabled: true,
-      disabledReason: "Live market data refresh is already running.",
+      disabledReason: "Live market data is already being fetched.",
       busy: true
     });
   });
@@ -1163,6 +1163,28 @@ describe("LiveQuotesScreen quick trade", () => {
 
     expect(screen.getByLabelText(/Market panels updated/)).toBeInTheDocument();
     expect(screen.getByLabelText(/Quote matrix updated/)).toBeInTheDocument();
+  });
+
+  it("opens the exact trade print from the chart even when it falls outside the tape table limit", async () => {
+    const user = userEvent.setup();
+    const trades = Array.from({ length: 30 }, (_, index) => ({
+      ...tradesWithPrintsFixture.trades[0],
+      timestamp: new Date(Date.UTC(2026, 4, 8, 15, 0, 30 - index)).toISOString(),
+      sequenceNumber: 30 - index,
+      price: 188 + index / 100
+    }));
+    vi.mocked(api.getLiveTrades).mockResolvedValue({ ...tradesFixture, trades, count: trades.length });
+    renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes?symbol=AAPL"] });
+
+    const chart = await screen.findByRole("group", { name: /Recent AAPL trade prices/ });
+    const oldest = within(chart).getByRole("button", { name: /^AAPL print 1\./ });
+    await user.hover(oldest);
+    const table = screen.getByRole("table", { name: "Recent trade prices chart data" });
+    expect(table).toHaveTextContent("188.29");
+    await user.click(screen.getByRole("link", { name: "Open trade print 1" }));
+    const detail = screen.getByRole("region", { name: "AAPL trade 1 detail" });
+    expect(detail).toHaveTextContent("188.29");
+    expect(detail).toHaveTextContent("15:00:01.000 UTC");
   });
 
   it("seeds a buy ticket at the ask price when ask is clicked and submits", async () => {
@@ -1316,6 +1338,7 @@ describe("LiveQuotesScreen quick trade", () => {
   });
 
   it("disables empty symbol lookup and describes the required input", () => {
+    vi.spyOn(api, "getSymbols").mockResolvedValue([]);
     renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes"] });
 
     const submitButton = screen.getByRole("button", { name: "View live quote" });
@@ -1333,7 +1356,35 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(api.getLiveQuote).not.toHaveBeenCalled();
   });
 
+  it("starts an empty quote list from the watchlist, skipping archived symbols", async () => {
+    const getSymbols = vi.spyOn(api, "getSymbols").mockResolvedValue([
+      { symbol: "MSFT", status: "Active" }, { symbol: "OLD", status: "Archived" }, { symbol: "NVDA", status: "Monitored" }
+    ] as never);
+    vi.spyOn(api, "getLiveQuote").mockResolvedValue(quoteFixture);
+    vi.spyOn(api, "getLiveTrades").mockResolvedValue(tradesFixture);
+    vi.spyOn(api, "getLiveOrderbook").mockResolvedValue(orderbookFixture);
+    renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes"] });
+    expect(await screen.findByDisplayValue("MSFT, NVDA")).toBeInTheDocument();
+    await waitForAsyncEffects();
+    expect(screen.getByDisplayValue("MSFT, NVDA")).toBeInTheDocument();
+    // Read once per screen (StrictMode re-issues an aborted first read).
+    expect(getSymbols).toHaveBeenCalled();
+    expect(screen.queryByText("Start a quote list")).not.toBeInTheDocument();
+  });
+
+  it("does not claim a connection is healthy when no symbols are subscribed", () => {
+    vi.spyOn(api, "getSymbols").mockResolvedValue([]);
+    renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes"] });
+    const strip = screen.getByLabelText("Market status strip");
+    expect(strip).toHaveTextContent("Connection: Connected · no symbols subscribed");
+    expect(strip).not.toHaveTextContent("Coverage");
+    expect(strip).toHaveTextContent("Market panels:");
+    expect(strip).toHaveTextContent("Quote matrix:");
+    expect(screen.getByRole("heading", { name: /Live quotes/ })).toBeInTheDocument();
+  });
+
   it("has no basic accessibility violations in the no-symbol state", async () => {
+    vi.spyOn(api, "getSymbols").mockResolvedValue([]);
     const { container } = renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes"] });
 
     const results = await axe(container);
@@ -1397,7 +1448,8 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(await screen.findByRole("button", { name: /Buy AAPL at ask 188\.07/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Sell AAPL at 188\.05/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Refresh live data for AAPL" }));
+    expect(screen.queryByRole("button", { name: /^Refresh/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Fetch latest live data for AAPL" }));
 
     expect(await screen.findByText("quote feed offline")).toBeInTheDocument();
     expect(screen.getByText("trade tape offline")).toBeInTheDocument();
@@ -1419,7 +1471,7 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(firstTrade).toHaveAttribute("aria-controls", "live-quotes-trade-detail");
     expect(firstTrade).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: "AAPL trade 11 detail" })).toBeInTheDocument();
-    expect(screen.getByText("AAPL print 11")).toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: "AAPL trade 11 detail" })).getByText("AAPL print 11")).toBeInTheDocument();
 
     await user.click(secondTrade);
 
@@ -1445,10 +1497,12 @@ describe("LiveQuotesScreen quick trade", () => {
     const depthCharts = screen.getAllByRole("img", { name: /depth profile/ });
     expect(depthCharts).toHaveLength(1);
     expect(depthCharts[0]).toHaveAccessibleName("Order-book depth profile for AAPL");
-    expect(depthCharts[0].tagName.toLowerCase()).toBe("svg");
+    const depthGroup = screen.getByRole("group", { name: "Order-book depth profile for AAPL" });
+    expect(depthGroup).toContainElement(depthCharts[0]);
+    expect(depthCharts[0]).not.toContainElement(within(depthGroup).getByRole("button", { name: /mid-price marker/ }));
     expect(depthCharts[0].parentElement?.closest('[role="img"]')).toBeNull();
     expect(depthCharts[0]).toHaveAccessibleDescription(
-      "Cumulative bid and ask size around the mid price. The depth ladder below lists each price level."
+      "Cumulative bid and ask size. The quantity coverage table identifies fully and partly used displayed levels."
     );
 
     expect(bidLevel).toHaveAttribute("aria-controls", "live-quotes-depth-level-detail");

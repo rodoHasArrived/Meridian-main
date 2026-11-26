@@ -10,6 +10,101 @@ public sealed class SimulatedPortfolioTests
     private static SimulatedPortfolio CreatePortfolio(decimal initialCash = 10_000m)
         => new(initialCash, new FixedCommissionModel(0m), annualMarginRate: 0.05, annualShortRebateRate: 0.02);
 
+    [Theory]
+    [InlineData(0.0)]
+    [InlineData(-0.0365)]
+    [InlineData(0.0365)]
+    public void AccrueDailyInterest_MarginRates_PostOnlyNonzeroBalancedLines(double rate)
+    {
+        var ledger = NewLedger();
+        var portfolio = new SimulatedPortfolio(1_000m, new FixedCommissionModel(), rate, 0, ledger);
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", 20, 100m, 0m, DateTimeOffset.UtcNow));
+        var journalsBefore = ledger.Journal.Count;
+
+        portfolio.AccrueDailyInterest(new DateOnly(2024, 1, 6)); // Saturday also accrues.
+
+        portfolio.Cash.Should().BeApproximately(-1_000m - 1_000m * (decimal)(rate / 365.0), 0.00000000001m);
+        ledger.Journal.Count.Should().Be(journalsBefore + (rate == 0 ? 0 : 1));
+        ledger.Journal.Should().OnlyContain(j => j.IsBalanced);
+        ledger.GetBalance(LedgerAccounts.CashAccount(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(portfolio.Cash);
+    }
+
+    [Theory]
+    [InlineData(0.0)]
+    [InlineData(-0.0365)]
+    [InlineData(0.0365)]
+    public void AccrueDailyInterest_ShortRebateRates_RespectSignAndSkipZero(double rate)
+    {
+        var ledger = NewLedger();
+        var portfolio = new SimulatedPortfolio(1_000m, new FixedCommissionModel(), 0, rate, ledger);
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", -10, 100m, 0m, DateTimeOffset.UtcNow));
+        portfolio.UpdateLastPrice("SPY", 100m);
+        var journalsBefore = ledger.Journal.Count;
+
+        portfolio.AccrueDailyInterest(new DateOnly(2024, 1, 7));
+
+        portfolio.Cash.Should().BeApproximately(2_000m + 1_000m * (decimal)(rate / 365.0), 0.00000000001m);
+        ledger.Journal.Count.Should().Be(journalsBefore + (rate == 0 ? 0 : 1));
+        ledger.Journal.Should().OnlyContain(j => j.IsBalanced);
+        ledger.GetBalance(LedgerAccounts.CashAccount(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(portfolio.Cash);
+    }
+
+    [Fact]
+    public void AccrueDailyInterest_BorrowFeeTakingCashNegative_ChargesMarginInterestFromTheNextDay()
+    {
+        // 3.65 p.a. margin = 1% per day; -36.5 p.a. rebate = a 10% per day borrow fee.
+        var portfolio = new SimulatedPortfolio(50m, new FixedCommissionModel(), 3.65, -36.5);
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", -10, 100m, 0m, DateTimeOffset.UtcNow));
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "QQQ", 10, 100m, 0m, DateTimeOffset.UtcNow));
+        portfolio.UpdateLastPrice("SPY", 100m);
+        portfolio.Cash.Should().Be(50m);
+        portfolio.MarginBalance.Should().Be(0m);
+
+        portfolio.AccrueDailyInterest(new DateOnly(2024, 1, 8));
+
+        portfolio.Cash.Should().BeApproximately(-50m, 0.00000000001m);
+        portfolio.MarginBalance.Should().Be(portfolio.Cash, "a borrow fee that overdraws the account creates a margin debit");
+
+        portfolio.AccrueDailyInterest(new DateOnly(2024, 1, 9));
+
+        var snapshot = portfolio.TakeSnapshot(DateTimeOffset.UtcNow, new DateOnly(2024, 1, 9));
+        snapshot.DayCashFlows.OfType<MarginInterestCashFlow>().Should().ContainSingle()
+            .Which.Amount.Should().BeApproximately(-0.5m, 0.00000000001m);
+        portfolio.Cash.Should().BeApproximately(-150.5m, 0.00000000001m);
+        portfolio.MarginBalance.Should().Be(portfolio.Cash);
+    }
+
+    [Fact]
+    public void AccrueDailyInterest_RebateLiftingCashPositive_StopsMarginInterest()
+    {
+        var portfolio = new SimulatedPortfolio(50m, new FixedCommissionModel(), 3.65, 36.5);
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", -10, 100m, 0m, DateTimeOffset.UtcNow));
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "QQQ", 11, 100m, 0m, DateTimeOffset.UtcNow));
+        portfolio.UpdateLastPrice("SPY", 100m);
+        portfolio.MarginBalance.Should().Be(-50m);
+
+        portfolio.AccrueDailyInterest(new DateOnly(2024, 1, 8));
+
+        // Day one: 1% interest on the -50 debit, then a +100 rebate clears it.
+        portfolio.Cash.Should().BeApproximately(49.5m, 0.00000000001m);
+        portfolio.MarginBalance.Should().Be(0m);
+
+        portfolio.AccrueDailyInterest(new DateOnly(2024, 1, 9));
+
+        portfolio.Cash.Should().BeApproximately(149.5m, 0.00000000001m, "no interest is owed once the debit is repaid");
+    }
+
+    [Fact]
+    public void ProcessFill_CommissionCashFlows_ReconcileToActualCashChange()
+    {
+        var portfolio = CreatePortfolio();
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", 10, 100m, 5m, DateTimeOffset.UtcNow));
+        var snapshot = portfolio.TakeSnapshot(DateTimeOffset.UtcNow, new DateOnly(2024, 1, 2));
+
+        snapshot.DayCashFlows.OfType<TradeCashFlow>().Single().Amount.Should().Be(-1_000m);
+        snapshot.DayCashFlows.Sum(flow => flow.Amount).Should().Be(portfolio.Cash - 10_000m);
+    }
+
     [Fact]
     public void ProcessFill_BuyOrder_DeductsCashAndCreatesPosition()
     {
@@ -56,6 +151,28 @@ public sealed class SimulatedPortfolioTests
             positions.Should().NotContainKey("SPY");
         else
             positions["SPY"].Quantity.Should().Be(expectedRemaining);
+    }
+
+    [Fact]
+    public void ProcessFill_AccountRefusals_AreFillRejectedExceptionsRaisedBeforeAnyStateChanges()
+    {
+        // The engine discards only FillRejectedException and lets every other failure end the run,
+        // because a later failure may leave the portfolio half-updated. That contract holds only if
+        // every refusal is raised before cash or positions move.
+        var portfolio = CreateLongOnlyPortfolio();
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", 100L, 50m, 0m, DateTimeOffset.UtcNow, "long-only"));
+        var cash = portfolio.Cash;
+
+        var shortSell = () => portfolio.ProcessFill(
+            new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", -150L, 55m, 0m, DateTimeOffset.UtcNow, "long-only"));
+        var marginBuy = () => portfolio.ProcessFill(
+            new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "QQQ", 1_000L, 400m, 0m, DateTimeOffset.UtcNow, "long-only"));
+
+        shortSell.Should().Throw<FillRejectedException>().WithMessage("*short selling*");
+        marginBuy.Should().Throw<FillRejectedException>().WithMessage("*margin*");
+        portfolio.Cash.Should().Be(cash);
+        portfolio.GetCurrentPositions().Keys.Should().BeEquivalentTo(["SPY"]);
+        portfolio.GetCurrentPositions()["SPY"].Quantity.Should().Be(100);
     }
 
     private static SimulatedPortfolio CreateLongOnlyPortfolio()
@@ -117,7 +234,7 @@ public sealed class SimulatedPortfolioTests
         var cashBefore = portfolio.Cash;
         portfolio.AccrueDailyInterest(DateOnly.FromDateTime(DateTime.Today));
 
-        // Interest = -1000 * 0.05 / 252 ≈ -0.198
+        // Interest uses ACT/365 fixed because every calendar date accrues.
         portfolio.Cash.Should().BeLessThan(cashBefore);
     }
 
@@ -150,6 +267,45 @@ public sealed class SimulatedPortfolioTests
     // ── Ledger tests ─────────────────────────────────────────────────────────
 
     private static Meridian.Ledger.Ledger NewLedger() => new();
+
+    [Fact]
+    public void Ledger_SharedChart_KeepsLongAndShortEconomicsInSeparateBrokerAccounts()
+    {
+        var ledger = NewLedger();
+        var timestamp = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var rules = new FinancialAccountRules(AllowMargin: true, AllowShortSelling: true);
+        var portfolio = new SimulatedPortfolio(
+            [
+                new FinancialAccount("broker-long", "Long Broker", FinancialAccountKind.Brokerage, "Broker One", 10_000m, rules),
+                new FinancialAccount("broker-short", "Short Broker", FinancialAccountKind.Brokerage, "Broker Two", 10_000m, rules)
+            ],
+            "broker-long",
+            new FixedCommissionModel(0m),
+            ledger,
+            timestamp);
+
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", 10L, 100m, 2m, timestamp.AddMinutes(1), "broker-long"));
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", -5L, 120m, 3m, timestamp.AddMinutes(2), "broker-long"));
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", -10L, 100m, 2m, timestamp.AddMinutes(3), "broker-short"));
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", 4L, 90m, 3m, timestamp.AddMinutes(4), "broker-short"));
+
+        IChartOfAccounts chart = StandardChartOfAccounts.Instance;
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Cash, "broker-long")).Should().Be(9_595m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Cash, "broker-short")).Should().Be(10_635m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, "broker-long", "SPY")).Should().Be(500m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-short", "SPY")).Should().Be(600m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.RealizedGain, "broker-long")).Should().Be(100m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.RealizedGain, "broker-short")).Should().Be(40m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.CommissionExpense, "broker-long")).Should().Be(5m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.CommissionExpense, "broker-short")).Should().Be(5m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, "broker-short", "SPY")).Should().Be(0m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-long", "SPY")).Should().Be(0m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Cash, "broker-long"))
+            .Should().Be(ledger.GetBalance(LedgerAccounts.CashAccount("broker-long")));
+        ledger.Accounts.Should().OnlyContain(account => account.FinancialAccountId == "broker-long" || account.FinancialAccountId == "broker-short");
+        ledger.Journal.Should().OnlyContain(entry => entry.IsBalanced);
+        portfolio.Cash.Should().Be(20_230m);
+    }
 
     [Fact]
     public void Ledger_InitialDeposit_PostsBalancedEntry()

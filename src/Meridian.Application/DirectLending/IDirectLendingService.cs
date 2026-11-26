@@ -75,6 +75,12 @@ public interface IDirectLendingService
 
     Task<ReconciliationRunDto?> ReconcileAsync(Guid loanId, CancellationToken ct = default, DirectLendingCommandMetadataDto? metadata = null);
 
+    Task<ReconciliationRunDto?> ReconcileAsync(Guid loanId, ReconcileLoanRequest request, CancellationToken ct = default, DirectLendingCommandMetadataDto? metadata = null)
+        => request.AmountTolerance == 0m && request.DateToleranceDays == 0
+            ? ReconcileAsync(loanId, ct, metadata)
+            : throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation,
+                "This direct-lending service does not support configurable reconciliation tolerances."));
+
     Task<IReadOnlyList<ReconciliationRunDto>> GetReconciliationRunsAsync(Guid loanId, CancellationToken ct = default);
 
     Task<IReadOnlyList<ReconciliationResultDto>> GetReconciliationResultsAsync(Guid reconciliationRunId, CancellationToken ct = default);

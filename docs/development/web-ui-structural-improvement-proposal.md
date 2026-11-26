@@ -375,7 +375,9 @@ routes, and a re-grade of the affected rows in `docs/screenshots/web-audit.md`.
 
 **Phase D deferred scope (recorded 2026-07-13).** Four Accounting items were intentionally left
 out of the Phase D delivery and remain open follow-ups: extracting the ~730-line inline
-`AccountingConfigurationPanel` from `accounting-screen.tsx` into its own module, converting the
+`AccountingConfigurationPanel` from `accounting-screen.tsx` into its own module (done 2026-11-13:
+now `accounting-screen.configuration-panel.tsx`, alongside the extracted external-GL,
+approvals-workstream, case-workbench, and manual-journal panel modules), converting the
 reconciliation comparison/casework band to the full master–detail rail, resolving the latent
 `showLedgerExplorer` branch that is only reachable via hash deep link (document-or-remove
 decision), and scoping the shared workflow/posture/external-GL/multi-asset-coverage tail that

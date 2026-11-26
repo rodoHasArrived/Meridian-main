@@ -9,12 +9,181 @@ using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Xunit;
 
 namespace Meridian.Tests.Strategies;
 
 public sealed class StrategyRunReadServiceTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetRunDetail_PaperQualityUsesOneAuthorizedPostedCaptureAndExactFillIdentity(bool matchesExpectedFill)
+    {
+        var run = BuildCompletedRun("posted-quality", "quality-strategy", "Quality", 101_000m, 1000m, .01m,
+            1000m, 0m, 1, 1d, 0m);
+        run = run with
+        {
+            RunType = RunType.Paper,
+            ParameterSet = new Dictionary<string, string>
+            {
+                ["workstationTenantId"] = "tenant-alpha",
+                ["workstationCompanyId"] = "company-alpha"
+            },
+            Metrics = run.Metrics! with { Ledger = new Meridian.Ledger.Ledger() }
+        };
+        var expectedFill = run.Metrics!.Fills.Single().FillId;
+        var postedFill = matchesExpectedFill ? expectedFill : Guid.NewGuid();
+        var time = run.EndedAt!.Value;
+        var date = DateOnly.FromDateTime(time.UtcDateTime);
+        var tags = new Dictionary<string, string>(Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Create([
+            new(ProviderId: "fixture", EventReference: "retained-paper-price", ObservedAt: time,
+                Repaired: matchesExpectedFill, GapFilled: false, QualityScore: .95, QualityThreshold: .8,
+                QualityAssessedAt: time, AssessmentFrom: date, AssessmentTo: date)]))
+        {
+            [LedgerQuery.StrategyRunIdTag] = run.RunId,
+            [LedgerQuery.AccountingRunIdTag] = run.RunId
+        };
+        var posted = new Meridian.Ledger.Ledger();
+        posted.PostLines(time, "retained trade", [(LedgerAccounts.Cash, 100m, 0m), (LedgerAccounts.RealizedGain, 0m, 100m)],
+            new JournalEntryMetadata(FillId: postedFill, Tags: tags));
+        posted.PostLines(time, "retained fee", [(LedgerAccounts.CommissionExpense, 1m, 0m), (LedgerAccounts.Cash, 0m, 1m)],
+            new JournalEntryMetadata(FillId: postedFill, Tags: tags));
+        var scope = new StrategyRunReadScope("tenant-alpha", "company-alpha");
+        var source = new Mock<IStrategyRunLedgerSource>(MockBehavior.Strict);
+        source.Setup(service => service.ReadAsync(It.Is<StrategyRunEntry>(entry => entry.RunId == run.RunId), scope,
+            It.IsAny<CancellationToken>())).ReturnsAsync(posted);
+        source.Setup(service => service.GetPostingChart(posted, It.IsAny<DateTimeOffset?>())).Returns(StandardChartOfAccounts.Instance);
+        source.Setup(service => service.GetBalanceComparisonUnavailableReason(posted)).Returns("Run activity is not an account balance.");
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(run);
+        var reader = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService(), postedLedgerSource: source.Object);
+
+        var warnings = (await reader.GetRunDetailAsync(run.RunId, scope))!.ReplayProvenance!.DataQualityWarnings!;
+
+        warnings.Should().ContainSingle().Which.Kind.Should().Be(matchesExpectedFill ? "Repaired" : "Unknown");
+        warnings[0].AffectedFillCount.Should().Be(1, "fee journals cannot duplicate a fill and another fill cannot replace missing evidence");
+        source.Verify(service => service.ReadAsync(It.IsAny<StrategyRunEntry>(), scope, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetRunDetail_QualityWarningsDeduplicateCostsAndPreserveCleanAssessment(bool repaired)
+    {
+        var run = BuildCompletedRun("quality-run", "quality-strategy", "Quality", 101_000m, 1000m, .01m,
+            1000m, 0m, 1, 1d, 0m);
+        var fillId = run.Metrics!.Fills[0].FillId;
+        var time = run.EndedAt!.Value;
+        var date = DateOnly.FromDateTime(time.UtcDateTime);
+        var sources = new Meridian.Contracts.Operations.MarketDataInputEvidence[]
+        {
+            new(ProviderId: "fixture", EventReference: "price:synthetic", ObservedAt: time,
+                Repaired: repaired, GapFilled: false, QualityScore: repaired ? .5 : .95,
+                QualityAssessedAt: time, AssessmentFrom: date, AssessmentTo: date, QualityThreshold: .8)
+        };
+        var tags = Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Create(sources);
+        var ledger = new Meridian.Ledger.Ledger();
+        ledger.PostLines(time, "synthetic trade", [(LedgerAccounts.Cash, 100m, 0m), (LedgerAccounts.RealizedGain, 0m, 100m)],
+            new JournalEntryMetadata(FillId: fillId, Tags: tags));
+        ledger.PostLines(time, "synthetic fee", [(LedgerAccounts.CommissionExpense, 1m, 0m), (LedgerAccounts.Cash, 0m, 1m)],
+            new JournalEntryMetadata(FillId: fillId, Tags: tags));
+        run = run with { Metrics = run.Metrics with { Ledger = ledger } };
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(run);
+        var service = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
+        var detail = await service.GetRunDetailAsync(run.RunId);
+        detail!.ReplayProvenance.Should().NotBeNull("quality coverage applies even without backfill source-mix receipts");
+        detail.ReplayProvenance!.DataQualityWarnings.Should().NotBeNull();
+        if (repaired)
+        {
+            detail.ReplayProvenance.DataQualityWarnings!.Should().Contain(warning => warning.Kind == "Repaired")
+                .And.Contain(warning => warning.Kind == "LowQuality");
+            detail.ReplayProvenance.DataQualityWarnings.Should().OnlyContain(warning => warning.AffectedFillCount == 1);
+        }
+        else
+            detail.ReplayProvenance.DataQualityWarnings.Should().BeEmpty("an assessed clean population differs from unassessed legacy input");
+    }
+
+    [Fact]
+    public async Task GetRunDetail_MissingJournalAttributionReportsUnknownInsteadOfClean()
+    {
+        var run = BuildCompletedRun("unknown-quality", "quality-strategy", "Quality", 101_000m, 1000m, .01m,
+            1000m, 0m, 2, 1d, 0m);
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(run);
+        var service = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
+        var warnings = (await service.GetRunDetailAsync(run.RunId))!.ReplayProvenance!.DataQualityWarnings!;
+        warnings.Should().ContainSingle().Which.AffectedFillCount.Should().Be(2);
+        warnings[0].Kind.Should().Be("Unknown");
+    }
+
+    [Fact]
+    public async Task GetRunDetail_UnrelatedCleanJournalCannotReplaceMissingExpectedFillEvidence()
+    {
+        var run = BuildCompletedRun("mismatched-quality", "quality-strategy", "Quality", 101_000m, 1000m, .01m,
+            1000m, 0m, 1, 1d, 0m);
+        var time = run.EndedAt!.Value;
+        var date = DateOnly.FromDateTime(time.UtcDateTime);
+        var ledger = new Meridian.Ledger.Ledger();
+        var tags = Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Create([
+            new(ProviderId: "fixture", EventReference: "other-fill", ObservedAt: time, Repaired: false, GapFilled: false,
+                QualityScore: .95, QualityAssessedAt: time, AssessmentFrom: date, AssessmentTo: date, QualityThreshold: .8)]);
+        ledger.PostLines(time, "unrelated synthetic trade", [(LedgerAccounts.Cash, 1m, 0m), (LedgerAccounts.RealizedGain, 0m, 1m)],
+            new JournalEntryMetadata(FillId: Guid.NewGuid(), Tags: tags));
+        run = run with { Metrics = run.Metrics! with { Ledger = ledger } };
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(run);
+        var service = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
+        var warnings = (await service.GetRunDetailAsync(run.RunId))!.ReplayProvenance!.DataQualityWarnings!;
+        warnings.Should().ContainSingle().Which.Kind.Should().Be("Unknown");
+        warnings[0].AffectedFillCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Sweeps_RankTheNamedObjectiveAndRetainCoordinatesWithoutMixingDatasets()
+    {
+        var store = new StrategyRunStore();
+        StrategyRunEntry Point(string id, decimal equity, decimal pnl, decimal totalReturn, string dataset) =>
+            BuildCompletedRun(id, "sensitivity", "Sensitivity", equity, pnl, totalReturn,
+                pnl, 0m, 1, 1.0, 100m) with
+            {
+                SweepId = "experiment-1",
+                SweepDefinitionHash = "sweep-v2:comparison-context",
+                SweepObjective = "TotalReturn",
+                DatasetReference = dataset,
+                ParameterSet = new Dictionary<string, string> { ["lookback"] = id == "a" ? "10" : "20" }
+            };
+        await store.RecordRunAsync(Point("a", 200_000m, 10_000m, 0.1m, "dataset-a"));
+        await store.RecordRunAsync(Point("b", 110_000m, 20_000m, 0.2m, "dataset-a"));
+        await store.RecordRunAsync(Point("c", 300_000m, 90_000m, 0.9m, "dataset-b"));
+        var service = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
+        var groups = await service.GetSweepResultGroupsAsync();
+        groups.Should().HaveCount(2);
+        var group = groups.Single(group => group.RunCount == 2);
+        group.ObjectiveRankings[0].RunId.Should().Be("b");
+        group.ObjectiveRankings[0].ObjectiveValue.Should().Be(0.2m);
+        group.Runs.Single(run => run.RunId == "a").Parameters.Should().ContainKey("lookback").WhoseValue.Should().Be("10");
+        group.HistoryMayBeTruncated.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Sweeps_UnknownObjectiveDoesNotMasqueradeAsFinalEquityRanking()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(BuildCompletedRun("unknown-objective", "sensitivity", "Sensitivity",
+            110_000m, 10_000m, 0.1m, 10_000m, 0m, 1, 1.0, 100m) with
+        {
+            SweepId = "legacy",
+            SweepDefinitionHash = "legacy-point-hash",
+            SweepObjective = "UnsupportedMetric"
+        });
+        var service = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
+        var group = (await service.GetSweepResultGroupsAsync()).Single();
+        group.ObjectiveRankings.Should().BeEmpty();
+        group.ComparisonContextVerified.Should().BeFalse();
+    }
 
     [Fact]
     public async Task GetRunsAsync_ProvidesCanonicalIdentityAndCompatibilityPasses()

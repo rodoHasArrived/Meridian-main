@@ -40,16 +40,6 @@
                         </Style>
                     </TextBlock.Style>
                 </TextBlock>
-                <Button DockPanel.Dock="Right"
-                        Click="Refresh_Click"
-                        Style="{StaticResource GhostButtonStyle}"
-                        ToolTip="Refresh provider health"
-                        AutomationProperties.AutomationId="ProviderHealthInlineRefreshButton"
-                        AutomationProperties.Name="Refresh Provider Health">
-                    <TextBlock Text="{StaticResource IconRefresh}"
-                               FontFamily="{StaticResource SymbolThemeFontFamily}"
-                               FontSize="14" />
-                </Button>
             </DockPanel>
 
             <ItemsControl ItemsSource="{Binding ProviderMetricTiles}" Margin="0,0,0,16"

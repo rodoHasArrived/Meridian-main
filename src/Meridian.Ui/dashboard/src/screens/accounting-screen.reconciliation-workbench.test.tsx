@@ -3,6 +3,7 @@ import { MemoryRouter } from "react-router-dom";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { backToBreakQueue, expectNarrowWorkbenchViewport, inspectReconciliationBreak as inspectSelectedBreak } from "@/test/narrow-workbench";
 import { resetSinceLastVisitCache, type RecordSurfaceVisit, type SurfaceVisitServices } from "@/lib/since-last-visit";
 import { ReconciliationWorkbench } from "./accounting-screen.reconciliation-workbench";
 import { buildReconciliationBreakQueueState, useReconciliationResolveDialogViewModel } from "./accounting-screen.view-model";
@@ -11,8 +12,8 @@ import type { ReconciliationBreakQueueItem, ReconciliationBulkCaseworkRequest, R
 
 type WorkbenchProps = ComponentProps<typeof ReconciliationWorkbench>;
 const breaks: ReconciliationBreakQueueItem[] = [
-  { breakId: "cash-1", runId: "run-1", strategyName: "Cash review", category: "AmountMismatch", status: "Open", variance: 500, reason: "Cash variance over tolerance.", assignedTo: null, detectedAt: "2026-10-01T00:00:00Z", lastUpdatedAt: "2026-10-01T00:00:00Z", reviewedBy: null, reviewedAt: null, resolvedBy: null, resolvedAt: null, resolutionNote: null },
-  { breakId: "fees-2", runId: "run-1", strategyName: "Fee review", category: "FeeMismatch", status: "Open", variance: 20, reason: "Review fee difference.", assignedTo: "ops", detectedAt: "2026-10-02T00:00:00Z", lastUpdatedAt: "2026-10-02T00:00:00Z", reviewedBy: null, reviewedAt: null, resolvedBy: null, resolvedAt: null, resolutionNote: null }
+  { breakId: "cash-1", runId: "run-1", strategyName: "Cash review", category: "AmountMismatch", status: "Open", variance: 500, reason: "Cash variance over tolerance.", assignedTo: null, detectedAt: "2026-10-01T00:00:00Z", lastUpdatedAt: "2026-10-01T00:00:00Z", reviewedBy: null, reviewedAt: null, resolvedBy: null, resolvedAt: null, resolutionNote: null, version: 1 },
+  { breakId: "fees-2", runId: "run-1", strategyName: "Fee review", category: "FeeMismatch", status: "Open", variance: 20, reason: "Review fee difference.", assignedTo: "ops", detectedAt: "2026-10-02T00:00:00Z", lastUpdatedAt: "2026-10-02T00:00:00Z", reviewedBy: null, reviewedAt: null, resolvedBy: null, resolvedAt: null, resolutionNote: null, version: 2 }
 ];
 
 function bulkResult(request: ReconciliationBulkCaseworkRequest, wouldSucceed: (breakId: string) => boolean): ReconciliationBulkCaseworkResult {
@@ -31,6 +32,7 @@ function bulkResult(request: ReconciliationBulkCaseworkRequest, wouldSucceed: (b
     bulkActionId: request.commandId,
     idempotencyKey: request.idempotencyKey,
     dryRun: request.dryRun,
+    reviewProtocol: request.dryRun ? 1 : null,
     requestedCount: results.length,
     succeededCount: results.filter((entry) => request.dryRun ? entry.wouldSucceed : entry.succeeded).length,
     failedCount: results.filter((entry) => !entry.wouldSucceed).length,
@@ -57,7 +59,8 @@ const offlineVisits: Partial<SurfaceVisitServices> = { record: offline, read: of
 function renderWorkbench(
   runSelector?: WorkbenchProps["runSelector"],
   bulkServices: BulkTriageServices = fakeBulkServices(),
-  visitServices: Partial<SurfaceVisitServices> = offlineVisits
+  visitServices: Partial<SurfaceVisitServices> = offlineVisits,
+  extra: { sourceRows?: ReconciliationBreakQueueItem[]; props?: Partial<WorkbenchProps> } = {}
 ) {
   const assignBreak = vi.fn().mockResolvedValue(undefined);
   const resolveBreak = vi.fn().mockResolvedValue(undefined);
@@ -68,12 +71,12 @@ function renderWorkbench(
     const [queueStatus, setQueueStatus] = useState("all");
     const [queueSort, setQueueSort] = useState("default");
     const state = buildReconciliationBreakQueueState({ breakQueue: breaks, selectedBreakId, loading: false, loadError: null, action: null, actionError: null });
-    const reconciliation = { ...state, selectBreak, assignBreak, beginBreakQueueUpdate: () => applyBreakQueueItems, detailActions: null } as unknown as WorkbenchProps["reconciliation"];
+    const reconciliation = { ...state, selectBreak, assignBreak, beginBreakQueueUpdate: () => applyBreakQueueItems, detailActions: null, sourceRows: extra.sourceRows } as unknown as WorkbenchProps["reconciliation"];
     const dialog = useReconciliationResolveDialogViewModel(resolveBreak);
-    return <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={dialog} runSelector={runSelector} bulkServices={bulkServices} visitServices={visitServices} controls={{ queueSearch, queueStatus, queueSort, setQueueSearch, setQueueStatus, setQueueSort, clearQueueFilters: () => { setQueueSearch(""); setQueueStatus("all"); } }} />;
+    return <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={dialog} runSelector={runSelector} bulkServices={bulkServices} visitServices={visitServices} {...extra.props} controls={{ queueSearch, queueStatus, queueSort, setQueueSearch, setQueueStatus, setQueueSort, clearQueueFilters: () => { setQueueSearch(""); setQueueStatus("all"); } }} />;
   }
-  render(<MemoryRouter><Harness /></MemoryRouter>);
-  return { assignBreak, resolveBreak, applyBreakQueueItems };
+  const { unmount } = render(<MemoryRouter><Harness /></MemoryRouter>);
+  return { assignBreak, resolveBreak, applyBreakQueueItems, unmount };
 }
 
 function breakTable() { return screen.getByRole("treegrid", { name: "Reconciliation break queue" }); }
@@ -81,7 +84,11 @@ function inspector() { return screen.getByRole("region", { name: /^Reconciliatio
 function bulkBar() { return screen.getByRole("region", { name: "Bulk break actions" }); }
 function queueRows() { return within(breakTable()).getAllByRole("row").slice(1); }
 
+// The test viewport is the constrained layout (see @/test/narrow-workbench): the break queue
+// and the inspector are shown one at a time.
+
 beforeEach(() => {
+  expectNarrowWorkbenchViewport();
   resetSinceLastVisitCache();
   window.sessionStorage.clear();
 });
@@ -93,9 +100,9 @@ describe("Reconciliation workbench", () => {
     await user.type(screen.getByRole("textbox", { name: "Search breaks" }), "Fee review");
     expect(within(breakTable()).queryByText("Cash review")).not.toBeInTheDocument();
     expect(within(breakTable()).getByText("Fee review")).toBeInTheDocument();
-    expect(within(inspector()).getByRole("heading", { name: /Cash review/ })).toBeInTheDocument();
     expect(screen.getByText("The selected break is outside these filters. Its evidence remains in the inspector.")).toBeInTheDocument();
     expect(screen.getByText("1 of 2 loaded breaks")).toBeInTheDocument();
+    expect(within(await inspectSelectedBreak(user)).getByRole("heading", { name: /Cash review/ })).toBeInTheDocument();
   });
 
   it("keeps controls available for no matches and clears filters without losing the sort", async () => {
@@ -118,7 +125,7 @@ describe("Reconciliation workbench", () => {
     const user = userEvent.setup();
     const { assignBreak } = renderWorkbench();
     expect(within(breakTable()).queryByRole("button", { name: /assign/i })).not.toBeInTheDocument();
-    await user.click(within(inspector()).getByRole("button", { name: /assign/i }));
+    await user.click(within(await inspectSelectedBreak(user)).getByRole("button", { name: /assign/i }));
     expect(assignBreak).toHaveBeenCalledExactlyOnceWith("cash-1");
   });
 
@@ -147,6 +154,79 @@ describe("Reconciliation workbench", () => {
     expect(resolveBreak).not.toHaveBeenCalled();
   });
 
+  it("moves between filtered cases from the inspector and returns focus to the queue", async () => {
+    const user = userEvent.setup();
+    renderWorkbench();
+    queueRows()[0].focus();
+    await user.keyboard("{Enter}");
+    await waitFor(() => expect(inspector()).toHaveFocus());
+    await user.keyboard("j");
+    expect(within(inspector()).getByRole("heading", { name: /Fee review/ })).toBeInTheDocument();
+    expect(within(inspector()).getByRole("button", { name: "Next case" })).toBeDisabled();
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(queueRows()[1]).toHaveFocus());
+  });
+
+  it("checks the retained batch receipt after an uncertain execute without dispatching again", async () => {
+    const user = userEvent.setup();
+    const services = fakeBulkServices();
+    services.execute.mockRejectedValueOnce(new Error("Connection interrupted"));
+    const readResult = vi.fn(async () => bulkResult(services.execute.mock.calls[0][0], () => true));
+    const scoped = { sourceRows: breaks.map((item) => ({ ...item, tenantId: "tenant", companyId: "company" })), props: { operatorId: "ops" } };
+    const { unmount } = renderWorkbench(undefined, { ...services, readResult }, offlineVisits, scoped);
+    await user.click(within(queueRows()[0]).getByRole("checkbox"));
+    await user.click(within(bulkBar()).getByRole("button", { name: "Assign to me" }));
+    await user.click(await within(bulkBar()).findByRole("button", { name: "Assign 1 break" }));
+    await within(bulkBar()).findByText("Batch outcome unconfirmed");
+    unmount();
+    renderWorkbench(undefined, { ...services, readResult }, offlineVisits, scoped);
+    await user.click(within(bulkBar()).getByRole("button", { name: "Check batch outcome" }));
+    expect(await within(bulkBar()).findByRole("region", { name: "Retained batch queue result" })).toBeVisible();
+    expect(within(bulkBar()).getByRole("list", { name: "Per-case batch results" })).toHaveTextContent("cash-1 · Recorded · Open");
+    expect(readResult).toHaveBeenCalledExactlyOnceWith(services.execute.mock.calls[0][0].commandId);
+    expect(services.execute).toHaveBeenCalledOnce();
+    expect(services.execute.mock.calls[0][0].previewBulkActionId).toBe(services.dryRun.mock.calls[0][0].commandId);
+  });
+
+  it("requires a server version-bound preview before offering a batch confirmation", async () => {
+    const user = userEvent.setup();
+    const services = fakeBulkServices();
+    services.dryRun.mockImplementationOnce(async (request) => ({ ...bulkResult(request, () => true), reviewProtocol: null }));
+    renderWorkbench(undefined, services);
+    await user.click(within(queueRows()[0]).getByRole("checkbox"));
+    await user.click(within(bulkBar()).getByRole("button", { name: "Assign to me" }));
+    await within(bulkBar()).findByText("The server did not retain a version-bound bulk preview.");
+    expect(within(bulkBar()).queryByRole("button", { name: "Assign 1 break" })).not.toBeInTheDocument();
+    expect(services.execute).not.toHaveBeenCalled();
+  });
+
+  it("keeps the queue-only batch effect distinct and resumes the exact reviewed request", async () => {
+    const user = userEvent.setup();
+    const services = fakeBulkServices();
+    services.execute.mockRejectedValueOnce(new Error("Statement handoff interrupted"));
+    const readResult = vi.fn(async (): Promise<ReconciliationBulkCaseworkResult> => {
+      const result = bulkResult(services.execute.mock.calls[0][0], () => true);
+      return { ...result, results: result.results.map((entry) => {
+        if (!entry.item) throw new Error(`The bulk fixture has no retained queue item for ${entry.breakId}.`);
+        return { ...entry,
+          item: { ...entry.item, sourceType: "statement", evidenceLinks: ["urn:meridian:statement-casework-handoff:pending:fixture"] }
+        };
+      }) };
+    });
+    renderWorkbench(undefined, { ...services, readResult });
+    await user.click(within(queueRows()[0]).getByRole("checkbox"));
+    await user.click(within(bulkBar()).getByRole("button", { name: "Resolve with reason" }));
+    await user.type(within(bulkBar()).getByRole("textbox", { name: "Reason" }), "Retained journal resolves the difference.");
+    await user.selectOptions(within(bulkBar()).getByLabelText("Root cause"), "LedgerClassification");
+    await user.selectOptions(within(bulkBar()).getByLabelText("Resolution"), "LedgerAdjusted");
+    await user.click(within(bulkBar()).getByRole("button", { name: "Check 1 break" }));
+    await user.click(await within(bulkBar()).findByRole("button", { name: "Resolve 1 break" }));
+    await user.click(await within(bulkBar()).findByRole("button", { name: "Check batch outcome" }));
+    await within(bulkBar()).findByText("The queue result is retained. Statement handoff is still unconfirmed.");
+    await user.click(within(bulkBar()).getByRole("button", { name: "Resume same batch" }));
+    expect(services.execute.mock.calls[1][0]).toEqual(services.execute.mock.calls[0][0]);
+  });
+
   it("keeps the break queue visible when activating a statement-run selector row", async () => {
     const user = userEvent.setup();
     renderWorkbench(<table><tbody><tr tabIndex={0} data-dense-row-id="statement-run" aria-label="Select statement run"><td>Statement run</td></tr></tbody></table>);
@@ -158,8 +238,10 @@ describe("Reconciliation workbench", () => {
   it("discards an open rationale when selection moves to another break", async () => {
     const user = userEvent.setup();
     renderWorkbench();
-    await user.click(within(inspector()).getByRole("button", { name: /resolve/i }));
+    await user.click(within(await inspectSelectedBreak(user)).getByRole("button", { name: /resolve/i }));
     await user.type(screen.getByRole("textbox", { name: "Resolve rationale" }), "Review in progress");
+    await backToBreakQueue(user);
+    // Activating another row opens the inspector on that break.
     await user.click(within(breakTable()).getAllByRole("row")[2]);
     await waitFor(() => expect(screen.queryByRole("textbox", { name: "Resolve rationale" })).not.toBeInTheDocument());
     await user.click(within(inspector()).getByRole("button", { name: /resolve/i }));
@@ -187,6 +269,18 @@ describe("Reconciliation workbench", () => {
     expect(executed.idempotencyKey).not.toBe(dryRun.idempotencyKey);
     expect(within(bulkBar()).getByText("2 breaks assigned. Each break keeps its own audit entry.")).toBeInTheDocument();
     expect(within(bulkBar()).getByText("No breaks selected")).toBeInTheDocument();
+  });
+
+  it("shows bulk actions only once breaks are selected, instead of rendering them disabled", async () => {
+    const user = userEvent.setup();
+    renderWorkbench(undefined, fakeBulkServices());
+    expect(within(bulkBar()).getByText("No breaks selected")).toBeInTheDocument();
+    for (const name of ["Clear selection", /assign/i, /resolve/i]) {
+      expect(within(bulkBar()).queryByRole("button", { name })).not.toBeInTheDocument();
+    }
+    await user.click(within(bulkBar()).getByRole("button", { name: "Select all 2" }));
+    expect(within(bulkBar()).getByRole("button", { name: "Clear selection" })).toBeEnabled();
+    expect(within(bulkBar()).getByRole("button", { name: "Resolve with reason" })).toBeEnabled();
   });
 
   it("resolves with a reason only the breaks the dry run passed and lists the rest (C2)", async () => {
@@ -310,7 +404,7 @@ describe("Reconciliation workbench", () => {
     renderWorkbench();
     queueRows()[0]!.focus();
     await user.keyboard("?");
-    const sheet = screen.getByRole("dialog", { name: "Break queue shortcuts" });
+    const sheet = await screen.findByRole("dialog", { name: "Break queue shortcuts" });
     for (const description of ["Move to the next break", "Move to the previous break", "Open the evidence drawer for the current break", "Show these shortcuts"]) {
       expect(within(sheet).getByText(description)).toBeInTheDocument();
     }
@@ -345,5 +439,35 @@ describe("Reconciliation workbench", () => {
     renderWorkbench();
     await waitFor(() => expect(within(breakTable()).getAllByRole("row")).toHaveLength(3));
     expect(screen.queryByText(/since your last visit/)).not.toBeInTheDocument();
+  });
+});
+
+describe("ReconciliationWorkbench lifecycle (Phase 1)", () => {
+  it("shows lifecycle decisions and activity for a break that carries a lifecycle state", async () => {
+    const taxonomy = vi.fn().mockResolvedValue({ version: 1, rootCauses: [], resolutionCodes: [] });
+    const lifecycleServices = {
+      read: vi.fn(), taxonomy, setRootCause: vi.fn(), setResolution: vi.fn(), waive: vi.fn(), signOff: vi.fn(), reopen: vi.fn()
+    };
+    const auditLoader = vi.fn().mockResolvedValue([]);
+    renderWorkbench(undefined, fakeBulkServices(), offlineVisits, {
+      sourceRows: breaks.map((item) => ({ ...item, version: 3, lifecycleState: "Investigating" as const })),
+      props: { lifecycleServices, auditLoader }
+    });
+    const user = userEvent.setup();
+    const rail = await inspectSelectedBreak(user);
+    const lifecycle = within(rail).getByRole("region", { name: "Break lifecycle" });
+    expect(lifecycle).toHaveTextContent("State: Investigating");
+    expect(within(lifecycle).getByRole("button", { name: "Waive" })).toBeEnabled();
+    expect(within(lifecycle).getByRole("button", { name: "Sign off" })).toBeDisabled();
+    await waitFor(() => expect(taxonomy).toHaveBeenCalled());
+    await userEvent.click(within(rail).getByText("Activity"));
+    expect(await within(rail).findByText("No history recorded yet.")).toBeInTheDocument();
+    expect(auditLoader).toHaveBeenCalledWith("cash-1");
+  });
+
+  it("offers no lifecycle decisions when the queue payload has no lifecycle state", async () => {
+    renderWorkbench(undefined, fakeBulkServices(), offlineVisits, { sourceRows: breaks });
+    const rail = await inspectSelectedBreak(userEvent.setup());
+    expect(within(rail).queryByRole("region", { name: "Break lifecycle" })).not.toBeInTheDocument();
   });
 });

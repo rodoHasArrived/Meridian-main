@@ -1128,7 +1128,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         }
         catch (Exception ex)
         {
-            _loggingService.LogError($"Backend sync failed for add symbol: {symbol}", ex);
+            _loggingService.LogError("Backend sync failed for add symbol: {Symbol}", ex, ("Symbol", symbol));
         }
     }
 
@@ -1144,7 +1144,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         }
         catch (Exception ex)
         {
-            _loggingService.LogError($"Backend sync failed for remove symbol: {symbol}", ex);
+            _loggingService.LogError("Backend sync failed for remove symbol: {Symbol}", ex, ("Symbol", symbol));
         }
     }
 
@@ -1216,7 +1216,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
 
             if (!response.Success || response.Data is null)
             {
-                _loggingService.LogError($"Security Master search failed for {ticker}");
+                _loggingService.LogError("Security Master search failed for {Ticker}", null, ("Ticker", ticker));
                 SelectedSymbolSecurityId = null;
                 CanViewInSecurityMaster = false;
                 CanAddToSecurityMaster = true; // Allow adding if lookup fails
@@ -1230,7 +1230,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
                     SelectedSymbolSecurityId = result.SecurityId;
                     CanViewInSecurityMaster = true;
                     CanAddToSecurityMaster = false;
-                    _loggingService.LogInfo($"Found security in Master for {ticker}");
+                    _loggingService.LogInfo("Found security in Master for {Ticker}", ("Ticker", ticker));
                     return;
                 }
             }
@@ -1242,14 +1242,14 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         }
         catch (OperationCanceledException)
         {
-            _loggingService.LogWarning($"Security Master search timeout for {ticker}");
+            _loggingService.LogWarning("Security Master search timeout for {Ticker}", ("Ticker", ticker));
             SelectedSymbolSecurityId = null;
             CanViewInSecurityMaster = false;
             CanAddToSecurityMaster = true;
         }
         catch (Exception ex)
         {
-            _loggingService.LogError($"Error checking Security Master status for {ticker}", ex);
+            _loggingService.LogError("Error checking Security Master status for {Ticker}", ex, ("Ticker", ticker));
             SelectedSymbolSecurityId = null;
             CanViewInSecurityMaster = false;
             CanAddToSecurityMaster = true;

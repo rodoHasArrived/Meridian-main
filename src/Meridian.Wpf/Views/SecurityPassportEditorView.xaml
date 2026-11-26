@@ -1,6 +1,7 @@
 <UserControl x:Class="Meridian.Wpf.Views.SecurityPassportEditorView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Meridian.Wpf.Controls"
              AutomationProperties.Name="Security Passport Editor"
              AutomationProperties.AutomationId="SecurityPassportEditorView">
     <UserControl.Resources>
@@ -239,6 +240,7 @@
                         <ItemsControl ItemsSource="{Binding ExerciseCalculations}" Margin="0,4,0,0" AutomationProperties.Name="Exercise calculations" />
                         <TextBlock Text="{Binding EvidenceText}" FontFamily="{DynamicResource MeridianDataFontFamily}" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding RunText}" FontFamily="{DynamicResource MeridianDataFontFamily}" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap" />
+                        <controls:PreparerDraftCheckPanel DataContext="{Binding DraftCheck}" />
                         <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
                             <StackPanel Width="320" Margin="0,0,8,0">
                                 <TextBlock Text="Retained run identity" Opacity="0.8" />

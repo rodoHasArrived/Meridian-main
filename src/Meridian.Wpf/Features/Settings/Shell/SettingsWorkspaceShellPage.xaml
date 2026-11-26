@@ -65,6 +65,7 @@
                                            Grid.Row="2"
                                            CommandGroup="{Binding CommandGroup}"
                                            CommandInvoked="OnCommandBarCommandInvoked"
+                                           ResetLayoutCommand="{Binding ResetLayoutCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                            Margin="0,16,0,0"
                                            AutomationProperties.AutomationId="WorkspaceCommandSurfaceSettings" />
 
@@ -96,11 +97,13 @@
                         <StackPanel Margin="12,0,0,0">
                             <TextBlock Text="Settings Workspace"
                                        Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="Preferences, credentials, diagnostics, notifications, services, and support from one operator shell."
+                            <TextBlock Text="Pick the setup task you need."
                                        Style="{StaticResource CardDescriptionStyle}"
                                        TextWrapping="Wrap" />
                         </StackPanel>
                     </StackPanel>
+
+                    <controls:ConfigurationChangeBanner Margin="0,14,0,0" />
 
                     <TextBlock Text="{Binding HeroSummaryText}"
                                Margin="0,18,0,0"
@@ -123,7 +126,7 @@
                         BorderThickness="1">
                     <StackPanel>
                         <DockPanel LastChildFill="False">
-                            <TextBlock Text="Next Handoff"
+                            <TextBlock Text="Next step"
                                        FontSize="11"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextMutedBrush}" />

@@ -976,6 +976,13 @@ export interface LedgerTrialBalanceLine {
   symbol: string | null;
   financialAccountId: string | null;
   balance: number;
+  /** Additive exact decimal supplied by current hosts; legacy numeric reads remain supported. */
+  balanceExact?: string;
+  balanceProofSubjectId?: string | null;
+  balanceProofScope?: import("./ledger-amount-proof").LedgerAmountScope | null;
+  balanceProofCurrency?: string | null;
+  journalEntryIds?: string[];
+  ledgerEntryIds?: string[];
   entryCount: number;
   security: WorkstationSecurityReference | null;
   accountScopeId?: string | null;
@@ -1045,6 +1052,14 @@ export interface LedgerPeriod {
  * spine and carry debit/credit totals but no resolved security reference.
  */
 export interface LedgerPeriodTrialBalanceLine {
+  balanceExact?: string;
+  debitTotalExact?: string;
+  creditTotalExact?: string;
+  balanceProofSubjectId?: string | null;
+  balanceProofScope?: import("./ledger-amount-proof").LedgerAmountScope | null;
+  balanceProofCurrency?: string | null;
+  journalEntryIds?: string[];
+  ledgerEntryIds?: string[];
   accountName: string;
   accountType: string;
   symbol: string | null;
@@ -1070,6 +1085,7 @@ export interface LedgerPeriodTrialBalanceLine {
  */
 /** One posting line of a governed journal entry (`LedgerJournalEntryLineDto`). */
 export interface LedgerPostedJournalEntryLine {
+  amountPassport?: import("./amount-passport").AmountPassportReference | null;
   entryId: string;
   journalEntryId: string;
   timestamp: string;
@@ -1081,6 +1097,15 @@ export interface LedgerPostedJournalEntryLine {
   credit: number;
   description: string;
   dimensions?: LedgerDimensionSet | null;
+  memo?: string | null;
+  chartAccount?: { nodeId: string; revision: string; accountCode: string | null } | null;
+  currency?: {
+    transactionCurrency: string;
+    functionalCurrency: string;
+    transactionDebit: number;
+    transactionCredit: number;
+    fxRateToFunctional: number;
+  } | null;
 }
 
 export interface LedgerPostedJournalEntry {
@@ -1094,9 +1119,18 @@ export interface LedgerPostedJournalEntry {
   isBalanced: boolean;
   lines: LedgerPostedJournalEntryLine[];
   accountingBasis?: AccountingBasisKind;
+  /** The execution this entry was posted from, as its metadata recorded it; absent otherwise. */
+  execution?: LedgerJournalExecutionLineage | null;
   // No entry-level `dimensions`: LedgerJournalEntryDto declares none. Posting dimensions belong to
   // LedgerJournalEntryLineDto, so an entry's scope has to be derived from its lines and only
   // exists when they agree — see resolvePostedEntryDimensions.
+}
+
+/** Order, fill and run identifiers a posting recorded; the order id is the execution journal's own. */
+export interface LedgerJournalExecutionLineage {
+  orderId: string | null;
+  fillId: string | null;
+  strategyRunId: string | null;
 }
 
 /** One posting to an account with the account balance after it. */
@@ -1385,7 +1419,7 @@ export interface RunAttributionSummary {
 // --- Strategy run summary ---
 
 export type StrategyRunMode = "Backtest" | "Paper" | "Live";
-export type StrategyRunEngine = "Internal" | "QuantConnect" | "External";
+export type StrategyRunEngine = "Internal" | "QuantConnect" | "External" | "Unknown" | "MeridianNative" | "Lean" | "BrokerPaper" | "BrokerLive";
 export type StrategyRunStatus = "Running" | "Paused" | "Completed" | "Failed" | "Cancelled" | "Stopped";
 export type StrategyRunPromotionState =
   | "None"
@@ -1413,6 +1447,20 @@ export interface StrategyRunSummary {
   fillCount: number;
   lastUpdatedAt: string;
   auditReference: string | null;
+  parameters?: Record<string, string> | null;
+}
+
+export interface StrategySweepResultGroup {
+  sweepId: string;
+  sweepDefinitionHash: string;
+  objective: string | null;
+  startedAt: string;
+  runCount: number;
+  runs: StrategyRunSummary[];
+  objectiveRankings: Array<{ runId: string; objectiveValue: number | null }>;
+  comparisonContextVerified?: boolean;
+  historyMayBeTruncated?: boolean;
+  coverageDescription?: string;
 }
 
 export type BiasDisclosureSeverity = "info" | "caution" | "warning";
@@ -1466,8 +1514,32 @@ export interface StrategyRunDetail {
   governance?: unknown | null;
   governanceHooks?: unknown[] | null;
   biasDisclosure?: BiasDisclosure | null;
+  replayProvenance?: StrategyRunReplayProvenance | null;
+  providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
   evidenceLoop?: StrategyRunEvidenceLoop | null;
   acceptanceChecklist?: StrategyRunAcceptanceChecklistItem[] | null;
+}
+
+export interface StrategyRunReplayProvenance {
+  dataQualityWarnings?: import("./market-data-input-evidence").MarketDataQualityWarning[] | null;
+  sourceMix: StrategyRunReplaySourceCount[];
+  revisions: StrategyRunReplayRevision[];
+  sourceMixHash?: string | null;
+  completedInputHashSha256?: string | null;
+}
+
+export interface StrategyRunReplaySourceCount {
+  symbol: string;
+  source: string;
+  bars: number;
+}
+
+export interface StrategyRunReplayRevision {
+  revisionId: string;
+  contentHash: string;
+  servingProvider: string;
+  instrument: string;
+  granularity: string;
 }
 
 export interface StrategyRunContinuityLink {

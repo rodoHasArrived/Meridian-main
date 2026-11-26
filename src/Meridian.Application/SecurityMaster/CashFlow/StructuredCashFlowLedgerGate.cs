@@ -3,12 +3,9 @@ using Meridian.Contracts.SecurityMaster;
 namespace Meridian.Application.SecurityMaster.CashFlow;
 
 /// <summary>
-/// Shared postability gate for routing a structured cash flow projection to the ledger. Both the
-/// preview bridge (<see cref="StructuredCashFlowLedgerBridge"/>) and the posting bridge
-/// (<c>SecurityMasterAmortizationLedgerBridge</c>) consult this single gate so a source without
-/// verified freshness, a stale source, a rate-shocked what-if scenario, or a schedule generated from
-/// declared schedule conventions (one carrying <see cref="StructuredCashFlowProjectionDto.ScheduleEvidence"/>)
-/// can never reach the general ledger through either path.
+/// Postability gate for routing a structured cash flow projection to the ledger. The
+/// amortization bridge consults this gate before computing accruals, so unsupported economics,
+/// unverified freshness, what-if scenarios and unretained declared-schedule identities cannot post.
 /// </summary>
 public static class StructuredCashFlowLedgerGate
 {

@@ -1,7 +1,8 @@
 using System.Text.Json;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Reconciliation;
 using Meridian.Domain.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
@@ -10,14 +11,21 @@ internal static class StatementRunComparisonEvidence
 {
     // Changes to matching/normalization semantics must advance this token before comparisons can
     // be used to establish clearing across runs produced by the new implementation.
-    private const string MatcherRevision = "statement-run-matcher-v2";
+    private const string CurrentMatcherRevision = "statement-run-matcher-v4";
+    private const string PreviousMatcherRevision = "statement-run-matcher-v3";
 
-    internal static string LegacyPolicyFingerprint(StatementToleranceProfile tolerance)
-        => Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new { MatcherRevision, Tolerance = tolerance }));
+    internal static string PolicyFingerprint(StatementToleranceProfile tolerance, string? mapping, bool legacy = false)
+    {
+        var revision = legacy ? PreviousMatcherRevision : CurrentMatcherRevision;
+        return mapping is null
+            ? Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new { MatcherRevision = revision, Tolerance = tolerance }))
+            : Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
+            { MatcherRevision = revision, Tolerance = tolerance, ExecutedMappingFingerprint = mapping }));
+    }
 
     public static StatementRunMatchArtifact Retain(StatementRunMatchArtifact artifact,
         IReadOnlyList<CanonicalStatementRow> rows, InternalReconciliationPopulations populations,
-        StatementToleranceProfile tolerance, string? executedMappingFingerprint = null)
+        StatementToleranceProfile tolerance, string? executedMappingFingerprint = null, DateOnly? effectiveDate = null)
     {
         var kinds = rows.Select(row => row.ActivityType.Trim().ToLowerInvariant() switch
         {
@@ -34,15 +42,16 @@ internal static class StatementRunComparisonEvidence
             "cash" => populations.CashBalances.Count > 0,
             _ => populations.LedgerTransactions.Count > 0
         });
+        var policyFingerprint = PolicyFingerprint(tolerance, executedMappingFingerprint);
         return artifact with
         {
             SourceComparisonComplete = complete,
             SourceComparisonMappingFingerprint = executedMappingFingerprint,
             SourceComparisonPopulationKinds = kinds,
-            SourceComparisonPolicyFingerprint = executedMappingFingerprint is null
-                ? LegacyPolicyFingerprint(tolerance)
-                : Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
-                { MatcherRevision, Tolerance = tolerance, ExecutedMappingFingerprint = executedMappingFingerprint }))
+            SourceComparisonPolicyFingerprint = policyFingerprint,
+            ExecutedTolerancePolicy = effectiveDate is { } date
+                ? new ExecutedStatementTolerancePolicy(tolerance.ProfileId, tolerance.Version, date, policyFingerprint)
+                : null
         };
     }
 }

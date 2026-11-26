@@ -1,17 +1,99 @@
 ---
-title: External GL import and controlled export review
+title: External GL posting, import and export review
 status: active
 owner: core-team
 reviewed: 2026-09-28
 ---
 
-# External GL import and controlled export review
+# External GL posting, import and export review
 
 Xero (`xero`) and NetSuite (`netsuite`) provide credentialed, read-only accounting
 evidence through the same accounting-system endpoints as QuickBooks Online.
 The `xero-fixture` and `netsuite-fixture` providers remain separate demo sources.
-All four advertise `SupportsPosting=false`. Certification produces a retained
-review artifact; it never sends a journal to an external system.
+Import adapters advertise `SupportsPosting=false`. The gross-total export review
+workflow retains a review artifact. The journal posting workflow below uses a
+separate, approved package derived from the immutable Meridian ledger.
+
+## Post Meridian journals to QuickBooks Online
+
+The posting workflow is in **Accounting → Reconciliation → External GL**. It uses
+a PostgreSQL-backed ledger and an explicitly owned QuickBooks Online connection.
+Meridian's posted journal remains the accounting authority. The adapter creates
+one QuickBooks JournalEntry for each approved Meridian journal.
+
+### Set the book policy
+
+1. In Settings, retain and verify a tenant-owned QuickBooks connection with access
+   to the intended realm. Review the realm and sandbox or production environment.
+   Enable `WarnDuplicateJournalNumber` in QuickBooks so ambiguous creates can
+   be recovered using both the request ID and the journal number.
+2. In the posting panel, select the Meridian book and open **Book posting policy**.
+   Enter the verified connection ID and save. An administrator can require confirmation
+   for final close and final reporting on this book. Confirmation is optional by default.
+   The destination is pinned after the book has an approved package.
+3. Certify the account and dimension mapping through
+   `POST /api/accounting-system/mapping-profiles` with the ledger book, fund, and
+   exact `postingDestination` returned by the book policy. The destination includes
+   the provider ID, connection ID, realm and environment. Account mappings use QuickBooks account IDs. Certified
+   dimension rules match Meridian line scope and emit `class` or `department`
+   IDs in `externalDimensions.externalGlDimensions`. Rules can explicitly emit
+   an empty dimension map. Scoped mapping revisions are retained in PostgreSQL.
+
+### Prepare, certify and approve
+
+Select a retained period and certified mapping. Prepare the package from all
+unassigned originals and rebooks in the period or specify exact journal IDs.
+Start a posted reversal from its fully accepted predecessor package. The preview
+shows the mapping version, Meridian line IDs, proposed accounts and dimensions,
+and exact debit and credit totals. Internal period-close transfers and their
+reversals are excluded from the export and the confirmation requirement.
+
+Use **Certify exact package** after reviewing those details. A second operator can
+then use **Approve and queue posting**. Both decisions bind the same payload hash. Approval and provider submission require a current book of record.
+Approval and enqueue commit in one database transaction. The worker uses only
+that retained package, including after a process restart.
+
+**Fully accepted** requires the provider document and all expected Meridian line
+identities to match the account, dimensions and amounts. **Partially accepted**
+means the package has terminal accepted and rejected results. **Pending** covers
+queued work or an acknowledged provider operation awaiting a receipt. An uncertain
+submission or mismatched receipt is **Outcome unknown** and remains in recovery.
+
+The worker queries QuickBooks by the deterministic journal document number and
+verifies the full Meridian key on the returned document. For an ambiguous create,
+a successful empty lookup can authorize a replay using the identical
+`requestid` and body while QuickBooks duplicate journal number protection is
+enabled. Duplicate faults and mismatched documents stay in recovery. Use the
+provider trace ID and the exact Meridian key when investigating an exception.
+
+### Correct, reverse or retain evidence
+
+- **Create corrective package** starts a separately certified and approved package
+  for definitively rejected journals. Select a certified mapping and enter the
+  reason for the correction. Accepted or uncertain journals remain outside it.
+- **Create reversal package** takes the ID of an approved and posted Meridian
+  reversal of a fully accepted journal. The new package reuses the original
+  external accounts and dimensions and retains both journal identities. Create
+  and approve the ledger reversal through the governed Meridian journal workflow.
+- **Download audit package** exports a versioned JSON snapshot of the retained
+  payload, decisions, document keys, provider receipts and line outcomes. The
+  filename includes a digest prefix and the response includes the full
+  `X-Content-SHA256`. A later observation creates a new audit snapshot.
+- A book that requires confirmation needs full receipts for all eligible journals
+  in the period before hard close or final report certification/release. Fiscal close
+  applies the check to its constituent periods. This includes journals posted after an earlier export. Soft close and draft reports
+  continue under their existing accounting controls.
+
+The first QuickBooks posting adapter covers US, single-currency USD realms and
+exact cent amounts. It supports a class per line and one location throughout a
+journal where the provider preferences allow them. Accounts requiring a customer,
+vendor, or tax treatment are outside this posting contract. QuickBooks single
+creates return document IDs and trace IDs. The provider batch ID is empty.
+
+Provider evidence is **synthetic-verified** for the PostgreSQL outbox and HTTP
+recovery cases and **live-untested** for Intuit sandbox and production. See the
+[JournalEntry reference](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/journalentry)
+and [Intuit request ID guidance](https://static.developer.intuit.com/output_html/qbo/docs/learn/learn-basic-field-definitions.html).
 
 ## Bounded onboarding
 
@@ -59,8 +141,8 @@ Run the onboarding acceptance cases with
 The cases also check foreign-scope refusal, concurrent updates, missing sources, retained-content
 corruption, historical economic dates and exact-decimal packet downloads.
 
-External books remain read-only. A readiness packet is evidence for a separate accounting-authority
-decision; neither capture, review nor freezing enables posting or changes the system of record.
+A readiness packet supplies evidence for an accounting-authority decision. Journal posting uses
+the book policy and governed package approvals above.
 
 ## Prerequisites and execution context
 
@@ -120,6 +202,13 @@ Use `POST /api/accounting-system/import/preview` with an explicit provider, ledg
 accounting/access scope, and inclusive `PeriodStart` / `PeriodEnd`. Retained imports
 must use `PersistPreview=true` before export review. Preview-only results do not
 replace retained evidence. The integration service supplies scoped content hashes.
+
+Retained imports, mapping profiles and export packages (with their certifications) are written
+under `workstation/accounting/external-gl/` in the configured data root and reloaded at startup,
+so they survive a host restart. Each collection is one JSON file replaced atomically; the write
+completes before the record becomes visible. An unreadable file stops the service from starting
+empty: restore or remove it before continuing. This is single-host local storage and does not
+coordinate two hosts writing the same directory.
 
 - Xero reads the chart, accrual Journals and TrialBalance report. Journals are
   scanned by journal-number offset, including backdated entries, then filtered to
@@ -291,7 +380,7 @@ tests use real period-close projections and reversals, different internal/extern
 account names, and a competing certified mapping profile.
 
 Issue #2752 originally referred to `docs/status/accounting-productization-checklist.md`.
-That historical snapshot is retained in the [archived checklist](../../archive/docs/summaries/accounting-productization-checklist.md).
+That historical snapshot is retained in the [archived checklist](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/summaries/accounting-productization-checklist.md).
 Current acceptance is tracked in the [active implementation list](../product/implementation-todo-list.md#acct-checklist-06-external-gl-provider-depth).
 Implementation acceptance requires passing validation on the current PR head;
 contract tests do not constitute customer-tenant smoke tests or vendor approval.

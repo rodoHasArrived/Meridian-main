@@ -3,6 +3,7 @@ using Meridian.Execution;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -26,6 +27,37 @@ public sealed class KillSwitchCloseOnlyTests : IDisposable
     private readonly string _root = Path.Combine(
         Path.GetTempPath(),
         "meridian-killswitch-" + Guid.NewGuid().ToString("N"));
+
+    [Fact]
+    public async Task ProbeFailure_NeutralizesSymbolInLogAndStillRefusesOrder()
+    {
+        const string symbol = "AA\r\nPL";
+        var logger = new RecordingLogger<ExecutionOperatorControlService>();
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(_root, Guid.NewGuid().ToString("N"))), logger);
+        var manualOverride = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+            Kind: ExecutionManualOverrideKinds.BypassOrderControls,
+            Reason: "Emergency close", CreatedBy: "ops"));
+        await controls.SetCircuitBreakerAsync(isOpen: true, reason: "Operator halt", changedBy: "ops");
+        string? probedSymbol = null;
+        controls.WorkingReductionQuantityProbe = (value, _) =>
+        {
+            probedSymbol = value;
+            throw new InvalidOperationException($"Synthetic book failure for {value}");
+        };
+
+        var decision = controls.EvaluateOrder(
+            Order(OrderSide.Sell, 1m, manualOverride.OverrideId) with { Symbol = symbol },
+            Portfolio((symbol, 10m)));
+
+        decision.IsApproved.Should().BeFalse();
+        decision.RejectCode.Should().Be(CloseOnlyCode);
+        probedSymbol.Should().Be(symbol, "log rendering must not change the symbol used for admission");
+        var warning = logger.Entries.Should().ContainSingle(entry => entry.Message.Contains("working-reduction probe failed")).Which;
+        warning.Exception.Should().BeNull("the raw exception may echo untrusted order text");
+        warning.Message.Should().Contain("for AA__PL").And.Contain("InvalidOperationException: Synthetic book failure for AA__PL")
+            .And.NotContain("\r").And.NotContain("\n");
+    }
 
     [Fact]
     public async Task ClosingOrder_IsAdmittedSoTheDeskCanFlattenAHaltedBook()

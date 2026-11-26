@@ -7,9 +7,11 @@ import { EmptyState as ConcreteEmptyState } from "@/components/data/empty-state"
 import { Pagination } from "@/components/data/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ProviderProvenancePanel } from "@/components/meridian/provider-provenance-panel";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { BackfillCoverageChart } from "@/components/meridian/backfill-coverage-chart";
+import { WorkstationBackfillReceipts } from "@/screens/data-screen.backfill-quota";
 import type { DataQueryPanelViewModel } from "@/screens/data-screen.query-panel.view-model";
 import {
   DATA_BACKFILL_DETAIL_PANEL_ID,
@@ -37,8 +39,8 @@ const backfillQueueColumns: TableWorkbenchColumn<DataOperationsBackfillRow>[] = 
     label: "Job",
     render: (backfill) => (
       <span className="block min-w-0">
-        <span className="block font-mono font-semibold text-foreground">{backfill.jobId}</span>
-        <span className="mt-1 block text-xs text-muted-foreground">{backfill.provider}</span>
+        <span className="block break-all font-mono font-semibold text-foreground">{backfill.jobId}</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{backfill.provider}{backfill.usedFallback ? " · Fallback used" : ""}</span>
       </span>
     )
   },
@@ -53,7 +55,7 @@ const backfillQueueColumns: TableWorkbenchColumn<DataOperationsBackfillRow>[] = 
     label: "Status",
     render: (backfill) => (
       <Badge
-        variant={backfill.status === "Review" ? "warning" : backfill.status === "Running" ? "default" : "outline"}
+        variant={backfill.status === "Review" || backfill.status === "Failed" ? "warning" : backfill.status === "Running" ? "default" : "outline"}
       >
         {backfill.status}
       </Badge>
@@ -185,7 +187,11 @@ const exportColumns: TableWorkbenchColumn<DataOperationsExportRow>[] = [
   }
 ];
 
-export function DataBackfillWorkstream({ vm }: { vm: DataOperationsVm }) {
+export function DataBackfillWorkstream({ vm, onBackfillCompleted, children }: {
+  vm: DataOperationsVm;
+  onBackfillCompleted?: () => void;
+  children?: React.ReactNode;
+}) {
   return (
     <section aria-labelledby="data-backfill-queue-title" className="workspace-region">
       <CardHeader>
@@ -227,9 +233,13 @@ export function DataBackfillWorkstream({ vm }: { vm: DataOperationsVm }) {
           <BackfillDetailPanel
             detail={vm.selectedBackfillDetail}
             emptyState={vm.backfillDetailEmptyState ?? vm.backfillSection.emptyState}
+            receipt={vm.selectedBackfill?.providerProvenance}
+            onBackfillCompleted={onBackfillCompleted}
           />
         </div>
+        <WorkstationBackfillReceipts rows={vm.queuedBackfills} error={vm.queuedBackfills.length > 0 ? vm.remediationHistoryError : null} />
         {vm.retainedBackfillHistory && !vm.remediationHistoryError && !vm.remediationHistoryLoading ? <BackfillCoverageChart history={vm.retainedBackfillHistory} /> : null}
+        {children}
         <section aria-labelledby="backfill-remediation-sla-title" className="mt-5 space-y-3 border-t border-border/70 pt-4">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
@@ -288,7 +298,7 @@ export function DataExportWorkstream({ vm }: { vm: DataOperationsVm }) {
         <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.48fr)]">
           {vm.exportSection.hasRows ? (
             <TableWorkbench workbenchId="data-export-packages" sourceKey={vm.exportSection.rows.map((row) => row.exportId).join("|")}
-              sourceDescription="Complete current Data workspace package projection; not the historical report-package catalog."
+              sourceDescription="Complete current Data workspace package snapshot; not the historical report-package catalog."
               onExportAll={(columns, search, sort, signal) => exportTableQuery("data-export-packages", columns, search, sort?.columnId, sort?.direction, signal)}
               getSearchText={(row) => `${row.exportId} ${row.profile} ${row.target} ${row.statusLabel}`}
               columns={exportColumns}
@@ -507,10 +517,14 @@ export function DataQueryWorkstream({
 
 function BackfillDetailPanel({
   detail,
-  emptyState
+  emptyState,
+  receipt,
+  onBackfillCompleted
 }: {
   detail: DataOperationsBackfillDetailState | null;
   emptyState: DataOperationsEmptyState | null;
+  receipt?: import("@/types/provider-provenance").ProviderProvenanceReceipt | null;
+  onBackfillCompleted?: () => void;
 }) {
   if (!detail) {
     return (
@@ -552,6 +566,9 @@ function BackfillDetailPanel({
           <FieldTile key={field.id} field={field} />
         ))}
       </div>
+      {receipt || detail.statusLabel === "Completed" || detail.statusLabel === "Failed" ? (
+        <ProviderProvenancePanel receipt={receipt} onBackfillCompleted={onBackfillCompleted} />
+      ) : null}
     </DenseRowDetailPanel>
   );
 }
@@ -576,7 +593,7 @@ function ExportDetailPanel({
           {emptyState?.title ?? "No export selected"}
         </h3>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          {emptyState?.description ?? "Select an export row to inspect readiness, target, row count, and handoff guidance."}
+          {emptyState?.description ?? "Select an export row to inspect readiness, target, row count, and delivery guidance."}
         </p>
       </aside>
     );
@@ -633,7 +650,7 @@ function EmptyState({ state }: { state: DataOperationsEmptyState }) {
 function FieldTile({ field }: { field: DataOperationsDetailField }) {
   return (
     <div className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
-      <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-wide")}>{field.label}</div>
+      <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-wide")}>{field.label}</div>
       <div className="mt-1 min-w-0 break-words text-sm font-medium text-foreground">{field.value}</div>
     </div>
   );

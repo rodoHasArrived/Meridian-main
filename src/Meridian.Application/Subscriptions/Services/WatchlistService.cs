@@ -76,12 +76,23 @@ public sealed class WatchlistService
     /// Create a new watchlist.
     /// </summary>
     public async Task<Watchlist> CreateWatchlistAsync(CreateWatchlistRequest request, CancellationToken ct = default)
+        => await CreateWatchlistAsync(request, null, ct);
+
+    /// <summary>Creates or recovers the same watchlist after an import loses its completion receipt.</summary>
+    public async Task<Watchlist> CreateWatchlistAsync(CreateWatchlistRequest request, string? retainedId, CancellationToken ct = default)
     {
         var watchlists = await LoadWatchlistsAsync(ct);
+        if (retainedId is not null && watchlists.FirstOrDefault(w => w.Id == retainedId) is { } retained)
+        {
+            if (retained.Name != request.Name || !retained.Symbols.Order(StringComparer.Ordinal).SequenceEqual(
+                    (request.Symbols ?? []).Select(s => s.ToUpperInvariant()).Distinct().Order(StringComparer.Ordinal)))
+                throw new InvalidOperationException("The retained import watchlist has conflicting contents.");
+            return retained;
+        }
         var now = DateTimeOffset.UtcNow;
 
         var watchlist = new Watchlist(
-            Id: $"wl_{Guid.NewGuid():N}"[..16],
+            Id: retainedId ?? $"wl_{Guid.NewGuid():N}"[..16],
             Name: request.Name,
             Description: request.Description,
             Symbols: (request.Symbols ?? Array.Empty<string>()).Select(s => s.ToUpperInvariant()).Distinct().ToArray(),

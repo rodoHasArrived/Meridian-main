@@ -75,8 +75,14 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
         // ----------------------------------------------------------------
         // Historical backfill provider
         // ----------------------------------------------------------------
-        services.AddSingleton<AlpacaHistoricalDataProvider>(_ =>
-            new AlpacaHistoricalDataProvider(keyId: keyId, secretKey: secretKey, feed: feed));
+        services.AddSingleton<AlpacaHistoricalDataProvider>(sp =>
+        {
+            var providers = sp.GetService<AppConfig>()?.Backfill?.Providers;
+            var options = BackfillProviderRuntimeOptions.FromConfig(providers, "alpaca");
+            return new AlpacaHistoricalDataProvider(keyId: keyId, secretKey: secretKey, feed: feed,
+                adjustment: providers?.Alpaca?.Adjustment ?? "all", priority: options.Priority,
+                rateLimitPerMinute: options.Requests!.Value);
+        });
 
         services.AddSingleton<IHistoricalDataProvider>(sp =>
             sp.GetRequiredService<AlpacaHistoricalDataProvider>());
@@ -107,7 +113,8 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
             {
                 var tradeCollector = sp.GetRequiredService<TradeDataCollector>();
                 var quoteCollector = sp.GetRequiredService<QuoteCollector>();
-                return new AlpacaMarketDataClient(tradeCollector, quoteCollector, streamingOptions);
+                return new AlpacaMarketDataClient(tradeCollector, quoteCollector, streamingOptions,
+                    ProviderValidationProfile.Resolve(sp.GetService<AppConfig>()?.Backfill, "alpaca"));
             });
 
             services.AddSingleton<IMarketDataClient>(sp =>

@@ -30,6 +30,8 @@
 
   <!-- Project references -->
   <ItemGroup>
+    <ProjectReference Include="../Meridian.Reporting.ReadModels/Meridian.Reporting.ReadModels.csproj" />
+    <ProjectReference Include="../Meridian.Storage.Accounting/Meridian.Storage.Accounting.csproj" />
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
     <ProjectReference Include="..\Meridian.Application\Meridian.Application.csproj" />
     <ProjectReference Include="..\Meridian.Audit\Meridian.Audit.csproj" />
@@ -54,4 +56,5 @@
     <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
     <ProjectReference Include="..\Meridian.Strategies\Meridian.Strategies.csproj" />
   </ItemGroup>
+
 </Project>

@@ -109,4 +109,20 @@ public sealed class LedgerEntryCurrencyTests
         var posted = ledger.Journal.Single();
         posted.Lines.Should().Contain(line => line.Currency != null && line.Currency.TransactionCurrency == "EUR");
     }
+    [Fact]
+    public void PostLines_RejectsMixedFunctionalCurrenciesBeforeMutatingLedger()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        Action post = () => ledger.PostLines(Timestamp, "mixed functional amounts",
+        [
+            (LedgerAccounts.CashInCurrency("USD"), 100m, 0m, (LedgerLineDimensionSet?)null,
+                (LedgerEntryCurrency?)new LedgerEntryCurrency("USD", "USD", 100m, 0m, 1m)),
+            (LedgerAccounts.CashInCurrency("EUR"), 0m, 100m, null,
+                new LedgerEntryCurrency("EUR", "EUR", 0m, 100m, 1m)),
+        ]);
+
+        post.Should().Throw<LedgerValidationException>().WithMessage("*one functional currency*");
+        ledger.Journal.Should().BeEmpty();
+    }
+
 }

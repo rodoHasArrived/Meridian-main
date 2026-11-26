@@ -45,7 +45,7 @@ export function governanceEvidence(governance: SecurityMasterGovernance | null):
     title: `Effective governance: ${governance.profile}`,
     summary: `${sourceLabels[governance.profileSource] ?? governance.profileSource}.${governance.isProfileLatched ? " Institutional requirements remain in force until the host restarts." : ""}`,
     fields: [
-      { label: "Governed term amendments", value: governance.requireGovernedTermAmendments ? "Required" : "Not required" },
+      { label: "Controlled term amendments", value: governance.requireGovernedTermAmendments ? "Required" : "Not required" },
       { label: "Independent field reviewer", value: governance.requireIndependentReviewer ? "Required" : "Not required" },
       { label: "Independent profile approver", value: governance.requireIndependentProfileApprover ? "Required" : "Not required" }
     ],

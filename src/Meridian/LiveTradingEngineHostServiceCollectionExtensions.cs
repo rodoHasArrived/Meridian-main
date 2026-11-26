@@ -1,5 +1,6 @@
 using Meridian.Backtesting.Plugins;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Operations;
 using Meridian.Domain.Events;
 using Meridian.Domain.Events.Publishers;
 using Meridian.Execution.Adapters;
@@ -52,7 +53,9 @@ internal static class LiveTradingEngineHostServiceCollectionExtensions
         services.AddSingleton<IBacktestStrategyLiveSource>(static sp => new DesignerDocumentLiveSource(
             sp.GetService<IStrategyDesignRepository>(),
             sp.GetService<StrategyDesignService>() ?? new StrategyDesignService(),
-            sp.GetService<ILogger<DesignerDocumentLiveSource>>()));
+            sp.GetService<ILogger<DesignerDocumentLiveSource>>(),
+            artifacts: sp.GetService<Meridian.Strategies.Artifacts.StrategyArtifactRegistry>(),
+            scopedDesigns: sp.GetService<Meridian.Strategies.Storage.ScopedStrategyDesignStore>()));
 
         services.TryAddSingleton<ILiveStrategyCatalog>(static sp =>
         {
@@ -91,7 +94,12 @@ internal static class LiveTradingEngineHostServiceCollectionExtensions
             sp.GetService<StrategyLifecycleManager>(),
             sp.GetService<ExecutionAuditTrailService>(),
             sp.GetService<BrokerageConfiguration>(),
-            sp.GetService<Meridian.Execution.Services.PortfolioRegistry>()));
+            sp.GetService<Meridian.Execution.Services.PortfolioRegistry>(),
+            sp.GetService<Meridian.Strategies.Artifacts.StrategyArtifactRegistry>(),
+            sp.GetService<Meridian.Strategies.Services.StrategyLiveAuthorizationService>(),
+            designerPaper: sp.GetService<DesignerPaperExecution>()));
+        services.TryAddSingleton<IDesignerPaperReviewAuthority, RetainedDesignerPaperReviewAuthority>();
+        services.TryAddSingleton<DesignerPaperExecution>();
         services.TryAddSingleton<IPromotedRunLauncher>(static sp => sp.GetRequiredService<LiveTradingEngine>());
         services.AddHostedService<LiveTradingEngineHostedService>();
 
@@ -123,7 +131,8 @@ internal static class LiveTradingEngineHostServiceCollectionExtensions
                 sp.GetRequiredService<LiveMarketEventHub>(),
                 // Resolved lazily: paper gateways register as evaluation triggers so resting
                 // limit/stop orders re-evaluate as market data arrives (W9-PAPER-003).
-                () => sp.GetServices<IPaperFillEvaluationTrigger>());
+                () => sp.GetServices<IPaperFillEvaluationTrigger>(),
+                sp.GetService<Meridian.Infrastructure.Adapters.Core.DataQualityMonitor>());
             return new CompositePublisher(sp.GetService<ILogger<CompositePublisher>>(), inner, tap);
         });
     }
@@ -153,16 +162,19 @@ internal sealed class LiveTradingMarketEventTap : IMarketEventPublisher
     private readonly LiveMarketDataCache _cache;
     private readonly LiveMarketEventHub _hub;
     private readonly Func<IEnumerable<IPaperFillEvaluationTrigger>>? _evaluationTriggers;
+    private readonly Meridian.Infrastructure.Adapters.Core.DataQualityMonitor? _quality;
     private IPaperFillEvaluationTrigger[]? _resolvedTriggers;
 
     public LiveTradingMarketEventTap(
         LiveMarketDataCache cache,
         LiveMarketEventHub hub,
-        Func<IEnumerable<IPaperFillEvaluationTrigger>>? evaluationTriggers = null)
+        Func<IEnumerable<IPaperFillEvaluationTrigger>>? evaluationTriggers = null,
+        Meridian.Infrastructure.Adapters.Core.DataQualityMonitor? quality = null)
     {
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _hub = hub ?? throw new ArgumentNullException(nameof(hub));
         _evaluationTriggers = evaluationTriggers;
+        _quality = quality;
     }
 
     public bool TryPublish(in MarketEvent evt)
@@ -176,10 +188,10 @@ internal sealed class LiveTradingMarketEventTap : IMarketEventPublisher
         switch (evt.Payload)
         {
             case Trade trade:
-                _cache.RecordTrade(symbol, trade);
+                _cache.RecordTrade(symbol, trade, CaptureEvidence(evt));
                 break;
             case BboQuotePayload quote:
-                _cache.RecordQuote(symbol, quote);
+                _cache.RecordQuote(symbol, quote, CaptureEvidence(evt));
                 break;
             case LOBSnapshot orderBook:
                 _cache.RecordOrderBook(symbol, orderBook);
@@ -187,7 +199,7 @@ internal sealed class LiveTradingMarketEventTap : IMarketEventPublisher
             case HistoricalBar bar:
                 // Bars feed the observed price envelope used by paper matching; they are
                 // not published to the strategy hub, which consumes tick-level events.
-                _cache.RecordBar(symbol, bar);
+                _cache.RecordBar(symbol, bar, CaptureEvidence(evt));
                 PokeEvaluationTriggers(symbol);
                 return true;
             default:
@@ -198,6 +210,21 @@ internal sealed class LiveTradingMarketEventTap : IMarketEventPublisher
         PokeEvaluationTriggers(symbol);
         _hub.Publish(new LiveMarketEvent(evt.Timestamp, symbol, evt.Payload));
         return true;
+    }
+
+    private IReadOnlyList<MarketDataInputEvidence> CaptureEvidence(in MarketEvent evt)
+    {
+        var evidence = _quality?.GetCachedInputEvidence(evt.EffectiveSymbol) ?? new MarketDataInputEvidence();
+        evidence = MarketDataInputEvidenceTags.ForObservation(evidence,
+            evt.Payload is HistoricalBar bar ? bar.SessionDate : DateOnly.FromDateTime(evt.Timestamp.UtcDateTime));
+        return [evidence with
+        {
+            ProviderId = Meridian.Contracts.Domain.MarketDataSources.IsMissing(evt.Source)
+                || string.Equals(evt.Source.Trim(), Meridian.Contracts.Domain.MarketDataSources.Unknown, StringComparison.OrdinalIgnoreCase)
+                ? null : ProviderProvenanceLabels.ProviderId(evt.Source),
+            EventReference = $"{evt.Type}:{evt.Sequence}", ObservedAt = evt.Timestamp,
+            BackfillRevisionId = evt.BackfillRevisionId
+        }];
     }
 
     /// <summary>

@@ -17,6 +17,26 @@ tooling remain visible, so running schema validation does not change the publish
 
 ## Core Scripts
 
+### Source-backed reference documentation
+
+These renderers maintain the public C# declaration catalog, the marked HTTP declaration block in
+`docs/reference/api-reference.md`, and the sample configuration reference. They extract source
+shapes and provenance rather than inferring runtime behavior or readiness.
+
+```bash
+python3 build/scripts/docs/render-public-type-reference.py
+python3 build/scripts/docs/render-endpoint-reference.py
+python3 build/scripts/docs/generate-configuration-reference.py
+python3 build/scripts/docs/generate-coverage.py --summary
+```
+
+Each renderer supports `--check`, which reports missing or stale output without writing files.
+The documentation automation `quick`, `core`, and `full` profiles run these drift checks.
+`build/scripts/run-maintained-generation.py --docs-only` runs all three producers before the
+core profile, so generated references and the coverage report converge together. Source API pages
+are generator-owned; the HTTP renderer may change only its marked block. Handwritten API guidance
+and the nightly test-coverage suffix retain their existing protection.
+
 ### validate-docs-structure.py
 
 Checks top-level folder ownership, folder indexes, and lifecycle metadata. Run from the
@@ -147,9 +167,11 @@ python3 build/scripts/docs/scan-source-todos.py --summary
 ### validate-doc-hashes.py
 
 Validates hash alignment for generated roadmap/source manifests and registered source modules. The
-hash manifest records source-tree hashes plus README hashes for each registered module, so code
+reviewed baseline in `docs/source/generated/source-hashes/` stores one file per registered module
+(plus a shared `_manifest.json` schema header) with its source-tree and README hashes, so code
 changes can intentionally fail the check until documentation has been reviewed and the manifest is
-refreshed. Use `--write-module` when only specific stale modules have been reviewed; reserve the
+refreshed. Because each module has its own file, branches that review different modules do not
+conflict in Git. Use `--write-module` when only specific stale modules have been reviewed; reserve the
 broad `--write` refresh for a full accepted-baseline review.
 
 Dependency-only bumps (for example Dependabot) do not drift the source hash: `package-lock.json` is
@@ -167,8 +189,8 @@ python3 build/scripts/docs/validate-doc-hashes.py --write --summary
 
 ### mark-stale-docs.py
 
-Compares current registered source module hashes to
-`docs/source/generated/source-hash-manifest.json` and writes a deterministic stale-doc report
+Compares current registered source module hashes to the reviewed per-module baseline in
+`docs/source/generated/source-hashes/` and writes a deterministic stale-doc report
 without refreshing the accepted hash baseline. This lets agents and maintainers update only
 outdated module READMEs before accepting a new hash baseline.
 

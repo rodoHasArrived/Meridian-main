@@ -19,12 +19,12 @@ public sealed class KillSwitchSweepTripHandler : ICircuitBreakerTripHandler
     // eagerly would close a DI cycle. The OMS is resolved only when a trip actually fires.
     private readonly Func<IOrderManager?> _orderManagerAccessor;
     private readonly ILogger<KillSwitchSweepTripHandler> _logger;
-    private readonly ExecutionAuditTrailService? _auditTrail;
+    private readonly IRiskControlAuditWriter? _auditTrail;
 
     public KillSwitchSweepTripHandler(
         Func<IOrderManager?> orderManagerAccessor,
         ILogger<KillSwitchSweepTripHandler> logger,
-        ExecutionAuditTrailService? auditTrail = null)
+        IRiskControlAuditWriter? auditTrail = null)
     {
         _orderManagerAccessor = orderManagerAccessor ?? throw new ArgumentNullException(nameof(orderManagerAccessor));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -50,7 +50,12 @@ public sealed class KillSwitchSweepTripHandler : ICircuitBreakerTripHandler
         {
             // A null sweep is an order manager that established nothing about the book. Fail
             // closed on it rather than dereferencing, exactly as the operator endpoint does.
-            var sweep = await orderManager.CancelAllAsync(ct).ConfigureAwait(false)
+            // The automated trip sweeps under kill-switch authority naming what tripped it, so each
+            // cancellation's audit record says who acted, not just that something did.
+            var killSwitch = OrderSubmissionAuthority.ForKillSwitch(
+                string.IsNullOrWhiteSpace(trippedBy) ? "circuit-breaker" : trippedBy,
+                $"circuit-breaker-trip-{Guid.NewGuid():N}");
+            var sweep = await orderManager.CancelAllAsync(new OrderCancelAllCommand(killSwitch), ct).ConfigureAwait(false)
                 ?? KillSwitchSweepResult.Unestablished(openCount);
 
             // Outcome, not invocation: the catch below fires only on a thrown exception, so a
@@ -73,9 +78,7 @@ public sealed class KillSwitchSweepTripHandler : ICircuitBreakerTripHandler
 
             if (_auditTrail is not null)
             {
-                await _auditTrail.RecordAsync(
-                        "controls",
-                        "CircuitBreakerCancelAll",
+                await _auditTrail.RecordCircuitBreakerSweepAsync(
                         sweep.Outcome.ToString(),
                         actor: trippedBy,
                         message: sweep.Describe(),
@@ -92,9 +95,7 @@ public sealed class KillSwitchSweepTripHandler : ICircuitBreakerTripHandler
                 trippedBy);
             if (_auditTrail is not null)
             {
-                await _auditTrail.RecordAsync(
-                        "controls",
-                        "CircuitBreakerCancelAll",
+                await _auditTrail.RecordCircuitBreakerSweepAsync(
                         "Failed",
                         actor: trippedBy,
                         message: $"Kill-switch cancel-all failed with {openCount} open order(s); manual cancellation is required.",

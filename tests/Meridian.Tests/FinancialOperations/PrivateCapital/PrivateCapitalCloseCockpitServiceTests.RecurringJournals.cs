@@ -104,7 +104,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     public async Task UnreadableRecurringQueue_BlocksCloseInsteadOfAssumingNothingIsOutstanding()
     {
         var activity = BuildActivity();
-        var service = new PrivateCapitalCloseCockpitService(new StubManualJournalEntryWorkbenchService(activity),
+        var service = CreateSourceBackedCockpitService(new StubManualJournalEntryWorkbenchService(activity),
             new StubOperationsContinuityWorkflowService([BuildClosedWorkflow()]),
             recurringJournalQueueSource: new RecurringQueue(null));
 
@@ -119,7 +119,8 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     public async Task UnprovisionedRecurringQueue_DoesNotAddACloseRequirement()
     {
         var activity = BuildActivity();
-        var service = new PrivateCapitalCloseCockpitService(new StubManualJournalEntryWorkbenchService(activity),
+        // Readiness also requires the structured intercompany schedule; the source-backed fixture supplies it.
+        var service = CreateSourceBackedCockpitService(new StubManualJournalEntryWorkbenchService(activity),
             new StubOperationsContinuityWorkflowService([BuildClosedWorkflow()]),
             recurringJournalQueueSource: new RecurringQueue(null, new RecurringJournalStoreNotProvisionedException()));
 
@@ -133,7 +134,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     private static PrivateCapitalCloseCockpitService RecurringCockpit(PrivateCapitalActivityProjectionDto activity,
         IReadOnlyList<RecurringJournalOccurrenceDto> occurrences,
         Func<Guid, Guid, CancellationToken, Task<LedgerPeriodDto?>>? lookupRecurringPeriod = null)
-        => new(new StubManualJournalEntryWorkbenchService(activity),
+        => CreateSourceBackedCockpitService(new StubManualJournalEntryWorkbenchService(activity),
             new StubOperationsContinuityWorkflowService([BuildClosedWorkflow()]),
             recurringJournalQueueSource: new RecurringQueue(occurrences), lookupRecurringPeriod: lookupRecurringPeriod);
 

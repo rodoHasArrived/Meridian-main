@@ -1583,9 +1583,10 @@ public sealed partial class AccountingPostingCandidateServiceTests
     private static async Task<AccountingPostingCandidateService> CreateSeededCandidateServiceAsync(
         string incomeAccountType = "Revenue",
         decimal? creditAmount = null,
-        Guid? ledgerBookId = null)
+        Guid? ledgerBookId = null,
+        string? entityId = null)
     {
-        var configurationService = await CreateSeededConfigurationServiceAsync(incomeAccountType, creditAmount, ledgerBookId);
+        var configurationService = await CreateSeededConfigurationServiceAsync(incomeAccountType, creditAmount, ledgerBookId, entityId: entityId);
         var policyService = await CreatePolicyServiceAsync([AccountingBasisKindDto.Gaap]);
 
         return new AccountingPostingCandidateService(
@@ -1660,7 +1661,8 @@ public sealed partial class AccountingPostingCandidateServiceTests
         string incomeAccountType = "Revenue",
         decimal? creditAmount = null,
         Guid? ledgerBookId = null,
-        LedgerDimensionSetDto? generatedLineDimensions = null)
+        LedgerDimensionSetDto? generatedLineDimensions = null,
+        string? entityId = null)
     {
         var configurationService = new AccountingConfigurationService(
             new InMemoryAccountingConfigurationStore(),
@@ -1671,7 +1673,8 @@ public sealed partial class AccountingPostingCandidateServiceTests
             ledgerBookId,
             incomeAccountType,
             creditAmount,
-            generatedLineDimensions: generatedLineDimensions);
+            generatedLineDimensions: generatedLineDimensions,
+            entityId: entityId);
 
         return configurationService;
     }
@@ -1688,7 +1691,8 @@ public sealed partial class AccountingPostingCandidateServiceTests
         string creditNodeId = "interest-income",
         string costCenterId = "income-review",
         LedgerDimensionSetDto? generatedLineDimensions = null,
-        string sourceEventType = "CustodianInterestAccrual")
+        string sourceEventType = "CustodianInterestAccrual",
+        string? entityId = null)
     {
         await configurationService.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
             "fund-alpha",
@@ -1722,7 +1726,7 @@ public sealed partial class AccountingPostingCandidateServiceTests
                 RuleVersion: "v1",
                 EffectiveFrom: new DateOnly(2026, 1, 1),
                 Priority: 100,
-                Scope: new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-master"),
+                Scope: new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: entityId ?? "entity-master"),
                 Conditions:
                 [
                     new AccountingRuleConditionDto(

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
+import { axe } from "jest-axe";
 import { NotificationCenter } from "@/components/meridian/notification-center";
 import { PriceAlertsProvider } from "@/lib/price-alerts/service";
 import * as api from "@/lib/api";
@@ -99,6 +100,44 @@ describe("NotificationCenter", () => {
     renderCenter();
 
     // The system event feed still produces one unread notification.
-    await waitFor(() => expect(screen.getByRole("button", { name: "Notifications — 1 unread" })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole("button", { name: "Notifications — 1 unread; operator inbox unavailable" })).toBeInTheDocument());
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /Notifications — 1 unread/ }));
+    expect(screen.getByRole("status")).toHaveTextContent("Operator inbox unavailable");
+    expect(screen.getByText("Alpaca")).toBeInTheDocument();
+    expect(screen.queryByText("You're all caught up.")).not.toBeInTheDocument();
+    expect((await axe(screen.getByRole("dialog", { name: "Notifications" }))).violations).toEqual([]);
+  });
+
+  it("retries the unavailable inbox without losing the independent system feed", async () => {
+    const fetchInbox = vi.spyOn(api, "getOperatorInbox")
+      .mockRejectedValueOnce(new Error("inbox offline"))
+      .mockResolvedValue(inbox);
+    const user = userEvent.setup();
+    renderCenter();
+
+    await user.click(await screen.findByRole("button", { name: /Notifications — 1 unread; operator inbox unavailable/ }));
+    await user.click(screen.getByRole("button", { name: "Retry inbox" }));
+
+    expect(await screen.findByText("Reconciliation break")).toBeInTheDocument();
+    expect(screen.getByText("Alpaca")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Retry inbox" })).not.toBeInTheDocument();
+    expect(fetchInbox).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not claim an empty inbox while its evidence is still loading", async () => {
+    vi.spyOn(api, "getOperatorInbox").mockReturnValue(new Promise<OperatorInbox>(() => {}));
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <PriceAlertsProvider options={{ storage: memoryStorage() }}>
+          <NotificationCenter overview={null} />
+        </PriceAlertsProvider>
+      </MemoryRouter>
+    );
+    await user.click(screen.getByRole("button", { name: "Notifications — none unread; operator inbox loading" }));
+    expect(screen.getByRole("status")).toHaveTextContent("Counts include loaded feeds only.");
+    expect(screen.queryByText("You're all caught up.")).not.toBeInTheDocument();
+    expect(screen.getByText("No notifications from the loaded feeds.")).toBeInTheDocument();
   });
 });

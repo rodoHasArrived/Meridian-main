@@ -2,7 +2,7 @@
 
 **Status:** active guidance  
 **Owner:** core-team  
-**Reviewed:** 2026-10-30
+**Reviewed:** 2026-11-25
 
 ## Definition
 
@@ -50,6 +50,13 @@ security/account identity. Replay by receipt preserves what was actually evaluat
 transaction with an earlier recorded timestamp commits later. Timestamp cutoffs alone are
 eligibility predicates, not durable certification or a commit-consistent snapshot.
 
+Bond quotation evidence also declares clean/dirty basis, per-100 or currency-per-unit convention,
+bid/ask/evaluated status and settlement facts. Analytics can consume an immutable retained receipt
+instead of a manually copied price; incompatible, stale or incomplete evidence blocks calculation.
+Imported holdings retain original face, factor, accrued interest and consideration basis alongside
+provider value, normalized value and variance. Import identity preview resolves every supplied
+identifier and retains an operator's conflict decision against the exact matching evidence.
+
 `GetRecordedByIdentifierAsOfAsync` applies that same timestamp limitation to retained Security
 Master event state and alias revisions. Its recorded cutoff filters stored timestamps; the separate
 effective cutoff selects identifier validity. Event timestamps and alias transaction timestamps can
@@ -57,6 +64,30 @@ precede lock acquisition and commit. A later commit can therefore change a repea
 same cutoffs. Imported alias baselines also have a migration availability eligibility boundary;
 earlier alias contents remain unknown. This identifier API retains no evaluation receipt and makes
 no claim about which transactions were visible at a historical cutoff.
+
+## Asset detail terms and market comparison
+
+Full term reads expose one canonical stream version, its economic window, a content fingerprint,
+matching source metadata and the exact original term JSON. The fingerprint identifies read inputs;
+it is not a retained transaction-visibility receipt or edit authority. Schema metadata does not
+replace unknown, nested or read-ahead properties. Explicit zero/false, missing, null, invalid and
+ambiguous values remain distinct. Undeclared rate/price/currency units are never inferred. Shared
+schema, envelope-version and dated-schedule rules still define compatibility.
+
+Market comparison reads bind an owned book, financial account, security, position, date and
+retained economic-state ID/version. The server resolves economic operands and registered models;
+a client cannot submit quantities or prices as authoritative values. Security terms are read from
+retained dated evidence and checked against their economic window. Golden-copy price receipts are
+replayed in their account scope; stale, missing or contradictory evidence blocks amounts.
+
+The supported unit/share holder adapter uses explicit currency-per-unit quotes without a contract
+multiplier. Original-face DCF uses the existing factor/cash-flow kernel once and reports dirty
+market value; it withholds comparison without a declared compatible carrying/accrual basis.
+Contract, notional, currency-amount, commitment, short and liability conventions require their
+proven dedicated adapters. No FX translation is inferred. The displayed unrealized comparison is
+market value minus retained carrying amount, not realized, total-return or tax-cost P/L, and
+retained position projections do not establish posted ledger balances. A `KnownAt` assertion is
+refused because this projection does not certify historical transaction visibility.
 
 ## Governed edit concurrency
 
@@ -183,3 +214,34 @@ while canonical aliases are shared through the asset catalog. MBS, ABS, CLO and 
 only to StructuredCredit. Profile metadata, including nested fields, cannot contradict the registered
 profile's canonical class. Custom profile documents still require explicit typed-term integration to
 produce contractual schedules; a readiness row alone does not supply that integration.
+
+## Structured-note valuation accounting
+
+StructuredNote uses fair value through profit or loss, as decided on 2026-11-11. Its catalog
+declaration selects `structured-note-fvtpl-v1` in the existing daily valuation route. Quantity is
+face value; raw cost and market quotes use the class's percentage-of-par convention through
+`LotQuantity`, so 1,000 face at 101 is worth 1,010. The journal recognizes only the change from
+the retained monetary carrying value, with unrealized gain in revenue or unrealized loss in
+expense. It does not repeat cumulative gains on subsequent valuation dates.
+
+The existing valuation freshness policy, canonical Security Master identity, retained mark and
+carrying-value evidence, period controls, draft submission, independent approval and posting
+lifecycle remain authoritative. The draft retains its template version and treatment; retries
+use the same mark fingerprint and corrected marks produce a new reviewable draft. Missing or
+stale marks cannot produce a draft. StructuredNote remains outside the coupon/accrual accounting
+event slice, so its FixedIncome taxonomy cannot authorize bond accruals or amortization.
+
+## CertificateOfDeposit reviewed accrual anchors and retained terms
+
+CertificateOfDeposit terms version 6 adds optional `issueDate`, `principal` and `paymentFrequency`.
+They are versioned scalars: a record stamped below 6 neither decodes nor writes them, an unrelated
+amendment cannot activate older-stamp residue, and a reviewed replacement stamped at 6 (or an
+explicit clear) is the only activation path. The class's module registers the
+`fixed-bullet-actual365-v1` recurring accrual policy; Bond and StructuredCredit keep their existing
+policy and version-5 calculation evidence. See
+[recurring journals](recurring-journal.md#declared-certificateofdeposit-accrual-profile).
+
+Calculation replay uses an explicit frozen retained-terms reader for historical packets that predate
+format declarations. It classifies only the verified retained view and preserves original receipt
+bytes and hashes. Current-state reads and new captures require the declared format; malformed or
+unsupported declarations remain refusals, retained as blocked receipts with no cash events.

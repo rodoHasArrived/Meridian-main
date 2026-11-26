@@ -36,7 +36,6 @@ These repo-local skills are the primary Meridian skill set for current AI work:
 
 | Skill | Purpose |
 | ------ | --------- |
-| `meridian-archive-organizer` | Archive stale files and keep the repository structure tidy |
 | `meridian-blueprint` | Turn one idea into an implementation-ready technical blueprint |
 | `meridian-brainstorm` | Generate Meridian-native product and architecture ideas |
 | `meridian-browser-workstation` | Implement and review browser workstation TypeScript/React changes |
@@ -100,14 +99,17 @@ Shared grounding files:
 
 Portable packages are mirrored under [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills)
 for Agent Skills-compatible hosts and [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills)
-for Claude-compatible hosts. Keep both mirrors aligned when shared skill behavior changes, but keep Codex-only package evals, scripts, profile wiring, and route rules in `.codex/skills/`.
+for Claude-compatible hosts. `.claude/skills/` is canonical: edit it, then run
+`python build/scripts/ai/generate-guidance.py --write` to regenerate `.agents/skills/` byte-for-byte
+(only the shared-context host header and `skills_provider.py` differ). `check-ai-inventory.py` reports
+any mirror drift. Keep Codex-only package evals, scripts, profile wiring, and route rules in `.codex/skills/`.
 
 | Skill | SKILL.md | Purpose |
 | ------ | --------- | --------- |
-| `meridian-archive-organizer` | [`SKILL.md`](../../../.claude/skills/meridian-archive-organizer/SKILL.md) | Archive stale files and keep the repository structure tidy |
 | `meridian-blueprint` | [`SKILL.md`](../../../.claude/skills/meridian-blueprint/SKILL.md) | Turn one idea into an implementation-ready technical blueprint |
 | `meridian-brainstorm` | [`SKILL.md`](../../../.claude/skills/meridian-brainstorm/SKILL.md) | Generate high-value product and architecture ideas |
 | `meridian-browser-workstation` | [`SKILL.md`](../../../.claude/skills/meridian-browser-workstation/SKILL.md) | Route and implement browser workstation TypeScript/React work |
+| `meridian-ci-cd` | [`SKILL.md`](../../../.claude/skills/meridian-ci-cd/SKILL.md) | Manage, create, and troubleshoot GitHub Actions workflows under the enforced hygiene rules |
 | `meridian-cleanup` | [`SKILL.md`](../../../.claude/skills/meridian-cleanup/SKILL.md) | Clean up code and docs without changing observable behavior |
 | `meridian-code-review` | [`SKILL.md`](../../../.claude/skills/meridian-code-review/SKILL.md) | Apply Meridian’s 7-lens review framework |
 | `meridian-docs` | [`SKILL.md`](../../../.claude/skills/meridian-docs/SKILL.md) | Maintain documentation accurately and conservatively |
@@ -119,22 +121,6 @@ for Claude-compatible hosts. Keep both mirrors aligned when shared skill behavio
 | `meridian-test-writer` | [`SKILL.md`](../../../.claude/skills/meridian-test-writer/SKILL.md) | Produce Meridian-style xUnit and FluentAssertions tests |
 
 Code-defined provider skills may also exist, such as AI documentation maintenance helpers exposed by the local skills provider.
-
----
-
-## Claude Plugin Skill Packages
-
-Checked-in Claude plugins live under [`.claude/plugins/`](../../../.claude/plugins). Treat them as
-provider-specific helper packages, not replacements for the shared Meridian workflow contract.
-
-| Plugin | Manifest | Skill folders | Role |
-| ------ | -------- | ------------- | ---- |
-| `csharp-dotnet-development` | [`.claude/plugins/csharp-dotnet-development/.github/plugin/plugin.json`](../../../.claude/plugins/csharp-dotnet-development/.github/plugin/plugin.json) | `aspnet-minimal-api-openapi`, `csharp-async`, `csharp-mstest`, `csharp-nunit`, `csharp-tunit`, `csharp-xunit`, `dotnet-best-practices`, `dotnet-upgrade` | General C#/.NET helper skills for async, tests, OpenAPI, best practices, and upgrades |
-| `frontend-web-dev` | [`.claude/plugins/frontend-web-dev/.github/plugin/plugin.json`](../../../.claude/plugins/frontend-web-dev/.github/plugin/plugin.json) | `playwright-explore-website`, `playwright-generate-test` | General frontend and Playwright helper skills |
-
-When a plugin package is added, renamed, or removed, update this table, the plugin-agent section in
-[`../agents/README.md`](../agents/README.md), and the shared inventory contract in
-[`../assistant-workflow-contract.md`](../assistant-workflow-contract.md).
 
 ---
 

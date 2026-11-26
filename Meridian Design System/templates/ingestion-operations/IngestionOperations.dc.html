@@ -128,7 +128,7 @@
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ jobBadge }}" label="{{ jobState }}" hint-size="80px,18px"></x-import>
 <span style="font:11px var(--font-data);color:var(--text-muted)">{{ jobRowsLabel }}</span>
 </div>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.ProgressBar" value="{{ jobProgress }}" show-value="{{ true }}" variant="{{ jobVariant }}" hint-size="100%,16px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ProgressBar" aria-label="{{ jobProgressLabel }}" value="{{ jobProgress }}" show-value="{{ true }}" variant="{{ jobVariant }}" hint-size="100%,16px"></x-import>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" columns="{{ 2 }}" items="{{ jobItems }}" hint-size="100%,190px"></x-import>
 <div style="display:flex;gap:8px;flex-wrap:wrap">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ jobRetryOff }}" on-click="{{ onRetry }}" hint-size="150px,28px">Retry from checkpoint</x-import>
@@ -392,7 +392,7 @@ class Component extends DCLogic {
         { key: "scope", label: "Scope" },
         { key: "window", label: "Window", tier: "full" },
         { key: "progress", label: "Progress", cell: (r) => el("div", { style: { minWidth: 140 } },
-          ProgressBar ? el(ProgressBar, { value: r.progress, showValue: true, variant: this.VARIANT[r.state], size: "sm" }) : pct(r.progress)) },
+          ProgressBar ? el(ProgressBar, { "aria-label": "Progress for job " + r.id, value: r.progress, showValue: true, variant: this.VARIANT[r.state], size: "sm" }) : pct(r.progress)) },
         { key: "state", label: "State", cell: (r) => SeverityBadge ? el(SeverityBadge, { status: this.BADGE[r.state], label: r.state }) : r.state },
         // 4.2 · B-2: priority is written from the row. Provisional until the scheduler confirms; a policy
         // refusal restores the prior value with SCHED-2 attached; a confirmed change reverts with a reason.
@@ -453,6 +453,7 @@ class Component extends DCLogic {
       logEntries: logRows,
       drawerOpen: s.drawer && !!job,
       drawerTitle: job ? job.id : "Job",
+      jobProgressLabel: job ? "Progress for job " + job.id : "Job progress",
       onCloseDrawer: () => this.setState({ drawer: false }),
       hasJob: !!job,
       jobBadge: job ? this.BADGE[job.state] : "Pending",

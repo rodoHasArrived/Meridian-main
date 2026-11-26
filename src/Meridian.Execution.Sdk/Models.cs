@@ -96,12 +96,16 @@ public sealed record OrderRequest
     public decimal? TrailPercent { get; init; }
     public TimeInForce TimeInForce { get; init; } = TimeInForce.Day;
     public string? ClientOrderId { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? IntentId { get; init; }
     public string? StrategyId { get; init; }
     public Guid? FundAccountId { get; init; }
     public PositionIntent? PositionIntent { get; init; }
     public OptionContractIdentity? OptionContract { get; init; }
     public IReadOnlyList<OrderLeg>? Legs { get; init; }
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public OrderSessionIntent? SessionIntent { get; init; }
 }
 
 /// <summary>One leg in a multi-leg options order.</summary>
@@ -146,6 +150,25 @@ public sealed record OrderModification
 /// <summary>Report from the execution gateway about an order event.</summary>
 public sealed record ExecutionReport
 {
+    /// <summary>
+    /// Canonical OMS fill identity passed to authoritative subscribers after the accounting handoff.
+    /// It is recreated by the OMS on replay and is never part of a broker-report fingerprint.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public Guid? AccountingFillId { get; init; }
+
+    /// <summary>Canonical identity retained from the accepted order admission; absent on older reports.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? AccountingSecurityId { get; init; }
+
+    /// <summary>Server-owned run identity retained with the fill for native position accounting.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? AccountingRunId { get; init; }
+
+    /// <summary>Source and quality snapshot of the observations used to produce this fill.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<Meridian.Contracts.Operations.MarketDataInputEvidence>? MarketDataEvidence { get; init; }
+
     public required string OrderId { get; init; }
     public required ExecutionReportType ReportType { get; init; }
     public required string Symbol { get; init; }
@@ -211,6 +234,21 @@ public sealed record ExecutionReport
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public bool? BookedVariationMargin { get; init; }
 
+    /// <summary>
+    /// Accrued interest per 100 face at <see cref="SettlementDate"/>, for a face-value fill of a
+    /// coupon-bearing bond whose clean price is <see cref="FillPrice"/>. The buyer pays and the
+    /// seller receives it on top of the clean consideration, so settlement cash is the dirty
+    /// amount. Stated per 100 face (like the price) so a partial-fill increment scales it by its
+    /// own face. Absent when the gateway priced no accrual; those fills settle clean, as before.
+    /// Omitted from serialized payloads when null so existing durable records are unaffected.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? AccruedInterestPer100 { get; init; }
+
+    /// <summary>Contractual settlement date the accrued interest was measured to; absent when none was priced.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public DateOnly? SettlementDate { get; init; }
+
     /// <summary>Regulatory/exchange fees for this fill, when the gateway models them.</summary>
     public decimal? Fees { get; init; }
 
@@ -224,6 +262,9 @@ public sealed record ExecutionReport
     /// <summary>Broker-reported external account that owns the order, never caller routing metadata.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string? BrokerAccountId { get; init; }
+    /// <summary>Exact account-activity identifier supplied by the broker for this fill.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? BrokerActivityId { get; init; }
     /// <summary>The client-provided order ID from the original <see cref="OrderRequest"/>.</summary>
     public string? ClientOrderId { get; init; }
     /// <summary>Broker identity superseded by this replacement, when explicitly reported.</summary>
@@ -293,6 +334,14 @@ public sealed record OrderResult
     public required string OrderId { get; init; }
     public string? ErrorMessage { get; init; }
     public OrderState? OrderState { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? IntentId { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? IntentStatus { get; init; }
+
+    /// <summary>True when a failed submission may have routed and requires reconciliation before retrying.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public bool RequiresOrderReconciliation { get; init; }
 
     /// <summary>
     /// Non-blocking risk flags raised while the order was approved (e.g. concentration
@@ -323,11 +372,40 @@ public sealed record OrderResult
     /// <see cref="RiskWarnings"/> is already on the wire and rendered by shipped clients.
     /// </remarks>
     public RiskDecisionSummary? RiskDecision { get; init; }
+
+    /// <summary>
+    /// The order-authority outcome for this submission: set when order authority refused it, and
+    /// when a typed submission was admitted. Null for untyped submissions refused or admitted by
+    /// other gates.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public AuthorityDecisionSummary? AuthorityDecision { get; init; }
 }
 
 /// <summary>Current state of an order tracked by the OMS.</summary>
 public sealed record OrderState
 {
+    /// <summary>Canonical identity captured by the successful admission gate, before routing.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? AccountingSecurityId { get; init; }
+
+    /// <summary>Run captured only from new, successfully authorized typed strategy-run admission.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? AccountingRunId { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? StrategyArtifactId { get; init; }
+
+    /// <summary>Who or what originated the order; null for states created outside order submission.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public OrderCommandOrigin? Origin { get; init; }
+
+    /// <summary>The journal submission attempt associated with this tracked order incarnation.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? JournalAttemptId { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public OrderSessionIntent? SessionIntent { get; init; }
     public required string OrderId { get; init; }
     public required string Symbol { get; init; }
     public required OrderSide Side { get; init; }
@@ -341,6 +419,8 @@ public sealed record OrderState
     public DateTimeOffset CreatedAt { get; init; }
     public DateTimeOffset? LastUpdatedAt { get; init; }
     public string? StrategyId { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? IntentId { get; init; }
 
     /// <summary>Accounting scope the order was submitted under, when fund-scoped.</summary>
     public Guid? FundAccountId { get; init; }

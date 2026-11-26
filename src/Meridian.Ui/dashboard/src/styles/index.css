@@ -1532,7 +1532,7 @@
   }
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1279px) {
   .data-management-frame,
   .workspace-table-inspector-layout {
     grid-template-columns: minmax(0, 1fr);
@@ -1547,7 +1547,7 @@
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 640px) {
   .workspace-metric-strip {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1720,7 +1720,7 @@
     background: color-mix(in srgb, var(--ws-accent) 8%, transparent);
     color: #E6A585;
     padding: 0.25rem 0.5rem;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 700;
   }
 
@@ -1744,7 +1744,7 @@
     padding: 0 0.625rem;
     background: var(--surface-input);
     color: var(--fg-muted);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 700;
   }
 
@@ -1848,8 +1848,9 @@
     @apply rounded-lg border border-border/70 bg-[hsl(var(--panel-soft)/0.92)];
   }
 
+  /* Light caps in the sans face: monospace is for numbers, IDs and code, not labels. */
   .eyebrow-label {
-    @apply font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground;
+    @apply font-sans text-xs font-medium uppercase tracking-[0.04em] text-muted-foreground;
   }
 
   /* Three-tier type scale: page title (the workspace header's h1), section (CardTitle and region
@@ -1872,22 +1873,23 @@
 
   .type-label {
     font-family: var(--font-body);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     line-height: 1rem;
     font-weight: 600;
     letter-spacing: 0.01em;
   }
 
   /* Caps keep the label tier's 11px: the contract test holds metadata at or above it. */
+  /* Short labels keep light caps but stay in the body face; monospace is for figures and IDs. */
   .type-label--caps {
-    font-family: var(--font-data);
+    font-family: var(--font-body);
     text-transform: uppercase;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.04em;
   }
 
   .eyebrow-label.eyebrow-label--sentence {
     font-family: var(--font-body);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 600;
     text-transform: none;
     letter-spacing: 0.01em;
@@ -1906,7 +1908,7 @@
   }
 
   .security-master-print-sheet__eyebrow {
-    @apply font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground;
+    @apply font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground;
   }
 
   .security-master-print-sheet__title {
@@ -1926,7 +1928,7 @@
   }
 
   .security-master-print-sheet__cell span {
-    @apply block font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground;
+    @apply block font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground;
   }
 
   .security-master-print-sheet__cell strong {
@@ -1992,8 +1994,9 @@
     border-radius: var(--radius-sm);
     background: var(--ws-surface-subtle);
     color: var(--fg);
-    font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
-    font-size: 0.6875rem;
+    /* A chip's label is text; its figure keeps the data face through its own font-mono class. */
+    font-family: var(--font-body, ui-sans-serif, system-ui, sans-serif);
+    font-size: 0.75rem;
     white-space: nowrap;
   }
 
@@ -2068,8 +2071,9 @@
 
 @layer utilities {
   /* Supporting and metadata copy stays legible at the workstation's dense
-     setting. This also covers legacy arbitrary-size utilities while those
-     screens migrate onto the semantic type scale. */
+     setting. Source no longer contains sub-12px sizes (the typography-floor
+     ratchet is at zero); these selectors are the runtime backstop for a class
+     or inline style that arrives from data or a third-party widget. */
   :where([class*="text-[9px]"], [class*="text-[10px]"], [class*="text-[11px]"], [class*="text-[0.625rem]"]) {
     font-size: 0.75rem !important;
   }
@@ -2153,7 +2157,7 @@
     outline-offset: 2px;
   }
 
-  :where([aria-current="page"], [aria-selected="true"], [aria-pressed="true"]) {
+  :where([aria-current="page"], [aria-selected="true"], [aria-pressed="true"], [aria-checked="true"]) {
     border-color: Highlight;
     outline: 2px solid Highlight;
     outline-offset: -2px;
@@ -2173,16 +2177,18 @@
 }
 
 /* ── Disabled buttons ───────────────────────────────────────────────────────
-   One look for every variant: a neutral fill, a dashed edge and a muted label, all at full
-   opacity. Halving the opacity of the accent fill left a washed-out primary button whose label
-   could not be read; the dashed edge is the cue that does not depend on colour. The reason a
-   button is disabled travels with it as `disabledReason` (its tooltip and description).
-   Unlayered on purpose: these rules have to win over the variant utilities on the same element. */
+   One look for every variant: the solid button shape on a neutral, dimmed fill with a muted
+   label. A dashed edge read as a drop zone, not as "unavailable". The dimming comes from the
+   `--ws-disabled-*` tokens rather than from `opacity`: lowering opacity on the whole button
+   takes the label from 4.8:1 to under 3:1, and a disabled label still has to be read to know
+   which gate it names. The reason a button is disabled travels with it as `disabledReason` (its
+   tooltip and description). Unlayered on purpose: these rules have to win over the variant
+   utilities on the same element. */
 .mds-btn:disabled,
 .mds-btn[aria-disabled="true"] {
   background-color: var(--ws-disabled-bg);
   border-color: var(--ws-disabled-border);
-  border-style: dashed;
+  border-style: solid;
   color: var(--ws-disabled-fg);
   cursor: not-allowed;
   opacity: 1;
@@ -2201,3 +2207,46 @@
   cursor: progress;
   opacity: 0.85;
 }
+
+/*
+ * One disclosure style (UX Phase C). A native <details> summary shows the browser's ▸ marker while
+ * TechnicalDetails shows a chevron; the two sat side by side on the same pages. Every summary that
+ * does not draw its own icon gets the same chevron here, leading the label, turning down when open.
+ * Summaries with their own icon (an <svg>) or menu glyph keep theirs.
+ */
+details > summary:not(:has(svg)):not(.table-workbench-more) {
+  list-style: none;
+  cursor: pointer;
+}
+details > summary:not(:has(svg)):not(.table-workbench-more)::-webkit-details-marker {
+  display: none;
+}
+details > summary:not(:has(svg)):not(.table-workbench-more)::before {
+  content: "";
+  display: inline-block;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-right: 0.5rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  opacity: 0.7;
+  transform: translateY(-0.1rem) rotate(-45deg);
+  transition: transform 150ms ease;
+  vertical-align: middle;
+}
+details[open] > summary:not(:has(svg)):not(.table-workbench-more)::before {
+  transform: translateY(-0.2rem) rotate(45deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  details > summary:not(:has(svg)):not(.table-workbench-more)::before { transition: none; }
+}
+
+/*
+ * Breakpoint tiers (UX Phase C). Every media query uses one of these widths, so layouts change at
+ * the same points across the workstation; styles/breakpoints.test.ts enforces it.
+ *   narrow  ≤ 640px   phone-width browser windows and very narrow panes
+ *   tablet  ≤ 980px   the shell stacks; the page scrolls instead of the work area
+ *   compact ≤ 1279px  detail inspectors stack under their tables
+ *   wide    ≤ 1599px  the masthead's compact column set only
+ * The matching min-width forms are 641px, 981px, 1280px and 1600px.
+ */

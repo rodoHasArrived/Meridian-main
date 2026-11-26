@@ -1,4 +1,4 @@
-import { formatCurrency, formatUtcDate } from "@/lib/format";
+import { formatCurrency, formatFixed, formatUtcDate } from "@/lib/format";
 import type {
   PortfolioCashLadder,
   PortfolioCashLadderBucket,
@@ -97,6 +97,11 @@ export interface CashLadderScenarioOption {
 
 export interface CashLadderDrillRow {
   id: string;
+  securityId: string;
+  projectionRunIdentity: string | null;
+  termsVersionId: string | null;
+  termsHash: string | null;
+  sourceEntityId: string | null;
   instrument: string;
   assetClass: string;
   flowType: string;
@@ -199,7 +204,7 @@ export function buildCashLadderChart(ladder: PortfolioCashLadder | null): CashLa
     y: scaleY(bucket.cumulativeCash),
     breaches: bucket.breachesMinimumBalance
   }));
-  const cumulativePoints = cumulativeMarkers.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
+  const cumulativePoints = cumulativeMarkers.map((point) => `${formatFixed(point.x, 1)},${formatFixed(point.y, 1)}`).join(" ");
 
   const thresholdY = ladder.minimumCashThreshold > paddedMin && ladder.minimumCashThreshold < paddedMax
     ? scaleY(ladder.minimumCashThreshold)
@@ -288,7 +293,12 @@ export function selectBucketContributions(
 
 function toDrillRow(row: PortfolioCashLadderContribution): CashLadderDrillRow {
   return {
-    id: `${row.securityId}-${row.dueDate}-${row.flowType}-${row.amount}`,
+    id: `${row.securityId}-${row.projectionRunId ?? ""}-${row.sourceEntityId ?? ""}-${row.dueDate}-${row.flowType}-${row.amount}`,
+    securityId: row.securityId,
+    projectionRunIdentity: row.projectionRunId ?? null,
+    termsVersionId: row.termsVersionId ?? null,
+    termsHash: row.termsHash ?? null,
+    sourceEntityId: row.sourceEntityId ?? null,
     instrument: row.displayName,
     assetClass: row.assetClass,
     flowType: row.flowType,

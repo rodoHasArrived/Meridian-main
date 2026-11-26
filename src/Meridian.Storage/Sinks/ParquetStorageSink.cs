@@ -90,7 +90,8 @@ public sealed class ParquetStorageSink : IStorageSink
         new DataField<string>("AsksJson")
     );
 
-    // Historical bar schema
+    // Historical bar schema v2. Separate file names preserve retained v1 files without
+    // quarantining them merely because they lack the new price-basis columns.
     private static readonly ParquetSchema BarSchema = new(
         new DataField<DateTime>("Timestamp"),
         new DataField<string>("Symbol"),
@@ -100,7 +101,9 @@ public sealed class ParquetStorageSink : IStorageSink
         new DataField<decimal>("Close"),
         new DataField<decimal>("Volume"),
         new DataField<long>("SequenceNumber"),
-        new DataField<string>("Source")
+        new DataField<string>("Source"),
+        new DataField<string>("PriceBasis"),
+        new DataField<bool?>("IsAdjusted")
     );
 
     public ParquetStorageSink(
@@ -139,9 +142,12 @@ public sealed class ParquetStorageSink : IStorageSink
         EventSchemaValidator.Validate(evt);
 
         var bufferKey = GetBufferKey(evt);
-        var buffer = _buffers.GetOrAdd(bufferKey, _ => new MarketEventBuffer(_parquetOptions.BufferSize));
-
-        buffer.Add(evt);
+        MarketEventBuffer buffer;
+        do
+        {
+            buffer = _buffers.GetOrAdd(bufferKey, _ => new MarketEventBuffer(_parquetOptions.BufferSize));
+        }
+        while (!buffer.TryAdd(evt));
 
         // Flush if buffer is full
         if (buffer.ShouldFlush(_parquetOptions.BufferSize))
@@ -257,6 +263,8 @@ public sealed class ParquetStorageSink : IStorageSink
             }
 
             _log.Debug("Flushed {Count} events to Parquet file: {Path}", events.Count, path);
+            if (buffer.TryRetireWhenEmpty())
+                _buffers.TryRemove(new KeyValuePair<string, MarketEventBuffer>(bufferKey, buffer));
         }
         catch (Exception ex)
         {
@@ -464,6 +472,8 @@ public sealed class ParquetStorageSink : IStorageSink
         var volumes = new decimal[count];
         var sequences = new long[count];
         var sources = new string[count];
+        var priceBases = new string[count];
+        var isAdjusted = new bool?[count];
 
         var idx = 0;
         for (var i = 0; i < events.Count; i++)
@@ -480,6 +490,8 @@ public sealed class ParquetStorageSink : IStorageSink
             volumes[idx] = bar.Volume;
             sequences[idx] = bar.SequenceNumber;
             sources[idx] = evt.Source;
+            priceBases[idx] = bar.PriceBasis.ToString();
+            isAdjusted[idx] = bar.IsAdjusted;
             idx++;
         }
 
@@ -494,6 +506,8 @@ public sealed class ParquetStorageSink : IStorageSink
             new DataColumn(BarSchema.DataFields[6], volumes),
             new DataColumn(BarSchema.DataFields[7], sequences),
             new DataColumn(BarSchema.DataFields[8], sources),
+            new DataColumn(BarSchema.DataFields[9], priceBases),
+            new DataColumn(BarSchema.DataFields[10], isAdjusted),
         }, ct);
     }
 
@@ -659,9 +673,15 @@ public sealed class ParquetStorageSink : IStorageSink
 
     private string GetFilePath(MarketEvent evt)
     {
-        var date = evt.Timestamp.Date;
-        var typeName = evt.Type.ToString().ToLowerInvariant();
-        var fileName = $"{evt.EffectiveSymbol}_{typeName}_{date:yyyyMMdd}.parquet";
+        var date = evt.Timestamp.UtcDateTime.Date;
+        var typeName = evt.Type == MarketEventType.HistoricalBar
+            ? "historicalbar_v2"
+            : evt.Type.ToString().ToLowerInvariant();
+        // Encode the symbol as a single safe path segment: a raw "BRK/B" would create a
+        // subfolder and "../" could escape the storage root. Plain ASCII symbols keep their
+        // existing spelling; case is preserved so existing file names do not change.
+        var symbolSegment = StoragePathSegmentCodec.Encode(evt.EffectiveSymbol);
+        var fileName = $"{symbolSegment}_{typeName}_{date:yyyyMMdd}.parquet";
 
         // Delegate the directory layout to the shared storage policy so every naming convention is
         // honored identically to the JSONL sink. Previously only BySymbol/ByDate/ByType were handled

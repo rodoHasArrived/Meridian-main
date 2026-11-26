@@ -45,13 +45,9 @@ internal static partial class SecurityMasterMapping
             var raw => throw new InvalidOperationException($"Unsupported liquidation preference '{raw}'.")
         };
 
-    // The schema declares preferredTerms as an object but registers no inner shape for it, so its
-    // members (and the two blocks nested in it) read through the ledgered view
-    // (UnboundCompatibilityReads) until the shape is declared.
-    private static PreferredTerms ToPreferredTerms(SchemaBoundTerms preferredTerms)
-    {
-        var terms = preferredTerms.Unbound;
-        return new(
+    // Bound to the inner shape the schema registers as Equity.preferredTerms (and its two nested blocks).
+    private static PreferredTerms ToPreferredTerms(SchemaBoundTerms terms)
+        => new(
             ToOption(terms.OptionalDecimal("dividendRate")),
             ToDividendType(terms.RequiredString("dividendType")),
             ToOption(terms.OptionalDecimal("redemptionPrice")),
@@ -59,7 +55,6 @@ internal static partial class SecurityMasterMapping
             ToOption(terms.OptionalDateOnly("callableDate")),
             ToParticipationTermsOption(terms.OptionalObject("participationTerms")),
             ToLiquidationPreference(terms.RequiredObject("liquidationPreference")));
-    }
 
     // Bound to the inner shape the schema registers as Equity.convertibleTerms.
     private static ConvertibleTerms ToConvertibleTerms(SchemaBoundTerms terms)

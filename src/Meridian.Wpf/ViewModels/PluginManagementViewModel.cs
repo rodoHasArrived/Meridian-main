@@ -63,7 +63,7 @@ public sealed class PluginItem
 /// All state, commands, and plugin orchestration live here; the code-behind is limited to
 /// <c>InitializeComponent()</c> and constructor wiring.
 /// </summary>
-public sealed class PluginManagementViewModel : BindableBase
+public sealed class PluginManagementViewModel : BindableBase, Meridian.Wpf.Contracts.IPageRefreshOptOut
 {
     private readonly IPluginLoaderService _pluginLoader;
 
@@ -128,6 +128,10 @@ public sealed class PluginManagementViewModel : BindableBase
 
     public IRelayCommand BrowseCommand { get; }
     public IAsyncRelayCommand LoadPluginsCommand { get; }
+    /// <summary>
+    /// Re-runs plugin loading from <see cref="PluginsDirectory"/>. This loads plugin assemblies, so the
+    /// shell Refresh control does not invoke it (see <see cref="Meridian.Wpf.Contracts.IPageRefreshOptOut"/>).
+    /// </summary>
     public IAsyncRelayCommand RefreshCommand { get; }
 
     // ── Command implementations ───────────────────────────────────────────────

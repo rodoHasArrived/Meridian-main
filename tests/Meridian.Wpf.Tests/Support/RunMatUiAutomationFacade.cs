@@ -260,7 +260,8 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
     public static IServiceProvider CreateMainPageServiceProvider(
         RunMatService? runMatService = null,
         FundContextService? fundContextService = null,
-        IWorkstationOperatorInboxApiClient? operatorInboxApiClient = null)
+        IWorkstationOperatorInboxApiClient? operatorInboxApiClient = null,
+        bool validateScopes = false)
     {
         var services = new ServiceCollection();
         var configureServices = typeof(Meridian.Wpf.App)
@@ -341,7 +342,7 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
         services.AddTransient<SecurityMasterPage>();
         services.AddTransient<MainPageViewModel>();
         services.AddTransient<MainPage>();
-        return services.BuildServiceProvider();
+        return services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = validateScopes });
     }
 
     public static void InvokeMainPageLoaded(MainPage page)

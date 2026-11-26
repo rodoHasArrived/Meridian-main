@@ -2,11 +2,14 @@
 
 # `direct-lending-contracts` data objects - page 2 of 2
 
-Objects 81-123 of 123. References crossing pages remain available in the dependency manifest.
+Objects 81-124 of 124. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% direct-lending-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_DirectLending_PostDailyAccrualRequest["PostDailyAccrualRequest"] {
+        +DateOnly AccrualDate
+    }
     class Meridian_Contracts_DirectLending_ProjectedCashFlowDto["ProjectedCashFlowDto"] {
         +DateOnly? AccrualEndDate
         +DateOnly? AccrualStartDate
@@ -87,23 +90,27 @@ classDiagram
     class Meridian_Contracts_DirectLending_ReconciliationResultDto["ReconciliationResultDto"] {
         +decimal? ActualAmount
         +DateOnly? ActualDate
+        +DateOnly? AsOfDate
         +Guid? CashTransactionId
         +DateTimeOffset CreatedAt
+        +string? Currency
         +decimal? ExpectedAmount
         +DateOnly? ExpectedDate
+        +IReadOnlyList~Guid~ JournalEntryIds
+        +Guid? LedgerBookId
         +Guid LoanId
         +string? MatchRule
-        +string MatchStatus
-        +IReadOnlyList~string~ Notes
-        +Guid? ProjectedCashFlowId
-        +Guid ReconciliationResultId
     }
     class Meridian_Contracts_DirectLending_ReconciliationRunDto["ReconciliationRunDto"] {
+        +decimal? AmountTolerance
+        +DateOnly? AsOfDate
         +DateTimeOffset? CompletedAt
+        +int? DateToleranceDays
         +Guid LoanId
         +Guid? ProjectionRunId
         +Guid ReconciliationRunId
         +DateTimeOffset RequestedAt
+        +string? RequestHash
         +string Status
     }
     class Meridian_Contracts_DirectLending_RecordIndexFixingRequest["RecordIndexFixingRequest"] {

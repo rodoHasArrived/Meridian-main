@@ -130,8 +130,18 @@ public sealed class SecurityMasterAggregateRebuilder
             return null;
         }
 
-        return SecurityEconomicDefinitionAdapter.ToProjection(
+        // The rebuild path's last in-memory step before the orchestrator persists the row (ADR-024
+        // amendment 2026-11-13). Replayed events already decode with tagged retained terms
+        // (SecurityMasterMapping.FromEconomicPayload); this also covers a profile envelope recovered
+        // from the economic document and a projection-only security folded back from its stored,
+        // possibly untagged row. The terms come from event history, so the frozen legacy classifier
+        // decides the family. Only the in-memory row is tagged; no event is rewritten.
+        var projection = SecurityEconomicDefinitionAdapter.ToProjection(
             rebuilt,
             projectionWithAliases?.Aliases);
+        return projection with
+        {
+            AssetSpecificTerms = SecurityTermsLegacyEventClassifier.StampDeclaredFormat(projection.AssetSpecificTerms)
+        };
     }
 }

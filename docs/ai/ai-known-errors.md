@@ -3,7 +3,7 @@
 **Status:** active
 **Owner:** core-team
 **Reviewed:** 2026-06-04
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-11-14
 
 This file tracks repeated AI-agent mistakes so future agents can avoid introducing the same failures.
 
@@ -57,6 +57,33 @@ label alone will update this file.
 ---
 
 ## Known issues
+
+### AI-20261118-unbound-ledger-transitional
+- **Area**: runtime/accounting/ledger
+- **Symptoms**: A new posting path accepts an invented account (for example `new LedgerAccount("Plug", Asset)`) or posts lines with no currency, and nothing fails until a report or reconciliation disagrees.
+- **Root cause**: `new Ledger()` creates an unbound ledger that accepts any account and currency-less lines for legacy fund, partnership, consolidation, lending and workbench callers.
+- **Prevention checklist**: (1) Create new posting ledgers with `new Ledger(LedgerPolicy.Trading(currency))` or another `LedgerPolicy`. (2) Resolve every account through `IChartOfAccounts.Resolve`; add a `LedgerAccountRole` instead of constructing a `LedgerAccount`. (3) When building `LedgerEntry` lines directly for a bound ledger, pass `ledger.Policy.FunctionalAmount(debit, credit)` as the currency. (4) Do not add constructor-time balance checks to `JournalEntry`: reporting builds deliberately partial journal slices.
+- **Verification commands**: `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter "FullyQualifiedName~LedgerPolicyStrictnessTests|FullyQualifiedName~FileLedgerJournalLogTests"`.
+- **Source issue**: Durable, strictly validated ledger work; no external issue created.
+- **Status**: mitigated
+
+### AI-20261114-configured-loan-policy-pin
+- **Area**: runtime/accounting/direct-lending
+- **Symptoms**: Configured loan journals used a global default policy instead of the selected book's custom policy and were rejected by the authoritative book guard.
+- **Root cause**: The configured chart/book path was added after an existing unscoped Primary policy lookup, leaving two different sources of posting authority.
+- **Prevention checklist**: (1) Resolve configured book, accounting basis and exact policy ID/version together before projection. (2) Use the retained fund/node scope. (3) Test a custom scoped v7 policy against a competing later default v8. (4) Keep legacy unconfigured selection separate and preserve append guards.
+- **Verification commands**: `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -p:EnableWindowsTargeting=true --filter FullyQualifiedName~ConfiguredLoanProjection_UsesPinnedChartRetainedOwnerAndExactCustomBookPolicy`.
+- **Source issue**: Local integration review and synthetic configured-book regression; no external issue created.
+- **Status**: mitigated
+
+### AI-20261114-canonical-fill-lineage
+- **Area**: runtime/accounting/Execution
+- **Symptoms**: Real PostgreSQL canonical fill workflows rejected acquisition journals with missing Security Master provenance and later rejected sales with incorrectly instrument-scoped gain accounts, although in-memory tests passed.
+- **Root cause**: The new producer supplied typed security and lot references but omitted the durable journal boundary's separate lineage metadata and native account identity conventions. A reporting fixture also reused a generic mapping that was not tied to its resolved instrument.
+- **Prevention checklist**: (1) Trace every producer through the actual append guards, including metadata, evidence and exact account identities. (2) Derive lineage from the resolved security and book-position versions. (3) Validate supported chart mappings before execution. (4) Run real PostgreSQL acquisition, disposal and fee workflows; use valid instrument-bound lineage in negative fixtures so they reach the intended guard. (5) Preserve existing append validation.
+- **Verification commands**: With a synthetic `MERIDIAN_LEDGER_CONNECTION_STRING`, run `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -p:EnableWindowsTargeting=true --filter "FullyQualifiedName~SyntheticFillWorkflow|FullyQualifiedName~SyntheticAccountingWorkflow|FullyQualifiedName~ReportingOpenPositions"`.
+- **Source issue**: Local regression reproduced by the named PostgreSQL tests during the scoped accounting integration implementation; no external issue created.
+- **Status**: mitigated
 
 ### AI-20260205-missing-error-memory
 - **Area**: process/documentation
@@ -462,7 +489,7 @@ label alone will update this file.
 - **ID**: AI-20260828-pr-body-rewrite-drops-phase-marker
 - **Area**: ci/governance
 - **Symptoms**: `scope-gate` reds on a PR that has been passing it for many pushes, with `##[error]No phase declaration found. Provide --phase/--dispatch-phase, a 'phase:PRx' label, or a PR body marker like '<!-- phase:PR2 -->'.` Nothing in the diff touches roadmap tooling or workflows, and the immediately preceding pushes on the same branch passed the same check.
-- **Root cause**: The phase is declared by an HTML comment marker (`<!-- phase:PRx -->`, `PR1` on the PR that produced this entry) in the pull-request body. HTML comments are invisible in every rendered view of the PR, so rewriting the body — to refresh a stale summary, say — silently drops the marker unless it is deliberately carried across. The check does not fail on the push that removed it if that was a body-only edit; it fails on the *next* code push, which makes the two events easy to disconnect.
+- **Root cause**: The phase is declared by an HTML comment marker (`<!-- phase:PRx -->`, `PR1` on the PR that produced this entry) in the pull-request body. HTML comments are invisible in every rendered view of the PR, so rewriting the body — to refresh a stale summary, say — silently drops the marker unless it is deliberately carried across. Originally the check did not fail on the body-only edit that removed it, only on the *next* code push, which made the two events easy to disconnect. Since `roadmap-source-docs.yml` added `edited`, `labeled` and `unlabeled` to its `pull_request` `types:` (`:13`), a body edit re-runs `scope-gate` against the edited body, so the failure now appears on the edit itself (for PRs that match the workflow's `paths:` filter). `.github/pull_request_template.md` now starts with `<!-- phase:PR7 -->`, so a body filled from the template carries a marker by default.
 - **Prevention checklist**: (1) When rewriting a PR body, write `<!-- phase:PRx -->` as the first line unconditionally, using the phase THIS PR declares — never a hardcoded one; hardcoding `PR1` onto a PR2–PR9 PR silently narrows scope and onto a PR0 PR silently widens it. (2) Establish the phase from `--phase`/dispatch input, the `phase:PRx` label, or the roadmap phase the change belongs to — if you can determine none of these, do not rewrite the body at all. (3) Prefer a `phase:PRx` label: it is visible in the UI, survives body rewrites, and outranks the body in `resolve_phase`. (4) Never confirm the marker via GitHub MCP `pull_request_read` method `get` — it strips HTML comments, so a marker that IS present returns invisible. (5) Never treat the latest `scope-gate` log as evidence about the current body. (6) A job re-run will not clear the failure. Ordering matters: the first three remove the need to detect the marker at all, and everything that tries to read it back has failed at least once. Detail below.
   - [ ] **Write the marker unconditionally — for *this PR's* phase, never a hardcoded one.** When rewriting a PR body, emit `<!-- phase:PRx -->` as the first line without first checking whether it is there, where `PRx` is the phase this pull request actually declares. It is idempotent and removes the read-back entirely. This is the primary rule: construct, do not verify. **Hardcoding a phase is worse than the bug it fixes** — `resolve_phase` prefers a label but otherwise takes the body value (`enforce_phase_scope.py:134-150`), so writing `PR1` onto a PR2–PR9 PR silently rejects in-scope changes against PR1's narrower allowlist, and writing it onto a PR0 PR silently *broadens* the allowed scope
   - [ ] **Establish the phase from a source you can actually read**, in this order: an explicit `--phase`/dispatch input; the `phase:PRx` label; or the roadmap phase the change belongs to, which the author knows independently of the body. **If you cannot determine the phase and cannot read the body, do not rewrite the body at all** — a rewrite is exactly the operation that can silently downgrade or widen scope, and no summary refresh is worth that
@@ -470,18 +497,18 @@ label alone will update this file.
   - [ ] Do not expect a job re-run to clear a failure once it happens — see the recovery note below
   - [ ] Do not try to confirm the marker by reading the body through GitHub MCP `pull_request_read` (method `get`): it returns the body with HTML comments **stripped**, so a marker that is really there comes back invisible. This recurred on PR #2857 *after* this entry was written — the returned body began `\n\n## Summary`, the two leading newlines being exactly where `<!-- phase:PR1 -->` sat
   - [ ] Do not treat the latest `scope-gate` log as evidence about the *current* body either — see below for why it is a post-push confirmation only
-- **Verification commands**: there is no sound pre-push check — two successive attempts to write one were both unsound, so rely on constructing the marker, not confirming it. POST-PUSH ONLY: read the `scope-gate` job log for `Phase scope gate passed for PRx (source: …)` and check the phase named is the one the PR intends — a wrong phase passes just as loudly, against the wrong allowlist; `source:` names what the gate resolved (`pr_body`, `labels`, `dispatch`). That log is evidence about the commit that triggered the run, NOT about the body as it now stands: `roadmap-source-docs.yml` declares `pull_request:` with `paths:` and no `types:` (`:10-20`), so it takes the default set (`opened`, `synchronize`, `reopened`) and a body-only edit emits `edited`, which triggers nothing — after such an edit the latest log still describes the pre-edit body. So the marker is unverified until the next `synchronize` push. Detail below.
+- **Verification commands**: there is no sound pre-push check — two successive attempts to write one were both unsound, so rely on constructing the marker, not confirming it. POST-PUSH ONLY: read the `scope-gate` job log for `Phase scope gate passed for PRx (source: …)` and check the phase named is the one the PR intends — a wrong phase passes just as loudly, against the wrong allowlist; `source:` names what the gate resolved (`pr_body`, `labels`, `dispatch`). That log is evidence about the event payload that triggered the run. `roadmap-source-docs.yml` now lists `edited`, `labeled` and `unlabeled` in its `pull_request` `types:` (`:13`), so a body edit or label change starts a fresh run carrying the current body and labels; read the log of the run triggered by your latest edit, not an older one. Detail below.
   - **Post-push confirmation** — the only sound read. After a push, read the `scope-gate` job log for
     `Phase scope gate passed for PRx (source: …)`. Check the phase it names is the one the PR intends —
     a wrong phase passes the gate just as loudly as a right one, against the wrong allowlist.
     `source:` names the declaration the gate actually
-    resolved (`pr_body`, `labels`, or `dispatch`). This is valid evidence **about the commit that
-    triggered that run, not about the body as it stands now**: `roadmap-source-docs.yml` declares
-    `pull_request:` with a `paths:` filter and no `types:` (`:10-20`), so it takes the default activity
-    set — `opened`, `synchronize`, `reopened`. A body-only edit emits `edited`, which triggers nothing,
-    so after such an edit the latest log still describes the *pre-edit* body.
-  - Consequently: after a body-only rewrite the marker's presence is **unverified until the next
-    `synchronize` push**. Treat that push's `scope-gate` as the confirmation. If it errors with
+    resolved (`pr_body`, `labels`, or `dispatch`). This is valid evidence **about the event payload
+    that triggered that run**. `roadmap-source-docs.yml` now declares `types: [opened, synchronize,
+    reopened, ready_for_review, edited, labeled, unlabeled]` (`:13`), so a body-only edit emits
+    `edited` and starts a fresh run against the current body. (Earlier revisions declared no
+    `types:`, so body edits triggered nothing; that is no longer true.)
+  - Consequently: after a body-only rewrite, the `scope-gate` run triggered by that `edited` event
+    is the confirmation. Do not read an older run's log as evidence about the edited body. If it errors with
     `No phase declaration found`, restore the marker and recover by the route your role allows — the
     two differ, so read the recovery note below rather than assuming:
     - *Automated contributors* fold the restoration into the next real change. Never an empty commit,
@@ -504,7 +531,7 @@ label alone will update this file.
     state unconditional instead.
 - **Source issue**: PR #2857
 - **Status**: mitigated
-- **Fixed in**: Documented here. The recovery is the part worth recording, because the obvious one does not work: `.github/workflows/roadmap-source-docs.yml:74-75` passes `PR_LABELS` and `PR_BODY` from `github.event.pull_request.*`, which is the **event payload captured when the run was triggered**. Re-running the failed job replays that same stale payload, so neither restoring the body marker nor adding a label takes effect on a re-run. Clearing it requires a fresh `pull_request` event, and there are two ways to get one. (1) **A `synchronize` push** — fold the marker restoration in with whatever genuine change is next; never push an empty commit to manufacture one. (2) **Close and reopen the PR**, which needs no commit: the workflow declares `pull_request:` with `paths:` and no `types:` (`:10-15`), so it takes the default set — `opened`, `synchronize`, `reopened` — and `reopened` carries the CURRENT body and labels; reach for this when the marker is noticed after the last intended code change, so a finished PR does not sit blocked on a stale required check. ROLE-SENSITIVE: automated contributors under a "never close and reopen a PR to kick CI" rule must use path (1) only — that rule exists to stop re-running checks hoping for a different result, and although this case differs in kind (the check is deterministic and reads stale input), the safe reading is to fold the fix into the next real change and leave reopening to a human author.
+- **Fixed in**: Documented here. The recovery is the part worth recording, because the obvious one does not work: `.github/workflows/roadmap-source-docs.yml:74-75` passes `PR_LABELS` and `PR_BODY` from `github.event.pull_request.*`, which is the **event payload captured when the run was triggered**. Re-running the failed job replays that same stale payload, so neither restoring the body marker nor adding a label takes effect on a re-run. Clearing it requires a fresh `pull_request` event. **Update:** the workflow now includes `edited`, `labeled` and `unlabeled` in its `types:` (`:13`), so restoring the marker in the body or adding a `phase:PRx` label is itself the fresh event — no commit and no close/reopen is needed. The historical recovery paths below predate that change and remain valid fallbacks. (1) **A `synchronize` push** — fold the marker restoration in with whatever genuine change is next; never push an empty commit to manufacture one. (2) **Close and reopen the PR**, which needs no commit: the workflow declares `pull_request:` with `paths:` and no `types:` (`:10-15`), so it takes the default set — `opened`, `synchronize`, `reopened` — and `reopened` carries the CURRENT body and labels; reach for this when the marker is noticed after the last intended code change, so a finished PR does not sit blocked on a stale required check. ROLE-SENSITIVE: automated contributors under a "never close and reopen a PR to kick CI" rule must use path (1) only — that rule exists to stop re-running checks hoping for a different result, and although this case differs in kind (the check is deterministic and reads stale input), the safe reading is to fold the fix into the next real change and leave reopening to a human author.
   - **A `synchronize` push** — fold the marker restoration in with whatever genuine change is next, or with an entry like this one recording the trap. Never push an empty commit to manufacture one.
   - **Close and reopen the pull request**, which needs no commit at all. The workflow declares `pull_request:` with a `paths:` filter and **no `types:`** (`:10-15`), so it takes the default activity set — `opened`, `synchronize`, `reopened` — and the `reopened` event carries the *current* body and labels. This is the recovery to reach for when the marker is noticed after the last intended code change, since otherwise a finished PR sits blocked on a stale required check, or its author invents a content change purely to emit `synchronize`.
   Note for automated contributors: agents operating under a "never close and reopen a PR to kick CI" rule should use the first path only. That rule exists to stop re-running checks in the hope of a different result; this case is different in kind — the check is deterministic and reads stale input — but the safe reading is to fold the fix into the next real change and leave reopening to a human author.

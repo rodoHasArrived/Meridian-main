@@ -322,6 +322,9 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     $"Direct lending aggregate version conflict for {loanId}. Expected {expectedVersion}, actual {currentVersion}."));
         }
 
+        await using var postingAuthority = ledgerJournalEntries is { Count: > 0 } && _ledgerJournalStore is not null
+            ? await _ledgerJournalStore.AcquirePostingAuthorityAsync(connection, transaction, ledgerJournalEntries, ct).ConfigureAwait(false)
+            : EmptyLedgerAuthorityLease.Instance;
         await UpsertStateAsync(connection, transaction, loanId, nextVersion, contract, servicing, ct).ConfigureAwait(false);
         await UpsertNormalizedProjectionAsync(connection, transaction, loanId, nextVersion, contract, servicing, ct).ConfigureAwait(false);
         await AppendEventAsync(connection, transaction, loanId, nextVersion, eventType, eventSchemaVersion, effectiveDate, payload, metadata, eventId, ct).ConfigureAwait(false);

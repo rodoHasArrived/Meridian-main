@@ -9,6 +9,9 @@ public sealed record AutomatedJournalDraft(
     IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit, LedgerLineDimensionSet? dimensions)> Lines,
     JournalEntryMetadata Metadata)
 {
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyDictionary<int, string>? LineMemos { get; init; }
+
     /// <summary>Total debits in the projected journal draft.</summary>
     public decimal TotalDebits => Lines.Sum(static line => line.debit);
 

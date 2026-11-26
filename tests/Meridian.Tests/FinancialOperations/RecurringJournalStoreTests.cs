@@ -5,17 +5,17 @@ using Xunit;
 
 namespace Meridian.Tests.FinancialOperations;
 
-public sealed class RecurringJournalStoreTests : IDisposable
+public sealed partial class RecurringJournalStoreTests : IDisposable
 {
     private readonly string _root = Path.Combine(Path.GetTempPath(), "meridian-recurring-tests", Guid.NewGuid().ToString("N"));
     private string StateDirectory => Path.Combine(_root, "registry");
-    private static readonly DateTimeOffset At = new(2026, 10, 1, 0, 0, 0, TimeSpan.Zero);
-    private static readonly DateOnly Date = new(2026, 10, 1);
-    private static readonly RecurringJournalScope Scope = new("fund-a", Guid.Parse("048804c2-31df-4878-8008-580386a12e80"), "entity-a", "USD", "tenant-a", "company-a", "account-a");
+    internal static readonly DateTimeOffset At = new(2026, 10, 1, 0, 0, 0, TimeSpan.Zero);
+    internal static readonly DateOnly Date = new(2026, 10, 1);
+    internal static readonly RecurringJournalScope Scope = new("fund-a", Guid.Parse("048804c2-31df-4878-8008-580386a12e80"), "entity-a", "USD", "tenant-a", "company-a", "account-a");
 
     private FileRecurringJournalStore Store() => new(StateDirectory);
 
-    private static JournalTemplate Template(decimal factor = 1m) => new("fee", "Management fee", "Approved contract fee",
+    internal static JournalTemplate Template(decimal factor = 1m) => new("fee", "Management fee", "Approved contract fee",
     [
         new JournalTemplateLine(new LedgerAccount("Expenses:ManagementFees", LedgerAccountType.Expense, "FUND", "account-a"),
             JournalTemplateSide.Debit, "fee", Factor: factor,
@@ -24,11 +24,11 @@ public sealed class RecurringJournalStoreTests : IDisposable
             JournalTemplateSide.Credit, "fee", Factor: factor)
     ], ledgerBook: "Fund");
 
-    private static RecurringJournalSchedule Schedule(decimal amount = 100m) => new("schedule-a", "fee", new LedgerBookKey("fund-a", "Fund"),
+    internal static RecurringJournalSchedule Schedule(decimal amount = 100m) => new("schedule-a", "fee", new LedgerBookKey("fund-a", "Fund"),
         RecurringJournalCadence.Monthly, Date, "controller", At,
         new Dictionary<string, decimal> { ["fee"] = amount }, description: "Monthly management fee");
 
-    private static JournalEvidenceReference Evidence() => new("contract-1", "vault://contracts/1", "Contract", "DocumentVault", At,
+    internal static JournalEvidenceReference Evidence() => new("contract-1", "vault://contracts/1", "Contract", "DocumentVault", At,
         "controller", "fund-a", new string('a', 64), "Approved fee contract", EvidenceVersion: 3);
 
     private async Task SeedAsync(IReadOnlyList<JournalEvidenceReference>? evidence = null)

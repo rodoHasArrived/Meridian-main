@@ -399,7 +399,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
     {
         // The vocabulary walk inspects the FLAT couponType the serializer writes, so a coupon
         // carried in the legacy nested object slips past it — while being lossy in exactly the same
-        // way: ToBondTerms has no nested-coupon fallback, reads the row as a fixed coupon, and
+        // way: ToBondCouponStructure has no nested-coupon fallback, reads the row as a fixed coupon, and
         // re-serializes it flat, dropping the nested index and spread. The projection store reads
         // this shape deliberately for externally-authored payloads, so such rows are expected.
         var securityId = Guid.NewGuid();
@@ -457,7 +457,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
     {
         // A flat couponType is NOT on its own proof the nested object is vestigial. The projection
         // store falls back per FIELD, so a row can name its structure flat while keeping one value
-        // only nested — here the spread. The store reports 125; ToBondTerms reads only the flat
+        // only nested — here the spread. The store reports 125; ToBondCouponStructure reads only the flat
         // spreadBps, finds none, and re-serializes it null. Judging the nested object by presence
         // rather than by contents would wave this through.
         var securityId = Guid.NewGuid();
@@ -558,7 +558,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
     [Fact]
     public async Task DeactivateAsync_BondWithAnExplicitlyNullCouponTypeAndFlatStructure_RefusesTheWrite()
     {
-        // A present property is not a readable discriminant: ToBondTerms treats an explicit null as
+        // A present property is not a readable discriminant: ToBondCouponStructure treats an explicit null as
         // the missing-value default and reads the record as Fixed, so the floating structure is
         // orphaned exactly as if couponType had been omitted. Keying the check on presence rather
         // than readability would let this through.
@@ -596,7 +596,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
     {
         // The projection store's readers are type-aware and fall through to the nested value when
         // the flat one does not parse, so a malformed flat spread is NOT a representation of the
-        // nested one — the store reports 125 while ToBondTerms reads neither and persists null.
+        // nested one — the store reports 125 while ToBondCouponStructure reads neither and persists null.
         // Judging the counterpart by presence rather than by decodability discards it.
         var securityId = Guid.NewGuid();
         var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
@@ -634,7 +634,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
     [Fact]
     public async Task DeactivateAsync_BondWhoseNestedCouponOnlyNamesTheDefaultFixedKind_IsNotRefused()
     {
-        // ToBondTerms defaults an absent couponType to Fixed and the store reads the nested kind as
+        // ToBondCouponStructure defaults an absent couponType to Fixed and the store reads the nested kind as
         // Fixed, so both codecs already agree: re-serializing canonicalizes the JSON shape and loses
         // nothing. Refusing here would freeze a valid legacy fixed-rate record to protect nothing.
         var securityId = Guid.NewGuid();
@@ -704,7 +704,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
     {
         // The JSON kind is a proxy, and it is wrong precisely where it matters: 1e100 is a number
         // that TryGetDecimal rejects, so both the codec and the projection store fail to read it —
-        // the store falls through to the nested 4.25 while ToBondTerms reads nothing and persists
+        // the store falls through to the nested 4.25 while ToBondCouponStructure reads nothing and persists
         // it as absent. Checking the kind alone would call the flat key a representation and let
         // the nested rate be discarded.
         var securityId = Guid.NewGuid();
@@ -884,7 +884,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
     [Fact]
     public async Task DeactivateAsync_BondDeclaringFixedBesideFloatingCompanions_RefusesTheWrite()
     {
-        // A READABLE discriminant is not on its own proof the flat payload survives. ToBondTerms
+        // A READABLE discriminant is not on its own proof the flat payload survives. ToBondCouponStructure
         // reads the companions one arm at a time and the Fixed arm reads neither floatingIndex nor
         // spreadBps, while the serializer emits both as null for a fixed coupon — so this row loses
         // its floating economics exactly as a row with no couponType at all would. The projection
@@ -1165,7 +1165,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
     public async Task AmendTermsAsync_BondPatchNullingAnUndeclaredCouponType_StillRefusesTheWrite()
     {
         // Clearing is a repair only where the codec decodes an absent key as a genuine absence.
-        // couponType is the opposite case: ToBondTerms reads a null discriminant as "Fixed", so an
+        // couponType is the opposite case: ToBondCouponStructure reads a null discriminant as "Fixed", so an
         // explicit null does not clear the coupon, it SUBSTITUTES one — the silent re-typing this
         // guard exists to stop, arriving through the exit the guard offers.
         var securityId = Guid.NewGuid();
@@ -1196,7 +1196,7 @@ public sealed partial class SecurityMasterServiceSnapshotTests
     public async Task DeactivateAsync_BondWhoseNestedCouponOnlyNamesTheDefaultFixedRate_IsNotRefused()
     {
         // The numeric twin of the nested Fixed-kind case, and the same false positive. With no flat
-        // couponType or couponRate, ToBondTerms supplies BOTH missing-key defaults — Fixed and
+        // couponType or couponRate, ToBondCouponStructure supplies BOTH missing-key defaults — Fixed and
         // `?? 0m` — and the projection store reads Fixed/0 from the nested object, so the two
         // codecs already agree and re-serializing writes the same values flat. Refusing here would
         // freeze a valid legacy fixed-rate record for a lossless canonicalization. A nested rate of

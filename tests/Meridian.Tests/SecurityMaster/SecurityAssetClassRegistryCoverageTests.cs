@@ -207,9 +207,9 @@ public sealed class SecurityAssetClassRegistryCoverageTests
     [InlineData("Bond", 2, 3, 4)]
     [InlineData("CertificateOfDeposit", 2, 3, 4)]
     [InlineData("StructuredCredit", 3, 4, 5)]
-    public void ReadAheadClasses_OfferNoTermIntroducedAboveTheWriteVersion(string assetClass, int blockSince, int scheduleSince, int companionSince)
+    public void VersionedClasses_OfferOnlyAuthoringEnabledTermsThroughTheWriteVersion(string assetClass, int blockSince, int scheduleSince, int companionSince)
     {
-        // The schema declares exactly these terms above what the class writes, each within what it reads ...
+        // Historical containers remain pinned to their introduction version; v5 adds the Bond workflow.
         var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
         var reads = SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass);
         var readOnly = SecurityAssetTermsSchema.Fields(assetClass)
@@ -217,11 +217,14 @@ public sealed class SecurityAssetClassRegistryCoverageTests
             .Select(static field => (field.Key, field.SinceTermsVersion))
             .ToArray();
         SecurityAssetTermsSchema.Fields(assetClass)
-            .Where(field => field.Key != SecurityRecordRateUnit.FieldKey && field.SinceTermsVersion > SecurityAssetClassCatalog.GetStampFloor(assetClass))
+            .Where(field => field.Key != SecurityRecordRateUnit.FieldKey && field.SinceTermsVersion > SecurityAssetClassCatalog.GetStampFloor(assetClass) && field.SinceTermsVersion <= companionSince)
             .Select(static field => (field.Key, field.SinceTermsVersion))
             .Should().Equal(("scheduleConventions", blockSince), ("callSchedule", scheduleSince), ("putSchedule", scheduleSince), ("cashFlowContract", companionSince));
         readOnly.Should().Equal(new[] { ("cashFlowContract", companionSince) },
-            "the calculation companion remains readable ahead of the unchanged schedule writer");
+            "the calculation companion remains calculation-only even when its version is writable");
+        if (assetClass == "Bond")
+            SecurityAssetTermsSchema.WritableFields(assetClass).Should().ContainSingle(
+                field => field.Key == "bondWorkflow" && field.SinceTermsVersion == 5);
         readOnly.Should().OnlyContain(term => term.SinceTermsVersion <= reads, assetClass);
 
         // ... and they are exactly the declared terms no write surface offers.
@@ -237,10 +240,10 @@ public sealed class SecurityAssetClassRegistryCoverageTests
     }
 
     [Fact]
-    public void Swap_OffersItsLegsBlock_WhileLegConventionsAndTheCalculationCompanionStayReadOnly()
+    public void Swap_OffersGovernedLegConventions_WhileTheCalculationCompanionStaysReadOnly()
     {
-        // Swap writes version 1. Its version-2 leg conventions and version-3 calculation
-        // companion remain outside every write surface.
+        // The already-readable version-2 leg block is writable through bounded vanilla validation;
+        // the calculation-only version-3 companion keeps its independent authoring refusal.
         var definition = SecurityAssetClassRegistry.Get("Swap");
         definition.Fields.Select(static field => field.Key)
             .Should().Equal("rateUnit", "effectiveDate", "maturityDate", "legs");
@@ -251,6 +254,6 @@ public sealed class SecurityAssetClassRegistryCoverageTests
         SecurityAssetTermsSchema.ElementFields("Swap", "legs")
             .Should().ContainSingle(static field => field.Key == "scheduleConventions")
             .Which.SinceTermsVersion.Should().Be(2);
-        SecurityAssetTermsSchema.ElementFields("Swap", "legs").Single(field => field.Key == "scheduleConventions").AuthoringEnabled.Should().BeFalse();
+        SecurityAssetTermsSchema.ElementFields("Swap", "legs").Single(field => field.Key == "scheduleConventions").AuthoringEnabled.Should().BeTrue();
     }
 }

@@ -10,6 +10,10 @@ builder.Logging.SetMinimumLevel(LogLevel.Warning);
 builder.Logging.AddConsole(o => o.LogToStandardErrorThreshold = LogLevel.Trace);
 
 builder.Services.AddSingleton<RepoPathService>();
+builder.Services.AddSingleton(_ => LedgerApiClient.CreateHttpClient());
+// Credential settings are evaluated only when a ledger read is invoked; other MCP tools do not
+// require an operator session. Session/tenant authority remains with the API's existing login flow.
+builder.Services.AddSingleton(sp => new LedgerApiClient(sp.GetRequiredService<HttpClient>()));
 
 builder.Services
     .AddMcpServer()

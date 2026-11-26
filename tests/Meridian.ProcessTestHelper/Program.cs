@@ -27,8 +27,10 @@ internal static partial class Program
                 "delayed-spawn-gated-mutation" => await DelayedSpawnGatedMutationAsync(args).ConfigureAwait(false),
                 "emit-output" => await EmitOutputAsync(args).ConfigureAwait(false),
                 "statement-store-stage" => await RunStatementStoreStageAsync(args).ConfigureAwait(false),
+                "collector-config-watch" => await WatchCollectorConfigurationAsync(args).ConfigureAwait(false),
                 "etl-crash-stage" => await RunEtlUntilKilledAsync(args).ConfigureAwait(false),
                 "audit-append-batch" => await AppendAuditBatchAsync(args).ConfigureAwait(false),
+                "recurring-pin-obligation" => await PinRecurringObligationAsync(args).ConfigureAwait(false),
                 "wal-append-and-wait" => await AppendWalAndWaitAsync(args).ConfigureAwait(false),
                 "evidence-reserve-and-wait" => await ReserveEvidenceAndWaitAsync(args).ConfigureAwait(false),
                 "manifest-retain-and-hold-lock" => await RetainManifestAndHoldLockAsync(args).ConfigureAwait(false),
@@ -200,7 +202,7 @@ internal static partial class Program
         Meridian.Core.IO.IAtomicFileWriter writer = stage == "publication-sync"
             ? new PausedStatementPublicationWriter(ready)
             : new AtomicFileWriterAdapter();
-        var store = new Meridian.Infrastructure.Reconciliation.JsonCanonicalStatementStore(root, writer);
+        var store = new Meridian.DataIntegration.Reconciliation.JsonCanonicalStatementStore(root, writer);
         var created = await store.TrySaveImportAsync(import, new StatementStageRows(stage == "mid-write" ? ready : null));
         await File.WriteAllTextAsync(ready, created ? "created" : "duplicate");
         if (stage != "race")
@@ -231,6 +233,9 @@ internal static partial class Program
             await File.WriteAllTextAsync(ready, "publication-sync", ct);
             await Task.Delay(Timeout.InfiniteTimeSpan, ct);
         }
+
+        public Task SyncDirectoryOrThrowAsync(string directory, CancellationToken ct = default) =>
+            _inner.SyncDirectoryOrThrowAsync(directory, ct);
     }
 
     private sealed class StatementStageRows(string? ready) : IReadOnlyList<Meridian.Domain.Reconciliation.CanonicalStatementRow>

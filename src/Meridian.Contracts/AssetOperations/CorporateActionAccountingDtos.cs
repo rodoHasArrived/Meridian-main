@@ -1011,6 +1011,10 @@ public sealed record CorporateActionAccountingProjectionDto(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool CanonicalLotTransferJournal { get; init; }
 
+    /// <summary>Explicit principal-only redemption through canonical disposal; absent on retained legacy projections.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool CanonicalLotRedemptionJournal { get; init; }
+
     public IReadOnlyList<CorporateActionEconomicOperationDto> Recipe { get; init; } = Recipe ?? [];
 
     public IReadOnlyList<CorporateActionProjectionBlockerDto> Blockers { get; init; } = Blockers ?? [];

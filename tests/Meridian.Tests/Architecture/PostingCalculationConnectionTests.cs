@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Xunit;
 
@@ -59,8 +60,17 @@ public sealed class PostingCalculationConnectionTests
         Assert.Contains("FundEconomicsJournalFactory.BuildPerformanceFeeAccrualDraft", discovered);
         Assert.Contains("MultiCurrencyLedgerTranslator.BuildUnrealizedFxRevaluationLines", discovered);
         Assert.Contains("ISecurityMasterAmortizationLedgerBridge.PostProjectedCashFlowsAsync", discovered);
-        Assert.Contains("SecurityMasterCashFlowService.BuildLedgerPostingsAsync", discovered);
-        Assert.Contains("StructuredCashFlowLedgerBridge.BuildCouponAccrualPostings", discovered);
+    }
+
+    [Fact]
+    public void RetiredDirectPostingPaths_AreAbsentFromProduction()
+    {
+        var application = typeof(SecurityMasterCashFlowService).Assembly;
+        Assert.Null(application.GetType("Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge"));
+        Assert.Null(application.GetType("Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge"));
+        Assert.Null(application.GetType("Meridian.Application.SecurityMaster.CashFlow.StructuredCashFlowLedgerBridge"));
+        Assert.Null(typeof(ISecurityMasterCashFlowService).GetMethod("BuildLedgerPostingsAsync"));
+        Assert.Null(typeof(SecurityMasterCashFlowService).GetMethod("BuildLedgerPostingsAsync"));
     }
 
     private static IEnumerable<MethodInfo> DiscoverPostingCalculations()

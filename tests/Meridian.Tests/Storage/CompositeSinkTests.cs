@@ -23,6 +23,55 @@ public sealed class CompositeSinkTests
     #region Fan-out basics
 
     [Fact]
+    public async Task FailOnAnyFailure_RetryWritesOnlyTheFailedChild()
+    {
+        var healthy = new Mock<IStorageSink>();
+        var intermittent = new Mock<IStorageSink>();
+        var attempts = 0;
+        intermittent.Setup(s => s.AppendAsync(It.IsAny<MarketEvent>(), It.IsAny<CancellationToken>()))
+            .Returns(() => ++attempts == 1
+                ? ValueTask.FromException(new IOException("synthetic transient failure"))
+                : ValueTask.CompletedTask);
+        var composite = new CompositeSink([healthy.Object, intermittent.Object],
+            failurePolicy: FailurePolicy.FailOnAnyFailure);
+        var evt = CreateTestEvent();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => composite.AppendAsync(evt).AsTask());
+        await composite.AppendAsync(evt);
+
+        healthy.Verify(s => s.AppendAsync(evt, It.IsAny<CancellationToken>()), Times.Once);
+        intermittent.Verify(s => s.AppendAsync(evt, It.IsAny<CancellationToken>()), Times.Exactly(2));
+        // Distinct pipeline admissions remain distinct even when their values happen to match.
+        await composite.AppendAsync(evt with { });
+        healthy.Verify(s => s.AppendAsync(It.IsAny<MarketEvent>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task FailOnAnyFailure_OpenCircuitDoesNotAcknowledgeMissingChild()
+    {
+        var healthy = new Mock<IStorageSink>();
+        var intermittent = new Mock<IStorageSink>();
+        var clock = new ControllableTimeProvider();
+        var fail = true;
+        intermittent.Setup(s => s.AppendAsync(It.IsAny<MarketEvent>(), It.IsAny<CancellationToken>()))
+            .Returns(() => fail ? ValueTask.FromException(new IOException("offline")) : ValueTask.CompletedTask);
+        var composite = new CompositeSink([healthy.Object, intermittent.Object],
+            failurePolicy: FailurePolicy.FailOnAnyFailure, maxConsecutiveFailures: 1,
+            circuitResetTimeout: TimeSpan.FromSeconds(5), timeProvider: clock);
+        var evt = CreateTestEvent();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => composite.AppendAsync(evt).AsTask());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => composite.AppendAsync(evt).AsTask());
+        await Assert.ThrowsAsync<AggregateException>(() => composite.FlushAsync());
+        fail = false;
+        clock.Advance(TimeSpan.FromSeconds(6));
+        await composite.AppendAsync(evt);
+
+        healthy.Verify(s => s.AppendAsync(evt, It.IsAny<CancellationToken>()), Times.Once);
+        intermittent.Verify(s => s.AppendAsync(evt, It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    [Fact]
     public async Task AppendAsync_FanOutToAllSinks()
     {
         var sink1 = new Mock<IStorageSink>();

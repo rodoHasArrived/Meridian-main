@@ -218,16 +218,50 @@ test("the Playwright adapter waits for the declared response delay", async () =>
 });
 
 
+test("ledger readiness checks the search control and loaded book and period before capture", async () => {
+  const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
+  const fixtures = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-fixtures.json"), "utf8"));
+  const capture = routeConfig.captures.find((item) => item.id === "W03I");
+  const book = fixtures.routes["/api/ledger/books"][0];
+  const period = fixtures.routes["/api/ledger/periods"].find((item) => item.ledgerBookId === book.ledgerBookId);
+  const searchLabel = "Search by account, amount, journal ID, source, security, entity";
+
+  assert.ok(capture.waitForSelectors.includes(`input#ledger-search[aria-label="${searchLabel}"]`));
+  assert.ok(!capture.waitForTexts.includes(searchLabel), "An input's accessible label is not rendered text");
+  assert.ok(capture.waitForSelectors.includes(`#ledger-book-select:has(option:checked[value="${book.ledgerBookId}"])`));
+  assert.ok(capture.waitForSelectors.includes(`#ledger-period-select:has(option:checked[value="${period.periodId}"])`));
+  assert.ok(capture.waitForTexts.includes("Cash sweep receipt"));
+  assert.ok(capture.waitForTexts.includes("Investor contribution recorded"));
+  assert.ok(capture.waitForAbsentTexts.includes("Loading posted journal entries for this period."));
+});
+
+test("journal readiness waits for the current heading and populated balanced draft", async () => {
+  const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
+  const fixtures = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-fixtures.json"), "utf8"));
+  const capture = routeConfig.captures.find((item) => item.id === "W03J");
+  const workbench = fixtures.routes["/api/ledger/journal-entry-workbench"];
+  assert.ok(capture.requiredApiRoutes.includes("/api/ledger/journal-entry-workbench"));
+  assert.equal(capture.waitForText, "Manual journal entry workbench");
+  assert.ok(capture.waitForTexts.includes(capture.waitForText));
+  assert.ok(capture.waitForTexts.includes(workbench.drafts[0].memo), "Readiness must prove the fixture draft loaded");
+  assert.ok(capture.waitForTexts.includes("Balanced"), "Readiness must still prove the populated balance state");
+  assert.ok(!capture.waitForTexts.includes("Manual journal entries"), "Removed introductory copy is not a readiness signal");
+});
+
 test("reconciliation readiness proves the loaded selected queue row and inspector", async () => {
   const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
   const capture = routeConfig.captures.find((item) => item.id === "W03A");
   const selectedBreak = source.module.accountingPayload.breakQueue[0];
+  const selectedRun = source.module.accountingPayload.reconciliationQueue.find((run) => run.runId === selectedBreak.runId);
   assert.equal(capture.waitForText, "Reconciliation break queue");
   assert.ok(capture.waitForTexts.includes(selectedBreak.strategyName));
   assert.ok(capture.waitForTexts.includes(selectedBreak.reason));
-  assert.ok(capture.waitForSelectors.some((selector) => selector.includes(`option[value="${selectedBreak.runId}"]:checked`)));
+  assert.ok(selectedRun, "The selected break must belong to a retained reconciliation run");
+  assert.ok(capture.waitForSelectors.includes(`#reconciliation-run-picker[role="combobox"][value="${selectedRun.strategyName} · ${selectedRun.openBreakCount} open"]`));
   assert.ok(capture.waitForSelectors.some((selector) => selector.includes(`data-dense-row-id="${selectedBreak.breakId}"`) && selector.includes('aria-selected="true"')));
-  assert.ok(capture.waitForSelectors.some((selector) => selector.includes(`Reconciliation break detail for ${selectedBreak.breakId}`)));
+  assert.ok(capture.waitForSelectors.includes(`[aria-label="Case inspector"][data-case-id="${selectedBreak.breakId}"][aria-busy="false"]`));
+  assert.ok(capture.waitForSelectors.some((selector) => selector.includes('[aria-label="Case inspector"]') && selector.includes(selectedBreak.breakId)));
+  assert.ok(capture.waitForSelectors.some((selector) => selector.includes('[aria-label="Case decisions"]') && selector.includes('button:not([disabled])')));
   assert.ok(capture.waitForAbsentTexts.includes("Loading reconciliation break queue..."));
   for (const obsolete of ["Open breaks", "Intraday Vol Carry", "Statement runs", "Reconciliation Casework"]) {
     assert.ok(!capture.waitForTexts.includes(obsolete), `Readiness must not wait for hidden supporting content: ${obsolete}`);
@@ -240,6 +274,61 @@ test("scenario fallback readiness waits for the selected break rather than an un
     const capture = scenarioCapture({ name: "reconciliation", path: "/accounting/reconciliation" }, scenario, source.module);
     const selectedBreak = source.module.accountingPayload.breakQueue[0];
     assert.deepEqual(capture.waitForTexts, ["Reconciliation run", "Reconciliation break queue", selectedBreak.strategyName, selectedBreak.reason]);
+  }
+});
+
+test("match workbench readiness proves the retained selected case and its evidence link", async () => {
+  const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
+  const capture = routeConfig.captures.find((item) => item.id === "W03I2");
+  const selectedBreak = source.module.accountingPayload.breakQueue[0];
+  assert.ok(capture.waitForTexts.includes(selectedBreak.reason));
+  assert.ok(capture.waitForTexts.includes("Disagreement"));
+  assert.ok(capture.waitForTexts.includes("Retained comparison and lineage"));
+  assert.ok(capture.waitForTexts.includes("Retained evidence"));
+  assert.ok(capture.waitForSelectors.includes(`[aria-label="Case inspector"][data-case-id="${selectedBreak.breakId}"][aria-busy="false"]`));
+  assert.ok(capture.waitForSelectors.includes(`[aria-label="Case inspector"] a[href="/workstation/reporting/evidence?subjectKind=reconciliation-break&subjectId=${encodeURIComponent(selectedBreak.breakId)}"]:visible`));
+  assert.ok(capture.waitForSelectors.includes(`#match-selected-case:has(option:checked[value="${selectedBreak.breakId}"])`));
+  assert.ok(capture.waitForSelectors.includes('[aria-label="Case inspector"] summary:has-text("Case identifiers")'));
+  for (const obsolete of ["Open breaks", "Record match decision", "Review retained evidence", "Source lineage"]) {
+    assert.ok(!capture.waitForTexts.includes(obsolete), `Readiness must match retained case evidence: ${obsolete}`);
+  }
+});
+
+test("exact report review readiness targets the selected accessible tab and its generated panel", async () => {
+  const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
+  const capture = routeConfig.captures.find((item) => item.id === "W04I1A");
+  assert.ok(capture.waitForSelectors.includes('[role="tab"][data-tab-id="changes"][aria-selected="true"]'));
+  assert.ok(capture.waitForSelectors.includes('[role="tabpanel"][id$="-panel-changes"]:not([hidden])'));
+  assert.ok(!capture.waitForSelectors.includes("#tab-panel-changes:not([hidden])"));
+  assert.ok(capture.requiredApiRoutes.includes("/api/fund-structure/reporting/runs/report-run-investor-202605/review"));
+  assert.ok(capture.waitForTexts.includes("Current retained version 6"));
+  const detail = routeConfig.captures.find((item) => item.id === "W04I2");
+  assert.ok(detail.requiredApiRoutes.includes("/api/fund-structure/reporting/runs/report-run-investor-202605/review"));
+  assert.ok(detail.waitForTexts.includes("Materiality not assessed"));
+  assert.ok(detail.waitForAbsentTexts.includes("Review evidence unavailable"));
+});
+
+test("instrument readiness retains exact identity without requiring a visible internal key", async () => {
+  const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
+  const capture = routeConfig.captures.find((item) => item.id === "W02D1");
+  assert.ok(capture.waitForTexts.includes("Ticker AAPL"));
+  assert.ok(!capture.waitForTexts.includes("sec-dev-001"));
+  assert.ok(capture.waitForSelectors.includes('[data-instrument-id="sec-dev-001"]'));
+  assert.ok(capture.waitForSelectors.includes('[role="tab"][data-tab-id="positions"][aria-selected="true"]'));
+  assert.ok(capture.waitForTexts.includes("38 units"));
+  assert.ok(capture.waitForTexts.includes("alpaca-roth"));
+  assert.ok(capture.requiredApiRoutes.includes("/api/workstation/security-master/securities/sec-dev-001"));
+});
+
+test("close readiness retains measured check coverage and the posting blocker", async () => {
+  const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
+  for (const name of ["web-accounting-operations-continuity", "web-close-legacy-redirect", "web-close-legacy-route"]) {
+    const capture = routeConfig.captures.find((item) => item.name === name);
+    assert.ok(capture.waitForTexts.includes("3/7 workstreams ready across 1 close workflow."));
+    assert.ok(!capture.waitForTexts.includes("3/7 lanes ready across 1 close workflow."));
+    assert.ok(capture.waitForTexts.includes("Balanced journal preview must be validated before posting."));
+    assert.ok(capture.waitForTexts.includes("Evidence"));
+    assert.ok(capture.waitForTexts.includes("Approvals"));
   }
 });
 

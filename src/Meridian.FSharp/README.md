@@ -6,7 +6,7 @@ module_id: SRC-FSHARP
 path: src/Meridian.FSharp
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-08-04
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.FSharp
@@ -34,6 +34,11 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
 
 ## API contract notes
 
+- Bond workflow conventions use the registered optional `BondWorkflowTerms` economic module.
+  Typed overnight, indexation and coupon-entitlement fields retain explicit zero and false values.
+  The v5 flat codec and economic-only replay share admission and serialization; historical records
+  without the module keep their prior flat bytes and omit the additive economic field.
+
 - Flat Security Master day-count fields, including bond coupon structures and swap legs, use the
   shared `Meridian.Contracts.SecurityMaster.DayCountConvention` enum. JSON accepts declared market
   spellings and enum names, writes canonical market labels, and refuses unsupported supplied values
@@ -48,6 +53,7 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   accreting leg; positive, strictly ascending, within the swap's effective and maturity dates) and
   a `ResetSchedule` (strictly ascending reset dates with the fixing once observed). Both are empty
   for legs that do not track them and serialize as `notionalSchedule` / `resetSchedule` arrays.
+- Bond terms version 5 retains the declared `bondWorkflow` conventions through F# domain mapping and serialization. Earlier versions remain readable without synthesizing missing fixing, inflation, principal, or signed-rate conventions.
 - The bond economic definition carries the record's issue date, payment frequency, call flag and
   first call date, and issuer name in its maturity, coupon, call, and issuer modules, so a replay
   from economic terms alone keeps a callable bond callable.
@@ -113,6 +119,12 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   vendor aliases. Securitized instruments belong in `StructuredCredit`, bank loans in `DirectLoan`.
   Custom profile metadata naming securitized products must resolve through a registered
   StructuredCredit profile. Generic custom profiles cannot save this classification.
+- `AssetClassRegistry` is the classification table every kind resolves through. Derivatives use
+  `ListedDerivative` (exchange-traded, booked in contracts) or `OtcDerivative` (Swap, Cfd, FX
+  forwards, NDFs, CDS, swaptions, caps/floors); FxSpot is `CashEquivalent` / `ForeignExchange`;
+  InvestmentFund is `Fund` / `PooledFund`. Every class except OtherSecurity declares a family.
+  Classification is derived on read, so a revision of this table changes current projections
+  without rewriting retained events (ADR-022 amendment 2026-11-18).
 - `SecurityMasterLegacyUpgrade.proposeStructuredCreditReclassification` builds the report-first
   StructuredCredit proposal for a legacy securitised row (ADR-022): a Bond in a securitised
   subclass, a CustomAsset whose `category` names a securitised product, or an envelope-less legacy
@@ -159,6 +171,16 @@ See the [Security Master extensibility review](../../docs/architecture/security-
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
+
+## Bounded CD terms compatibility (2026-11-25)
+
+The SecurityKind union cases remain unchanged. CD version 6 carries optional issue date, principal and
+payment frequency through the existing economic modules, generated flat writer and legacy upgrade
+path; `CertificateOfDepositTerms` gains a `Notional` module for the principal. Their introduction
+stamps prevent older residue from activating in an unrelated amendment.
+Existing event/module replay and absent-field serialization remain compatibility authorities; the
+new recurring calculation profile belongs to the shared C# policy/kernel consumers. See
+[CD accrual boundary](../../docs/domain/recurring-journal.md#declared-certificateofdeposit-accrual-profile).
 
 ## Roadmap traceability
 

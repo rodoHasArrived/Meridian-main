@@ -65,7 +65,7 @@ export function DesignSystemTrustStrip({
   const headline = attention && !attention.clear ? attention.title : decisionBrief && decisionBrief.statusTone !== "ready" ? decisionBrief.title : summaryValue;
   const statusLabel = attention?.statusLabel ?? decisionBrief?.statusLabel;
   const showEnvironment = viewModel.environment.variant !== "live" || provenance === "real";
-  const summaryAriaLabel = `Environment, provenance, and provider posture. ${attention?.ariaLabel ?? ""} ${badge.ariaLabel} ${decisionBrief ? `${decisionBrief.statusLabel}: ${decisionBrief.title}. ` : ""}${viewModel.items.map((item) => item.ariaLabel).join(" ")}`;
+  const summaryAriaLabel = `Environment, provenance, and provider health. ${attention?.ariaLabel ?? ""} ${badge.ariaLabel} ${decisionBrief ? `${decisionBrief.statusLabel}: ${decisionBrief.title}. ` : ""}${viewModel.items.map((item) => item.ariaLabel).join(" ")}`;
 
   return (
     <section
@@ -142,6 +142,8 @@ export function DesignSystemTrustStrip({
                   `mds-status--${item.tone}`
                 )}
                 aria-label={`${item.ariaLabel} ${item.actionLabel}.`}
+                data-trust-strip-item={item.id}
+                data-trust-strip-tone={item.tone}
               >
                 {content}
               </Link>
@@ -154,6 +156,8 @@ export function DesignSystemTrustStrip({
                   `mds-status--${item.tone}`
                 )}
                 aria-label={item.ariaLabel}
+                data-trust-strip-item={item.id}
+                data-trust-strip-tone={item.tone}
               >
                 {content}
               </span>

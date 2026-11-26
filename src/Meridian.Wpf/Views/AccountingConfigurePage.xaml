@@ -92,20 +92,6 @@
                     </StackPanel>
 
                     <WrapPanel Grid.Column="2" MaxWidth="520" HorizontalAlignment="Right" VerticalAlignment="Center">
-                        <Button AutomationProperties.AutomationId="AccountingConfigureRefreshButton"
-                                Command="{Binding RefreshCommand}"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                ToolTip="{Binding StatusText}"
-                                ToolTipService.ShowOnDisabled="True"
-                                Margin="0,0,8,8">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{StaticResource IconRefresh}"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="14"
-                                           VerticalAlignment="Center" />
-                                <TextBlock Text="Refresh" Margin="8,0,0,0" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
                         <Button AutomationProperties.AutomationId="AccountingConfigureSeedBaselineButton"
                                 Command="{Binding SeedBaselineConfigurationCommand}"
                                 Style="{StaticResource SecondaryButtonStyle}"
@@ -181,7 +167,7 @@
                 </Border>
             </UniformGrid>
 
-            <TabControl AutomationProperties.AutomationId="AccountingConfigureTabs">
+            <TabControl x:Name="AccountingTabs" AutomationProperties.AutomationId="AccountingConfigureTabs">
                 <TabItem Header="Configuration">
                     <Grid Margin="0,16,0,0">
                         <Grid.ColumnDefinitions>
@@ -690,21 +676,29 @@
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="2*" />
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                            <TextBlock Text="Account code" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBox Text="{Binding ChartAccountCode, UpdateSourceTrigger=PropertyChanged}"
+                                                     IsReadOnly="{Binding IsChartAccountCodeReadOnly}" Margin="0,4,0,0"
+                                                     AutomationProperties.Name="Account code"
+                                                     AutomationProperties.AutomationId="AccountingChartAccountCodeTextBox" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Margin="0,0,8,0">
                                             <TextBlock Text="Parent path" Style="{StaticResource MetricLabelStyle}" />
                                             <TextBox Text="{Binding ChartAccountParentPath, UpdateSourceTrigger=PropertyChanged}"
                                                      Margin="0,4,0,0"
                                                      AutomationProperties.AutomationId="AccountingChartAccountParentPathTextBox" />
                                         </StackPanel>
-                                        <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                        <StackPanel Grid.Column="2" Margin="0,0,8,0">
                                             <TextBlock Text="Financial account id" Style="{StaticResource MetricLabelStyle}" />
                                             <TextBox Text="{Binding ChartAccountFinancialAccountId, UpdateSourceTrigger=PropertyChanged}"
                                                      Margin="0,4,0,0"
                                                      AutomationProperties.AutomationId="AccountingChartAccountFinancialAccountIdTextBox" />
                                         </StackPanel>
-                                        <StackPanel Grid.Column="2">
+                                        <StackPanel Grid.Column="3">
                                             <TextBlock Text="Retained evidence" Style="{StaticResource MetricLabelStyle}" />
                                             <TextBox Text="{Binding ChartAccountEvidenceText, UpdateSourceTrigger=PropertyChanged}"
                                                      Margin="0,4,0,0"
@@ -983,7 +977,7 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel>
                                         <TextBlock Text="MANUAL JOURNAL ENTRY - BALANCED DOUBLE-ENTRY" Style="{StaticResource CardHeaderStyle}" Visibility="{Binding CanEditManualJournalDraft, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                        <TextBlock Text="{Binding ManualJournalEntryHeadingText}" Style="{StaticResource CardHeaderStyle}" Visibility="{Binding IsAssetAccountingDraft, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        <TextBlock Text="{Binding ManualJournalEntryHeadingText}" Style="{StaticResource CardHeaderStyle}" Visibility="{Binding IsReadOnlyRetainedDraft, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                         <TextBlock Text="{Binding ManualJournalStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
                                         <TextBlock Text="{Binding AssetAccountingDraftRestrictionText}" TextWrapping="Wrap" Margin="0,6,0,0" AutomationProperties.AutomationId="AssetAccountingDraftRestriction" />
                                     </StackPanel>
@@ -1148,7 +1142,7 @@
                                 </Border>
 
                                 <DataGrid ItemsSource="{Binding AssetAccountingDraftLines}" IsReadOnly="True" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0"
-                                          Visibility="{Binding IsAssetAccountingDraft, Converter={StaticResource BooleanToVisibilityConverter}}" AutomationProperties.AutomationId="AssetAccountingDraftLines">
+                                          Visibility="{Binding IsReadOnlyRetainedDraft, Converter={StaticResource BooleanToVisibilityConverter}}" AutomationProperties.AutomationId="AssetAccountingDraftLines">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="Account" Binding="{Binding AccountPath}" Width="*" />
                                         <DataGridTextColumn Header="Side" Binding="{Binding Side}" Width="80" />
@@ -1316,6 +1310,77 @@
                         </Border>
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                             <StackPanel>
+                                <Expander Header="Unit register reconciliation" DataContext="{Binding UnitRegister}"
+                                          Margin="0,0,0,14" AutomationProperties.AutomationId="CapitalUnitRegisterReconciliation">
+                                    <StackPanel Margin="0,8,0,0">
+                                        <WrapPanel IsEnabled="{Binding CanEdit}">
+                                            <Button Content="Load ledger books" Command="{Binding LoadBooksCommand}"
+                                                    Style="{StaticResource SecondaryButtonStyle}" VerticalAlignment="Bottom" Margin="0,0,12,8" />
+                                            <StackPanel Width="240" Margin="0,0,12,8">
+                                                <TextBlock Text="Ledger book" Style="{StaticResource MetricLabelStyle}" />
+                                                <ComboBox ItemsSource="{Binding Books}" SelectedItem="{Binding SelectedBook}"
+                                                          DisplayMemberPath="DisplayName" AutomationProperties.Name="Unit register ledger book" />
+                                            </StackPanel>
+                                            <Button Content="Load closed periods" Command="{Binding LoadPeriodsCommand}"
+                                                    Style="{StaticResource SecondaryButtonStyle}" VerticalAlignment="Bottom" Margin="0,0,12,8" />
+                                            <StackPanel Width="185" Margin="0,0,0,8">
+                                                <TextBlock Text="Hard-closed period" Style="{StaticResource MetricLabelStyle}" />
+                                                <ComboBox ItemsSource="{Binding Periods}" SelectedItem="{Binding SelectedPeriod}"
+                                                          DisplayMemberPath="Label" AutomationProperties.Name="Unit register period" />
+                                            </StackPanel>
+                                        </WrapPanel>
+                                        <WrapPanel IsEnabled="{Binding CanEdit}">
+                                            <StackPanel Width="285" Margin="0,0,12,8">
+                                                <TextBlock Text="Accepted Evidence Vault reference" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBox Text="{Binding EvidenceLink, UpdateSourceTrigger=PropertyChanged}"
+                                                         AutomationProperties.Name="Accepted Evidence Vault reference" />
+                                            </StackPanel>
+                                            <StackPanel Width="180" Margin="0,0,12,8">
+                                                <TextBlock Text="Document ID" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBox Text="{Binding DocumentId, UpdateSourceTrigger=PropertyChanged}"
+                                                         AutomationProperties.Name="Unit register document ID" />
+                                            </StackPanel>
+                                            <Button Content="Preview unit register" Command="{Binding PreviewCommand}"
+                                                    Style="{StaticResource SecondaryButtonStyle}" VerticalAlignment="Bottom" Margin="0,0,0,8" />
+                                        </WrapPanel>
+                                        <TextBlock Text="{Binding StatusText}" AutomationProperties.LiveSetting="Polite" TextWrapping="Wrap" />
+                                        <StackPanel Margin="0,6,0,0">
+                                            <StackPanel.Style>
+                                                <Style TargetType="StackPanel">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Result}" Value="{x:Null}">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </StackPanel.Style>
+                                            <TextBlock Text="{Binding Result.ShareClassId, StringFormat='Share class {0}'}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Result.UnitsOutstanding, StringFormat='Units outstanding {0}'}" />
+                                            <TextBlock Text="{Binding Result.ClassNav, StringFormat='Class NAV {0}'}" />
+                                            <TextBlock Text="{Binding Result.Currency, StringFormat='Currency {0}'}" />
+                                            <TextBlock Text="{Binding Result.NavPerUnit, StringFormat='NAV per unit {0}'}" />
+                                            <ItemsControl ItemsSource="{Binding Result.Issues}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate><TextBlock Text="{Binding Message}" TextWrapping="Wrap" /></DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <Expander Header="Holdings and source evidence" Margin="0,4,0,0">
+                                                <StackPanel>
+                                                    <DataGrid ItemsSource="{Binding Result.Holdings}" Style="{StaticResource ConfigureGridStyle}"
+                                                              MaxHeight="230" IsReadOnly="True" AutomationProperties.Name="Unit register holdings">
+                                                        <DataGrid.Columns>
+                                                            <DataGridTextColumn Header="Investor" Binding="{Binding InvestorId}" Width="2*" />
+                                                            <DataGridTextColumn Header="Units" Binding="{Binding Units}" Width="*" />
+                                                            <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+                                                        </DataGrid.Columns>
+                                                    </DataGrid>
+                                                    <TextBlock Text="{Binding Result.SourceHashSha256, StringFormat='Register source hash {0}'}" TextWrapping="Wrap" />
+                                                    <TextBlock Text="{Binding Result.CloseSnapshotHashSha256, StringFormat='Close snapshot hash {0}'}" TextWrapping="Wrap" />
+                                                </StackPanel>
+                                            </Expander>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Expander>
                                 <TextBlock Text="Investor Capital Accounts" Style="{StaticResource CardHeaderStyle}" />
                                 <DataGrid ItemsSource="{Binding CapitalAccountInvestorRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,16" AutomationProperties.AutomationId="CapitalAccountWorkbenchInvestorGrid">
                                     <DataGrid.Columns>
@@ -1498,6 +1563,9 @@
                         </Border>
                     </Grid>
                 </TabItem>
+                <TabItem Header="Onboarding parallel run" AutomationProperties.AutomationId="AccountingConfigureShadowOnboardingTab">
+                    <views:OnboardingShadowControl DataContext="{Binding ShadowOnboarding}" />
+                </TabItem>
 
                 <TabItem Header="Close, Evidence, Reconciliation">
                     <Grid Margin="0,16,0,0">
@@ -1566,6 +1634,9 @@
                             </DataGrid>
                         </StackPanel>
                     </Border>
+                </TabItem>
+                <TabItem Header="Entities &amp; consolidation">
+                    <views:EntityConsolidationControl DataContext="{Binding EntityConsolidation}" ReviewDraftsRequested="OnReviewConsolidationDrafts" />
                 </TabItem>
             </TabControl>
         </StackPanel>

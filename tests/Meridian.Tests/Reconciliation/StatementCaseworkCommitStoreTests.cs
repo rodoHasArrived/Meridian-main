@@ -1,10 +1,11 @@
 using Meridian.Storage.Archival;
 using FluentAssertions;
 using Meridian.Domain.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Tests.Infrastructure;
 
 namespace Meridian.Tests.Reconciliation;
 
@@ -48,6 +49,54 @@ public sealed class StatementCaseworkCommitStoreTests : IDisposable
                 Path.Combine(_root, "reconciliation", "statement-casework-commits", "completed"),
                 "*.json")
             .Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task Scenario_EnvelopeAndCompletionSyncFail_NotAcknowledgedAndRetryConverges()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var envelope = BuildEnvelope("command-unsynced", new string('c', 64));
+        var store = new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter());
+        var commits = Path.Combine(_root, "reconciliation", "statement-casework-commits");
+
+        using (DirectorySyncFaults.FailIn(Path.Combine(commits, "envelopes")))
+        {
+            var prepare = () => store.PrepareAsync(envelope, timeout.Token);
+            await prepare.Should().ThrowAsync<DirectorySyncException>();
+            // The retained-envelope path must not acknowledge the unconfirmed rename either.
+            await prepare.Should().ThrowAsync<DirectorySyncException>();
+        }
+
+        (await store.PrepareAsync(envelope, timeout.Token)).Should().BeEquivalentTo(envelope);
+
+        using (DirectorySyncFaults.FailIn(Path.Combine(commits, "completed")))
+        {
+            var complete = () => store.CompleteAsync(envelope.CommandId, envelope.InputHashSha256, timeout.Token);
+            await complete.Should().ThrowAsync<DirectorySyncException>();
+            await complete.Should().ThrowAsync<DirectorySyncException>();
+        }
+
+        await store.CompleteAsync(envelope.CommandId, envelope.InputHashSha256, timeout.Token);
+        (await store.IsCompletedAsync(envelope.CommandId, envelope.InputHashSha256, timeout.Token)).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Scenario_MatchArtifactSyncFails_NotAcknowledgedAndRetrySucceeds()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var artifact = new StatementRunMatchArtifact("RUN-UNSYNCED", "IMP-1", [], [], 0);
+        var store = new FileStatementRunMatchArtifactStore(_root, new AtomicFileWriterAdapter());
+        var runs = Path.Combine(_root, "reconciliation", "statement-runs");
+
+        using (DirectorySyncFaults.FailWhen(dir => dir.StartsWith(runs, StringComparison.Ordinal)))
+        {
+            var save = () => store.SaveAsync(artifact, timeout.Token);
+            await save.Should().ThrowAsync<DirectorySyncException>();
+            await save.Should().ThrowAsync<DirectorySyncException>();
+        }
+
+        await store.SaveAsync(artifact, timeout.Token);
+        (await store.GetAsync(artifact.RunId, timeout.Token)).Should().BeEquivalentTo(artifact);
     }
 
     [Fact]

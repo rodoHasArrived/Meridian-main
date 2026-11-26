@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPortfolioFigureDifferenceNote } from "@/screens/portfolio-screen.figure-differences";
+import { buildPortfolioFigureDifferenceNote, buildPositionSourceDifferences } from "@/screens/portfolio-screen.figure-differences";
 import { buildPortfolioFallbackMetrics } from "@/screens/portfolio-screen.view-model";
 import type { FinancialRecordExplorerDto } from "@/types";
 
@@ -39,7 +39,7 @@ describe("buildPortfolioFigureDifferenceNote", () => {
   it("explains header-strip and explorer figures that disagree, naming each source", () => {
     expect(buildPortfolioFigureDifferenceNote({ headerMetrics, headerProvenance, explorer: explorer() })).toEqual({
       title: "Why these differ",
-      summary: "Header strip and Portfolio Explorer read different records, so their figures are not expected to match.",
+      summary: "Live holdings and Retained run records read different records, so their figures are not expected to match.",
       unexplained: false,
       rows: [
         { key: "exposure", label: "Total exposure", first: "$18,900", second: "$25,587" },
@@ -47,8 +47,8 @@ describe("buildPortfolioFigureDifferenceNote", () => {
         { key: "positions", label: "Open positions", first: "1", second: "2" }
       ],
       sources: [
-        { name: "Header strip", text: "Source: Portfolio workspace · As of Jun 30, 2026, 18:05 UTC · Scope: All linked accounts" },
-        { name: "Portfolio Explorer", text: "Source: Retained run records (demo portfolio data) · As of Jan 2, 2026, 14:00 UTC · Scope: Mean reversion" }
+        { name: "Live holdings", text: "Source: Portfolio workspace · As of Jun 30, 2026, 18:05 UTC · Scope: All linked accounts" },
+        { name: "Retained run records", text: "Source: Retained run records (demo portfolio data) · As of Jan 2, 2026, 14:00 UTC · Scope: Mean reversion" }
       ]
     });
   });
@@ -95,11 +95,11 @@ describe("buildPortfolioFigureDifferenceNote", () => {
         label: "Total exposure",
         first: "$18,900",
         second: "$21,400",
-        detail: "Header strip is gross, Portfolio Explorer is net: different measures, so these would differ on the same records."
+        detail: "Live holdings is gross, Retained run records is net: different measures, so these would differ on the same records."
       },
       { key: "positions", label: "Open positions", first: "1", second: "3" }
     ]);
-    expect(note?.sources[1]).toEqual({ name: "Portfolio Explorer", text: "Source: Retained run records · Scope: run-1" });
+    expect(note?.sources[1]).toEqual({ name: "Retained run records", text: "Source: Retained run records · Scope: run-1" });
   });
 
   it("compares a gross explorer exposure with the header like for like", () => {
@@ -130,5 +130,24 @@ describe("buildPortfolioFigureDifferenceNote", () => {
     expect(buildPortfolioFigureDifferenceNote({ headerMetrics, headerProvenance, explorer: agreeing })).toBeNull();
     expect(buildPortfolioFigureDifferenceNote({ headerMetrics, headerProvenance, explorer: explorer({ isBlocked: true }) })).toBeNull();
     expect(buildPortfolioFigureDifferenceNote({ headerMetrics, headerProvenance, explorer: null })).toBeNull();
+  });
+});
+
+describe("buildPositionSourceDifferences", () => {
+  const holding = (symbol: string, quantity: string, averagePrice: string) => ({ symbol, quantity, averagePrice });
+
+  it("names both sources for a symbol that reads differently", () => {
+    expect(buildPositionSourceDifferences({
+      holdings: [holding("AAPL", "38", "142.20"), holding("MSFT", "10", "400")],
+      session: [holding("aapl", "100", "188.10"), holding("MSFT", "10.00", "$400.00")],
+      sessionLabel: "Paper session (Alpaca …4567)"
+    })).toEqual([
+      "AAPL: 38 at 142.20 in live holdings vs 100 at 188.10 in the paper session (Alpaca …4567). Different sources, not a conflict."
+    ]);
+  });
+
+  it("says nothing when either source is empty", () => {
+    expect(buildPositionSourceDifferences({ holdings: [], session: [holding("AAPL", "1", "1")], sessionLabel: "Paper session" })).toEqual([]);
+    expect(buildPositionSourceDifferences({ holdings: [holding("AAPL", "1", "1")], session: null, sessionLabel: "Paper session" })).toEqual([]);
   });
 });

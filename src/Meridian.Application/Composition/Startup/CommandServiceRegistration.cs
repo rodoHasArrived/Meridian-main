@@ -6,6 +6,7 @@ using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Application.Services;
 using Meridian.Application.Subscriptions.Services;
 using Meridian.Application.UI;
+using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Domain;
 using Meridian.Domain.Reconciliation;
 using Meridian.Contracts.Operations;
@@ -43,7 +44,9 @@ internal static class CommandServiceRegistration
         services.TryAddSingleton(cfg);
         services.TryAddSingleton(log);
         services.TryAddSingleton(configService);
-        services.TryAddSingleton(configStore);
+        services.AddProviderCredentialOwnershipPolicy();
+        services.TryAddSingleton(sp => new ConfigStore(configStore.ConfigPath,
+            sp.GetRequiredService<ProviderCredentialOwnershipPolicy>()));
         services.TryAddSingleton(storageOptions);
         var configuration = CompositionConfiguration.Resolve(services);
         services.TryAddSingleton(configuration);
@@ -85,7 +88,9 @@ internal static class CommandServiceRegistration
                 positionSnapshots: sp.GetService<IPositionSnapshotStore>(),
                 logger: sp.GetService<Microsoft.Extensions.Logging.ILogger<RetainedInternalReconciliationPopulationProvider>>(),
                 ledgerTransactionSource: sp.GetService<IInternalLedgerTransactionSource>(),
-                accountQueryResolver: () => sp.GetService<IAccountQueryService>())));
+                accountQueryResolver: () => sp.GetService<IAccountQueryService>(),
+                ledgerStore: sp.GetService<Meridian.Storage.Ledger.ILedgerJournalStore>(),
+                tenancy: sp.GetService<Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry>())));
         // Normalize cross-currency statement lines using the operator-maintained FX rate table under the
         // data root (reconciliation/fx-rates.json), matching the workstation graph, instead of the
         // identity-only default. A missing or empty table keeps cross-currency lines failing closed.
@@ -140,7 +145,8 @@ internal static class CommandServiceRegistration
             sp.GetRequiredService<IStatementReconciliationCheckpointStore>()));
         services.AddSingleton<ICliCommand>(sp => new ConfigPresetCommand(
             sp.GetRequiredService<AutoConfigurationService>(),
-            sp.GetRequiredService<ILogger>()));
+            sp.GetRequiredService<ILogger>(),
+            sp.GetRequiredService<ProviderCredentialOwnershipPolicy>()));
         services.AddSingleton<ICliCommand>(sp => new QueryCommand(
             sp.GetRequiredService<HistoricalDataQueryService>(),
             sp.GetRequiredService<ILogger>()));

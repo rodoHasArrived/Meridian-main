@@ -7,7 +7,7 @@
 **Source evidence:** `6bcc7a0262ab0870cee32cb2cb344851e9da7e89` (slices 1–6);
 `fc848789e637f3e241698c84b5415a1a9e0ed32d` (slices 7–9 and the consolidation decision, 2026-11-09)
 
-This plan consumes the [October review consolidation](../../architecture/security-master-extensibility-review.md#consolidated-october-review-and-dispositions--2026-10-28),
+This plan consumes the [October review consolidation](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/architecture/security-master-extensibility-review.md#consolidated-october-review-and-dispositions--2026-10-28),
 including the dated observations and corrected prescriptions from #3111, #3188, #3196, #3220,
 #3234, #3240, #3247 and #3263. It replaces #3240's unaccepted October 20 design as a current
 working input. The immutable original plan is linked in the review's coverage ledger.
@@ -52,6 +52,10 @@ explicit mappings and exceptions. Decide how historical strings read without mut
 before and after the change; certified-report grouping is pinned for affected classes. A display
 repair cannot silently change stored classification or report grouping.
 
+**2026-11-16:** the listed-option exercise-style label no longer comes from the union case's
+`ToString()`; `CanonicalExerciseStyle` spells out American, European and Bermudan, and
+`ExerciseStyleStoredLabelTests` pins them. Stored values are unchanged.
+
 ## Slice 4 — Declared rate semantics and explicit accounting disposition
 
 **Evidence:** D10. First inventory each rate field's meaning and the already-readable schedule
@@ -72,7 +76,7 @@ review. The October 20 blanket `[0,1]` rule and all-fraction design are not acce
 
 **Implementation note (2026-11-04):** a local implementation adds `RateUnitNormalizer`,
 `SecurityRateFieldUnits` and explicit catalog accounting dispositions. See the
-[slice-4 disposition](../../architecture/security-master-extensibility-review.md#slice-4-disposition--2026-11-04-d10).
+[slice-4 disposition](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/architecture/security-master-extensibility-review.md#slice-4-disposition--2026-11-04-d10).
 D3 decided 2026-11-05: undeclared non-zero rates block. Legacy fixed-income rows stop projecting
 until they declare a unit, Security Master engine swaps cannot declare per-leg units yet, and readers
 still treat negative rates differently. Canonical units and ranges, the repair path, the negative-rate
@@ -86,6 +90,11 @@ allowing negative index, spread and floor). Only the new direct-lending
 use it. It is separate from the Security Master `RateUnitNormalizer`
 (`src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs`) in the implementation note above; the
 two may converge once canonical units are approved.
+
+**2026-11-16:** the unit-to-fraction arithmetic now has one home, the Security Master
+`RateUnitNormalizer.ToFraction`. The direct-lending normalizer and the two observed-fixing
+conversions call it. Ranges, sign policy and error text stay per domain and still wait for the
+canonical-unit decision.
 
 ## Slice 5 — Audit evidence contracts before storage/serialization changes
 
@@ -102,7 +111,7 @@ schema/storage review remains a gate for migrations and destructive-operation wa
 
 **Progress (2026-11-04):** identifier recorded history (migration 062) and versioned governance
 payloads with captured version-1 fixtures are implemented; see the
-[D7 slice-5 disposition](../../architecture/security-master-extensibility-review.md#d7--audit-history-and-serialization-distinguish-current-state-from-retained-evidence).
+[D7 slice-5 disposition](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/architecture/security-master-extensibility-review.md#d7--audit-history-and-serialization-distinguish-current-state-from-retained-evidence).
 Row classification, the WPF provenance composition and migration 062's independent review remain open.
 
 ## Slice 6 — Remaining catalog, identifier and consumer convergence
@@ -120,7 +129,8 @@ Row classification, the WPF provenance composition and migration 062's independe
   give the pack registry an agreed typed purpose or preserve it as informational documentation.
   (Pack registry: informational disposition recorded 2026-11-04. On 2026-11-09 the built-in shared
   coverage was declared and checked, and the candidate overlap rule gained the planned axis; see the
-  D9 disposition in the review. Profile-to-class resolution and term roles remain open.)
+  D9 disposition in the review. Profile-to-class resolution closed in the 2026-11-10 close-out;
+  cash-flow term roles and the resolver's spellings closed 2026-11-13, see the review's D9 leftovers entry.)
 - Verify actual ledger/NAV/risk/client consumption of income, factor, corporate-action and
   unitized-lot capabilities with retained end-to-end examples. Keep override enrichment fields
   separate from economic-term fields.
@@ -136,7 +146,7 @@ scheduled-review PR.
 
 ## Slice 7 — Term-form parity contract between the shared model and the browser mirror (2026-11-09)
 
-**Evidence:** D9; the [2026-11-09 verification pass](../../architecture/security-master-extensibility-review.md#verification-pass--2026-11-09--dual-model-audit-reconciliation).
+**Evidence:** D9; the [2026-11-09 verification pass](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/architecture/security-master-extensibility-review.md#verification-pass--2026-11-09--dual-model-audit-reconciliation).
 The registry schema is already served (`/api/security-master/asset-classes[/{assetClass}]`) and
 the dashboard passport editor already builds its term fields from it; the original "serve the
 schema to the browser" scope was stale. What D9 still named open: the browser mirrors
@@ -182,7 +192,7 @@ domain-owner review; magnitude or class-name inference is not an accepted fallba
 exact-token routes over the produced evidence vocabulary, unresolved outside it; the catalog
 descriptor declares `QuoteConvention` (defaulting from the lot unit so no price changes), and
 `LotQuantity` gains the convention-aware overload plus `QuoteConventionFor`. See the
-[slice-8 disposition](../../architecture/security-master-extensibility-review.md#slice-8-disposition--descriptor-owned-consumer-rules--2026-11-09).
+[slice-8 disposition](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/architecture/security-master-extensibility-review.md#slice-8-disposition--descriptor-owned-consumer-rules--2026-11-09).
 Open from this slice: moving class-aware pricing callers onto the convention overload when a
 class first declares a non-default convention, and the quote-convention vocabulary decision
 above.
@@ -331,7 +341,8 @@ removed) is rebuilt into its next economic document, and when that reproduces th
 byte-for-byte the carry is dropped — the flat row IS the document. Byte equality is the
 strictest possible test, failing closed to keeping the carry on any difference or exception:
 image documents written by the current serializer shed it (CertificateOfDeposit and
-StructuredCredit twins do today; Bond's floating-coupon twin does not yet and keeps it);
+StructuredCredit twins did at this increment; Bond's floating-coupon twin did not then, and
+does since the stage-3 contraction — every class's image now sheds it, pinned per class);
 historical shapes and hand-written documents keep it with fold-on-read, and refusals refuse
 unchanged. No stored payload is rewritten. Pinned by the derived-verdict gate theory over every
 declared class, the class-aware retained pins (now per-class facts), and the regenerated corpus
@@ -420,7 +431,7 @@ and S2-B4 (codec single-purpose) land. Planned increments:
   `CanonicalizeDeclaredAliases` in write mode, ambiguous double-spellings refusing. The decode
   arm's real contract is now ledgered where it diverges from a naive schema reading: two-sided
   vocabulary enforcement, `ToleratedAbsenceDefaults` (eight Required booleans plus Bond
-  subclass), `ToleratedMistypes` (the legacy factorSchedule pointer). See the review record.
+  subclass; since 2026-11-13 declared on the schema as `AbsentReadDefault`), `ToleratedMistypes` (the legacy factorSchedule pointer). See the review record.
 - **S3-C — the encode-arm sweeps (implemented 2026-11-09).** 124 schema-generated cases:
   every written value carries its field's declared JSON kind (dates ISO, guids parseable);
   a minimal required-only submission writes every required key and invents no optional value
@@ -507,7 +518,7 @@ and S2-B4 (codec single-purpose) land. Planned increments:
 ## Close-out pass — 2026-11-10
 
 Recorded in the review's
-[close-out section](../../architecture/security-master-extensibility-review.md#close-out-pass--2026-11-10).
+[close-out section](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/architecture/security-master-extensibility-review.md#close-out-pass--2026-11-10).
 It implements the typed blocked outcome and ADR-025 increment 8f, completes S3-D, decides the
 governance defaults (D5), closes the code-level parts of D6 and D8, moves conflict and profile
 routing onto class-owned keys (D9), and acts on an agent-run review of migration 062 (D7). Open
@@ -518,8 +529,8 @@ model, StructuredNote's accounting treatment).
 *2026-11-11 (owner decisions):* the owner authorized the migration 062 waiver, accepted the three
 D10 recommendations as the decisions, and sequenced the remaining code as follow-up pull requests
 after the close-out pull request merges. Recorded in the review's
-[owner decisions](../../architecture/security-master-extensibility-review.md#owner-decisions--2026-11-11).
-Remaining work, none of it started:
+[owner decisions](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/architecture/security-master-extensibility-review.md#owner-decisions--2026-11-11).
+At the time of the owner decision, the follow-up items were:
 
 - **S3-E record contraction**, one field group at a time, each with its own replay-compatibility
   proof, including module homes for the residual complement listed above.
@@ -592,3 +603,86 @@ lists, per class and embedded module, the members the row carries, and `validate
 the rest (`term_member_not_persisted`) and a conflicting value in a member the row derives
 (`term_member_value_not_persisted`). The list was derived from the flat codec's own round trip
 and is held to it by `SecurityKindPersistenceTests`. See the review record.
+
+A second gap in the fold is closed too. The fix above covered the stage-3 homes; a value in a
+field the document carried before stage 3 (a call date, an issuer name, a reference index) was
+still refilled after an amendment cleared it. The write path now flattens and rebuilds the
+retained document's own flat row and treats whatever that rebuild populates as held by the row,
+so only values the row never held fold back. Replay output is unchanged.
+
+### Codec generation, cohort 1 — 2026-11-11
+
+Stage 3's codec arms were asserted, not generated. Twenty classes now have both arms generated
+from one binding table (`SecurityAssetTermsCodecBindings`): the decode arm in
+`SecurityMasterMapping.GeneratedDecode.cs` and the writer arm in
+`Interop.SecurityMaster.GeneratedWriter.fs`, both committed and held to the table by
+`SecurityFlatCodecGenerationTests`. Behaviour is unchanged.
+
+Cohort 2 (2026-11-12) added a module-level row kind and generated Deposit,
+CertificateOfDeposit, CommercialPaper and CashSweep, so 24 of 32 classes are generated. Eight
+remained hand-written at that point.
+
+Cohort 3 (2026-11-13) added list, computed and multi-key row kinds plus per-class decode inputs.
+It generated the five structural classes (Bond, Swap, DirectLoan, StructuredCredit,
+CommitmentGuarantee), so 29 of 32 classes are generated.
+
+Cohort 4 (2026-11-13) generated Equity and InvestmentFund, so 31 of 32 classes are generated.
+CustomAsset is not generated by design: it stores the approved profile's document verbatim and has
+no class keys to bind. Codec generation is complete. The same pass declared the inner shape of
+`Equity.preferredTerms`, retiring eleven unbound-read ledger entries; only the three CustomAsset
+legacy-salvage reads remain unbound. See the review record.
+
+## Accrual and accounting follow-through — 2026-11-12
+
+The S3-E contraction above is already complete and retains its per-group replay proofs. Accrual
+windows now read shared lot exposure and the declared quote convention; recurring admission
+remains Bond only, with unsupported factored lots refused. Empty blocked projections report
+their block before checking for an empty schedule. Cash-flow context v4 stores row version 1
+and measured accrual dates; frozen v0 serialization preserves v1–v3 receipts.
+
+The unused whole-coupon helper and direct corporate-action poster have been removed from
+production. Golden cases for historical corporate-action defects remain in test fixtures.
+StructuredNote uses the existing governed daily-valuation workflow with an explicit FVTPL
+template, source-mark evidence and approval; it remains outside coupon accrual accounting.
+
+The canonical principal-only call/put mode binds reviewed full long-lot quantities and bases to
+a retained disposal instruction. Approval, period checks and atomic disposal govern lot closure
+and journal posting together. Interest, make-whole and short redemptions remain blocked on this
+path pending their own allocation support.
+
+
+## Unit-safe amortization and pool accrual — 2026-11-12
+
+The follow-up removes the cost-basis service's assumed quantity unit. Amortization targets
+economic face per recorded quantity, with separate factor adjustments and explicit rejection
+of incompatible lot units. Decimal face-unit costs and retained exact monetary basis survive
+relief without ten-place unit rounding.
+
+Calculated fixed-rate Bond and StructuredCredit consumers accept typed daily holdings and
+row-2 interest segments. Dated factors and explicit principal reconcile before projection;
+source reference principal and pre-paydown held face scale interest exactly once. A scoped
+read retains acquisition/disposal history and the final interest day when a full paydown
+closes a lot. Recurring output remains an approval-bound accrual draft, excluding principal cash. The typed
+path captures one version-pinned v5 projection; its receipt hash and model persist in the
+structured recurring source evidence and survive draft restart without a source reread.
+
+Context v5 retains these segments. Contexts v1–v3 keep row 0 and v4 keeps row 1, including
+frozen JSON, hashes and arithmetic. Declared schedules, external/provider schedules, floating
+economics, negative interest, stale sources and unsupported synthetic sinkers retain their gates.
+Positive legacy Bond coupons still require a resolvable rate unit; this change does not add a
+new Bond rate-unit declaration or lift the declared-schedule posting gate. StructuredCredit
+uses its existing governed scalar unit declaration. Consumer admission is not proof that
+every retained record satisfies these existing conditions.
+
+Validation on the integrated branch: the .NET 10 build of `tests/Meridian.Tests/Meridian.Tests.csproj`
+passed with `EnableWindowsTargeting=true`; 569 focused tests passed with zero skips, with Docker
+PostgreSQL enabled. The filter covers cost-basis/relief precision, the source projector and bridge,
+context receipt versions, historical lot reconstruction, recurring journal calculations/lifecycle,
+draft intake, rate-unit parity and catalog coverage. The database regression executes governed
+paydowns and a same-day disposal, restarts the store, and verifies final-day entitlement and scope.
+An additional 122 lot-adapter, schedule-equality, compatibility and ledger-gate tests passed
+with zero skips. A separate read-only agent financial review found no unresolved findings
+after corrections.
+Changed-file whitespace formatting passed. Maintained documentation generation converged; the
+repository inventory and test coverage report were refreshed. Hosted checks remain the merge
+authority. No migration or historical journal rewrite is introduced.

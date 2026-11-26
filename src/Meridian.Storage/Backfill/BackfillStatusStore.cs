@@ -3,6 +3,7 @@ using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage.Archival;
 using Meridian.Contracts.Backfill;
+using Meridian.Contracts.Operations;
 
 namespace Meridian.Storage.Backfill;
 
@@ -13,6 +14,7 @@ namespace Meridian.Storage.Backfill;
 public sealed class BackfillStatusStore
 {
     private readonly string _path;
+    private readonly string _receiptDirectory;
     private readonly string _symbolCheckpointsPath;
     private readonly string _symbolBarCountsPath;
     private readonly string _symbolCoveragePath;
@@ -22,10 +24,14 @@ public sealed class BackfillStatusStore
         var root = string.IsNullOrWhiteSpace(dataRoot) ? "data" : dataRoot;
         var statusDir = Path.Combine(root, "_status");
         _path = Path.Combine(statusDir, "backfill.json");
+        _receiptDirectory = Path.Combine(statusDir, "backfill-receipts");
         _symbolCheckpointsPath = Path.Combine(statusDir, "backfill-symbol-checkpoints.json");
         _symbolBarCountsPath = Path.Combine(statusDir, "backfill-symbol-barcounts.json");
         _symbolCoveragePath = Path.Combine(statusDir, "backfill-symbol-coverage.json");
+        Batches = new BackfillBatchStore(Path.Combine(statusDir, "backfill-batches"));
     }
+
+    public BackfillBatchStore Batches { get; }
 
     public static BackfillStatusStore FromConfig(AppConfig cfg) => new(cfg.DataRoot);
 
@@ -35,11 +41,99 @@ public sealed class BackfillStatusStore
 
     public async Task WriteAsync(BackfillResult result, CancellationToken ct = default)
     {
+        if (result.ProviderProvenance is { } receipt)
+            await WriteRetainedResultAsync(new(receipt, result.Success, result.BarsWritten, result.ProvenanceAccess), ct).ConfigureAwait(false);
+
         var json = JsonSerializer.Serialize(result, BackfillStatusStoreJsonContext.Default.BackfillResult);
         await AtomicFileWriter.WriteAsync(_path, json, ct);
     }
 
+    public async Task WriteRetainedResultAsync(RetainedBackfillResult result, CancellationToken ct = default)
+    {
+        var destination = ReceiptPath(result.Receipt.ReceiptId);
+        var temporary = Path.Combine(_receiptDirectory, $"{Guid.NewGuid():N}.tmp");
+        var json = JsonSerializer.Serialize(result, BackfillStatusStoreJsonContext.Default.RetainedBackfillResult);
+        try
+        {
+            await AtomicFileWriter.WriteAsync(temporary, json, ct).ConfigureAwait(false);
+            try
+            {
+                // Publish a complete receipt once. Retrying the same write is idempotent.
+                File.Move(temporary, destination, overwrite: false);
+            }
+            catch (IOException) when (File.Exists(destination))
+            {
+                if (!string.Equals(json, await File.ReadAllTextAsync(destination, ct).ConfigureAwait(false), StringComparison.Ordinal))
+                    throw;
+            }
+            // Strict: returning publishes the receipt (and lets WriteAsync record the run). The
+            // identical-content check above makes a retry after this throw idempotent.
+            await AtomicFileWriter.SyncDirectoryOrThrowAsync(_receiptDirectory, CancellationToken.None).ConfigureAwait(false);
+        }
+        finally
+        {
+            if (File.Exists(temporary))
+                File.Delete(temporary);
+        }
+    }
+
+    public RetainedBackfillResult? TryReadRetainedResult(Guid receiptId) => ReadRetainedResult(ReceiptPath(receiptId));
+
+    public IReadOnlyList<RetainedBackfillResult> ReadRecentRetainedResults(int limit, string? tenantId, Guid? before = null)
+    {
+        if (!Directory.Exists(_receiptDirectory))
+            return [];
+
+        var files = new DirectoryInfo(_receiptDirectory).EnumerateFiles("*.json")
+            .OrderByDescending(static file => file.LastWriteTimeUtc)
+            .ThenByDescending(static file => file.Name, StringComparer.Ordinal);
+        var page = before is { } id
+            ? files.SkipWhile(file => !string.Equals(file.Name, $"{id:N}.json", StringComparison.Ordinal)).Skip(1)
+            : files;
+        return page
+            .Select(static file => ReadRetainedResult(file.FullName))
+            .OfType<RetainedBackfillResult>()
+            .Where(result => result.IsVisibleTo(tenantId))
+            .Take(limit)
+            .ToArray();
+    }
+
+    private string ReceiptPath(Guid receiptId) => Path.Combine(_receiptDirectory, $"{receiptId:N}.json");
+
+    private static RetainedBackfillResult? ReadRetainedResult(string path)
+    {
+        try
+        {
+            var json = File.ReadAllText(path);
+            var result = JsonSerializer.Deserialize(json, BackfillStatusStoreJsonContext.Default.RetainedBackfillResult);
+            return result?.Receipt is { Request: not null, ValidationProfile: not null } receipt &&
+                !receipt.Providers.IsDefault && !receipt.FallbackChain.IsDefault && !receipt.Request.Symbols.IsDefault &&
+                Guid.TryParseExact(Path.GetFileNameWithoutExtension(path), "N", out var id) && id == receipt.ReceiptId ? result : null;
+        }
+        catch (Exception ex) when (ex is JsonException or IOException)
+        {
+            return null;
+        }
+    }
+
     public BackfillResult? TryRead()
+    {
+        var result = TryReadSnapshot();
+        if (result?.ProviderProvenance is not { } receipt)
+            return result;
+
+        var retained = TryReadRetainedResult(receipt.ReceiptId);
+        return result with { ProviderProvenance = retained?.Receipt, ProvenanceAccess = retained?.Access };
+    }
+
+    /// <summary>
+    /// Reads the last pre-provenance summary. A snapshot carrying a receipt belongs to the
+    /// scoped retained-results path, even if that receipt is unavailable.
+    /// </summary>
+    public BackfillResult? TryReadLegacySummary() =>
+        TryReadSnapshot() is { ProviderProvenance: null } legacy ? legacy : null;
+
+    private BackfillResult? TryReadSnapshot()
     {
         try
         {
@@ -227,7 +321,7 @@ public sealed class BackfillStatusStore
 
     /// <summary>
     /// Removes all per-symbol checkpoints, bar-count data and verified coverage.
-    /// Call when starting a fresh (non-resume) backfill run.
+    /// Fresh backfill runs reset progress through <see cref="ResetSymbolCheckpointStatusAsync"/>.
     /// </summary>
     public async Task ClearSymbolCheckpointsAsync(CancellationToken ct = default)
     {
@@ -257,7 +351,16 @@ public sealed class BackfillStatusStore
     /// Removes only the checkpoints, bar-count data and verified coverage associated with the requested
     /// <paramref name="granularity"/>, preserving resume state for other backfill lanes.
     /// </summary>
-    public async Task ClearSymbolCheckpointsAsync(DataGranularity granularity, CancellationToken ct = default)
+    public Task ClearSymbolCheckpointsAsync(DataGranularity granularity, CancellationToken ct = default)
+        => ClearSymbolCheckpointsAsync(granularity, includeVerifiedCoverage: true, ct);
+
+    /// <summary>
+    /// Resets date and bar-count status for the requested granularity while retaining verified coverage.
+    /// </summary>
+    public Task ResetSymbolCheckpointStatusAsync(DataGranularity granularity, CancellationToken ct = default)
+        => ClearSymbolCheckpointsAsync(granularity, includeVerifiedCoverage: false, ct);
+
+    private async Task ClearSymbolCheckpointsAsync(DataGranularity granularity, bool includeVerifiedCoverage, CancellationToken ct)
     {
         await _checkpointLock.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -286,8 +389,7 @@ public sealed class BackfillStatusStore
                 await AtomicFileWriter.WriteAsync(_symbolBarCountsPath, barCountJson, ct);
             }
 
-            var coverage = TryReadCoverageDocument();
-            if (coverage is not null)
+            if (includeVerifiedCoverage && TryReadCoverageDocument() is { } coverage)
             {
                 var lane = granularity.ToUiValue();
                 coverage.Entries.RemoveAll(entry => string.Equals(entry.Granularity, lane, StringComparison.OrdinalIgnoreCase));
@@ -477,4 +579,11 @@ public sealed class BackfillStatusStore
 
     private static bool IsCheckpointKeyForGranularity(string rawKey, DataGranularity granularity)
         => TryMapCheckpointKey(rawKey, granularity, out _);
+}
+
+/// <summary>Durable history row. Only the safe receipt and numeric outcome are retained here.</summary>
+public sealed record RetainedBackfillResult(ProviderProvenanceReceipt Receipt, bool Success, long BarsWritten,
+    ProviderProvenanceAccess? Access)
+{
+    public bool IsVisibleTo(string? tenantId) => Access?.IsVisibleTo(tenantId) == true;
 }

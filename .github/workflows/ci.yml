@@ -8,6 +8,7 @@ on:
         type: boolean
         default: false
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   merge_group:
   push:
     branches:
@@ -37,6 +38,9 @@ env:
 jobs:
   secret-scan:
     name: Secret Scan
+    # Draft pull requests skip this required check (a draft cannot merge); marking the
+    # PR ready for review scans it.
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -94,6 +98,21 @@ jobs:
 
       - name: Set up .NET SDK and NuGet cache
         uses: ./.github/actions/setup-dotnet-nuget
+
+      - name: Set up browser build toolchain
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Build workstation assets before evaluating .NET content
+        run: python build/scripts/ensure-workstation-assets.py
 
       - name: Restore solution
         run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true

@@ -32,6 +32,7 @@ public sealed class SecurityUnderlyingRoleCoverageTests
     {
         ["Bond.inflationBaseIndexValue"] = "the reference index level at issue, a number",
         ["Bond.inflationIndexRatio"] = "the current index ratio, a number",
+        ["Equity.preferredTerms.liquidationPreference"] = "the preferred holder's liquidation ranking (Pari, Senior, Subordinated); \"preference\" only spells \"reference\"",
         ["Repo.collateralType"] = "the collateral category (general or special), not a pledged asset",
         ["StructuredCredit.collateralType"] = "the pool's collateral category, not a pledged asset",
         ["Cfd.underlyingAssetClass"] = "the class of the reference asset, not the asset",

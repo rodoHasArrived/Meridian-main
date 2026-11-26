@@ -184,6 +184,8 @@ internal static class DurableLineAppender
 
             // A flushed file is not durable until its directory entry is: after power loss a
             // never-synced new file (or new job directory) can vanish with acknowledged records.
+            // Best effort: the line is already appended, and a throw would make the caller retry
+            // and append it twice.
             if (createdFile)
                 await AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).ConfigureAwait(false);
             if (createdDirectory && Path.GetDirectoryName(directory) is { Length: > 0 } parent)

@@ -42,11 +42,12 @@
                        Foreground="{StaticResource ConsoleTextMutedBrush}"
                        TextWrapping="Wrap"
                        Margin="0,4,0,0" />
-            <Button Content="Refresh"
-                    Command="{Binding RefreshCommand}"
-                    HorizontalAlignment="Left"
-                    Margin="0,8,0,0"
-                    AutomationProperties.AutomationId="PostedLedgerRefreshButton" />
+            <Button Content="Download journal CSV" Command="{Binding ExportJournalCsvCommand}"
+                    HorizontalAlignment="Left" Margin="0,8,0,0"
+                    ToolTip="Complete posted journals for the selected period; table filters do not limit the file."
+                    AutomationProperties.AutomationId="PostedLedgerExportJournalCsvButton" />
+            <TextBlock Text="{Binding JournalExportStatus}" TextWrapping="Wrap" Margin="0,4,0,0"
+                       AutomationProperties.LiveSetting="Polite" AutomationProperties.AutomationId="PostedLedgerExportJournalCsvStatus" />
         </StackPanel>
 
         <!-- Explicit states: an unclosed period is a notice, a failure is an error. -->
@@ -72,6 +73,13 @@
                        TextWrapping="Wrap"
                        Margin="0,0,0,8"
                        AutomationProperties.AutomationId="PostedLedgerPnlError" />
+            <Button Content="Retry"
+                    Command="{Binding RefreshCommand}"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,8"
+                    Visibility="{Binding HasLoadError, Converter={StaticResource BoolToVisibilityConverter}}"
+                    AutomationProperties.AutomationId="PostedLedgerRetryButton"
+                    AutomationProperties.Name="Retry loading posted ledger" />
         </StackPanel>
 
         <!-- P&L summary for the selected period. -->
@@ -210,6 +218,16 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Account" Binding="{Binding AccountName}" Width="*" />
                             <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="90" />
+                            <DataGridTemplateColumn Header="Line evidence" Width="2*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding RetainedLineEvidence}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTemplateColumn Header="Debit" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>

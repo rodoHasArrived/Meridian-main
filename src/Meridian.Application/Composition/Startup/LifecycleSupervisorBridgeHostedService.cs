@@ -15,15 +15,18 @@ public sealed class LifecycleSupervisorBridgeHostedService : BackgroundService
     public const string PipeEnvironmentVariable = "MDC_LIFECYCLE_PIPE";
 
     private readonly IRuntimeLifecycleControlPlane _lifecycle;
+    private readonly RuntimeSupervisorConnection _connection;
     private readonly ILogger<LifecycleSupervisorBridgeHostedService> _log;
     private readonly string _pipeName;
     private readonly SemaphoreSlim _writeGate = new(1, 1);
 
     public LifecycleSupervisorBridgeHostedService(
         IRuntimeLifecycleControlPlane lifecycle,
+        RuntimeSupervisorConnection connection,
         ILogger<LifecycleSupervisorBridgeHostedService> log)
     {
         _lifecycle = lifecycle;
+        _connection = connection;
         _log = log;
         _pipeName = Environment.GetEnvironmentVariable(PipeEnvironmentVariable) ?? string.Empty;
     }
@@ -70,7 +73,9 @@ public sealed class LifecycleSupervisorBridgeHostedService : BackgroundService
 
         using var reader = new StreamReader(pipe, leaveOpen: true);
         await using var writer = new StreamWriter(pipe, leaveOpen: true) { AutoFlush = true };
-        await WriteAsync(writer, "register-host", null, ct).ConfigureAwait(false);
+        var registrationId = Guid.NewGuid().ToString("N");
+        var sessionId = _lifecycle.Snapshot.SessionId;
+        await WriteAsync(writer, "register-host", registrationId, ct).ConfigureAwait(false);
 
         using var publishCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         var publishTask = PublishSnapshotsAsync(writer, publishCts.Token);
@@ -87,6 +92,14 @@ public sealed class LifecycleSupervisorBridgeHostedService : BackgroundService
                 var message = JsonSerializer.Deserialize(
                     line,
                     LifecycleContractsJsonContext.Default.LifecycleSupervisorMessageDto);
+                if (message is { Command: "host-registered", Success: true } &&
+                    string.Equals(message.RequestId, registrationId, StringComparison.Ordinal) &&
+                    string.Equals(message.SessionId, sessionId, StringComparison.Ordinal))
+                {
+                    _connection.MarkConfirmed();
+                    continue;
+                }
+
                 if (message is null ||
                     (!string.Equals(message.Command, "shutdown", StringComparison.OrdinalIgnoreCase) &&
                      !string.Equals(message.Command, "restart", StringComparison.OrdinalIgnoreCase)))
@@ -120,6 +133,7 @@ public sealed class LifecycleSupervisorBridgeHostedService : BackgroundService
         }
         finally
         {
+            _connection.MarkDisconnected();
             publishCts.Cancel();
             try
             {
@@ -171,4 +185,16 @@ public sealed class LifecycleSupervisorBridgeHostedService : BackgroundService
             _writeGate.Release();
         }
     }
+}
+
+/// <summary>Evidence of a live, acknowledged registration with the owning supervisor.</summary>
+public sealed class RuntimeSupervisorConnection
+{
+    private int _confirmed;
+
+    public bool IsConfirmed => Volatile.Read(ref _confirmed) == 1;
+
+    internal void MarkConfirmed() => Volatile.Write(ref _confirmed, 1);
+
+    internal void MarkDisconnected() => Volatile.Write(ref _confirmed, 0);
 }

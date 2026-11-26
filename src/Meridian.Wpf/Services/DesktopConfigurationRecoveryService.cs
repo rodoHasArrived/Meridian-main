@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Configuration;
+using Meridian.Application.ProviderRouting;
 using Meridian.Storage.Archival;
 using Meridian.Ui.Services;
 
@@ -42,6 +43,8 @@ public sealed record DesktopConfigurationRecoveryResult(
     {
         ConfigurationProvisioningResult.CreatedDefault =>
             "Created a valid desktop configuration and retained a last-known-good copy.",
+        ConfigurationProvisioningResult.RestoredLastKnownGood when string.IsNullOrWhiteSpace(InvalidConfigurationPath) =>
+            "Recovered the desktop configuration from the last-known-good copy.",
         ConfigurationProvisioningResult.RestoredLastKnownGood =>
             "Recovered the desktop configuration from the last-known-good copy. The invalid file was retained for review.",
         ConfigurationProvisioningResult.RepairedInvalid =>
@@ -66,16 +69,19 @@ public sealed class DesktopConfigurationRecoveryService
 
     private readonly string _configPath;
     private readonly Func<DateTimeOffset> _utcNow;
+    private readonly ProviderCredentialOwnershipPolicy _ownershipPolicy;
 
     public DesktopConfigurationRecoveryService(
         string configPath,
-        Func<DateTimeOffset>? utcNow = null)
+        Func<DateTimeOffset>? utcNow = null,
+        ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     {
         if (string.IsNullOrWhiteSpace(configPath))
             throw new ArgumentException("A desktop configuration path is required.", nameof(configPath));
 
         _configPath = Path.GetFullPath(configPath);
         _utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
+        _ownershipPolicy = ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
     }
 
     public string ConfigPath => _configPath;
@@ -85,10 +91,24 @@ public sealed class DesktopConfigurationRecoveryService
     public DesktopConfigurationRecoveryResult EnsureReadableConfiguration(CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        // Refuse before copying, renaming or replacing either generation. Unparseable input
+        // cannot be proven secret-free and must not become a new plaintext recovery artifact.
+        ValidateProtectedExistingFile(_configPath);
+        ValidateProtectedExistingFile(LastKnownGoodPath);
         EnsureParentDirectory();
 
         if (!File.Exists(_configPath))
         {
+            if (_ownershipPolicy.RequireExplicitOwnership &&
+                TryReadValidConfiguration(LastKnownGoodPath, out var retainedJson, out _))
+            {
+                // A reviewed purge of an unsafe primary must retain the last known-good owner
+                // configuration. Creating defaults here would overwrite that recovery authority.
+                PersistValidConfiguration(retainedJson!, ct);
+                return new DesktopConfigurationRecoveryResult(
+                    ConfigurationProvisioningResult.RestoredLastKnownGood, _configPath, LastKnownGoodPath,
+                    InvalidConfigurationPath: null, RecoveryReceiptPath: null, FailureReason: null);
+            }
             var defaultJson = SerializeDefaultConfiguration();
             PersistValidConfiguration(defaultJson, ct);
             return new DesktopConfigurationRecoveryResult(
@@ -102,6 +122,7 @@ public sealed class DesktopConfigurationRecoveryService
 
         if (TryReadValidConfiguration(_configPath, out var currentJson, out _))
         {
+            ValidateConfigurationJson(currentJson!);
             // A valid operator edit becomes the new recovery point. Failure to refresh this
             // auxiliary copy must not make an otherwise readable configuration fatal.
             try
@@ -128,6 +149,8 @@ public sealed class DesktopConfigurationRecoveryService
                 FailureReason: null);
         }
 
+        if (_ownershipPolicy.RequireExplicitOwnership)
+            throw new ProviderConfigurationCredentialException();
         _ = TryReadValidConfiguration(_configPath, out _, out var invalidReason);
         var suffix = $"{_utcNow():yyyyMMddHHmmssfff}-{Guid.NewGuid():N}";
         var invalidPath = $"{_configPath}.invalid-{suffix}.bak";
@@ -176,6 +199,8 @@ public sealed class DesktopConfigurationRecoveryService
     public async Task PersistValidConfigurationAsync(string json, CancellationToken ct = default)
     {
         ValidateConfigurationJson(json);
+        ValidateProtectedExistingFile(_configPath);
+        ValidateProtectedExistingFile(LastKnownGoodPath);
         EnsureParentDirectory();
         await AtomicFileWriter.WriteAsync(_configPath, json, ct).ConfigureAwait(false);
         await AtomicFileWriter.WriteAsync(LastKnownGoodPath, json, ct).ConfigureAwait(false);
@@ -184,6 +209,8 @@ public sealed class DesktopConfigurationRecoveryService
     private void PersistValidConfiguration(string json, CancellationToken ct)
     {
         ValidateConfigurationJson(json);
+        ValidateProtectedExistingFile(_configPath);
+        ValidateProtectedExistingFile(LastKnownGoodPath);
         AtomicFileWriter.Write(_configPath, json, ct);
         AtomicFileWriter.Write(LastKnownGoodPath, json, ct);
     }
@@ -198,10 +225,35 @@ public sealed class DesktopConfigurationRecoveryService
     private static string SerializeDefaultConfiguration()
         => JsonSerializer.Serialize(AppConfigDefaults.CreateDefaultAppConfig(), ConfigurationJsonOptions);
 
-    private static void ValidateConfigurationJson(string json)
+    private void ValidateConfigurationJson(string json)
     {
+        ValidateProtectedConfigurationJson(json);
         if (!TryDeserializeConfiguration(json, out var error))
             throw new JsonException($"Desktop configuration is invalid: {error}");
+    }
+
+    private void ValidateProtectedExistingFile(string path)
+    {
+        if (_ownershipPolicy.RequireExplicitOwnership && File.Exists(path))
+            ValidateProtectedConfigurationJson(File.ReadAllText(path));
+    }
+
+    private void ValidateProtectedConfigurationJson(string json)
+    {
+        if (!_ownershipPolicy.RequireExplicitOwnership)
+            return;
+        // The shared scanner covers both Core configuration and WPF DTO JSON, including
+        // retained provider extension settings that a typed DTO round trip could otherwise drop.
+        try
+        {
+            ProviderConfigurationCredentialGuard.ValidateJson(json, _ownershipPolicy);
+            if (!TryDeserializeConfiguration(json, out _))
+                throw new ProviderConfigurationCredentialException();
+        }
+        catch (JsonException)
+        {
+            throw new ProviderConfigurationCredentialException();
+        }
     }
 
     private static bool TryReadValidConfiguration(

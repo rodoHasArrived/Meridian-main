@@ -325,14 +325,16 @@ public static class BondExerciseEconomics
             return true;
         var frequency = exerciseFrequency ?? BondContractualEconomics.Text(row, "exerciseFrequency") ?? couponFrequency;
         if (!SecurityTermConventions.TryParsePaymentFrequency(frequency, out var cadence)
-            || cadence.PeriodsPerYear() is not { } periods)
+            || cadence.PeriodsPerYear() is null)
         {
             refusal = "Bermudan exercise requires a supported regular frequency.";
             return false;
         }
         if (start == end)
             return true;
-        var grid = ScheduleGenerator.Generate(new ScheduleSpec(start, end, ScheduleTenor.Months(12 / periods)));
+        if (cadence.MonthsPerPeriod() is not { } months)
+        { refusal = "Bermudan exercise requires a supported month-based regular grid."; return false; }
+        var grid = ScheduleGenerator.Generate(new ScheduleSpec(start, end, ScheduleTenor.Months(months)));
         if (!grid.Succeeded)
         { refusal = grid.Failure.Message; return false; }
         dates = grid.Periods.Where(static period => !period.IsStub).Select(static period => period.UnadjustedEnd).Prepend(start).ToArray();

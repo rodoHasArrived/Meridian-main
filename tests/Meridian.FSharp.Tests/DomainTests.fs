@@ -205,6 +205,7 @@ let ``BondTerms callable bond preserves callDate`` () =
         RedemptionFacts = BondRedemptionTerms.empty
         Principal = { Payments = [] }
         DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
+        Workflow = None
     }
     terms.IsCallable |> should equal true
     terms.CallDate |> should equal (Some callDate)
@@ -823,6 +824,7 @@ let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` ()
         RedemptionFacts = { Par = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
         Principal = { Payments = [] }
         DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
+        Workflow = None
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.Bond bondTerms }
@@ -856,6 +858,7 @@ let private stepBondTerms = {
     RedemptionFacts = { Par = Some 1000m; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
     Principal = { Payments = [] }
     DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
+    Workflow = None
 }
 
 [<Fact>]
@@ -1229,6 +1232,9 @@ let ``SecurityClassification.familyName returns canonical string for each AssetF
             AssetFamily.MoneyMarket,         "MoneyMarket"
             AssetFamily.RepurchaseAgreement, "RepurchaseAgreement"
             AssetFamily.ListedDerivative,    "ListedDerivative"
+            AssetFamily.OtcDerivative,       "OtcDerivative"
+            AssetFamily.ForeignExchange,     "ForeignExchange"
+            AssetFamily.PooledFund,          "PooledFund"
             AssetFamily.PrivateLoan,         "PrivateLoan"
             AssetFamily.OtherFamily "Crypto","Crypto"
         ]
@@ -1913,6 +1919,7 @@ let private securitizedBond subclass coupon par =
         RedemptionFacts = { Par = par; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
         Principal = { Payments = [] }
         DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
+        Workflow = None
     }
 
 [<Theory>]
@@ -2126,6 +2133,7 @@ let private scheduleDeposit conventions =
     SecurityKind.CertificateOfDeposit ({
         IssuerTerms = { IssuerName = Some ("First Bank"); InstitutionName = None; IssuerProgram = None; LeiCode = None; UltimateParentName = None; IssuerSector = None; IssuerCountry = None }
         Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2028, 3, 15)) }
+        Notional = { Notional = None; Denomination = None; CommittedAmount = None; FundedAmount = None; UnfundedAmount = None }
         CouponTerms = { CouponType = Some CouponKind.Fixed; CouponRate = Some 4.1m; PaymentFrequency = None; DayCount = Some Meridian.Contracts.SecurityMaster.DayCountConvention.Actual360 }
         Callability = EconomicCallTerms.scalar false None
         DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = conventions }

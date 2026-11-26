@@ -1,8 +1,8 @@
 import { screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { renderWithRouter } from "@/test/render";
-import { buildBreakAgingRows, buildProviderFreshnessRows, CloseTaskProgressChart, ReconciliationAgingChart } from "./workstation-evidence-charts";
-import type { ProviderConnectionRow, ReconciliationBreakQueueItem } from "@/types";
+import { buildBreakAgingRows, buildProviderFreshnessRows, chooseEvidenceAgeUnit, CloseChecklistProgressChart, CloseTaskProgressChart, ProviderFreshnessChart, ReconciliationAgingChart } from "./workstation-evidence-charts";
+import type { OperationsCloseChecklistTask, ProviderConnectionRow, ReconciliationBreakQueueItem } from "@/types";
 
 const now = Date.parse("2026-11-11T12:00:00Z");
 
@@ -13,9 +13,28 @@ describe("operational chart evidence", () => {
       { providerId: "missing", displayName: "Missing", lastSuccessfulAt: null },
       { providerId: "future", displayName: "Future", lastSuccessfulAt: "2026-11-12T10:00:00Z" }
     ] as ProviderConnectionRow[];
+    // Missing and future timestamps are never shown as zero age: they are listed as
+    // "No timestamp" without a bar, so the chart covers every provider in use.
     expect(buildProviderFreshnessRows(providers, now)).toEqual({
-      rows: [{ id: "current", label: "Current", value: 2, valueLabel: "2h" }], unavailable: 2
+      rows: [
+        { id: "current", label: "Current", value: 2, valueLabel: "2h" },
+        { id: "missing", label: "Missing", value: 0, valueLabel: "No timestamp" },
+        { id: "future", label: "Future", value: 0, valueLabel: "No timestamp" }
+      ],
+      unit: "hours", unavailable: 2, timed: 1
     });
+  });
+
+  it("states evidence age in one readable unit for the whole chart", () => {
+    const providers = [
+      { providerId: "old", displayName: "Old", lastSuccessfulAt: new Date(now - 125 * 86_400_000).toISOString() },
+      { providerId: "recent", displayName: "Recent", lastSuccessfulAt: new Date(now - 3 * 3_600_000).toISOString() }
+    ] as ProviderConnectionRow[];
+    const model = buildProviderFreshnessRows(providers, now);
+    expect(model.unit).toBe("months");
+    expect(model.rows.map((row) => row.valueLabel)).toEqual(["4.2mo", "<0.1mo"]);
+    expect(chooseEvidenceAgeUnit(30 * 3_600_000)).toBe("hours");
+    expect(chooseEvidenceAgeUnit(5 * 86_400_000)).toBe("days");
   });
 
   it("uses retained occurrence age with explicit buckets and excludes untracked timestamps", () => {
@@ -42,5 +61,21 @@ describe("operational chart evidence", () => {
     expect(screen.getByText("No close plan tasks are loaded.")).toBeInTheDocument();
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
     expect(screen.getByText(/Historical task snapshots are unavailable/)).toBeInTheDocument();
+  });
+
+  it("shows figures instead of a chart when there are fewer than three categories", async () => {
+    const tasks = [{ status: "Done" }] as OperationsCloseChecklistTask[];
+    const { container } = renderWithRouter(<CloseChecklistProgressChart tasks={tasks} />);
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    expect(screen.getByText("Done")).toBeInTheDocument();
+    expect(screen.getByText("1")).toBeInTheDocument();
+    expect((await axe(container)).violations).toEqual([]);
+  });
+
+  it("keeps a single provider's evidence age as a figure", () => {
+    const providers = [{ providerId: "alpaca", displayName: "Alpaca", lastSuccessfulAt: "2026-11-11T09:00:00Z" }] as ProviderConnectionRow[];
+    renderWithRouter(<ProviderFreshnessChart providers={providers} nowMs={now} />);
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    expect(screen.getByText("3h")).toBeInTheDocument();
   });
 });

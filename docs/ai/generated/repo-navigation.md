@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-11T11:02:41Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-25T11:14:04Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `b80fa4ee03` (2026-11-11T10:00:22Z) | 60 |
-| `src/Meridian.Application/README.md` | Host and Composition | `b80fa4ee03` (2026-11-11T10:00:22Z) | 55 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs` | Host and Composition | `b80fa4ee03` (2026-11-11T10:00:22Z) | 7 |
-| `src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs` | Host and Composition | `b80fa4ee03` (2026-11-11T10:00:22Z) | 2 |
-| `src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.CashFlowBlocker.cs` | Desktop and UI Workflows | `b80fa4ee03` (2026-11-11T10:00:22Z) | 2 |
-| `src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs` | Host and Composition | `b80fa4ee03` (2026-11-11T10:00:22Z) | 1 |
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `d9f2c6983b` (2026-11-11T09:39:07Z) | 59 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | `d9f2c6983b` (2026-11-11T09:39:07Z) | 50 |
-| `src/Meridian.Storage/README.md` | Providers and Storage | `d9f2c6983b` (2026-11-11T09:39:07Z) | 27 |
-| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `d9f2c6983b` (2026-11-11T09:39:07Z) | 25 |
-| `src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs` | Host and Composition | `d9f2c6983b` (2026-11-11T09:39:07Z) | 15 |
-| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | `d9f2c6983b` (2026-11-11T09:39:07Z) | 15 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs` | Host and Composition | `d9f2c6983b` (2026-11-11T09:39:07Z) | 13 |
-| `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | Host and Composition | `d9f2c6983b` (2026-11-11T09:39:07Z) | 13 |
-| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `d9f2c6983b` (2026-11-11T09:39:07Z) | 12 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 25 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 18 |
+| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 13 |
+| `src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 8 |
+| `src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 8 |
+| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | `cb5d7320` (2026-11-25T03:02:09-07:00) | 7 |
+| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | `cb5d7320` (2026-11-25T03:02:09-07:00) | 6 |
+| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 6 |
+| `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 5 |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.TableViews.cs` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 5 |
+| `src/Meridian.Ui/README.md` | Unmapped | `cb5d7320` (2026-11-25T03:02:09-07:00) | 5 |
+| `src/Meridian.Ui/dashboard/src/types/workstation-5.ts` | Desktop and UI Workflows | `cb5d7320` (2026-11-25T03:02:09-07:00) | 5 |
+| `src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs` | Execution, Risk, and Strategies | `cb5d7320` (2026-11-25T03:02:09-07:00) | 4 |
+| `src/Meridian.Strategies/Live/LiveTradingEngine.cs` | Execution, Risk, and Strategies | `cb5d7320` (2026-11-25T03:02:09-07:00) | 4 |
+| `src/Meridian.Execution/OrderManagementSystem.RiskOutcomes.cs` | Execution, Risk, and Strategies | `cb5d7320` (2026-11-25T03:02:09-07:00) | 3 |
 

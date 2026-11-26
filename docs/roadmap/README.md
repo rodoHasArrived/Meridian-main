@@ -2,7 +2,7 @@
 
 **Status:** canonical-registry
 **Owner:** core-team
-**Reviewed:** 2026-10-28
+**Reviewed:** 2026-11-25
 
 This directory is the structured source of truth for Meridian roadmap status.
 Human-facing status pages may summarize it, but durable roadmap truth belongs in
@@ -24,6 +24,8 @@ registry view; individual items and the production-readiness baseline retain the
 - `data/` stores versioned roadmap registries.
 - `schemas/` stores schema contracts for registry shape and compatibility.
 - `generated/` stores deterministic Markdown views rendered by `build/scripts/docs/render-roadmap-docs.py`.
+- `snapshots/` retains migrated detailed status evidence and reservations; load only
+  the item relevant to the current task.
 - Governance, status taxonomy, schema versioning, generated-doc policy, and item templates live beside this README.
 
 ## Maintenance
@@ -38,10 +40,31 @@ python3 build/scripts/docs/render-roadmap-docs.py --summary
 python3 build/scripts/docs/render-roadmap-diagrams.py --summary
 ```
 
-The Markdown renderer also updates the compatibility summary at `docs/status/ROADMAP_SUMMARY.md`
-and the generated manifest. The diagram renderer owns
+The Markdown renderer also updates the generated manifest. The diagram renderer owns
 `docs/architecture/diagrams/meridian-development-roadmap.mmd`.
 Generated files are derived artifacts. Update the registry or renderer instead of editing generated outputs by hand.
+
+### Compact status contracts
+
+Roadmap and program data use the [v2 structured-status contracts](schema-versioning.md#structured-status-migration-2026-11-14).
+Set status, health, evidence posture, decision IDs and PR references in their own
+fields. Keep `status_note` within 320 characters; link detailed implementation
+boundaries through `status_detail`. The original scalar source remains in each
+item's migration snapshot, including historical reservations. Migration does not
+change acceptance or release authority.
+
+The production-readiness tracker is generated from
+`data/production-readiness.yml`, where implementation state and release completion
+are separate. Its full detail remains linked from the compact tracker. To inspect
+or repair these generated views locally:
+
+```bash
+python3 build/scripts/docs/render-production-readiness.py --summary
+python3 scripts/generate_program_state_summary.py
+```
+
+The canonical registry validator checks these registries together. Generated
+status prose must not become a second hand-maintained source of status.
 
 ### Two things that will fail a PR if you miss them
 

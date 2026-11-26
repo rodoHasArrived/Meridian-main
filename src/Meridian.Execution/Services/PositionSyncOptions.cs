@@ -42,4 +42,10 @@ public sealed class PositionSyncOptions
     /// Default: 0 (any difference triggers an alert).
     /// </summary>
     public decimal DivergenceTolerance { get; init; } = 0m;
+
+    /// <summary>Absolute cash and financing tolerance in account currency.</summary>
+    public decimal CashTolerance { get; init; } = 0.01m;
+
+    /// <summary>Absolute average unit-cost tolerance for carrying-basis comparisons.</summary>
+    public decimal CostBasisTolerance { get; init; } = 0.00000001m;
 }

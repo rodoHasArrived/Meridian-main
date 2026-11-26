@@ -57,9 +57,12 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
     private PostedLedgerTrialBalanceRow? _selectedTrialBalanceRow;
     private string _accountPostingsStatusText = AccountPostingsPrompt;
 
-    public PostedLedgerViewModel(ILedgerReportsApiClient? client = null)
+    public PostedLedgerViewModel(ILedgerReportsApiClient? client = null,
+        Func<string, byte[], CancellationToken, Task<bool>>? saveJournalCsv = null)
     {
         _client = client;
+        _saveJournalCsv = saveJournalCsv ?? SaveJournalCsvAsync;
+        ExportJournalCsvCommand = new AsyncRelayCommand(ExportJournalCsvAsync, () => CanExportJournalCsv);
         ProofDrawer = new LedgerAmountProofDrawerViewModel(client);
         // A reloaded trial balance replaces its rows, so a selection into the old rows is gone.
         TrialBalance.CollectionChanged += (_, args) =>
@@ -201,7 +204,7 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
     public Guid? SelectedPeriodId
     {
         get => _selectedPeriodId;
-        private set => SetProperty(ref _selectedPeriodId, value);
+        private set { if (SetProperty(ref _selectedPeriodId, value)) ResetJournalCsvExport(); }
     }
 
     public string SelectedPeriodLabel
@@ -213,7 +216,7 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
     public Guid? SelectedBookId
     {
         get => _selectedBookId;
-        private set => SetProperty(ref _selectedBookId, value);
+        private set { if (SetProperty(ref _selectedBookId, value)) ResetJournalCsvExport(); }
     }
 
     /// <summary>
@@ -362,6 +365,7 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
             if (SetProperty(ref _periodsErrorText, value))
             {
                 OnPropertyChanged(nameof(HasPeriodsError));
+                OnPropertyChanged(nameof(HasLoadError));
             }
         }
     }
@@ -376,6 +380,7 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
             if (SetProperty(ref _trialBalanceErrorText, value))
             {
                 OnPropertyChanged(nameof(HasTrialBalanceError));
+                OnPropertyChanged(nameof(HasLoadError));
             }
         }
     }
@@ -390,11 +395,15 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
             if (SetProperty(ref _pnlErrorText, value))
             {
                 OnPropertyChanged(nameof(HasPnlError));
+                OnPropertyChanged(nameof(HasLoadError));
             }
         }
     }
 
     public bool HasPnlError => !string.IsNullOrEmpty(PnlErrorText);
+
+    /// <summary>True when any posted-ledger section failed to load; gates the page's Retry action.</summary>
+    public bool HasLoadError => HasPeriodsError || HasTrialBalanceError || HasPnlError;
 
     /// <summary>Loads once, when the page is first shown.</summary>
     public void Activate()
@@ -427,6 +436,7 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
         }
 
         var previous = _cts;
+        ResetJournalCsvExport();
         _periodRevision++;
         _bookRevision++;
         _loadRevision++;

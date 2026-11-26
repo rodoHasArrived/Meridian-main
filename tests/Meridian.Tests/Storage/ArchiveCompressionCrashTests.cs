@@ -217,6 +217,83 @@ public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
             File.ReadAllBytes(file.Key).Should().Equal(file.Value);
     }
 
+    [Fact]
+    public async Task BackupDirectorySyncFailure_LeavesSourceUnchangedAndRetrySucceeds()
+    {
+        var path = await CreateSourceAsync();
+        var original = await File.ReadAllBytesAsync(path);
+        var backupRoot = Path.Combine(TestDataRoot, "backups");
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+
+        FileCompressionResult failed;
+        using (DirectorySyncFaults.FailWhen(dir => dir.StartsWith(backupRoot, StringComparison.Ordinal)))
+            failed = await service.CompressAsync(new FileCompressionOptions(BackupPath: backupRoot, Paths: [path]));
+
+        failed.Success.Should().BeFalse();
+        failed.Errors.Should().Contain(error => error.Contains("Backup failed"));
+        (await File.ReadAllBytesAsync(path)).Should().Equal(original);
+        File.Exists(path + ".gz").Should().BeFalse("no source may be mutated before its backup is durable");
+
+        var retried = await service.CompressAsync(new FileCompressionOptions(BackupPath: backupRoot, Paths: [path]));
+
+        retried.Success.Should().BeTrue();
+        File.Exists(path).Should().BeFalse();
+        (await ReadAllAsync(Read(0))).Should().Equal(ExpectedLines());
+    }
+
+    [Fact]
+    public async Task PublicationDirectorySyncFailure_KeepsSourceAndRetryResumes()
+    {
+        var path = await CreateSourceAsync();
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+        var options = new FileCompressionOptions(BackupBeforeCompression: false);
+
+        using (DirectorySyncFaults.FailIn(TestDataRoot))
+        {
+            var failed = await service.CompressAsync(options);
+            failed.Success.Should().BeFalse();
+            File.Exists(path).Should().BeTrue("the source is the only confirmed-durable copy");
+
+            // The retained archive takes the resume path, which must also refuse to delete.
+            var resumedWhileFailing = await service.CompressAsync(options);
+            resumedWhileFailing.Success.Should().BeFalse();
+            File.Exists(path).Should().BeTrue();
+        }
+
+        (await ReadAllAsync(Read(0))).Should().Equal(ExpectedLines());
+        var retried = await service.CompressAsync(options);
+
+        retried.Success.Should().BeTrue();
+        File.Exists(path).Should().BeFalse();
+        File.Exists(path + ".gz.sha256").Should().BeTrue();
+        (await ReadAllAsync(Read(0))).Should().Equal(ExpectedLines());
+    }
+
+    [Fact]
+    public async Task ChecksumSidecarDirectorySyncFailure_KeepsSourceAndRetrySucceeds()
+    {
+        var path = await CreateSourceAsync();
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+        var options = new FileCompressionOptions(BackupBeforeCompression: false);
+
+        // Only fail once the archive's integrity sidecar exists, i.e. the strict sync that guards
+        // the source delete after the sidecar is written.
+        FileCompressionResult failed;
+        using (DirectorySyncFaults.FailWhen(dir =>
+                   DirectorySyncFaults.SameDirectory(dir, TestDataRoot) && File.Exists(path + ".gz.sha256")))
+            failed = await service.CompressAsync(options);
+
+        failed.Success.Should().BeFalse();
+        File.Exists(path).Should().BeTrue();
+        File.Exists(path + ".gz.sha256").Should().BeTrue();
+
+        var retried = await service.CompressAsync(options);
+
+        retried.Success.Should().BeTrue();
+        File.Exists(path).Should().BeFalse();
+        (await ReadAllAsync(Read(0))).Should().Equal(ExpectedLines());
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(1)]
@@ -400,6 +477,7 @@ public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
     [Theory]
     [InlineData("SPY/2026-01-02/trades.jsonl", "2026-01-03T00:00:00Z")]
     [InlineData("SPY_trade_20260102.jsonl", "2026-01-03T00:00:00Z")]
+    [InlineData("SPY_trade_20260102.merged-20261112abcdefabcdefabcdefabcdef.jsonl", "2026-01-03T00:00:00Z")]
     [InlineData("SPY/2026-01-02_14/trades.jsonl", "2026-01-02T15:00:00Z")]
     [InlineData("SPY/2026-01/trades.jsonl", "2026-02-01T00:00:00Z")]
     [InlineData("2026/01/02/alpaca/SPY/Trade.jsonl", "2026-01-03T00:00:00Z")]

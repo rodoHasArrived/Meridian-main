@@ -1,4 +1,5 @@
 import type { LedgerAmountProof } from "./ledger-amount-proof";
+import type { PreparerAttestationEvidenceProjection } from "./preparer-attestation-evidence";
 import type {
   AccountingConfigurationValidationIssue,
   OperationsActionOrigin,
@@ -600,6 +601,7 @@ export interface EvidenceProofChain {
 }
 
 export interface EvidencePacket {
+  preparerAttestations?: PreparerAttestationEvidenceProjection | null;
   ledgerAmount?: LedgerAmountProof | null;
   subject: EvidenceSubject;
   generatedAt: string;
@@ -612,6 +614,7 @@ export interface EvidencePacket {
 }
 
 export interface EvidenceGraph {
+  preparerAttestations?: PreparerAttestationEvidenceProjection | null;
   subject: EvidenceSubject;
   generatedAt: string;
   nodes: EvidenceNode[];
@@ -735,7 +738,9 @@ export type EvidenceDocumentLinkKind =
   | "CloseTask"
   | "Fund"
   | "StatementRun"
-  | "StatementImport";
+  | "StatementImport"
+  | "IntercompanyAgreement"
+  | "LegalEntity";
 
 export type EvidenceDocumentReviewStatus = "Unreviewed" | "NeedsReview" | "Accepted" | "Rejected";
 
@@ -1227,7 +1232,7 @@ export type ProviderCredentialSource =
 export type ProviderVerificationState = "NotRequired" | "NotVerified" | "Verified" | "Failed" | "Stale";
 export type ProviderContinuityHealth = "Unknown" | "Healthy" | "Warning" | "Degraded" | "Blocked";
 export type ProviderReadinessStatus = "Ready" | "Review" | "Degraded" | "Blocked" | "Unknown";
-export type ProviderReadinessEvidenceKind = "Credential" | "Connection" | "Validation" | "Degradation" | "Plaid" | "Routing";
+export type ProviderReadinessEvidenceKind = "Credential" | "Connection" | "Validation" | "Degradation" | "Plaid" | "Routing" | "Unknown";
 export type ProviderCredentialInputKind = "Text" | "Password" | "Url";
 
 export interface ProviderCredentialFieldMetadata {
@@ -1267,6 +1272,7 @@ export interface ProviderConnectionRow {
   actionHref: string;
   credentialFields?: ProviderCredentialFieldMetadata[] | null;
   environmentOptions?: ProviderEnvironmentOption[] | null;
+  rotationDueAt?: string | null;
 }
 
 export interface ProviderCredentialUpsertRequest {
@@ -1295,6 +1301,12 @@ export interface ProviderCredentialVerificationResult {
   lastError: string | null;
   externalAccountId: string | null;
   warnings: string[];
+}
+
+export interface ProviderCredentialDraftResult {
+  providerId: string;
+  status: "Verified" | "Rejected" | "Unavailable";
+  message: string;
 }
 
 export interface ProviderReadinessSummary {
@@ -1380,6 +1392,8 @@ export interface LedgerDimensionSet {
   taxLotId?: string | null;
   costCenterId?: string | null;
   counterpartyId?: string | null;
+  intercompanyAgreementId?: string | null;
+  intercompanyAgreementVersion?: number | null;
   externalGlDimensions?: Record<string, string> | null;
   organizationId?: string | null;
   portfolioId?: string | null;
@@ -1388,6 +1402,11 @@ export interface LedgerDimensionSet {
   customerId?: string | null;
   vendorId?: string | null;
   projectId?: string | null;
+  accountingArrangementId?: string | null;
+  accountingArrangementRevisionId?: string | null;
+  chartAccountNodeId?: string | null;
+  accountBindingRevisionId?: string | null;
+  intercompanyTransactionId?: string | null;
 }
 
 export interface DimensionMappingProfile {
@@ -1402,6 +1421,7 @@ export interface DimensionMappingProfile {
 
 /** Server-owned close decision. Missing or incomplete contributors always block. */
 export interface CloseReadinessProjection {
+  intercompanyAdvisories?: import("./intercompany-obligations").IntercompanyObligationMonitor | null;
   scope: { fundProfileId: string | null; ledgerBookId: string | null; fundAccountId: string | null; entityId: string | null; periodId: string | null };
   evaluatedAtUtc: string;
   status: string;

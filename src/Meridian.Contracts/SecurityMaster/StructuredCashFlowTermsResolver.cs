@@ -11,36 +11,63 @@ namespace Meridian.Contracts.SecurityMaster;
 /// </summary>
 public static class StructuredCashFlowTermsResolver
 {
-    // Known vendor spellings for each term. Order is priority: the first key that resolves wins.
-    private static readonly string[] MaturityAliases = ["maturityDate", "maturity", "legalFinalMaturity"];
-    private static readonly string[] IssueAliases = ["issueDate", "originationDate", "effectiveDate"];
-    private static readonly string[] PrincipalFaceAliases = ["par", "originalFace", "notional", "principal", "principalAmount"];
-    private static readonly string[] CurrentFactorAliases = ["currentFactor", "factor"];
-    private static readonly string[] CouponRateAliases = ["fixedCouponRate", "couponRate", "coupon", "annualRate"];
-    private static readonly string[] PaymentFrequencyAliases = ["paymentFrequency", "paymentFrequencyPerYear", "couponFrequency"];
-    private static readonly string[] DayCountAliases = ["dayCountConvention", "dayCount", "dayCountBasis"];
+    // Top-level terms are read by role: each class declares which of its schema keys play which
+    // role on its catalog descriptor, merged with the shared vendor spellings
+    // (SecurityCashFlowTermRoles.Spellings, review D9).
 
-    // Inflation-linked indexation emitted by the Bond codec for couponType = "InflationLinked".
-    private static readonly string[] InflationIndexAliases = ["inflationIndex"];
-    private static readonly string[] InflationBaseIndexValueAliases = ["inflationBaseIndexValue", "baseIndexValue"];
-    private static readonly string[] InflationIndexRatioAliases = ["inflationIndexRatio", "indexRatio"];
+    // Swap-leg reads, keyed by the schema path of the field each reads under Swap ("legs" is the
+    // container; "legs.resetSchedule.resetDate" a member of a reset entry). Each list is the declared
+    // spellings plus vendor variants, in priority order; SecurityCashFlowTermRoleTests holds every
+    // list to the schema's spellings for its path. "legType" is the spelling the F# SwapLeg serializer
+    // persists.
+    private static readonly Dictionary<string, string[]> LegSpellingsByPath = new(StringComparer.Ordinal)
+    {
+        ["legs"] = ["legs", "swapLegs", "cashFlowLegs"],
+        ["legs.legId"] = ["legId", "id", "name"],
+        ["legs.legType"] = ["legType", "rateType", "type"],
+        ["legs.direction"] = ["direction", "payReceive", "payOrReceive", "side"],
+        ["legs.fixedRate"] = ["fixedRate", "rate", "couponRate"],
+        ["legs.index"] = ["index", "indexName", "referenceIndex"],
+        ["legs.spreadBps"] = ["spreadBps"],
+        ["legs.currentIndexRate"] = ["currentIndexRate", "lastFixing", "currentRate", "indexRate"],
+        ["legs.notional"] = ["notional", "notionalAmount", "faceAmount", "principal"],
+        ["legs.paymentFrequency"] = ["paymentFrequency", "frequency"],
+        ["legs.notionalSchedule"] = ["notionalSchedule", "amortizationSchedule"],
+        ["legs.resetSchedule"] = ["resetSchedule", "fixings"],
+        ["legs.dayCount"] = ["dayCountConvention", "dayCount", "dayCountBasis"],
+        ["legs.exchangesPrincipal"] = ["exchangesPrincipal", "principalExchange", "notionalExchange"],
+        ["legs.notionalSchedule.effectiveDate"] = ["effectiveDate", "date"],
+        ["legs.notionalSchedule.notional"] = ["notional", "amount"],
+        // effectiveDate and indexRate are the schema's declared aliases; they are read last, after
+        // the vendor spellings that were already read.
+        ["legs.resetSchedule.resetDate"] = ["resetDate", "fixingDate", "date", "effectiveDate"],
+        ["legs.resetSchedule.fixingRate"] = ["fixingRate", "fixing", "rate", "indexRate"],
+    };
 
-    // Leg-container keys and, within each leg row, the per-field key aliases. "legType" is the
-    // spelling the F# SwapLeg serializer persists; the rest cover vendor variants.
-    private static readonly string[] LegContainerAliases = ["legs", "swapLegs", "cashFlowLegs"];
-    private static readonly string[] LegIdAliases = ["legId", "id", "name"];
-    private static readonly string[] LegRateKindAliases = ["legType", "rateType", "type"];
-    private static readonly string[] LegDirectionAliases = ["direction", "payReceive", "payOrReceive", "side"];
-    private static readonly string[] LegFixedRateAliases = ["fixedRate", "rate", "couponRate"];
-    private static readonly string[] LegIndexAliases = ["index", "indexName", "referenceIndex"];
-    private static readonly string[] LegSpreadBpsAliases = ["spreadBps"];
-    private static readonly string[] LegCurrentIndexRateAliases = ["currentIndexRate", "lastFixing", "currentRate", "indexRate"];
-    private static readonly string[] LegNotionalAliases = ["notional", "notionalAmount", "faceAmount", "principal"];
-    private static readonly string[] LegPaymentFrequencyAliases = ["paymentFrequency", "frequency"];
-    private static readonly string[] LegNotionalScheduleAliases = ["notionalSchedule", "amortizationSchedule"];
-    private static readonly string[] LegResetScheduleAliases = ["resetSchedule", "fixings"];
-    private static readonly string[] LegDayCountAliases = ["dayCountConvention", "dayCount", "dayCountBasis"];
-    private static readonly string[] LegPrincipalExchangeAliases = ["exchangesPrincipal", "principalExchange", "notionalExchange"];
+    private static readonly string[] LegContainerAliases = LegSpellingsByPath["legs"];
+    private static readonly string[] LegIdAliases = LegSpellingsByPath["legs.legId"];
+    private static readonly string[] LegRateKindAliases = LegSpellingsByPath["legs.legType"];
+    private static readonly string[] LegDirectionAliases = LegSpellingsByPath["legs.direction"];
+    private static readonly string[] LegFixedRateAliases = LegSpellingsByPath["legs.fixedRate"];
+    private static readonly string[] LegIndexAliases = LegSpellingsByPath["legs.index"];
+    private static readonly string[] LegSpreadBpsAliases = LegSpellingsByPath["legs.spreadBps"];
+    private static readonly string[] LegCurrentIndexRateAliases = LegSpellingsByPath["legs.currentIndexRate"];
+    private static readonly string[] LegNotionalAliases = LegSpellingsByPath["legs.notional"];
+    private static readonly string[] LegPaymentFrequencyAliases = LegSpellingsByPath["legs.paymentFrequency"];
+    private static readonly string[] LegNotionalScheduleAliases = LegSpellingsByPath["legs.notionalSchedule"];
+    private static readonly string[] LegResetScheduleAliases = LegSpellingsByPath["legs.resetSchedule"];
+    private static readonly string[] LegDayCountAliases = LegSpellingsByPath["legs.dayCount"];
+    private static readonly string[] LegPrincipalExchangeAliases = LegSpellingsByPath["legs.exchangesPrincipal"];
+    private static readonly string[] NotionalStepDateAliases = LegSpellingsByPath["legs.notionalSchedule.effectiveDate"];
+    private static readonly string[] NotionalStepAmountAliases = LegSpellingsByPath["legs.notionalSchedule.notional"];
+    private static readonly string[] ResetDateAliases = LegSpellingsByPath["legs.resetSchedule.resetDate"];
+    private static readonly string[] ResetFixingAliases = LegSpellingsByPath["legs.resetSchedule.fixingRate"];
+
+    /// <summary>The swap-leg schema paths the resolver reads, under <c>Swap</c>.</summary>
+    public static IReadOnlyCollection<string> LegSpellingPaths => LegSpellingsByPath.Keys;
+
+    /// <summary>The spellings read for the swap-leg field at <paramref name="path"/>, in priority order.</summary>
+    public static IReadOnlyList<string> LegSpellings(string path) => LegSpellingsByPath[path];
 
     /// <summary>Resolves the typed cash flow terms for <paramref name="security"/>.</summary>
     public static StructuredCashFlowTerms Resolve(SecurityDetailDto security)
@@ -61,25 +88,29 @@ public static class StructuredCashFlowTermsResolver
             _ => SecurityCouponRateUnit.Unspecified
         };
 
-        // A financing trade (repo) has a start and an end date rather than an issue and a maturity.
-        var isFinancing = SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CashFlowBehavior == SecurityCashFlowBehavior.FinancingInterest;
+        // A financing trade (repo) declares its start and end dates as its issue and maturity.
+        var assetClass = security.AssetClass;
+        var descriptor = SecurityAssetClassCatalog.GetOrDefault(assetClass);
         return new StructuredCashFlowTerms(
-            MaturityDate: SecurityTermReader.ReadDate(sources, isFinancing ? ["endDate", .. MaturityAliases] : MaturityAliases),
-            IssueDate: SecurityTermReader.ReadDate(sources, isFinancing ? ["startDate", .. IssueAliases] : IssueAliases),
-            PrincipalFace: SecurityTermReader.ReadDecimal(sources, PrincipalFaceAliases),
-            CurrentFactor: SecurityTermReader.ReadDecimal(sources, CurrentFactorAliases),
-            CouponRate: couponKind == SecurityCouponKind.ZeroCoupon
-                && SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CarriesBondCouponStructure
-                    ? 0m : ResolveCouponRate(security.AssetClass, sources),
-            PaymentFrequency: SecurityTermReader.ReadString(sources, PaymentFrequencyAliases),
-            DayCountConvention: SecurityTermReader.ReadString(sources, DayCountAliases),
+            MaturityDate: SecurityTermReader.ReadDate(sources, Spellings(assetClass, SecurityCashFlowTermRole.Maturity)),
+            IssueDate: SecurityTermReader.ReadDate(sources, Spellings(assetClass, SecurityCashFlowTermRole.Issue)),
+            PrincipalFace: SecurityTermReader.ReadDecimal(sources, Spellings(assetClass, SecurityCashFlowTermRole.PrincipalFace)),
+            CurrentFactor: SecurityTermReader.ReadDecimal(sources, Spellings(assetClass, SecurityCashFlowTermRole.CurrentFactor)),
+            // Discount yield is not a contractual coupon: bills and discount paper pay principal
+            // only, and discount accretion belongs to the carrying-value calculation.
+            CouponRate: descriptor.PaysNoContractualCoupon
+                        || (couponKind == SecurityCouponKind.ZeroCoupon && descriptor.CarriesBondCouponStructure)
+                ? 0m
+                : SecurityTermReader.ReadDecimal(sources, Spellings(assetClass, SecurityCashFlowTermRole.CouponRate)),
+            PaymentFrequency: SecurityTermReader.ReadString(sources, Spellings(assetClass, SecurityCashFlowTermRole.PaymentFrequency)),
+            DayCountConvention: SecurityTermReader.ReadString(sources, Spellings(assetClass, SecurityCashFlowTermRole.DayCount)),
             FactorSchedule: schedules.FactorSchedule.Entries,
-            Legs: ReadLegs(sources) ?? ReadBondFloatingLeg(security.AssetClass, sources, couponKind, rateUnit),
+            Legs: ReadLegs(sources) ?? ReadBondFloatingLeg(assetClass, sources, couponKind, rateUnit),
             PrincipalSchedule: schedules.PrincipalSchedule.IsPresent ? schedules.PrincipalSchedule.Entries : null,
             StepCouponSchedule: schedules.StepCouponSchedule.IsPresent ? schedules.StepCouponSchedule.Entries : null,
-            InflationIndex: SecurityTermReader.ReadString(sources, InflationIndexAliases),
-            InflationBaseIndexValue: SecurityTermReader.ReadDecimal(sources, InflationBaseIndexValueAliases),
-            InflationIndexRatio: SecurityTermReader.ReadDecimal(sources, InflationIndexRatioAliases))
+            InflationIndex: SecurityTermReader.ReadString(sources, Spellings(assetClass, SecurityCashFlowTermRole.InflationIndex)),
+            InflationBaseIndexValue: SecurityTermReader.ReadDecimal(sources, Spellings(assetClass, SecurityCashFlowTermRole.InflationBaseIndexValue)),
+            InflationIndexRatio: SecurityTermReader.ReadDecimal(sources, Spellings(assetClass, SecurityCashFlowTermRole.InflationIndexRatio)))
         {
             CouponKind = couponKind,
             CouponRateUnit = rateUnit,
@@ -137,13 +168,13 @@ public static class StructuredCashFlowTermsResolver
                 IndexName: SecurityTermReader.ReadString(sources, "floatingIndex", "floatingRateIndex"),
                 SpreadBps: SecurityTermReader.ReadDecimal(sources, "spreadBps", "floatingSpreadBps"),
                 CurrentIndexRate: SecurityTermReader.ReadDecimal(sources, LegCurrentIndexRateAliases),
-                Notional: SecurityTermReader.ReadDecimal(sources, PrincipalFaceAliases),
-                PaymentFrequency: SecurityTermReader.ReadString(sources, PaymentFrequencyAliases),
-                DayCountConvention: SecurityTermReader.ReadString(sources, DayCountAliases),
+                Notional: SecurityTermReader.ReadDecimal(sources, Spellings(assetClass, SecurityCashFlowTermRole.PrincipalFace)),
+                PaymentFrequency: SecurityTermReader.ReadString(sources, Spellings(assetClass, SecurityCashFlowTermRole.PaymentFrequency)),
+                DayCountConvention: SecurityTermReader.ReadString(sources, Spellings(assetClass, SecurityCashFlowTermRole.DayCount)),
                 ExchangesPrincipal: true,
                 ResetSchedule: resets.Select(static item => (
-                        Date: SecurityTermReader.ReadDate(item, "resetDate", "fixingDate", "date"),
-                        Rate: SecurityTermReader.ReadDecimal(item, "fixingRate", "fixing", "rate")))
+                        Date: SecurityTermReader.ReadDate(item, ResetDateAliases),
+                        Rate: SecurityTermReader.ReadDecimal(item, ResetFixingAliases)))
                     .Where(static item => item.Date.HasValue)
                     .Select(static item => new StructuredCashFlowResetFixing(item.Date!.Value, item.Rate)).ToArray())
             {
@@ -157,19 +188,8 @@ public static class StructuredCashFlowTermsResolver
         ];
     }
 
-    // Discount yield is not a contractual coupon. Bills and discount paper pay principal only;
-    // discount accretion belongs to the carrying-value calculation, not coupon accrual.
-    private static decimal? ResolveCouponRate(string assetClass, JsonElement[] sources)
-        => SecurityAssetClassCatalog.GetOrDefault(assetClass).AssetClass switch
-        {
-            "TreasuryBill" or "CommercialPaper" => 0m,
-            "Deposit" => SecurityTermReader.ReadDecimal(sources, ["interestRate", .. CouponRateAliases]),
-            "Repo" => SecurityTermReader.ReadDecimal(sources, ["repoRate", .. CouponRateAliases]),
-            "DirectLoan" => SecurityTermReader.ReadDecimal(sources, ["currentCouponRate", .. CouponRateAliases]),
-            // Only a numeric couponOrIndex is a fixed rate. An index name is unresolved economics.
-            "StructuredCredit" => SecurityTermReader.ReadDecimal(sources, [.. CouponRateAliases, "couponOrIndex"]),
-            _ => SecurityTermReader.ReadDecimal(sources, CouponRateAliases)
-        };
+    private static string[] Spellings(string assetClass, SecurityCashFlowTermRole role)
+        => SecurityCashFlowTermRoles.Spellings(assetClass, role);
 
     private static IReadOnlyList<StructuredCashFlowLeg>? ReadLegs(IReadOnlyList<JsonElement> sources)
     {
@@ -226,12 +246,12 @@ public static class StructuredCashFlowTermsResolver
             DayCountConvention: SecurityTermReader.ReadString(leg, LegDayCountAliases),
             ExchangesPrincipal: ReadBoolean(leg, LegPrincipalExchangeAliases),
             NotionalSchedule: ReadScheduleItems(leg, LegNotionalScheduleAliases)
-                .Select(static item => (Date: SecurityTermReader.ReadDate(item, "effectiveDate", "date"), Notional: SecurityTermReader.ReadDecimal(item, "notional", "amount")))
+                .Select(static item => (Date: SecurityTermReader.ReadDate(item, NotionalStepDateAliases), Notional: SecurityTermReader.ReadDecimal(item, NotionalStepAmountAliases)))
                 .Where(static step => step.Date is not null && step.Notional is > 0m)
                 .Select(static step => new StructuredCashFlowNotionalStep(step.Date!.Value, step.Notional!.Value))
                 .ToArray(),
             ResetSchedule: ReadScheduleItems(leg, LegResetScheduleAliases)
-                .Select(static item => (Date: SecurityTermReader.ReadDate(item, "resetDate", "fixingDate", "date"), Fixing: SecurityTermReader.ReadDecimal(item, "fixingRate", "fixing", "rate")))
+                .Select(static item => (Date: SecurityTermReader.ReadDate(item, ResetDateAliases), Fixing: SecurityTermReader.ReadDecimal(item, ResetFixingAliases)))
                 .Where(static entry => entry.Date is not null)
                 .Select(static entry => new StructuredCashFlowResetFixing(entry.Date!.Value, entry.Fixing))
                 .ToArray());

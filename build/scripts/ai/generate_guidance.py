@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Synchronize the canonical shared context without changing host-specific guidance."""
+"""Synchronize the canonical shared context and the portable skill mirror.
+
+* The marked shared-context section of ``.claude/skills/_shared/project-context.md`` is copied
+  into each host mirror; text outside the markers stays host-specific.
+* ``.agents/skills`` is a byte-for-byte mirror of the portable ``.claude/skills`` packages, except
+  for the shared context (synchronized by section) and Claude-only code listed in
+  ``SKILL_MIRROR_EXCLUDES``. ``.codex/skills`` is intentionally host-specific and not mirrored.
+"""
 
 from __future__ import annotations
 
@@ -18,6 +25,10 @@ MIRRORS = (
     ".codex/skills/_shared/project-context.md",
     ".agents/skills/_shared/project-context.md",
 )
+SKILL_SOURCE = ".claude/skills"
+SKILL_MIRROR = ".agents/skills"
+# Relative to the skills root. The shared context has its own section-level synchronization.
+SKILL_MIRROR_EXCLUDES = frozenset({"_shared/project-context.md", "skills_provider.py"})
 BEGIN = b"<!-- shared-context:begin"
 END = b"<!-- shared-context:end -->"
 
@@ -92,6 +103,50 @@ def generate(root: Path, *, write: bool = False) -> list[str]:
     return list(pending)
 
 
+def _skill_files(base: Path, excludes: frozenset[str] = SKILL_MIRROR_EXCLUDES) -> dict[str, Path]:
+    files: dict[str, Path] = {}
+    for path in sorted(base.rglob("*")):
+        rel = path.relative_to(base).as_posix()
+        if path.is_symlink():
+            raise ValueError(f"Symlinks are not allowed in skill packages: {base.name}/{rel}")
+        if not path.is_file() or "__pycache__" in path.parts or path.suffix == ".pyc":
+            continue
+        if rel not in excludes:
+            files[rel] = path
+    return files
+
+
+def skill_mirror_drift(root: Path, *, write: bool = False) -> list[str]:
+    """Return mirror paths that differ from the canonical skills; optionally repair them."""
+    return _directory_mirror_drift(root, SKILL_SOURCE, SKILL_MIRROR, SKILL_MIRROR_EXCLUDES, write=write)
+
+
+def _directory_mirror_drift(
+    root: Path, source_rel: str, mirror_rel: str, excludes: frozenset[str], *, write: bool
+) -> list[str]:
+    root = root.resolve(strict=True)
+    source, mirror = root / source_rel, root / mirror_rel
+    if not source.is_dir() or not mirror.is_dir():
+        return []
+    canonical, mirrored = _skill_files(source, excludes), _skill_files(mirror, excludes)
+    changed = sorted(rel for rel, path in canonical.items()
+                     if rel not in mirrored or mirrored[rel].read_bytes() != path.read_bytes())
+    extra = sorted(set(mirrored) - set(canonical))
+    if write:
+        for rel in changed:
+            target = mirror / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with tempfile.NamedTemporaryFile(dir=target.parent, prefix=".guidance-", delete=False) as output:
+                output.write(canonical[rel].read_bytes())
+                output.flush()
+                os.fsync(output.fileno())
+            os.chmod(output.name, stat.S_IMODE(canonical[rel].stat().st_mode))
+            os.replace(output.name, target)
+        for rel in extra:
+            (mirror / rel).unlink()
+    return [f"{mirror_rel}/{rel}" for rel in (*changed, *extra)]
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=REPO_ROOT)
@@ -102,6 +157,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         drift = generate(args.root, write=args.write)
+        drift += skill_mirror_drift(args.root, write=args.write)
     except (OSError, ValueError) as exc:
         print(f"Guidance generation failed: {exc}", file=sys.stderr)
         return 2
@@ -111,7 +167,7 @@ def main(argv: list[str] | None = None) -> int:
         if not args.write:
             print("Repair: python build/scripts/ai/generate-guidance.py --write")
     elif args.summary:
-        print("Shared guidance is current (2 mirrors).")
+        print("Shared guidance is current (2 context mirrors, 1 skill mirror).")
     return 0 if args.write or not drift else 1
 
 

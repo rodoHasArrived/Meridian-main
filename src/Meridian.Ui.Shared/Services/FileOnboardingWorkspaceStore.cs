@@ -28,22 +28,7 @@ public sealed class FileOnboardingWorkspaceStore(string snapshotPath)
         }
 
         foreach (var workspace in snapshot.Workspaces)
-        {
-            if (workspace.Comparisons is null || workspace.Packets is null)
-                throw new InvalidDataException("Retained onboarding history is missing.");
-            string? previousHash = null;
-            var sequence = 1;
-            foreach (var comparison in workspace.Comparisons)
-            {
-                if (comparison.Sequence != sequence++ || comparison.PreviousContentHash != previousHash ||
-                    !OnboardingWorkspaceService.VerifyComparisonHash(comparison))
-                    throw new InvalidDataException("Retained onboarding comparison history failed its integrity check.");
-                previousHash = comparison.ContentHash;
-            }
-
-            if (workspace.Packets.Any(packet => packet.ContentHash != OnboardingWorkspaceService.HashPacketContent(packet.Content)))
-                throw new InvalidDataException("A retained onboarding packet failed its integrity check.");
-        }
+            OnboardingWorkspaceRetention.VerifyIntegrity(workspace);
 
         return snapshot;
     }
@@ -63,41 +48,40 @@ public sealed class FileOnboardingWorkspaceStore(string snapshotPath)
             workspace.WorkspaceId == workspaceId && Matches(workspace, tenantId, companyId)), ct);
     }
 
+    public Task<IReadOnlyList<OnboardingWorkspaceDto>> ListByLedgerBookAsync(
+        string tenantId, string? companyId, Guid ledgerBookId, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(tenantId))
+            throw new OnboardingValidationException("A tenant is required for onboarding storage.");
+        return ReadSnapshotAsync<IReadOnlyList<OnboardingWorkspaceDto>>(snapshot => snapshot.Workspaces
+            .Where(workspace => workspace.Scope.TenantId == tenantId && workspace.Scope.LedgerBookId == ledgerBookId
+                && (companyId is null || workspace.Scope.CompanyId == companyId))
+            .OrderBy(workspace => workspace.CreatedAtUtc).ToArray(), ct);
+    }
+
     public async Task SaveAsync(OnboardingWorkspaceDto workspace, int? expectedVersion, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(workspace);
         RequireScope(workspace.Scope.TenantId, workspace.Scope.CompanyId);
         // Serialize before awaiting so callers cannot mutate nested lists during persistence.
-        var retained = JsonSerializer.Deserialize<OnboardingWorkspaceDto>(JsonSerializer.Serialize(workspace, JsonOptions), JsonOptions)!;
+        var retained = OnboardingWorkspaceRetention.Detach(workspace);
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(SnapshotPath))!);
         // Serialize writers across store instances and processes, in addition to the base store's gate.
         await using var lease = await AcquireLeaseAsync(ct).ConfigureAwait(false);
         await UpdateSnapshotAsync(snapshot =>
         {
             var current = snapshot.Workspaces.SingleOrDefault(item => item.WorkspaceId == retained.WorkspaceId);
-            if (current is null ? expectedVersion is not null : expectedVersion != current.Version)
-            {
-                throw new OnboardingConcurrencyException("The onboarding workspace changed. Refresh before saving.");
-            }
+            OnboardingWorkspaceRetention.RequireValidTransition(current, retained, expectedVersion);
 
-            if (retained.Version != (current?.Version ?? 0) + 1)
+            // Book-level exclusivity is checked inside the same writer lease as the save, so two concurrent
+            // designations of one ledger book cannot both pass a pre-save read.
+            if (retained.ShadowDesignation?.State == OnboardingShadowStates.Shadow && current?.ShadowDesignation is null
+                && snapshot.Workspaces.Any(item => item.WorkspaceId != retained.WorkspaceId
+                    && item.Scope.TenantId == retained.Scope.TenantId
+                    && item.Scope.LedgerBookId == retained.Scope.LedgerBookId
+                    && OnboardingWorkspaceRetention.HoldsLedgerBook(item.ShadowDesignation?.State)))
             {
-                throw new OnboardingConcurrencyException("Onboarding versions must advance exactly once.");
-            }
-
-            if (current is not null)
-            {
-                if (!Equal(current.Scope, retained.Scope) || current.OwnerId != retained.OwnerId ||
-                    current.Name != retained.Name || current.CreatedAtUtc != retained.CreatedAtUtc)
-                {
-                    throw new OnboardingValidationException("The retained onboarding scope and owner cannot be replaced.");
-                }
-
-                RequirePrefix(current.Comparisons, retained.Comparisons);
-                RequirePrefix(current.CriteriaHistory, retained.CriteriaHistory);
-                RequirePrefix(current.Assignments, retained.Assignments);
-                RequirePrefix(current.Reviews, retained.Reviews);
-                RequirePrefix(current.Packets, retained.Packets);
+                throw new OnboardingConcurrencyException(OnboardingWorkspaceRetention.ShadowBookHeldMessage);
             }
 
             return new Snapshot(snapshot.Workspaces.Where(item => item.WorkspaceId != retained.WorkspaceId).Append(retained).ToArray());
@@ -129,17 +113,6 @@ public sealed class FileOnboardingWorkspaceStore(string snapshotPath)
         if (string.IsNullOrWhiteSpace(tenantId) || string.IsNullOrWhiteSpace(companyId))
         {
             throw new OnboardingValidationException("A tenant and company are required for onboarding storage.");
-        }
-    }
-
-    private static bool Equal<T>(T left, T right)
-        => JsonSerializer.Serialize(left, JsonOptions) == JsonSerializer.Serialize(right, JsonOptions);
-
-    private static void RequirePrefix<T>(IReadOnlyList<T> previous, IReadOnlyList<T> next)
-    {
-        if (next.Count < previous.Count || previous.Where((item, index) => !Equal(item, next[index])).Any())
-        {
-            throw new OnboardingValidationException("Retained onboarding history and packets are immutable.");
         }
     }
 }

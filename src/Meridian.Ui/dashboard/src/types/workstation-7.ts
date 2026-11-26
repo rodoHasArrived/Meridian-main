@@ -1,3 +1,4 @@
+import type { ProviderIntegrationIdentityDecision } from "./provider-integration-identity";
 import type {
   MetricSnapshot,
   ProviderCredentialSource,
@@ -434,6 +435,7 @@ export type ProviderIntegrationIdentityResolutionStatus =
   | "ReviewRequired"
   | "MissingIdentifier"
   | "NotFound"
+  | "Conflict"
   | "NotConfigured";
 
 export type ProviderIntegrationPromotionReadinessStatus =
@@ -746,6 +748,9 @@ export interface ProviderIntegrationStagingIdentityResolutionRow {
   securityRoute?: string | null;
   securityCandidates: ProviderIntegrationIdentityCandidate[];
   issues: ProviderIntegrationValidationIssue[];
+  evidenceHash?: string | null;
+  hasIdentifierConflict?: boolean;
+  operatorResolution?: ProviderIntegrationIdentityDecision | null;
 }
 
 export interface ProviderIntegrationStagingIdentityResolutionPreview {
@@ -914,6 +919,7 @@ export interface ProviderIntegrationRunDueSyncRequest {
 }
 
 export interface ProviderIntegrationDryRunResult {
+  mappedRecordPreviews?: unknown[];
   syncRunId: string;
   rawPayloadId: string;
   capability: ProviderIntegrationCapabilityKind;
@@ -1068,6 +1074,11 @@ export interface ProviderIntegrationActivationResult {
   manifestReference?: ProviderIntegrationManifestReference | null;
 }
 
+export interface ProviderRoutingProposedConfig {
+  bindings?: { bindingId: string; priority?: number; enabled?: boolean }[];
+  backfillProviders?: { providerId: string; priority?: number; enabled?: boolean }[];
+}
+
 export interface ProviderRoutePreviewRequest {
   capability: string;
   workspace?: string | null;
@@ -1081,6 +1092,11 @@ export interface ProviderRoutePreviewRequest {
   market?: string | null;
   assetClass?: string | null;
   requireProductionReady?: boolean;
+  proposedConfig?: ProviderRoutingProposedConfig | null;
+  previewBackfill?: boolean;
+  granularity?: string;
+  from?: string | null;
+  to?: string | null;
 }
 
 export interface ProviderRoutePreviewCandidate {
@@ -1113,6 +1129,8 @@ export interface ProviderRoutePreviewResponse {
   policyGate: string | null;
   candidates: ProviderRoutePreviewCandidate[];
   rankedAlternatives?: ProviderRoutePreviewCandidate[] | null;
+  warnings?: string[] | null;
+  isProposed?: boolean;
 }
 
 // --- Backfill mutation types ---
@@ -1122,6 +1140,7 @@ export interface BackfillTriggerRequest {
   symbols: string[];
   from: string | null;
   to: string | null;
+  resumeFromCheckpoint?: boolean;
 }
 
 export interface BackfillTriggerResult {
@@ -1134,6 +1153,93 @@ export interface BackfillTriggerResult {
   startedUtc: string;
   completedUtc: string;
   error: string | null;
+  quotaReceipt?: BackfillQuotaReceipt | null;
+  providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
+  batchReceipts?: BackfillBatchReceipt[] | null;
+  routingAttempts?: BackfillRoutingAttempt[] | null;
+}
+
+export interface BackfillRoutingAttempt {
+  symbol: string;
+  providerId: string;
+  reason: string;
+  bars: number;
+  attempted: boolean;
+}
+
+export interface BackfillQuotaEstimate {
+  expectedRequests: number | null;
+  requestsPerWindow: number | null;
+  windowSeconds: number | null;
+  observedRemainingRequests: number | null;
+  observedAt: string | null;
+  resetAt: string | null;
+  backfillRequestsPerWindow: number | null;
+  backfillRemainingRequests: number | null;
+  reservedHeadroomPercent: number;
+  maxConcurrentRequests: number | null;
+  estimatedDurationSeconds: number | null;
+  exceedsBudget: boolean;
+  uncertainty: string;
+  quotaUnit?: string;
+  dailyLimit?: number | null;
+  dailyBackfillAllowance?: number | null;
+  observedDailyRemaining?: number | null;
+  dailyResetAt?: string | null;
+}
+
+export interface BackfillQuotaReceipt {
+  estimate: BackfillQuotaEstimate;
+  observedProviders: string[];
+  actualRequests: number | null;
+  actualDurationSeconds: number;
+  requestVariance: number | null;
+  durationVarianceSeconds: number | null;
+  throttlingEventCount: number;
+  throttlingEvents: { provider: string; reason: string; observedAt: string; waitSeconds: number | null }[];
+  providersThatReturnedBars?: string[] | null;
+}
+
+export interface BackfillProviderAlternative {
+  provider: string;
+  displayName: string;
+}
+
+export interface BackfillSubmissionRequest extends BackfillTriggerRequest {
+  executionPolicy: "queued" | "scheduled";
+  scheduledAt: string | null;
+  submissionId: string;
+  approvedAlternativeFor?: string;
+}
+
+export interface BackfillSubmissionReceipt {
+  executionId: string;
+  status: string;
+  provider: string;
+  scheduledAt: string;
+  quota: BackfillQuotaEstimate;
+}
+
+export interface BackfillBatchReceiptSummary {
+  revisionId: string;
+  requestedProvider: string;
+  servingProvider: string | null;
+  feed: string;
+  instrument: string;
+  granularity: string;
+  from: string | null;
+  to: string | null;
+  status: string;
+  rowCount: number;
+  contentHash: string;
+  calendar: string | null;
+  expectedSessionCount: number | null;
+  receivedSessionCount: number;
+}
+
+export interface BackfillBatchReceipt extends Omit<BackfillBatchReceiptSummary, "expectedSessionCount" | "receivedSessionCount"> {
+  expectedSessions: string[] | null;
+  receivedSessions: string[];
 }
 
 export interface BackfillPreviewSymbol {
@@ -1151,8 +1257,10 @@ export interface BackfillPreviewResult {
   totalDays: number;
   estimatedTradingDays: number;
   symbols: BackfillPreviewSymbol[];
-  estimatedDurationSeconds: number;
+  estimatedDurationSeconds: number | null;
   notes: string[];
+  quota?: BackfillQuotaEstimate;
+  approvedAlternatives?: BackfillProviderAlternative[];
 }
 
 export interface BackfillProgressEntry {
@@ -1254,6 +1362,13 @@ export interface BackfillExecutionHistoryRow {
   autoRemediationLastOutcome: string | null;
   autoRemediationIdempotencyKey: string | null;
   autoRemediationSla: BackfillRemediationSla | null;
+  requestedProvider?: string | null;
+  scheduledAt?: string | null;
+  throttledUntil?: string | null;
+  submissionEstimate?: BackfillQuotaEstimate | null;
+  quotaReceipt?: BackfillQuotaReceipt | null;
+  batchReceipts?: BackfillBatchReceiptSummary[] | null;
+  routingAttempts?: BackfillRoutingAttempt[] | null;
 }
 
 export interface BackfillExecutionHistoryResponse {
@@ -1446,6 +1561,27 @@ export interface ProviderInstrumentCapabilityRow {
   declaredInstrumentTypes: string[];
   surfaces: ProviderCapabilitySurface;
   cells: ProviderInstrumentCapabilityCell[];
+  fixedIncomeTasks?: ProviderFixedIncomeTaskCapability[] | null;
+}
+
+export interface ProviderFixedIncomeTaskCapability {
+  task: string;
+  adapterSupport: "AdapterDeclared" | "Unsupported";
+  detail: string;
+  connections: ProviderFixedIncomeConnectionEvidence[];
+}
+
+export interface ProviderFixedIncomeConnectionEvidence {
+  connectionId: string;
+  displayName: string;
+  enabled: boolean;
+  configurationState: string;
+  entitlementState: string;
+  freshnessState: string;
+  verificationState: string;
+  observationAsOf: string | null;
+  verifiedAt: string | null;
+  evidence: { kind: string; detail: string; observedAt?: string | null }[];
 }
 
 export interface ProviderDiscoveryFailure {
@@ -1463,274 +1599,31 @@ export interface ProviderCapabilityMatrixResponse {
   discoveryFailures: ProviderDiscoveryFailure[];
 }
 
-// --- Corporate action inbox ---
-
-export type CorporateActionCaseStatus =
-  | "Detected"
-  | "NeedsTerms"
-  | "Disputed"
-  | "TermsConfirmed"
-  | "ElectionPending"
-  | "ElectionSubmitted"
-  | "AllocationPending"
-  | "AccountingReview"
-  | "ReadyForApproval"
-  | "Approved"
-  | "Scheduled"
-  | "Posted"
-  | "Reconciled"
-  | "Reported"
-  | "Closed"
-  | "Blocked"
-  | "Cancelled"
-  | "Superseded"
-  | "RestatementRequired";
-
-export type CorporateActionConflictState = "None" | "Open" | "Resolved" | "Waived";
-export type CorporateActionPermissionState = "Allowed" | "Denied" | "ServerChecked";
-
-export interface CorporateActionCaseScope {
-  tenantId: string;
-  companyId: string;
-  structureNodeId?: string | null;
-  fundProfileId?: string | null;
-  financialAccountId?: string | null;
-  portfolioId?: string | null;
-  custodyAccountId?: string | null;
-  ledgerBookId?: string | null;
-  periodId?: string | null;
-  accountingBasis?: string | null;
-  functionalCurrency?: string | null;
-  jurisdiction?: string | null;
-}
-
-export type CorporateActionSourceProposalState =
-  | "Observed"
-  | "ReviewRequired"
-  | "Accepted"
-  | "Rejected"
-  | "Superseded";
-
-export interface CorporateActionSourceProposalActionAvailability {
-  canAccept: boolean;
-  canReject: boolean;
-  canCompareEvidence: boolean;
-  blockers: string[];
-}
-
-/**
- * Exact compact action posture returned with CorporateActionProcessingCaseDto. This is not the
- * richer case-workspace command contract: it only describes the generic durable-case operations
- * currently exposed by the API.
- */
-export interface CorporateActionProcessingCaseActionAvailabilityDto {
-  canAddEvidence: boolean;
-  canRecordConflict: boolean;
-  canResolveConflict: boolean;
-  canManageOptions: boolean;
-  canTransition: boolean;
-  canApproveAccounting: boolean;
-  allowedTransitionTargets: string[];
-  blockers: string[];
-}
-
-export interface CorporateActionCaseSourceSnapshotDto {
-  proposedAction: CorporateAction;
-  providerIdentity: {
-    providerId: string;
-    sourceEventId: string;
-    sourceEventVersion: string;
-    observedAtUtc: string;
-    evidenceHash?: string | null;
-    evidenceReference?: string | null;
-    releaseStatus: "ReviewOnly" | "AcceptanceEligible" | string;
-  };
-  displayMetadata?: {
-    ticker: string;
-    winningSource: string;
-    agreeingSources: string[];
-    dissentingSources: string[];
-    dissentingFields?: Array<{
-      field: string;
-      candidates: Array<{
-        source: string;
-        value: unknown;
-        evidenceReference?: string | null;
-      }>;
-    }> | null;
-  } | null;
-}
-
-/** Wire contract for the top-level `cases` collection in CorporateActionDurableInboxDto. */
-export interface CorporateActionProcessingCaseDto {
-  caseId: string;
-  proposalId: string;
-  corporateActionId: string;
-  securityId: string;
-  scope: CorporateActionCaseScope;
-  state: string;
-  version: number;
-  methodologyProfileId?: string | null;
-  assignedTo?: string | null;
-  blockedReason?: string | null;
-  createdBy: string;
-  createdAtUtc: string;
-  updatedBy: string;
-  updatedAtUtc: string;
-  actionAvailability?: CorporateActionProcessingCaseActionAvailabilityDto | null;
-  sourceSnapshot?: CorporateActionCaseSourceSnapshotDto | null;
-}
-
-export interface CorporateActionCaseActionAvailability {
-  canAcceptCanonicalFact: boolean;
-  acceptCanonicalFactDisabledReason?: string | null;
-  canSubmitElection?: boolean;
-  submitElectionDisabledReason?: string | null;
-  canApproveTreatment?: boolean;
-  approveTreatmentDisabledReason?: string | null;
-  canPost?: boolean;
-  postDisabledReason?: string | null;
-}
-
-export interface CorporateActionSourceFact {
-  field: string;
-  value: string;
-  source: string;
-  agreesWithWinner: boolean;
-  observedAt?: string | null;
-  evidenceId?: string | null;
-}
-
-export interface CorporateActionEntitlementPreview {
-  scopeLabel: string;
-  recordDatePosition: string;
-  entitledQuantity: string;
-  expectedCash: string;
-  evidenceVersion: string;
-}
-
-export interface CorporateActionElectionPreview {
-  electionId?: string | null;
-  optionLabel: string;
-  quantity: string;
-  deadline?: string | null;
-  status: string;
-  evidenceId?: string | null;
-}
-
-export interface CorporateActionBasisComparison {
-  basis: string;
-  treatment: string;
-  taxability: string;
-  bookValueEffect: string;
-  gainLossRecognition: string;
-  holdingPeriodTreatment: string;
-  policyVersion?: string | null;
-  status: string;
-}
-
-export interface CorporateActionLotPreview {
-  lotId: string;
-  operation: string;
-  quantityBefore: string;
-  quantityAfter: string;
-  bookValueBefore: string;
-  bookValueAfter: string;
-  basis: string;
-}
-
-export interface CorporateActionJournalPreview {
-  lineId: string;
-  basis: string;
-  account: string;
-  debit: string;
-  credit: string;
-  currency: string;
-}
-
-export interface CorporateActionReconciliationPreview {
-  control: string;
-  expected: string;
-  actual: string;
-  variance: string;
-  status: string;
-}
-
-export interface CorporateActionCaseHistoryEntry {
-  eventId: string;
-  atUtc: string;
-  actor: string;
-  action: string;
-  fromStatus?: string | null;
-  toStatus?: string | null;
-  evidenceId?: string | null;
-}
-
-/**
- * Additive durable-case projection. The current inbox endpoint may omit this object; the browser
- * then shows the missing server-owned evidence and policy states explicitly instead of deriving
- * accounting treatment or permission locally.
- */
-export interface CorporateActionCaseProjection {
-  caseId: string;
-  proposalId: string;
-  version: number;
-  status: CorporateActionCaseStatus;
-  assignedTo?: string | null;
-  /** Null when the compact inbox case contract does not project conflict status. */
-  conflictState?: CorporateActionConflictState | null;
-  /** Null when no exact workspace-command authorization projection was returned. */
-  permissionState?: CorporateActionPermissionState | null;
-  scope: CorporateActionCaseScope;
-  receivedAt?: string | null;
-  dueAt?: string | null;
-  sourceFacts: CorporateActionSourceFact[];
-  entitlement?: CorporateActionEntitlementPreview | null;
-  elections: CorporateActionElectionPreview[];
-  basisComparisons: CorporateActionBasisComparison[];
-  lotPreview: CorporateActionLotPreview[];
-  journalPreview: CorporateActionJournalPreview[];
-  reconciliation: CorporateActionReconciliationPreview[];
-  history: CorporateActionCaseHistoryEntry[];
-  proofReferences: string[];
-  actionAvailability: CorporateActionCaseActionAvailability;
-}
-
-export interface CorporateActionProposalEntry {
-  securityId: string;
-  ticker: string;
-  actionType: string;
-  exDate: string;
-  recordDate: string | null;
-  payableDate: string | null;
-  amount: number | null;
-  currency: string | null;
-  splitFromFactor: number | null;
-  splitToFactor: number | null;
-  winningSource: string;
-  agreeingSources: string[];
-  dissentingSources: string[];
-  autoApplied: boolean;
-  /** Durable source-proposal command identity and optimistic-concurrency token. */
-  proposalId?: string | null;
-  version?: number | null;
-  proposalState?: CorporateActionSourceProposalState | null;
-  /** Exact scope selected or supplied by the server for case creation. */
-  acceptanceScope?: CorporateActionCaseScope | null;
-  /** Server-owned source-proposal command posture. */
-  actionAvailability?: CorporateActionSourceProposalActionAvailability | null;
-}
-
-export interface CorporateActionInboxResponse {
-  lastIngestAt: string | null;
-  stagedCount: number;
-  appliedLastRun: number;
-  duplicatesSkippedLastRun: number;
-  staged: CorporateActionProposalEntry[];
-  errors: string[];
-  /** Durable cases remain here after their accepted source proposal leaves `staged`. */
-  cases: CorporateActionProcessingCaseDto[];
-}
+// Keep existing direct imports compatible; declarations belong to the corporate-action inbox.
+export type {
+  CorporateActionCaseStatus,
+  CorporateActionConflictState,
+  CorporateActionPermissionState,
+  CorporateActionCaseScope,
+  CorporateActionSourceProposalState,
+  CorporateActionSourceProposalActionAvailability,
+  CorporateActionProcessingCaseActionAvailabilityDto,
+  CorporateActionCaseSourceSnapshotDto,
+  CorporateActionProcessingCaseDto,
+  CorporateActionElectionCalendar,
+  CorporateActionCaseActionAvailability,
+  CorporateActionSourceFact,
+  CorporateActionEntitlementPreview,
+  CorporateActionElectionPreview,
+  CorporateActionBasisComparison,
+  CorporateActionLotPreview,
+  CorporateActionJournalPreview,
+  CorporateActionReconciliationPreview,
+  CorporateActionCaseHistoryEntry,
+  CorporateActionCaseProjection,
+  CorporateActionProposalEntry,
+  CorporateActionInboxResponse,
+} from "./corporate-action-inbox";
 
 // --- Security master quality report (RC001 coverage gaps) ---
 

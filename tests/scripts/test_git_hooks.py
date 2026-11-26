@@ -14,6 +14,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 HOOK_FILES = (
     ".githooks/pre-commit",
+    ".githooks/pre-push",
+    ".githooks/post-merge",
     "scripts/dev/install-git-hooks.sh",
     "build/scripts/hooks/install-hooks.sh",
     "build/scripts/hooks/pre-commit",
@@ -311,6 +313,8 @@ sys.exit(1 if failed else 0)
             with self.subTest(checkout=repo.name, installer=method):
                 # Installation must restore executable permission for actual Git invocation.
                 (repo / ".githooks" / "pre-commit").chmod(0o644)
+                (repo / ".githooks" / "pre-push").chmod(0o644)
+                (repo / ".githooks" / "post-merge").chmod(0o644)
                 if method == "make":
                     self._run(["make", "install-hooks"], cwd=repo)
                 else:
@@ -318,6 +322,8 @@ sys.exit(1 if failed else 0)
                 self.assertEqual(self._git("config", "--local", "--get", "core.hooksPath", repo=repo), ".githooks")
                 self.assertEqual(self.global_config.read_bytes(), global_before)
                 self.assertTrue(os.access(repo / ".githooks" / "pre-commit", os.X_OK))
+                self.assertTrue(os.access(repo / ".githooks" / "pre-push", os.X_OK))
+                self.assertTrue(os.access(repo / ".githooks" / "post-merge", os.X_OK))
                 self.assertFalse((repo / ".git" / "hooks" / "pre-commit").exists())
                 self._write("src/Example.cs", "// GOOD installed hook\n", repo=repo)
                 self._git("add", "src/Example.cs", repo=repo)
@@ -366,6 +372,88 @@ sys.exit(1 if failed else 0)
         self._git("add", "README.md")
         self._hook(legacy=True)
         self.assertEqual(self._calls(), [])
+
+    # --- pre-push -------------------------------------------------------------
+
+    ZERO = "0" * 40
+
+    def _commit(self, relative: str, content: str, message: str) -> str:
+        self._write(relative, content)
+        self._git("add", relative)
+        self._git("-c", "core.hooksPath=/dev/null", "commit", "-m", message)
+        return self._git("rev-parse", "HEAD")
+
+    def _pre_push(self, lines: list[str], *, expected: int = 0) -> subprocess.CompletedProcess[str]:
+        before = self._state(self.repo, self.env)
+        result = subprocess.run(
+            ["bash", str(self.repo / ".githooks" / "pre-push"), "origin", "https://example.invalid/repo.git"],
+            cwd=self.repo, env=self.env, input="".join(line + "\n" for line in lines),
+            capture_output=True, text=True, timeout=30,
+        )
+        self.assertEqual(result.returncode, expected, result.stdout + result.stderr)
+        self.assertEqual(before, self._state(self.repo, self.env), "Hook changed index or checkout")
+        self.assertEqual(list(self.snapshots.iterdir()), [], "Hook leaked a temporary snapshot")
+        return result
+
+    def test_pre_push_checks_only_files_changed_since_remote_tip(self) -> None:
+        remote_tip = self._git("rev-parse", "HEAD")
+        head = self._commit("src/Example.cs", "// GOOD pushed change\n", "Change example")
+        self._pre_push([f"refs/heads/topic {head} refs/heads/topic {remote_tip}"])
+        call = self._assert_format_call({"src/Example.cs"})
+        self.assertEqual(call["files"]["src/Example.cs"], "// GOOD pushed change\n")
+        self.assertIn(".editorconfig", call["files"])
+        self.assertIn("src/.editorconfig", call["files"])
+
+    def test_pre_push_reads_pushed_commit_not_working_tree(self) -> None:
+        remote_tip = self._git("rev-parse", "HEAD")
+        head = self._commit("src/Example.cs", "// BAD_FORMAT committed\n", "Bad change")
+        self._write("src/Example.cs", "// GOOD only in working tree\n")
+        result = self._pre_push([f"refs/heads/topic {head} refs/heads/topic {remote_tip}"], expected=1)
+        self.assertIn("dotnet format whitespace --folder --include", result.stderr)
+        call = self._assert_format_call({"src/Example.cs"})
+        self.assertEqual(call["files"]["src/Example.cs"], "// BAD_FORMAT committed\n")
+
+    def test_pre_push_new_branch_without_remotes_checks_all_reachable_changes(self) -> None:
+        head = self._git("rev-parse", "HEAD")
+        self._pre_push([f"refs/heads/topic {head} refs/heads/topic {self.ZERO}"])
+        self._assert_format_call({"src/Example.cs", "src/Unchanged.cs", "src/Rename.cs", "src/Delete.cs"})
+
+    def test_pre_push_documentation_only_and_deletions_skip_without_sdk(self) -> None:
+        (self.bin / "dotnet").unlink()
+        remote_tip = self._git("rev-parse", "HEAD")
+        head = self._commit("README.md", "Pushed documentation\n", "Docs")
+        self._git("rm", "-q", "src/Delete.cs")
+        self._git("-c", "core.hooksPath=/dev/null", "commit", "-m", "Delete source")
+        head = self._git("rev-parse", "HEAD")
+        result = self._pre_push([
+            f"refs/heads/topic {head} refs/heads/topic {remote_tip}",
+            f"(delete) {self.ZERO} refs/heads/old {remote_tip}",
+        ])
+        self.assertIn("skipping", result.stdout)
+        self.assertEqual(self._calls(), [])
+
+    def test_pre_push_requires_sdk_for_pushed_csharp(self) -> None:
+        (self.bin / "dotnet").unlink()
+        remote_tip = self._git("rev-parse", "HEAD")
+        head = self._commit("src/Example.cs", "// GOOD needs sdk\n", "Change")
+        result = self._pre_push([f"refs/heads/topic {head} refs/heads/topic {remote_tip}"], expected=1)
+        self.assertIn("dotnet CLI is required", result.stderr)
+
+    def test_installed_pre_push_blocks_real_push_of_bad_format(self) -> None:
+        remote = self.base / "remote.git"
+        self._git("init", "--bare", "--template=", str(remote))
+        self._git("remote", "add", "origin", str(remote))
+        self._run(["bash", str(self.repo / "scripts/dev/install-git-hooks.sh")])
+        self._git("push", "-q", "origin", "HEAD:refs/heads/main")
+        self.log.unlink(missing_ok=True)
+        self._commit("src/Example.cs", "// BAD_FORMAT for push\n", "Bad push")
+        result = self._run(["git", "push", "-q", "origin", "HEAD:refs/heads/main"], check=False)
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self._assert_format_call({"src/Example.cs"})
+        self.log.unlink()
+        self._commit("src/Example.cs", "// GOOD fixed for push\n", "Fix push")
+        self._git("push", "-q", "origin", "HEAD:refs/heads/main")
+        self._assert_format_call({"src/Example.cs"})
 
 
 if __name__ == "__main__":

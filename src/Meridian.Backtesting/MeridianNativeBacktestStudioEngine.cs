@@ -110,8 +110,13 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
 
         try
         {
+            // Journal the run's books under its run id so they can be reloaded and re-verified later.
+            var nativeRequest = request.NativeRequest with
+            {
+                LedgerJournalScopeId = request.NativeRequest.LedgerJournalScopeId ?? registration.RunId
+            };
             var result = await _engine.RunAsync(
-                    request.NativeRequest,
+                    nativeRequest,
                     request.Strategy!,
                     progress,
                     runToken)

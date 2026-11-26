@@ -1,5 +1,6 @@
 using System.Net;
 using FluentAssertions;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Xunit;
 
@@ -7,6 +8,86 @@ namespace Meridian.Tests.Infrastructure.Providers;
 
 public sealed class AlpacaHistoricalDataProviderTests
 {
+    [Theory]
+    [InlineData("raw", HistoricalPriceBasis.Raw)]
+    [InlineData("split", HistoricalPriceBasis.SplitAdjusted)]
+    [InlineData("dividend", HistoricalPriceBasis.DividendAdjusted)]
+    [InlineData("all", HistoricalPriceBasis.FullyAdjusted)]
+    [InlineData("split,dividend", HistoricalPriceBasis.FullyAdjusted)]
+    [InlineData(" DIVIDEND , SPLIT ", HistoricalPriceBasis.FullyAdjusted)]
+    [InlineData("split,dividend,spin-off", HistoricalPriceBasis.FullyAdjusted)]
+    [InlineData("spin-off", HistoricalPriceBasis.Unknown)]
+    [InlineData("split,spin-off", HistoricalPriceBasis.Unknown)]
+    [InlineData("dividend,spin-off", HistoricalPriceBasis.Unknown)]
+    public async Task GetAdjustedDailyBarsAsync_DeclaresRequestedBasisWithoutInventingRawPrices(
+        string adjustment, HistoricalPriceBasis expectedBasis)
+    {
+        Uri? requestedUri = null;
+        using var handler = new StubHttpMessageHandler(request =>
+        {
+            requestedUri = request.RequestUri;
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{"bars":[{"t":"2024-01-03T00:00:00Z","o":50,"h":55,"l":45,"c":50,"v":2000}]}""")
+            };
+        });
+        using var http = new HttpClient(handler);
+        using var provider = new AlpacaHistoricalDataProvider("test-key", "test-secret", adjustment: adjustment, httpClient: http);
+        var session = new DateOnly(2024, 1, 3);
+
+        var bar = (await provider.GetAdjustedDailyBarsAsync("AAPL", session, session)).Should().ContainSingle().Subject;
+
+        bar.PriceBasis.Should().Be(expectedBasis);
+        var projected = bar.ToHistoricalBar();
+        projected.PriceBasis.Should().Be(expectedBasis);
+        projected.Close.Should().Be(50m);
+        requestedUri!.GetComponents(UriComponents.Query, UriFormat.Unescaped).Should().Contain(
+            "adjustment=" + string.Join(',', adjustment.ToLowerInvariant().Split(',', StringSplitOptions.TrimEntries)));
+        if (expectedBasis == HistoricalPriceBasis.Raw)
+        {
+            bar.ToHistoricalBar(preferAdjusted: false).PriceBasis.Should().Be(HistoricalPriceBasis.Raw);
+            bar.AdjustedClose.Should().BeNull();
+        }
+        else
+        {
+            var raw = () => bar.ToHistoricalBar(preferAdjusted: false);
+            raw.Should().Throw<InvalidOperationException>();
+        }
+    }
+
+    [Theory]
+    [InlineData("bars")]
+    [InlineData("quotes")]
+    [InlineData("trades")]
+    [InlineData("auctions")]
+    public async Task HistoricalPagination_RepeatedTokenFailsWithoutMakingAThirdRequest(string kind)
+    {
+        var body = kind == "bars"
+            ? """{"bars":[{"t":"2024-01-03T00:00:00Z","o":10,"h":11,"l":9,"c":10,"v":100}],"next_page_token":"repeat"}"""
+            : $$"""{"{{kind}}":{"AAPL":[]},"next_page_token":"repeat"}""";
+        using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(body) });
+        using var client = new HttpClient(handler);
+        using var sut = new AlpacaHistoricalDataProvider("synthetic-key", "synthetic-secret", httpClient: client);
+        var date = new DateOnly(2024, 1, 3);
+        var start = new DateTimeOffset(2024, 1, 3, 0, 0, 0, TimeSpan.Zero);
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        Func<Task> fetch = kind switch
+        {
+            "bars" => async () => { await sut.GetAdjustedDailyBarsAsync("AAPL", date, date, deadline.Token); }
+            ,
+            "quotes" => async () => { await sut.GetHistoricalQuotesAsync(new[] { "AAPL" }, start, start.AddDays(1), ct: deadline.Token); }
+            ,
+            "trades" => async () => { await sut.GetHistoricalTradesAsync(new[] { "AAPL" }, start, start.AddDays(1), ct: deadline.Token); }
+            ,
+            _ => async () => { await sut.GetHistoricalAuctionsAsync(new[] { "AAPL" }, date, date, deadline.Token); }
+        };
+
+        Func<Task> boundedFetch = () => fetch().WaitAsync(TimeSpan.FromSeconds(5));
+        await boundedFetch.Should().ThrowAsync<InvalidOperationException>().WithMessage("*repeated*cursor*");
+        handler.RequestCount.Should().Be(2);
+    }
+
     [Theory]
     [InlineData("iex")]
     [InlineData("sip")]

@@ -1,8 +1,10 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
+import { TestMemoryRouter } from "@/test/render";
+import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
-import { ScopePickerOpenerProvider } from "@/lib/operating-scope/scope-picker-context";
+import { FundAccountScopeSelectionProvider, ScopePickerOpenerProvider } from "@/lib/operating-scope/scope-picker-context";
 import { BrokerageRecoveryPanel } from "./trading-screen.brokerage-recovery";
 import type { TradingBrokerageRecovery, TradingOperatorReadiness } from "@/types";
 
@@ -29,7 +31,9 @@ function readiness(overrides: Partial<TradingOperatorReadiness> = {}): TradingOp
   };
 }
 
-function panel(data: TradingOperatorReadiness | null, extra = {}) {
+// `brokerageEnvironment` defaults to undefined, so every test that does not set it stays on the
+// fail-closed path (an unknown environment keeps the recovery block).
+function panel(data: TradingOperatorReadiness | null, extra: Partial<Parameters<typeof BrokerageRecoveryPanel>[0]> = {}) {
   return <BrokerageRecoveryPanel readiness={data} fundAccountId={accountId} busy={false} error={null} onRecover={vi.fn().mockResolvedValue(undefined)} {...extra} />;
 }
 
@@ -40,7 +44,7 @@ describe("BrokerageRecoveryPanel", () => {
     expect(screen.getByText("Connected · healthy")).toBeInTheDocument();
     expect(screen.getByText("$1,250.00 (USD)")).toBeInTheDocument();
     expect(screen.getByText("$2,500.00 (USD)")).toBeInTheDocument();
-    expect(screen.getByText("2026-10-05 15:30:02 UTC")).toBeInTheDocument();
+    expect(screen.getByText("Oct 5, 2026, 15:30:02 UTC")).toBeInTheDocument();
     expect(screen.getByText(/Live operation also requires all trading readiness gates/)).toBeInTheDocument();
     expect((await axe(container)).violations).toEqual([]);
   });
@@ -93,16 +97,95 @@ describe("BrokerageRecoveryPanel", () => {
   it("offers choosing an account as the single next step when none is in scope", async () => {
     const openScopePicker = vi.fn();
     const { container } = render(
-      <ScopePickerOpenerProvider open={openScopePicker}>{panel(null, { fundAccountId: undefined })}</ScopePickerOpenerProvider>
+      <ScopePickerOpenerProvider open={openScopePicker}>{panel(null, { fundAccountId: undefined, brokerageEnvironment: "paper" })}</ScopePickerOpenerProvider>
     );
-    // Live trading stays announced as blocked.
-    expect(screen.getByRole("status")).toHaveTextContent("Live trading blocked");
+    // Setup, not a failure: one neutral status that says live trading stays off.
+    const status = screen.getByRole("status", { name: "Brokerage recovery readiness" });
+    expect(status).toHaveTextContent("Choose a fund account");
+    expect(status).toHaveTextContent("Live trading stays off until then.");
+    expect(screen.getAllByRole("status", { name: "Brokerage recovery readiness" })).toHaveLength(1);
+    expect(screen.queryByText(/recovery required/i)).not.toBeInTheDocument();
     expect(screen.queryByText("Unavailable")).not.toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
     expect(screen.getAllByRole("button")).toHaveLength(1);
     await userEvent.setup().click(screen.getByRole("button", { name: "Choose account" }));
     expect(openScopePicker).toHaveBeenCalledTimes(1);
     expect((await axe(container)).violations).toEqual([]);
+  });
+
+  it.each([
+    ["live", "live"],
+    ["unknown", undefined],
+    ["blank", "  "]
+  ] as const)("keeps live trading blocked with no account when the environment is %s", (_, brokerageEnvironment) => {
+    render(panel(null, { fundAccountId: undefined, brokerageEnvironment }));
+    const status = screen.getByRole("status", { name: "Brokerage recovery readiness" });
+    expect(status).toHaveTextContent("Live trading blocked");
+    expect(screen.getAllByRole("status", { name: "Brokerage recovery readiness" })).toHaveLength(1);
+    // The account is still the next step; only the banner above it stays red.
+    expect(screen.getByText("Choose a fund account")).toBeInTheDocument();
+  });
+
+  it("treats a live environment case-insensitively", () => {
+    render(panel(null, { fundAccountId: undefined, brokerageEnvironment: " LIVE " }));
+    expect(screen.getByRole("status", { name: "Brokerage recovery readiness" })).toHaveTextContent("Live trading blocked");
+  });
+
+  it("keeps a synchronization error blocked in a paper environment with no account", () => {
+    render(panel(null, { fundAccountId: undefined, brokerageEnvironment: "paper", error: "Connection lost" }));
+    const status = screen.getByRole("status", { name: "Brokerage recovery readiness" });
+    expect(status).toHaveTextContent("Live trading blocked");
+    expect(status).toHaveTextContent("Synchronization unavailable: Connection lost");
+  });
+
+  it("keeps an account in scope on the recovery path in a paper environment", () => {
+    render(panel(readiness({ brokerageRecovery: { ...recovery, status: "Blocked" } }), { brokerageEnvironment: "paper" }));
+    expect(screen.getByRole("status", { name: "Brokerage recovery readiness" })).toHaveTextContent("Live trading blocked");
+  });
+
+  it("collapses to a neutral setup row with the account picker as its action", async () => {
+    const openScopePicker = vi.fn();
+    const { container } = render(
+      <TestMemoryRouter>
+        <ScopePickerOpenerProvider open={openScopePicker}>
+          {panel(null, { fundAccountId: undefined, brokerageEnvironment: "paper", variant: "row", reviewHref: "/trading#brokerage-recovery" })}
+        </ScopePickerOpenerProvider>
+      </TestMemoryRouter>
+    );
+    const row = screen.getByRole("region", { name: "Brokerage recovery" });
+    expect(row).not.toHaveClass("border-l-danger");
+    expect(row).not.toHaveTextContent("Live trading blocked");
+    expect(within(row).getByRole("status", { name: "Brokerage recovery readiness" })).toHaveTextContent("No fund account in scope");
+    expect(within(row).queryByRole("link", { name: "Review brokerage recovery" })).not.toBeInTheDocument();
+    await userEvent.setup().click(within(row).getByRole("button", { name: "Choose account" }));
+    expect(openScopePicker).toHaveBeenCalledTimes(1);
+    expect((await axe(container)).violations).toEqual([]);
+  });
+
+  it("keeps the Review link on the neutral setup row when no account picker is available", () => {
+    render(
+      <TestMemoryRouter>
+        {panel(null, { fundAccountId: undefined, brokerageEnvironment: "paper", variant: "row", reviewHref: "/trading#brokerage-recovery" })}
+      </TestMemoryRouter>
+    );
+    const row = screen.getByRole("region", { name: "Brokerage recovery" });
+    expect(within(row).getByRole("status", { name: "Brokerage recovery readiness" }))
+      .toHaveTextContent("No fund account in scope · brokerage recovery is checked per account; live trading stays off until one is chosen.");
+    expect(row).not.toHaveTextContent("Live trading blocked");
+    expect(within(row).queryByRole("button")).not.toBeInTheDocument();
+    expect(within(row).getByRole("link", { name: "Review brokerage recovery" })).toHaveAttribute("href", "/trading#brokerage-recovery");
+  });
+
+  it("keeps the blocked row red for a live environment with no account", () => {
+    render(
+      <TestMemoryRouter>
+        {panel(null, { fundAccountId: undefined, brokerageEnvironment: "live", variant: "row", reviewHref: "/trading#brokerage-recovery" })}
+      </TestMemoryRouter>
+    );
+    const row = screen.getByRole("region", { name: "Brokerage recovery" });
+    expect(row).toHaveClass("border-l-danger");
+    expect(within(row).getByRole("status", { name: "Brokerage recovery readiness" })).toHaveTextContent("Live trading blocked — recovery required");
+    expect(within(row).getByRole("link", { name: "Review brokerage recovery" })).toBeInTheDocument();
   });
 
   it("requests recovery once with a keyboard-operable command and clears blockage only after reconciled evidence arrives", async () => {
@@ -116,5 +199,95 @@ describe("BrokerageRecoveryPanel", () => {
     expect(screen.getByRole("status", { name: "Brokerage recovery readiness" })).toHaveTextContent("Live trading blocked");
     rerender(panel(readiness(), { onRecover }));
     expect(screen.getByRole("status", { name: "Brokerage recovery readiness" })).toHaveTextContent("Brokerage evidence reconciled");
+  });
+
+  describe("inline account picker", () => {
+    function inShell(node: ReactNode, select = vi.fn(), openScopePicker = vi.fn(), options = [{ id: accountId, label: "Main fund" }]) {
+      return render(
+        <TestMemoryRouter>
+          <ScopePickerOpenerProvider open={openScopePicker}>
+            <FundAccountScopeSelectionProvider value={{ options, select }}>
+              {node}
+            </FundAccountScopeSelectionProvider>
+          </ScopePickerOpenerProvider>
+        </TestMemoryRouter>
+      );
+    }
+
+    it("replaces the empty state with an account picker in a non-live environment", async () => {
+      const user = userEvent.setup();
+      const select = vi.fn();
+      const { container } = inShell(panel(null, { fundAccountId: undefined, brokerageEnvironment: "paper" }), select);
+
+      const status = screen.getByRole("status", { name: "Brokerage recovery readiness" });
+      expect(status).toHaveTextContent("Choose a fund account");
+      expect(status).toHaveTextContent("Live trading stays off until then.");
+      expect(screen.queryByText(/recovery required/i)).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Choose account" })).not.toBeInTheDocument();
+
+      const useAccount = screen.getByRole("button", { name: "Use account" });
+      expect(useAccount).toBeDisabled();
+      await user.type(screen.getByLabelText("Fund account"), "Main fund");
+      await user.keyboard("{Enter}");
+      await user.click(useAccount);
+      expect(select).toHaveBeenCalledWith(accountId);
+      expect((await axe(container)).violations).toEqual([]);
+    });
+
+    it("refuses an id Trading cannot use instead of silently ignoring it", async () => {
+      const user = userEvent.setup();
+      const select = vi.fn();
+      inShell(panel(null, { fundAccountId: undefined, brokerageEnvironment: "paper" }), select, vi.fn(), [{ id: "not-a-guid", label: "Invalid retained account" }]);
+
+      await user.type(screen.getByLabelText("Fund account"), "Invalid retained");
+      await user.keyboard("{Enter}");
+      await user.click(screen.getByRole("button", { name: "Use account" }));
+      expect(select).not.toHaveBeenCalled();
+      expect(screen.getByRole("alert")).toHaveTextContent("Not a fund account id.");
+      expect(screen.getByLabelText("Fund account")).toHaveAttribute("aria-invalid", "true");
+    });
+
+    it("keeps All scope options one step away", async () => {
+      const openScopePicker = vi.fn();
+      inShell(panel(null, { fundAccountId: undefined, brokerageEnvironment: "paper" }), vi.fn(), openScopePicker);
+
+      await userEvent.setup().click(screen.getByRole("button", { name: "All scope options" }));
+      expect(openScopePicker).toHaveBeenCalledTimes(1);
+    });
+
+    it("points the setup row at the scope bar's account step on routes like Orders", () => {
+      const select = vi.fn();
+      inShell(panel(null, { fundAccountId: undefined, brokerageEnvironment: "paper", variant: "row", reviewHref: "/trading#brokerage-recovery" }), select);
+
+      const row = screen.getByRole("region", { name: "Brokerage recovery" });
+      expect(within(row).getByRole("status", { name: "Brokerage recovery readiness" }))
+        .toHaveTextContent("No fund account in scope · brokerage recovery is checked per account; live trading stays off until one is chosen.");
+      expect(row).not.toHaveTextContent("Live trading blocked");
+      // The header scope bar carries the one account picker; the row has none of its own.
+      expect(row).toHaveTextContent("Choose the account in the scope bar above.");
+      expect(within(row).queryByRole("combobox")).not.toBeInTheDocument();
+      expect(within(row).queryByRole("button")).not.toBeInTheDocument();
+      expect(select).not.toHaveBeenCalled();
+    });
+
+    it("keeps a blocked Orders row blocked and never initiates recovery from it", () => {
+      const onRecover = vi.fn();
+      inShell(panel(null, { fundAccountId: undefined, brokerageEnvironment: "live", variant: "row", onRecover }), vi.fn());
+      expect(screen.getByRole("status", { name: "Brokerage recovery readiness" })).toHaveTextContent("Live trading blocked");
+      expect(screen.getByRole("region", { name: "Brokerage recovery" })).toHaveTextContent("Choose the account in the scope bar above.");
+      expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+      expect(onRecover).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ["live", "live"],
+      ["unknown", undefined]
+    ] as const)("keeps the %s environment blocking while offering account selection", (_, brokerageEnvironment) => {
+      inShell(panel(null, { fundAccountId: undefined, brokerageEnvironment }));
+
+      expect(screen.getByRole("status", { name: "Brokerage recovery readiness" })).toHaveTextContent("Live trading blocked");
+      expect(screen.getByRole("combobox", { name: "Fund account" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Use account" })).toBeDisabled();
+    });
   });
 });

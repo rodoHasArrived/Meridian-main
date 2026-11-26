@@ -21,7 +21,8 @@ import type {
   QuantNotebookDataResultViewModel,
   QuantNotebookViewModel
 } from "@/components/meridian/quant-notebook.view-model";
-import { QuantPlotChart } from "@/components/meridian/quant-plot";
+import { QuantPlotChart, QuantPlotSource } from "@/components/meridian/quant-plot";
+import type { ChartEvidenceProof } from "@/components/charts/chart-evidence";
 import type { CellKind, CellOutput, QuantTrade } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
 import { TextArea } from "@/components/ui/text-area";
@@ -225,7 +226,7 @@ function DataFetchPanel({ vm }: { vm: QuantNotebookViewModel }) {
           onChange={(value) => vm.setContext({ to: value })}
         />
         <div className="grid gap-1">
-          <label htmlFor={panel.fields.interval.id} className={cn("text-[0.65rem] font-semibold text-muted-foreground", usesTrackedCaps(panel.fields.interval.label) && "uppercase tracking-[0.14em]")}>
+          <label htmlFor={panel.fields.interval.id} className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(panel.fields.interval.label) && "type-label--caps")}>
             {panel.fields.interval.label}
           </label>
             <Select
@@ -302,7 +303,7 @@ function DataContextInput({
 }) {
   return (
     <div className="grid gap-1">
-      <label htmlFor={field.id} className={cn("text-[0.65rem] font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.14em]")}>
+      <label htmlFor={field.id} className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "type-label--caps")}>
         {field.label}
       </label>
       <Input
@@ -443,7 +444,7 @@ function NotebookCellItem({
           )}
 
           {!isMarkdown && cell.output.length > 0 && (
-            <CellOutputPanel output={cell.output} />
+            <CellOutputPanel output={cell.output} source={cell.outputSource} />
           )}
         </>
       )}
@@ -549,24 +550,26 @@ function CellHeader({
 
 // ── Cell output ────────────────────────────────────────────────────────────────
 
-function CellOutputPanel({ output }: { output: CellOutput[] }) {
+function CellOutputPanel({ output, source }: { output: CellOutput[]; source?: string }) {
   return (
     <div className="border-t border-border/60 px-3 py-2">
       <div className="rounded-md border border-border/60 bg-background/60 px-3 py-2 font-mono text-xs">
-        {output.map((line, index) => (
-          <CellOutputLine key={`${line.kind}-${index}`} line={line} />
-        ))}
+        <QuantPlotSource source={output.some((line) => line.kind === "plot") ? source : undefined}>
+          {(proof) => output.map((line, index) => (
+            <CellOutputLine key={`${line.kind}-${index}`} line={line} proof={proof} />
+          ))}
+        </QuantPlotSource>
       </div>
     </div>
   );
 }
 
-function CellOutputLine({ line }: { line: CellOutput }) {
+function CellOutputLine({ line, proof }: { line: CellOutput; proof?: ChartEvidenceProof }) {
   if (line.kind === "plot") {
     return (
       <section className="my-2" aria-label={line.text}>
         <h3 className="mb-1 font-semibold">{line.text}</h3>
-        <QuantPlotChart plot={line.plot} />
+        <QuantPlotChart plot={line.plot} proof={proof} />
       </section>
     );
   }

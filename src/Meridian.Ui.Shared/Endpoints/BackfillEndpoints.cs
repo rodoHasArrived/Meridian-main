@@ -1,7 +1,10 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Meridian.Application.Backfill;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Backfill;
+using Meridian.Contracts.Operations;
+using Meridian.Contracts.Workstation;
 using Meridian.Core.Config;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
@@ -11,7 +14,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using BackfillCoordinator = Meridian.Ui.Shared.Services.BackfillCoordinator;
 using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
+using BackfillRoutingRuntime = Meridian.Application.Backfill.BackfillRoutingRuntime;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -34,13 +39,89 @@ public static class BackfillEndpoints
         var group = app.MapGroup("").WithTags("Backfill");
         group.RequireWorkstationTenantScope();
 
+        group.MapGet(UiApiRoutes.BackfillReceipts, (Guid? before, HttpContext context, [FromServices] BackfillCoordinator? backfill) =>
+        {
+            if (backfill is null)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill receipt store");
+            var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+            var store = backfill.GetReceiptStore();
+            if (before is { } id && store.TryReadRetainedResult(id)?.IsVisibleTo(tenantId) != true)
+                return ApiProblemDetails.NotFound(context, "Backfill receipt was not found.");
+            return Results.Json(store.ReadRecentRetainedResults(50, tenantId, before).Select(WorkstationEndpoints.BuildRetainedBackfillRow), jsonOptions);
+        })
+        .WithName("ListBackfillReceipts")
+        .Produces<WorkstationDataBackfillRecord[]>(200)
+        .RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
+
+        group.MapGet(UiApiRoutes.BackfillReceipt, (Guid receiptId, HttpContext context, [FromServices] BackfillCoordinator? backfill) =>
+        {
+            if (backfill is null)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill receipt store");
+            var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+            var result = backfill.GetReceiptStore().TryReadRetainedResult(receiptId);
+            return result?.IsVisibleTo(tenantId) == true ? Results.Json(result.Receipt, jsonOptions)
+                : ApiProblemDetails.NotFound(context, "Backfill receipt was not found.");
+        })
+        .WithName("GetBackfillReceipt")
+        .Produces<ProviderProvenanceReceipt>(200)
+        .RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
+
+        group.MapGet(UiApiRoutes.BackfillClone, async (
+            Guid receiptId, HttpContext context, [FromServices] BackfillCoordinator? backfill, CancellationToken ct) =>
+        {
+            if (backfill is null)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill coordinator");
+
+            var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+            var plan = await backfill.GetClonePlanAsync(receiptId, tenantId, ct).ConfigureAwait(false);
+            return plan is null ? ApiProblemDetails.NotFound(context, "Backfill receipt was not found.") : Results.Json(plan, jsonOptions);
+        })
+        .WithName("ReviewBackfillClone")
+        .Produces<BackfillClonePlan>(200)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .RequirePermission(UserPermission.TriggerBackfill);
+
+        group.MapPost(UiApiRoutes.BackfillClone, async (
+            Guid receiptId, BackfillCloneConfirmation confirmation, HttpContext context,
+            [FromServices] BackfillCoordinator? backfill, CancellationToken ct) =>
+        {
+            if (backfill is null)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill coordinator");
+            if (string.IsNullOrWhiteSpace(confirmation.ConfirmationCode))
+                return ApiProblemDetails.Validation(context, "confirmationCode", "Review and confirm the clone before running it.");
+
+            try
+            {
+                var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+                var result = await backfill.RunCloneAsync(receiptId, confirmation.ConfirmationCode, tenantId, ct).ConfigureAwait(false);
+                return Results.Json(result.ForTenant(tenantId), jsonOptions);
+            }
+            catch (BackfillCloneConflictException ex)
+            {
+                return Results.Json(ex.Plan, jsonOptions, statusCode: StatusCodes.Status409Conflict);
+            }
+            catch (KeyNotFoundException)
+            {
+                return ApiProblemDetails.NotFound(context, "Backfill receipt was not found.");
+            }
+            catch (InvalidOperationException)
+            {
+                return ApiProblemDetails.Conflict(context, "The historical backfill clone could not be started. Review it again.");
+            }
+        })
+        .WithName("RunBackfillClone")
+        .Produces<BackfillResult>(200)
+        .Produces<BackfillClonePlan>(StatusCodes.Status409Conflict)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequirePermission(UserPermission.TriggerBackfill);
+
         // Get available providers
         group.MapGet(UiApiRoutes.BackfillProviders, ([FromServices] BackfillCoordinator? backfill, HttpContext context) =>
         {
             if (backfill is null)
                 return ApiProblemDetails.ServiceUnavailable(context, "backfill coordinator");
 
-            var providers = backfill.DescribeProviders();
+            var providers = backfill.DescribeProviders(HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId);
             return Results.Json(providers, jsonOptions);
         })
         .WithName("GetBackfillProviders")
@@ -55,7 +136,7 @@ public static class BackfillEndpoints
             if (backfill is null)
                 return ApiProblemDetails.ServiceUnavailable(context, "backfill coordinator");
 
-            var status = backfill.TryReadLast();
+            var status = backfill.TryReadLast()?.ForTenant(HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId);
             return status is null
                 ? ApiProblemDetails.NotFound(context, "No completed backfill operation was found.")
                 : Results.Json(status, jsonOptionsIndented);
@@ -82,7 +163,7 @@ public static class BackfillEndpoints
             try
             {
                 request = CreateBackfillRequest(req);
-                var validation = ValidateBackfillRequest(context, req, request, backfill);
+                var validation = ValidateBackfillRequest(context, req, request, backfill, validateProvider: false);
                 if (validation is not null)
                     return validation;
             }
@@ -93,8 +174,13 @@ public static class BackfillEndpoints
 
             try
             {
-                var preview = await backfill.PreviewAsync(request, ct).ConfigureAwait(false);
+                var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+                var preview = await backfill.PreviewAsync(request, tenantId, ct).ConfigureAwait(false);
                 return Results.Json(preview, jsonOptionsIndented);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return ApiProblemDetails.Validation(context, "request", ex.Message);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -138,7 +224,7 @@ public static class BackfillEndpoints
             try
             {
                 request = CreateBackfillRequest(req);
-                var validation = ValidateBackfillRequest(context, req, request, backfill);
+                var validation = ValidateBackfillRequest(context, req, request, backfill, validateProvider: req.ExecutionPolicy is null);
                 if (validation is not null)
                     return validation;
             }
@@ -147,10 +233,43 @@ public static class BackfillEndpoints
                 return ApiProblemDetails.Validation(context, "request", ex.Message);
             }
 
+            if (req.ExecutionPolicy is not null || req.SubmissionId is not null || req.ScheduledAt is not null || req.ApprovedAlternativeFor is not null)
+            {
+                if (req.ExecutionPolicy is not ("queued" or "scheduled") || req.SubmissionId is null || req.SubmissionId == Guid.Empty ||
+                    (req.ExecutionPolicy == "scheduled") != req.ScheduledAt.HasValue)
+                    return ApiProblemDetails.Validation(context, "executionPolicy", "Choose queued or scheduled execution. Scheduling requires a start time and both options require a submission ID.");
+
+                var queue = context.RequestServices.GetService<WorkstationBackfillQueue>();
+                if (queue is null)
+                    return ApiProblemDetails.ServiceUnavailable(context, "workstation backfill queue");
+
+                try
+                {
+                    var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                    var receipt = await queue.SubmitAsync(req.SubmissionId.Value, tenant.TenantId!, request, req.ScheduledAt, req.ApprovedAlternativeFor, ct)
+                        .ConfigureAwait(false);
+                    return Results.Json(receipt, jsonOptions, statusCode: StatusCodes.Status202Accepted);
+                }
+                catch (BackfillSubmissionConflictException ex)
+                {
+                    return ApiProblemDetails.Conflict(context, ex.Message);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return ApiProblemDetails.Validation(context, "request", ex.Message);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+                {
+                    loggerFactory.CreateLogger(nameof(BackfillEndpoints)).LogError(ex, "Could not retain queued backfill submission.");
+                    return ApiProblemDetails.ServiceUnavailable(context, "backfill execution storage");
+                }
+            }
+
             try
             {
-                var result = await backfill.RunAsync(request, ct).ConfigureAwait(false);
-                return Results.Json(result, jsonOptionsIndented);
+                var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+                var result = await backfill.RunAsync(request, tenantId, ct).ConfigureAwait(false);
+                return Results.Json(result.ForTenant(tenantId), jsonOptionsIndented);
             }
             catch (InvalidOperationException)
             {
@@ -176,8 +295,9 @@ public static class BackfillEndpoints
             }
         })
         .WithName("RunBackfill")
-        .WithDescription("Executes a backfill operation for the specified symbols and date range.")
+        .WithDescription("Executes a backfill, or accepts a queued or scheduled workstation submission.")
         .Produces<BackfillResult>(200)
+        .Produces<BackfillSubmissionReceipt>(202)
         .ProducesValidationProblem()
         .ProducesProblem(StatusCodes.Status409Conflict)
         .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -205,7 +325,10 @@ public static class BackfillEndpoints
                     DroppedProviderNotifications: 0,
                     Timestamp: DateTimeOffset.UtcNow),
                 Timestamp: DateTimeOffset.UtcNow);
-            return Results.Json(progress, jsonOptions);
+            return Results.Json(progress with
+            {
+                LastRun = progress.LastRun?.ForTenant(HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId)
+            }, jsonOptions);
         })
         .WithName("GetBackfillProgress")
         .WithDescription("Returns the latest run plus bounded, live provider-attempt progress for the current symbol and range.")
@@ -225,21 +348,91 @@ public static class BackfillEndpoints
         .RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ManageProviders);
 
         // Get provider statuses from the effective host configuration.
-        group.MapGet(UiApiRoutes.BackfillProviderStatuses, (HttpContext context, [FromServices] ConfigStore store) =>
+        group.MapGet(UiApiRoutes.BackfillProviderStatuses, (HttpContext context, [FromServices] ConfigStore store,
+            [FromServices] BackfillRoutingRuntime? runtime) =>
         {
             var providerConfig = store.Load().Backfill?.Providers;
-            if (providerConfig is null)
+            if (providerConfig is null && runtime?.Current is null)
                 return ApiProblemDetails.ServiceUnavailable(context, "backfill provider configuration");
 
             var metadata = GetKnownProviderMetadata();
-            var statuses = BuildProviderStatuses(metadata, providerConfig);
+            var statuses = BuildProviderStatuses(metadata, providerConfig ?? new());
             return Results.Json(statuses, jsonOptions);
         })
         .WithName("GetBackfillProviderStatuses")
-        .WithDescription("Returns the configured status of backfill providers; unavailable configuration fails closed.")
+        .WithDescription("Returns provider options from available host configuration; missing provider configuration fails closed.")
         .Produces<Meridian.Contracts.Configuration.BackfillProviderStatusDto[]>(200)
         .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
         .RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ManageProviders);
+
+        // Secret-free provider edits preserve all unrelated host configuration under the store lock.
+        group.MapPut(UiApiRoutes.BackfillProviders + "/{id}", async (
+            string id, BackfillProviderEdit request, HttpContext context,
+            [FromServices] ConfigStore store, CancellationToken ct) =>
+        {
+            if (!BackfillProviderCatalog.Providers.Any(p => p.Id == id))
+                return ApiProblemDetails.NotFound(context, "Unknown or non-editable provider.");
+            try
+            {
+                var (saved, changeImpact) = await store.UpdateWithChangeStatusAsync(config =>
+                {
+                    var backfill = config.Backfill ?? new BackfillConfig();
+                    var providers = BackfillProviderCatalog.Apply(backfill.Providers ?? new(), id, request);
+                    var updated = config with { Backfill = backfill with { Providers = providers } };
+                    return (updated, GetProviderOptionsFromConfig(providers, id));
+                }, ct).ConfigureAwait(false);
+                return Results.Json(new
+                {
+                    providerId = id,
+                    options = saved,
+                    changeImpact
+                }, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return ApiProblemDetails.Validation(context, "provider", ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return ApiProblemDetails.Validation(context, "configuration", ex.Message);
+            }
+        })
+        .WithName("UpdateBackfillProvider")
+        .WithDescription("Updates secret-free backfill options. Enablement and priority apply to the next job; pacing and tiers require restart.")
+        .ProducesValidationProblem()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequirePermission(UserPermission.ManageProviders)
+        .RequirePermission(UserPermission.ModifyConfig);
+
+        group.MapGet(UiApiRoutes.BackfillProviders + "/effective-order", (HttpContext context,
+            [FromServices] BackfillRoutingRuntime? runtime) =>
+        {
+            if (runtime?.Current is not { } routing)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill routing runtime");
+
+            var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+            var visible = routing.ForTenant(tenantId);
+            static object ToProvider(BackfillRoutingProvider entry) => new
+            {
+                entry.ProviderId,
+                entry.Provider.DisplayName,
+                entry.Priority,
+                entry.Provider.IsSimulated
+            };
+
+            return Results.Json(new
+            {
+                Providers = visible.DefaultOrder.Select(ToProvider).ToArray(),
+                AvailableProviders = visible.Providers.Select(ToProvider).ToArray(),
+                routing.FallbackEnabled,
+                routing.RotationEnabled
+            }, jsonOptions);
+        })
+        .WithName("GetEffectiveBackfillProviderOrder")
+        .WithDescription("Returns the active default route and available choices for the next historical backfill job.")
+        .Produces(200)
+        .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+        .RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ManageProviders, UserPermission.TriggerBackfill);
 
         // Get fallback chain preview (enabled providers only, sorted by priority)
         group.MapGet(UiApiRoutes.BackfillFallbackChain, (HttpContext context, [FromServices] ConfigStore store) =>
@@ -250,7 +443,7 @@ public static class BackfillEndpoints
 
             var metadata = GetKnownProviderMetadata();
             var statuses = BuildProviderStatuses(metadata, providerConfig);
-            var chain = statuses.Where(s => s.Options.Enabled).ToArray();
+            var chain = statuses.Where(s => s.Options.Enabled && s.Metadata.ProviderId != "openfigi").ToArray();
             return Results.Json(chain, jsonOptions);
         })
         .WithName("GetBackfillFallbackChain")
@@ -277,7 +470,7 @@ public static class BackfillEndpoints
 
             var metadata = GetKnownProviderMetadata();
             var statuses = BuildProviderStatuses(metadata, providerConfig);
-            var enabledChain = statuses.Where(s => s.Options.Enabled).ToArray();
+            var enabledChain = statuses.Where(s => s.Options.Enabled && s.Metadata.ProviderId != "openfigi").ToArray();
 
             var plan = BuildDryRunPlan(body.Symbols, enabledChain);
             return Results.Json(plan, jsonOptions);
@@ -313,107 +506,46 @@ public static class BackfillEndpoints
     }
 
     private static Meridian.Contracts.Configuration.BackfillProviderMetadataDto[] GetKnownProviderMetadata()
-    {
-        return
-        [
-            new() { ProviderId = "alpaca", DisplayName = "Alpaca", Description = "Bars, trades, and quotes via REST API.", DataTypes = ["Bars", "Trades", "Quotes"], RequiresApiKey = true, FreeTier = true, DefaultPriority = 5, DefaultRateLimitPerMinute = 200 },
-            new() { ProviderId = "polygon", DisplayName = "Polygon", Description = "Full market data including aggregates.", DataTypes = ["Bars", "Trades", "Quotes", "Aggregates"], RequiresApiKey = true, FreeTier = false, DefaultPriority = 12, DefaultRateLimitPerMinute = 5 },
-            new() { ProviderId = "tiingo", DisplayName = "Tiingo", Description = "Daily bars and end-of-day data.", DataTypes = ["Daily bars"], RequiresApiKey = true, FreeTier = true, DefaultPriority = 15, DefaultRateLimitPerHour = 50, SupportedGranularities = ["Daily"] },
-            new() { ProviderId = "finnhub", DisplayName = "Finnhub", Description = "Daily bars with international coverage.", DataTypes = ["Daily bars"], RequiresApiKey = true, FreeTier = true, DefaultPriority = 18, DefaultRateLimitPerMinute = 60, SupportedGranularities = ["Daily"] },
-            new() { ProviderId = "stooq", DisplayName = "Stooq", Description = "Free daily bar data. No API key required.", DataTypes = ["Daily bars"], RequiresApiKey = false, FreeTier = true, DefaultPriority = 20, SupportedGranularities = ["Daily"] },
-            new() { ProviderId = "yahoo", DisplayName = "Yahoo Finance", Description = "Unofficial daily and intraday bar data.", DataTypes = ["Daily bars", "Intraday bars", "Aggregates"], RequiresApiKey = false, FreeTier = true, DefaultPriority = 10, DefaultRateLimitPerHour = 2000, SupportedGranularities = ["Daily", "1Min", "5Min", "15Min", "30Min", "Hourly", "4Hour"], FeatureFlags = new Dictionary<string, bool> { ["supportsIntraday"] = true, ["unofficial"] = true } },
-            new() { ProviderId = "alphavantage", DisplayName = "Alpha Vantage", Description = "Daily and intraday bars with strict rate limits.", DataTypes = ["Daily bars", "Intraday bars"], RequiresApiKey = true, FreeTier = true, DefaultPriority = 25, DefaultRateLimitPerMinute = 5, SupportedGranularities = ["Daily", "1Min", "5Min", "15Min", "30Min", "Hourly"] },
-            new() { ProviderId = "nasdaqdatalink", DisplayName = "Nasdaq Data Link", Description = "Various market data sets.", DataTypes = ["Various"], RequiresApiKey = true, FreeTier = false, DefaultPriority = 30, SupportedGranularities = ["Daily"] },
-        ];
-    }
+        => BackfillProviderCatalog.Describe();
 
     private static Meridian.Contracts.Configuration.BackfillProviderStatusDto[] BuildProviderStatuses(
         Meridian.Contracts.Configuration.BackfillProviderMetadataDto[] metadata,
         BackfillProvidersConfig config)
-    {
-        return metadata.Select(m =>
+        => metadata.Select(m => new Meridian.Contracts.Configuration.BackfillProviderStatusDto
         {
-            var opts = GetProviderOptionsFromConfig(config, m.ProviderId);
-            return new Meridian.Contracts.Configuration.BackfillProviderStatusDto
-            {
-                Metadata = m,
-                Options = opts,
-                EffectiveConfigSource = HasExplicitProviderConfig(config, m.ProviderId)
-                    ? "user"
-                    : "default",
-            };
-        })
-        .OrderBy(s => s.Options.Enabled ? 0 : 1)
-        .ThenBy(s => s.Options.Priority ?? s.Metadata.DefaultPriority)
-        .ToArray();
-    }
+            Metadata = m,
+            Options = GetProviderOptionsFromConfig(config, m.ProviderId),
+            EffectiveConfigSource = HasExplicitProviderConfig(config, m.ProviderId) ? "user" : "default"
+        }).OrderBy(s => s.Options.Enabled ? 0 : 1).ThenBy(s => s.Options.Priority).ToArray();
+
+    private static bool HasExplicitProviderConfig(BackfillProvidersConfig config, string id) => id switch
+    {
+        "alpaca" => config.Alpaca is not null,
+        "polygon" => config.Polygon is not null,
+        "tiingo" => config.Tiingo is not null,
+        "finnhub" => config.Finnhub is not null,
+        "stooq" => config.Stooq is not null,
+        "yahoo" => config.Yahoo is not null,
+        "alphavantage" => config.AlphaVantage is not null,
+        "nasdaqdatalink" => config.Nasdaq is not null,
+        "twelvedata" => config.TwelveData is not null,
+        "openfigi" => config.OpenFigi is not null,
+        _ => false
+    };
 
     internal static Meridian.Contracts.Configuration.BackfillProviderOptionsDto GetProviderOptionsFromConfig(
-        BackfillProvidersConfig config,
-        string providerId)
+        BackfillProvidersConfig config, string providerId)
     {
-        return providerId switch
+        var edit = BackfillProviderCatalog.Read(config, providerId);
+        return new Meridian.Contracts.Configuration.BackfillProviderOptionsDto
         {
-            "alpaca" => ToOptions(
-                config.Alpaca?.Enabled ?? true,
-                config.Alpaca?.Priority ?? 5,
-                rateLimitPerMinute: config.Alpaca?.RateLimitPerMinute ?? 200),
-            "polygon" => ToOptions(
-                config.Polygon?.Enabled ?? true,
-                config.Polygon?.Priority ?? 12,
-                rateLimitPerMinute: config.Polygon?.RateLimitPerMinute ?? 5),
-            "tiingo" => ToOptions(
-                config.Tiingo?.Enabled ?? true,
-                config.Tiingo?.Priority ?? 15,
-                rateLimitPerHour: config.Tiingo?.RateLimitPerHour ?? 50),
-            "finnhub" => ToOptions(
-                config.Finnhub?.Enabled ?? true,
-                config.Finnhub?.Priority ?? 18,
-                rateLimitPerMinute: config.Finnhub?.RateLimitPerMinute ?? 60),
-            "stooq" => ToOptions(
-                config.Stooq?.Enabled ?? true,
-                config.Stooq?.Priority ?? 20),
-            "yahoo" => ToOptions(
-                config.Yahoo?.Enabled ?? true,
-                config.Yahoo?.Priority ?? 10,
-                rateLimitPerHour: config.Yahoo?.RateLimitPerHour ?? 2000),
-            "alphavantage" => ToOptions(
-                config.AlphaVantage?.Enabled ?? true,
-                config.AlphaVantage?.Priority ?? 25,
-                rateLimitPerMinute: config.AlphaVantage?.RateLimitPerMinute ?? 5),
-            "nasdaqdatalink" => ToOptions(
-                config.Nasdaq?.Enabled ?? true,
-                config.Nasdaq?.Priority ?? 30),
-            _ => throw new InvalidOperationException($"Unsupported backfill provider metadata id '{providerId}'.")
+            Enabled = edit.Enabled,
+            Priority = edit.Priority,
+            TierId = edit.TierId,
+            RateLimitPerMinute = edit.RateLimitPerMinute,
+            RateLimitPerHour = edit.RateLimitPerHour
         };
     }
-
-    private static bool HasExplicitProviderConfig(BackfillProvidersConfig config, string providerId)
-        => providerId switch
-        {
-            "alpaca" => config.Alpaca is not null,
-            "polygon" => config.Polygon is not null,
-            "tiingo" => config.Tiingo is not null,
-            "finnhub" => config.Finnhub is not null,
-            "stooq" => config.Stooq is not null,
-            "yahoo" => config.Yahoo is not null,
-            "alphavantage" => config.AlphaVantage is not null,
-            "nasdaqdatalink" => config.Nasdaq is not null,
-            _ => false
-        };
-
-    private static Meridian.Contracts.Configuration.BackfillProviderOptionsDto ToOptions(
-        bool enabled,
-        int priority,
-        int? rateLimitPerMinute = null,
-        int? rateLimitPerHour = null)
-        => new()
-        {
-            Enabled = enabled,
-            Priority = priority,
-            RateLimitPerMinute = rateLimitPerMinute,
-            RateLimitPerHour = rateLimitPerHour
-        };
 
     private static Meridian.Contracts.Configuration.BackfillDryRunPlanDto BuildDryRunPlan(
         string[] symbols,
@@ -446,7 +578,8 @@ public static class BackfillEndpoints
         HttpContext context,
         BackfillRequestDto req,
         BackfillRequest request,
-        BackfillCoordinator backfill)
+        BackfillCoordinator backfill,
+        bool validateProvider = true)
     {
         if (req.Symbols is null || req.Symbols.Length == 0)
             return ApiProblemDetails.Validation(context, "symbols", "At least one symbol is required.");
@@ -454,7 +587,7 @@ public static class BackfillEndpoints
         if (req.Symbols.Length > 100)
             return ApiProblemDetails.Validation(context, "symbols", "Maximum 100 symbols per backfill request.");
 
-        var invalidSymbols = req.Symbols.Where(s => !SymbolPattern.IsMatch(s)).ToArray();
+        var invalidSymbols = req.Symbols.Where(s => s is null or "." or ".." || !SymbolPattern.IsMatch(s)).ToArray();
         if (invalidSymbols.Length > 0)
             return ApiProblemDetails.Validation(
                 context,
@@ -493,9 +626,12 @@ public static class BackfillEndpoints
             }
         }
 
+        if (!validateProvider)
+            return null;
+
         try
         {
-            backfill.ValidateRequest(request);
+            backfill.ValidateRequest(request, HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId);
         }
         catch (InvalidOperationException ex)
         {
@@ -519,6 +655,7 @@ public static class BackfillEndpoints
             req.Symbols ?? Array.Empty<string>(),
             req.From,
             req.To,
-            granularity);
+            granularity,
+            ResumeFromCheckpoint: req.ResumeFromCheckpoint);
     }
 }

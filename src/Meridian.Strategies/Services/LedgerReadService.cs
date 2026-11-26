@@ -24,17 +24,35 @@ public sealed class LedgerReadService
     }
 
     public LedgerSummary? BuildSummary(StrategyRunEntry entry)
-        => BuildBaseSummary(entry);
+        => BuildBaseSummary(entry, asOf: null, postedLedger: null);
 
-    public async Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default)
+    public LedgerSummary? BuildSummary(StrategyRunEntry entry, DateTimeOffset asOf)
+        => BuildBaseSummary(entry, asOf, postedLedger: null);
+
+    public Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default)
+        => BuildSummaryAsync(entry, ct, postedLedger: null);
+
+    public Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct,
+        IReadOnlyLedger? postedLedger, IChartOfAccounts? postingChart = null)
+        => BuildSummaryCoreAsync(entry, asOf: null, ct, postedLedger, postingChart);
+
+    public Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf, CancellationToken ct = default)
+        => BuildSummaryCoreAsync(entry, asOf, ct, postedLedger: null);
+
+    public Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf,
+        CancellationToken ct, IReadOnlyLedger? postedLedger, IChartOfAccounts? postingChart = null)
+        => BuildSummaryCoreAsync(entry, asOf, ct, postedLedger, postingChart);
+
+    private async Task<LedgerSummary?> BuildSummaryCoreAsync(StrategyRunEntry entry, DateTimeOffset? asOf,
+        CancellationToken ct, IReadOnlyLedger? postedLedger, IChartOfAccounts? postingChart = null)
     {
-        var summary = BuildBaseSummary(entry);
+        var summary = BuildBaseSummary(entry, asOf, postedLedger, postingChart);
         if (summary is null || _securityReferenceLookup is null || summary.TrialBalance.Count == 0)
         {
             return summary;
         }
 
-        var requests = BuildLookupRequests(entry, summary.TrialBalance);
+        var requests = BuildLookupRequests(entry, summary.TrialBalance, postedLedger, asOf, summary.AccountingPositions);
         var lookup = await ResolveSecuritiesAsync(requests, ct).ConfigureAwait(false);
 
         var trialBalance = summary.TrialBalance
@@ -75,14 +93,27 @@ public sealed class LedgerReadService
         ];
     }
 
-    private static LedgerSummary? BuildBaseSummary(StrategyRunEntry entry)
+    private static LedgerSummary? BuildBaseSummary(StrategyRunEntry entry, DateTimeOffset? asOf,
+        IReadOnlyLedger? postedLedger, IChartOfAccounts? selectedPostingChart = null)
     {
         ArgumentNullException.ThrowIfNull(entry);
 
-        var ledger = entry.Metrics?.Ledger;
+        var ledger = postedLedger ?? entry.Metrics?.Ledger;
         if (ledger is null)
         {
             return null;
+        }
+
+        var postingChart = selectedPostingChart ?? (ledger as Meridian.Ledger.Ledger)?.Policy?.Chart;
+
+        // Reuse the ledger's validation and normal-balance rules for an inclusive economic-time
+        // cut. Never mutate the retained run ledger or mix final balances with historical journal.
+        if (asOf.HasValue)
+        {
+            var historicalLedger = new Meridian.Ledger.Ledger();
+            foreach (var posting in ledger.Journal.Where(item => item.Timestamp <= asOf.Value))
+                historicalLedger.Post(posting);
+            ledger = historicalLedger;
         }
 
         var scope = StrategyRunScopeMetadataResolver.Resolve(entry);
@@ -136,7 +167,7 @@ public sealed class LedgerReadService
         return new LedgerSummary(
             LedgerReference: entry.LedgerReference ?? entry.RunId,
             RunId: entry.RunId,
-            AsOf: entry.EndedAt ?? entry.StartedAt,
+            AsOf: asOf ?? entry.EndedAt ?? entry.StartedAt,
             JournalEntryCount: ledger.Journal.Count,
             LedgerEntryCount: accountSummaries.Sum(static summary => summary.EntryCount),
             AssetBalance: SumBalance(accountSummaries, LedgerAccountType.Asset),
@@ -154,7 +185,16 @@ public sealed class LedgerReadService
             SleeveScopeDisplayName: scope.SleeveDisplayName,
             VehicleScopeId: scope.VehicleId,
             VehicleScopeDisplayName: scope.VehicleDisplayName,
-            Dimensions: BuildDimensions(scope, scope.AccountId));
+            Dimensions: BuildDimensions(scope, scope.AccountId))
+        {
+            AccountingPositions = StrategyPositionAccountingProjector.Project(ledger.Journal,
+                (entry.Metrics?.CashFlows ?? []).OfType<Meridian.Backtesting.Sdk.AssetEventCashFlow>()
+                    .Where(flow => !asOf.HasValue || flow.Timestamp <= asOf.Value).ToArray(),
+                postingChart),
+            HasUnresolvedValuation = ledger.Journal.Any(StrategyPositionAccountingProjector.IsValuation),
+            HistoricalCostNetAssets = ledger.Journal.Any(StrategyPositionAccountingProjector.IsValuation) ? null
+                : SumBalance(accountSummaries, LedgerAccountType.Asset) - SumBalance(accountSummaries, LedgerAccountType.Liability)
+        };
     }
 
     private static LedgerDimensionSetDto BuildDimensions(StrategyRunScopeMetadata scope, string? accountId) =>
@@ -181,9 +221,13 @@ public sealed class LedgerReadService
 
     private static IReadOnlyDictionary<string, SecurityReferenceLookupRequest> BuildLookupRequests(
         StrategyRunEntry entry,
-        IReadOnlyList<LedgerTrialBalanceLine> trialBalance)
+        IReadOnlyList<LedgerTrialBalanceLine> trialBalance,
+        IReadOnlyLedger? postedLedger = null,
+        DateTimeOffset? asOf = null,
+        IReadOnlyList<StrategyPositionAccountingEvidence>? accountingPositions = null)
     {
-        var metadataByKey = entry.Metrics?.Ledger?.Journal
+        var metadataByKey = (postedLedger ?? entry.Metrics?.Ledger)?.Journal
+            .Where(item => !asOf.HasValue || item.Timestamp <= asOf.Value)
             .Where(static item => !string.IsNullOrWhiteSpace(item.Metadata.Symbol))
             .GroupBy(
                 static item => ComposeLineKey(item.Metadata.Symbol!, item.Metadata.FinancialAccountId),
@@ -198,6 +242,9 @@ public sealed class LedgerReadService
                         .Select(static id => id!.Value)
                         .Distinct()
                         .ToArray();
+                    var native = group.Any(static item => item.Metadata.Tags?.ContainsKey(SecurityTradePositionEvidence.VersionTag) == true);
+                    var nativeIds = group.Where(static item => item.Metadata.Tags?.ContainsKey(SecurityTradePositionEvidence.VersionTag) == true)
+                        .Select(static item => item.Metadata.SecurityId).Distinct().ToArray();
                     var venues = group
                         .Select(static item => item.Metadata.Institution)
                         .Where(static venue => !string.IsNullOrWhiteSpace(venue))
@@ -205,11 +252,13 @@ public sealed class LedgerReadService
                         .ToArray();
 
                     return (
-                        SecurityId: securityIds.Length == 1 ? securityIds[0] : (Guid?)null,
+                        SecurityId: native ? nativeIds.Length == 1 && nativeIds[0] != Guid.Empty ? nativeIds[0] : null
+                            : securityIds.Length == 1 ? securityIds[0] : (Guid?)null,
+                        HasRetainedIdentityAuthority: native,
                         Venue: venues.Length == 1 ? venues[0] : null);
                 },
                 StringComparer.OrdinalIgnoreCase)
-            ?? new Dictionary<string, (Guid? SecurityId, string? Venue)>(StringComparer.OrdinalIgnoreCase);
+            ?? new Dictionary<string, (Guid? SecurityId, bool HasRetainedIdentityAuthority, string? Venue)>(StringComparer.OrdinalIgnoreCase);
 
         return trialBalance
             .Where(static line => !string.IsNullOrWhiteSpace(line.Symbol))
@@ -221,13 +270,18 @@ public sealed class LedgerReadService
                     var representative = group.First();
                     var key = group.Key;
                     var meta = metadataByKey.GetValueOrDefault(key);
+                    var ids = (accountingPositions ?? []).Where(position =>
+                            string.Equals(ComposeLineKey(position.Symbol, position.FinancialAccountId), key, StringComparison.OrdinalIgnoreCase))
+                        .Select(static position => position.SecurityId).Distinct().ToArray();
                     return new SecurityReferenceLookupRequest(
-                        SecurityId: meta.SecurityId,
+                        SecurityId: meta.HasRetainedIdentityAuthority && ids.Length > 0
+                            ? ids.Length == 1 && ids[0] != Guid.Empty ? ids[0] : null : meta.SecurityId,
                         IdentifierKind: SecurityIdentifierKind.Ticker.ToString(),
                         IdentifierValue: representative.Symbol,
                         Symbol: representative.Symbol,
                         Venue: meta.Venue ?? representative.FinancialAccountId,
-                        Source: meta.SecurityId is null ? "ledger-trial-balance" : "ledger-journal-metadata");
+                        Source: meta.HasRetainedIdentityAuthority ? "native-ledger-accounting"
+                            : meta.SecurityId is null ? "ledger-trial-balance" : "ledger-journal-metadata");
                 },
                 StringComparer.OrdinalIgnoreCase);
     }
@@ -244,10 +298,13 @@ public sealed class LedgerReadService
 
         foreach (var (key, request) in requests)
         {
-            var resolved = await _securityReferenceLookup.GetByCanonicalAsync(request, ct).ConfigureAwait(false)
-                ?? (request.Symbol is null
-                    ? null
-                    : await _securityReferenceLookup.GetBySymbolAsync(request.Symbol, ct).ConfigureAwait(false));
+            var native = request.Source == "native-ledger-accounting";
+            var resolved = native && request.SecurityId is null ? null
+                : await _securityReferenceLookup.GetByCanonicalAsync(request, ct).ConfigureAwait(false);
+            if (native && resolved?.SecurityId != request.SecurityId)
+                resolved = null;
+            if (!native && resolved is null && request.Symbol is not null)
+                resolved = await _securityReferenceLookup.GetBySymbolAsync(request.Symbol, ct).ConfigureAwait(false);
 
             lookup[key] = resolved is null
                 ? null

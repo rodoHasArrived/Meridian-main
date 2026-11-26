@@ -1,6 +1,9 @@
-import { RefreshCcw, Search } from "lucide-react";
+import { useState } from "react";
+import { SymbolMappingEditor } from "@/screens/data-screen.symbol-mapping-editor";
+import { Search } from "lucide-react";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { StatusBanner, type StatusBannerTone } from "@/components/ui/status-banner";
@@ -10,7 +13,7 @@ import {
   type CanonicalSymbolRegistryFetcher,
   type CanonicalSymbolRegistryRow
 } from "@/screens/data-screen.canonical-symbols.view-model";
-import { formatCount, formatUtcTimestamp } from "@/lib/format";
+import { formatCount, formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
 
 const badgeVariantByTone: Record<CanonicalSymbolModeTone, BadgeProps["variant"]> = {
   success: "success",
@@ -27,7 +30,7 @@ const bannerToneByModeTone: Record<CanonicalSymbolModeTone, StatusBannerTone> = 
 };
 
 function formatTimestamp(value: string | null): string {
-  return value ? formatUtcTimestamp(new Date(value)) : "No mismatch observed";
+  return value ? formatDisplayTimestamp(new Date(value)) : "No mismatch observed";
 }
 
 function symbolSubtitle(symbol: CanonicalSymbolRegistryRow): string {
@@ -98,6 +101,7 @@ export function CanonicalSymbolRegistryRegion({
 }: {
   fetchRegistry?: CanonicalSymbolRegistryFetcher;
 }) {
+  const [editing, setEditing] = useState(false);
   const panel = useCanonicalSymbolRegistryPanel(fetchRegistry);
   const model = panel.model;
 
@@ -114,20 +118,14 @@ export function CanonicalSymbolRegistryRegion({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {model ? <Badge variant={badgeVariantByTone[model.modeTone]}>{model.resolutionMode}</Badge> : null}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => void panel.refresh()}
-              disabled={panel.loading}
-              aria-label="Refresh canonical symbol registry"
-            >
-              <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
-            </Button>
+            <PanelReload reload={panel.refresh} failed={Boolean(panel.error)} busy={panel.loading} what="canonical symbol registry" />
           </div>
         </CardHeader>
         <CardContent>
+          <div className="mb-4 grid gap-3">
+            <div><Button type="button" variant="outline" size="sm" aria-expanded={editing} onClick={() => setEditing(value => !value)}>{editing ? "Close mapping editor" : "Edit mappings and rollout"}</Button></div>
+            {editing ? <SymbolMappingEditor onChanged={() => void panel.refresh()} /> : null}
+          </div>
           {panel.error ? (
             <StatusBanner tone="danger" title="Canonical symbol registry unavailable" detail={panel.error} />
           ) : !model ? (

@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
 using Xunit;
+using Meridian.Tests.TestHelpers;
 
 namespace Meridian.Tests.SecurityMaster;
 
@@ -262,8 +263,8 @@ public sealed class SecurityAssetClassTermsHistoryTests
             .Should().Equal(assetClass switch
             {
                 "Swap" => new[] { 1, 2, 3, 4 },
-                "CertificateOfDeposit" => new[] { 1, 2, 3, 4, 5 },
-                _ => new[] { 1, 2, 3, 4 }
+                "CertificateOfDeposit" => new[] { 1, 2, 3, 4, 5, 6 },
+                _ => new[] { 1, 2, 3, 4, 5 }
             });
         var added = manifest.Versions[1].Fields.Select(Describe).Except(manifest.Versions[0].Fields.Select(Describe)).ToArray();
         var removed = manifest.Versions[0].Fields.Select(Describe).Except(manifest.Versions[1].Fields.Select(Describe)).ToArray();
@@ -290,11 +291,48 @@ public sealed class SecurityAssetClassTermsHistoryTests
         var manifest = LoadCommittedManifests().Should().ContainKey(assetClass).WhoseValue;
 
         manifest.Versions.Select(static version => version.TermsVersion)
-            .Should().Equal(assetClass == "CertificateOfDeposit" ? new[] { 1, 2, 3, 4, 5 } : new[] { 1, 2, 3, 4 });
+            .Should().Equal(assetClass == "CertificateOfDeposit" ? new[] { 1, 2, 3, 4, 5, 6 } : new[] { 1, 2, 3, 4, 5 });
         manifest.Versions[2].Fields.Select(Describe).Except(manifest.Versions[1].Fields.Select(Describe))
             .Should().Equal("callSchedule:Array:optional", "putSchedule:Array:optional");
         manifest.Versions[1].Fields.Select(Describe).Except(manifest.Versions[2].Fields.Select(Describe))
             .Should().BeEmpty("version 3 adds the call and put schedules and changes nothing version 2 declares");
+    }
+
+    [Fact]
+    public void BondVersionFive_AddsOnlyTheOptionalWorkflow_WithoutChangingVersionFour()
+    {
+        var manifest = LoadCommittedManifests().Should().ContainKey("Bond").WhoseValue;
+        var before = manifest.Versions[3].Fields.Select(Describe).ToArray();
+        var after = manifest.Versions[4].Fields.Select(Describe).ToArray();
+
+        after.Except(before).Should().Equal("bondWorkflow:Object:optional");
+        before.Except(after).Should().BeEmpty("v5 adds explicit conventions without changing historical terms");
+        var workflow = SecurityAssetTermsSchema.Field("Bond", "bondWorkflow")!;
+        workflow.SinceTermsVersion.Should().Be(5);
+        workflow.Required.Should().BeFalse();
+        workflow.AuthoringEnabled.Should().BeTrue();
+        SecurityAssetClassCatalog.GetTermsVersion("Bond").Should().Be(5);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("Bond").Should().Be(5);
+    }
+
+    [Fact]
+    public void CertificateOfDepositVersionSix_AddsOnlyTheOptionalReviewedAccrualAnchors()
+    {
+        var manifest = LoadCommittedManifests().Should().ContainKey("CertificateOfDeposit").WhoseValue;
+        var before = manifest.Versions[4].Fields.Select(Describe).ToArray();
+        var after = manifest.Versions[5].Fields.Select(Describe).ToArray();
+
+        after.Except(before).Should().Equal("issueDate:Date:optional", "paymentFrequency:String:optional", "principal:Decimal:optional");
+        before.Except(after).Should().BeEmpty("v6 preserves every previously declared CD field");
+        foreach (var key in new[] { "issueDate", "principal", "paymentFrequency" })
+        {
+            var field = SecurityAssetTermsSchema.Field("CertificateOfDeposit", key)!;
+            field.SinceTermsVersion.Should().Be(6);
+            field.Required.Should().BeFalse();
+            field.AuthoringEnabled.Should().BeTrue();
+        }
+        SecurityAssetClassCatalog.GetTermsVersion("CertificateOfDeposit").Should().Be(6);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("CertificateOfDeposit").Should().Be(6);
     }
 
     [Theory]
@@ -337,7 +375,7 @@ public sealed class SecurityAssetClassTermsHistoryTests
         after.Except(before).Should().Equal("rateUnit:String:optional");
         before.Except(after).Should().BeEmpty();
         SecurityAssetTermsSchema.Field(assetClass, "rateUnit")!.SinceTermsVersion.Should().Be(version);
-        SecurityAssetClassCatalog.GetTermsVersion(assetClass).Should().Be(version);
+        SecurityAssetClassCatalog.GetTermsVersion(assetClass).Should().Be(assetClass == "CertificateOfDeposit" ? 6 : version);
     }
 
     [Fact]
@@ -384,8 +422,8 @@ public sealed class SecurityAssetClassTermsHistoryTests
         {
             var steps = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsUpgrades;
             var expected = assetClass == "CertificateOfDeposit"
-                ? new[] { (1, 2), (2, 3), (3, 4), (4, 5) }
-                : new[] { (1, 2), (2, 3), (3, 4) };
+                ? new[] { (1, 2), (2, 3), (3, 4), (4, 5), (5, 6) }
+                : new[] { (1, 2), (2, 3), (3, 4), (4, 5) };
             steps.Should().HaveCount(expected.Length);
             steps!.Select(static step => (step.FromVersion, step.ToVersion)).Should().Equal(expected);
             steps.Should().OnlyContain(static step => step.Kind == SecurityTermsUpgradeKind.Identity && step.Transform == null);
@@ -799,7 +837,7 @@ public sealed class SecurityAssetClassTermsHistoryTests
     {
         var root = FindRepositoryRoot();
         var offenders = new List<string>();
-        foreach (var file in Directory.EnumerateFiles(Path.Combine(root, "src"), "*.*", SearchOption.AllDirectories))
+        foreach (var file in RepositoryFileWalker.EnumerateFiles(Path.Combine(root, "src"), "*.*"))
         {
             if (Path.GetExtension(file) is not (".cs" or ".fs"))
             {

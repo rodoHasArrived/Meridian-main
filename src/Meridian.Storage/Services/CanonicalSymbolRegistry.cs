@@ -12,8 +12,8 @@ namespace Meridian.Storage.Services;
 /// </summary>
 public sealed class CanonicalSymbolRegistry :
     ICanonicalSymbolRegistry,
+    ICanonicalSymbolOperatorMappingWriter,
     ICanonicalSymbolRegistrySecurityMasterWriter,
-    ISecurityMasterLegacyIdentifierCleanupWriter,
     ICanonicalSymbolRegistryMigrationWriter
 {
     private readonly ISymbolRegistryService _registryService;
@@ -114,6 +114,32 @@ public sealed class CanonicalSymbolRegistry :
         return count;
     }
 
+    public async Task<int> SaveOperatorMappingsAsync(
+        IReadOnlyList<CanonicalSymbolDefinition> definitions,
+        CancellationToken ct = default)
+    {
+        var count = await GetOperatorMappingWriter()
+            .SaveOperatorMappingsAsync(definitions.Select(ToRegistryEntry).ToArray(), ct).ConfigureAwait(false);
+        RebuildResolverCache();
+        return count;
+    }
+
+    public async Task<int> RemoveOperatorMappingsAsync(
+        string canonical,
+        string? provider,
+        CancellationToken ct = default)
+    {
+        var count = await GetOperatorMappingWriter()
+            .RemoveOperatorMappingsAsync(canonical, provider, ct).ConfigureAwait(false);
+        if (count > 0)
+            RebuildResolverCache();
+        return count;
+    }
+
+    private SymbolRegistryService GetOperatorMappingWriter()
+        => _registryService as SymbolRegistryService
+           ?? throw new InvalidOperationException("The symbol registry store does not support operator mappings.");
+
     /// <inheritdoc />
     public async Task<int> ReconcileSecurityMasterAsync(
         IReadOnlyCollection<Guid> securityIds,
@@ -136,30 +162,6 @@ public sealed class CanonicalSymbolRegistry :
         RebuildResolverCache();
         return count;
     }
-
-    /// <inheritdoc />
-    public Task<string> GetLegacyIdentifierCleanupFingerprintAsync(CancellationToken ct = default)
-        => GetLegacyCleanupWriter().GetLegacyIdentifierCleanupFingerprintAsync(ct);
-
-    /// <inheritdoc />
-    public Task<SecurityMasterLegacyIdentifierCleanupValidation> ValidateLegacyIdentifierCleanupAsync(
-        SecurityMasterLegacyIdentifierCleanupManifest manifest,
-        CancellationToken ct = default)
-        => GetLegacyCleanupWriter().ValidateLegacyIdentifierCleanupAsync(manifest, ct);
-
-    /// <inheritdoc />
-    public async Task<SecurityMasterLegacyIdentifierCleanupReceipt> ApplyLegacyIdentifierCleanupAsync(
-        SecurityMasterLegacyIdentifierCleanupValidation validation,
-        CancellationToken ct = default)
-    {
-        var receipt = await GetLegacyCleanupWriter().ApplyLegacyIdentifierCleanupAsync(validation, ct).ConfigureAwait(false);
-        RebuildResolverCache();
-        return receipt;
-    }
-
-    private ISecurityMasterLegacyIdentifierCleanupWriter GetLegacyCleanupWriter()
-        => _registryService as ISecurityMasterLegacyIdentifierCleanupWriter
-           ?? throw new InvalidOperationException("The symbol registry store does not support evidence-bound legacy identifier cleanup.");
 
     /// <inheritdoc />
     public async Task<int> ApplyMigrationAsync(

@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "jest-axe";
 import { describe, expect, it, vi } from "vitest";
 import { Combobox } from "@/components/ui/combobox";
 
@@ -10,6 +11,69 @@ const options = [
 ];
 
 describe("Combobox", () => {
+  it("searches retained IDs as well as names without accepting an unknown value", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<Combobox label="Fund account" options={[{ value: "fund-001", label: "Operating account" }]} onChange={onChange} />);
+    const input = screen.getByRole("combobox", { name: "Fund account" });
+    await user.type(input, "FUND-001");
+    expect(screen.getByRole("option", { name: "Operating account" })).toBeInTheDocument();
+    await user.keyboard("{Enter}");
+    expect(onChange).toHaveBeenCalledWith("fund-001");
+    onChange.mockClear();
+    await user.type(input, "unknown-id");
+    await user.keyboard("{Enter}");
+    expect(screen.getByText("No matches")).toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("opens on the selected option and keeps it when a search is abandoned", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<><Combobox label="Instrument" options={options} value="MSFT" onChange={onChange} /><button>Next</button></>);
+    const input = screen.getByRole("combobox", { name: "Instrument" });
+    expect(input).toHaveValue("Microsoft Corp.");
+    await user.click(input);
+    expect(document.getElementById(input.getAttribute("aria-activedescendant")!)).toHaveAccessibleName("Microsoft Corp.");
+    await user.keyboard("{Escape}{ArrowDown}");
+    expect(document.getElementById(input.getAttribute("aria-activedescendant")!)).toHaveAccessibleName("Microsoft Corp.");
+    await user.type(input, "Apple");
+    await user.tab();
+    expect(input).toHaveValue("Microsoft Corp.");
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+  });
+
+  it("exposes required validation and help to assistive technology", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<><Combobox label="Fund account" options={options} required aria-invalid="true" aria-describedby="account-help" /><p id="account-help">Choose an account before loading its journal.</p></>);
+    const input = screen.getByRole("combobox", { name: "Fund account" });
+    expect(input).toBeRequired();
+    expect(input).toHaveAttribute("aria-invalid", "true");
+    expect(input).toHaveAccessibleDescription("Choose an account before loading its journal.");
+    await user.click(input);
+    expect((await axe(container)).violations).toEqual([]);
+  });
+
+  it("reopens by clicking an input that retained focus after Escape or a selection", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<Combobox label="Instrument" options={options} onChange={onChange} />);
+    const input = screen.getByRole("combobox", { name: "Instrument" });
+    await user.click(input);
+    await user.keyboard("{Escape}");
+    expect(input).toHaveFocus();
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    await user.click(input);
+    expect(screen.getByRole("listbox")).toBeVisible();
+    await user.click(screen.getByRole("option", { name: "Microsoft Corp." }));
+    expect(onChange).toHaveBeenCalledWith("MSFT");
+    expect(input).toHaveFocus();
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    await user.click(input);
+    expect(screen.getByRole("listbox")).toBeVisible();
+  });
+
   it("filters options by query and commits selection with Enter", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

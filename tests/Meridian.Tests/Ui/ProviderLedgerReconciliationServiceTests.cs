@@ -30,7 +30,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
-public sealed class ProviderLedgerReconciliationServiceTests
+public sealed partial class ProviderLedgerReconciliationServiceTests
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -2946,7 +2946,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
     }
 
     [Fact]
-    public async Task Scenario_FundAccountCloseReadiness_MissingScopeOrCaseworkStore_FailsClosed()
+    public async Task Scenario_FundAccountCloseReadiness_MissingCaseworkStore_FailsClosed()
     {
         var root = CreateTempRoot();
         try
@@ -2957,19 +2957,10 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 includeBreakQueue: false,
                 capabilityRouter: new FixedCapabilityRouter(IsRoutable: true));
 
-#pragma warning disable CS0618 // Explicitly verifies the retained compatibility surface fails closed.
-            var unscoped = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
-#pragma warning restore CS0618
             var missingStore = await fixture.CloseReadiness.GetAsync(
                 fixture.AccountId,
                 fixture.QueueScope);
 
-            unscoped.Should().NotBeNull();
-            unscoped!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Blocked);
-            unscoped.IsReadyToClose.Should().BeFalse();
-            unscoped.LatestReconciliationRunId.Should().BeNull();
-            unscoped.Blockers.Should().ContainSingle(blocker =>
-                blocker.Code == "close.authority.scope_required");
             missingStore.Should().NotBeNull();
             missingStore!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Blocked);
             missingStore.IsReadyToClose.Should().BeFalse();

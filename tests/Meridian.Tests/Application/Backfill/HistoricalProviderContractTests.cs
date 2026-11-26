@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text;
 using FluentAssertions;
+using Meridian.Core.Config;
 using Meridian.Core.Exceptions;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -457,11 +458,14 @@ public class HistoricalProviderContractTests
     {
         // Arrange
         using var provider = new YahooFinanceHistoricalDataProvider();
+        var defaults = new YahooFinanceConfig();
 
         // Assert
         provider.Name.Should().Be("yahoo");
         provider.DisplayName.Should().Contain("Yahoo");
-        provider.Priority.Should().Be(22);
+        provider.Priority.Should().Be(defaults.Priority);
+        provider.MaxRequestsPerWindow.Should().Be(defaults.RateLimitPerHour);
+        provider.GetRateLimitInfo().MaxRequests.Should().Be(defaults.RateLimitPerHour);
         provider.SupportsAdjustedPrices.Should().BeTrue();
         provider.SupportsDividends.Should().BeTrue();
         provider.SupportsSplits.Should().BeTrue();

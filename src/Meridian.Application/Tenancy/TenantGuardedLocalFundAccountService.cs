@@ -48,6 +48,10 @@ public sealed class TenantGuardedLocalFundAccountService(InMemoryFundAccountServ
     public Task<IReadOnlyList<CustodianPositionLineDto>> GetCustodianPositionsAsync(Guid accountId, DateOnly asOfDate, CancellationToken ct = default)
         => gate.ExecuteAsync(() => inner.GetCustodianPositionsAsync(accountId, asOfDate, ct));
 
+    public Task<CustodianHoldingSnapshotDto?> GetCustodianSnapshotAsync(Guid accountId, DateOnly asOf,
+        DateTimeOffset? knownAt = null, CancellationToken ct = default)
+        => gate.ExecuteAsync(() => inner.GetCustodianSnapshotAsync(accountId, asOf, knownAt, ct));
+
     public Task<IReadOnlyList<BankStatementLineDto>> GetBankStatementLinesAsync(Guid accountId, DateOnly? fromDate = null, DateOnly? toDate = null, CancellationToken ct = default)
         => gate.ExecuteAsync(() => inner.GetBankStatementLinesAsync(accountId, fromDate, toDate, ct));
 

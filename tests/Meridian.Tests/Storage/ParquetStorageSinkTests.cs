@@ -1,11 +1,14 @@
 using System.Reflection;
 using System.Text;
 using FluentAssertions;
+using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
 using Meridian.Storage;
+using Meridian.Storage.Interfaces;
 using Meridian.Storage.Sinks;
+using Meridian.Storage.Services;
 using Meridian.Tests.Infrastructure;
 using Parquet;
 using Parquet.Data;
@@ -21,6 +24,162 @@ namespace Meridian.Tests.Storage;
 public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
 {
     private ParquetStorageSink? _sink;
+
+    [Theory]
+    [InlineData(FileNamingConvention.Flat, "SPY")]
+    [InlineData(FileNamingConvention.Flat, "BRK/B")]
+    [InlineData(FileNamingConvention.BySymbol, "SPY")]
+    [InlineData(FileNamingConvention.ByDate, "SPY")]
+    [InlineData(FileNamingConvention.ByType, "SPY")]
+    [InlineData(FileNamingConvention.BySource, "SPY")]
+    [InlineData(FileNamingConvention.ByAssetClass, "SPY")]
+    [InlineData(FileNamingConvention.Hierarchical, "SPY")]
+    [InlineData(FileNamingConvention.Canonical, "SPY")]
+    public async Task FlushAsync_HistoricalV2Files_RemainDiscoverableByCatalogDateFilter(
+        FileNamingConvention convention, string symbol)
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot, NamingConvention = convention };
+        _sink = new ParquetStorageSink(options, new ParquetStorageOptions
+        {
+            CompressionMethod = CompressionMethod.None,
+            FlushInterval = TimeSpan.FromHours(1)
+        });
+        var date = new DateOnly(2026, 11, 20);
+        foreach (var session in new[] { date, date.AddDays(1) })
+        {
+            var bar = new HistoricalBar(symbol, session, 100, 101, 99, 100, 1_000,
+                "fixture", PriceBasis: HistoricalPriceBasis.SplitAdjusted);
+            await _sink.AppendAsync(MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, bar.Source));
+        }
+        await _sink.FlushAsync();
+        var catalog = new StorageCatalogService(TestDataRoot, options);
+        await catalog.InitializeAsync();
+        var rebuilt = await catalog.RebuildCatalogAsync();
+
+        rebuilt.Success.Should().BeTrue(string.Join("; ", rebuilt.Errors));
+        var retained = catalog.SearchFiles(new CatalogSearchCriteria
+        {
+            Symbols = [symbol],
+            EventTypes = ["HistoricalBar"],
+            StartDate = date.ToDateTime(TimeOnly.MinValue),
+            EndDate = date.ToDateTime(TimeOnly.MinValue)
+        }).Should().ContainSingle().Which;
+        retained.Date.Should().Be(date.ToDateTime(TimeOnly.MinValue));
+        retained.EventType.Should().Be("historicalbar");
+        retained.FileName.Should().Contain("_historicalbar_v2_");
+    }
+
+    [Theory]
+    [InlineData(HistoricalPriceBasis.Unknown)]
+    [InlineData(HistoricalPriceBasis.Raw)]
+    [InlineData(HistoricalPriceBasis.SplitAdjusted)]
+    [InlineData(HistoricalPriceBasis.DividendAdjusted)]
+    [InlineData(HistoricalPriceBasis.FullyAdjusted)]
+    public async Task FlushAsync_HistoricalBars_RetainsExplicitPriceBasis(HistoricalPriceBasis basis)
+    {
+        _sink = CreateSink();
+        var bar = new HistoricalBar("SPY", new DateOnly(2026, 11, 20), 100, 101, 99, 100, 1_000,
+            "fixture", PriceBasis: basis);
+        await _sink.AppendAsync(MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, bar.Source));
+
+        await _sink.FlushAsync();
+
+        var file = Directory.GetFiles(TestDataRoot, "*historicalbar_v2_*.parquet", SearchOption.AllDirectories).Single();
+        (await ReadStringColumnAsync(file, "PriceBasis")).Should().Equal(basis.ToString());
+        await using var stream = File.OpenRead(file);
+        using var reader = await ParquetReader.CreateAsync(stream);
+        using var rowGroup = reader.OpenRowGroupReader(0);
+        var field = reader.Schema.GetDataFields().Single(item => item.Name == "IsAdjusted");
+        var column = await rowGroup.ReadColumnAsync(field);
+        column.Data.Should().BeAssignableTo<bool?[]>().Subject.Should().Equal(bar.IsAdjusted);
+    }
+
+    [Fact]
+    public async Task FlushAsync_NewHistoricalBarSchema_PreservesExistingLegacyFile()
+    {
+        _sink = CreateSink();
+        var bar = new HistoricalBar("SPY", new DateOnly(2026, 11, 20), 100, 101, 99, 100, 1_000,
+            "fixture", PriceBasis: HistoricalPriceBasis.SplitAdjusted);
+        var item = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, bar.Source);
+        await _sink.AppendAsync(item);
+        await _sink.FlushAsync();
+        var currentFile = Directory.GetFiles(TestDataRoot, "*historicalbar_v2_*.parquet", SearchOption.AllDirectories).Single();
+        var legacyFile = currentFile.Replace("_historicalbar_v2_", "_historicalbar_", StringComparison.Ordinal);
+        await WriteLegacyBarFileAsync(legacyFile, bar);
+        var retainedBytes = await File.ReadAllBytesAsync(legacyFile);
+
+        await _sink.AppendAsync(item);
+        await _sink.FlushAsync();
+
+        (await File.ReadAllBytesAsync(legacyFile)).Should().Equal(retainedBytes,
+            "the additive schema must not rewrite or quarantine an existing unclassified history");
+        (await CountRowsAsync(legacyFile)).Should().Be(1);
+        (await CountRowsAsync(currentFile)).Should().Be(2);
+        Directory.GetFiles(TestDataRoot, "*.corrupt-*", SearchOption.AllDirectories).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task FlushAsync_ReleasesEmptyBuffersAndLateWritesPreserveEarlierRows()
+    {
+        _sink = CreateSink();
+        for (var day = 1; day <= 10; day++)
+            await _sink.AppendAsync(CreateTradeEvent("SPY") with
+            {
+                Timestamp = new DateTimeOffset(2024, 1, day, 15, 0, 0, TimeSpan.Zero)
+            });
+        var buffers = (System.Collections.IDictionary)typeof(ParquetStorageSink)
+            .GetField("_buffers", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(_sink)!;
+        buffers.Count.Should().Be(10);
+
+        await _sink.FlushAsync();
+        buffers.Count.Should().Be(0);
+        await _sink.AppendAsync(CreateTradeEvent("SPY") with
+        {
+            Timestamp = new DateTimeOffset(2024, 1, 1, 16, 0, 0, TimeSpan.Zero)
+        });
+        await _sink.FlushAsync();
+
+        buffers.Count.Should().Be(0);
+        var firstDay = Directory.GetFiles(TestDataRoot, "*20240101.parquet", SearchOption.AllDirectories).Single();
+        (await CountRowsAsync(firstDay)).Should().Be(2);
+    }
+
+    [Fact]
+    public async Task FlushAsync_OffsetCrossingMidnight_UsesUtcDateForFilenameAndDirectory()
+    {
+        _sink = CreateSink();
+        await _sink.AppendAsync(CreateTradeEvent("SPY") with
+        {
+            Timestamp = new DateTimeOffset(2024, 1, 2, 0, 30, 0, TimeSpan.FromHours(2))
+        });
+
+        await _sink.FlushAsync();
+
+        var file = Directory.GetFiles(TestDataRoot, "*.parquet", SearchOption.AllDirectories).Single();
+        Path.GetFileName(file).Should().Contain("20240101");
+        Path.GetFileName(file).Should().NotContain("20240102");
+    }
+
+    [Theory]
+    [InlineData("BRK/B")]
+    [InlineData("../ESCAPE")]
+    public async Task FlushAsync_SymbolWithPathCharacters_WritesOneEncodedFileInsideTheRoot(string symbol)
+    {
+        _sink = CreateSink();
+        await _sink.AppendAsync(CreateTradeEvent(symbol));
+
+        await _sink.FlushAsync();
+
+        var root = Path.GetFullPath(TestDataRoot);
+        var parent = Path.GetDirectoryName(root.TrimEnd(Path.DirectorySeparatorChar))!;
+        Directory.GetFiles(parent, "*ESCAPE*.parquet", SearchOption.TopDirectoryOnly)
+            .Should().BeEmpty("a symbol must never place a file outside the storage root");
+
+        var file = Directory.GetFiles(root, "*.parquet", SearchOption.AllDirectories).Single();
+        Path.GetFullPath(file).Should().StartWith(root);
+        Path.GetFileName(file).Should().StartWith("~", "unsafe symbols are hex-encoded into one path segment");
+        Directory.GetParent(file)!.Name.Should().NotBe("BRK", "a '/' in the symbol must not create a subfolder");
+    }
 
     public override async Task DisposeAsync()
     {
@@ -264,6 +423,37 @@ public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────────
+
+    private static async Task WriteLegacyBarFileAsync(string path, HistoricalBar bar)
+    {
+        var schema = new ParquetSchema(
+            new DataField<DateTime>("Timestamp"),
+            new DataField<string>("Symbol"),
+            new DataField<decimal>("Open"),
+            new DataField<decimal>("High"),
+            new DataField<decimal>("Low"),
+            new DataField<decimal>("Close"),
+            new DataField<decimal>("Volume"),
+            new DataField<long>("SequenceNumber"),
+            new DataField<string>("Source"));
+        var columns = new[]
+        {
+            new DataColumn(schema.DataFields[0], new[] { bar.ToTimestampUtc().UtcDateTime }),
+            new DataColumn(schema.DataFields[1], new[] { bar.Symbol }),
+            new DataColumn(schema.DataFields[2], new[] { bar.Open }),
+            new DataColumn(schema.DataFields[3], new[] { bar.High }),
+            new DataColumn(schema.DataFields[4], new[] { bar.Low }),
+            new DataColumn(schema.DataFields[5], new[] { bar.Close }),
+            new DataColumn(schema.DataFields[6], new[] { (decimal)bar.Volume }),
+            new DataColumn(schema.DataFields[7], new[] { bar.SequenceNumber }),
+            new DataColumn(schema.DataFields[8], new[] { bar.Source })
+        };
+        await using var stream = File.Create(path);
+        using var writer = await ParquetWriter.CreateAsync(schema, stream);
+        using var rowGroup = writer.CreateRowGroup();
+        foreach (var column in columns)
+            await rowGroup.WriteColumnAsync(column);
+    }
 
     private ParquetStorageSink CreateSink(
         int bufferSize = 10000,

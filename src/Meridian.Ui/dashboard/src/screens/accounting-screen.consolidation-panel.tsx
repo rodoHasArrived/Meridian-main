@@ -73,7 +73,7 @@ function ConsolidationScopePanel({ initialBookId, initialPeriodId }: Consolidati
     <Card className="panel-surface min-w-0" aria-labelledby="consolidation-title">
       <CardHeader>
         <CardTitle id="consolidation-title">Group consolidation</CardTitle>
-        <CardDescription>First slice: exactly two directly wholly owned entities under one ownership root, Primary basis, and one shared functional currency. Foreign currency translation, minority interests, and nested ownership are outside this slice.</CardDescription>
+        <CardDescription>Reviewed eliminations on Primary books under authoritative direct 100% ownership. The selected book policy determines entity count, FX translation and receivable/payable or revenue/expense treatments. Minority interests and nested ownership remain unsupported.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
         <form onSubmit={preview} className="space-y-3">

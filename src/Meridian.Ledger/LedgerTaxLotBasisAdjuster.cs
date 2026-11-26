@@ -1,3 +1,5 @@
+using Meridian.Contracts.SecurityMaster;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -35,8 +37,17 @@ public static class LedgerTaxLotBasisAdjuster
         var effective = new List<LedgerTaxLot>(openLots.Count);
         foreach (var lot in openLots)
         {
+            // An adjustment for another lot cannot discard this lot's exact monetary basis or
+            // round its retained quantity/unit cost merely because they shared one relief input.
+            if (!ordered.Any(adjustment => adjustment.AppliesTo(lot)))
+            {
+                effective.Add(lot);
+                continue;
+            }
+
             var quantity = lot.Quantity;
             var unitCost = lot.UnitCost;
+            var exactBasis = lot.CostBasis;
             var holdingPeriodStart = lot.HoldingPeriodStartDate;
 
             foreach (var adjustment in ordered)
@@ -44,6 +55,10 @@ public static class LedgerTaxLotBasisAdjuster
                 if (!adjustment.AppliesTo(lot))
                     continue;
 
+                // Exact current money is independent of a rounded per-unit cost. Apply the same
+                // transform in monetary units, using the quantity after earlier adjustments.
+                if (exactBasis is { } basis)
+                    exactBasis = ApplyExactBasis(adjustment, quantity, basis);
                 (quantity, unitCost) = ApplyOne(adjustment, quantity, unitCost);
 
                 // A wash sale also carries the disallowed sale's holding period onto the
@@ -65,9 +80,12 @@ public static class LedgerTaxLotBasisAdjuster
                 lot.LotId,
                 lot.AcquiredDate,
                 quantity,
-                RoundUnitCost(Math.Max(0m, unitCost)),
+                lot.UnitKind == SecurityLotUnitKind.FaceValue
+                    ? Math.Max(0m, unitCost)
+                    : RoundUnitCost(Math.Max(0m, unitCost)),
                 lot.SecurityId,
-                holdingPeriodStart)
+                holdingPeriodStart,
+                costBasis: exactBasis)
             {
                 UnitKind = lot.UnitKind,
                 Multiplier = lot.Multiplier
@@ -76,6 +94,17 @@ public static class LedgerTaxLotBasisAdjuster
 
         return effective;
     }
+
+    private static decimal ApplyExactBasis(LedgerTaxLotBasisAdjustment adjustment, decimal quantity, decimal basis)
+        => adjustment.Kind switch
+        {
+            LedgerTaxLotBasisAdjustmentKind.Split => basis,
+            LedgerTaxLotBasisAdjustmentKind.Factor => basis * adjustment.Value,
+            LedgerTaxLotBasisAdjustmentKind.ReturnOfCapital => Math.Max(0m, basis - quantity * adjustment.Value),
+            LedgerTaxLotBasisAdjustmentKind.Amortization => Math.Max(0m, basis + quantity * adjustment.Value),
+            LedgerTaxLotBasisAdjustmentKind.WashSale => basis + adjustment.Value,
+            _ => throw new ArgumentOutOfRangeException(nameof(adjustment), adjustment.Kind, "Unsupported basis-adjustment kind."),
+        };
 
     private static (decimal quantity, decimal unitCost) ApplyOne(
         LedgerTaxLotBasisAdjustment adjustment,

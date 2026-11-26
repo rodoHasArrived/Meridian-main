@@ -1,6 +1,7 @@
 import { screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { renderWithRouter } from "@/test/render";
+import { setDisplayTimeZone } from "@/lib/format";
 import { CloseChecklistHistoryView } from "./close-checklist-history-chart";
 import type { CloseChecklistHistory } from "@/lib/api/close-checklist-history.api";
 
@@ -34,4 +35,18 @@ it("names unavailable legacy coverage instead of showing an empty successful bur
   renderWithRouter(<CloseChecklistHistoryView history={{ ...history, status: "Unavailable", observations: [], reason: "Legacy audit has no retained checklist snapshots." }} />);
   expect(screen.getByRole("status")).toHaveTextContent("Legacy audit has no retained checklist snapshots.");
   expect(screen.queryByRole("img")).not.toBeInTheDocument();
+});
+
+it("shows recorded times in the operator's display zone and keeps the retained UTC instant in the markup", () => {
+  setDisplayTimeZone("America/New_York");
+  try {
+    renderWithRouter(<CloseChecklistHistoryView history={history} />);
+    expect(screen.getByText(/tasks remaining/)).toHaveTextContent("as of Nov 11, 2026, 05:00 EST");
+    expect(screen.getByRole("columnheader", { name: /^Recorded at/, hidden: true })).not.toHaveTextContent("UTC");
+    const cell = screen.getAllByText("Nov 10, 2026, 03:00 EST")[0];
+    expect(cell.tagName).toBe("TIME");
+    expect(cell).toHaveAttribute("datetime", "2026-11-10T08:00:00Z");
+  } finally {
+    setDisplayTimeZone("UTC");
+  }
 });

@@ -469,7 +469,9 @@ public enum OperationsActionOriginDto : byte
     HumanOperator = 0,
     AutomationSuggestion = 1,
     AssistantDraft = 2,
-    AutomationAssistant = 3
+    AutomationAssistant = 3,
+    /// <summary>Deterministic system execution under retained operator delegation; never a human or assistant.</summary>
+    AuthorizedSystem = 4
 }
 
 public sealed record OperationsStartWorkflowRequestDto(
@@ -1085,6 +1087,19 @@ public sealed record OperationsContinuityWorkflowDto(
     OperationsReviewedAutomationSummaryDto? ReviewedAutomation = null,
     Guid? LedgerBookId = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public OperationsWorkflowPurposeDto Purpose { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SubjectRevisionId { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SubjectMaker { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SubjectEvidenceId { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SubjectEvidenceSha256 { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SubjectReviewState { get; init; }
+
     public IReadOnlyList<OperationsEvidencePackageSummaryDto> EvidencePackages { get; init; } =
         EvidencePackages ?? [];
 }

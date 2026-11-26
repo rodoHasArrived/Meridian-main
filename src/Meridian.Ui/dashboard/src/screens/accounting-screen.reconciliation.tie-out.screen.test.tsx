@@ -124,7 +124,7 @@ async function settle() {
 describe("AccountingScreen reconciliation tie-out mount", () => {
   it("mounts the tie-out proof under the comparison summary for a loaded external GL reconciliation", async () => {
     await renderAccountingScreen(
-      systemReconciliation([row("cash", "Cash", "MissingMeridian", 100, 0)], 1)
+      systemReconciliation([row("cash", "Cash", "Variance", 500, 400)], 1)
     );
 
     const proof = await screen.findByRole("region", { name: "Tie-out proof" }, { timeout: 10_000 });
@@ -132,7 +132,7 @@ describe("AccountingScreen reconciliation tie-out mount", () => {
 
     expect(proof).toBeVisible();
     // The tie-out is the proof of the summary directly above it, never a second verdict.
-    expect(comparison).toHaveTextContent("Out by $100");
+    expect(comparison).toHaveTextContent("Out by 100.00 USD");
     expect(comparison.compareDocumentPosition(proof) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(comparison.parentElement).toBe(proof.parentElement);
     expect(proof).toHaveAttribute("data-tie-out-status", "exception");
@@ -144,6 +144,19 @@ describe("AccountingScreen reconciliation tie-out mount", () => {
     expect(proof).not.toHaveTextContent("quickbooks-fixture:trial-balance:cash");
     expect(proof).not.toHaveTextContent(/Accept|Resolve|Escalate|Reopen|Add reconciling item|Reviewed by/);
     expect((await axe(proof)).violations).toEqual([]);
+  }, 30_000);
+
+  it("shows why a missing ledger population cannot establish a tie-out proof", async () => {
+    await renderAccountingScreen(
+      systemReconciliation([{ ...row("cash", "Cash", "MissingMeridian", 100, 0),
+        externalCurrency: "EUR", meridianCurrency: null }], 1)
+    );
+
+    const comparison = await screen.findByRole("region", { name: comparisonName });
+    expect(comparison).toHaveTextContent("100.00 EUR");
+    expect(comparison).toHaveTextContent("one source has no reconciliation rows");
+    expect(comparison).toHaveTextContent("Can't assess");
+    expect(screen.queryByRole("region", { name: "Tie-out proof" })).not.toBeInTheDocument();
   }, 30_000);
 
   it("heads the tie-out at the same level as its sibling cards in the exceptions band", async () => {

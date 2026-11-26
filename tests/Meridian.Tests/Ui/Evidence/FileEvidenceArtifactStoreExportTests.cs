@@ -1,6 +1,9 @@
 using FluentAssertions;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
+using Meridian.Storage.Archival;
+using Meridian.Tests.Infrastructure;
+using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Evidence;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -15,6 +18,28 @@ public sealed class FileEvidenceArtifactStoreExportTests : IDisposable
         TenantId = "tenant-export",
         Scope = "company-export"
     };
+
+    [Fact]
+    public async Task InvalidVaultIndex_RemainsUnavailableWithoutLoggingPathOrRetainedContents()
+    {
+        const string vaultId = "ev-012345678901234567890123";
+        const string invalidIndex = "{\"private-evidence-contents\": unquoted-value}";
+        var indexPath = Path.Combine(_root, "workstation", "evidence", "_vault", $"{vaultId}.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(indexPath)!);
+        await File.WriteAllTextAsync(indexPath, invalidIndex);
+        var logger = new RecordingLogger<FileEvidenceArtifactStore>();
+        var store = new FileEvidenceArtifactStore(_root, logger);
+
+        var identity = await store.TryGetVaultIdentityAsync(vaultId, Request.TenantId!, Request.Scope!);
+
+        identity.Should().BeNull();
+        (await File.ReadAllTextAsync(indexPath)).Should().Be(invalidIndex);
+        logger.Entries.Should().NotBeEmpty();
+        logger.Entries.Should().OnlyContain(entry =>
+            entry.Exception == null
+            && !entry.Message.Contains(_root, StringComparison.Ordinal)
+            && !entry.Message.Contains("private-evidence-contents", StringComparison.Ordinal));
+    }
 
     [Fact]
     public async Task NearLimitArtifact_RetainsExactBytesAndDigestAfterRestart()
@@ -196,6 +221,42 @@ public sealed class FileEvidenceArtifactStoreExportTests : IDisposable
         Directory.Exists(Path.Combine(EvidenceRoot, "_vault", vaultId)).Should().BeFalse();
         StagingFiles().Should().BeEmpty();
         EvidenceFiles().Should().Equal(indexPath);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task PrePublicationDirectorySyncFailure_PublishesNoIndexAndRetrySucceeds(bool failPackageDirectory)
+    {
+        const string vaultId = "ev-123456789012345678901234";
+        var manifestPath = Path.Combine(EvidenceRoot, "report-pack", "export-sync", "candidate-manifest.json");
+        var vaultDirectory = Path.Combine(EvidenceRoot, "_vault");
+        var indexPath = Path.Combine(vaultDirectory, $"{vaultId}.json");
+        var failing = failPackageDirectory ? vaultDirectory : Path.GetDirectoryName(manifestPath)!;
+
+        using (DirectorySyncFaults.FailIn(failing))
+        {
+            await using var publication = new FileEvidenceArtifactStore.ExportPublication(Store(), vaultId, manifestPath);
+            await File.WriteAllTextAsync(Path.Combine(publication.ArtifactDirectory, "owned.dat"), "staged artifact");
+            var publish = () => publication.PublishAsync("{}", "{}", CancellationToken.None);
+            await publish.Should().ThrowAsync<DirectorySyncException>();
+        }
+
+        File.Exists(indexPath).Should().BeFalse("the index publishes only after the package and manifest are durable");
+        File.Exists(manifestPath).Should().BeFalse();
+        Directory.Exists(Path.Combine(vaultDirectory, vaultId)).Should().BeFalse();
+        StagingFiles().Should().BeEmpty();
+
+        await using (var retry = new FileEvidenceArtifactStore.ExportPublication(Store(), vaultId, manifestPath))
+        {
+            await File.WriteAllTextAsync(Path.Combine(retry.ArtifactDirectory, "owned.dat"), "staged artifact");
+            await retry.PublishAsync("{}", "{}", CancellationToken.None);
+        }
+
+        File.Exists(indexPath).Should().BeTrue();
+        File.Exists(manifestPath).Should().BeTrue();
+        Directory.EnumerateFiles(Path.Combine(vaultDirectory, vaultId), "owned.dat", SearchOption.AllDirectories)
+            .Should().ContainSingle();
     }
 
     [Fact]

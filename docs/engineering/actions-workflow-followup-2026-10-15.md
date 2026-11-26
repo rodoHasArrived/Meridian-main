@@ -11,10 +11,10 @@ longer. The historical IB runtime job finished without ever receiving a runner.
 
 ## Collection scope and limits
 
-[Source snapshot](actions-workflow-source-2026-10-15.json.gz),
-[full report](actions-workflow-report-2026-10-15.json.gz),
-[diagnostic policy](actions-workflow-policy-2026-10-15.json) and
-[audit and operational evidence](actions-workflow-audit-2026-10-15.json) retain the inputs,
+[Source snapshot](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/engineering/actions-workflow-source-2026-10-15.json.gz),
+[full report](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/engineering/actions-workflow-report-2026-10-15.json.gz),
+[diagnostic policy](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/engineering/actions-workflow-policy-2026-10-15.json) and
+[audit and operational evidence](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/engineering/actions-workflow-audit-2026-10-15.json) retain the inputs,
 checksums, live verification receipts, access errors and separate queue/rules observations.
 Snapshots use deterministic gzip compression. Collection used read-only connected GitHub
 requests replayed through `build/scripts/ci/collect-actions.py`; no settings were changed.
@@ -132,8 +132,8 @@ Runner inventory remained unavailable through the connector.
 
 ```bash
 python build/scripts/ci/ci-metrics.py \
-  --input docs/engineering/actions-workflow-source-2026-10-15.json.gz \
-  --comparison docs/engineering/actions-workflow-policy-2026-10-15.json \
+  --input archive/docs/engineering/actions-workflow-source-2026-10-15.json.gz \
+  --comparison archive/docs/engineering/actions-workflow-policy-2026-10-15.json \
   --output artifacts/actions-workflow-followup/report.json \
   --markdown artifacts/actions-workflow-followup/report.md
 ```

@@ -1,4 +1,4 @@
-import { type DragEvent, type ReactNode, useState } from "react";
+import { type DragEvent, type ReactNode, useEffect, useId, useMemo, useRef, useState } from "react";
 import { BarChart2, ChevronLeft, ChevronRight, Eye, Filter, GripVertical, Palette, PencilLine, Plus, RotateCcw, Trash2, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Select } from "@/components/ui/select";
 import { TextArea } from "@/components/ui/text-area";
 import { PrincipalIdInput } from "@/components/meridian/principal-id-input";
 import { ReportWriterExtraFilters } from "@/screens/reporting-screen.report-writer-filters";
+import { buildReportWriterDatasetFieldCatalog, parseReportWriterCustomDatasetRows } from "@/screens/reporting-screen.report-writer-dataset";
 import { ReportWriterChartPreview } from "@/components/meridian/report-writer-chart-preview";
 import { ReportWriterGridDiffView } from "@/components/meridian/report-writer-grid-diff-view";
 import { buildReportWriterGridDiff } from "@/lib/report-writer-grid-diff";
@@ -16,7 +17,8 @@ import { cellStyleClassName, resolveCellStyle } from "@/lib/report-writer-grid-f
 import { createReportTemplateDraft, renderReportTemplate } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
-import { presentReportingIdentifier } from "@/screens/reporting-screen.view-model";
+import { buildReportWriterCatalogTokens, presentReportingIdentifier } from "@/screens/reporting-screen.view-model";
+import { reportWriterSamples, type ReportWriterSampleDataset } from "@/screens/reporting-screen.report-writer-samples";
 import type { ReportingWriterGridRow, ReportingWriterToken } from "@/screens/reporting-screen.view-model";
 import type { ReportingCommandStatus } from "@/screens/reporting-screen.shared-components";
 import type {
@@ -38,8 +40,13 @@ export type ReportWriterDropZone = "rowFields" | "columnFields" | "metrics" | "f
 export type ReportWriterDraftState = Partial<Record<ReportWriterDropZone, ReportingWriterToken[]>>;
 export type ReportWriterTokenDragOrigin = { gridId: string; zone: ReportWriterDropZone };
 export type ReportWriterTokenDragPayload = { token: ReportingWriterToken; origin?: ReportWriterTokenDragOrigin | null };
-export type ReportWriterFixtureDatasetProfile = "portfolioPositions" | "ledgerFacts" | "cashLadder" | "customRows";
-export type ReportWriterPreviewDatasetProfile = ReportWriterFixtureDatasetProfile | `source:${string}`;
+export type ReportWriterPreviewDatasetProfile = "" | ReportWriterSampleDataset | "customRows" | `source:${string}`;
+
+interface ReportWriterPreview {
+  grid: ReportWriterGridRender;
+  sourceDetail: string;
+  source: ReportWriterDatasetSource | null;
+}
 export type ReportWriterDraftSettingsField =
   | "name"
   | "displayName"
@@ -102,55 +109,8 @@ export interface ReportWriterCustomFormulaDraft {
   expression: string;
 }
 
-export const reportWriterPreviewDatasetProfiles: { id: ReportWriterPreviewDatasetProfile; label: string }[] = [
-  { id: "portfolioPositions", label: "Portfolio positions" },
-  { id: "ledgerFacts", label: "Ledger facts" },
-  { id: "cashLadder", label: "Cash ladder" },
-  { id: "customRows", label: "Custom pasted rows" }
-];
-
-export function normalizeReportWriterPreviewDatasetProfile(value: string | null | undefined): ReportWriterPreviewDatasetProfile {
-  return reportWriterPreviewDatasetProfiles.some((profile) => profile.id === value)
-    || isReportWriterDatasetSourceProfile(value)
-    ? value as ReportWriterPreviewDatasetProfile
-    : "portfolioPositions";
-}
-
-function buildReportWriterPreviewDatasetProfiles(
-  datasetSources: ReportWriterDatasetSource[]
-): { id: ReportWriterPreviewDatasetProfile; label: string }[] {
-  return [
-    ...datasetSources.map((source) => ({
-      id: buildReportWriterDatasetSourceProfile(source.sourceId),
-      label: `${source.label} (${formatCount(source.rowCount)})`
-    })),
-    ...reportWriterPreviewDatasetProfiles
-  ];
-}
-
-export function buildRetainedReportWriterDatasetRows(
-  datasetSource: ReportWriterDatasetSource | null
-): Record<string, string>[] | null {
-  if (!datasetSource || datasetSource.rows.length === 0) {
-    return null;
-  }
-
-  return datasetSource.rows.map((row) => ({ ...row }));
-}
-
-export function resolveReportWriterDatasetSource(
-  datasetSources: ReportWriterDatasetSource[],
-  previewDataset: ReportWriterPreviewDatasetProfile
-): ReportWriterDatasetSource | null {
-  if (!isReportWriterDatasetSourceProfile(previewDataset)) {
-    return null;
-  }
-
-  const sourceId = previewDataset.slice("source:".length);
-  return datasetSources.find((source) => source.sourceId === sourceId) ?? null;
-}
-
 type ReportWriterZones = Record<ReportWriterDropZone, ReportingWriterToken[]>;
+type PreviewRequest = { gridId: string; controller: AbortController; source: ReportWriterDatasetSource | null };
 
 interface UseReportingReportWriterOptions {
   datasetSources: ReportWriterDatasetSource[];
@@ -163,7 +123,7 @@ interface UseReportingReportWriterOptions {
     grid: ReportingWriterGridRow,
     zones: ReportWriterZones,
     settings: ReportWriterDraftSettings,
-    customDatasetRows?: Record<string, string>[] | null,
+    datasetRows: Record<string, string>[],
     chartDraft?: ReportWriterChartDraft | null,
     formatRules?: ReportWriterFormatRuleDraft[] | null
   ) => RenderReportTemplateRequest;
@@ -180,12 +140,39 @@ export function useReportingReportWriter({
   const [writerCustomDatasetText, setWriterCustomDatasetText] = useState<Record<string, string>>({});
   const [writerDraftStatus, setWriterDraftStatus] = useState<ReportingCommandStatus | null>(null);
   const [writerPreviewStatus, setWriterPreviewStatus] = useState<ReportingCommandStatus | null>(null);
-  const [writerPreviewByGridId, setWriterPreviewByGridId] = useState<Record<string, ReportWriterGridRender | null>>({});
+  const [writerPreviewByGridId, setWriterPreviewByGridId] = useState<Record<string, ReportWriterPreview | null>>({});
   const [writerPreviousPreviewByGridId, setWriterPreviousPreviewByGridId] = useState<Record<string, ReportWriterGridRender | null>>({});
   const [writerChartDrafts, setWriterChartDrafts] = useState<Record<string, ReportWriterChartDraft>>({});
   const [writerFormatRuleDrafts, setWriterFormatRuleDrafts] = useState<Record<string, ReportWriterFormatRuleDraft[]>>({});
+  const activePreview = useRef<PreviewRequest | null>(null);
   const savingWriterDraftId = writerDraftStatus?.state === "running" ? writerDraftStatus.id : null;
   const previewingWriterDraftId = writerPreviewStatus?.state === "running" ? writerPreviewStatus.id : null;
+
+  useEffect(() => {
+    const request = activePreview.current;
+    if (request?.source && !datasetSources.includes(request.source)) {
+      request.controller.abort();
+    }
+  }, [datasetSources]);
+
+  useEffect(() => () => activePreview.current?.controller.abort(), []);
+
+  function getWriterPreview(grid: ReportingWriterGridRow): ReportWriterPreview | null {
+    const preview = writerPreviewByGridId[grid.id];
+    return preview && (!preview.source || datasetSources.includes(preview.source)) ? preview : null;
+  }
+
+  function invalidateWriterPreview(gridId: string, datasetChanged = false) {
+    if (activePreview.current?.gridId === gridId) {
+      activePreview.current.controller.abort();
+      activePreview.current = null;
+    }
+    setWriterPreviewStatus((current) => current?.id === gridId ? null : current);
+    setWriterPreviewByGridId((current) => removeRecordEntry(current, gridId));
+    if (datasetChanged) {
+      setWriterPreviousPreviewByGridId((current) => removeRecordEntry(current, gridId));
+    }
+  }
 
   function getWriterZoneTokens(grid: ReportingWriterGridRow, zone: ReportWriterDropZone): ReportingWriterToken[] {
     return writerDrafts[grid.id]?.[zone] ?? grid[zone];
@@ -238,7 +225,7 @@ export function useReportingReportWriter({
         [grid.id]: nextSettings
       };
     });
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    invalidateWriterPreview(grid.id, field === "previewDataset");
   }
 
   function updateWriterCustomFormula(
@@ -253,7 +240,7 @@ export function useReportingReportWriter({
         [field]: value
       }
     }));
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    invalidateWriterPreview(grid.id);
   }
 
   function updateWriterCustomDataset(grid: ReportingWriterGridRow, value: string) {
@@ -261,7 +248,7 @@ export function useReportingReportWriter({
       ...current,
       [grid.id]: value
     }));
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    invalidateWriterPreview(grid.id, true);
   }
 
   function updateWriterChartDraft(grid: ReportingWriterGridRow, field: ReportWriterChartDraftField | "enabled", value: string) {
@@ -274,7 +261,7 @@ export function useReportingReportWriter({
           : { ...existing, [field]: value }
       };
     });
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    invalidateWriterPreview(grid.id);
   }
 
   function updateWriterExtraFilters(
@@ -288,7 +275,7 @@ export function useReportingReportWriter({
         extraFilters: update(current[grid.id]?.extraFilters ?? buildDefaultWriterDraftSettings(grid).extraFilters)
       }
     }));
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    invalidateWriterPreview(grid.id);
   }
 
   function addWriterFilter(grid: ReportingWriterGridRow) {
@@ -313,7 +300,7 @@ export function useReportingReportWriter({
       ...current,
       [grid.id]: [...(current[grid.id] ?? []), { id, column: "", operator: "GreaterThan" as ReportWriterFilterOperator, value: "", style: "Warning" as ReportWriterCellStyle }]
     }));
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    invalidateWriterPreview(grid.id);
   }
 
   function removeWriterFormatRule(grid: ReportingWriterGridRow, ruleId: string) {
@@ -321,7 +308,7 @@ export function useReportingReportWriter({
       ...current,
       [grid.id]: (current[grid.id] ?? []).filter((rule) => rule.id !== ruleId)
     }));
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    invalidateWriterPreview(grid.id);
   }
 
   function updateWriterFormatRule(grid: ReportingWriterGridRow, ruleId: string, field: keyof Omit<ReportWriterFormatRuleDraft, "id">, value: string) {
@@ -331,7 +318,7 @@ export function useReportingReportWriter({
         rule.id === ruleId ? { ...rule, [field]: value } : rule
       )
     }));
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    invalidateWriterPreview(grid.id);
   }
 
   function handleWriterTokenDragStart(
@@ -357,8 +344,17 @@ export function useReportingReportWriter({
       return;
     }
 
+    const { token, origin } = dragPayload;
+    placeWriterToken(grid, zone, token, origin);
+  }
+
+  function placeWriterToken(
+    grid: ReportingWriterGridRow,
+    zone: ReportWriterDropZone,
+    token: ReportingWriterToken,
+    origin?: ReportWriterTokenDragOrigin | null
+  ) {
     setWriterDrafts((current) => {
-      const { token, origin } = dragPayload;
       const existing = current[grid.id]?.[zone] ?? grid[zone];
       if (origin?.gridId === grid.id && origin.zone === zone) {
         return current;
@@ -383,7 +379,7 @@ export function useReportingReportWriter({
         [grid.id]: nextGridDraft
       };
     });
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    invalidateWriterPreview(grid.id);
   }
 
   function removeWriterZoneToken(grid: ReportingWriterGridRow, zone: ReportWriterDropZone, tokenId: string) {
@@ -401,7 +397,7 @@ export function useReportingReportWriter({
         }
       };
     });
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    invalidateWriterPreview(grid.id);
   }
 
   function moveWriterZoneToken(
@@ -430,12 +426,12 @@ export function useReportingReportWriter({
         }
       };
     });
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    invalidateWriterPreview(grid.id);
   }
 
   function resetWriterGrid(grid: ReportingWriterGridRow) {
     setWriterDrafts((current) => removeRecordEntry(current, grid.id));
-    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    invalidateWriterPreview(grid.id, true);
     setWriterCustomFormulas((current) => removeRecordEntry(current, grid.id));
     setWriterDraftSettings((current) => removeRecordEntry(current, grid.id));
     setWriterCustomDatasetText((current) => removeRecordEntry(current, grid.id));
@@ -456,7 +452,10 @@ export function useReportingReportWriter({
     }
 
     const settings = getWriterDraftSettings(grid);
-    const request = buildDraftRequest(grid, settings, getWriterCurrentZones(grid));
+    const zones = getWriterCurrentZones(grid);
+    const request = buildDraftRequest(grid, settings, zones);
+    const dataset = resolvePreviewDataset(settings.previewDataset, datasetSources, writerCustomDatasetText[grid.id] ?? "");
+    const incompatible = dataset.rows ? findIncompatibleFields(zones, settings, dataset.fields) : [];
 
     setWriterDraftStatus({
       id: grid.id,
@@ -477,8 +476,13 @@ export function useReportingReportWriter({
           `Template: ${result.definition.templateId.name}@v${result.definition.templateId.version}`,
           `Status: ${result.status}`,
           result.validationIssues.length > 0
-            ? `Validation: ${result.validationIssues.join("; ")}`
-            : "Validation: ready"
+            ? `Template validation · ${result.validationIssues.join("; ")}`
+            : "Template validation passed.",
+          !dataset.rows
+            ? "Dataset fields are unverified. Choose a preview dataset to check them."
+            : incompatible.length > 0
+              ? `Fields absent from the preview dataset · ${incompatible.join(", ")}`
+              : "Dataset fields checked against the selected preview dataset."
         ]
       });
     } catch (error) {
@@ -494,34 +498,32 @@ export function useReportingReportWriter({
   }
 
   async function previewWriterGrid(grid: ReportingWriterGridRow) {
-    if (previewingWriterDraftId) {
+    if (activePreview.current) {
       return;
     }
 
     const settings = getWriterDraftSettings(grid);
-    const customDataset = settings.previewDataset === "customRows"
-      ? parseReportWriterCustomDatasetRows(writerCustomDatasetText[grid.id] ?? "")
-      : null;
-    if (customDataset?.error) {
+    const dataset = resolvePreviewDataset(settings.previewDataset, datasetSources, writerCustomDatasetText[grid.id] ?? "");
+    if (!dataset.rows) {
       setWriterPreviewStatus({
         id: grid.id,
         label: "Preview report-writer grid",
         state: "error",
-        message: `${grid.title} custom dataset is invalid.`,
-        details: [customDataset.error]
+        message: `${grid.title} needs a preview dataset.`,
+        details: [dataset.detail]
       });
       return;
     }
 
-    const selectedDatasetSource = resolveReportWriterDatasetSource(datasetSources, settings.previewDataset);
-    const retainedDatasetRows = buildRetainedReportWriterDatasetRows(selectedDatasetSource);
     const request = buildRenderRequest(
       grid,
       getWriterCurrentZones(grid),
       settings,
-      customDataset?.rows ?? retainedDatasetRows,
+      dataset.rows,
       getWriterChartDraft(grid),
       getWriterFormatRules(grid));
+    const previewRequest: PreviewRequest = { gridId: grid.id, controller: new AbortController(), source: dataset.source };
+    activePreview.current = previewRequest;
     setWriterPreviewStatus({
       id: grid.id,
       label: "Preview report-writer grid",
@@ -531,12 +533,15 @@ export function useReportingReportWriter({
     });
 
     try {
-      const result = await renderReportTemplate(request);
+      const result = await renderReportTemplate(request, { signal: previewRequest.controller.signal });
+      if (previewRequest.controller.signal.aborted) return;
       const renderedGrid = result.grids?.find((item) => item.gridId === grid.gridId) ?? result.grids?.[0] ?? null;
-      const previousPreview = writerPreviewByGridId[grid.id] ?? null;
+      const previousPreview = getWriterPreview(grid)?.grid ?? null;
+      const failed = renderedGrid?.validationChecks?.some((check) => check.status === "Failed");
+      const warnings = Array.from(new Set([...(result.warnings ?? []), ...(renderedGrid?.warnings ?? [])]));
       setWriterPreviewByGridId((current) => ({
         ...current,
-        [grid.id]: renderedGrid
+        [grid.id]: renderedGrid ? { grid: renderedGrid, sourceDetail: dataset.detail, source: dataset.source } : null
       }));
       setWriterPreviousPreviewByGridId((current) => ({
         ...current,
@@ -545,23 +550,21 @@ export function useReportingReportWriter({
       setWriterPreviewStatus({
         id: grid.id,
         label: "Preview report-writer grid",
-        state: "success",
-        message: `${grid.title} preview rendered.`,
+        state: failed ? "error" : warnings.length > 0 ? "warning" : "success",
+        message: failed ? `${grid.title} preview has invalid fields.`
+          : warnings.length > 0 ? `${grid.title} preview rendered with warnings.` : `${grid.title} preview rendered.`,
         details: [
           `Template: ${result.templateId.name}@v${result.templateId.version}`,
           `Rows: ${renderedGrid?.rows.length ?? 0}`,
-          customDataset
-            ? `Dataset rows: ${customDataset.rows.length}`
-            : retainedDatasetRows
-              ? `Dataset rows: ${retainedDatasetRows.length}`
-              : `Dataset profile: ${settings.previewDataset}`,
+          `Dataset rows: ${dataset.rows.length}`,
           result.missingRequiredParameters.length > 0
             ? `Missing parameters: ${result.missingRequiredParameters.join(", ")}`
             : "Required parameters: satisfied",
-          ...(result.warnings ?? [])
+          ...warnings
         ]
       });
     } catch (error) {
+      if (previewRequest.controller.signal.aborted) return;
       const display = describeApiError(error, `${grid.title} preview failed.`);
       setWriterPreviewStatus({
         id: grid.id,
@@ -570,15 +573,23 @@ export function useReportingReportWriter({
         message: display.summary,
         details: display.details
       });
+    } finally {
+      if (activePreview.current === previewRequest) {
+        activePreview.current = null;
+        if (previewRequest.controller.signal.aborted) {
+          setWriterPreviewStatus((current) => current?.id === grid.id ? null : current);
+        }
+      }
     }
   }
 
+  const statusSource = writerPreviewStatus ? writerPreviewByGridId[writerPreviewStatus.id]?.source : null;
   return {
     writerDraftStatus,
-    writerPreviewStatus,
+    writerPreviewStatus: statusSource && !datasetSources.includes(statusSource) ? null : writerPreviewStatus,
     savingWriterDraftId,
     previewingWriterDraftId,
-    writerPreviewByGridId,
+    getWriterPreview,
     writerPreviousPreviewByGridId,
     writerCustomDatasetText,
     getWriterZoneTokens,
@@ -598,6 +609,7 @@ export function useReportingReportWriter({
     updateWriterFormatRule,
     handleWriterTokenDragStart,
     handleWriterZoneDrop,
+    placeWriterToken,
     removeWriterZoneToken,
     moveWriterZoneToken,
     resetWriterGrid,
@@ -614,17 +626,73 @@ function isReportWriterDatasetSourceProfile(value: string | null | undefined): v
   return typeof value === "string" && value.startsWith("source:") && value.length > "source:".length;
 }
 
-function clearWriterPreview(
-  current: Record<string, ReportWriterGridRender | null>,
-  gridId: string
-): Record<string, ReportWriterGridRender | null> {
-  if (!(gridId in current)) {
-    return current;
-  }
+function isReportWriterSampleDataset(value: string): value is ReportWriterSampleDataset {
+  return Object.hasOwn(reportWriterSamples, value);
+}
 
-  const next = { ...current };
-  delete next[gridId];
-  return next;
+function resolvePreviewDataset(
+  profile: ReportWriterPreviewDatasetProfile,
+  sources: ReportWriterDatasetSource[],
+  customText: string
+): { rows: Record<string, string>[] | null; fields: ReportingWriterToken[]; source: ReportWriterDatasetSource | null; detail: string } {
+  if (isReportWriterDatasetSourceProfile(profile)) {
+    const source = sources.find((item) => buildReportWriterDatasetSourceProfile(item.sourceId) === profile) ?? null;
+    return source && source.rows.length > 0
+      ? { rows: source.rows, fields: buildReportWriterCatalogTokens(source.fields), source, detail: `Retained dataset · ${source.label}` }
+      : { rows: null, fields: [], source, detail: "The selected retained dataset is unavailable. Choose another dataset to preview." };
+  }
+  if (isReportWriterSampleDataset(profile)) {
+    const sample = reportWriterSamples[profile];
+    return {
+      rows: sample.rows,
+      fields: buildPreviewFieldTokens(sample.rows, "Sample data"),
+      source: null,
+      detail: `Sample data · ${sample.label}`
+    };
+  }
+  if (profile === "customRows") {
+    const data = parseReportWriterCustomDatasetRows(customText);
+    return data.error
+      ? { rows: null, fields: [], source: null, detail: data.error }
+      : { rows: data.rows, fields: buildPreviewFieldTokens(data.rows, "Pasted rows"), source: null, detail: "Operator-pasted preview dataset." };
+  }
+  return { rows: null, fields: [], source: null, detail: "Choose a dataset to see available fields and preview the grid." };
+}
+
+function buildPreviewFieldTokens(rows: Record<string, string>[], dataset: string): ReportingWriterToken[] {
+  const keys = new Map<string, string>();
+  for (const row of rows) {
+    for (const key of Object.keys(row)) {
+      const normalized = key.toLowerCase();
+      if (!keys.has(normalized)) keys.set(normalized, key);
+    }
+  }
+  return buildReportWriterCatalogTokens(Array.from(keys.values(), (name) => {
+    const values = rows.map((row) => row[name]?.trim()).filter(Boolean);
+    const numeric = values.length > 0 && values.every((value) => /^[+-]?(0|[1-9]\d*)(\.\d+)?$/.test(value));
+    const label = name === "pnl" ? "P&L" : name
+      .replace(/([a-z])([A-Z])(?=[a-z])/g, (_, left: string, right: string) => `${left} ${right.toLowerCase()}`)
+      .replace(/[_-]+/g, " ")
+      .replace(/^./, (character) => character.toUpperCase());
+    return { name, label, role: numeric ? "metric" : "dimension", dataType: numeric ? "decimal" : "string", dataset };
+  }));
+}
+
+function findIncompatibleFields(
+  zones: Pick<ReportWriterZones, "rowFields" | "columnFields" | "metrics">,
+  settings: ReportWriterDraftSettings,
+  fields: ReportingWriterToken[]
+): string[] {
+  const known = new Set(fields.map((field) => (field.fieldName ?? field.label).trim().toLowerCase()));
+  const selected = [
+    ...zones.rowFields.map((token) => token.fieldName),
+    ...zones.columnFields.map((token) => token.fieldName),
+    ...zones.metrics.map((token) => token.sourceField ?? token.fieldName),
+    settings.filterField,
+    ...settings.extraFilters.map((filter) => filter.field)
+  ];
+  return [...new Set(selected.filter((field): field is string =>
+    Boolean(field && field !== "*" && !known.has(field.trim().toLowerCase()))))];
 }
 
 function removeRecordEntry<T>(current: Record<string, T>, key: string): Record<string, T> {
@@ -657,7 +725,7 @@ function isReportWriterDropZone(value: string): value is ReportWriterDropZone {
 
 function normalizeWriterDraftSettingValue(field: ReportWriterDraftSettingsField, value: string): string {
   if (field === "previewDataset") {
-    return normalizeReportWriterPreviewDatasetProfile(value);
+    return value === "customRows" || isReportWriterDatasetSourceProfile(value) || isReportWriterSampleDataset(value) ? value : "";
   }
 
   if (field === "gridKind") {
@@ -694,7 +762,7 @@ function buildDefaultWriterDraftSettings(grid: ReportingWriterGridRow): ReportWr
     displayName: `${grid.title} Draft`,
     gridKind: normalizeReportWriterGridKind(grid.kind),
     topN: normalizeReportWriterTopNText(grid.topN?.toString() ?? "10"),
-    previewDataset: "portfolioPositions",
+    previewDataset: "",
     accessMode: "CompanyWide",
     principalKind: "Group",
     principalId: "reporting-ops",
@@ -750,141 +818,6 @@ function buildCustomFormulaToken(
   };
 }
 
-function parseReportWriterCustomDatasetRows(text: string): { rows: Record<string, string>[]; error: null } | { rows: []; error: string } {
-  const trimmed = text.trim();
-  if (!trimmed) {
-    return { rows: [], error: "Custom dataset requires JSON rows or CSV rows with a header." };
-  }
-
-  const parsed = trimmed.startsWith("[") ? parseReportWriterJsonDatasetRows(trimmed) : parseReportWriterCsvDatasetRows(trimmed);
-  if (parsed.error) {
-    return parsed;
-  }
-
-  if (parsed.rows.length === 0) {
-    return { rows: [], error: "Custom dataset requires at least one row." };
-  }
-
-  return { rows: parsed.rows.slice(0, 100), error: null };
-}
-
-function parseReportWriterJsonDatasetRows(text: string): { rows: Record<string, string>[]; error: null } | { rows: []; error: string } {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    return { rows: [], error: "Custom JSON dataset must be an array of row objects." };
-  }
-
-  if (!Array.isArray(parsed)) {
-    return { rows: [], error: "Custom JSON dataset must be an array of row objects." };
-  }
-
-  const rows: Record<string, string>[] = [];
-  for (const item of parsed) {
-    if (!item || typeof item !== "object" || Array.isArray(item)) {
-      return { rows: [], error: "Each custom JSON dataset row must be an object." };
-    }
-
-    const row: Record<string, string> = {};
-    for (const [key, value] of Object.entries(item)) {
-      if (!key.trim()) {
-        continue;
-      }
-
-      row[key.trim()] = value == null ? "" : String(value);
-    }
-
-    if (Object.keys(row).length > 0) {
-      rows.push(row);
-    }
-  }
-
-  return { rows, error: null };
-}
-
-function parseReportWriterCsvDatasetRows(text: string): { rows: Record<string, string>[]; error: null } | { rows: []; error: string } {
-  const lines = text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-  if (lines.length < 2) {
-    return { rows: [], error: "Custom CSV dataset requires a header row and at least one data row." };
-  }
-
-  const headers = parseReportWriterCsvLine(lines[0]).map((header) => header.trim());
-  if (headers.length === 0 || headers.every((header) => !header)) {
-    return { rows: [], error: "Custom CSV dataset requires at least one header." };
-  }
-
-  const rows = lines.slice(1).map((line) => {
-    const values = parseReportWriterCsvLine(line);
-    const row: Record<string, string> = {};
-    headers.forEach((header, index) => {
-      if (header) {
-        row[header] = values[index] ?? "";
-      }
-    });
-    return row;
-  }).filter((row) => Object.keys(row).length > 0);
-
-  return { rows, error: null };
-}
-
-function parseReportWriterCsvLine(line: string): string[] {
-  const values: string[] = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let index = 0; index < line.length; index += 1) {
-    const character = line[index];
-    if (character === '"') {
-      if (inQuotes && line[index + 1] === '"') {
-        current += '"';
-        index += 1;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (character === "," && !inQuotes) {
-      values.push(current);
-      current = "";
-    } else {
-      current += character;
-    }
-  }
-
-  values.push(current);
-  return values;
-}
-
-function buildReportWriterDatasetFieldCatalog(
-  datasetSource: ReportWriterDatasetSource
-): ReportWriterDatasetSource["fields"] {
-  return [...datasetSource.fields]
-    .sort((left, right) => {
-      const roleDelta = reportWriterDatasetFieldRoleRank(left.role) - reportWriterDatasetFieldRoleRank(right.role);
-      return roleDelta !== 0 ? roleDelta : (left.label || left.name).localeCompare(right.label || right.name);
-    })
-    .slice(0, 8);
-}
-
-function reportWriterDatasetFieldRoleRank(role: string | null | undefined): number {
-  const normalized = role?.toLowerCase();
-  if (normalized === "dimension") {
-    return 0;
-  }
-
-  if (normalized === "metric") {
-    return 1;
-  }
-
-  if (normalized === "generated" || normalized === "formula") {
-    return 2;
-  }
-
-  return 3;
-}
-
 export function ReportingReportWriterSection({ children }: { children: ReactNode }) {
   return (
     <section role="region" aria-label="No-code report writer">
@@ -892,7 +825,7 @@ export function ReportingReportWriterSection({ children }: { children: ReactNode
         <CardHeader>
           <div className="eyebrow-label">Report writer</div>
           <CardTitle>No-code grid designer</CardTitle>
-          <CardDescription>Pivot, Top-N, contribution, and formula grids from governed template metadata.</CardDescription>
+          <CardDescription>Pivot, Top-N, contribution, and formula grids from template metadata.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 xl:grid-cols-2">
@@ -914,11 +847,12 @@ interface ReportWriterDesignerGridProps {
   customDatasetText: string;
   isSaving: boolean;
   isPreviewing: boolean;
-  preview: ReportWriterGridRender | null;
+  preview: ReportWriterPreview | null;
   previousPreview: ReportWriterGridRender | null;
   getZoneTokens: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone) => ReportingWriterToken[];
   onTokenDragStart: (event: DragEvent<HTMLElement>, token: ReportingWriterToken, origin?: ReportWriterTokenDragOrigin | null) => void;
   onZoneDrop: (event: DragEvent<HTMLElement>, grid: ReportingWriterGridRow, zone: ReportWriterDropZone) => void;
+  onFieldAdd: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone, token: ReportingWriterToken) => void;
   onTokenRemove: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone, tokenId: string) => void;
   onTokenMove: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone, tokenId: string, direction: -1 | 1) => void;
   onReset: (grid: ReportingWriterGridRow) => void;
@@ -951,6 +885,7 @@ export function ReportWriterDesignerGrid({
   getZoneTokens,
   onTokenDragStart,
   onZoneDrop,
+  onFieldAdd,
   onTokenRemove,
   onTokenMove,
   onReset,
@@ -973,12 +908,19 @@ export function ReportWriterDesignerGrid({
   const accessPolicySummary = buildReportAccessPolicySummary(settings);
   const topNDisabled = settings.gridKind !== "TopN";
   const topNLabel = buildReportWriterDraftTopNLabel(settings);
-  const previewDatasetProfiles = buildReportWriterPreviewDatasetProfiles(datasetSources);
-  const selectedDatasetSource = resolveReportWriterDatasetSource(datasetSources, settings.previewDataset);
+  const { previewDataset } = settings;
+  const dataset = useMemo(() => resolvePreviewDataset(previewDataset, datasetSources, customDatasetText),
+    [previewDataset, datasetSources, customDatasetText]);
+  const sourceFields = dataset.fields;
+  const selectedDatasetSource = dataset.source;
   const rowTokens = getZoneTokens(grid, "rowFields");
   const columnTokens = getZoneTokens(grid, "columnFields");
   const metricTokens = getZoneTokens(grid, "metrics");
   const formulaTokens = getZoneTokens(grid, "formulas");
+  const incompatible = dataset.rows
+    ? findIncompatibleFields({ rowFields: rowTokens, columnFields: columnTokens, metrics: metricTokens }, settings, sourceFields)
+    : [];
+  const noPreviewHost = grid.isNew && !grid.previewHost;
   const draftLayoutSummary = buildReportWriterDraftLayoutSummary(
     settings,
     rowTokens,
@@ -997,7 +939,7 @@ export function ReportWriterDesignerGrid({
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-foreground">{grid.title}</h3>
-          <p className="mt-1 text-[11px] text-muted-foreground">{grid.isNew ? "New report · not saved yet" : `${presentReportingIdentifier(grid.templateId)} · v${grid.templateVersion}`}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{grid.isNew ? "New report · not saved yet" : `${presentReportingIdentifier(grid.templateId)} · v${grid.templateVersion}`}</p>
         </div>
         <span className="flex flex-wrap items-center gap-1.5">
           <Badge variant="outline">{settings.gridKind}</Badge>
@@ -1013,7 +955,7 @@ export function ReportWriterDesignerGrid({
         {draftLayoutSummary}
       </div>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-        <span className="flex flex-wrap items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
+        <span className="flex flex-wrap items-center gap-1.5 font-mono text-xs text-muted-foreground">
           <span>{grid.sortLabel}</span>
           <span aria-hidden="true">·</span>
           <span>{grid.filterSummary}</span>
@@ -1031,7 +973,7 @@ export function ReportWriterDesignerGrid({
       </div>
       <div className="mt-3 grid gap-2 md:grid-cols-2">
         <label className="space-y-1">
-          <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Draft name</span>
+          <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Draft name</span>
           <Input
             value={settings.name}
             onChange={(event) => onSettingsChange(grid, "name", event.target.value)}
@@ -1040,7 +982,7 @@ export function ReportWriterDesignerGrid({
           />
         </label>
         <label className="space-y-1">
-          <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Display name</span>
+          <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Display name</span>
           <Input
             value={settings.displayName}
             onChange={(event) => onSettingsChange(grid, "displayName", event.target.value)}
@@ -1048,20 +990,39 @@ export function ReportWriterDesignerGrid({
           />
         </label>
         <label className="space-y-1">
-          <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Preview dataset</span>
+          <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Preview dataset</span>
           <Select
             value={settings.previewDataset}
             onChange={(event) => onSettingsChange(grid, "previewDataset", event.target.value)}
             aria-label={`${grid.title} preview dataset`}
           >
-            {previewDatasetProfiles.map((profile) => (
-              <option key={profile.id} value={profile.id}>{profile.label}</option>
-            ))}
+            <option value="">Choose a dataset</option>
+            {isReportWriterDatasetSourceProfile(previewDataset) && !selectedDatasetSource ? (
+              <option value={previewDataset} disabled>Retained dataset unavailable</option>
+            ) : null}
+            {datasetSources.length > 0 ? (
+              <optgroup label="Retained datasets">
+                {datasetSources.map((source) => (
+                  <option key={source.sourceId} value={buildReportWriterDatasetSourceProfile(source.sourceId)}>
+                    {source.label} ({formatCount(source.rowCount)})
+                  </option>
+                ))}
+              </optgroup>
+            ) : null}
+            <option value="customRows">Custom pasted rows</option>
+            <optgroup label="Sample data · preview only">
+              {Object.entries(reportWriterSamples).map(([profile, sample]) => (
+                <option key={profile} value={profile}>Sample {sample.label.toLowerCase()}</option>
+              ))}
+            </optgroup>
           </Select>
+          <span className="block text-xs text-muted-foreground">
+            Governed runs validate fields against the certified ledger snapshot.
+          </span>
         </label>
         <div className="grid gap-2 sm:grid-cols-[1fr_0.7fr]">
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Grid type</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Grid type</span>
             <Select
               value={settings.gridKind}
               onChange={(event) => onSettingsChange(grid, "gridKind", event.target.value)}
@@ -1074,7 +1035,7 @@ export function ReportWriterDesignerGrid({
             </Select>
           </label>
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Top N</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Top N</span>
             <Input
               type="number"
               min={1}
@@ -1087,7 +1048,7 @@ export function ReportWriterDesignerGrid({
           </label>
         </div>
         <label className="space-y-1">
-          <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Access</span>
+          <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Access</span>
           <Select
             value={settings.accessMode}
             onChange={(event) => onSettingsChange(grid, "accessMode", event.target.value)}
@@ -1100,7 +1061,7 @@ export function ReportWriterDesignerGrid({
         </label>
         <div className="grid gap-2 sm:grid-cols-[0.8fr_1.2fr]">
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Principal</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Principal</span>
             <Select
               value={settings.principalKind}
               onChange={(event) => onSettingsChange(grid, "principalKind", event.target.value)}
@@ -1113,7 +1074,7 @@ export function ReportWriterDesignerGrid({
             </Select>
           </label>
           <label className="space-y-1">
-            <span className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(accessPrincipalIdLabel) && "uppercase tracking-[0.14em]")}>{accessPrincipalIdLabel}</span>
+            <span className={cn("text-xs text-muted-foreground", usesTrackedCaps(accessPrincipalIdLabel) && "type-label--caps")}>{accessPrincipalIdLabel}</span>
             <PrincipalIdInput
               principalKind={settings.principalKind}
               value={settings.principalId}
@@ -1127,7 +1088,7 @@ export function ReportWriterDesignerGrid({
       </div>
       {settings.previewDataset === "customRows" ? (
         <label className="mt-3 block space-y-1">
-          <span className="text-[10px] text-muted-foreground">Custom dataset rows</span>
+          <span className="text-xs text-muted-foreground">Custom dataset rows</span>
           <TextArea
             value={customDatasetText}
             onChange={(event) => onCustomDatasetChange(grid, event.target.value)}
@@ -1138,7 +1099,12 @@ export function ReportWriterDesignerGrid({
           />
         </label>
       ) : null}
-      {selectedDatasetSource ? (
+      {!dataset.rows || incompatible.length > 0 ? (
+        <p role="status" className="mt-3 text-xs text-muted-foreground">
+          {!dataset.rows ? dataset.detail : `Fields absent from this dataset · ${incompatible.join(", ")}`}
+        </p>
+      ) : null}
+      {selectedDatasetSource && dataset.rows ? (
         <div
           className="mt-3 rounded-md border border-border/70 bg-background/30 px-2.5 py-2 text-xs leading-5 text-muted-foreground"
           aria-label={`${grid.title} retained dataset source`}
@@ -1150,11 +1116,11 @@ export function ReportWriterDesignerGrid({
             {buildReportWriterDatasetFieldCatalog(selectedDatasetSource).map((field) => (
               <div key={field.name} role="listitem" className="rounded-sm border border-border/60 bg-secondary/25 px-2 py-1.5">
                 <span className="block font-medium text-foreground">{field.label || field.name}</span>
-                <span className="mt-0.5 block font-mono text-[11px] text-muted-foreground">
+                <span className="mt-0.5 block font-mono text-xs text-muted-foreground">
                   {field.name} · {field.role} · {field.dataType}
                 </span>
                 {field.description ? (
-                  <span className="mt-1 block text-[11px] leading-4 text-muted-foreground">{field.description}</span>
+                  <span className="mt-1 block text-xs leading-4 text-muted-foreground">{field.description}</span>
                 ) : null}
               </div>
             ))}
@@ -1178,20 +1144,23 @@ export function ReportWriterDesignerGrid({
         ) : null}
         <div className="mt-2 grid gap-2 md:grid-cols-[1fr_0.8fr_1fr]">
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Field</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Field</span>
             <Select
               value={settings.filterField}
               onChange={(event) => onSettingsChange(grid, "filterField", event.target.value)}
               aria-label={`${grid.title} filter field`}
             >
               <option value="">No filter</option>
-              {grid.sourceFields.map((field) => (
+              {settings.filterField && !sourceFields.some((field) => field.fieldName === settings.filterField) ? (
+                <option value={settings.filterField}>{settings.filterField}</option>
+              ) : null}
+              {sourceFields.map((field) => (
                 <option key={field.id} value={field.fieldName ?? field.label}>{field.label}</option>
               ))}
             </Select>
           </label>
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Operator</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Operator</span>
             <Select
               value={settings.filterOperator}
               onChange={(event) => onSettingsChange(grid, "filterOperator", event.target.value)}
@@ -1212,7 +1181,7 @@ export function ReportWriterDesignerGrid({
             </Select>
           </label>
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Value</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Value</span>
             <Input
               value={settings.filterValue}
               onChange={(event) => onSettingsChange(grid, "filterValue", event.target.value)}
@@ -1224,6 +1193,7 @@ export function ReportWriterDesignerGrid({
         </div>
         <ReportWriterExtraFilters
           grid={grid}
+          sourceFields={sourceFields}
           filters={settings.extraFilters}
           onFilterAdd={onFilterAdd}
           onFilterRemove={onFilterRemove}
@@ -1234,7 +1204,7 @@ export function ReportWriterDesignerGrid({
         <div>
           <div className="eyebrow-label">Fields</div>
           <div role="list" aria-label={`${grid.title} source fields`} className="mt-2 flex flex-wrap gap-1.5">
-            {grid.sourceFields.map((token) => (
+            {sourceFields.map((token) => (
               <ReportWriterTokenChip
                 key={token.id}
                 token={token}
@@ -1250,6 +1220,8 @@ export function ReportWriterDesignerGrid({
             zone="rowFields"
             label="Rows"
             tokens={rowTokens}
+            sourceFields={sourceFields}
+            onFieldAdd={onFieldAdd}
           onTokenDragStart={onTokenDragStart}
           onZoneDrop={onZoneDrop}
           onTokenRemove={onTokenRemove}
@@ -1260,6 +1232,8 @@ export function ReportWriterDesignerGrid({
             zone="columnFields"
             label="Columns"
             tokens={columnTokens}
+            sourceFields={sourceFields}
+            onFieldAdd={onFieldAdd}
           onTokenDragStart={onTokenDragStart}
           onZoneDrop={onZoneDrop}
           onTokenRemove={onTokenRemove}
@@ -1270,6 +1244,8 @@ export function ReportWriterDesignerGrid({
             zone="metrics"
             label="Metrics"
             tokens={metricTokens}
+            sourceFields={sourceFields}
+            onFieldAdd={onFieldAdd}
           onTokenDragStart={onTokenDragStart}
           onZoneDrop={onZoneDrop}
           onTokenRemove={onTokenRemove}
@@ -1291,7 +1267,7 @@ export function ReportWriterDesignerGrid({
         <div className="eyebrow-label">Custom formula</div>
         <div className="mt-2 grid gap-2 md:grid-cols-[0.8fr_0.9fr_1.3fr]">
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Name</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Name</span>
             <Input
               value={customFormula.name}
               onChange={(event) => onCustomFormulaChange(grid, "name", event.target.value)}
@@ -1300,7 +1276,7 @@ export function ReportWriterDesignerGrid({
             />
           </label>
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Label</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Label</span>
             <Input
               value={customFormula.label}
               onChange={(event) => onCustomFormulaChange(grid, "label", event.target.value)}
@@ -1308,7 +1284,7 @@ export function ReportWriterDesignerGrid({
             />
           </label>
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Expression</span>
+            <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Expression</span>
             <Input
               value={customFormula.expression}
               onChange={(event) => onCustomFormulaChange(grid, "expression", event.target.value)}
@@ -1341,20 +1317,20 @@ export function ReportWriterDesignerGrid({
             {formatRules.map((rule) => (
               <div key={rule.id} className="grid gap-2 md:grid-cols-[1fr_0.8fr_0.8fr_0.8fr_auto] items-end">
                 <label className="space-y-1">
-                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Column</span>
+                  <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Column</span>
                   <Select
                     value={rule.column}
                     onChange={(event) => onFormatRuleChange(grid, rule.id, "column", event.target.value)}
                     aria-label={`Formatting rule column for ${grid.title}`}
                   >
                     <option value="">Select column</option>
-                    {grid.sourceFields.map((field) => (
+                    {sourceFields.map((field) => (
                       <option key={field.id} value={field.fieldName ?? field.label}>{field.label}</option>
                     ))}
                   </Select>
                 </label>
                 <label className="space-y-1">
-                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Operator</span>
+                  <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Operator</span>
                   <Select
                     value={rule.operator}
                     onChange={(event) => onFormatRuleChange(grid, rule.id, "operator", event.target.value)}
@@ -1372,7 +1348,7 @@ export function ReportWriterDesignerGrid({
                   </Select>
                 </label>
                 <label className="space-y-1">
-                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Value</span>
+                  <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Value</span>
                   <Input
                     value={rule.value}
                     onChange={(event) => onFormatRuleChange(grid, rule.id, "value", event.target.value)}
@@ -1382,7 +1358,7 @@ export function ReportWriterDesignerGrid({
                   />
                 </label>
                 <label className="space-y-1">
-                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Style</span>
+                  <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Style</span>
                   <Select
                     value={rule.style}
                     onChange={(event) => onFormatRuleChange(grid, rule.id, "style", event.target.value)}
@@ -1426,7 +1402,7 @@ export function ReportWriterDesignerGrid({
         {chartDraft.enabled ? (
           <div className="mt-2 grid gap-2 md:grid-cols-[0.6fr_1fr_1.4fr]">
             <label className="space-y-1">
-              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Type</span>
+              <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Type</span>
               <Select
                 value={chartDraft.type}
                 onChange={(event) => onChartDraftChange(grid, "type", event.target.value)}
@@ -1440,20 +1416,20 @@ export function ReportWriterDesignerGrid({
               </Select>
             </label>
             <label className="space-y-1">
-              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Category field</span>
+              <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Category field</span>
               <Select
                 value={chartDraft.categoryField}
                 onChange={(event) => onChartDraftChange(grid, "categoryField", event.target.value)}
                 aria-label={`Chart category field for ${grid.title}`}
               >
                 <option value="">Select field</option>
-                {grid.sourceFields.map((field) => (
+                {sourceFields.map((field) => (
                   <option key={field.id} value={field.fieldName ?? field.label}>{field.label}</option>
                 ))}
               </Select>
             </label>
             <label className="space-y-1">
-              <span className="text-[10px] text-muted-foreground">Value columns (comma-separated)</span>
+              <span className="text-xs text-muted-foreground">Value columns (comma-separated)</span>
               <Input
                 value={chartDraft.valueColumns}
                 onChange={(event) => onChartDraftChange(grid, "valueColumns", event.target.value)}
@@ -1471,7 +1447,8 @@ export function ReportWriterDesignerGrid({
           size="sm"
           variant="secondary"
           aria-label={`Preview ${grid.title} report-writer grid`}
-          disabled={isPreviewing}
+          disabled={isPreviewing || !dataset.rows || noPreviewHost}
+          disabledReason={!dataset.rows ? dataset.detail : noPreviewHost ? "An accessible template is required to preview the grid." : undefined}
           busy={isPreviewing}
           busyLabel="Previewing"
           onClick={() => void onPreview(grid)}
@@ -1482,7 +1459,7 @@ export function ReportWriterDesignerGrid({
         <Button
           type="button"
           size="sm"
-          aria-label={`Save ${grid.title} as governed report template draft`}
+          aria-label={`Save ${grid.title} as report template draft`}
           disabled={isSaving}
           busy={isSaving}
           busyLabel="Saving"
@@ -1499,8 +1476,13 @@ export function ReportWriterDesignerGrid({
   );
 }
 
-function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: ReportingWriterGridRow; preview: ReportWriterGridRender; previousPreview?: ReportWriterGridRender | null }) {
-  const rows = preview.rows.slice(0, 5);
+function ReportWriterPreviewTable({ grid, preview: rendered, previousPreview }: { grid: ReportingWriterGridRow; preview: ReportWriterPreview; previousPreview?: ReportWriterGridRender | null }) {
+  const proofId = useId();
+  const preview = rendered.grid;
+  const rows = preview.chart ? preview.rows : preview.rows.slice(0, 5);
+  const chartKeys = preview.chart ? [preview.chart.categoryField, ...preview.chart.series.map(({ key }) => key)] : [];
+  const proofColumns = [...new Set(chartKeys)].filter((key) => !preview.columns.some((column) => column.key.toLowerCase() === key.toLowerCase()));
+  const columns = [...preview.columns, ...proofColumns.map((key) => ({ key, label: key, role: "source field" }))];
   const lineage = preview.lineage;
   const dataDictionary = preview.dataDictionary ?? [];
   const validationChecks = preview.validationChecks ?? [];
@@ -1514,17 +1496,25 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
         <div>
           <div className="eyebrow-label">Live preview</div>
           <p className="mt-1 text-xs text-muted-foreground">{preview.title} · {preview.rows.length} row{preview.rows.length === 1 ? "" : "s"}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{rendered.sourceDetail}</p>
         </div>
         <Badge variant="outline">{preview.kind}</Badge>
       </div>
+      {preview.warnings.length > 0 ? (
+        <ul aria-label={`${grid.title} preview warnings`} className="mt-2 space-y-1 text-xs text-warning">
+          {preview.warnings.map((warning) => (
+            <li key={warning}>{warning}</li>
+          ))}
+        </ul>
+      ) : null}
       <div className="mt-2 max-h-56 overflow-auto rounded-sm border border-border/60" role="region" aria-label={`${grid.title} preview table scroll area`} tabIndex={0}>
         <table className="min-w-full table-fixed text-left text-xs" aria-label={`${grid.title} preview rows`}>
-          <thead className="bg-secondary/40 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+          <thead className="bg-secondary/40 text-xs uppercase tracking-[0.12em] text-muted-foreground">
             <tr>
-              {preview.columns.map((column) => (
+            {columns.map((column) => (
                 <th key={column.key} scope="col" className="min-w-28 px-2 py-1.5 font-semibold">
                   <span className="block truncate" title={column.label}>{column.label}</span>
-                  <span className="mt-0.5 block truncate font-mono text-[9px] normal-case tracking-normal" title={column.role}>
+                  <span className="mt-0.5 block truncate font-mono text-xs normal-case tracking-normal" title={column.role}>
                     {column.role}
                   </span>
                 </th>
@@ -1532,9 +1522,9 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
             </tr>
           </thead>
           <tbody>
-            {rows.length > 0 ? rows.map((row) => (
-              <tr key={row.rowKey} className="border-t border-border/50">
-                {preview.columns.map((column) => (
+            {rows.length > 0 ? rows.map((row, index) => (
+              <tr key={`${row.rowKey}:${index}`} id={`${proofId}-row-${index}`} tabIndex={-1} className="border-t border-border/50 target:bg-secondary/60">
+                {columns.map((column) => (
                   <td
                     key={`${row.rowKey}:${column.key}`}
                     className={cn("px-2 py-1.5 font-mono text-foreground", cellStyleClassName(resolveCellStyle(row, column.key)))}
@@ -1545,7 +1535,7 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
               </tr>
             )) : (
               <tr>
-                <td className="px-2 py-2 text-muted-foreground" colSpan={Math.max(preview.columns.length, 1)}>
+                <td className="px-2 py-2 text-muted-foreground" colSpan={Math.max(columns.length, 1)}>
                   No rows returned.
                 </td>
               </tr>
@@ -1553,10 +1543,12 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
           </tbody>
         </table>
       </div>
-      {preview.chart ? <ReportWriterChartPreview chart={preview.chart} /> : null}
+      {preview.chart ? (
+        <ReportWriterChartPreview chart={preview.chart} grid={preview} proofId={proofId} sourceDetail={rendered.sourceDetail} />
+      ) : null}
       {comparison ? (
         <details className="mt-2 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1.5 text-xs">
-          <summary className="cursor-pointer select-none text-[11px] font-semibold text-foreground">
+          <summary className="cursor-pointer select-none text-xs font-semibold text-foreground">
             Changes since previous preview ({comparisonChangeCount} changed)
           </summary>
           <div className="mt-2">
@@ -1569,17 +1561,17 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
           <div className="eyebrow-label">Audit trace</div>
           <dl className="mt-2 grid gap-2 sm:grid-cols-2">
             <div>
-              <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Rows</dt>
+              <dt className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Rows</dt>
               <dd className="mt-1 font-mono text-foreground">
                 {lineage.inputRowCount} input / {lineage.filteredInputRowCount ?? lineage.inputRowCount} filtered / {lineage.outputRowCount} output
               </dd>
             </div>
             <div>
-              <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Sources</dt>
+              <dt className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Sources</dt>
               <dd className="mt-1 break-words font-mono text-foreground">{lineage.sourceFields.length > 0 ? lineage.sourceFields.join(", ") : "None"}</dd>
             </div>
             <div>
-              <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Metrics</dt>
+              <dt className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Metrics</dt>
               <dd className="mt-1 break-words font-mono text-foreground">
                 {lineage.metrics.length > 0
                   ? lineage.metrics.map((metric) => `${metric.name}=${metric.function}(${metric.sourceField})`).join(", ")
@@ -1587,7 +1579,7 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
               </dd>
             </div>
             <div>
-              <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Formulas</dt>
+              <dt className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Formulas</dt>
               <dd className="mt-1 break-words font-mono text-foreground">
                 {lineage.formulas.length > 0
                   ? lineage.formulas.map((formula) => `${formula.name}=${formula.expression} [${formula.sourceFields.join(", ")}]`).join(", ")
@@ -1595,7 +1587,7 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
               </dd>
             </div>
             <div>
-              <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Filters</dt>
+              <dt className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Filters</dt>
               <dd className="mt-1 break-words font-mono text-foreground">
                 {lineage.filters && lineage.filters.length > 0
                   ? lineage.filters.map((filter) => `${filter.field} ${formatReportWriterFilterOperator(normalizeReportWriterFilterOperator(filter.operator))}${filter.value ? ` ${filter.value}` : ""}`).join(", ")
@@ -1616,7 +1608,7 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
                   <Badge variant={field.isGenerated ? "warning" : "outline"}>{field.role}</Badge>
                   <Badge variant="outline">{field.dataType}</Badge>
                 </div>
-                <p className="mt-1 break-words text-[11px] text-muted-foreground">
+                <p className="mt-1 break-words text-xs text-muted-foreground">
                   {field.sourceField}
                   {field.description ? ` · ${field.description}` : ""}
                 </p>
@@ -1634,19 +1626,12 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
                 <Badge variant={reportWriterValidationCheckVariant(check.status)}>{check.status}</Badge>
                 <span className="min-w-0">
                   <span className="block break-all font-mono text-foreground">{check.checkId}</span>
-                  <span className="mt-1 block break-words text-[11px] text-muted-foreground">{check.detail}</span>
+                  <span className="mt-1 block break-words text-xs text-muted-foreground">{check.detail}</span>
                 </span>
               </li>
             ))}
           </ul>
         </div>
-      ) : null}
-      {preview.warnings.length > 0 ? (
-        <ul aria-label={`${grid.title} preview warnings`} className="mt-2 space-y-1 text-xs text-warning">
-          {preview.warnings.map((warning) => (
-            <li key={warning}>{warning}</li>
-          ))}
-        </ul>
       ) : null}
     </div>
   );
@@ -1674,6 +1659,8 @@ interface ReportWriterDropZoneViewProps {
   zone: ReportWriterDropZone;
   label: string;
   tokens: ReportingWriterToken[];
+  sourceFields?: ReportingWriterToken[];
+  onFieldAdd?: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone, token: ReportingWriterToken) => void;
   onTokenDragStart: (event: DragEvent<HTMLElement>, token: ReportingWriterToken, origin?: ReportWriterTokenDragOrigin | null) => void;
   onZoneDrop: (event: DragEvent<HTMLElement>, grid: ReportingWriterGridRow, zone: ReportWriterDropZone) => void;
   onTokenRemove: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone, tokenId: string) => void;
@@ -1685,21 +1672,22 @@ function ReportWriterDropZoneView({
   zone,
   label,
   tokens,
+  sourceFields,
+  onFieldAdd,
   onTokenDragStart,
   onZoneDrop,
   onTokenRemove,
   onTokenMove
 }: ReportWriterDropZoneViewProps) {
+  const fields = sourceFields?.filter((field) => zone !== "metrics" || field.kind !== "formula") ?? [];
   return (
     <div
-      role="list"
-      aria-label={`${grid.title} ${label}`}
       className="min-h-24 rounded-md border border-dashed border-border/70 bg-background/25 px-2.5 py-2"
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => onZoneDrop(event, grid, zone)}
     >
-      <div className={cn("mb-2 text-[10px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</div>
-      <div className="flex flex-wrap gap-1.5">
+      <div className={cn("mb-2 text-xs text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</div>
+      <div role="list" aria-label={`${grid.title} ${label}`} className="flex flex-wrap gap-1.5">
         {tokens.length > 0 ? tokens.map((token, tokenIndex) => (
           <ReportWriterTokenChip
             key={token.id}
@@ -1716,6 +1704,25 @@ function ReportWriterDropZoneView({
           <span className="text-xs text-muted-foreground">No fields</span>
         )}
       </div>
+      {fields.length > 0 && onFieldAdd ? (
+        <Select
+          className="mt-2"
+          aria-label={`Add field to ${grid.title} ${label}`}
+          value=""
+          onChange={(event) => {
+            const field = fields.find((item) => item.id === event.target.value);
+            if (field) onFieldAdd(grid, zone, field);
+          }}
+        >
+          <option value="">Add field</option>
+          {fields.map((field) => (
+            <option key={field.id} value={field.id}
+              disabled={tokens.some((token) => token.fieldName?.toLowerCase() === field.fieldName?.toLowerCase())}>
+              {field.label}
+            </option>
+          ))}
+        </Select>
+      ) : null}
     </div>
   );
 }
@@ -1744,7 +1751,7 @@ function ReportWriterTokenChip({
       role="listitem"
       draggable={draggable}
       onDragStart={(event) => onDragStart(event, token, dragOrigin ?? null)}
-      className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-1.5 rounded-sm border border-border/70 bg-secondary/35 px-2 py-1 text-[11px] text-foreground"
+      className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-1.5 rounded-sm border border-border/70 bg-secondary/35 px-2 py-1 text-xs text-foreground"
       title={token.detail}
     >
       <span className={cn("inline-flex min-w-0 flex-wrap items-center gap-1.5", (onMove || onRemove) && "w-full")}>

@@ -127,7 +127,7 @@ export function ExportsReportRunner({
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <div className={eyebrowClassName(workspaceLabel)}>{workspaceLabel}</div>
-              <CardTitle>Run a governed report now</CardTitle>
+              <CardTitle>Run a report now</CardTitle>
               <CardDescription>
                 Submit approved Reporting templates through Meridian reporting services with explicit date, requester, retry, and dataset context.
               </CardDescription>
@@ -238,7 +238,7 @@ export function ExportsReportRunner({
             <div>
               <h4 className="text-sm font-semibold text-foreground">Restate a released report</h4>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Regenerating a released report is a governed action that supersedes the released run. Select the
+                Regenerating a released report is a controlled action that supersedes the released run. Select the
                 released run to restate — its template and as-of date are reused so the new run versions into the same
                 series — and record why. The reason is retained in the run&apos;s audit trail.
               </p>

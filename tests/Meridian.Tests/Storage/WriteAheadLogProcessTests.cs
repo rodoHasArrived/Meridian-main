@@ -23,8 +23,8 @@ public sealed class WriteAheadLogProcessTests
         };
         foreach (var argument in new[]
         {
-            "exec", "--depsfile", Path.Combine(AppContext.BaseDirectory, "Meridian.Tests.deps.json"),
-            "--runtimeconfig", Path.Combine(AppContext.BaseDirectory, "Meridian.Tests.runtimeconfig.json"),
+            "exec", "--depsfile", Path.Combine(AppContext.BaseDirectory, $"{typeof(WriteAheadLogProcessTests).Assembly.GetName().Name}.deps.json"),
+            "--runtimeconfig", Path.Combine(AppContext.BaseDirectory, $"{typeof(WriteAheadLogProcessTests).Assembly.GetName().Name}.runtimeconfig.json"),
             typeof(ProcessTestHelperMarker).Assembly.Location, "wal-append-and-wait", root, ready, marker
         })
             start.ArgumentList.Add(argument);
@@ -57,6 +57,15 @@ public sealed class WriteAheadLogProcessTests
                     await Task.Delay(20, flushDeadline.Token);
             }
 
+            // The live writer owns the directory, so a second process must not open it: it would
+            // treat the writer's live segment as closed and archive it away.
+            await using (var intruder = new WriteAheadLog(root))
+            {
+                var intrusion = await Record.ExceptionAsync(() => intruder.InitializeAsync(timeout.Token));
+                Assert.IsType<WalDirectoryInUseException>(intrusion);
+            }
+
+            // Killing the owner releases the lock with its handles; recovery can then proceed.
             writer.Kill(entireProcessTree: true);
             await writer.WaitForExitAsync(timeout.Token);
 

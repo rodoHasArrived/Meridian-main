@@ -357,6 +357,64 @@ public sealed class AccrualLedgerServiceTests
         var entry = writes.Should().ContainSingle().Subject.Entry;
         entry.Lines.Sum(line => line.Debit).Should().Be(1000.00m);
         entry.Lines.Sum(line => line.Credit).Should().Be(1000.00m);
+        entry.Lines.Should().OnlyContain(line => line.Currency != null &&
+            line.Currency.TransactionCurrency == "USD" && line.Currency.FunctionalCurrency == "USD" &&
+            line.Currency.FxRateToFunctional == 1m &&
+            line.Currency.TransactionDebit == line.Debit && line.Currency.TransactionCredit == line.Credit);
+    }
+
+    [Theory]
+    [InlineData("loan.drawdown-booked", """{"amount":1000}""", true)]
+    [InlineData("loan.drawdown-booked", """{"amount":0}""", false)]
+    [InlineData("loan.daily-accrual-posted", """{"interestAmount":10,"commitmentFeeAmount":0}""", true)]
+    [InlineData("loan.daily-accrual-posted", """{"interestAmount":0,"commitmentFeeAmount":0}""", false)]
+    [InlineData("loan.status-transitioned", """{"status":"Active"}""", false)]
+    public async Task AccountingImpactManifest_UsesThePostingKernel(string eventType, string payloadJson, bool expected)
+    {
+        using var payload = JsonDocument.Parse(payloadJson);
+
+        LoanAccountingProjector.HasAccountingImpact(eventType, payload.RootElement).Should().Be(expected);
+        var writes = await ProjectAsync(eventType, payloadJson);
+        (writes.Count > 0).Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("""{"amount":-1}""")]
+    [InlineData("""{"amount":"1"}""")]
+    [InlineData("""{}""")]
+    public void AccountingImpactManifest_RefusesMalformedSourceInsteadOfCallingItNonAccounting(string payloadJson)
+    {
+        using var payload = JsonDocument.Parse(payloadJson);
+        var inspect = () => LoanAccountingProjector.HasAccountingImpact("loan.drawdown-booked", payload.RootElement);
+
+        inspect.Should().Throw<DirectLendingCommandException>();
+    }
+
+    [Fact]
+    public async Task ProjectAsync_UsesSharedCashAndLoanAccountsWithRetainedScope()
+    {
+        var writes = await ProjectAsync("loan.drawdown-booked", """{"amount":1000.00}""");
+        var entry = writes.Should().ContainSingle().Subject.Entry;
+        var chart = StandardChartOfAccounts.Instance;
+        var accountId = entry.Metadata.FinancialAccountId;
+
+        entry.Lines.Should().ContainSingle(line =>
+            line.Account == chart.Resolve(LedgerAccountRole.Cash, accountId) && line.Credit == 1000m);
+        entry.Lines.Should().ContainSingle(line =>
+            line.Account == chart.Resolve(LedgerAccountRole.LoanPrincipal, accountId, "NWTERM26") && line.Debit == 1000m);
+        entry.Lines.Should().OnlyContain(line => line.Account.FinancialAccountId == accountId);
+    }
+
+    [Fact]
+    public async Task ProjectAsync_RejectsNegativeInterestInsteadOfPostingOnlyThePositiveFee()
+    {
+        var act = () => ProjectAsync(
+            "loan.daily-accrual-posted",
+            """{"interestAmount":-10,"commitmentFeeAmount":2.50}""");
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex => ex.Error.Code == DirectLendingErrorCode.Validation)
+            .WithMessage("*'interestAmount' cannot be negative*");
     }
 
     [Theory]

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Contracts.FixedIncome;
 
 /// <summary>
@@ -9,7 +11,12 @@ public sealed record BondCalculationContext(
     DateOnly? SettlementDate = null,
     DateTimeOffset? KnownAt = null,
     long? SecurityVersion = null,
-    IReadOnlyList<BondPinnedCurveInput>? Curves = null);
+    IReadOnlyList<BondPinnedCurveInput>? Curves = null)
+{
+    /// <summary>Explicit immutable observed-reset selections; absence never reads a changing latest fixing.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<Guid>? ObservedFixingReceiptIds { get; init; }
+}
 
 /// <summary>An immutable market-input version selected for a calculation role.</summary>
 public sealed record BondPinnedCurveInput(string Role, Guid CurveId, Guid CurveVersionId);

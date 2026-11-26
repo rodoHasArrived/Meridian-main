@@ -14,16 +14,19 @@ import type {
   CoveredCallScoringMode,
   CoveredCallTrade
 } from "@/lib/covered-call";
-import { buildShortCallPayoffCurve, shortCallBreakEven } from "@/lib/covered-call/payoff";
+import { shortCallBreakEven } from "@/lib/covered-call/payoff";
+import { formatPrefixedCurrency } from "@/lib/format";
 import {
   formatCount,
   formatDecimal,
   formatExitReason,
   formatRatioAsPercent,
   formatPrice,
-  formatSignedMoney,
-  formatUtcDateTime
+  formatCoveredCallDateTime
 } from "@/screens/covered-call-screen.formatters";
+import { buildCoveredCallPayoffChart, type CoveredCallPayoffChartViewModel } from "./covered-call-screen.payoff-chart";
+
+export type { CoveredCallPayoffChartLineViewModel, CoveredCallPayoffChartViewModel } from "./covered-call-screen.payoff-chart";
 
 export type CoveredCallStage = "configure" | "run" | "results";
 
@@ -279,21 +282,6 @@ export interface CoveredCallPayoffPositionOptionViewModel {
   ariaLabel: string;
 }
 
-export interface CoveredCallPayoffChartLineViewModel {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-}
-
-export interface CoveredCallPayoffChartViewModel {
-  viewBox: string;
-  ariaLabel: string;
-  zeroLine: CoveredCallPayoffChartLineViewModel;
-  strikeLine: CoveredCallPayoffChartLineViewModel;
-  path: string;
-}
-
 export interface CoveredCallPayoffPanelViewModel {
   title: string;
   description: string;
@@ -348,7 +336,7 @@ const COVERED_CALL_FORM_FIELD_DEFINITIONS: CoveredCallFormFieldDefinition[] = [
     label: "Underlying",
     type: "text",
     required: true,
-    helperText: "Ticker symbol used for historical bars, chain preview, and result handoffs.",
+    helperText: "Ticker symbol used for historical bars, the chain preview, and the results you send on.",
     errorId: "cc-underlyingSymbol-error",
     options: []
   },
@@ -1138,7 +1126,7 @@ export function buildCoveredCallPayoffPanel(
     positionOptions: result.openPositionsAtEnd.map((position, index) =>
       buildCoveredCallPayoffPositionOption(result.underlyingSymbol, position, index, selectedPositionIndex)
     ),
-    chart: buildCoveredCallPayoffChart(selectedPosition, result.underlyingSymbol)
+    chart: buildCoveredCallPayoffChart(selectedPosition, result)
   };
 }
 
@@ -1162,47 +1150,6 @@ function buildCoveredCallPayoffPositionOption(
   };
 }
 
-function buildCoveredCallPayoffChart(
-  position: CoveredCallOpenPosition,
-  underlyingSymbol: string
-): CoveredCallPayoffChartViewModel {
-  const width = 320;
-  const height = 180;
-  const spotMin = position.strike * 0.75;
-  const spotMax = position.strike * 1.25;
-  const samples = buildShortCallPayoffCurve({
-    strike: position.strike,
-    entryCredit: position.entryCredit,
-    contracts: position.contracts,
-    multiplier: position.multiplier
-  }, spotMin, spotMax, 80);
-  const allPayoffs = samples.map((sample) => sample.payoff);
-  const yMin = Math.min(...allPayoffs);
-  const yMax = Math.max(...allPayoffs);
-  const xScale = (spot: number) => ((spot - spotMin) / Math.max(spotMax - spotMin, 1e-6)) * width;
-  const yScale = (value: number) => height - ((value - yMin) / Math.max(yMax - yMin, 1e-6)) * height;
-  if (samples.length === 0 || !Number.isFinite(yMin) || !Number.isFinite(yMax)) {
-    return {
-      viewBox: `0 0 ${width} ${height}`,
-      ariaLabel: `${underlyingSymbol} ${formatPrice(position.strike)} short-call payoff diagram unavailable`,
-      zeroLine: { x1: 0, y1: height / 2, x2: width, y2: height / 2 },
-      strikeLine: { x1: width / 2, y1: 0, x2: width / 2, y2: height },
-      path: `M0,${height / 2} L${width},${height / 2}`
-    };
-  }
-  const path = samples
-    .map((sample, index) => `${index === 0 ? "M" : "L"}${xScale(sample.spot).toFixed(1)},${yScale(sample.payoff).toFixed(1)}`)
-    .join(" ");
-
-  return {
-    viewBox: `0 0 ${width} ${height}`,
-    ariaLabel: `${underlyingSymbol} ${formatPrice(position.strike)} short-call payoff diagram`,
-    zeroLine: { x1: 0, y1: yScale(0), x2: width, y2: yScale(0) },
-    strikeLine: { x1: xScale(position.strike), y1: 0, x2: xScale(position.strike), y2: height },
-    path
-  };
-}
-
 function buildCoveredCallTradeTimelineRow(
   underlyingSymbol: string,
   trade: CoveredCallTrade,
@@ -1210,7 +1157,7 @@ function buildCoveredCallTradeTimelineRow(
   selectedIndex: number
 ): CoveredCallTradeTimelineRowViewModel {
   const strikeLabel = formatPrice(trade.strike);
-  const pnlLabel = formatSignedMoney(trade.totalNetPnl);
+  const pnlLabel = formatPrefixedCurrency(trade.totalNetPnl);
   const statusLabel = trade.wasAssigned ? "Assigned" : trade.isWin ? "Closed gain" : "Closed loss";
   const exitReasonLabel = formatExitReason(trade.exitReason);
   const statusBadgeVariant: CoveredCallBadgeVariant = trade.wasAssigned
@@ -1256,7 +1203,7 @@ function buildCoveredCallTradeTimelineDetail(
     : trade.isWin
       ? "success"
       : "danger";
-  const totalPnl = formatSignedMoney(trade.totalNetPnl);
+  const totalPnl = formatPrefixedCurrency(trade.totalNetPnl);
 
   return {
     panelId: COVERED_CALL_TRADE_DETAIL_PANEL_ID,
@@ -1268,9 +1215,9 @@ function buildCoveredCallTradeTimelineDetail(
     statusBadgeVariant,
     fields: [
       { label: "Exit reason", value: exitReasonLabel },
-      { label: "Entry credit", value: formatSignedMoney(trade.entryCredit) },
-      { label: "Exit debit", value: formatSignedMoney(trade.exitDebit) },
-      { label: "Net per contract", value: formatSignedMoney(trade.netPnlPerContract) },
+      { label: "Entry credit", value: formatPrefixedCurrency(trade.entryCredit) },
+      { label: "Exit debit", value: formatPrefixedCurrency(trade.exitDebit) },
+      { label: "Net per contract", value: formatPrefixedCurrency(trade.netPnlPerContract) },
       { label: "Total net P&L", value: totalPnl },
       { label: "Holding days", value: formatCount(trade.holdingDays) },
       { label: "Multiplier", value: formatCount(trade.multiplier) },
@@ -1373,7 +1320,7 @@ function buildChainPreviewRow(
 ): CoveredCallChainPreviewRowViewModel {
   const strikeLabel = formatPrice(row.strike);
   const bidLabel = formatPrice(row.bid);
-  const deltaLabel = formatDecimal(row.delta, 2);
+  const deltaLabel = row.deltaAvailable === false ? "Unavailable" : formatDecimal(row.delta, 2);
   const statusLabel = row.meetsAllFilters ? "Pass" : row.rejectReason ?? "Reject";
   const statusBadgeVariant: CoveredCallBadgeVariant = row.meetsAllFilters ? "success" : "outline";
   const rowBase = `${preview.underlyingSymbol} ${strikeLabel} call expiring ${row.expiration}`;
@@ -1386,7 +1333,7 @@ function buildChainPreviewRow(
     daysToExpirationLabel: formatCount(row.daysToExpiration),
     bidLabel,
     deltaLabel,
-    openInterestLabel: formatCount(row.openInterest),
+    openInterestLabel: row.openInterestAvailable === false ? "Unavailable" : formatCount(row.openInterest),
     statusLabel,
     statusBadgeVariant,
     statusAriaLabel: row.meetsAllFilters
@@ -1423,10 +1370,13 @@ function buildChainPreviewDetail(
       { label: "Expiration", value: row.expiration },
       { label: "DTE", value: formatCount(row.daysToExpiration) },
       { label: "Bid / Ask", value: `${formatPrice(row.bid)} / ${formatPrice(row.ask)}` },
-      { label: "Delta", value: formatDecimal(row.delta, 2) },
+      { label: "Delta", value: row.deltaAvailable === false ? "Unavailable" : formatDecimal(row.delta, 2) },
       { label: "Implied volatility", value: row.impliedVolatility === null ? "—" : formatRatioAsPercent(row.impliedVolatility) },
-      { label: "Open interest", value: formatCount(row.openInterest) },
-      { label: "Volume", value: formatCount(row.volume) }
+      { label: "Open interest", value: row.openInterestAvailable === false ? "Unavailable" : formatCount(row.openInterest) },
+      { label: "Volume", value: row.volumeAvailable === false ? "Unavailable" : formatCount(row.volume) },
+      { label: "Spread / midpoint", value: row.spreadFraction == null ? "Unavailable" : formatRatioAsPercent(row.spreadFraction) },
+      { label: "Quoted bid premium / unit", value: formatPrice(row.bid) },
+      { label: "Contract multiplier", value: row.multiplier == null ? "Unavailable" : formatCount(row.multiplier) }
     ],
     ariaLabel: `Selected covered-call candidate: ${preview.underlyingSymbol} ${strikeLabel} call expiring ${row.expiration}`
   };
@@ -1440,7 +1390,7 @@ function clampIndex(index: number, length: number): number {
 
 export function buildCoveredCallHistoryRows(history: CoveredCallRunSummary[]): CoveredCallHistoryRowViewModel[] {
   return history.map((row) => {
-    const startedAtLabel = formatUtcDateTime(row.startedAt);
+    const startedAtLabel = formatCoveredCallDateTime(row.startedAt);
     const rangeLabel = `${row.from} to ${row.to}`;
     const statusBadgeVariant = statusBadgeVariantForHistory(row.status);
     const cagrLabel = row.cagr === null ? "—" : formatRatioAsPercent(row.cagr);
@@ -1522,7 +1472,7 @@ export interface CoveredCallScreenViewModel extends CoveredCallScreenState {
   selectChainRow: (index: number) => void;
   startRun: () => Promise<void>;
   cancelRun: () => Promise<void>;
-  loadHistory: () => Promise<void>;
+  loadHistory: (signal?: AbortSignal) => Promise<void>;
   openRun: (runId: string) => Promise<void>;
   selectTradeRow: (index: number) => void;
   selectOpenPosition: (index: number) => void;
@@ -1586,6 +1536,10 @@ export function useCoveredCallScreenViewModel(
   const [pendingCancelRunId, setPendingCancelRunId] = useState<string | null>(null);
 
   const setField = useCallback(<K extends keyof CoveredCallFormState>(key: K, value: CoveredCallFormState[K]) => {
+    if (["underlyingSymbol", "from", "minStrike", "maxDelta", "minDte", "maxDte", "minOpenInterest", "minVolume", "maxSpreadPct"].includes(key)) {
+      chainAbortRef.current?.abort();
+      setChainPreview({ status: "idle", data: null, error: null, selectedIndex: 0 });
+    }
     setForm((prev) => ({ ...prev, [key]: value }));
     setFormErrors((prev) => {
       if (!(key in prev)) return prev;
@@ -1596,6 +1550,8 @@ export function useCoveredCallScreenViewModel(
   }, []);
 
   const resetForm = useCallback(() => {
+    chainAbortRef.current?.abort();
+    setChainPreview({ status: "idle", data: null, error: null, selectedIndex: 0 });
     setForm(DEFAULT_COVERED_CALL_FORM);
     setFormErrors({});
     setPendingCancelRunId(null);
@@ -1644,9 +1600,9 @@ export function useCoveredCallScreenViewModel(
         maxSpreadPct: Number(form.maxSpreadPct)
       }, controller.signal);
 
-      setChainPreview({ status: "ready", data, error: null, selectedIndex: 0 });
+      if (!controller.signal.aborted) setChainPreview({ status: "ready", data, error: null, selectedIndex: 0 });
     } catch (error) {
-      if ((error as Error).name === "AbortError") return;
+      if (controller.signal.aborted || (error as Error).name === "AbortError") return;
       setChainPreview({
         status: "error",
         data: null,
@@ -1677,6 +1633,7 @@ export function useCoveredCallScreenViewModel(
       void refreshChainPreview();
     }, chainDebounceMs);
     return () => {
+      chainAbortRef.current?.abort();
       if (chainDebounceRef.current !== null) {
         clearTimeout(chainDebounceRef.current);
         chainDebounceRef.current = null;
@@ -1810,17 +1767,19 @@ export function useCoveredCallScreenViewModel(
     }
   }, [pendingCancelRunId, run.isCancelling, run.runId, services, stopPolling]);
 
-  const loadHistory = useCallback(async () => {
+  const loadHistory = useCallback(async (signal?: AbortSignal) => {
     setHistoryLoading(true);
     setHistoryError(null);
     try {
-      const items = await services.listRuns(50);
-      setHistory(items);
+      const items = await services.listRuns(50, signal);
+      if (!signal?.aborted) setHistory(items);
     } catch (error) {
-      setHistoryError(describeApiError(error, "Previous covered-call runs failed to load."));
+      if (!signal?.aborted) setHistoryError(describeApiError(error, "Previous covered-call runs failed to load."));
     } finally {
-      setHistoryLoaded(true);
-      setHistoryLoading(false);
+      if (!signal?.aborted) {
+        setHistoryLoaded(true);
+        setHistoryLoading(false);
+      }
     }
   }, [services]);
 

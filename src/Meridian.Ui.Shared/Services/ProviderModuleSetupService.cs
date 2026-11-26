@@ -194,32 +194,19 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
 
-        // Persist first; only update live registry when config write succeeds to keep
-        // the in-process state and the persisted config in sync across restarts.
-        var result = await MutateConfigAsync(cfg =>
+        // Startup rebuilds the provider graph. This response reports the saved revision and its pending changes.
+        return await MutateConfigAsync(cfg =>
         {
             var modules = cfg.ProviderModules?.Modules is not null
                 ? new Dictionary<string, ProviderModuleSettings>(cfg.ProviderModules.Modules, StringComparer.OrdinalIgnoreCase)
                 : new Dictionary<string, ProviderModuleSettings>(StringComparer.OrdinalIgnoreCase);
 
-            if (modules.TryGetValue(moduleId, out var existing))
-                modules[moduleId] = existing with { Enabled = enabled };
+            if (!modules.TryGetValue(moduleId, out var existing))
+                throw new InvalidOperationException("Configure this provider module before changing its enabled state.");
+            modules[moduleId] = existing with { Enabled = enabled };
 
             return cfg with { ProviderModules = new ProviderModulesConfig(modules) };
-        }, ct).ConfigureAwait(false);
-
-        if (!result.Success)
-            return result;
-
-        if (_providerRegistry is not null)
-        {
-            if (enabled)
-                _providerRegistry.Enable(moduleId);
-            else
-                _providerRegistry.Disable(moduleId);
-        }
-
-        return result;
+        }, ct, includeChangeStatus: true).ConfigureAwait(false);
     }
 
     public async Task<ProviderModuleSetupResult> RemoveModuleAsync(string moduleId, CancellationToken ct = default)
@@ -392,12 +379,14 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
 
     private async Task<ProviderModuleSetupResult> MutateConfigAsync(
         Func<AppConfig, AppConfig> mutate,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool includeChangeStatus = false)
     {
         try
         {
-            await _configStore.UpdateAsync(mutate, ct).ConfigureAwait(false);
-            return ProviderModuleSetupResult.Ok();
+            var status = await _configStore.UpdateWithChangeStatusAsync(mutate, ct).ConfigureAwait(false);
+            var result = ProviderModuleSetupResult.Ok();
+            return includeChangeStatus ? result with { ChangeStatus = status } : result;
         }
         catch (OperationCanceledException)
         {

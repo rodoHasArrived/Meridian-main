@@ -5,6 +5,7 @@ using System.Threading;
 using Meridian.Core.Logging;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
+using Meridian.Storage.Policies;
 using Serilog;
 
 namespace Meridian.Storage.Services;
@@ -240,7 +241,14 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
         long bytesBefore = 0;
         long bytesAfter = 0;
 
-        var cutoffDate = DateTime.UtcNow - options.MaxFileAge;
+        ArgumentNullException.ThrowIfNull(options);
+        if (options.MaxFileAge < TimeSpan.Zero)
+            throw new ArgumentOutOfRangeException(nameof(options), "MaxFileAge must not be negative.");
+        if (options.MaxFilesPerMerge < 2)
+            throw new ArgumentOutOfRangeException(nameof(options), "MaxFilesPerMerge must be at least two.");
+        var now = DateTimeOffset.UtcNow;
+        var cutoffDate = now.UtcDateTime - options.MaxFileAge;
+        var policy = new JsonlStoragePolicy(_options);
 
         // Find small files eligible for merging. Only plain .jsonl files qualify: merging is a
         // text concatenation, and running it over compressed (.gz/.zst/.lz4) or parquet files
@@ -253,6 +261,10 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
 
         var smallFiles = allSmallDataFiles
             .Where(f => f.FullName.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase))
+            // An old filesystem timestamp cannot prove that an event-time partition is closed.
+            // Unknown/nonpartitioned paths stay untouched rather than guessing their identity.
+            .Where(f => policy.TryParsePath(f.FullName) is { Date: { } start } &&
+                        DefragPartitionEnd(start) is { } end && end <= now)
             .OrderBy(f => f.DirectoryName)
             .ThenBy(f => f.Name)
             .ToList();
@@ -265,9 +277,10 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
                 excludedCount);
         }
 
-        // Group files by directory for merging
+        // A directory can hold unrelated symbols, types, providers and event-time periods
+        // (especially under Flat). Merge only fragments of the exact same partition.
         var groups = smallFiles
-            .GroupBy(f => f.DirectoryName)
+            .GroupBy(f => (f.DirectoryName, Metadata: policy.TryParsePath(f.FullName)))
             .Where(g => g.Count() >= 2);
 
         if (options.DryRun)
@@ -314,8 +327,21 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
             mergeGroupsAttempted++;
             var groupErrorCount = errors.Count;
 
+            var leases = new List<IDisposable>();
             try
             {
+                // Hold both writer fences until every source has been retired. Checking once
+                // without holding the leases leaves a check/open/delete race with appenders.
+                foreach (var file in filesToMerge)
+                {
+                    if (!JsonlWriteFence.TryEnterExclusive(file.FullName, out var fence))
+                        throw new IOException($"Refusing to merge a file that is open for writing: {file.FullName}");
+                    leases.Add(fence);
+                    if (!JsonlWriterLock.TryAcquireExclusive(file.FullName, out var writerLock))
+                        throw new IOException($"Refusing to merge a file another process has open for writing: {file.FullName}");
+                    leases.Add(writerLock!);
+                    RequireUnchangedSource(file.FullName, (file.Length, file.LastWriteTimeUtc));
+                }
                 var mergedPath = await MergeFilesAsync(filesToMerge, options, ct);
                 if (!string.IsNullOrEmpty(mergedPath))
                 {
@@ -371,6 +397,11 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
                 errors.Add($"Defragmentation failed for a group of {filesToMerge.Count} files: {ex.Message}");
                 _log.Warning(ex, "Defragmentation failed for a file group of {FileCount} files; skipping the group", filesToMerge.Count);
                 bytesAfter += filesToMerge.Sum(f => f.Length);
+            }
+            finally
+            {
+                for (var i = leases.Count - 1; i >= 0; i--)
+                    leases[i].Dispose();
             }
         }
 
@@ -573,8 +604,15 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
 
     private string? DetermineOrphanReason(string filePath)
     {
-        // Extract symbol from path
-        var parts = filePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        // Only names inside the data root are meaningful; an ancestor such as
+        // /backups/_temp-volume/data must never turn the whole store into orphans.
+        var relative = Path.GetRelativePath(Path.GetFullPath(_options.RootPath), Path.GetFullPath(filePath));
+        if (Path.IsPathRooted(relative) || relative == ".." || relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+            return null;
+        var parts = relative.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        // Quarantine is retained recovery evidence, even beneath a temporary directory.
+        if (parts.Any(part => part.StartsWith("_quarantine", StringComparison.OrdinalIgnoreCase)))
+            return null;
 
         // Look for known orphan patterns
         foreach (var part in parts)
@@ -585,8 +623,6 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
             if (part.StartsWith("_temp", StringComparison.OrdinalIgnoreCase))
                 return "temporary_file";
 
-            if (part.StartsWith("_quarantine", StringComparison.OrdinalIgnoreCase))
-                return "quarantined_file";
         }
 
         return null;
@@ -635,6 +671,17 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
                 $"TruncateCorrupted repair only supports plain .jsonl files; '{Path.GetFileName(filePath)}' must be repaired by re-ingest or restore.");
         }
 
+        // A file a sink still has open (typically today's file with a half-written last line)
+        // must not be rewritten: the atomic rename would leave the sink appending to the
+        // replaced inode, silently losing the rest of the day's events. Hold both writer fences
+        // across both passes and the rename, in the same order Defrag and compression take them.
+        if (!JsonlWriteFence.TryEnterExclusive(filePath, out var fence))
+            throw new IOException($"Refusing to repair a file that is open for writing: {filePath}");
+        using var fenceLease = fence;
+        if (!JsonlWriterLock.TryAcquireExclusive(filePath, out var writerLock))
+            throw new IOException($"Refusing to repair a file another process has open for writing: {filePath}");
+        using var writerLease = writerLock;
+
         // Pass 1: stream the file, buffering only the rejected lines (bounded by corruption
         // volume) so multi-GB day files are never loaded whole into memory.
         var validCount = 0;
@@ -672,7 +719,9 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
             await writer.FlushAsync(ct);
             stream.Flush(flushToDisk: true);
         }
-        await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(quarantinePath)!, CancellationToken.None);
+        // Strict: pass 2 drops the rejected lines from the source, so the quarantine must be durable
+        // first. On a throw the source is untouched; a retry writes a fresh quarantine file.
+        await AtomicFileWriter.SyncDirectoryOrThrowAsync(Path.GetDirectoryName(quarantinePath)!, CancellationToken.None);
         recoveryCopies.Add(quarantinePath);
 
         // Pass 2: stream the salvaged content into the atomic temp file. The source is re-read
@@ -722,6 +771,21 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
         return string.Equals(expected, await ComputeChecksumAsync(filePath, ct), StringComparison.OrdinalIgnoreCase);
     }
 
+    private DateTimeOffset? DefragPartitionEnd(DateTimeOffset start)
+    {
+        // The parser knows which path segment owns the partition. A provider, symbol or
+        // prefix may also contain dates; heuristic scanning of the full path is unsafe here.
+        if (_options.NamingConvention == FileNamingConvention.Canonical)
+            return start.AddDays(1);
+        return _options.DatePartition switch
+        {
+            DatePartition.Hourly => start.AddHours(1),
+            DatePartition.Daily => start.AddDays(1),
+            DatePartition.Monthly => start.AddMonths(1),
+            _ => null
+        };
+    }
+
     private async Task<string?> MergeFilesAsync(List<FileInfo> files, DefragOptions options, CancellationToken ct)
     {
         if (files.Count == 0)
@@ -737,8 +801,10 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
         }
 
         var directory = files[0].DirectoryName!;
-        var extension = files[0].Extension;
-        var mergedPath = Path.Combine(directory, $"merged_{DateTime.UtcNow:yyyyMMdd_HHmmss}{extension}");
+        // Retain the owning partition in the name; the policy parser recognizes this
+        // reserved fragment suffix. A GUID also prevents two maintenance runs colliding.
+        var stem = JsonlStoragePolicy.StripMergeSuffix(Path.GetFileNameWithoutExtension(files[0].Name));
+        var mergedPath = Path.Combine(directory, $"{stem}.merged-{Guid.NewGuid():N}.jsonl");
 
         await AtomicFileWriter.WriteAsync(mergedPath, async writer =>
         {
@@ -885,6 +951,8 @@ public sealed record DefragOptions(
     bool DryRun = false
 )
 {
+    public TimeSpan MaxFileAge { get; init; } = MaxFileAge == default ? TimeSpan.FromDays(1) : MaxFileAge;
+
     public DefragOptions() : this(1_048_576) { }
 }
 

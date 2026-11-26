@@ -1,4 +1,5 @@
 using Meridian.Ui.Services.Services;
+using Meridian.Contracts.Configuration;
 using ProviderIdentity = Meridian.Infrastructure.Adapters.Core.ProviderIdentity;
 
 namespace Meridian.Wpf.ViewModels;
@@ -200,6 +201,30 @@ public sealed partial class AddProviderWizardViewModel : BindableBase
     }
 
     // ---- Connection test ----
+
+    private string? _credentialRotationText;
+    public string? CredentialRotationText
+    {
+        get => _credentialRotationText;
+        private set => SetProperty(ref _credentialRotationText, value);
+    }
+
+    private string _saveCredentialActionLabel = "Save selected connection credentials";
+    private string _testCredentialActionLabel = "Re-verify saved credentials";
+    public string SaveCredentialActionLabel
+    {
+        get => _saveCredentialActionLabel;
+        private set => SetProperty(ref _saveCredentialActionLabel, value);
+    }
+
+    public string TestCredentialActionLabel
+    {
+        get => _testCredentialActionLabel;
+        private set => SetProperty(ref _testCredentialActionLabel, value);
+    }
+
+    public void SetCredentialDraftPresence(bool hasDraft)
+        => TestCredentialActionLabel = hasDraft ? "Test draft credentials" : "Re-verify saved credentials";
 
     public Brush ConnectionTestDotBrush
     {
@@ -410,6 +435,28 @@ public sealed partial class AddProviderWizardViewModel : BindableBase
     {
         ConnectionTestDotBrush = MutedBrush;
         ConnectionTestStatusText = message;
+        SaveCredentialActionLabel = "Save selected connection credentials";
+    }
+
+    public void SetDraftTestResult(ProviderCredentialDraftStatusDto status, string message)
+    {
+        ConnectionTestDotBrush = status switch
+        {
+            ProviderCredentialDraftStatusDto.Verified => SuccessBrush,
+            ProviderCredentialDraftStatusDto.Rejected => ErrorBrush,
+            _ => WarningBrush
+        };
+        var label = status == ProviderCredentialDraftStatusDto.Unavailable ? "Verification unavailable" : status.ToString();
+        ConnectionTestStatusText = $"{label}. {message}";
+        SaveCredentialActionLabel = status == ProviderCredentialDraftStatusDto.Verified
+            ? "Save selected connection credentials" : "Save anyway";
+    }
+
+    public void SetCredentialRotation(DateTimeOffset? dueAt)
+    {
+        CredentialRotationText = dueAt is { } due && due <= DateTimeOffset.UtcNow.AddDays(14)
+            ? $"Credential rotation due {due.UtcDateTime:yyyy-MM-dd} UTC."
+            : null;
     }
 
     /// <summary>Marks the connection test as successful: verified by the service, or no credentials needed.</summary>
@@ -417,6 +464,7 @@ public sealed partial class AddProviderWizardViewModel : BindableBase
     {
         ConnectionTestDotBrush = SuccessBrush;
         ConnectionTestStatusText = "Credentials verified. Provider ready.";
+        SaveCredentialActionLabel = "Save selected connection credentials";
     }
 
     /// <summary>Marks credentials as saved but not verified by the authenticated service.</summary>
@@ -424,6 +472,7 @@ public sealed partial class AddProviderWizardViewModel : BindableBase
     {
         ConnectionTestDotBrush = WarningBrush;
         ConnectionTestStatusText = "Credentials saved but not verified. Live verification failed or is unavailable for this provider.";
+        SaveCredentialActionLabel = "Save selected connection credentials";
     }
 
     /// <summary>Marks the connection test as failed because the service did not confirm the save.</summary>

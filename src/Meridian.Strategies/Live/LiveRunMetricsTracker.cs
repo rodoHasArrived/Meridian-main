@@ -12,9 +12,13 @@ namespace Meridian.Strategies.Live;
 /// </summary>
 internal sealed class LiveRunMetricsTracker
 {
+    internal const string FinancingUnavailableWarning =
+        "Run-attributed margin interest is unavailable without an explicit account-charge allocation. "
+        + "TotalMarginInterest is a compatibility placeholder; gross P&L financing decomposition requires review.";
     private readonly decimal _initialEquity;
     private readonly DateTimeOffset _startedAt;
     private readonly List<PortfolioSnapshot> _snapshots = [];
+    private bool _hasNativeAccountObservation;
     private readonly List<CashFlowEntry> _cashFlows = [];
     private readonly List<FillEvent> _fills = [];
     private readonly List<CashFlowEntry> _currentDayCashFlows = [];
@@ -84,8 +88,10 @@ internal sealed class LiveRunMetricsTracker
         decimal cash,
         decimal equity,
         IReadOnlyDictionary<string, Position> positions,
-        IReadOnlyDictionary<string, FinancialAccountSnapshot> accounts)
+        IReadOnlyDictionary<string, FinancialAccountSnapshot> accounts,
+        Meridian.Execution.Interfaces.PositionAccountingEvidenceSnapshot? accountingEvidence = null)
     {
+        _hasNativeAccountObservation |= accountingEvidence is not null;
         var dailyReturn = _previousEquity > 0m ? (equity - _previousEquity) / _previousEquity : 0m;
 
         if (equity > _peakEquity)
@@ -101,17 +107,26 @@ internal sealed class LiveRunMetricsTracker
         _maxDrawdownFraction = Math.Max(_maxDrawdownFraction, drawdownFraction);
 
         _snapshots.Add(new PortfolioSnapshot(
-            Timestamp: new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero),
+            Timestamp: accountingEvidence?.AsOf ?? new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero),
             Date: date,
             Cash: cash,
-            MarginBalance: 0m,
-            LongMarketValue: Math.Max(0m, equity - cash),
-            ShortMarketValue: Math.Min(0m, equity - cash),
+            MarginBalance: accountingEvidence is null ? 0m : accounts.Values.Sum(static account => account.MarginBalance),
+            LongMarketValue: accountingEvidence is null ? Math.Max(0m, equity - cash) : accounts.Values.Sum(static account => account.LongMarketValue),
+            ShortMarketValue: accountingEvidence is null ? Math.Min(0m, equity - cash) : accounts.Values.Sum(static account => account.ShortMarketValue),
             TotalEquity: equity,
             DailyReturn: dailyReturn,
             Positions: positions,
             Accounts: accounts,
-            DayCashFlows: _currentDayCashFlows.ToArray()));
+            DayCashFlows: _currentDayCashFlows.ToArray())
+        {
+            FunctionalCurrency = accountingEvidence is not null && accounts.Values.Select(static account => account.FunctionalCurrency)
+                .Distinct(StringComparer.OrdinalIgnoreCase).ToArray() is [var currency] ? currency : null,
+            AccountingPositions = accountingEvidence is null ? null : Array.AsReadOnly(accountingEvidence.Positions
+                .Select(position => position with
+                {
+                    EvidenceReferences = position.EvidenceReferences is null ? null : Array.AsReadOnly(position.EvidenceReferences.ToArray())
+                }).ToArray())
+        });
         _currentDayCashFlows.Clear();
         _previousEquity = equity;
     }
@@ -121,9 +136,13 @@ internal sealed class LiveRunMetricsTracker
         IReadOnlySet<string> universe,
         decimal finalEquity,
         IReadOnlyLedger ledger,
-        DateTimeOffset endedAt)
+        DateTimeOffset endedAt,
+        decimal? runAttributedMarginInterest = null)
     {
         var netPnl = finalEquity - _initialEquity;
+        // A context ledger, even when populated, does not prove that account-level charges
+        // were allocated to this run. Only an explicit complete run allocation supplies a total.
+        var marginInterest = runAttributedMarginInterest ?? 0m;
         var totalReturn = _initialEquity > 0m ? netPnl / _initialEquity : 0m;
         var elapsed = endedAt - _startedAt;
         // Same formulas as BacktestMetricsEngine (risk-free rate zero), so live and backtest runs
@@ -153,7 +172,7 @@ internal sealed class LiveRunMetricsTracker
         var metrics = new BacktestMetrics(
             InitialCapital: _initialEquity,
             FinalEquity: finalEquity,
-            GrossPnl: netPnl + _totalCommissions,
+            GrossPnl: netPnl + _totalCommissions + marginInterest,
             NetPnl: netPnl,
             TotalReturn: totalReturn,
             AnnualizedReturn: annualizedReturn,
@@ -163,13 +182,13 @@ internal sealed class LiveRunMetricsTracker
             MaxDrawdown: _maxDrawdown,
             MaxDrawdownPercent: _maxDrawdownFraction,
             MaxDrawdownRecoveryDays: 0,
-            ProfitFactor: 0,
-            WinRate: 0,
-            TotalTrades: _fills.Count,
+            ProfitFactor: double.NaN,
+            WinRate: double.NaN,
+            TotalTrades: 0,
             WinningTrades: 0,
             LosingTrades: 0,
             TotalCommissions: _totalCommissions,
-            TotalMarginInterest: 0m,
+            TotalMarginInterest: marginInterest,
             TotalShortRebates: 0m,
             Xirr: double.NaN,
             SymbolAttribution: new Dictionary<string, SymbolAttribution>(StringComparer.OrdinalIgnoreCase));
@@ -200,7 +219,16 @@ internal sealed class LiveRunMetricsTracker
                 CoverageWarnings:
                 [
                     "Win-rate, profit-factor, drawdown-recovery, and XIRR require closed-trade accounting not yet tracked by the live engine.",
-                ]));
+                    .. (_hasNativeAccountObservation
+                        ? new[] { "Cash and equity describe the captured financial account; allocation to this strategy run is unavailable." }
+                        : Array.Empty<string>()),
+                    .. (runAttributedMarginInterest.HasValue ? Array.Empty<string>() : new[] { FinancingUnavailableWarning })
+                ])
+            {
+                FinancingCoverageStatus = runAttributedMarginInterest.HasValue
+                    ? BacktestFinancingCoverageStatuses.Available : BacktestFinancingCoverageStatuses.Unavailable,
+                RunAttributedMarginInterest = runAttributedMarginInterest
+            });
     }
     private static decimal ComputeAnnualizedReturn(decimal totalReturn, TimeSpan elapsed)
     {

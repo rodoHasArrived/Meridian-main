@@ -406,6 +406,17 @@ describe("useWorkstationData", () => {
     expect(api.getTradingWorkspace).toHaveBeenCalledTimes(1);
   });
 
+  it.each(["trading", "settings", "portfolio"] as const)(
+    "loads the owning holdings read model in the initial %s batch",
+    async (activeWorkspace) => {
+      renderHook(() => useWorkstationData({ activeWorkspace }));
+      await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+      // Today uses Trading's shell key too. Headline counts must never wait for
+      // deferred pages or substitute the aggregate system-status count.
+      expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(1);
+    }
+  );
+
   it("refreshes both canonical brokerage status entries after Settings mutations", async () => {
     const { result } = renderHook(() => useWorkstationData({ activeWorkspace: "settings" }));
 
@@ -753,11 +764,13 @@ describe("useWorkstationData", () => {
     // The operator selects account B: the shell reloads for B, and that Trading request fails.
     rerender({ fundAccountId: accountB });
     await waitFor(() => expect(api.getTradingWorkspace).toHaveBeenCalledTimes(2));
+    expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(2);
     expect(api.getTradingWorkspace).toHaveBeenLastCalledWith(expect.objectContaining({ fundAccountId: accountB }));
     await act(async () => {
       resolveRequest<SessionInfo>("session", 1, { activeWorkspace: "trading", commandCount: 1, displayName: "account-b session", environment: "paper", role: "Operator" });
       resolveRequest<SystemOverviewResponse>("overview", 1, { marker: "account-b overview" } as unknown as SystemOverviewResponse);
       rejectRequest("trading", 1, new Error("Trading workspace request failed."));
+      resolveRequest<PortfolioWorkspaceResponse>("portfolio", 1, { marker: "account-b portfolio" } as unknown as PortfolioWorkspaceResponse);
       resolveRequest<WorkflowLibrary>("workflowLibrary", 1, { marker: "account-b workflows" } as unknown as WorkflowLibrary);
       resolveRequest<WorkflowPresetLibrary>("workflowPresets", 1, { generatedAt: "2026-01-01T00:04:00Z", presets: [] });
       await flushAsync();
@@ -765,6 +778,9 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
 
     // Account A's payload is still the one on screen, and it is still recorded as account A's.
+    expect(result.current.refreshStatus.phase).toBe("partial");
+    expect(result.current.workspaceErrors.trading).toBe("Trading workspace request failed.");
+    expect(result.current.portfolio).toEqual({ marker: "account-b portfolio" });
     expect(result.current.trading).toEqual({ marker: "account-a trading" });
     expect(result.current.figureSourceScope.trading).toBe(accountA);
     expect(result.current.figureSourcesStale).toContain("trading");
@@ -1161,6 +1177,7 @@ describe("useWorkstationData", () => {
       rejectRequest("session", 1, new Error("Session failed."));
       rejectRequest("overview", 1, new Error("Overview failed."));
       rejectRequest("trading", 1, new Error("Trading failed."));
+      rejectRequest("portfolio", 1, new Error("Portfolio failed."));
       rejectRequest("workflowLibrary", 1, new Error("Workflow library failed."));
       rejectRequest("workflowPresets", 1, new Error("Workflow presets failed."));
       await failedRefresh;

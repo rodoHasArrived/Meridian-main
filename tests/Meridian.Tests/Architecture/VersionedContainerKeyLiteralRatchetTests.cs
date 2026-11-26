@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Tests.TestHelpers;
 
 namespace Meridian.Tests.Architecture;
 
@@ -12,7 +13,8 @@ namespace Meridian.Tests.Architecture;
 /// spell a key differently from the predicate and the shared reader that decide what a row declares.
 /// <para>
 /// The allowed set may only shrink. Increment 5a moved OpenLotAmortization.cs onto the constants and
-/// aliased the mapping's private keys to them; the later increments use the constants.
+/// aliased the mapping's private keys to them; the later increments use the constants. The class
+/// modules that now declare the schema's terms read the constants too, so the schema left the set.
 /// </para>
 /// </summary>
 [Trait("Category", "Architecture")]
@@ -21,7 +23,6 @@ public sealed class VersionedContainerKeyLiteralRatchetTests
     // Repository-relative, forward-slash paths of the only C# sources that may spell a key.
     private static readonly string[] AllowedSites =
     [
-        "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs",
     ];
 
@@ -41,7 +42,7 @@ public sealed class VersionedContainerKeyLiteralRatchetTests
 
         sites.Except(AllowedSites, StringComparer.Ordinal).Should().BeEmpty(
             "a versioned-container key is read through SecurityVersionedTerms.ScheduleConventionsKey, CallScheduleKey "
-            + "or PutScheduleKey, never spelled as a literal outside the schema and SecurityVersionedTerms");
+            + "or PutScheduleKey, never spelled as a literal outside SecurityVersionedTerms");
         AllowedSites.Except(sites, StringComparer.Ordinal).Should().BeEmpty(
             "an allowed site that no longer spells a key must leave AllowedSites so the ratchet only ever shrinks");
     }
@@ -75,7 +76,7 @@ public sealed class VersionedContainerKeyLiteralRatchetTests
             RegexOptions.CultureInvariant);
 
         var sites = new List<string>();
-        foreach (var file in Directory.EnumerateFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories))
+        foreach (var file in RepositoryFileWalker.EnumerateFiles(Path.Combine(root, "src"), "*.cs"))
         {
             var relative = Path.GetRelativePath(root, file).Replace('\\', '/');
             if (SkippedPathSegments.Any(segment => ("/" + relative).Contains(segment, StringComparison.Ordinal)))

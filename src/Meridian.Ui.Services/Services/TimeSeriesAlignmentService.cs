@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text.Json;
+using Meridian.Contracts.Api;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,6 +15,12 @@ namespace Meridian.Ui.Services;
 public sealed class TimeSeriesAlignmentService
 {
     private static readonly Lazy<TimeSeriesAlignmentService> _instance = new(() => new TimeSeriesAlignmentService());
+    /// <summary>
+    /// The host answers 501 when it has no alignment execution service (see
+    /// <c>HistoricalEndpoints.MapAlignmentEndpoints</c>); that is a capability gap, not a run failure.
+    /// </summary>
+    private const int NotImplementedStatusCode = 501;
+
     private readonly ApiClientService _apiClient;
 
     public static TimeSeriesAlignmentService Instance => _instance.Value;
@@ -35,45 +44,44 @@ public sealed class TimeSeriesAlignmentService
         AlignmentOptions options,
         CancellationToken ct = default)
     {
-        var response = await _apiClient.PostWithResponseAsync<AlignmentResponse>(
-            "/api/alignment/create",
-            new
-            {
-                symbols = options.Symbols,
-                fromDate = options.FromDate?.ToString(FormatHelpers.IsoDateFormat),
-                toDate = options.ToDate?.ToString(FormatHelpers.IsoDateFormat),
-                interval = options.Interval.ToString(),
-                aggregation = options.Aggregation.ToString(),
-                gapStrategy = options.GapStrategy.ToString(),
-                maxGapIntervals = options.MaxGapIntervals,
-                markFilledValues = options.MarkFilledValues,
-                timezone = options.Timezone,
-                marketHoursOnly = options.MarketHoursOnly,
-                outputPath = options.OutputPath,
-                outputFormat = options.OutputFormat.ToString(),
-                includeMetadata = options.IncludeMetadata
-            },
-            ct);
+        var elapsed = Stopwatch.StartNew();
+        var response = await _apiClient.PostWithResponseAsync<TimeSeriesAlignmentExecution>(
+            UiApiRoutes.AlignmentCreate, BuildRequest(options), ct).ConfigureAwait(false);
 
-        if (response.Success && response.Data != null)
-        {
+        if (!response.Success || response.Data is not { } execution)
             return new AlignmentResult
             {
-                Success = response.Data.Success,
-                OutputPath = response.Data.OutputPath,
-                TotalSourceRecords = response.Data.TotalSourceRecords,
-                AlignedRecords = response.Data.AlignedRecords,
-                GapsDetected = response.Data.GapsDetected,
-                GapsFilled = response.Data.GapsFilled,
-                Duration = TimeSpan.FromSeconds(response.Data.DurationSeconds),
-                Metadata = response.Data.Metadata
+                IsServiceUnavailable = response.StatusCode == NotImplementedStatusCode,
+                Error = ReadProblem(response.ErrorMessage, "Alignment failed.")
             };
-        }
 
+        var output = options.OutputPath;
+        if (string.IsNullOrWhiteSpace(output))
+            return new AlignmentResult { Error = "Choose an output path." };
+
+        await TimeSeriesAlignmentExporter.WriteAsync(execution, options.OutputFormat, output, ct).ConfigureAwait(false);
         return new AlignmentResult
         {
-            Success = false,
-            Error = response.ErrorMessage ?? "Alignment failed"
+            Success = true,
+            OutputPath = output,
+            TotalSourceRecords = execution.Summary.TotalSourceRecords,
+            AlignedRecords = execution.Summary.OutputRecords,
+            GapsDetected = execution.Summary.GapsDetected,
+            GapsFilled = execution.Summary.GapsFilled,
+            Duration = elapsed.Elapsed,
+            Summary = execution.Summary,
+            Metadata = new AlignmentMetadata
+            {
+                RecordsBySymbol = execution.Rows.GroupBy(row => row.Symbol)
+                    .ToDictionary(group => group.Key, group => group.LongCount()),
+                GapsBySymbol = execution.Summary.Series.GroupBy(series => series.Symbol)
+                    .ToDictionary(group => group.Key, group => group.Sum(series => series.Gaps)),
+                FirstTimestamp = execution.Rows.FirstOrDefault()?.Timestamp,
+                LastTimestamp = execution.Rows.LastOrDefault()?.Timestamp,
+                TotalIntervals = execution.Summary.IntervalCount,
+                CoveragePercent = 100d * execution.Summary.Series.Sum(series => series.ObservedIntervals) /
+                    (execution.Summary.Series.Length * execution.Summary.IntervalCount)
+            }
         };
     }
 
@@ -111,55 +119,6 @@ public sealed class TimeSeriesAlignmentService
                 DisplayName = "OHLCV",
                 Description = "Open, High, Low, Close, Volume bars",
                 Fields = new[] { "Open", "High", "Low", "Close", "Volume" }
-            },
-            new()
-            {
-                Value = AggregationType.Last,
-                DisplayName = "Last",
-                Description = "Last value in each interval",
-                Fields = new[] { "Price", "Volume" }
-            },
-            new()
-            {
-                Value = AggregationType.First,
-                DisplayName = "First",
-                Description = "First value in each interval",
-                Fields = new[] { "Price", "Volume" }
-            },
-            new()
-            {
-                Value = AggregationType.Mean,
-                DisplayName = "Mean",
-                Description = "Average value in each interval",
-                Fields = new[] { "Price" }
-            },
-            new()
-            {
-                Value = AggregationType.VWAP,
-                DisplayName = "VWAP",
-                Description = "Volume-weighted average price",
-                Fields = new[] { "VWAP", "Volume" }
-            },
-            new()
-            {
-                Value = AggregationType.TWAP,
-                DisplayName = "TWAP",
-                Description = "Time-weighted average price",
-                Fields = new[] { "TWAP" }
-            },
-            new()
-            {
-                Value = AggregationType.Sum,
-                DisplayName = "Sum",
-                Description = "Sum of values (for volume, trade count)",
-                Fields = new[] { "Volume", "TradeCount" }
-            },
-            new()
-            {
-                Value = AggregationType.Count,
-                DisplayName = "Count",
-                Description = "Number of events in interval",
-                Fields = new[] { "Count" }
             }
         });
     }
@@ -244,12 +203,12 @@ public sealed class TimeSeriesAlignmentService
             },
             new()
             {
-                Name = "1-Second Ticks (VWAP)",
-                Description = "High-frequency VWAP snapshots",
+                Name = "1-Second Bars",
+                Description = "High-frequency OHLCV for a short archive range",
                 Interval = TimeSeriesInterval.Second1,
-                Aggregation = AggregationType.VWAP,
+                Aggregation = AggregationType.OHLCV,
                 GapStrategy = GapStrategy.Null,
-                MarketHoursOnly = false
+                MarketHoursOnly = true
             },
             new()
             {
@@ -272,9 +231,9 @@ public sealed class TimeSeriesAlignmentService
             new()
             {
                 Name = "ML Training (Interpolated)",
-                Description = "Continuous data for machine learning",
+                Description = "Intraday OHLCV with bounded interpolation",
                 Interval = TimeSeriesInterval.Minute1,
-                Aggregation = AggregationType.Mean,
+                Aggregation = AggregationType.OHLCV,
                 GapStrategy = GapStrategy.LinearInterpolate,
                 MaxGapIntervals = 5,
                 MarkFilledValues = true,
@@ -285,7 +244,7 @@ public sealed class TimeSeriesAlignmentService
                 Name = "Correlation Analysis",
                 Description = "Multi-symbol aligned data for correlation",
                 Interval = TimeSeriesInterval.Minute5,
-                Aggregation = AggregationType.Last,
+                Aggregation = AggregationType.OHLCV,
                 GapStrategy = GapStrategy.ForwardFill,
                 MaxGapIntervals = 6,
                 MarketHoursOnly = true
@@ -300,36 +259,64 @@ public sealed class TimeSeriesAlignmentService
         AlignmentOptions options,
         CancellationToken ct = default)
     {
-        var response = await _apiClient.PostWithResponseAsync<AlignmentPreviewResponse>(
-            "/api/alignment/preview",
-            new
-            {
-                symbols = options.Symbols,
-                fromDate = options.FromDate?.ToString(FormatHelpers.IsoDateFormat),
-                toDate = options.ToDate?.ToString(FormatHelpers.IsoDateFormat),
-                interval = options.Interval.ToString(),
-                gapStrategy = options.GapStrategy.ToString()
-            },
-            ct);
+        var response = await _apiClient.PostWithResponseAsync<TimeSeriesAlignmentPreview>(
+            UiApiRoutes.AlignmentPreview, BuildRequest(options), ct).ConfigureAwait(false);
 
-        if (response.Success && response.Data != null)
-        {
+        if (!response.Success || response.Data is not { } preview)
             return new AlignmentPreview
             {
-                Success = true,
-                TotalSourceRecords = response.Data.TotalSourceRecords,
-                ExpectedOutputRecords = response.Data.ExpectedOutputRecords,
-                ExpectedGaps = response.Data.ExpectedGaps,
-                EstimatedFileSizeBytes = response.Data.EstimatedFileSizeBytes,
-                IntervalCount = response.Data.IntervalCount
+                IsServiceUnavailable = response.StatusCode == NotImplementedStatusCode,
+                Error = ReadProblem(response.ErrorMessage, "Alignment preview unavailable.")
             };
-        }
 
         return new AlignmentPreview
         {
-            Success = false,
-            Error = response.ErrorMessage ?? "Alignment preview unavailable"
+            Success = true,
+            TotalSourceRecords = preview.Summary.TotalSourceRecords,
+            ExpectedOutputRecords = preview.Summary.OutputRecords,
+            ExpectedGaps = preview.Summary.GapsDetected,
+            IntervalCount = preview.Summary.IntervalCount,
+            Summary = preview.Summary,
+            SampleRows = preview.SampleRows
         };
+    }
+
+    internal static TimeSeriesAlignmentRequest BuildRequest(AlignmentOptions options) => new(
+        options.Symbols?.ToArray(), options.FromDate, options.ToDate,
+        Providers: options.Providers?.ToArray(),
+        Interval: options.Interval.ToString(),
+        GapStrategy: options.GapStrategy.ToString(),
+        MaxGapIntervals: options.MaxGapIntervals,
+        Timezone: options.Timezone,
+        MarketHoursOnly: options.MarketHoursOnly,
+        InputKind: options.InputKind,
+        AdjustmentPolicy: options.AdjustmentPolicy,
+        Fields: options.Fields,
+        Aggregation: options.Aggregation.ToString(),
+        ExpectedContentHash: options.ExpectedContentHash);
+
+    private static string ReadProblem(string? response, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(response))
+            return fallback;
+        try
+        {
+            using var document = JsonDocument.Parse(response);
+            if (document.RootElement.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var field in new[] { "detail", "title" })
+                {
+                    if (document.RootElement.TryGetProperty(field, out var property) &&
+                        property.ValueKind == JsonValueKind.String && property.GetString() is { Length: > 0 } message)
+                        return message;
+                }
+            }
+        }
+        catch (JsonException)
+        {
+            return response;
+        }
+        return fallback;
     }
 
     /// <summary>
@@ -359,15 +346,17 @@ public sealed class TimeSeriesAlignmentService
             errors.Add("Output path must be specified");
         }
 
-        if (options.MaxGapIntervals < 0)
-        {
-            errors.Add("Max gap intervals must be non-negative");
-        }
+        if (options.Providers is { Count: 1 or > 8 })
+            errors.Add("Select two to eight provider IDs, or leave the list empty to discover them");
 
-        if (options.MaxGapIntervals > 100)
-        {
-            warnings.Add("Large max gap intervals may result in unreliable filled data");
-        }
+        if (options.Aggregation != AggregationType.OHLCV)
+            errors.Add("Alignment supports OHLCV aggregation");
+
+        if (options.MaxGapIntervals is < 0 or > 100)
+            errors.Add("Maximum gap intervals must be between 0 and 100");
+
+        if (options.Interval != TimeSeriesInterval.Daily && options.InputKind == "DailyBars")
+            errors.Add("Daily bars cannot be split into intraday intervals");
 
         if (options.Interval == TimeSeriesInterval.Second1 && options.Symbols?.Count > 5)
         {
@@ -441,6 +430,11 @@ public enum GapStrategy : byte
 public sealed class AlignmentOptions
 {
     public List<string>? Symbols { get; set; }
+    public List<string>? Providers { get; set; }
+    public string InputKind { get; set; } = "Auto";
+    public string AdjustmentPolicy { get; set; } = "AsStored";
+    public string[]? Fields { get; set; }
+    public string? ExpectedContentHash { get; set; }
     public DateOnly? FromDate { get; set; }
     public DateOnly? ToDate { get; set; }
     public TimeSeriesInterval Interval { get; set; } = TimeSeriesInterval.Minute1;
@@ -461,6 +455,13 @@ public sealed class AlignmentOptions
 public sealed class AlignmentResult
 {
     public bool Success { get; set; }
+
+    /// <summary>
+    /// True when the host reported that alignment is not implemented (HTTP 501), so retrying
+    /// with different options cannot succeed.
+    /// </summary>
+    public bool IsServiceUnavailable { get; set; }
+
     public string? Error { get; set; }
     public string? OutputPath { get; set; }
     public long TotalSourceRecords { get; set; }
@@ -469,6 +470,7 @@ public sealed class AlignmentResult
     public int GapsFilled { get; set; }
     public TimeSpan Duration { get; set; }
     public AlignmentMetadata? Metadata { get; set; }
+    public TimeSeriesAlignmentSummary? Summary { get; set; }
 }
 
 /// <summary>
@@ -537,12 +539,21 @@ public sealed class AlignmentPreset
 public sealed class AlignmentPreview
 {
     public bool Success { get; set; }
+
+    /// <summary>
+    /// True when the host reported that alignment is not implemented (HTTP 501), so retrying
+    /// with different options cannot succeed.
+    /// </summary>
+    public bool IsServiceUnavailable { get; set; }
+
     public string? Error { get; set; }
     public long TotalSourceRecords { get; set; }
     public long ExpectedOutputRecords { get; set; }
     public int ExpectedGaps { get; set; }
-    public long EstimatedFileSizeBytes { get; set; }
+    public long? EstimatedFileSizeBytes { get; set; }
     public int IntervalCount { get; set; }
+    public TimeSeriesAlignmentSummary? Summary { get; set; }
+    public TimeSeriesAlignmentRow[] SampleRows { get; set; } = [];
 }
 
 /// <summary>

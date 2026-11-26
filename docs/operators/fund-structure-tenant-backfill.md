@@ -45,14 +45,15 @@ initialization and before workers or HTTP service. Missing/unscoped attribution,
 quarantine, dangling ownership, and tenant mismatches refuse startup with table/count diagnostics
 and this remediation path. Unavailable inspection also refuses startup. The check is read-only:
 it does not delete records or silently present retained data as an empty ledger.
-WPF completes its registered database migrations and legacy imports, then awaits the same inspection
+WPF completes its registered database migrations, then awaits the same inspection
 before creating retained workspaces or showing the main window. Preparation and inspection have a
 five-minute overall deadline, with a 60-second inspection limit. A refusal or unavailable check
 prevents shell activation; later host startup reuses the successful inspection result.
 
 The browser and WPF hosts' unpartitioned local fund/account snapshots cannot establish tenant ownership. Strict local
-access to those services is explicitly refused with a migration-required error; the retained files
-remain available for the supported snapshot import into the durable host and reviewed backfill.
+access to those services is explicitly refused with a migration-required error. The durable host
+no longer imports those snapshots at startup (removed 2026-11-25); the retained files stay on disk
+untouched, and their records must be re-entered or loaded through the reviewed backfill.
 Server-backed workstation services remain available. Explicit single-company migration compatibility
 permits the old local access while that migration is performed.
 

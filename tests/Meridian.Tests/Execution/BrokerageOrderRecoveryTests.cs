@@ -31,6 +31,7 @@ public sealed partial class BrokerageOrderRecoveryTests
         var retry = await oms.PlaceOrderAsync(request);
 
         result.Success.Should().BeFalse();
+        Assert.NotNull(result.OrderState);
         result.OrderState.Status.Should().Be(OrderStatus.PendingNew,
             "a lost response cannot establish that the broker rejected the order");
         oms.GetOpenOrders().Should().ContainSingle(order =>
@@ -58,6 +59,7 @@ public sealed partial class BrokerageOrderRecoveryTests
         response.SetException(new IOException("Lost response after the first partial execution."));
         var result = await submission.WaitAsync(Timeout);
 
+        Assert.NotNull(result.OrderState);
         result.OrderState.Status.Should().Be(OrderStatus.PartiallyFilled);
         result.OrderState.FilledQuantity.Should().Be(4m);
         portfolio.Positions["AAPL"].Quantity.Should().Be(4);
@@ -105,6 +107,7 @@ public sealed partial class BrokerageOrderRecoveryTests
                 // checkpoint must wait for accounting admission. Fail submit in that exact gap.
                 response.SetException(new IOException("Disconnected while the earlier fill handoff was pending."));
                 var result = await submission.WaitAsync(Timeout);
+                Assert.NotNull(result.OrderState);
                 result.OrderState.FilledQuantity.Should().Be(4m);
                 first.GetRecoveryOrders(FundAccountId).Should().ContainSingle();
 
@@ -187,7 +190,9 @@ public sealed partial class BrokerageOrderRecoveryTests
         };
         await using (var first = CreateOms(firstGateway, recoveryPath: directory.Path))
         {
-            (await first.PlaceOrderAsync(request)).OrderState.Status.Should().Be(OrderStatus.PendingNew);
+            var placement = await first.PlaceOrderAsync(request);
+            Assert.NotNull(placement.OrderState);
+            placement.OrderState.Status.Should().Be(OrderStatus.PendingNew);
         }
 
         var recoveredGateway = new RecoveryGateway();
@@ -348,7 +353,9 @@ public sealed partial class BrokerageOrderRecoveryTests
         };
         await using (var first = CreateOms(gateway, recoveryPath: directory.Path))
         {
-            (await first.PlaceOrderAsync(request)).OrderState.Status.Should().Be(status);
+            var placement = await first.PlaceOrderAsync(request);
+            Assert.NotNull(placement.OrderState);
+            placement.OrderState.Status.Should().Be(status);
         }
 
         var recoveredGateway = new RecoveryGateway();
@@ -439,6 +446,7 @@ public sealed partial class BrokerageOrderRecoveryTests
         var result = await oms.PlaceOrderAsync(Request("write-before-dispatch-failure"));
 
         result.Success.Should().BeFalse();
+        Assert.NotNull(result.OrderState);
         result.OrderState.Status.Should().Be(OrderStatus.Rejected);
         gateway.SubmitCount.Should().Be(0,
             "a broker call without durable identity could execute twice after restart");

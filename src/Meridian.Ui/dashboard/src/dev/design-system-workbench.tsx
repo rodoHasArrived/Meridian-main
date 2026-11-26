@@ -15,7 +15,7 @@ import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-acce
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { DESIGN_SYSTEM_SEVERITIES, StatusBadge, type DesignSystemSeverity } from "@/design-system/status";
 import { applyDensity } from "@/lib/density";
-import { formatMoney, formatUtcTimestamp } from "@/lib/format";
+import { formatMoney, formatTimestamp } from "@/lib/format";
 import { applyAppearance } from "@/lib/theme";
 import {
   DEFAULT_WORKBENCH_OPTIONS, readWorkbenchOptions, writeWorkbenchOptions, type WorkbenchOptions
@@ -52,7 +52,7 @@ const SAMPLE_COLUMNS: DenseDataTableColumn<SampleRecord>[] = [
   { id: "record", label: "Record", render: (row) => <span className="font-medium">{row.name}</span> },
   { id: "amount", label: "Amount (USD)", numeric: true, render: (row) => <span className="font-mono">{formatSampleAmount(row.amount)}</span> },
   { id: "status", label: "Status", render: (row) => <StatusBadge status={row.severity} /> },
-  { id: "observed", label: "Observed", render: (row) => <span className="font-mono text-muted-foreground">{formatUtcTimestamp(new Date(row.observed))}</span> },
+  { id: "observed", label: "Observed", render: (row) => <span className="font-mono text-muted-foreground">{formatTimestamp(new Date(row.observed))}</span> },
   { id: "source", label: "Source", render: (row) => <span className="text-muted-foreground">{row.source}</span> }
 ];
 
@@ -204,7 +204,7 @@ export function DesignSystemWorkbench() {
                       <div><dt>Amount (USD)</dt><dd className="font-mono">{formatSampleAmount(selected.amount)}</dd></div>
                       <div><dt>Status</dt><dd><StatusBadge status={selected.severity} /></dd></div>
                       <div><dt>Source</dt><dd className="text-muted-foreground">{selected.source}</dd></div>
-                      <div><dt>As of</dt><dd className="font-mono text-muted-foreground">{formatUtcTimestamp(new Date(selected.observed))}</dd></div>
+                      <div><dt>As of</dt><dd className="font-mono text-muted-foreground">{formatTimestamp(new Date(selected.observed))}</dd></div>
                     </dl>
                   ) : <p>{options.data === "loading" ? "Loading synthetic records." : options.data === "error" ? "Synthetic records are unavailable. Retry the preview." : "Select a synthetic record to inspect it."}</p>}
                 </DenseRowDetailPanel>

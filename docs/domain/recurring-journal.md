@@ -2,7 +2,7 @@
 
 **Status:** active guidance
 **Owner:** Accounting and Ledger
-**Reviewed:** 2026-11-11
+**Reviewed:** 2026-11-25
 
 A recurring journal schedules a versioned, balanced journal template for a cadence and an exact
 tenant, company, fund profile, ledger book, entity and currency. Each effective date identifies one
@@ -17,8 +17,12 @@ neither a worker restart nor a later definition version creates another draft fo
 dimensions, ownership and source references, including their exact versions and content digests.
 Schedule and template versions are part of the claim's provenance, not part of its logical identity.
 
-The file store serializes writers with an OS-exclusive lease across claim, intake and completion.
-It writes each state transition before returning. A stopped process releases the lease; a new
+Every store serializes writers with an exclusive lease across claim, intake and completion. Hosts
+with a ledger database use `PostgresRecurringJournalStore`, whose lease is a PostgreSQL advisory lock
+held for the whole session, so runners on separate processes and hosts share one authority. Hosts
+without one use `FileRecurringJournalStore`, whose lease is an OS-exclusive file lock. Both retain the
+same hashed document through the shared `RecurringJournalDocumentSession`. Each store writes every
+state transition before returning. A stopped process releases the lease; a new
 runner resumes the claim and asks the existing journal-intake path for the same deterministic draft.
 The existing workbench retains draft and audit recovery independently, so interruption after draft
 save does not authorize a second draft. A previously completed occurrence whose draft has been lost
@@ -65,6 +69,7 @@ flow. Its memo states the inputs the amount came from.
 | `fund-expense-accrual` | Nothing | `annualAmount`, `yearBasisDays`; input `expenseId` |
 | `fixed-asset-depreciation` | The fixed-asset register for the fund book | none |
 | `fixed-income-accrual` | Security Master cash-flow projection and the position's face-value lots at the effective date | inputs `securityId`, `ticker`, `bookPositionId`, optional `financialAccountId` |
+| `bond-coupon-income` | Governed bond coupon recognition (and, with `includeAmortization`, bond income preparation) for one tax lot through the accounting-event spine. It prepares a review candidate instead of a manual draft, carries no coupon cash allocations, and waits until the previous occurrence's coupon receipt is posted. Do not also schedule `fixed-income-accrual` for the same position. | inputs `accountId`, `taxLotRecordId`, optional `includeAmortization` |
 | `fx-revaluation` | Foreign-currency journal legs, prior posted revaluations and the dated FX rate for the effective date | `maxRateAgeDays` |
 
 Rules that keep an amount from being drafted twice:
@@ -101,6 +106,9 @@ Rules that keep an amount from being drafted twice:
   retirement. Assets are registered through `/api/ledger/fixed-assets`. A registered asset's cost,
   salvage value, life, method, currency and in-service date cannot be changed, because periods
   already depreciated are not recomputed; retire it and register the revised asset under a new id.
+  Each asset's charge is retained as source evidence with a SHA-256 content hash of the book scope,
+  asset, period end and posted lines, because recurring provenance requires every source to carry a
+  content hash or source version.
   Depreciation requires a retained register. A missing or invalid snapshot blocks the occurrence
   until the register is restored. A retained empty register confirms that there is nothing to post.
 - **A coupon accrues across windows, once.** The bond calculation drafts the day-count share of
@@ -150,6 +158,43 @@ ledger postings has no production caller and is not marked
 waiting for: the corporate-action ledger bridge, the short-lot tuple reversal, and the
 whole-coupon ledger-postings builder.
 
+## Declared CertificateOfDeposit accrual profile
+
+Class admission selects a registered, tested recurring profile instead of a class-wide boolean.
+The first new profile, `fixed-bullet-actual365-v1`, accepts only a complete fixed-rate bullet CD:
+explicit issue/start date, maturity, principal, coupon and rate unit, Actual/365, AtMaturity,
+noncallable and unadjusted. Actual held long face lots must be at par with NoAmortization and a
+compatible approved journal template. Fees, OID/discount, premium, floating/reset economics,
+PIK, options and unsupported principal schedules remain refused. Declaring a profile does not
+bypass source authority, period locks, approval or the declared-schedule posting gate.
+
+CD terms version 6 introduces optional `issueDate`, `principal` and `paymentFrequency`; the new
+CD calculation/context uses version 6. A retained CD below declaration stamp 6 keeps its existing
+version-5 analytical captures and replay; module policy alone cannot reinterpret it. An explicit
+stamp-6 declaration must pass the strict profile and cannot fall back to normalized legacy economics.
+Raw issue/principal/cadence keys below their introduction stamp are not reviewed accrual anchors.
+An explicit reviewed amendment activates those fields; older-stamp residue cannot activate during
+an unrelated edit. Existing Bond/StructuredCredit
+version-5 calculations and old retained receipt bytes remain unchanged. Other classes, including
+DirectLoan and CommercialPaper, require their own tested profiles.
+
+Before intake, the recurring store pins write-once daily-lot economic-obligation keys to the
+retained occurrence under its exclusive document lease. The file and PostgreSQL stores share that
+session and its document validation. Identity includes tenant/company/book,
+security, book position, lot and accrual date; it excludes schedule, template and model versions.
+Overlapping windows from another schedule or cadence therefore refuse rather than create a second
+draft. Exact retries retain ownership across process failure and restart. Claims persist after a
+failed attempt; a correction follows the existing audited reversal/rebook workflow. The draft's
+independent claim digest is checked during recovery, submission, approval and posting. Optional
+claim fields are omitted from old occurrence and Bond evidence payloads.
+
+Proof cases are in `SecurityRecurringAccrualPolicyTests`,
+`CertificateOfDepositCalculationProfileTests`,
+`RecurringJournalCalculationTests.CertificateOfDeposit`,
+`RecurringJournalCalculationTests.CertificateOfDepositObligations` and
+`RecurringJournalStoreTests.EconomicObligations`. Their presence is implementation evidence,
+not deployment or operator acceptance.
+
 ## Event-driven calculations
 
 Two posting calculations are events, not recurring accruals, and run through journal-automation
@@ -195,15 +240,26 @@ date and period in that evidence. The workbench verifies their retained source-a
 client-provided correction links cannot substitute for it.
 
 The recurring store requires explicit administrator initialization through the recurring-journal
-initialization endpoint. Runtime reads never initialize it. Its persistent initialization marker
-distinguishes initial provisioning from loss of an existing snapshot; restore the retained snapshot
-and marker together if either becomes unavailable. The supported concurrency boundary is processes
-sharing the same filesystem data root. Separate data roots are separate authorities and are not a
-distributed scheduling deployment.
+initialization endpoint. Runtime reads never initialize it. For the file store, a persistent
+initialization marker distinguishes initial provisioning from loss of an existing snapshot; restore
+the retained snapshot and marker together if either becomes unavailable. The supported file-store
+concurrency boundary is processes sharing the same filesystem data root; separate data roots are
+separate authorities.
+
+The PostgreSQL store keeps its document in one `recurring_journal_state` row
+(`V_ledger_074__recurring_journal_state`). Initialization creates that row and the table rejects
+deletes and truncation, so lost state cannot read as empty. Each commit advances a row revision by
+compare-and-swap; a session whose connection, and therefore lease, was lost faults instead of
+overwriting a newer commit. When a host that already retained file state moves to the ledger
+database, initialization imports the verified file document once, so earlier claims, outcomes and
+draft identities are carried forward rather than reissued; unverifiable file state fails closed and
+creates no row. After the row exists it is the only authority, and the file is not read again.
 
 ## Implementation and regression references
 
-- [Durable definitions and occurrence store](../../src/Meridian.FinancialOperations/FundAdministration/FileRecurringJournalStore.cs)
+- [Shared session semantics](../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalDocumentSession.cs)
+- [PostgreSQL definitions and occurrence store](../../src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs)
+- [File definitions and occurrence store](../../src/Meridian.FinancialOperations/FundAdministration/FileRecurringJournalStore.cs)
 - [Runner and shared queue projection](../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs)
 - [Posting calculations](../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs)
 - [Calculated draft scenarios](../../tests/Meridian.Tests/Ui/RecurringJournalCalculationTests.cs)
@@ -214,6 +270,7 @@ distributed scheduling deployment.
 - [Recurring evidence guard](../../src/Meridian.Ledger/RecurringJournalEvidence.cs)
 - [Lifecycle registry and correction ancestry guard](../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Recurring.cs)
 - [Store regression scenarios](../../tests/Meridian.Tests/FinancialOperations/RecurringJournalStoreTests.cs)
+- [PostgreSQL store, lease and import scenarios](../../tests/Meridian.Tests/Storage/RecurringJournalPostgresStoreTests.cs)
 - [Runner recovery and intake scenarios](../../tests/Meridian.Tests/Ui/RecurringJournalRunnerTests.cs)
 - [Lifecycle durable-state and definition checks](../../tests/Meridian.Tests/Ui/RecurringJournalLifecycleTests.cs)
 - [PostgreSQL period lock recovery](../../tests/Meridian.Tests/Storage/RecurringJournalPeriodAuthorityPostgresTests.cs)

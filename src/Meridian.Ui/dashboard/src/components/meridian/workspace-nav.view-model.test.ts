@@ -37,8 +37,7 @@ describe("workspace nav view model", () => {
       "/trading",
       "/trading/orders",
       "/trading/positions",
-      "/trading/risk",
-      "/trading/readiness"
+      "/trading/risk"
     ]);
   });
 
@@ -108,7 +107,8 @@ describe("workspace nav view model", () => {
       "/portfolio/brokerage-sync",
       "/portfolio/cash-ladder",
       "/portfolio/family-office",
-      "/portfolio/loan-book"
+      "/portfolio/loan-book",
+      "/portfolio/nav"
     ]);
     // Family Office left UNWIRED_WORKSTATION_ROUTES once the screen started loading
     // /api/workstation/family-office/overview, so it belongs in primary navigation again.
@@ -142,7 +142,7 @@ describe("workspace nav view model", () => {
 
     expect(accounting?.subItems.map((item) => item.route)).toEqual([
       "/accounting",
-      "/accounting/operations-continuity",
+      "/accounting/close",
       "/accounting/close-calendar",
       "/accounting/ledger",
       "/accounting/factor-paydown",
@@ -163,23 +163,23 @@ describe("workspace nav view model", () => {
       group.label,
       group.items.map((item) => item.label)
     ])).toEqual([
-      ["Close", ["Today", "Operations continuity", "Close calendar"]],
+      ["Close", ["Close cockpit", "Close", "Close calendar"]],
       ["Records", ["Ledger explorer", "Factor paydown", "Consolidation", "Adjustments", "Capital accounts", "Capital calls", "Security Master"]],
       ["Reconciliation", ["Import statement", "Casework", "External GL"]],
       ["Review", ["Exceptions", "Approvals"]],
       ["Administration", ["Entity setup", "Configure"]]
     ]);
     expect(accounting?.subItems[0]).toMatchObject({
-      label: "Today",
+      label: "Close cockpit",
       active: false,
       ariaCurrent: undefined,
-      ariaLabel: "Open Today"
+      ariaLabel: "Open Close cockpit"
     });
     expect(accounting?.subItems[1]).toMatchObject({
-      label: "Operations continuity",
+      label: "Close",
       active: false,
       ariaCurrent: undefined,
-      ariaLabel: "Open Operations continuity"
+      ariaLabel: "Open Close"
     });
     expect(accounting?.subItems[3]).toMatchObject({
       label: "Ledger explorer",
@@ -187,6 +187,13 @@ describe("workspace nav view model", () => {
       ariaCurrent: "page",
       ariaLabel: "Ledger explorer, current page"
     });
+  });
+
+  it("highlights only the destination whose view the page shows", () => {
+    const options = buildWorkspaceNavViewModel("/data/quotes", undefined, "?view=options").items.find((item) => item.key === "data");
+    expect(options?.subItems.filter((item) => item.active).map((item) => item.label)).toEqual(["Options screening"]);
+    const quotes = buildWorkspaceNavViewModel("/data/quotes", undefined, "?view=watchlist").items.find((item) => item.key === "data");
+    expect(quotes?.subItems.filter((item) => item.active).map((item) => item.label)).toEqual(["Market data"]);
   });
 
   it("keeps the evidence workbench out of Accounting navigation after canonicalization", () => {
@@ -353,6 +360,7 @@ describe("workspace nav view model", () => {
       "/data/import",
       "/data/providers",
       "/data/quotes",
+      "/data/quotes?view=options",
       "/data/operations",
       // The Backfill queue was reachable only from the Data tab strip until the sidebar became
       // the single sub-route navigation.
@@ -468,5 +476,21 @@ describe("workspace attention badges", () => {
     const model = buildWorkspaceNavViewModel("/", undefined, "", null, [item, item, { ...item, id: "review-1", tone: "review" }, { ...item, id: "ready-1", tone: "ready" }]);
     expect(model.items.find((entry) => entry.key === "accounting")).toMatchObject({ attentionCount: 2, attentionSeverity: "blocked" });
     expect(model.items.filter((entry) => entry.key !== "accounting").every((entry) => entry.attentionCount === 0)).toBe(true);
+  });
+
+  it("names the badge unit in a pointer hint, and gives no hint without a badge", () => {
+    const counted = buildWorkspaceNavViewModel("/trading", undefined, "", null, { total: 1, byWorkspace: { accounting: 1 } });
+    expect(counted.today).toMatchObject({ attentionCount: 1, attentionTitle: "1 item in Today's finance queue" });
+    expect(counted.items.find((entry) => entry.key === "accounting")).toMatchObject({
+      attentionCount: 1,
+      attentionTitle: "1 item from Accounting in Today's finance queue"
+    });
+    expect(counted.items.filter((entry) => entry.key !== "accounting").map((entry) => entry.attentionTitle))
+      .toEqual(Array(6).fill(null));
+
+    const clear = buildWorkspaceNavViewModel("/trading", undefined, "", null, { total: 0, byWorkspace: {} });
+    expect(clear.today).toMatchObject({ attentionCount: 0, attentionTitle: null });
+    expect(clear.items.every((entry) => entry.attentionCount === 0 && entry.attentionTitle === null)).toBe(true);
+    expect(buildWorkspaceNavViewModel("/").today.attentionTitle).toBeNull();
   });
 });

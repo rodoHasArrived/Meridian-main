@@ -21,6 +21,7 @@ namespace Meridian.Storage.Integrations;
 /// </remarks>
 public sealed partial class FileProviderIntegrationManifestStore :
     IProviderIntegrationManifestStore,
+    IProviderIntegrationIdentityDecisionStore,
     IProviderIntegrationTenantManifestStoreFactory
 {
     private readonly string _rootPath;

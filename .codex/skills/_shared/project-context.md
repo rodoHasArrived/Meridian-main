@@ -19,6 +19,12 @@
 
 <!-- shared-context:begin — identical in .claude/, .codex/, and .agents/ copies; check-ai-inventory.py enforces it -->
 
+## Generated file delivery
+
+Run `python build/python/cli/buildctl.py regen --fix` after merging. Commit reviewed views only;
+declared machine inventories and workstation builds are CI artifacts. Preserve reviewed source
+hashes. See `docs/engineering/generated-output-delivery.md` for the exact ownership policy.
+
 ## Platform Snapshot
 
 - Meridian is a .NET 10 operational-finance and trading-platform codebase in active delivery; fund
@@ -143,7 +149,8 @@ the full `bash scripts/ci.sh` aggregate is optional at Level 1, recommended at L
 practical at Level 3 or for build/CI-tooling changes; state which checks ran and which did not.
 GitHub Actions `Meridian CI / quality-gate` is the authoritative merge result. Local work may happen on `main` when the user explicitly requests
 it or the checkout is intentionally operating there, but PR-ready publishing should flow through a
-`codex/<short-task-name>` branch and PR targeting `main` unless GitHub repository rules explicitly
+`codex/<short-task-name>` or `claude/<short-task-name>` branch (either agent prefix is accepted)
+and PR targeting `main` unless GitHub repository rules explicitly
 allow the requested protected-branch flow.
 When local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation
 unreliable, push the branch and use the GitHub-hosted `Targeted Test` workflow as the remote proof
@@ -366,7 +373,6 @@ and choose the narrowest lane that matches the user's request:
 | Review | `meridian-code-review` | Report bugs, regressions, missing tests, and architecture drift before summaries. |
 | Test | `meridian-test-writer` | Add scenario-first tests in the right project and validation lane. |
 | Provider | `meridian-provider-builder` | Build or extend provider adapters and hand off to assurance for rollout proof. |
-| Archive | `meridian-archive-organizer` | Classify and move stale material with reference evidence. |
 | Roadmap | `meridian-roadmap-strategist` | Reconcile product direction, waves, and target-state docs from repo evidence. |
 | Cleanup | `meridian-cleanup` | Preserve behavior while removing dead code, duplication, or stale guidance. |
 | Simulated user review | `meridian-simulated-user-panel` | Critique concrete artifacts with canonical roles, label simulation, and separate verified evidence, inference, and missing proof. |

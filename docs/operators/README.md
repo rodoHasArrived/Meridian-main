@@ -2,7 +2,7 @@
 title: Operator Documentation
 status: active
 owner: core-team
-reviewed: 2026-10-28
+reviewed: 2026-11-13
 audience: operators
 ---
 
@@ -46,11 +46,17 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | Historical journal legs missing their currency | [Ledger Currency Backfill](./ledger-currency-backfill.md) | why legs are currency-blind, what the repair may assert, and the survey/affirm workflow |
 | Retained data blocks tenant enforcement | [Fund Structure Tenant Backfill](fund-structure-tenant-backfill.md) | inventory, attribution, quarantine, and strict-startup checks |
 | Statement intake through reconciliation report | [Statement Reconciliation Report Operations](./statement-reconciliation-report-operations.md) | exact accounting scope, Operations Continuity and canonical-queue handoff, JSON/CSV verification, and recovery |
+| Coupon, interest and principal collections | [Book Receipt Queue](book-receipt-queue.md) | accepted holding-sized expectations, provider cash, posted allocations, daily observations and reversal casework |
+| Shadow-mode parallel run and cutover | [Shadow-Mode Onboarding](./shadow-mode-onboarding.md) | shadow-book designation, incumbent opening balances (camt.053/BAI2, administrator pack, GL trial balance), per-period explanations, parallel-run certificate, and the audited promotion decision |
+| Intercompany and entity controls | [Intercompany and Entity Controls](intercompany-entity-controls.md) | agreement evidence, new/legacy book controls, counterpart review, lifecycle and versioned consolidation |
 | Durable account oversight | [Bounded Account Oversight](account-oversight.md) | cash-balance continuity, immutable reviewed price sets and source-backed cash forecasts |
+| Financial charts and source entry | [Financial Visualization Workflows](financial-visualizations.md) | ten investigation views, private-capital observations, election deadlines and dated broker option assessments |
+| Bond holdings, income, collections and risk | [Bond Workflows](bond-workflows.md) | scoped imports, signed/floating/indexed models, reviewed cash, performance and explicit book-policy adoption |
 | Governed reporting, schedules, and delivery | [Governed Reporting Operations](./governed-reporting-operations.md) | reporting preflight, hard-close evidence, recovery, and secure relay operation |
 | Deployment and packaging | [Deployment and Packaging](./deployment-packaging.md) | canonical packaging/checksum/sign-off posture |
 | Security Master cross-instance edit rollout | [Governed Edit Rollout](security-master-governed-edit-rollout.md) | independent schema/Storage review, old-writer drain, migration and operator-acceptance receipts |
 | Security Master schedule-terms contract rollout | [Terms Contract Rollout](security-master-terms-contract-rollout.md) | node inventory from the startup capability line, stored-data gates, calendar parity, edit routing and rollback floors |
+| Move CustomAsset records onto a first-class class | [CustomAsset Promotion](security-master-custom-asset-promotion.md) | read-only promotion report per reclassifying profile, one envelope amendment per record that repairs and promotes, and the no-patch guard |
 | Business-day calendars for declared schedules | [Business-Day Calendar Files](business-day-calendar-files.md) | file format, version bumps, hash verification from the startup lines, refusal warnings and calendar governance |
 | A firing alert | [Operator Runbook](./operator-runbook.md) | per-alert response, diagnostics bundle, incident procedure and ownership |
 | Inspect a connected pipeline or backfill trace | [Distributed Tracing](./distributed-tracing.md) | opt-in exporters, collector configuration, sampling, and shutdown delivery |
@@ -63,9 +69,9 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | --- | --- |
 | Install, start, and package | [Browser installer](browser-workstation-installer.md), [preflight](preflight-checklist.md), [deployment/packaging](deployment-packaging.md), [lifecycle reference](../reference/lifecycle-control-plane.md) |
 | Configure providers | [Credentials](provider-credentials.md), [Alpaca](provider-onboarding-alpaca.md), [Interactive Brokers](provider-onboarding-interactive-brokers.md), [Plaid](plaid-provider-operations.md), [Xero/NetSuite GL](external-gl-providers.md) |
-| Reconcile and report | [Reconciliation triage](reconciliation-operations.md), [statement-to-report](statement-reconciliation-report-operations.md), [governed reporting](governed-reporting-operations.md) |
+| Reconcile and report | [Reconciliation triage](reconciliation-operations.md), [statement-to-report](statement-reconciliation-report-operations.md), [governed reporting](governed-reporting-operations.md), [shadow-mode onboarding](shadow-mode-onboarding.md) |
 | Diagnose, repair, and recover | [Alert runbook](operator-runbook.md), [verified outcomes](verified-outcome-recovery.md), [backfill](provider-backfill-operations.md), [backup/recovery](failover-and-recovery.md), [distributed tracing](distributed-tracing.md), [SLO reference](service-level-objectives.md) |
-| Controlled data maintenance | [Persistence cutover](fund-ops-persistence-cutover.md), [tenant attribution](fund-structure-tenant-backfill.md), [ledger currency backfill](ledger-currency-backfill.md), [Security Master identifier migration](security-master-normalized-identifier-migration.md), [Security Master governed edit rollout](security-master-governed-edit-rollout.md), [Security Master terms contract rollout](security-master-terms-contract-rollout.md), [business-day calendar files](business-day-calendar-files.md) |
+| Controlled data maintenance | [Persistence cutover](fund-ops-persistence-cutover.md), [tenant attribution](fund-structure-tenant-backfill.md), [ledger currency backfill](ledger-currency-backfill.md), [Security Master identifier migration](security-master-normalized-identifier-migration.md), [Security Master governed edit rollout](security-master-governed-edit-rollout.md), [Security Master terms contract rollout](security-master-terms-contract-rollout.md), [Security Master CustomAsset promotion](security-master-custom-asset-promotion.md), [business-day calendar files](business-day-calendar-files.md) |
 
 An active procedure is maintained guidance, not evidence that its workflow or release is certified.
 Use the document's stated prerequisites and retained acceptance artifacts; an index/navigation

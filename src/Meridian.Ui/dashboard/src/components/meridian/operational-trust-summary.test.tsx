@@ -21,7 +21,7 @@ function shellSignal(overrides: Partial<AppShellAttentionSignal>): AppShellAtten
     kind: "source",
     label: "Providers",
     value: "4/4 healthy",
-    detail: "4 providers healthy in the loaded data posture.",
+    detail: "4 providers healthy in the loaded provider data.",
     tone: "ready",
     headline: "Providers: 4/4 healthy",
     href: null,
@@ -32,7 +32,7 @@ function shellSignal(overrides: Partial<AppShellAttentionSignal>): AppShellAtten
 
 describe("OperationalTrustSummary", () => {
   it("says all sources are current in one line when every fact is ready", async () => {
-    const { container } = render(<OperationalTrustSummary {...readyFacts} />);
+    const { container } = render(<OperationalTrustSummary {...readyFacts} showWhenClear />);
 
     const region = screen.getByRole("region", { name: "Data confidence" });
     const summary = container.querySelector("summary")!;
@@ -139,10 +139,10 @@ describe("OperationalTrustSummary", () => {
           label: "Connectivity",
           value: "Provider degraded",
           tone: "blocked",
-          action: <a href="/data/providers">Open provider posture</a>
+          action: <a href="/data/providers">Open provider health</a>
         }}
         scope={{
-          value: "No operating scope selected",
+          value: "All authorized scopes",
           tone: "review",
           action: <button type="button">Set operating scope</button>
         }}
@@ -160,7 +160,7 @@ describe("OperationalTrustSummary", () => {
     const scopeCard = within(breakdown).getByText("Scope").parentElement as HTMLElement;
     const freshnessCard = within(breakdown).getByText("Freshness").parentElement as HTMLElement;
 
-    expect(within(connectivityCard).getByRole("link", { name: "Open provider posture" }))
+    expect(within(connectivityCard).getByRole("link", { name: "Open provider health" }))
       .toHaveAttribute("href", "/data/providers");
     expect(within(scopeCard).getByRole("button", { name: "Set operating scope" })).toBeInTheDocument();
     expect(within(freshnessCard).getByRole("button", { name: "Refresh evidence" })).toBeInTheDocument();
@@ -173,7 +173,7 @@ describe("OperationalTrustSummary", () => {
     const { container } = render(
       <OperationalTrustSummary
         source={{ label: "Connectivity", value: "1 warning", tone: "review" }}
-        scope={{ value: "No operating scope selected", tone: "review" }}
+        scope={{ value: "All authorized scopes", tone: "review" }}
         freshness={{ value: "Timestamp unavailable", tone: "review" }}
         completeness={{ value: "6 ranked items", tone: "ready" }}
         blocker={{ value: "Cash variance over tolerance.", tone: "blocked" }}
@@ -192,17 +192,29 @@ describe("OperationalTrustSummary", () => {
     expect(pill).toHaveClass("shrink-0");
   });
 
+  it("renders nothing when the page's own facts are all ready, and returns when one is not", () => {
+    const { container, rerender } = render(<OperationalTrustSummary {...readyFacts} />);
+    // The masthead already states the environment and the worst issue; a ready page adds no row.
+    expect(container).toBeEmptyDOMElement();
+
+    rerender(<OperationalTrustSummary {...readyFacts} freshness={{ value: "192d ago", tone: "review" }} />);
+    expect(screen.getByRole("region", { name: "Data confidence" })).toHaveAttribute("data-status-tone", "review");
+
+    rerender(<OperationalTrustSummary {...readyFacts} action={<button type="button">Refresh evidence</button>} />);
+    expect(screen.getByRole("button", { name: "Refresh evidence" })).toBeInTheDocument();
+  });
+
   describe("shell source signals", () => {
     const renderInShell = (sourceSignals: AppShellAttentionSignal[]) =>
       render(
         <MemoryRouter>
           <ShellStatusSignalsProvider value={{ sourceSignals, operatingScope: null }}>
-            <OperationalTrustSummary {...readyFacts} label="Trading data confidence" />
+            <OperationalTrustSummary {...readyFacts} label="Trading data confidence" showWhenClear />
           </ShellStatusSignalsProvider>
         </MemoryRouter>
       );
 
-    it("cannot read all sources current while the masthead warns about a provider", () => {
+    it("points to the trust strip instead of repeating a shell issue the masthead names", () => {
       // The Trading example: page freshness is "2s ago" and ready, the masthead says 1 warning.
       const { container } = renderInShell([
         shellSignal({
@@ -211,18 +223,19 @@ describe("OperationalTrustSummary", () => {
           tone: "review",
           headline: "Providers: 1 warning",
           href: "/data/providers",
-          actionLabel: "Open provider posture"
+          actionLabel: "Open provider health"
         })
       ]);
 
       const summary = container.querySelector("summary")!;
-      expect(within(summary).queryByTestId("status-row-clear")).toBeNull();
-      const line = within(summary).getByTestId("status-row-issues");
-      expect(line).toHaveTextContent("Needs review");
-      expect(line).toHaveTextContent("Providers:1 warning");
-      expect(line).not.toHaveTextContent("2s ago");
-      expect(screen.getByRole("region", { name: "Trading data confidence" })).toHaveAttribute("data-status-tone", "review");
-      expect(screen.getByRole("link", { name: "Open provider posture" })).toHaveAttribute("href", "/data/providers");
+      // Never "All sources current" over a warning masthead, and never the masthead's item again.
+      const clear = within(summary).getByTestId("status-row-clear");
+      expect(clear).toHaveTextContent("This page's sources are current · 1 workspace issue in the trust strip");
+      expect(summary).not.toHaveTextContent("Providers");
+      expect(summary).not.toHaveTextContent(/All sources current/);
+      // The shell issue and its recovery link stay available under Details.
+      expect(within(container.querySelector("dl")!).getByText("Providers")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Open provider health" })).toHaveAttribute("href", "/data/providers");
     });
 
     it("stays on all sources current when the shell signals are ready", () => {

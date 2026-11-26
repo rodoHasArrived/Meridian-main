@@ -1,3 +1,4 @@
+using Meridian.Contracts.Reconciliation;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 
@@ -65,7 +66,12 @@ public interface IReconciliationCaseIntakeService
 public sealed record StatementRunWorkflowResult(
     CanonicalStatementImport Import,
     IReadOnlyList<ReconciliationBreakRecord> Breaks,
-    IReadOnlyList<ReconciliationCase> Cases);
+    IReadOnlyList<ReconciliationCase> Cases)
+{
+    public ExecutedStatementTolerancePolicy? ExecutedTolerancePolicy { get; init; }
+    public string? MatchArtifactSha256 { get; init; }
+    public IReadOnlyDictionary<string, RetainedStatementMatchEvidence>? CaseMatchEvidence { get; init; }
+}
 
 /// <summary>
 /// Defines statement-run creation, inspection, open breaks, and reconciliation casework operations.

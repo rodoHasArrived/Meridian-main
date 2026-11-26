@@ -84,6 +84,28 @@ Use native labelled input/select controls, existing focus indicators, and wrappi
 at laptop widths/browser zoom. Search URL updates must not move focus or scroll the workbench.
 Copy link and Save view capture table controls through the existing view envelope.
 
+### Financial scanning aids and retained bridges
+
+Keep exact values primary when adding graphics inside dense tables. `PositionValueGraphic` in the
+browser workstation uses an exposure-magnitude bar and a signed P&L bar with a visible zero marker.
+The scale belongs to all loaded positions before filters, separately for each column and source
+currency. Rows without a currency remain a separate display-only group; the dollar-format limitation
+is disclosed. Unsupported formats are unavailable,
+never zero. Pair large displayed exposure with the shared mark-review state using explicit text;
+bar color alone must not carry review meaning. Do not use rounded display ratios for concentration,
+approval, financial totals, FX conversion, or accounting decisions.
+
+`ReportWriterChartPreview` is a **Signed value summary**, labeled separately from the configured
+chart type. Direct series labels, exact reported values, a common zero baseline and explicit
+unavailable observations preserve sign and missingness. Keep the retained grid alongside it.
+
+`IncomeMovementWaterfall` follows the start/delta/total bridge pattern with dashed level connectors.
+Keep currency, basis, period and population beside the chart, and exact amounts below each stage.
+Contribution buttons open retained support and restore focus on close. Missing, incompatible or
+internally inconsistent bridges withhold the drawing while preserving the exact evidence. Use
+exact decimal arithmetic before deriving drawing coordinates; never fold unexplained records into
+the residual twice or treat offsetting unsupported records as verified evidence.
+
 ### Selection inputs — which control?
 
 | Situation | Use |
@@ -152,6 +174,18 @@ use the full indicator for provider links and run telemetry. Flat by default —
 | Inline trend, no axes | **Sparkline** |
 | Entity / ownership structure (nodes + %-edges) | **OwnershipGraph** — layered top-down; `TreeView` for flat hierarchies without percentages |
 | Any of the above in a titled, toolbar'd frame | wrap in **ChartCard** |
+
+### Decision chart evidence
+
+Pair decision charts with the browser workstation's `ChartEvidenceView`. Build the plotted mark and
+inspector entry from the same observation. Keep the series, signed plotted value, unit, calculation
+basis, timestamp or as-of, and a link to the source record or inputs together. Use the source's units
+and timestamps. Show missing provenance explicitly and label illustrative data at the chart.
+
+Pointer inspection, tap, and keyboard focus select the same entry. The plot has one tab stop, with
+Left and Right Arrow to move and Home and End to jump. The adjacent point slider supports inspection
+independently of the plot. Keep the entry visible while users reach its proof link. Identify live
+points by source identity so refreshed data cannot move an inspected value to another record.
 
 ---
 

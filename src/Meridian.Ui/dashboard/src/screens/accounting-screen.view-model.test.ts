@@ -875,7 +875,7 @@ describe("accounting-screen view model", () => {
 
     expect(buildAccountingTaskMode("/accounting")).toMatchObject({
       id: "close-cockpit",
-      label: "Close Cockpit",
+      label: "Accounting today",
       href: "/accounting",
       workstream: "ledger"
     });
@@ -893,7 +893,7 @@ describe("accounting-screen view model", () => {
     });
     expect(buildAccountingTaskMode("/accounting/journal-entries")).toMatchObject({
       id: "journal-entry",
-      label: "Journal Entry",
+      label: "Journal entries",
       href: "/accounting/journal-entries",
       workstream: "journal-entries"
     });
@@ -938,7 +938,7 @@ describe("accounting-screen view model", () => {
       titleId: "reporting-workspace-loading-title",
       detailId: "reporting-workspace-loading-detail",
       title: "Loading Reporting",
-      detail: "Waiting for report-pack, governed export, and approval summaries from workspace data.",
+      detail: "Waiting for report-pack, export, and approval summaries from workspace data.",
       workstreamLabel: "Reporting"
     });
   });
@@ -1031,8 +1031,9 @@ describe("accounting-screen view model", () => {
       tableAriaLabel: "Tolerance profile health by reconciliation route",
       selectedProfileId: "profile-cash",
       refreshCommand: {
-        label: "Refresh calibration",
-        ariaLabel: "Refresh calibration summary",
+        visible: false,
+        label: "Retry calibration summary",
+        ariaLabel: "Retry calibration summary load",
         disabled: false,
         disabledReason: null
       }
@@ -1137,12 +1138,14 @@ describe("accounting-screen view model", () => {
 
   it("derives calibration refresh command states for loading and retry recovery", () => {
     expect(buildCalibrationSummaryViewState(null, true, null).refreshCommand).toEqual({
-      label: "Refreshing...",
-      ariaLabel: "Calibration summary refresh is already running",
+      visible: false,
+      label: "Loading...",
+      ariaLabel: "Calibration summary is already loading",
       disabled: true,
-      disabledReason: "Calibration summary refresh is already running."
+      disabledReason: "Calibration summary is already loading."
     });
     expect(buildCalibrationSummaryViewState(null, false, "Calibration API offline").refreshCommand).toEqual({
+      visible: true,
       label: "Retry calibration summary",
       ariaLabel: "Retry calibration summary load",
       disabled: false,
@@ -1585,7 +1588,9 @@ describe("accounting-screen view model", () => {
       expect.objectContaining({
         journalEntryId: "je-cash-1",
         debitLabel: "$120,500",
-        creditLabel: "$0",
+        // The credit side is not applicable to a debit-balance line, so it is blank rather than $0.
+        creditLabel: "",
+        ariaLabel: "Cash journal je-cash-1. Debit $120,500. Balance $120,500. Source evidence.",
         evidenceLabel: "Source evidence",
         evidenceHref: "/accounting/audit?sourceEventId=evt-cash-1",
         approvalHref: "/accounting/approvals?approvalId=approval-cash-1"
@@ -2111,7 +2116,7 @@ describe("accounting-screen view model", () => {
       expectedAmountLabel: "126,250 USD",
       actualAmountLabel: "124,900 USD",
       varianceLabel: "-1,350 USD",
-      factorLabel: "1.000000 -> 0.900000",
+      factorLabel: "1.000000 → 0.900000",
       postingStatusLabel: "Variance review",
       postingStatusTone: "danger",
       selectAriaLabel: "Inspect schedule event Paydown for sec-1 on Nov 15, 2026",
@@ -2140,7 +2145,7 @@ describe("accounting-screen view model", () => {
       { label: "Expected", value: "126,250 USD" },
       { label: "Actual", value: "124,900 USD", tone: "default" },
       { label: "Variance", value: "-1,350 USD", tone: "danger" },
-      { label: "Factor", value: "1.000000 -> 0.900000" }
+      { label: "Factor", value: "1.000000 → 0.900000" }
     ]));
   });
 
@@ -2244,8 +2249,8 @@ describe("accounting-screen view model", () => {
       isExpanded: true
     });
     expect(state).toMatchObject({
-      title: "Open lot read model",
-      tableLabel: "Open lot read model for sec-1",
+      title: "Open lot summary",
+      tableLabel: "Open lot summary for sec-1",
       selectedRowId: "lot-1",
       hasRows: true,
       statusAnnouncement: "1 open lot loaded for sec-1."
@@ -2281,8 +2286,8 @@ describe("accounting-screen view model", () => {
       selectedRowId: null,
       loading: true
     })).toMatchObject({
-      loadingText: "Loading open lot read model...",
-      statusAnnouncement: "Loading open lot read model for sec-1."
+      loadingText: "Loading open lot summary...",
+      statusAnnouncement: "Loading open lot summary for sec-1."
     });
     expect(buildSecurityOpenLotReadModelViewState({
       securityId: "sec-1",
@@ -2292,7 +2297,7 @@ describe("accounting-screen view model", () => {
     })).toMatchObject({
       errorText: "Trust snapshot offline",
       errorDetails: [],
-      statusAnnouncement: "Open lot read model error: Trust snapshot offline"
+      statusAnnouncement: "Open lot summary error: Trust snapshot offline"
     });
   });
 
@@ -2344,7 +2349,7 @@ describe("accounting-screen view model", () => {
         value: "Ready: 1 active provider evidence row retained on the passport. Evidence 2; blockers 0.",
         tone: "success"
       },
-      { label: "Operations handoff", value: "1 enabled / 1 total handoff(s).", tone: "success" },
+      { label: "Operations next steps", value: "1 enabled / 1 total next step(s).", tone: "success" },
       {
         label: "Operations workbench",
         value: "Ready: Security Master operations workbench is ready for downstream portfolio, accounting, reconciliation, close, and reporting use.",
@@ -2425,7 +2430,7 @@ describe("accounting-screen view model", () => {
     });
     expect(view.fields).toEqual(expect.arrayContaining([
       { label: "Display name", value: "Apple Inc." },
-      { label: "Trust", value: "Trust posture is unavailable.", tone: "default" },
+      { label: "Trust", value: "Trust status is unavailable.", tone: "default" },
       { label: "Identifiers", value: "Identifier summary is unavailable." },
       { label: "Usage", value: "Downstream usage is unavailable." }
     ]));
@@ -2662,8 +2667,9 @@ describe("accounting-screen view model", () => {
     expect(countOpenSecurityConflicts(conflicts)).toBe(1);
     expect(countOpenSecurityConflicts(null)).toBe(0);
     expect(buildSecurityConflictRefreshCommand(false, null)).toEqual({
-      label: "Refresh conflicts",
-      ariaLabel: "Refresh Security Master identifier conflicts",
+      visible: false,
+      label: "Retry conflicts",
+      ariaLabel: "Retry loading Security Master identifier conflicts",
       disabled: false,
       disabledReason: null,
       busy: false,
@@ -2672,19 +2678,22 @@ describe("accounting-screen view model", () => {
       feedbackText: null
     });
     expect(buildSecurityConflictRefreshCommand(true, null)).toMatchObject({
-      label: "Refreshing...",
+      visible: false,
+      label: "Retrying...",
       disabled: true,
       disabledReason: "Identifier conflicts are already loading.",
       busy: true,
-      busyLabel: "Refreshing..."
+      busyLabel: "Retrying..."
     });
     expect(buildSecurityConflictRefreshCommand(false, "Provider offline")).toMatchObject({
+      visible: true,
       label: "Retry conflicts",
       ariaLabel: "Retry loading Security Master identifier conflicts"
     });
     expect(buildSecurityConflictRefreshCommand(false, null, "conflict-1")).toMatchObject({
-      label: "Refresh conflicts",
-      ariaLabel: "Refresh disabled while identifier conflict conflict-1 is resolving",
+      visible: false,
+      label: "Retry conflicts",
+      ariaLabel: "Retry disabled while identifier conflict conflict-1 is resolving",
       disabled: true,
       disabledReason: "Wait until identifier conflict conflict-1 finishes resolving before refreshing the conflict queue.",
       busy: false,
@@ -2911,6 +2920,7 @@ describe("accounting-screen view model", () => {
       "Meridian service returned 503. Open diagnostics for technical details."
     ]);
     expect(result.current.conflictRefreshCommand).toMatchObject({
+      visible: true,
       label: "Retry conflicts",
       disabled: false
     });
@@ -2921,7 +2931,7 @@ describe("accounting-screen view model", () => {
     });
 
     await waitFor(() => expect(result.current.conflictRefreshCommand).toMatchObject({
-      label: "Refreshing...",
+      label: "Retrying...",
       disabled: true,
       busy: true
     }));
@@ -2934,7 +2944,7 @@ describe("accounting-screen view model", () => {
     expect(result.current.conflictsErrorText).toBeNull();
     expect(result.current.conflictRows).toHaveLength(2);
     expect(result.current.conflictRefreshCommand).toMatchObject({
-      label: "Refresh conflicts",
+      visible: false,
       disabled: false
     });
   });
@@ -2985,8 +2995,8 @@ describe("accounting-screen view model", () => {
       statusTone: "warning",
       isOpen: true,
       isResolving: true,
-      providerASummary: "Bloomberg -> security sec-1",
-      providerBSummary: "Refinitiv -> security sec-2",
+      providerASummary: "Bloomberg → security sec-1",
+      providerBSummary: "Refinitiv → security sec-2",
       detectedLabel: "Detected Jan 1, 2026",
       fieldLabel: "CUSIP identifier",
       resolutionStatusText: "Resolving identifier conflict conflict-1."
@@ -3181,5 +3191,91 @@ describe("accounting-screen view model", () => {
       tone: "danger",
       role: "alert"
     });
+  });
+});
+
+describe("authoritative Security Master ladder selection", () => {
+  it("loads economics outside search results without changing the query or filtered rows", async () => {
+    const bond: SecurityMasterEntry = {
+      ...securityResult,
+      securityId: "33333333-3333-3333-3333-333333333333",
+      displayName: "European issuer 3.5% 2032",
+      classification: { ...securityResult.classification, assetClass: "Bond", primaryIdentifierKind: "Isin", primaryIdentifierValue: "DE0001234567" },
+      economicDefinition: { ...securityResult.economicDefinition, currency: "EUR" }
+    };
+    const detail = deferred<SecurityMasterEntry>();
+    const getDetail = vi.fn().mockReturnValue(detail.promise);
+    const services = createSecurityMasterServices({ getDetail });
+    const drillInServices = createSecurityMasterDrillInServices();
+    const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
+    act(() => result.current.updateQuery("existing filter"));
+    await waitFor(() => expect(services.search).toHaveBeenCalledWith("existing filter"));
+    act(() => { void result.current.selectSecurity(bond.securityId); });
+    expect(getDetail).toHaveBeenCalledWith(bond.securityId);
+    expect(result.current.detailLoading).toBe(true);
+    expect(result.current.referenceDataWorkbenchView.loadingText).not.toBeNull();
+    expect(drillInServices.getReferenceDataCoverage).not.toHaveBeenCalled();
+    await act(async () => detail.resolve(bond));
+    await waitFor(() => expect(drillInServices.getReferenceDataCoverage).toHaveBeenCalledTimes(1));
+    expect(drillInServices.getReferenceDataCoverage).toHaveBeenCalledWith(expect.objectContaining({
+      securityId: bond.securityId,
+      currency: "EUR",
+      primaryIdentifierKind: "Isin",
+      primaryIdentifierValue: "DE0001234567",
+      issuerName: "European issuer 3.5% 2032",
+      underlyingSymbol: "DE000123"
+    }));
+    expect(result.current.selectedEntry).toEqual(bond);
+    expect(result.current.results).toEqual([]);
+    expect(result.current.query).toBe("existing filter");
+  });
+
+  it("ignores an older selection response and refuses mismatched authoritative economics", async () => {
+    const earlier = deferred<SecurityMasterEntry>();
+    const getDetail = vi.fn().mockImplementation((id: string) => id === "earlier" ? earlier.promise : Promise.resolve({ ...securityResult, securityId: "latest" }));
+    const services = createSecurityMasterServices({ getDetail });
+    const drillInServices = createSecurityMasterDrillInServices();
+    const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
+    act(() => { void result.current.selectSecurity("earlier"); });
+    await act(() => result.current.selectSecurity("latest"));
+    await act(async () => earlier.resolve({ ...securityResult, securityId: "earlier" }));
+    expect(result.current.selectedEntry?.securityId).toBe("latest");
+    expect(drillInServices.getReferenceDataCoverage).toHaveBeenCalledTimes(1);
+    expect(drillInServices.getReferenceDataCoverage).toHaveBeenCalledWith(expect.objectContaining({ securityId: "latest", primaryIdentifierValue: "AAPL" }));
+    await act(() => result.current.selectSecurity("mismatched"));
+    expect(result.current.selectedEntry).toBeNull();
+    expect(result.current.detailErrorText).toContain("different security");
+    expect(result.current.referenceDataWorkbenchView.errorText).toContain("different security");
+    expect(drillInServices.getReferenceDataCoverage).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not substitute search-row context when authoritative detail fails", async () => {
+    const services = createSecurityMasterServices({
+      search: vi.fn().mockResolvedValue([securityResult]),
+      getDetail: vi.fn().mockRejectedValue(new Error("Retained terms unavailable."))
+    });
+    const drillInServices = createSecurityMasterDrillInServices();
+    const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
+    act(() => result.current.updateQuery("AAPL"));
+    await waitFor(() => expect(result.current.results).toEqual([securityResult]));
+    await act(() => result.current.selectSecurity(securityResult.securityId));
+    expect(drillInServices.getReferenceDataCoverage).not.toHaveBeenCalled();
+    expect(result.current.referenceDataWorkbenchView.errorText).toBe("Retained terms unavailable.");
+    expect(result.current.referenceDataWorkbenchView.loadingText).toBeNull();
+  });
+
+  it("retains exact search-row context for callers without a full-detail loader", async () => {
+    const services = createSecurityMasterServices({ search: vi.fn().mockResolvedValue([securityResult]) });
+    const drillInServices = createSecurityMasterDrillInServices();
+    const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
+    act(() => result.current.updateQuery("AAPL"));
+    await waitFor(() => expect(result.current.results).toEqual([securityResult]));
+    await act(() => result.current.selectSecurity(securityResult.securityId));
+    expect(drillInServices.getReferenceDataCoverage).toHaveBeenCalledWith(expect.objectContaining({
+      securityId: securityResult.securityId,
+      primaryIdentifierValue: "AAPL",
+      issuerName: "Apple Inc.",
+      currency: "USD"
+    }));
   });
 });

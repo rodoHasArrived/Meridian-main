@@ -21,6 +21,8 @@ public sealed class StrategyRunDetailViewModel : BindableBase
     private ParameterItemViewModel? _selectedParameter;
     private InspectorPanelModel _runSummaryInspector = BuildEmptyRunSummaryInspector();
     private InspectorPanelModel _selectedParameterInspector = BuildEmptyParameterInspector();
+    private StrategyRunReplayProvenanceDto? _replayProvenance;
+    private bool _showReplayEvidence;
     private string _runActionStateTitle = "Select a retained run";
     private string _runActionStateDetail = "Portfolio, Ledger, Risk, and Cash Flow unlock after selecting a retained strategy run.";
 
@@ -68,6 +70,85 @@ public sealed class StrategyRunDetailViewModel : BindableBase
     }
 
     public bool HasSelectedParameter => SelectedParameter is not null;
+
+    public StrategyRunReplayProvenanceDto? ReplayProvenance
+    {
+        get => _replayProvenance;
+        private set
+        {
+            if (SetProperty(ref _replayProvenance, value))
+            {
+                OnPropertyChanged(nameof(ReplaySourceTable));
+                OnPropertyChanged(nameof(ReplayRevisionTable));
+                OnPropertyChanged(nameof(HasReplayFingerprint));
+                OnPropertyChanged(nameof(HasReplayRevisions));
+                OnPropertyChanged(nameof(ReplayQualityStatus));
+                OnPropertyChanged(nameof(ReplayQualityWarnings));
+            }
+        }
+    }
+
+    public bool ShowReplayEvidence
+    {
+        get => _showReplayEvidence;
+        private set => SetProperty(ref _showReplayEvidence, value);
+    }
+
+    public bool HasReplayFingerprint => ReplayProvenance?.CompletedInputHashSha256 is not null;
+
+    public bool HasReplayRevisions => ReplayProvenance?.Revisions.Count > 0;
+
+    public string ReplayQualityStatus => ReplayProvenance?.DataQualityWarnings is null
+        ? "Data-quality coverage was not retained. Repair, gap-fill and quality assessment status remain unknown."
+        : ReplayProvenance.DataQualityWarnings.Count == 0 ? "No source-quality warnings were reported for the retained inputs."
+        : "Retained input dependencies require review.";
+
+    public IReadOnlyList<ReplayDataQualityWarningRow> ReplayQualityWarnings =>
+        BuildReplayQualityWarnings(ReplayProvenance?.DataQualityWarnings);
+
+    internal static IReadOnlyList<ReplayDataQualityWarningRow> BuildReplayQualityWarnings(
+        IReadOnlyList<Meridian.Contracts.Operations.MarketDataQualityWarningDto>? warnings) =>
+        warnings?.Select(warning => new ReplayDataQualityWarningRow(
+            warning.Kind switch { "Repaired" => "Repaired data", "GapFilled" => "Gap-filled data",
+                "LowQuality" => "Low-quality data", "Unknown" => "Unknown source quality", _ => warning.Kind },
+            $"{warning.Message} Affected fills: {warning.AffectedFillCount}.",
+            string.Join(Environment.NewLine, warning.Evidence.Select(DescribeReplayInput)))).ToArray() ?? [];
+
+    private static string DescribeReplayInput(Meridian.Contracts.Operations.MarketDataInputEvidence source) =>
+        string.Join("; ", new[]
+        {
+            $"Provider {source.ProviderId ?? "Unknown"}", $"event {source.EventReference ?? "Unknown"}",
+            $"observed {source.ObservedAt?.ToString("O") ?? "Unknown"}", $"dataset {source.DatasetId ?? "Unknown"}",
+            $"revision {source.BackfillRevisionId ?? "Unknown"}", $"hash {source.ContentHash ?? "Unknown"}",
+            $"repaired {source.Repaired?.ToString() ?? "Unknown"}", $"gap-filled {source.GapFilled?.ToString() ?? "Unknown"}",
+            $"receipt {source.RepairReceiptId ?? "Unknown"}",
+            $"quality {source.QualityScore?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "Unassessed"}",
+            $"retained threshold {source.QualityThreshold?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "Unknown"}",
+            $"assessed {source.QualityAssessedAt?.ToString("O") ?? "Unknown"}",
+            $"range {source.AssessmentFrom?.ToString("yyyy-MM-dd") ?? "Unknown"} to {source.AssessmentTo?.ToString("yyyy-MM-dd") ?? "Unknown"}"
+        });
+
+    public WorkstationTableModel<StrategyRunReplaySourceCountDto> ReplaySourceTable => new(
+        ReplayProvenance?.SourceMix ?? [],
+        [
+            new("Symbol", nameof(StrategyRunReplaySourceCountDto.Symbol), 108),
+            new("Source", nameof(StrategyRunReplaySourceCountDto.Source), 140),
+            new("Replayed bars", nameof(StrategyRunReplaySourceCountDto.Bars), 100, "{0:N0}")
+        ],
+        "Replayed bars by source",
+        "Replay provider mix is unavailable",
+        "Source counts are available for new runs that replay bars.");
+
+    public WorkstationTableModel<StrategyRunReplayRevisionDto> ReplayRevisionTable => new(
+        ReplayProvenance?.Revisions ?? [],
+        [
+            new("Instrument", nameof(StrategyRunReplayRevisionDto.Instrument), 96),
+            new("Serving provider", nameof(StrategyRunReplayRevisionDto.ServingProvider), 115),
+            new("Granularity", nameof(StrategyRunReplayRevisionDto.Granularity), 80),
+            new("Revision", nameof(StrategyRunReplayRevisionDto.RevisionId), 450),
+            new("Content hash", nameof(StrategyRunReplayRevisionDto.ContentHash), 450)
+        ],
+        "Verified backfill revisions");
 
     private string _title = "Strategy Run Detail";
     public string Title
@@ -236,13 +317,13 @@ public sealed class StrategyRunDetailViewModel : BindableBase
     private void ApplyDetail(StrategyRunDetail detail)
     {
         Title = $"{detail.Summary.StrategyName} ({detail.Summary.RunId[..Math.Min(8, detail.Summary.RunId.Length)]})";
-        StatusText = $"{detail.Summary.Status} {detail.Summary.Mode} run recorded at {UtcFormat.FormatUtcTimestamp(detail.Summary.StartedAt)}.";
+        StatusText = $"{detail.Summary.Status} {detail.Summary.Mode} run recorded at {UtcFormat.FormatDisplayTimestamp(detail.Summary.StartedAt)}.";
         RunActionStateTitle = "Run drill-ins ready";
         RunActionStateDetail = $"Open portfolio, ledger, risk, or cash-flow review for run {detail.Summary.RunId}.";
         ModeText = detail.Summary.Mode.ToString();
         EngineText = detail.Summary.Engine.ToString();
-        StartedAtText = UtcFormat.FormatUtcTimestamp(detail.Summary.StartedAt);
-        CompletedAtText = UtcFormat.FormatUtcTimestamp(detail.Summary.CompletedAt, "In progress");
+        StartedAtText = UtcFormat.FormatDisplayTimestamp(detail.Summary.StartedAt);
+        CompletedAtText = UtcFormat.FormatDisplayTimestamp(detail.Summary.CompletedAt, "In progress");
         NetPnlText = FormatCurrency(detail.Summary.NetPnl);
         ReturnText = FormatPercent(detail.Summary.TotalReturn);
         EquityText = FormatCurrency(detail.Summary.FinalEquity);
@@ -250,6 +331,8 @@ public sealed class StrategyRunDetailViewModel : BindableBase
         PortfolioReferenceText = detail.Summary.PortfolioId ?? "Not linked";
         LedgerReferenceText = detail.Summary.LedgerReference ?? "Not linked";
         RunSummaryInspector = BuildRunSummaryInspector(detail);
+        ReplayProvenance = detail.ReplayProvenance;
+        ShowReplayEvidence = detail.Summary.Mode == StrategyRunMode.Backtest || detail.ReplayProvenance?.DataQualityWarnings is not null;
 
         Parameters.Clear();
         foreach (var parameter in detail.Parameters.OrderBy(static entry => entry.Key, StringComparer.OrdinalIgnoreCase))
@@ -328,6 +411,8 @@ public sealed class StrategyRunDetailViewModel : BindableBase
         Parameters.Clear();
         SelectedParameter = null;
         RunSummaryInspector = BuildEmptyRunSummaryInspector();
+        ReplayProvenance = null;
+        ShowReplayEvidence = false;
     }
 
     private void NotifyRunCommandsChanged()
@@ -351,8 +436,8 @@ public sealed class StrategyRunDetailViewModel : BindableBase
             Badge = new WorkstationBadgeModel("Status", statusValue, "\uE8A5", ToneForStatus(statusValue)),
             Facts =
             [
-                new("Started", UtcFormat.FormatUtcTimestamp(detail.Summary.StartedAt)),
-                new("Completed", UtcFormat.FormatUtcTimestamp(detail.Summary.CompletedAt, "In progress")),
+                new("Started", UtcFormat.FormatDisplayTimestamp(detail.Summary.StartedAt)),
+                new("Completed", UtcFormat.FormatDisplayTimestamp(detail.Summary.CompletedAt, "In progress")),
                 new("Return", FormatPercent(detail.Summary.TotalReturn)),
                 new("Fills", detail.Summary.FillCount.ToString("N0")),
                 new("Portfolio", detail.Summary.PortfolioId ?? "Not linked"),
@@ -451,3 +536,5 @@ public sealed class StrategyRunDetailViewModel : BindableBase
 }
 
 public sealed record ParameterItemViewModel(string Name, string Value);
+
+public sealed record ReplayDataQualityWarningRow(string Kind, string Message, string Evidence);

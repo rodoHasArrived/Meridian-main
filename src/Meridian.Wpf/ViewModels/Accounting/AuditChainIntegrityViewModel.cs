@@ -191,7 +191,7 @@ public sealed class AuditChainIntegrityViewModel : BindableBase
                 $"Every configured audit chain verified ({configured} of {report.Chains.Count}).");
         }
 
-        StatusText = $"Verification ran {UtcFormat.FormatUtcTimestamp(report.VerifiedAtUtc)}.";
+        StatusText = $"Verification ran {UtcFormat.FormatDisplayTimestamp(report.VerifiedAtUtc)}.";
     }
 
     private static AccountingWorkbenchRow BuildRow(AuditChainIntegrityResultDto result) => new(

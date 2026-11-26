@@ -48,22 +48,24 @@ export function CorrelationHeatmap({
   const cols = `${headerSize}px repeat(${n}, ${cellSize}px)`;
 
   return (
-    <div className="mds-corr" style={{ gridTemplateColumns: cols }} role="grid" aria-label="Correlation matrix">
-      <div role="row" style={{ display: "contents" }}>
+    <div className="mds-corr" style={{ gridTemplateColumns: cols }} role="table" aria-label="Correlation matrix" aria-rowcount={matrix.length + 1} aria-colcount={n + 1}>
+      <div role="row" aria-rowindex={1} style={{ display: "contents" }}>
       <div className="mds-corr__corner" role="columnheader" aria-label="Series" />
       {labels.map((l) => (
         <div key={"ch" + l} className="mds-corr__h" role="columnheader">{l}</div>
       ))}
       </div>
       {matrix.map((row, r) => (
-        <div role="row" key={"r" + r} style={{ display: "contents" }}>
+        <div role="row" key={"r" + r} aria-rowindex={r + 2} style={{ display: "contents" }}>
           <div className="mds-corr__h mds-corr__rh" role="rowheader">{labels[r]}</div>
           {row.map((v, c) => {
             const diag = r === c;
             return (
               <div
                 key={"c" + r + "-" + c}
-                role="gridcell"
+                role="cell"
+                aria-colindex={c + 2}
+                aria-label={`${labels[r]} · ${labels[c]} = ${typeof v !== "number" || !Number.isFinite(v) ? "—" : valueFmt(v)}`}
                 className={`mds-corr__cell${diag ? " mds-corr__cell--diag" : ""}`}
                 style={{ background: diag ? "var(--selected-surface,var(--bg-active,#E7EDF2))" : cellColor(v), height: cellSize }}
                 title={`${labels[r]} · ${labels[c]} = ${typeof v !== "number" || !Number.isFinite(v) ? "—" : valueFmt(v)}`}

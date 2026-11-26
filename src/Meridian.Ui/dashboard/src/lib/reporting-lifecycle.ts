@@ -126,7 +126,7 @@ const WORKFLOW_DESCRIPTORS: Record<ReportingWorkflowState, ReportingVocabularyDe
 };
 
 const DATA_DESCRIPTORS: Record<ReportingDataState, ReportingVocabularyDescriptor<ReportingDataState>> = {
-  Confirmed: { state: "Confirmed", label: "Confirmed", severity: "ready", description: "Sourced from a governed, current, confirmed value." },
+  Confirmed: { state: "Confirmed", label: "Confirmed", severity: "ready", description: "Sourced from a current, confirmed value." },
   Provisional: { state: "Provisional", label: "Provisional", severity: "review", description: "Sourced but not yet final; expected to change before cutoff." },
   Estimated: { state: "Estimated", label: "Estimated", severity: "action", description: "Modelled or accrued rather than observed." },
   Stale: { state: "Stale", label: "Stale", severity: "action", description: "The source has not refreshed within its expected window." },
@@ -146,12 +146,12 @@ const CONTROL_DESCRIPTORS: Record<ReportingControlState, ReportingVocabularyDesc
 const FREEZE_DESCRIPTORS: Record<ReportingFreezeState, ReportingVocabularyDescriptor<ReportingFreezeState>> = {
   Open: { state: "Open", label: "Open", severity: "info", description: "Linked data continues to update in place." },
   SoftFrozen: { state: "SoftFrozen", label: "Soft frozen", severity: "review", description: "Upstream changes are detected but not applied automatically." },
-  HardFrozen: { state: "HardFrozen", label: "Hard frozen", severity: "ready", description: "Bound to an immutable governed dataset version." },
+  HardFrozen: { state: "HardFrozen", label: "Hard frozen", severity: "ready", description: "Bound to an immutable dataset version." },
   Published: { state: "Published", label: "Published", severity: "ready", description: "An immutable publication record exists." }
 };
 
 const BLOCK_DESCRIPTORS: Record<ReportBlockState, ReportingVocabularyDescriptor<ReportBlockState>> = {
-  Live: { state: "Live", label: "Live", severity: "ready", description: "Tracks its governed source and is current." },
+  Live: { state: "Live", label: "Live", severity: "ready", description: "Tracks its source and is current." },
   Snapshot: { state: "Snapshot", label: "Snapshot", severity: "info", description: "Pinned to a captured value rather than tracking its source." },
   Stale: { state: "Stale", label: "Stale", severity: "action", description: "The underlying source refreshed after this block was rendered." },
   Changed: { state: "Changed", label: "Changed", severity: "review", description: "The source changed after the last review of this block." },
@@ -162,7 +162,7 @@ const BLOCK_DESCRIPTORS: Record<ReportBlockState, ReportingVocabularyDescriptor<
 
 const CLASS_DESCRIPTORS: Record<ReportClass, { reportClass: ReportClass; label: string; description: string; requiresReconciliation: boolean; requiresApproval: boolean; structureLocked: boolean }> = {
   Accounting: { reportClass: "Accounting", label: "Accounting", description: "Tables, reconciliation and controls; ties to the ledger.", requiresReconciliation: true, requiresApproval: true, structureLocked: false },
-  Analytical: { reportClass: "Analytical", label: "Analytical", description: "Charts, commentary and scenarios over governed analytics.", requiresReconciliation: false, requiresApproval: false, structureLocked: false },
+  Analytical: { reportClass: "Analytical", label: "Analytical", description: "Charts, commentary and scenarios over analytics.", requiresReconciliation: false, requiresApproval: false, structureLocked: false },
   Portfolio: { reportClass: "Portfolio", label: "Portfolio", description: "Exposure, attribution and comparison against benchmarks.", requiresReconciliation: false, requiresApproval: true, structureLocked: false },
   Management: { reportClass: "Management", label: "Management", description: "Narrative synthesis and decision support for committees.", requiresReconciliation: false, requiresApproval: true, structureLocked: false },
   Regulatory: { reportClass: "Regulatory", label: "Regulatory", description: "Locked structure with strict evidence retention.", requiresReconciliation: true, requiresApproval: true, structureLocked: true }

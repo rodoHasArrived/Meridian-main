@@ -23,6 +23,10 @@ public sealed partial class PostgresLedgerJournalStore
     private static JournalEntryMetadata DeserializeMetadata(string json)
         => JsonSerializer.Deserialize<JournalEntryMetadata>(json, JsonOptions) ?? new JournalEntryMetadata();
 
+    private static LedgerAccountChartReference DeserializeChartAccount(string json)
+        => JsonSerializer.Deserialize<LedgerAccountChartReference>(json, JsonOptions)
+           ?? throw new LedgerValidationException("Stored chart account evidence is invalid.");
+
     private static LedgerEntryCurrency? ReadLegCurrency(
         NpgsqlDataReader reader,
         int transactionCurrencyOrdinal,
@@ -95,6 +99,10 @@ public sealed partial class PostgresLedgerJournalStore
         AddDimension(values, "taxLotId", dimensions.TaxLotId);
         AddDimension(values, "costCenterId", dimensions.CostCenterId);
         AddDimension(values, "counterpartyId", dimensions.CounterpartyId);
+        if (dimensions.IntercompanyAgreementId.HasValue)
+            values["intercompanyAgreementId"] = dimensions.IntercompanyAgreementId.Value;
+        if (dimensions.IntercompanyAgreementVersion.HasValue)
+            values["intercompanyAgreementVersion"] = dimensions.IntercompanyAgreementVersion.Value;
         AddDimension(values, "organizationId", dimensions.OrganizationId);
         AddDimension(values, "portfolioId", dimensions.PortfolioId);
         AddDimension(values, "bookId", dimensions.BookId);
@@ -102,6 +110,11 @@ public sealed partial class PostgresLedgerJournalStore
         AddDimension(values, "customerId", dimensions.CustomerId);
         AddDimension(values, "vendorId", dimensions.VendorId);
         AddDimension(values, "projectId", dimensions.ProjectId);
+        AddDimension(values, "accountingArrangementId", dimensions.AccountingArrangementId);
+        AddDimension(values, "accountingArrangementRevisionId", dimensions.AccountingArrangementRevisionId);
+        AddDimension(values, "chartAccountNodeId", dimensions.ChartAccountNodeId);
+        AddDimension(values, "accountBindingRevisionId", dimensions.AccountBindingRevisionId);
+        AddDimension(values, "intercompanyTransactionId", dimensions.IntercompanyTransactionId);
 
         if (values["externalGlDimensions"] is IReadOnlyDictionary<string, string> { Count: 0 })
         {
@@ -109,6 +122,43 @@ public sealed partial class PostgresLedgerJournalStore
         }
 
         return JsonSerializer.Serialize(values, JsonOptions);
+    }
+
+    /// <summary>
+    /// The execution-lineage filter on the retained journal metadata (web JSON: camelCase properties,
+    /// tag keys as written, GUIDs in lowercase "D" form). A fill matches <c>fillId</c> exactly. An order
+    /// matches the <c>source.orderId</c> tag, which holds the execution journal's own identifier, or the
+    /// GUID <c>orderId</c> when that identifier parses as a GUID. Exact matches only.
+    /// </summary>
+    internal static (string Sql, IReadOnlyList<(string Name, object Value)> Parameters) BuildExecutionLineageFilter(
+        LedgerJournalEntryQuery query)
+    {
+        var sql = string.Empty;
+        var parameters = new List<(string Name, object Value)>();
+        if (query.FillId is { } fillId)
+        {
+            sql += " and je_filter.metadata ->> 'fillId' = @execution_fill_id";
+            parameters.Add(("execution_fill_id", fillId.ToString("D")));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.OrderId))
+        {
+            var orderId = query.OrderId.Trim();
+            if (Guid.TryParse(orderId, out var orderGuid))
+            {
+                sql += " and (je_filter.metadata -> 'tags' ->> 'source.orderId' = @execution_order_id"
+                    + " or je_filter.metadata ->> 'orderId' = @execution_order_guid)";
+                parameters.Add(("execution_order_guid", orderGuid.ToString("D")));
+            }
+            else
+            {
+                sql += " and je_filter.metadata -> 'tags' ->> 'source.orderId' = @execution_order_id";
+            }
+
+            parameters.Add(("execution_order_id", orderId));
+        }
+
+        return (sql, parameters);
     }
 
     internal static string BuildJournalEntryQueryFilterSql(
@@ -132,9 +182,19 @@ public sealed partial class PostgresLedgerJournalStore
             sql += " and je_filter.journal_entry_id = @journal_entry_id";
         }
 
+        if (!string.IsNullOrEmpty(query?.JournalEntryIdPrefix))
+        {
+            sql += " and starts_with(je_filter.journal_entry_id::text, @journal_entry_id_prefix)";
+        }
+
         if (query?.SourceEventId.HasValue == true)
         {
             sql += " and je_filter.source_event_id = @source_event_id";
+        }
+
+        if (query?.SourceJournalEntryId.HasValue == true)
+        {
+            sql += " and je_filter.source_journal_entry_id = @source_journal_entry_id";
         }
 
         // JournalEntryMetadata.EffectiveDate is serialized as an ISO yyyy-MM-dd JSON string. Use
@@ -193,7 +253,14 @@ public sealed partial class PostgresLedgerJournalStore
             VendorId: NormalizeOptional(dimensions.VendorId),
             ProjectId: NormalizeOptional(dimensions.ProjectId))
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion,
+            AccountingArrangementId = NormalizeOptional(dimensions.AccountingArrangementId),
+            AccountingArrangementRevisionId = NormalizeOptional(dimensions.AccountingArrangementRevisionId),
+            ChartAccountNodeId = NormalizeOptional(dimensions.ChartAccountNodeId),
+            AccountBindingRevisionId = NormalizeOptional(dimensions.AccountBindingRevisionId),
+            IntercompanyTransactionId = NormalizeOptional(dimensions.IntercompanyTransactionId)
         };
 
         return HasAnyLineDimension(canonical) ? canonical : null;
@@ -220,6 +287,8 @@ public sealed partial class PostgresLedgerJournalStore
            !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId) ||
            dimensions.InstrumentId.HasValue ||
            dimensions.PositionId.HasValue ||
+           dimensions.IntercompanyAgreementId.HasValue ||
+           dimensions.IntercompanyAgreementVersion.HasValue ||
            !string.IsNullOrWhiteSpace(dimensions.TaxLotId) ||
            !string.IsNullOrWhiteSpace(dimensions.CostCenterId) ||
            !string.IsNullOrWhiteSpace(dimensions.CounterpartyId) ||
@@ -230,6 +299,11 @@ public sealed partial class PostgresLedgerJournalStore
            !string.IsNullOrWhiteSpace(dimensions.CustomerId) ||
            !string.IsNullOrWhiteSpace(dimensions.VendorId) ||
            !string.IsNullOrWhiteSpace(dimensions.ProjectId) ||
+           !string.IsNullOrWhiteSpace(dimensions.AccountingArrangementId) ||
+           !string.IsNullOrWhiteSpace(dimensions.AccountingArrangementRevisionId) ||
+           !string.IsNullOrWhiteSpace(dimensions.ChartAccountNodeId) ||
+           !string.IsNullOrWhiteSpace(dimensions.AccountBindingRevisionId) ||
+           !string.IsNullOrWhiteSpace(dimensions.IntercompanyTransactionId) ||
            dimensions.ExternalGlDimensions.Any(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value));
 
     private static LedgerAdjustmentApprovalMetadataDto DeserializeAdjustmentApproval(string json)

@@ -2,9 +2,9 @@
 
 # `ledger` schema
 
-- Relations: 37
-- Functions/procedures: 18
-- Triggers: 26
+- Relations: 74
+- Functions/procedures: 39
+- Triggers: 83
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -53,6 +53,8 @@ erDiagram
         text configuration_scope_id PK,FK
         text tenant_id PK,FK
         text company_id PK,FK
+        text intercompany_role
+        text account_code
     }
     ledger_accounting_configuration_journal_templates {
         text fund_profile_id PK,FK
@@ -155,11 +157,295 @@ erDiagram
         jsonb capital_return_instruction
         jsonb factor_paydown_instruction
     }
+    ledger_automated_posting_grants {
+        uuid grant_id PK
+        bigint version
+        text tenant_id
+        text company_id
+        text financial_account_id
+        uuid ledger_book_id FK
+        uuid period_id FK
+        text policy_id
+        text policy_version
+        text mapping_revision
+        text mapping_fingerprint
+        text source_mode
+        boolean is_active
+        text activated_by
+        timestamp_with_time_zone activated_at_utc
+        text revoked_by
+        timestamp_with_time_zone revoked_at_utc
+        jsonb policy_snapshot
+        text policy_snapshot_sha256
+    }
+    ledger_bond_coupon_cash_consumption {
+        uuid ledger_book_id PK
+        uuid account_id PK
+        text payment_version_id
+        text payment_flow_id
+        uuid tax_lot_record_id FK
+        text expected_flow_id
+        text allocation_id PK
+        text receipt_id PK,FK
+        numeric_38_12_ net_amount
+        numeric_38_12_ gross_amount
+        numeric_38_12_ withholding_tax
+        numeric_38_12_ fees
+    }
+    ledger_bond_coupon_recognition {
+        text receipt_id PK
+        uuid ledger_book_id FK
+        uuid account_id
+        uuid tax_lot_record_id FK
+        text run_id
+        text previous_receipt_id FK
+        text reverses_receipt_id FK
+        uuid journal_entry_id FK
+        timestamp_with_time_zone posted_at
+        text payload
+    }
+    ledger_book_fx_settlement_receipts {
+        text tenant_id PK,FK
+        text company_id PK,FK
+        uuid set_id PK,FK
+        text leg PK
+        uuid command_id
+        uuid journal_entry_id
+        text content_hash_sha256
+        text payload_json
+    }
+    ledger_book_fx_settlement_sets {
+        text tenant_id PK
+        text company_id PK
+        uuid set_id PK
+        uuid gaap_book_id FK
+        uuid cash_book_id FK
+        uuid trade_event_id
+        uuid settlement_event_id
+        text plan_hash_sha256
+        text payload_json
+    }
+    ledger_consolidation_fx_book_configurations {
+        uuid ledger_book_id PK,FK
+        integer revision PK
+        text tenant_id FK
+        text company_id FK
+        date effective_from
+        date effective_to
+        uuid rate_set_id FK
+        integer rate_set_revision FK
+        text content_hash
+        jsonb document
+    }
+    ledger_consolidation_fx_rate_sets {
+        text tenant_id PK
+        text company_id PK
+        uuid rate_set_id PK
+        integer revision PK
+        text content_hash
+        jsonb document
+    }
+    ledger_consolidation_transition_previews {
+        uuid preview_id PK
+        uuid transition_id
+        uuid organization_id
+        uuid ownership_root_id
+        text tenant_id
+        text company_id
+        text fingerprint
+        timestamp_with_time_zone prepared_at
+        jsonb document
+    }
+    ledger_consolidation_transition_receipts {
+        uuid transition_id PK
+        uuid preview_id FK
+        uuid organization_id
+        uuid ownership_root_id
+        bigint root_version
+        uuid previous_transition_id FK
+        uuid previous_book_id FK
+        uuid new_book_id FK
+        date cutover_date
+        text tenant_id
+        text company_id
+        text content_hash
+        jsonb document
+    }
+    ledger_entity_controlled_close_authorization {
+        uuid authorization_id PK
+        uuid ledger_book_id FK
+        uuid journal_entry_id
+        integer draft_version
+        text tenant_id
+        jsonb payload
+        timestamp_with_time_zone recorded_at_utc
+    }
+    ledger_external_gl_book_policy {
+        uuid ledger_book_id PK,FK
+        text tenant_id
+        text company_id
+        text provider_id
+        text external_ledger_id
+        text environment
+        boolean confirmation_required
+        text policy
+    }
+    ledger_external_gl_mapping_profiles {
+        bigint revision PK
+        uuid ledger_book_id FK
+        text tenant_id
+        text company_id
+        text provider_id
+        text profile_id
+        text content
+    }
+    ledger_external_gl_mapping_profiles_revision_seq {
+        text catalogued_object
+    }
+    ledger_external_gl_posting_decisions {
+        text package_id PK,FK
+        text decision_kind PK
+        text decision
+    }
+    ledger_external_gl_posting_outbox {
+        text idempotency_key PK
+        text package_id FK
+        uuid journal_entry_id FK
+        text provider_id
+        text external_ledger_id
+        text environment
+        text status
+        boolean superseded
+        integer post_attempts
+        timestamp_with_time_zone last_post_at
+        boolean provider_acknowledged
+        timestamp_with_time_zone next_check_at
+        uuid lease_token
+        timestamp_with_time_zone lease_until
+    }
+    ledger_external_gl_posting_packages {
+        text package_id PK
+        uuid ledger_book_id FK
+        uuid period_id FK
+        text tenant_id
+        text company_id
+        text payload_hash
+        text payload
+        text prepared_by
+        timestamp_with_time_zone prepared_at
+    }
+    ledger_external_gl_posting_receipts {
+        bigint observation_id PK
+        text idempotency_key FK
+        text observation
+    }
+    ledger_external_gl_posting_receipts_observation_id_seq {
+        text catalogued_object
+    }
+    ledger_fiscal_year_close_receipts {
+        uuid ledger_book_id PK,FK
+        integer fiscal_year PK,FK
+        uuid receipt_id PK
+        uuid supersedes_receipt_id FK
+        integer revision
+        text tenant_id
+        text company_id
+        text plan_hash_sha256
+        text payload_json
+        text content_hash_sha256
+    }
     ledger_fund_profile_tenancy {
         text fund_profile_id PK
         text tenant_id
         text company_id
         timestamp_with_time_zone registered_at_utc
+    }
+    ledger_intercompany_account_binding_revisions {
+        uuid revision_id PK
+        uuid binding_id
+        bigint revision_number
+        uuid ledger_book_id FK
+        text tenant_id
+        text company_id
+        text chart_account_node_id
+        date effective_from
+        date effective_to
+        timestamp_with_time_zone recorded_at_utc
+        jsonb payload
+    }
+    ledger_intercompany_accrual_schedules {
+        uuid schedule_id PK
+        bigint version PK
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
+        text status
+        jsonb payload
+        timestamp_with_time_zone recorded_at
+    }
+    ledger_intercompany_balance_confirmations {
+        uuid confirmation_id PK
+        bigint version PK
+        text tenant_id
+        text company_id
+        uuid accounting_arrangement_id
+        date as_of
+        jsonb payload
+        timestamp_with_time_zone recorded_at
+    }
+    ledger_intercompany_confirmation_close_policies {
+        uuid policy_id PK
+        bigint version PK
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
+        text status
+        jsonb payload
+        timestamp_with_time_zone recorded_at
+    }
+    ledger_intercompany_counterpart_reservations {
+        text tenant_id PK
+        uuid target_book_id PK
+        uuid target_journal_id PK
+        uuid proposal_id FK
+        timestamp_with_time_zone recorded_at
+    }
+    ledger_intercompany_proposal_links {
+        text tenant_id PK
+        uuid request_id PK
+        uuid proposal_id FK
+        uuid target_book_id
+        uuid target_journal_id
+        text actor
+        text reason
+        timestamp_with_time_zone recorded_at
+        uuid rejected_draft_id
+        integer rejected_draft_version
+    }
+    ledger_intercompany_proposal_retries {
+        text tenant_id PK
+        uuid request_id PK
+        uuid proposal_id FK
+        text actor
+        text reason
+        timestamp_with_time_zone recorded_at
+    }
+    ledger_intercompany_proposals {
+        uuid proposal_id PK
+        text tenant_id
+        uuid source_book_id FK
+        uuid source_journal_id FK
+        text source_payload
+        text source_digest
+        text status
+        integer attempts
+        timestamp_with_time_zone recorded_at
+        timestamp_with_time_zone next_attempt_at
+        text claim_token
+        timestamp_with_time_zone lease_until
+        uuid target_book_id
+        uuid target_journal_id
+        text last_error
     }
     ledger_journal_entries {
         bigint global_sequence PK
@@ -244,6 +530,56 @@ erDiagram
         numeric_38_10_ transaction_debit
         numeric_38_10_ transaction_credit
         numeric_38_10_ fx_rate_to_functional
+        text memo
+        jsonb chart_account
+    }
+    ledger_ledger_balance_checkpoint_rows {
+        uuid checkpoint_id PK,FK
+        integer row_no PK
+        text account_name
+        text account_type
+        text symbol
+        text financial_account_id
+        jsonb dimensions
+        numeric debit
+        numeric credit
+        bigint entry_count
+    }
+    ledger_ledger_balance_checkpoints {
+        uuid checkpoint_id PK
+        uuid close_event_id FK
+        uuid ledger_book_id FK
+        uuid period_id FK
+        bigint period_version
+        text tenant_id
+        integer schema_version
+        timestamp_with_time_zone as_of_utc
+        bigint source_sequence
+        bigint future_audit_sequence
+        bigint journal_count
+        bigint line_count
+        text content_hash
+        timestamp_with_time_zone created_at_utc
+    }
+    ledger_ledger_book_control_activation {
+        uuid receipt_id PK
+        uuid ledger_book_id FK
+        bigint prior_version
+        text preflight_digest
+        text actor
+        text reason
+        text evidence_reference
+        timestamp_with_time_zone recorded_at_utc
+    }
+    ledger_ledger_book_controls {
+        uuid ledger_book_id PK,FK
+        text mode
+        bigint version
+        text policy_version
+        timestamp_with_time_zone created_at_utc
+        timestamp_with_time_zone activated_at_utc
+        text activated_by
+        text migration_receipt_id
     }
     ledger_ledger_books {
         uuid ledger_book_id PK
@@ -292,6 +628,49 @@ erDiagram
         text filename PK
         text checksum
         timestamp_with_time_zone applied_at
+    }
+    ledger_legacy_intercompany_attributions {
+        uuid attribution_id PK
+        bigint revision
+        uuid ledger_book_id FK
+        uuid journal_entry_id
+        uuid line_id
+        text tenant_id
+        text company_id
+        jsonb payload
+    }
+    ledger_manual_journal_entry_drafts {
+        text fund_key PK
+        text tenant_key PK
+        text company_key PK
+        uuid journal_entry_id PK
+        text fund_profile_id
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
+        integer version
+        timestamp_with_time_zone updated_at_utc
+        text payload
+        timestamp_with_time_zone recorded_at
+    }
+    ledger_manual_journal_mutation_receipts {
+        text command_key PK
+        boolean completed
+        timestamp_with_time_zone completed_at_utc
+        text digest
+        text payload
+        timestamp_with_time_zone recorded_at
+    }
+    ledger_onboarding_workspaces {
+        text workspace_id PK
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
+        integer version
+        text shadow_state
+        timestamp_with_time_zone created_at
+        timestamp_with_time_zone updated_at
+        text payload_json
     }
     ledger_open_lot_backfill_evidence {
         uuid evidence_record_id PK
@@ -383,6 +762,17 @@ erDiagram
         text notes
         timestamp_with_time_zone recorded_at
         bigint period_version
+        uuid balance_checkpoint_id
+        text balance_checkpoint_hash
+    }
+    ledger_period_close_snapshots {
+        uuid period_id PK,FK
+        bigint period_version PK
+        uuid ledger_book_id FK
+        uuid close_event_id FK
+        timestamp_with_time_zone closed_at
+        text payload_json
+        text content_hash_sha256
     }
     ledger_private_capital_calls {
         text tenant_id PK
@@ -419,6 +809,14 @@ erDiagram
         text bank_line_id
         uuid journal_entry_id FK
         date effective_date
+    }
+    ledger_recurring_journal_state {
+        text store_id PK
+        bigint revision
+        text content_hash
+        text envelope_json
+        timestamp_with_time_zone initialized_at
+        timestamp_with_time_zone updated_at
     }
     ledger_tax_lot_mutations {
         uuid mutation_record_id PK
@@ -519,26 +917,67 @@ erDiagram
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_posting_rules : "accounting_configuration_posting_rules_workspace_fkey"
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_rule_test_cases : "accounting_configuration_rule_test_cases_workspace_fkey"
     ledger_accounting_periods ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_period_id_fkey"
+    ledger_accounting_periods ||--o{ ledger_automated_posting_grants : "automated_posting_grants_period_id_fkey"
+    ledger_accounting_periods ||--o{ ledger_external_gl_posting_packages : "external_gl_posting_packages_period_id_fkey"
+    ledger_accounting_periods ||--o{ ledger_ledger_balance_checkpoints : "ledger_balance_checkpoints_period_id_fkey"
     ledger_accounting_periods ||--o{ ledger_period_close_events : "period_close_events_period_id_fkey"
+    ledger_accounting_periods ||--o{ ledger_period_close_snapshots : "period_close_snapshots_period_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_corrects_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lots : "tax_lots_last_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lots : "tax_lots_originating_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_wash_sale_deferrals : "wash_sale_deferrals_disposal_mutation_batch_id_fkey"
+    ledger_bond_coupon_recognition ||--o{ ledger_bond_coupon_cash_consumption : "bond_coupon_cash_consumption_receipt_id_fkey"
+    ledger_bond_coupon_recognition ||--o{ ledger_bond_coupon_recognition : "bond_coupon_recognition_previous_receipt_id_fkey"
+    ledger_bond_coupon_recognition ||--o{ ledger_bond_coupon_recognition : "bond_coupon_recognition_reverses_receipt_id_fkey"
+    ledger_book_fx_settlement_sets ||--o{ ledger_book_fx_settlement_receipts : "book_fx_settlement_receipts_tenant_id_company_id_set_id_fkey"
+    ledger_consolidation_fx_rate_sets ||--o{ ledger_consolidation_fx_book_configurations : "consolidation_fx_book_configu_tenant_id_company_id_rate_se_fkey"
+    ledger_consolidation_transition_previews ||--o{ ledger_consolidation_transition_receipts : "consolidation_transition_receipts_preview_id_fkey"
+    ledger_consolidation_transition_receipts ||--o{ ledger_consolidation_transition_receipts : "consolidation_transition_receipts_previous_transition_id_fkey"
+    ledger_external_gl_posting_outbox ||--o{ ledger_external_gl_posting_receipts : "external_gl_posting_receipts_idempotency_key_fkey"
+    ledger_external_gl_posting_packages ||--o{ ledger_external_gl_posting_decisions : "external_gl_posting_decisions_package_id_fkey"
+    ledger_external_gl_posting_packages ||--o{ ledger_external_gl_posting_outbox : "external_gl_posting_outbox_package_id_fkey"
+    ledger_fiscal_year_close_receipts ||--o{ ledger_fiscal_year_close_receipts : "fiscal_year_close_receipts_ledger_book_id_fiscal_year_supe_fkey"
+    ledger_intercompany_proposals ||--o{ ledger_intercompany_counterpart_reservations : "intercompany_counterpart_reservations_proposal_id_fkey"
+    ledger_intercompany_proposals ||--o{ ledger_intercompany_proposal_links : "intercompany_proposal_links_proposal_id_fkey"
+    ledger_intercompany_proposals ||--o{ ledger_intercompany_proposal_retries : "intercompany_proposal_retries_proposal_id_fkey"
     ledger_journal_entries ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_journal_entry_id_fkey"
+    ledger_journal_entries ||--o{ ledger_bond_coupon_recognition : "bond_coupon_recognition_journal_entry_id_fkey"
+    ledger_journal_entries ||--o{ ledger_external_gl_posting_outbox : "external_gl_posting_outbox_journal_entry_id_fkey"
+    ledger_journal_entries ||--o{ ledger_intercompany_proposals : "intercompany_proposals_source_journal_id_fkey"
     ledger_journal_entries ||--o{ ledger_journal_entry_integrity_seals : "journal_entry_integrity_seals_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_journal_entry_open_postings : "journal_entry_open_postings_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_journal_legs : "fk_journal_legs_journal_entry"
     ledger_journal_entries ||--o{ ledger_private_capital_postings : "private_capital_postings_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_tax_lots : "tax_lots_source_journal_entry_id_fkey"
+    ledger_ledger_balance_checkpoints ||--o{ ledger_ledger_balance_checkpoint_rows : "ledger_balance_checkpoint_rows_checkpoint_id_fkey"
     ledger_ledger_books ||--o{ ledger_accounting_periods : "accounting_periods_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_automated_posting_grants : "automated_posting_grants_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_bond_coupon_recognition : "bond_coupon_recognition_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_book_fx_settlement_sets : "book_fx_settlement_sets_cash_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_book_fx_settlement_sets : "book_fx_settlement_sets_gaap_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_consolidation_fx_book_configurations : "consolidation_fx_book_configurations_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_consolidation_transition_receipts : "consolidation_transition_receipts_new_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_consolidation_transition_receipts : "consolidation_transition_receipts_previous_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_entity_controlled_close_authorization : "entity_controlled_close_authorization_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_external_gl_book_policy : "external_gl_book_policy_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_external_gl_mapping_profiles : "external_gl_mapping_profiles_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_external_gl_posting_packages : "external_gl_posting_packages_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_fiscal_year_close_receipts : "fiscal_year_close_receipts_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_intercompany_account_binding_revisions : "intercompany_account_binding_revisions_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_intercompany_proposals : "intercompany_proposals_source_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_journal_leg_currency_affirmations : "journal_leg_currency_affirmations_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_ledger_balance_checkpoints : "ledger_balance_checkpoints_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_ledger_book_control_activation : "ledger_book_control_activation_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_ledger_book_controls : "ledger_book_controls_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_legacy_intercompany_attributions : "legacy_intercompany_attributions_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_open_lot_backfill_evidence : "open_lot_backfill_evidence_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_open_lot_backfill_exceptions : "open_lot_backfill_exceptions_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_open_lot_backfill_receipts : "open_lot_backfill_receipts_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_period_close_snapshots : "period_close_snapshots_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_private_capital_calls : "private_capital_calls_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_private_capital_commitments : "private_capital_commitments_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_private_capital_postings : "private_capital_postings_ledger_book_id_fkey"
@@ -549,8 +988,12 @@ erDiagram
     ledger_open_lot_backfill_receipts ||--o{ ledger_open_lot_backfill_exceptions : "open_lot_backfill_exceptions_resolution_receipt_id_fkey"
     ledger_open_lot_backfill_reviews ||--o{ ledger_open_lot_backfill_receipts : "open_lot_backfill_receipts_evidence_record_id_fkey"
     ledger_operations_continuity_workflows ||--o{ ledger_operations_continuity_audit : "operations_continuity_audit_workflow_id_fkey"
+    ledger_period_close_events ||--o{ ledger_ledger_balance_checkpoints : "ledger_balance_checkpoints_close_event_id_fkey"
+    ledger_period_close_events ||--o{ ledger_period_close_snapshots : "period_close_snapshots_close_event_id_fkey"
     ledger_private_capital_calls ||--o{ ledger_private_capital_postings : "private_capital_postings_tenant_id_company_id_fund_profile_fkey"
     ledger_private_capital_commitments ||--o{ ledger_private_capital_postings : "private_capital_postings_tenant_id_company_id_fund_profil_fkey1"
+    ledger_tax_lots ||--o{ ledger_bond_coupon_cash_consumption : "bond_coupon_cash_consumption_tax_lot_record_id_fkey"
+    ledger_tax_lots ||--o{ ledger_bond_coupon_recognition : "bond_coupon_recognition_tax_lot_record_id_fkey"
     ledger_tax_lots ||--o{ ledger_open_lot_backfill_evidence : "open_lot_backfill_evidence_tax_lot_record_id_fkey"
     ledger_tax_lots ||--o{ ledger_open_lot_backfill_exceptions : "open_lot_backfill_exceptions_tax_lot_record_id_fkey"
     ledger_tax_lots ||--o{ ledger_open_lot_backfill_receipts : "open_lot_backfill_receipts_tax_lot_record_id_fkey"
@@ -562,7 +1005,7 @@ erDiagram
 | --- | --- | ---: | --- | ---: | ---: | --- |
 | `accounting_action_audit_chain_head` | table | 7 | `chain_id` | 0 | 1 | Single-row head of the accounting-action audit hash chain: the next sequence, the last entry hash, and the declared genesis boundary separating chained events from the pre-chain history that was appended before V_ledger_032 and which nothing ever protected. Locked FOR UPDATE and advanced inside the append transaction so concurrent writers cannot fork the chain. |
 | `accounting_action_audit_events` | table | 18 | `audit_event_id` | 0 | 6 | - |
-| `accounting_configuration_chart_nodes` | table | 12 | `tenant_id`, `company_id`, `fund_profile_id`, `configuration_scope_id`, `node_id` | 1 | 2 | - |
+| `accounting_configuration_chart_nodes` | table | 14 | `tenant_id`, `company_id`, `fund_profile_id`, `configuration_scope_id`, `node_id` | 1 | 3 | - |
 | `accounting_configuration_journal_templates` | table | 10 | `tenant_id`, `company_id`, `fund_profile_id`, `configuration_scope_id`, `template_id` | 1 | 1 | - |
 | `accounting_configuration_posting_rules` | table | 12 | `tenant_id`, `company_id`, `fund_profile_id`, `configuration_scope_id`, `rule_id` | 1 | 3 | - |
 | `accounting_configuration_rule_test_cases` | table | 7 | `tenant_id`, `company_id`, `fund_profile_id`, `configuration_scope_id`, `test_case_id` | 1 | 2 | - |
@@ -570,29 +1013,66 @@ erDiagram
 | `accounting_periods` | table | 14 | `period_id` | 1 | 8 | - |
 | `accounting_policies` | table | 14 | `accounting_policy_key` | 0 | 3 | - |
 | `atomic_tax_lot_posting_batches` | table | 21 | `mutation_batch_id` | 4 | 5 | - |
+| `automated_posting_grants` | table | 19 | `grant_id` | 2 | 1 | - |
+| `bond_coupon_cash_consumption` | table | 12 | `ledger_book_id`, `account_id`, `allocation_id`, `receipt_id` | 2 | 3 | - |
+| `bond_coupon_recognition` | table | 10 | `receipt_id` | 5 | 4 | - |
+| `book_fx_settlement_receipts` | table | 8 | `tenant_id`, `company_id`, `set_id`, `leg` | 1 | 3 | - |
+| `book_fx_settlement_sets` | table | 9 | `tenant_id`, `company_id`, `set_id` | 2 | 2 | - |
+| `consolidation_fx_book_configurations` | table | 10 | `ledger_book_id`, `revision` | 2 | 1 | - |
+| `consolidation_fx_rate_sets` | table | 6 | `tenant_id`, `company_id`, `rate_set_id`, `revision` | 0 | 1 | - |
+| `consolidation_transition_previews` | table | 9 | `preview_id` | 0 | 2 | - |
+| `consolidation_transition_receipts` | table | 13 | `transition_id` | 4 | 5 | - |
+| `entity_controlled_close_authorization` | table | 7 | `authorization_id` | 1 | 2 | - |
+| `external_gl_book_policy` | table | 8 | `ledger_book_id` | 1 | 1 | - |
+| `external_gl_mapping_profiles` | table | 7 | `revision` | 1 | 2 | - |
+| `external_gl_mapping_profiles_revision_seq` | sequence | 0 | - | 0 | 0 | - |
+| `external_gl_posting_decisions` | table | 3 | `package_id`, `decision_kind` | 1 | 1 | - |
+| `external_gl_posting_outbox` | table | 14 | `idempotency_key` | 2 | 4 | - |
+| `external_gl_posting_packages` | table | 9 | `package_id` | 2 | 2 | - |
+| `external_gl_posting_receipts` | table | 3 | `observation_id` | 1 | 2 | - |
+| `external_gl_posting_receipts_observation_id_seq` | sequence | 0 | - | 0 | 0 | - |
+| `fiscal_year_close_receipts` | table | 10 | `ledger_book_id`, `fiscal_year`, `receipt_id` | 2 | 4 | - |
 | `fund_profile_tenancy` | table | 4 | `fund_profile_id` | 0 | 2 | - |
-| `journal_entries` | table | 19 | `global_sequence` | 0 | 16 | - |
+| `intercompany_account_binding_revisions` | table | 11 | `revision_id` | 1 | 3 | - |
+| `intercompany_accrual_schedules` | table | 8 | `schedule_id`, `version` | 0 | 3 | - |
+| `intercompany_balance_confirmations` | table | 8 | `confirmation_id`, `version` | 0 | 3 | - |
+| `intercompany_confirmation_close_policies` | table | 8 | `policy_id`, `version` | 0 | 3 | - |
+| `intercompany_counterpart_reservations` | table | 5 | `tenant_id`, `target_book_id`, `target_journal_id` | 1 | 1 | - |
+| `intercompany_proposal_links` | table | 10 | `tenant_id`, `request_id` | 1 | 1 | - |
+| `intercompany_proposal_retries` | table | 6 | `tenant_id`, `request_id` | 1 | 1 | - |
+| `intercompany_proposals` | table | 15 | `proposal_id` | 2 | 4 | - |
+| `journal_entries` | table | 19 | `global_sequence` | 0 | 20 | - |
 | `journal_entries_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `journal_entry_integrity_seals` | table | 3 | `journal_entry_id` | 1 | 1 | - |
 | `journal_entry_open_postings` | table | 2 | `journal_entry_id` | 1 | 1 | - |
 | `journal_leg_currency_affirmations` | table | 7 | `affirmation_id` | 1 | 2 | Operator assertions that a ledger book with no retained currency evidence transacted only in its base currency, and the currency-blind journal legs each assertion completed. Append-only: this is the authority for a repair the data alone could not determine. |
 | `journal_leg_currency_backfill_status` | view | 8 | - | 0 | 0 | - |
-| `journal_legs` | table | 30 | `entry_id` | 1 | 9 | - |
-| `ledger_books` | table | 13 | `ledger_book_id` | 0 | 6 | - |
-| `ledger_event_audit_events` | table | 13 | `chain_sequence` | 0 | 3 | Ledger facts and actor attribution, hash chained in the same transaction as journal and period mutations. Null actor explicitly means unattributed; it is never synthesized from an approver. Verification checks covered facts as well as links. Coherent rollback of the head, suffix and corresponding facts requires an external retained checkpoint to detect. |
+| `journal_legs` | table | 32 | `entry_id` | 1 | 9 | - |
+| `ledger_balance_checkpoint_rows` | table | 10 | `checkpoint_id`, `row_no` | 1 | 1 | Exact account and line-dimension debit/credit totals in one immutable hard-close balance checkpoint, including known zero balances. |
+| `ledger_balance_checkpoints` | table | 14 | `checkpoint_id` | 3 | 4 | Immutable cumulative balances captured atomically with an authoritative hard close and bound to its retained audit evidence. |
+| `ledger_book_control_activation` | table | 8 | `receipt_id` | 1 | 1 | - |
+| `ledger_book_controls` | table | 8 | `ledger_book_id` | 1 | 1 | - |
+| `ledger_books` | table | 13 | `ledger_book_id` | 0 | 7 | - |
+| `ledger_event_audit_events` | table | 13 | `chain_sequence` | 0 | 4 | Ledger facts and actor attribution, hash chained in the same transaction as journal and period mutations. Null actor explicitly means unattributed; it is never synthesized from an approver. Verification checks covered facts as well as links. Coherent rollback of the head, suffix and corresponding facts requires an external retained checkpoint to detect. |
 | `ledger_event_audit_genesis` | table | 3 | `subject_kind`, `subject_id` | 0 | 1 | - |
 | `ledger_event_audit_head` | table | 6 | `chain_id` | 0 | 1 | - |
 | `ledger_journal_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
+| `legacy_intercompany_attributions` | table | 8 | `attribution_id` | 1 | 3 | - |
+| `manual_journal_entry_drafts` | table | 12 | `fund_key`, `tenant_key`, `company_key`, `journal_entry_id` | 0 | 3 | - |
+| `manual_journal_mutation_receipts` | table | 6 | `command_key` | 0 | 2 | - |
+| `onboarding_workspaces` | table | 9 | `workspace_id` | 0 | 4 | Retained bounded onboarding workspaces, including shadow-mode designation, certificates and promotion (W11-SHADOW-001). |
 | `open_lot_backfill_evidence` | table | 11 | `evidence_record_id` | 2 | 1 | - |
 | `open_lot_backfill_exceptions` | table | 9 | `tax_lot_record_id` | 3 | 2 | - |
 | `open_lot_backfill_receipts` | table | 12 | `receipt_id` | 3 | 3 | - |
 | `open_lot_backfill_reviews` | table | 5 | `evidence_record_id` | 1 | 1 | - |
 | `operations_continuity_audit` | table | 19 | `audit_id` | 1 | 5 | - |
-| `operations_continuity_workflows` | table | 13 | `workflow_id` | 0 | 6 | - |
-| `period_close_events` | table | 8 | `event_id` | 1 | 2 | - |
+| `operations_continuity_workflows` | table | 13 | `workflow_id` | 0 | 7 | - |
+| `period_close_events` | table | 10 | `event_id` | 1 | 2 | - |
+| `period_close_snapshots` | table | 7 | `period_id`, `period_version` | 3 | 2 | - |
 | `private_capital_calls` | table | 6 | `tenant_id`, `company_id`, `fund_profile_id`, `ledger_book_id`, `call_id` | 1 | 2 | Immutable reviewed capital-call allocations bound to exact approved commitment revisions and accounting scope. |
 | `private_capital_commitments` | table | 7 | `tenant_id`, `company_id`, `fund_profile_id`, `ledger_book_id`, `commitment_id`, `revision` | 1 | 2 | Effective-dated source-backed investor commitment revisions; approval changes only retained review metadata. |
 | `private_capital_postings` | table | 17 | `tenant_id`, `company_id`, `fund_profile_id`, `ledger_book_id`, `posting_id` | 4 | 8 | Immutable issuance and funding receipts committed atomically with their ledger journals and source identities. |
+| `recurring_journal_state` | table | 6 | `store_id` | 0 | 1 | Retained recurring journal definitions, activations and occurrence claims (W10-JRNL-001). |
 | `tax_lot_mutations` | table | 25 | `mutation_record_id` | 4 | 5 | - |
 | `tax_lot_policies` | table | 16 | `policy_record_id` | 1 | 3 | - |
 | `tax_lots` | table | 27 | `tax_lot_record_id` | 4 | 8 | - |

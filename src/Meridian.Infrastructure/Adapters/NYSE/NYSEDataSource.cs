@@ -142,6 +142,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         ILogger? logger = null)
         : base(sourceOptions ?? DataSourceOptions.Default, logger)
     {
+        NyseCredentialAccessPolicy.EnsureAccessAllowed();
         _options = options ?? throw new ArgumentNullException(nameof(options));
         ArgumentNullException.ThrowIfNull(httpClientFactory);
 
@@ -482,7 +483,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         CancellationToken ct = default)
     {
         var adjusted = await GetAdjustedDailyBarsAsync(symbol, from, to, ct).ConfigureAwait(false);
-        return adjusted.Select(b => b.ToHistoricalBar(preferAdjusted: false)).ToList();
+        return adjusted.Select(b => b.ToHistoricalBar()).ToList();
     }
 
     public Task<IReadOnlyList<AdjustedHistoricalBar>> GetAdjustedDailyBarsAsync(

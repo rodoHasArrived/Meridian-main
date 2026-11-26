@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
+import { TaxParcelComposition } from "@/screens/tax-parcel-composition";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { StatusBanner } from "@/components/ui/status-banner";
-import { formatDateTime, formatNumber } from "@/lib/format";
+import { formatNumber, formatTimestamp } from "@/lib/format";
 import { formatTaxAmount as amount, formatTaxDecimal } from "@/lib/ledger-tax-results-format";
 import { getLedgerJournalEntryTaxResults, type LedgerTaxResultScope } from "@/lib/ledger-tax-results-api";
 import type { LedgerDisposalTaxResult, LedgerJournalTaxResults, LedgerDisposalTaxParcel } from "@/types/ledger-tax-results";
@@ -19,12 +20,12 @@ export function JournalEntryTaxResults({ ledgerBookId, periodId, journalEntryId 
 
   useEffect(() => {
     const controller = new AbortController();
-    setResult(null);
     setLoading(true);
     setError(null);
     getLedgerJournalEntryTaxResults({ ledgerBookId, periodId, journalEntryId }, { signal: controller.signal })
       .then((response) => { if (!controller.signal.aborted) setResult(response); })
       .catch(() => {
+        if (!controller.signal.aborted) setResult(null);
         if (!controller.signal.aborted) setError("Retained tax results could not be loaded. Tax character and amounts are unavailable until the source responds.");
       })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
@@ -41,14 +42,12 @@ export function JournalEntryTaxResults({ ledgerBookId, periodId, journalEntryId 
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <CardTitle id="journal-tax-results-title">Disposal tax results</CardTitle>
-          <Button size="sm" variant="outline" disabled={loading} onClick={() => setRefreshVersion((value) => value + 1)}>
-            {error ? "Retry tax results" : "Refresh retained results"}
-          </Button>
+          <PanelReload reload={() => { if (!loading) setRefreshVersion((value) => value + 1); }} failed={Boolean(error)} busy={loading} what="tax results" />
         </div>
         <CardDescription>Retained server results for this posting. Refresh reads the latest evidence; it does not re-evaluate or change a disposal.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4" aria-busy={loading}>
-        {loading ? <p role="status" className="text-sm text-muted-foreground">Loading retained tax results…</p> : error ? (
+        {loading && !current ? <p role="status" className="text-sm text-muted-foreground">Loading retained tax results…</p> : error ? (
           <StatusBanner role="alert" tone="danger" title="Tax results unavailable" detail={error} />
         ) : current ? (
           <>
@@ -95,6 +94,7 @@ function DisposalResult({ disposal, currency }: { disposal: LedgerDisposalTaxRes
       </dl>
       {disposal.parcels.length > 0 ? (
         <div className="space-y-2">
+          <TaxParcelComposition key={disposal.mutationBatchId} parcels={disposal.parcels} currency={currency} state={stateLabels[disposal.state]} disposal={disposal} />
           <h4 className="text-sm font-semibold">Relieved parcels</h4>
           {disposal.parcels.map((parcel, index) => (
             <ParcelResult key={`${parcel.lotId}-${index}`} parcel={parcel} currency={currency} />
@@ -135,7 +135,5 @@ function TaxFact({ label, value }: { label: string; value: string }) {
 
 function retainedTime(value: string) {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : `${formatDateTime(date, {
-    year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone: "UTC"
-  })} UTC`;
+  return Number.isNaN(date.getTime()) ? value : formatTimestamp(date, { precision: "second" });
 }

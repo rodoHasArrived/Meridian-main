@@ -39,6 +39,17 @@ class IntegrationEvidenceTests(unittest.TestCase):
         for prefix in MODULE.SUITES:
             suite = self.results / prefix
             suite.mkdir()
+            for process in MODULE.SUITES[prefix].get("processes", {}):
+                # Each declared process leaves its own TRX and coverage, as dotnet test names them.
+                test = (MODULE.TAX_LOT_JOURNAL_CLASS + ".Posts" if process == "tax-lot-journal"
+                        else "LedgerWrites")
+                (suite / f"{prefix}-{process}_net10.0_20260101000000.trx").write_text(
+                    f'<TestRun><Results><UnitTestResult testName="{test}" '
+                    f'testId="{prefix}-{process}-1" outcome="Passed"/></Results></TestRun>')
+                (suite / process).mkdir()
+                (suite / process / "coverage.cobertura.xml").write_text('<coverage line-rate="0.75"/>')
+            if "processes" in MODULE.SUITES[prefix]:
+                continue
             (suite / (prefix + ".trx")).write_text(
                 '<TestRun><Results><UnitTestResult testName="LedgerWrites" '
                 f'testId="{prefix}-1" outcome="Passed"/></Results></TestRun>')
@@ -47,10 +58,20 @@ class IntegrationEvidenceTests(unittest.TestCase):
         for name in MODULE.SCHEMA_FILES:
             (self.results / name).write_text("schema evidence\n")
         (self.results / "skip-evidence.json").write_text(json.dumps({
-            "certifiable": True, "totals": {"passed": 2, "failed": 0, "skipped": 0, "other": 0},
+            "certifiable": True, "totals": {"passed": self.expected_passed(), "failed": 0, "skipped": 0, "other": 0},
         }))
         self.name = "meridian-ci-integrations-20-2"
         self.receipt, self.sha256 = MODULE.create(self.results, self.name, self.identity, self.root)
+
+    @staticmethod
+    def expected_passed():
+        return sum(len(suite.get("processes", {})) or 1 for suite in MODULE.SUITES.values())
+
+    def trx(self, prefix):
+        """The suite's single TRX, or its remainder process's when it runs as processes."""
+        if "processes" in MODULE.SUITES[prefix]:
+            return self.results / prefix / f"{prefix}-remainder_net10.0_20260101000000.trx"
+        return self.results / prefix / f"{prefix}.trx"
 
     def verify(self, **kwargs):
         inputs = dict(root=self.results, expected_name=self.name, expected_sha256=self.sha256,
@@ -61,7 +82,7 @@ class IntegrationEvidenceTests(unittest.TestCase):
 
     def test_complete_same_commit_run_attempt_is_reusable(self):
         receipt = self.verify()
-        self.assertEqual(receipt["totals"]["passed"], 2)
+        self.assertEqual(receipt["totals"]["passed"], self.expected_passed())
         self.assertEqual(set(receipt["suites"]), set(MODULE.SUITES))
         self.assertIn("database-schema.sql", receipt["files"])
         self.assertEqual(receipt["identity"], self.identity)
@@ -103,7 +124,7 @@ class IntegrationEvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "bytes changed"):
             self.verify()
         extra.unlink()
-        trx = self.results / "meridian-integrations/meridian-integrations.trx"
+        trx = self.trx("meridian-integrations")
         trx.write_text(trx.read_text().replace("LedgerWrites", "DifferentTest"))
         with self.assertRaisesRegex(ValueError, "roster"):
             self.verify()
@@ -123,28 +144,89 @@ class IntegrationEvidenceTests(unittest.TestCase):
             self.verify()
 
     def test_missing_failed_skipped_empty_and_unknown_test_results_are_rejected(self):
-        path = self.results / "meridian-integrations/meridian-integrations.trx"
-        original = path.read_text()
-        for outcome in ("Failed", "NotExecuted", "Timeout"):
-            with self.subTest(outcome=outcome):
-                path.write_text(original.replace("Passed", outcome))
-                with self.assertRaises(ValueError):
+        for prefix in MODULE.SUITES:
+            path = self.trx(prefix)
+            original = path.read_text()
+            for outcome in ("Failed", "NotExecuted", "Timeout"):
+                with self.subTest(suite=prefix, outcome=outcome):
+                    path.write_text(original.replace("Passed", outcome))
+                    with self.assertRaises(ValueError):
+                        MODULE.create(self.results, self.name, self.identity, self.root)
+                    with self.assertRaises(ValueError):
+                        self.verify()
+            path.write_text("<TestRun/>")
+            with self.subTest(suite=prefix, outcome="empty"):
+                with self.assertRaisesRegex(ValueError, "zero discovered|no passing"):
                     MODULE.create(self.results, self.name, self.identity, self.root)
-        path.write_text("<TestRun/>")
-        with self.assertRaisesRegex(ValueError, "zero discovered|no passing"):
-            MODULE.create(self.results, self.name, self.identity, self.root)
-        path.unlink()
-        with self.assertRaisesRegex(ValueError, "required TRX suite"):
-            MODULE.create(self.results, self.name, self.identity, self.root)
+                with self.assertRaisesRegex(ValueError, "zero discovered|no passing"):
+                    self.verify()
+            path.unlink()
+            with self.subTest(suite=prefix, outcome="missing"):
+                with self.assertRaisesRegex(ValueError, "required TRX suite"):
+                    MODULE.create(self.results, self.name, self.identity, self.root)
+                with self.assertRaisesRegex(ValueError, "required TRX suite"):
+                    self.verify()
+            path.write_text(original)
+
+    def test_demo_evidence_contract_follows_the_moved_project(self):
+        self.assertEqual(set(MODULE.SUITES["meridian-integrations"]),
+                         {"project", "filter", "processes"})
+        self.assertEqual(MODULE.SUITES["demo-integrations"], {
+            "project": "tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj",
+            "filter": "Category=Integration&Category!=LiveProvider",
+        })
 
     def test_missing_or_invalid_coverage_rejects_certification(self):
-        path = self.results / "meridian-integrations/coverage.cobertura.xml"
+        path = self.results / "direct-lending-integrations/coverage.cobertura.xml"
         path.write_text('<coverage line-rate="nan"/>')
         with self.assertRaisesRegex(ValueError, "coverage"):
             MODULE.create(self.results, self.name, self.identity, self.root)
         path.unlink()
         with self.assertRaisesRegex(ValueError, "must retain its own coverage"):
             MODULE.create(self.results, self.name, self.identity, self.root)
+
+    def test_meridian_processes_must_each_leave_their_own_correctly_routed_evidence(self):
+        suite = self.results / "meridian-integrations"
+        tax_lot = suite / "meridian-integrations-tax-lot-journal_net10.0_20260101000000.trx"
+        remainder = self.trx("meridian-integrations")
+
+        def rejected(pattern):
+            with self.assertRaisesRegex(ValueError, pattern):
+                MODULE.create(self.results, self.name, self.identity, self.root)
+
+        # One process's coverage cannot stand in for the other's.
+        coverage = suite / "remainder" / "coverage.cobertura.xml"
+        saved = coverage.read_text()
+        coverage.unlink()
+        rejected("does not match its declared processes")
+        coverage.write_text(saved)
+
+        # An unsharded result file is not one of the declared processes.
+        stray = suite / "meridian-integrations_net10.0_20260101000000.trx"
+        stray.write_text(remainder.read_text())
+        rejected("does not match its declared processes|summary disagrees")
+        stray.unlink()
+
+        # A test from the serial class in the remainder process, or any other test in the
+        # tax-lot process, means the filters no longer partition the suite.
+        for path, wrong in ((remainder, MODULE.TAX_LOT_JOURNAL_CLASS + ".Posts"), (tax_lot, "LedgerWrites")):
+            original = path.read_text()
+            name = original.split('testName="', 1)[1].split('"', 1)[0]
+            path.write_text(original.replace(name, wrong))
+            rejected("wrong process")
+            path.write_text(original)
+
+        saved = tax_lot.read_text()
+        tax_lot.unlink()
+        rejected("lacks results from its tax-lot-journal process|required TRX suite")
+        tax_lot.write_text(saved)
+        MODULE.create(self.results, self.name, self.identity, self.root)
+
+        for name in MODULE.SCHEMA_FILES:
+            if name.startswith("meridian_tax_lot-"):
+                (self.results / name).unlink()
+                rejected("missing or empty")
+                (self.results / name).write_text("schema evidence\n")
 
     def test_duplicate_coverage_from_one_suite_cannot_replace_missing_other_suite(self):
         (self.results / "direct-lending-integrations/coverage.cobertura.xml").unlink()

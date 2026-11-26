@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useMoreBelow } from "@/components/meridian/use-more-below";
 import "@/styles/workspace-workbench-shell.css";
 
 export interface WorkspaceWorkbenchShellProps {
@@ -42,6 +43,7 @@ export function WorkspaceWorkbenchShell({
   const mainRef = useRef<HTMLElement>(null);
   const inspectorRef = useRef<HTMLElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
+  const inspectorMoreBelow = useMoreBelow(inspectorRef, Boolean(inspector));
   const openInspector = () => {
     returnFocus.current = mainRef.current?.querySelector<HTMLElement>('tr[aria-selected="true"]') ?? null;
     setDetailOpen(true);
@@ -170,8 +172,24 @@ export function WorkspaceWorkbenchShell({
             role={inspectorRole}
             aria-label={inspectorLabel}
             data-workbench-slot="inspector"
+            data-more-below={inspectorMoreBelow ? "true" : undefined}
           >
             {inspector}
+            {inspectorMoreBelow ? (
+              <div className="workspace-workbench-shell-more-below">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    const panel = inspectorRef.current;
+                    panel?.scrollBy({ top: Math.round(panel.clientHeight * 0.8), behavior: "smooth" });
+                  }}
+                >
+                  More below
+                </Button>
+              </div>
+            ) : null}
           </aside>
         ) : null}
       </div>

@@ -19,10 +19,8 @@ import {
   validateManualJournalEntryDraft,
   type ManualJournalEntryWorkbenchQuery,
 } from "@/lib/api";
-import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
+import { describeApiError, isApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import {
-  formatCurrency,
-  formatCurrencyWithCode,
   formatDateTimeLabel,
 } from "./accounting-screen.formatting";
 import {
@@ -38,6 +36,7 @@ import type {
   ManualJournalEntryWorkbenchServices,
   ManualJournalEntryWorkbenchViewModel,
   ManualJournalLineValidationBadge,
+  ManualJournalLifecycleConflict,
   ManualJournalPaymentIntentWorkflowRowViewModel,
   ManualJournalPrivateCapitalAccountRowViewModel,
   ManualJournalPrivateCapitalActivityViewModel,
@@ -71,7 +70,7 @@ import type {
   PrivateCapitalReportOutput,
   SecurityMasterEntry,
 } from "@/types";
-import { formatCount } from "@/lib/format";
+import { formatCount, formatCurrencyWithCode, formatPrefixedCurrency } from "@/lib/format";
 
 const defaultManualJournalEntryWorkbenchServices: ManualJournalEntryWorkbenchServices = {
   getAssetCapabilities: getAssetAccountingDraftCapabilities,
@@ -85,6 +84,23 @@ const defaultManualJournalEntryWorkbenchServices: ManualJournalEntryWorkbenchSer
 };
 
 const MANUAL_JOURNAL_AUTOSAVE_DELAY_MS = 1_200;
+
+function journalConflictChanges(before: ManualJournalEntryDraft, after: ManualJournalEntryDraft): ManualJournalLifecycleConflict["changes"] {
+  const fields: Array<[string, unknown, unknown]> = [
+    ["Version", before.version, after.version], ["Status", before.status, after.status],
+    ["Entity", before.entityId, after.entityId], ["Book", before.ledgerBookId, after.ledgerBookId],
+    ["Period", before.periodId, after.periodId], ["Currency", before.currency, after.currency],
+    ["Accounting date", before.accountingDate, after.accountingDate], ["Memo", before.memo, after.memo],
+    ["Total debits", `${before.totalDebits} ${before.currency}`, `${after.totalDebits} ${after.currency}`],
+    ["Total credits", `${before.totalCredits} ${before.currency}`, `${after.totalCredits} ${after.currency}`]
+  ];
+  const ids = new Set([...before.lines.map((line) => line.lineId), ...after.lines.map((line) => line.lineId)]);
+  const describeLine = (line: ManualJournalEntryLine | undefined) => line
+    ? `${line.side} ${line.amount} ${line.currency} · ${line.accountPath || "Account not recorded"} · ${line.description ?? ""}` : "Not recorded";
+  for (const id of ids) fields.push([`Line ${id}`, describeLine(before.lines.find((line) => line.lineId === id)), describeLine(after.lines.find((line) => line.lineId === id))]);
+  return fields.filter(([, previous, current]) => previous !== current)
+    .map(([label, previous, current]) => ({ label, before: previous == null ? "Not recorded" : String(previous), after: current == null ? "Not recorded" : String(current) }));
+}
 
 export function useManualJournalEntryWorkbenchViewModel(
   active: boolean,
@@ -109,6 +125,13 @@ export function useManualJournalEntryWorkbenchViewModel(
   const [attachmentDraft, setAttachmentDraft] = useState<ManualJournalEvidenceAttachmentDraft>(() => createManualJournalAttachmentDraft());
   const [lifecycleBusyAction, setLifecycleBusyAction] = useState<JournalEntryLifecycleAction | null>(null);
   const [lifecycleStatusText, setLifecycleStatusText] = useState<string | null>(null);
+  const [lifecycleConflict, setLifecycleConflict] = useState<ManualJournalLifecycleConflict | null>(null);
+  const lifecycleRequest = useRef(0);
+  const lifecycleSending = useRef(false);
+  const activeRef = useRef(active);
+  activeRef.current = active;
+  const sessionRef = useRef(sessionIdentity);
+  sessionRef.current = sessionIdentity;
   const [lifecycleCorrectionDrafts, setLifecycleCorrectionDrafts] = useState<ManualJournalEntryDraft[]>([]);
   const [validatedDraftSignature, setValidatedDraftSignature] = useState<string | null>(null);
   const [savedDraftSignature, setSavedDraftSignature] = useState<string | null>(null);
@@ -126,6 +149,15 @@ export function useManualJournalEntryWorkbenchViewModel(
   const savedSignatureRef = useRef(savedDraftSignature);
   savedSignatureRef.current = savedDraftSignature;
   const [loadedQueryKey, setLoadedQueryKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    lifecycleRequest.current += 1;
+    lifecycleSending.current = false;
+    setLifecycleBusyAction(null);
+    setLifecycleConflict(null);
+    setLifecycleStatusText(null);
+    return () => { lifecycleRequest.current += 1; lifecycleSending.current = false; };
+  }, [active, queryKey, sessionIdentity, draft.journalEntryId]);
 
   const openRetainedDraft = useCallback((selected: ManualJournalEntryDraft, exactRecovery = false) => {
     const recovered = readManualJournalRecoverySnapshot(selected, exactRecovery);
@@ -223,7 +255,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     setValidatedDraftSignature(null);
     setSelectedLineId(result.journalEntry.lines[0]?.lineId ?? selectedLineId);
     setLifecycleCorrectionDrafts(generated);
-    setLifecycleStatusText(`${result.transition.action} recorded: ${result.transition.fromStatus} -> ${result.transition.toStatus}`);
+    setLifecycleStatusText(`${result.transition.action} recorded: ${result.transition.fromStatus} → ${result.transition.toStatus}`);
     setSavedDraftSignature(buildManualJournalEditableSignature(result.journalEntry));
     setLastSavedAtUtc(result.journalEntry.updatedAtUtc);
     setSaveState("saved");
@@ -499,7 +531,8 @@ export function useManualJournalEntryWorkbenchViewModel(
     candidate: ManualJournalEntryDraft,
     cause: "manual" | "autosave"
   ) => {
-    if (candidate.assetAccountingDraft || saveBusyRef.current || !isManualJournalEditable(candidate.status)) {
+    if (candidate.assetAccountingDraft || saveBusyRef.current || !isManualJournalEditable(candidate.status)
+      || lifecycleConflict && !lifecycleConflict.reviewedLatest) {
       return;
     }
 
@@ -559,7 +592,7 @@ export function useManualJournalEntryWorkbenchViewModel(
       saveBusyRef.current = false;
       setSaveBusy(false);
     }
-  }, [applyServerDraft, query.ledgerBookId, queryKey, services]);
+  }, [applyServerDraft, lifecycleConflict, query.ledgerBookId, queryKey, services]);
 
   const save = useCallback(async () => {
     await persistDraft(draftRef.current, "manual");
@@ -639,7 +672,8 @@ export function useManualJournalEntryWorkbenchViewModel(
     }
   }, [applyServerDraft, assetWorkflow.pendingAction, assetWorkflow.hasPendingPost, draft, query.ledgerBookId, services, validatedDraftSignature]);
 
-  const applyLifecycleAction = useCallback<ManualJournalEntryWorkbenchViewModel["applyLifecycleAction"]>(async (action) => {
+  const applyLifecycleAction = useCallback<ManualJournalEntryWorkbenchViewModel["applyLifecycleAction"]>(async (action, reason) => {
+    if (!activeRef.current || queryKeyRef.current !== queryKey || sessionRef.current !== sessionIdentity) return;
     if (draft.assetAccountingDraft && (action === "Approve" || action === "Post")) {
       const blocked = assetWorkflow.blockedReason(action);
       if (blocked) { setLifecycleStatusText(blocked); return; }
@@ -650,37 +684,97 @@ export function useManualJournalEntryWorkbenchViewModel(
       setLifecycleStatusText(ASSET_REVIEW_ONLY_REASON);
       return;
     }
-    if (lifecycleBusyAction) {
+    if (lifecycleSending.current || lifecycleConflict && !lifecycleConflict.reviewedLatest) {
       return;
     }
 
     const draftForAction = withManualJournalTotals(draft);
+    const requestId = ++lifecycleRequest.current;
+    const signature = buildManualJournalEditableSignature(draftForAction);
+    const notes = reason?.trim() ? reason : lifecycleActionNotes(action, draftForAction);
+    const sameContext = () => activeRef.current && requestId === lifecycleRequest.current
+      && queryKeyRef.current === queryKey && sessionRef.current === sessionIdentity
+      && draftRef.current.journalEntryId === draftForAction.journalEntryId
+      && draftRef.current.fundProfileId === draftForAction.fundProfileId
+      && draftRef.current.ledgerBookId === draftForAction.ledgerBookId
+      && draftRef.current.periodId === draftForAction.periodId;
+    lifecycleSending.current = true;
     setLifecycleBusyAction(action);
     setLifecycleStatusText(null);
+    setLifecycleConflict(null);
     setError(null);
     try {
-      applyLifecycleResult(await services.applyLifecycleAction({
+      const result = await services.applyLifecycleAction({
         journalEntryId: draftForAction.journalEntryId,
         fundProfileId: draftForAction.fundProfileId,
         action,
         actor: "browser-user",
         version: draftForAction.version,
-        notes: lifecycleActionNotes(action, draftForAction),
+        notes,
         correlationId: `manual-je-${action.toLowerCase()}`,
         evidenceLinks: draftForAction.evidenceLinks ?? [],
         actionOrigin: "HumanOperator",
         periodIsLocked: action === "LockAfterClose",
         rebookLines: action === "Rebook" ? draftForAction.lines : [],
         ledgerBookId: draftForAction.ledgerBookId ?? query.ledgerBookId ?? null
-      }));
+      });
+      if (!sameContext()) return;
+      if (result.journalEntry.journalEntryId !== draftForAction.journalEntryId
+        || result.journalEntry.fundProfileId !== draftForAction.fundProfileId
+        || result.journalEntry.ledgerBookId !== draftForAction.ledgerBookId || result.journalEntry.periodId !== draftForAction.periodId)
+        throw new Error("The lifecycle result does not match the selected journal scope. Refresh before continuing.");
+      if (draftRef.current.version !== draftForAction.version || buildManualJournalEditableSignature(draftRef.current) !== signature) {
+        setValidatedDraftSignature(null);
+        setLifecycleConflict({ action, notes, before: draftForAction, latest: result.journalEntry, loading: false,
+          reviewedLatest: false, unavailableReason: null, changes: journalConflictChanges(draftForAction, result.journalEntry) });
+        setLifecycleStatusText(`${action} completed, but your local draft changed. Review the returned record before continuing. Your local changes are retained.`);
+        return;
+      }
+      applyLifecycleResult(result);
     } catch (err) {
+      if (!sameContext()) return;
       const errorDisplay = describeApiError(err, `Manual journal entry lifecycle action ${action} failed.`);
       setError(errorDisplay);
       setLifecycleStatusText(errorDisplay.summary);
+      if (isApiError(err) && err.status === 409) {
+        setValidatedDraftSignature(null);
+        setLifecycleConflict({ action, notes, before: draftForAction, latest: null, loading: true,
+          unavailableReason: null, reviewedLatest: false, changes: [] });
+        try {
+          const next = await services.getWorkbench({ fundProfileId: draftForAction.fundProfileId,
+            ledgerBookId: draftForAction.ledgerBookId ?? query.ledgerBookId ?? null,
+            journalEntryId: draftForAction.journalEntryId, periodId: draftForAction.periodId });
+          if (!sameContext()) return;
+          const matches = next.drafts.filter((item) => item.journalEntryId === draftForAction.journalEntryId
+            && item.fundProfileId === draftForAction.fundProfileId && item.ledgerBookId === draftForAction.ledgerBookId
+            && item.periodId === draftForAction.periodId && item.version >= draftForAction.version);
+          if (next.fundProfileId !== draftForAction.fundProfileId || next.ledgerBookId !== draftForAction.ledgerBookId || matches.length !== 1)
+            throw new Error("The latest journal is unavailable in the original scope.", { cause: err });
+          setLifecycleConflict({ action, notes, before: draftForAction, latest: matches[0], loading: false,
+            unavailableReason: null, reviewedLatest: false, changes: journalConflictChanges(draftForAction, matches[0]) });
+        } catch {
+          if (!sameContext()) return;
+          setLifecycleConflict({ action, notes, before: draftForAction, latest: null, loading: false,
+            unavailableReason: "The latest record could not be read in this scope. Your draft and decision notes are retained; no command was retried.", reviewedLatest: false, changes: [] });
+        }
+      }
     } finally {
-      setLifecycleBusyAction(null);
+      if (requestId === lifecycleRequest.current) { lifecycleSending.current = false; setLifecycleBusyAction(null); }
     }
-  }, [applyLifecycleResult, assetWorkflow, draft, lifecycleBusyAction, query.ledgerBookId, services]);
+  }, [applyLifecycleResult, assetWorkflow, draft, lifecycleConflict, query.ledgerBookId, queryKey, services, sessionIdentity]);
+
+  const reviewLatestLifecycleDraft = useCallback(() => {
+    if (!lifecycleConflict?.latest || lifecycleConflict.loading || lifecycleConflict.reviewedLatest) return;
+    applyServerDraft(lifecycleConflict.latest);
+    setLifecycleConflict({ ...lifecycleConflict, reviewedLatest: true });
+    setError(null);
+    setLifecycleStatusText("Latest journal loaded. Validation is required again; review and confirm a new decision. The submitted snapshot and exact notes remain in the comparison.");
+  }, [applyServerDraft, lifecycleConflict]);
+  const discardLifecycleConflict = useCallback(() => {
+    setLifecycleConflict(null);
+    setError(null);
+    setLifecycleStatusText("Decision discarded. The currently displayed draft has not been replaced and no command was retried.");
+  }, []);
 
   const validationIssues = draft.validationIssues.map<AccountingConfigurationIssueViewModel>((issue, index) => ({
     id: `${issue.code}-${index}`,
@@ -729,7 +823,7 @@ export function useManualJournalEntryWorkbenchViewModel(
   const canSubmit = submitDisabledReason === null;
   const blockingIssueCount = draft.validationIssues.filter((issue) => issue.severity === "Critical").length;
   const warningIssueCount = draft.validationIssues.filter((issue) => issue.severity === "Warning").length;
-  const balanceStatusLabel = Math.abs(balancedDraft.imbalance) === 0 ? "Balanced" : "Out by " + formatCurrency(Math.abs(balancedDraft.imbalance));
+  const balanceStatusLabel = Math.abs(balancedDraft.imbalance) === 0 ? "Balanced" : "Out by " + formatPrefixedCurrency(Math.abs(balancedDraft.imbalance));
   const saveStatusLabel = draft.assetAccountingDraft ? "Retained source draft" : saveState === "saving"
     ? "Saving draft"
     : saveState === "unsaved"
@@ -753,7 +847,9 @@ export function useManualJournalEntryWorkbenchViewModel(
     () => buildManualJournalPrivateCapitalActivityView(workbench?.privateCapitalActivity ?? null),
     [workbench?.privateCapitalActivity]
   );
-  const lifecycleCommands = buildManualJournalLifecycleCommands(balancedDraft, lifecycleBusyAction ?? assetWorkflow.busyAction, assetWorkflow);
+  const lifecycleCommands = buildManualJournalLifecycleCommands(balancedDraft, lifecycleBusyAction ?? assetWorkflow.busyAction, assetWorkflow)
+    .map((command) => lifecycleConflict && !lifecycleConflict.reviewedLatest
+      ? { ...command, disabledReason: "Review the latest journal or discard the conflicting decision first." } : command);
   const lifecycleTransitions = (balancedDraft.lifecycleTransitions ?? []).slice().reverse().map(formatManualJournalLifecycleTransition);
   const lifecycleCorrectionRows = lifecycleCorrectionDrafts.map(formatManualJournalLifecycleCorrection);
   const lifecycleChecklist = buildManualJournalLifecycleChecklist(
@@ -788,10 +884,10 @@ export function useManualJournalEntryWorkbenchViewModel(
     securitySearchErrorText: securitySearchError?.summary ?? null,
     securitySearchStatusText,
     attachmentDraft,
-    totalsLabel: `Debits ${formatCurrency(balancedDraft.totalDebits)} / Credits ${formatCurrency(balancedDraft.totalCredits)}`,
-    totalDebitsLabel: formatCurrency(balancedDraft.totalDebits),
-    totalCreditsLabel: formatCurrency(balancedDraft.totalCredits),
-    imbalanceLabel: `Imbalance ${formatCurrency(balancedDraft.imbalance)}`,
+    totalsLabel: `Debits ${formatPrefixedCurrency(balancedDraft.totalDebits)} / Credits ${formatPrefixedCurrency(balancedDraft.totalCredits)}`,
+    totalDebitsLabel: formatPrefixedCurrency(balancedDraft.totalDebits),
+    totalCreditsLabel: formatPrefixedCurrency(balancedDraft.totalCredits),
+    imbalanceLabel: `Imbalance ${formatPrefixedCurrency(balancedDraft.imbalance)}`,
     balanceStatusLabel,
     balanceStatusTone: Math.abs(balancedDraft.imbalance) === 0 ? "success" : "warning",
     balanceImpactRows,
@@ -809,6 +905,9 @@ export function useManualJournalEntryWorkbenchViewModel(
     lifecycleTransitions,
     lifecycleCorrectionRows,
     lifecycleStatusText: assetWorkflow.statusText ?? lifecycleStatusText,
+    lifecycleConflict,
+    reviewLatestLifecycleDraft,
+    discardLifecycleConflict,
     lifecycleBusyAction: lifecycleBusyAction ?? assetWorkflow.busyAction,
     saveBusy,
     validateBusy,
@@ -1071,7 +1170,7 @@ function buildManualJournalPrivateCapitalActivityView(
         id: "published-report-outputs",
         label: "Published outputs",
         value: formatCount(publishedReportOutputCount),
-        detail: "Governed report-pack outputs",
+        detail: "Report-pack outputs",
         tone: publishedReportOutputCount > 0 ? "success" : "default"
       },
       {
@@ -1084,7 +1183,7 @@ function buildManualJournalPrivateCapitalActivityView(
       {
         id: "net-activity",
         label: "Net activity",
-        value: formatCurrencyWithCode(activity.netCapitalActivity, currency, true),
+        value: formatCurrencyWithCode(activity.netCapitalActivity, currency, { signed: true }),
         detail: "Ledger-derived capital activity",
         tone: activity.netCapitalActivity < 0 ? "warning" : activity.netCapitalActivity > 0 ? "success" : "default"
       },
@@ -1138,9 +1237,9 @@ function buildManualJournalPrivateCapitalCapitalAccountSubledgerRow(
     nextActionLabel: subledger.nextAction || "No next action",
     nextActionRouteLabel: subledger.nextActionRoute || "No next-action route",
     activityRouteLabel: subledger.activityRoute || "No subledger route",
-    netActivityLabel: formatCurrencyWithCode(subledger.netCapitalActivity, subledger.currency, true),
-    openingLabel: formatCurrencyWithCode(subledger.openingNetActivity, subledger.currency, true),
-    endingLabel: formatCurrencyWithCode(subledger.endingNetActivity, subledger.currency, true),
+    netActivityLabel: formatCurrencyWithCode(subledger.netCapitalActivity, subledger.currency, { signed: true }),
+    openingLabel: formatCurrencyWithCode(subledger.openingNetActivity, subledger.currency, { signed: true }),
+    endingLabel: formatCurrencyWithCode(subledger.endingNetActivity, subledger.currency, { signed: true }),
     contributionLabel: formatCurrencyWithCode(subledger.contributions, subledger.currency),
     distributionLabel: formatCurrencyWithCode(subledger.distributions, subledger.currency),
     otherActivityLabel: [
@@ -1204,9 +1303,9 @@ export function buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
     nextActionLabel: record.nextAction || "No next action",
     nextActionRouteLabel: record.nextActionRoute ?? "No next-action route",
     effectiveDateLabel: record.effectiveDate,
-    netActivityLabel: formatCurrencyWithCode(record.netCapitalActivity, record.currency, true),
+    netActivityLabel: formatCurrencyWithCode(record.netCapitalActivity, record.currency, { signed: true }),
     grossActivityLabel: formatCurrencyWithCode(record.grossAmount, record.currency),
-    capitalAccountRollForwardLabel: `${formatCurrencyWithCode(record.capitalAccountOpeningNetActivity, record.currency, true)} opening -> ${formatCurrencyWithCode(record.capitalAccountEndingNetActivity, record.currency, true)} ending`,
+    capitalAccountRollForwardLabel: `${formatCurrencyWithCode(record.capitalAccountOpeningNetActivity, record.currency, { signed: true })} opening → ${formatCurrencyWithCode(record.capitalAccountEndingNetActivity, record.currency, { signed: true })} ending`,
     memoLabel: record.memo || record.journalEntryId,
     referenceLabel: [record.paymentIntentId, record.settlementReference].filter((value): value is string => Boolean(value)).join(" / ") || record.journalEntryId,
     paymentEvidenceLabel: paymentEvidence.label,
@@ -1215,7 +1314,7 @@ export function buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
     paymentEvidenceRequiredLabel: paymentEvidence.required,
     activityRouteLabel: record.activityRoute || "No activity route",
     commandCenterRouteLabel: buildPrivateCapitalFundEventCommandCenterRoute(fundProfileId, ledgerBookId, record.fundEventId),
-    evidenceRouteLabel: record.evidenceRoute || "No evidence route",
+    evidenceRouteLabel: record.evidenceRoute || "No supporting record link",
     approvalRouteLabel: record.approvalRoute ?? (record.approvalId ? `/accounting/approvals?approvalId=${encodeURIComponent(record.approvalId)}` : "No approval route"),
     evidenceLabel: `${formatCount(record.evidenceLinkCount)} evidence`,
     ledgerImpactLabel: `${formatCount(record.ledgerImpactCount)} ledger impact(s)${record.isPostingReady ? " / posting ready" : ""}`,
@@ -1273,7 +1372,7 @@ function buildManualJournalPaymentIntentWorkflowRow(
     auditLabel: `${formatCount(workflow.auditHistory.length)} audit event(s)`,
     readinessReasonLabel: workflow.readinessReason || "Payment intent readiness requires review.",
     executionDeferredLabel: workflow.executionDeferredReason || "Full payment execution is deferred.",
-    evidenceRouteLabel: workflow.evidenceRoute || "No evidence route",
+    evidenceRouteLabel: workflow.evidenceRoute || "No supporting record link",
     workbenchRouteLabel: workflow.workbenchRoute || "No workbench route",
     approvalSteps: workflow.approvalChain.map((step) => ({
       id: `${workflow.paymentIntentId}-approval-${step.sequence}-${step.role}`,
@@ -1282,7 +1381,7 @@ function buildManualJournalPaymentIntentWorkflowRow(
       actorLabel: step.actor || "No actor assigned",
       statusLabel: step.status || "No status",
       decidedLabel: step.decidedAtUtc ? formatDateTimeLabel(step.decidedAtUtc) : "Decision pending",
-      evidenceRouteLabel: step.evidenceRoute || "No approval evidence route"
+      evidenceRouteLabel: step.evidenceRoute || "No approval record link"
     })),
     bankEvidence: workflow.bankEvidence.map((item) => ({
       id: item.evidenceId,
@@ -1300,13 +1399,13 @@ function buildManualJournalPaymentIntentWorkflowRow(
         item.transactionType ?? null,
         item.externalRef ?? null
       ].filter((value): value is string => Boolean(value)).join(" / ") || "No external reference",
-      evidenceRouteLabel: item.evidenceRoute || "No bank evidence route"
+      evidenceRouteLabel: item.evidenceRoute || "No bank record link"
     })),
     reconciliationLinks: workflow.reconciliationLinks.map((link) => ({
       id: link.linkId,
       statusLabel: link.status || "No status",
       summaryLabel: link.summary || "No reconciliation summary",
-      routeLabel: link.evidenceRoute || "No reconciliation evidence route",
+      routeLabel: link.evidenceRoute || "No reconciliation record link",
       caseLabel: [
         link.reconciliationCaseId ? `case ${link.reconciliationCaseId}` : null,
         link.reconciliationRunId ? `run ${link.reconciliationRunId}` : null
@@ -1410,7 +1509,7 @@ function buildManualJournalPrivateCapitalFundEventRow(
     statusLabel: event.isPosted ? "Posted" : event.journalStatus,
     statusTone: event.isPosted ? "success" : manualJournalPrivateCapitalStatusTone(event.journalStatus),
     effectiveDateLabel: event.effectiveDate,
-    amountLabel: formatCurrencyWithCode(event.netCapitalActivity, event.currency, true),
+    amountLabel: formatCurrencyWithCode(event.netCapitalActivity, event.currency, { signed: true }),
     grossAmountLabel: formatCurrencyWithCode(event.grossAmount, event.currency),
     evidenceLabel: `${formatCount(event.evidenceLinks.length)} evidence`,
     memoLabel: event.memo || event.journalEntryId,
@@ -1428,7 +1527,7 @@ function buildManualJournalPrivateCapitalAccountRow(
     id: `${account.capitalAccountId}-${account.currency}`,
     title: account.capitalAccountId,
     subtitle: account.investorId ?? "Investor not assigned",
-    netActivityLabel: formatCurrencyWithCode(account.netActivity, account.currency, true),
+    netActivityLabel: formatCurrencyWithCode(account.netActivity, account.currency, { signed: true }),
     contributionLabel: formatCurrencyWithCode(account.contributions, account.currency),
     distributionLabel: formatCurrencyWithCode(account.distributions, account.currency),
     subscriptionLabel: formatCurrencyWithCode(account.subscriptions, account.currency),
@@ -1451,8 +1550,8 @@ function buildManualJournalPrivateCapitalSubledgerEntryRow(
     statusLabel: entry.isPosted ? "Posted" : entry.approvalState,
     statusTone: entry.isPosted ? "success" : manualJournalPrivateCapitalStatusTone(entry.approvalState),
     effectiveDateLabel: entry.effectiveDate,
-    netActivityLabel: formatCurrencyWithCode(entry.netCapitalActivity, entry.currency, true),
-    runningBalanceLabel: formatCurrencyWithCode(entry.runningNetActivity, entry.currency, true),
+    netActivityLabel: formatCurrencyWithCode(entry.netCapitalActivity, entry.currency, { signed: true }),
+    runningBalanceLabel: formatCurrencyWithCode(entry.runningNetActivity, entry.currency, { signed: true }),
     grossAmountLabel: formatCurrencyWithCode(entry.grossAmount, entry.currency),
     evidenceLabel: `${formatCount(entry.evidenceLinks.length)} evidence`,
     memoLabel: entry.memo || entry.journalEntryId,
@@ -1474,7 +1573,7 @@ function buildManualJournalPrivateCapitalLedgerImpactRow(
     effectiveDateLabel: impact.effectiveDate,
     debitLabel: formatCurrencyWithCode(impact.totalDebits, impact.currency),
     creditLabel: formatCurrencyWithCode(impact.totalCredits, impact.currency),
-    imbalanceLabel: formatCurrencyWithCode(impact.imbalance, impact.currency, true),
+    imbalanceLabel: formatCurrencyWithCode(impact.imbalance, impact.currency, { signed: true }),
     evidenceLabel: `${formatCount(impact.evidenceLinks.length)} evidence`,
     lineLabel: `${formatCount(impact.lineCount)} GL lines`,
     issueLabel: impact.validationIssues.length > 0
@@ -1496,7 +1595,7 @@ function buildManualJournalPrivateCapitalReportOutputRow(
     nextActionLabel: output.nextAction || "No next action",
     nextActionRouteLabel: output.nextActionRoute ?? output.reportOutputRoute ?? output.reportRoute,
     effectiveDateLabel: output.effectiveDate,
-    amountLabel: formatCurrencyWithCode(output.netCapitalActivity, output.currency, true),
+    amountLabel: formatCurrencyWithCode(output.netCapitalActivity, output.currency, { signed: true }),
     evidenceLabel: `${formatCount(output.evidenceLinkCount)} evidence`,
     routeLabel: output.reportOutputRoute ?? output.reportRoute,
     issueLabel: output.validationIssues.length > 0
@@ -1686,15 +1785,15 @@ function buildManualJournalBalanceImpactRows(
         ? totals.debit - totals.credit
         : totals.credit - totals.debit;
       const direction = netEffect > 0 ? "increases" : netEffect < 0 ? "decreases" : "does not change";
-      const absoluteEffect = formatCurrency(Math.abs(netEffect));
+      const absoluteEffect = formatPrefixedCurrency(Math.abs(netEffect));
 
       return {
         id: accountPath,
         accountPath,
         accountName: account?.accountName ?? accountPath,
         accountType: account?.accountType ?? "Unclassified",
-        debitLabel: formatCurrency(totals.debit),
-        creditLabel: formatCurrency(totals.credit),
+        debitLabel: formatPrefixedCurrency(totals.debit),
+        creditLabel: formatPrefixedCurrency(totals.credit),
         netEffectLabel: `${netEffect >= 0 ? "+" : "-"}${absoluteEffect}`,
         balanceDirectionLabel: `This draft ${direction} the ${normalBalanceSide.toLowerCase()}-normal account balance by ${absoluteEffect}.`,
         lineCountLabel: `${totals.count} line${totals.count === 1 ? "" : "s"}`,

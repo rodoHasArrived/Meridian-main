@@ -99,7 +99,8 @@ public partial class StrategyWorkspaceShellPage : StrategyWorkspaceShellPageBase
         switch (request.Kind)
         {
             case StrategyWorkspaceShellActionKind.ResetLayout:
-                _ = LoadDefaultDockLayoutAsync(StrategyDockManager);
+                // Persist the default panes too, so the reset survives a restart.
+                _ = ResetDockLayoutAsync(StrategyDockManager);
                 return;
             case StrategyWorkspaceShellActionKind.Navigate when !string.IsNullOrWhiteSpace(request.PageTag):
                 NavigationService.NavigateTo(request.PageTag, request.Parameter);
@@ -124,6 +125,10 @@ public partial class StrategyWorkspaceShellPage : StrategyWorkspaceShellPageBase
 
     private void ApplyToneBindings()
         => ApplyTone(StrategyHeroBadgeBorder, StrategyHeroBadgeText, ViewModel.StrategyHeroBadgeTone);
+
+    /// <inheritdoc />
+    protected override Task RefreshShellInPlaceAsync()
+        => ViewModel.RefreshAsync();
 
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
         => OpenDroppedPane(StrategyDockManager, e);

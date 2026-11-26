@@ -44,6 +44,10 @@ public partial class ReportingWorkspaceShellPage : ReportingWorkspaceShellPageBa
     private async System.Threading.Tasks.Task RefreshRequestedCoreAsync(object? sender, EventArgs e)
         => await ViewModel.RefreshAsync().ConfigureAwait(true);
 
+    /// <inheritdoc />
+    protected override Task RefreshShellInPlaceAsync()
+        => ViewModel.RefreshAsync();
+
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
         => OpenDroppedPane(ReportingDockManager, e);
 

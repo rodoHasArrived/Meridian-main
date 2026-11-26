@@ -115,9 +115,6 @@
                             Style="{StaticResource DangerButtonStyle}"
                             ToolTip="Close or flatten selected positions"
                             Margin="0,0,8,0" />
-                    <Button Content="Refresh"
-                            Command="{Binding RefreshCommand}"
-                            Style="{StaticResource GhostButtonStyle}" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -272,6 +269,7 @@
                             <ColumnDefinition Width="92" />
                             <ColumnDefinition Width="68" />
                             <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="110" />
                             <ColumnDefinition Width="90" />
                         </Grid.ColumnDefinitions>
 
@@ -287,11 +285,12 @@
                         <TextBlock Grid.Column="2" Text="Group" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
                         <TextBlock Grid.Column="3" Text="Product Description" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
                         <TextBlock Grid.Column="4" Text="Trade ID" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
-                        <TextBlock Grid.Column="5" Text="Unit Price" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontFamily="{StaticResource MeridianDataFontFamily}" TextAlignment="Right" VerticalAlignment="Center" Margin="8,6,8,6" />
+                        <TextBlock Grid.Column="5" Text="Avg cost" ToolTip="Average cost per unit, as reported by the execution source" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontFamily="{StaticResource MeridianDataFontFamily}" TextAlignment="Right" VerticalAlignment="Center" Margin="8,6,8,6" />
                         <TextBlock Grid.Column="6" Text="Qty" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontFamily="{StaticResource MeridianDataFontFamily}" TextAlignment="Right" VerticalAlignment="Center" Margin="8,6,8,6" />
                         <TextBlock Grid.Column="7" Text="Side" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
                         <TextBlock Grid.Column="8" Text="Unreal. PnL" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontFamily="{StaticResource MeridianDataFontFamily}" TextAlignment="Right" VerticalAlignment="Center" Margin="8,6,8,6" />
-                        <TextBlock Grid.Column="9" Text="Status" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
+                        <TextBlock Grid.Column="9" Text="Mkt value" ToolTip="Market value reported by the execution source, in the instrument's own currency" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontFamily="{StaticResource MeridianDataFontFamily}" TextAlignment="Right" VerticalAlignment="Center" Margin="8,6,8,6" />
+                        <TextBlock Grid.Column="10" Text="Status" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
                     </Grid>
 
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
@@ -320,6 +319,7 @@
                                                 <ColumnDefinition Width="92" />
                                                 <ColumnDefinition Width="68" />
                                                 <ColumnDefinition Width="120" />
+                                                <ColumnDefinition Width="110" />
                                                 <ColumnDefinition Width="90" />
                                             </Grid.ColumnDefinitions>
 
@@ -395,6 +395,7 @@
                                                             <ColumnDefinition Width="92" />
                                                             <ColumnDefinition Width="68" />
                                                             <ColumnDefinition Width="120" />
+                                                            <ColumnDefinition Width="110" />
                                                             <ColumnDefinition Width="90" />
                                                         </Grid.ColumnDefinitions>
 
@@ -413,7 +414,8 @@
                                                         <TextBlock Grid.Column="6" Text="{Binding QuantityText}" Style="{StaticResource NumericCellTextStyle}" Margin="8,5,8,5" />
                                                         <TextBlock Grid.Column="7" Text="{Binding Side}" FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" Margin="4,5,4,5" />
                                                         <TextBlock Grid.Column="8" Text="{Binding UnrealisedPnlText}" Style="{StaticResource NumericCellTextStyle}" Foreground="{Binding PnlBrush}" Margin="8,5,8,5" />
-                                                        <TextBlock Grid.Column="9" Text="{Binding Status}" FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,5,4,5" />
+                                                        <TextBlock Grid.Column="9" Text="{Binding MarketValueText}" Style="{StaticResource NumericCellTextStyle}" Margin="8,5,8,5" />
+                                                        <TextBlock Grid.Column="10" Text="{Binding Status}" FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,5,4,5" />
                                                     </Grid>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>

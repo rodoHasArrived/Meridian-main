@@ -252,6 +252,55 @@ public sealed class BackfillScheduleManager
         return updated;
     }
 
+    /// <summary>Edits ordered preferences without replacing schedule timing or execution state.</summary>
+    public async Task<BackfillSchedule?> SetPreferredProvidersAsync(
+        string scheduleId,
+        IReadOnlyList<string> preferredProviders,
+        CancellationToken ct = default)
+    {
+        BackfillSchedule candidate;
+        await _persistLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (!_schedules.TryGetValue(scheduleId, out var existing))
+                return null;
+            candidate = CloneSchedule(existing);
+            candidate.PreferredProviders.Clear();
+            candidate.PreferredProviders.AddRange(preferredProviders);
+            candidate.ModifiedAt = DateTimeOffset.UtcNow;
+            await PersistScheduleUnderLockAsync(candidate, ct).ConfigureAwait(false);
+            _schedules[scheduleId] = candidate;
+        }
+        finally
+        {
+            _persistLock.Release();
+        }
+
+        var updated = CloneSchedule(candidate);
+        ScheduleUpdated?.Invoke(this, updated);
+        return updated;
+    }
+
+    /// <summary>Advances a due occurrence while preserving edits saved after the dispatcher read it.</summary>
+    internal async Task<bool> TryAdvanceDueScheduleAsync(string scheduleId, DateTimeOffset? occurrence, CancellationToken ct)
+    {
+        await _persistLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (!_schedules.TryGetValue(scheduleId, out var existing) || !existing.Enabled || existing.NextExecutionAt != occurrence)
+                return false;
+            var candidate = CloneSchedule(existing);
+            candidate.NextExecutionAt = candidate.CalculateNextExecution();
+            await PersistScheduleUnderLockAsync(candidate, ct).ConfigureAwait(false);
+            _schedules[scheduleId] = candidate;
+            return true;
+        }
+        finally
+        {
+            _persistLock.Release();
+        }
+    }
+
     /// <summary>
     /// Delete a schedule.
     /// </summary>
@@ -283,7 +332,10 @@ public sealed class BackfillScheduleManager
 
                 try
                 {
-                    await AtomicFileWriter.SyncDirectoryAsync(
+                    // Strict: the deletion is acknowledged only once the tombstone rename is durable.
+                    // On a throw the rename is rolled back below and the schedule stays retained, so a
+                    // retry starts from the original state.
+                    await AtomicFileWriter.SyncDirectoryOrThrowAsync(
                             _schedulesDirectory,
                             CancellationToken.None)
                         .ConfigureAwait(false);
@@ -293,6 +345,7 @@ public sealed class BackfillScheduleManager
                     try
                     {
                         File.Move(tombstonePath, filePath);
+                        // Best effort: the restore has committed; a throw would report it as failed.
                         await AtomicFileWriter.SyncDirectoryAsync(
                                 _schedulesDirectory,
                                 CancellationToken.None)
@@ -646,6 +699,7 @@ public sealed class BackfillScheduleManager
         try
         {
             File.Delete(tombstonePath);
+            // Best effort: the tombstone is ignored on load, so its removal needs no acknowledgement.
             await AtomicFileWriter.SyncDirectoryAsync(
                     _schedulesDirectory,
                     CancellationToken.None)

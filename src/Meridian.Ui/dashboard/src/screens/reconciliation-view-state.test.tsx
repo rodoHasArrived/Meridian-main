@@ -1,5 +1,5 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { MemoryRouter, useLocation, useNavigate } from "react-router-dom";
+import { BrowserRouter, MemoryRouter, useLocation, useNavigate } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import { readReconciliationViewState, useReconciliationViewState } from "./reconciliation-view-state";
 
@@ -12,6 +12,52 @@ function useHarness() {
 }
 
 describe("reconciliation URL view state", () => {
+  it("preserves a newer receipt book and retained run when an earlier selection callback completes", () => {
+    const { result } = renderHook(useHarness, { wrapper });
+    const earlierSelection = result.current.view.replaceSelection;
+    act(() => result.current.navigate("/accounting/reconciliation?fundAccountId=fund-a&ledgerBookId=book-b&receiptRunId=receipt-history-b#receipts"));
+    act(() => earlierSelection("run-a", "break-a"));
+    const params = new URLSearchParams(result.current.location.search);
+    expect(params.get("ledgerBookId")).toBe("book-b");
+    expect(params.get("receiptRunId")).toBe("receipt-history-b");
+    expect(params.get("reconciliationBreak")).toBe("break-a");
+    expect(result.current.location.hash).toBe("#receipts");
+  });
+
+  it("preserves a browser book navigation before React commits the next router render", () => {
+    const originalUrl = window.location.href;
+    const originalState = window.history.state;
+    window.history.replaceState(null, "", "/workstation/accounting/reconciliation?ledgerBookId=book-a&receiptRunId=receipt-history-a");
+    const { result, unmount } = renderHook(useHarness, { wrapper: ({ children }) => <BrowserRouter basename="/workstation">{children}</BrowserRouter> });
+    try {
+      const earlierSelection = result.current.view.replaceSelection;
+      act(() => {
+        result.current.navigate("/accounting/reconciliation?ledgerBookId=book-b&receiptRunId=receipt-history-b#receipts");
+        earlierSelection("run-a", "break-a");
+      });
+      const params = new URLSearchParams(result.current.location.search);
+      expect(params.get("ledgerBookId")).toBe("book-b");
+      expect(params.get("receiptRunId")).toBe("receipt-history-b");
+      expect(params.get("reconciliationBreak")).toBe("break-a");
+      expect(result.current.location.hash).toBe("#receipts");
+    } finally {
+      unmount();
+      window.history.replaceState(originalState, "", originalUrl);
+    }
+  });
+
+  it("ignores an earlier selection callback after scope or destination changes", () => {
+    const { result } = renderHook(useHarness, { wrapper });
+    const earlierSelection = result.current.view.replaceSelection;
+    act(() => result.current.navigate("/accounting/reconciliation?fundAccountId=fund-b&ledgerBookId=book-b"));
+    act(() => earlierSelection("run-a", "break-a"));
+    expect(result.current.location.search).toBe("?fundAccountId=fund-b&ledgerBookId=book-b");
+    act(() => result.current.navigate("/reporting/evidence?subject=run-a"));
+    act(() => earlierSelection("run-a", "break-a"));
+    expect(result.current.location.pathname).toBe("/reporting/evidence");
+    expect(result.current.location.search).toBe("?subject=run-a");
+  });
+
   it("does not mutate URLs when disabled for another Accounting workstream", async () => {
     const { result } = renderHook(() => ({ view: useReconciliationViewState(false), location: useLocation(), navigate: useNavigate() }), { wrapper });
     act(() => result.current.view.selectRun("run-b"));
@@ -57,6 +103,19 @@ describe("reconciliation URL view state", () => {
     expect(result.current.view).toMatchObject({ selectedRunId: "run-a", selectedBreakId: "break-a", queueSearch: "cash", queueStatus: "Open", queueSort: "oldest" });
   });
 
+  it("retains an earlier case comparison in the link and clears it when opening another case", async () => {
+    const { result } = renderHook(useHarness, { wrapper });
+    act(() => result.current.view.setComparisonBreakId("prior-break"));
+    await waitFor(() => expect(result.current.view.comparisonBreakId).toBe("prior-break"));
+    expect(result.current.location.search).toContain("reconciliationCompare=prior-break");
+    act(() => result.current.view.selectBreak("break-b", "run-b"));
+    await waitFor(() => expect(result.current.view.selectedBreakId).toBe("break-b"));
+    expect(result.current.view.comparisonBreakId).toBeNull();
+    act(() => result.current.navigate(-1));
+    await waitFor(() => expect(result.current.view.comparisonBreakId).toBe("prior-break"));
+    expect(result.current.view.selectedBreakId).toBe("break-a");
+  });
+
   it("clears retained selection when operating scope changes", async () => {
     const { result } = renderHook(useHarness, { wrapper });
     act(() => result.current.navigate(result.current.location.pathname + result.current.location.search.replace("fund-a", "fund-b")));
@@ -64,6 +123,14 @@ describe("reconciliation URL view state", () => {
     expect(result.current.view.selectedBreakId).toBeNull();
     expect(result.current.location.search).not.toContain("reconciliationBreak");
     expect(result.current.view.queueStatus).toBe("Open");
+  });
+
+  it.each(["fundProfileId", "entityId", "companyId"])("clears the reviewed case when %s changes", async (field) => {
+    const { result } = renderHook(useHarness, { wrapper });
+    act(() => result.current.navigate(`${result.current.location.pathname}${result.current.location.search}&${field}=new-scope`));
+    await waitFor(() => expect(result.current.view.selectedBreakId).toBeNull());
+    expect(result.current.location.search).toContain(`${field}=new-scope`);
+    expect(result.current.location.search).not.toContain("reconciliationBreak");
   });
 
   it("allows Back to restore a different scope and its matching explicit selection", async () => {

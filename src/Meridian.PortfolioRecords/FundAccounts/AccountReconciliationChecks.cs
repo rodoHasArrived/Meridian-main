@@ -150,6 +150,22 @@ internal static class AccountReconciliationChecks
     private static bool IsBrokerageSync(AccountBalanceSnapshotDto snapshot) =>
         snapshot.Source?.StartsWith("brokerage-sync:", StringComparison.OrdinalIgnoreCase) == true;
 
+    internal static (IReadOnlyList<CustodianPositionLineDto> Positions, IReadOnlyList<CustodianStatementBatchDto> Batches)
+        SelectCustodianState(Guid accountId, DateOnly date, IReadOnlyList<CustodianPositionLineDto> positions,
+            IReadOnlyList<CustodianStatementBatchDto> batches)
+    {
+        var fullStates = batches.Where(batch => batch.AccountId == accountId && batch.AsOfDate == date
+            && batch.Authority is { IsFullSnapshot: true }).ToArray();
+        if (fullStates.Length == 0)
+            return (positions, batches);
+        // Preserve legacy observation checks only where no canonical full state exists. Once a
+        // full state is declared, ambiguity, rejection or corrupt retained membership blocks the
+        // financial read instead of silently falling back to a union of historical observations.
+        var selected = CustodianHoldingSnapshotSelector.Select(accountId, date, null, fullStates, positions)
+            ?? throw new InvalidOperationException("Custodian reconciliation requires an accepted full statement for the exact date.");
+        return (selected.Lines, new[] { selected.Batch });
+    }
+
     /// <summary>
     /// Compares the custodian statement's declared line count (source A, batch header metadata
     /// captured at ingestion) against the count of persisted custodian position records for the

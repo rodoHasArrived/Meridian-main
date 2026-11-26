@@ -7,28 +7,33 @@ on:
         description: Output directory for captured screenshots.
         required: false
         default: "docs/screenshots/desktop"
-      commit:
-        description: Open a pull request with the refreshed desktop screenshots.
+      create_pr:
+        description: Open a catalog refresh pull request after capture and validation pass.
         type: boolean
         required: false
-        default: false
+        default: true
+  # A weekly refresh keeps the published desktop catalog from silently going stale.
+  schedule:
+    - cron: "41 10 * * 1"
 
 permissions:
   contents: write
   pull-requests: write
 
 concurrency:
-  # The workflow always checks out the default branch and writes the fixed
-  # automation/desktop-screenshot-capture branch, so every dispatch must share
-  # one concurrency lane regardless of the ref it was dispatched from. A per-ref
-  # group would let cross-branch dispatches race and reopen the shared screenshot
-  # PR. Runs serialize (no cancellation) so an in-flight capture still finishes.
+  # The workflow always checks out the default branch and opens a refresh PR on
+  # a per-run automation/desktop-screenshot-capture-* branch, closing older
+  # refresh PRs, so every dispatch must share one concurrency lane regardless of
+  # the ref it was dispatched from. A per-ref group would let cross-branch
+  # dispatches race and close each other's refresh PRs. Runs serialize (no cancellation) so an in-flight capture still finishes.
   group: desktop-screenshot-capture
   cancel-in-progress: false
 
 env:
   CI: true
   WORKFLOW_OUTPUT_DIR: ${{ inputs.output_dir }}
+  # Captures land here first; the tracked catalog changes only after validation passes.
+  CAPTURE_DIR: artifacts/desktop-screenshot-capture/captures
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
   DOTNET_NOLOGO: "true"
@@ -42,11 +47,12 @@ jobs:
 
     steps:
       - name: Check out repository
+        id: checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Always capture and propose the refresh from the canonical default branch so a
           # dispatch from a feature branch cannot publish that branch's commits into the
-          # automation/desktop-screenshot-capture PR alongside the screenshots.
+          # automation/desktop-screenshot-capture-* PR alongside the screenshots.
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
           fetch-depth: 1
@@ -92,16 +98,19 @@ jobs:
       - name: Capture desktop screenshots
         id: capture_desktop
         shell: pwsh
-        run: >
-          scripts/dev/capture-desktop-screenshots.ps1
-          -OutputDir "${{ steps.validate_output_dir.outputs.safe_output_dir }}"
+        run: |
+          if (Test-Path -LiteralPath $env:CAPTURE_DIR) {
+            Remove-Item -LiteralPath $env:CAPTURE_DIR -Recurse -Force
+          }
+          New-Item -ItemType Directory -Force -Path $env:CAPTURE_DIR | Out-Null
+          scripts/dev/capture-desktop-screenshots.ps1 -OutputDir $env:CAPTURE_DIR
 
       - name: Validate desktop screenshot captures
         shell: pwsh
         run: >
           python scripts/dev/validate-screenshot-captures.py
           --surface desktop
-          --output-dir "${{ steps.validate_output_dir.outputs.safe_output_dir }}"
+          --output-dir "${{ env.CAPTURE_DIR }}"
           --desktop-workflows scripts/dev/desktop-workflows.json
           --desktop-workflow screenshot-catalog
           --require-fresh
@@ -110,7 +119,7 @@ jobs:
         if: ${{ always() }}
         shell: pwsh
         run: |
-          $outputDir = "${{ steps.validate_output_dir.outputs.safe_output_dir }}"
+          $outputDir = $env:CAPTURE_DIR
           if (-not (Test-Path -LiteralPath $outputDir)) {
             Write-Warning "Desktop screenshot output directory '$outputDir' was not created."
             return
@@ -162,7 +171,7 @@ jobs:
             }
           }
 
-          Copy-ScreenshotSet -SourceRoot "${{ steps.validate_output_dir.outputs.safe_output_dir }}" -Bucket "catalog"
+          Copy-ScreenshotSet -SourceRoot $env:CAPTURE_DIR -Bucket "catalog"
           Copy-ScreenshotSet -SourceRoot "artifacts/desktop-workflows" -Bucket "workflow-runs"
 
           [ordered]@{
@@ -184,17 +193,50 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+      - name: Stage validated catalog refresh
+        if: ${{ success() && (inputs.create_pr || github.event_name == 'schedule') }}
+        shell: pwsh
+        env:
+          OUTPUT_DIR: ${{ steps.validate_output_dir.outputs.safe_output_dir }}
+        run: |
+          New-Item -ItemType Directory -Force -Path $env:OUTPUT_DIR | Out-Null
+          # Replace the whole catalog so renamed or removed screens drop out.
+          Get-ChildItem -LiteralPath $env:OUTPUT_DIR -Filter '*.png' -File | Remove-Item -Force
+          Copy-Item -Path (Join-Path $env:CAPTURE_DIR '*.png') -Destination $env:OUTPUT_DIR -Force
+
       - name: Open screenshot refresh pull request
-        if: ${{ success() && inputs.commit == true }}
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
+        id: refresh_pr
+        if: ${{ success() && (inputs.create_pr || github.event_name == 'schedule') }}
+        uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8
         with:
-          branch: automation/desktop-screenshot-capture
+          # A PR opened with the default GITHUB_TOKEN starts no other workflows,
+          # so the required checks would never run on it. SCREENSHOT_PR_TOKEN
+          # (a GitHub App or fine-grained token with contents and pull-requests
+          # write) lets them run; without it the PR still opens, unchecked.
+          token: ${{ secrets.SCREENSHOT_PR_TOKEN || github.token }}
+          # Each run publishes on its own branch: create-pull-request rebuilds
+          # its branch from the base, so a fixed branch needs a force-push, which
+          # repository rules forbid. The next step closes older refresh PRs.
+          branch: automation/desktop-screenshot-capture-${{ github.run_id }}-${{ github.run_attempt }}
           base: ${{ github.event.repository.default_branch }}
           title: "chore: refresh desktop workstation screenshot catalog"
           commit-message: "chore: refresh desktop workstation screenshot catalog"
           body: |
             Automated refresh of the desktop WPF screenshot catalog captured by the
-            Desktop Screenshot Capture workflow. Review the rendered screens before merging.
+            Desktop Screenshot Capture workflow. Every configured capture and the freshness
+            checks passed before staging this catalog.
+
+            Source commit: ${{ steps.checkout.outputs.commit }}
+            Capture evidence: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            Review the rendered screens before merging.
           add-paths: |
             ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
           delete-branch: true
+
+      - name: Close superseded screenshot refresh PRs
+        if: ${{ steps.refresh_pr.outputs.pull-request-number != '' }}
+        uses: ./.github/actions/close-superseded-refresh-prs
+        with:
+          branch-prefix: automation/desktop-screenshot-capture
+          keep-pr-number: ${{ steps.refresh_pr.outputs.pull-request-number }}
+          token: ${{ secrets.SCREENSHOT_PR_TOKEN || github.token }}

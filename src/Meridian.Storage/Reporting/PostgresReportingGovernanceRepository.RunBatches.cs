@@ -8,6 +8,57 @@ public sealed partial class PostgresReportingGovernanceRepository
 {
     private sealed partial class PostgresReportingGovernanceTransaction
     {
+        public async ValueTask<IReadOnlyList<string>> FindRunIdsAsync(
+            string tenantId,
+            string companyId,
+            string query,
+            int offset,
+            int limit,
+            CancellationToken cancellationToken = default)
+        {
+            tenantId = NormalizeKey(tenantId, nameof(tenantId));
+            companyId = NormalizeKey(companyId, nameof(companyId));
+            query = NormalizeKey(query, nameof(query));
+            ArgumentOutOfRangeException.ThrowIfNegative(offset);
+            ArgumentOutOfRangeException.ThrowIfLessThan(limit, 1);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(limit, IReportingGovernanceTransaction.MaximumRunReadBatchSize);
+
+            await using var command = CreateCommand();
+            // Only identity candidates come from this query. GetRunsAsync still validates the
+            // state and audit bindings before the coordinator evaluates the immutable audience.
+            command.CommandText =
+                $"""
+                select run_id
+                from {_runsTable}
+                where tenant_id = @tenant_id
+                  and company_id = @company_id
+                  and (lower(run_id) = lower(@query)
+                      or lower(state_payload::jsonb ->> 'templateId') = lower(@query)
+                      or (length(@query) >= 2 and (
+                          starts_with(lower(run_id), lower(@query))
+                          or starts_with(lower(state_payload::jsonb ->> 'templateId'), lower(@query)))))
+                order by case
+                    when lower(run_id) = lower(@query) then 0
+                    when lower(state_payload::jsonb ->> 'templateId') = lower(@query) then 1
+                    when starts_with(lower(run_id), lower(@query)) then 2
+                    else 3 end, run_id
+                limit @limit offset @offset;
+                """;
+            command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, tenantId);
+            command.Parameters.AddWithValue("company_id", NpgsqlDbType.Text, companyId);
+            command.Parameters.AddWithValue("query", NpgsqlDbType.Text, query);
+            command.Parameters.AddWithValue("limit", NpgsqlDbType.Integer, limit);
+            command.Parameters.AddWithValue("offset", NpgsqlDbType.Integer, offset);
+            var ids = new List<string>(limit);
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                ids.Add(reader.GetString(0));
+            }
+
+            return ids;
+        }
+
         public async ValueTask<IReadOnlyList<GovernedReportingRun>> GetRunsAsync(
             string tenantId,
             IReadOnlyCollection<string> runIds,

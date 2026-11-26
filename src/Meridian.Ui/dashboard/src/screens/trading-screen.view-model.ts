@@ -1,18 +1,48 @@
 import { presentMarkFreshness, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
+import { formatAuthorityRefusal, manualOrderEntryDisabledReason, orderOriginLabel } from "@/screens/trading-screen.order-authority";
 import { buildFillDetail, buildOrderDetail, buildPositionDetail } from "@/screens/trading-screen.blotter-details";
 import {
-  buildOrderRequirementText,
-  buildOrderTicketAcknowledgementState,
-  buildOrderTicketStatusAnnouncement,
-  buildOrderTicketSubmitDisabledReason
-} from "./trading-screen.order-ticket-text";
+  buildOrderSubmitRequest,
+  buildOrderTicketState,
+  emptyOrderTicketForm,
+  normalizeOrderSymbol,
+  updateOrderTicketForm,
+  validateOrderTicketForm,
+  type OrderTicketField,
+  type OrderTicketPhase
+} from "./trading-screen.order-ticket-state";
+export {
+  buildOrderSubmitRequest,
+  buildOrderTicketState,
+  emptyOrderTicketForm,
+  updateOrderTicketForm,
+  validateOrderTicketForm
+} from "./trading-screen.order-ticket-state";
+export type {
+  OrderTicketField,
+  OrderTicketPhase,
+  OrderTicketFieldControl,
+  OrderTicketSelectControl,
+  OrderTicketControls,
+  OrderTicketAcknowledgementState,
+  OrderTicketState,
+  BuildOrderTicketStateOptions
+} from "./trading-screen.order-ticket-state";
 import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction } from "react";
+import { getJournalOrder, previewExecutionOrder, type ServerOrderPreview, type SessionIntent } from "@/lib/api/execution-workflows.api";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
+import { useLinkedRecordSelection } from "@/hooks/use-linked-record-selection";
+import { findUniqueRecord, positionRecordIdentity, positionReference, type RecordIdentity } from "@/lib/record-workspace-context";
 import * as workstationApi from "@/lib/api";
-import { formatCurrency, formatMoney as formatMoneyValue, formatQuantity as formatQuantityValue, formatUtcTimestamp, pluralizeCount } from "@/lib/format";
+import {
+  clearPendingPaperIntent,
+  readPendingPaperIntent,
+  unresolvedPaperIntentMessage
+} from "./trading-screen.pending-paper-intent";
+import { formatCurrency, formatDecimal, formatMoney as formatMoneyValue, formatPercent, formatQuantity as formatQuantityValue, pluralizeCount } from "@/lib/format";
+import { buildExecutionAuditRow, type ExecutionAuditRow, type ExecutionEvidenceTone } from "./trading-screen.execution-audit-rows";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { readCancelAllPreview, type CancelAllPreview } from "./trading-screen.cancel-preview";
-import { parsePositiveDecimal } from "@/lib/positive-decimal";
 import { useBrokerageRecoveryObservation } from "./trading-screen.brokerage-recovery-state";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
 import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
@@ -23,7 +53,7 @@ import {
 import {
   buildTradingReadinessSummaryRows,
   formatReadinessStatusValue,
-  formatTradingUtcDateTime as formatUtcDateTime,
+  formatTradingDateTime,
   type AcceptanceLevel,
   type TradingReadinessSummaryRow
 } from "@/screens/trading-screen.readiness-summary";
@@ -48,9 +78,37 @@ import type {
   TradingOperatorReadiness,
   TradingOrder,
   TradingPosition,
+  TradingManualOrderEntry,
   TradingRiskState,
   TradingWorkspaceResponse
 } from "@/types";
+
+import {
+  buildPromotionApprovalChecklist,
+  buildPromotionApprovalRequest,
+  buildPromotionRejectionRequest,
+  emptyPromotionGateForm,
+  isPromotionEvaluationForRun,
+  selectPromotionEvaluationForRun,
+  trimPromotionGateForm,
+  validatePromotionApproval,
+  validatePromotionRejection,
+  type PromotionApprovalChecklistItem,
+  type PromotionGateField,
+  type PromotionGateForm
+} from "./trading-screen.promotion-evidence";
+
+export {
+  buildPromotionApprovalChecklist,
+  buildPromotionApprovalRequest,
+  buildPromotionRejectionRequest,
+  emptyPromotionGateForm,
+  livePromotionApprovalChecklist,
+  paperPromotionApprovalChecklist,
+  validatePromotionApproval,
+  validatePromotionRejection
+} from "./trading-screen.promotion-evidence";
+export type { PromotionApprovalChecklistItem, PromotionGateField, PromotionGateForm } from "./trading-screen.promotion-evidence";
 
 export {
   formatReadinessStatusValue,
@@ -61,6 +119,7 @@ export type {
   AcceptanceLevel,
   TradingReadinessSummaryRow
 } from "@/screens/trading-screen.readiness-summary";
+export type { ExecutionAuditRow, ExecutionEvidenceTone } from "./trading-screen.execution-audit-rows";
 
 export type TradingDataTone = "default" | "success" | "warning" | "danger" | "muted";
 export type TradingRouteWorkstream = "orders" | "positions" | "risk";
@@ -146,12 +205,23 @@ const tradingRouteCopy: Record<TradingRouteWorkstream, { title: string; descript
 
 export function useTradingScreenShellViewModel({
   pathname,
-  data
+  data,
+  hash = "",
+  navigationKey = ""
 }: {
   pathname: string;
   data: TradingWorkspaceResponse | null;
+  hash?: string;
+  navigationKey?: string;
 }): TradingScreenShellViewModel {
-  const [activeWorkflowPanel, setActiveWorkflowPanel] = useState<TradingWorkflowPanelId | null>(null);
+  const [activeWorkflowPanel, setActiveWorkflowPanel] = useState<TradingWorkflowPanelId | null>(() => workflowPanelFromHash(hash));
+
+  // A task link opens its existing sheet without remounting it or resetting drafted inputs.
+  // Closing stays respected on refreshes/rerenders; following the same task link again reopens it.
+  useEffect(() => {
+    const panel = workflowPanelFromHash(hash);
+    if (panel) setActiveWorkflowPanel(panel);
+  }, [hash, navigationKey]);
 
   const openWorkflowPanel = useCallback((panel: TradingWorkflowPanelId) => {
     setActiveWorkflowPanel(panel);
@@ -184,6 +254,29 @@ export function useTradingScreenShellViewModel({
   );
 }
 
+function workflowPanelFromHash(hash: string): TradingWorkflowPanelId | null {
+  switch (hash) {
+    case "#strategy-lifecycle-panel": return "strategy";
+    case "#session-replay-panel": return "replay";
+    case "#promotion-gate-panel": return "promotion";
+    default: return null;
+  }
+}
+
+/** The broker link in operator words; an unknown state says the status is unavailable. */
+export function describeBrokerConnection(connection: TradingWorkspaceResponse["brokerage"]["connection"] | undefined): string {
+  switch (connection) {
+    case "Connected":
+      return "Online";
+    case "Degraded":
+      return "Degraded";
+    case "Disconnected":
+      return "Offline";
+    default:
+      return "Status unavailable";
+  }
+}
+
 export function buildTradingScreenShellViewModel({
   pathname,
   data,
@@ -204,8 +297,7 @@ export function buildTradingScreenShellViewModel({
   const positionCount = data?.positions.length ?? 0;
   const openOrderCount = data?.openOrders.length ?? 0;
   const fillCount = data?.fills.length ?? 0;
-  const connection = data?.brokerage.connection ?? "Unavailable";
-  const activeLabel = activeWorkflowPanel ? workflowPanelLabel(activeWorkflowPanel) : "None";
+  const activeLabel = activeWorkflowPanel ? workflowPanelLabel(activeWorkflowPanel) : null;
 
   return {
     route: {
@@ -229,10 +321,12 @@ export function buildTradingScreenShellViewModel({
       statusText: activeWorkflowPanel
         ? `${activeLabel} panel open. Press Escape or the close button to return to the trading cockpit.`
         : "No workflow panel open.",
+      // Plain-language posture: the broker link reads as a sentence, and the open panel is only
+      // named while one is open (an always-on "Panel: None" reads like debug output).
       chips: [
         { label: "Positions", value: String(positionCount) },
-        { label: "Connection", value: connection },
-        { label: "Panel", value: activeLabel }
+        { label: "Broker", value: describeBrokerConnection(data?.brokerage.connection) },
+        ...(activeLabel ? [{ label: "Open panel", value: activeLabel }] : [])
       ],
       commands: [
         buildWorkflowCommand("strategy", activeWorkflowPanel),
@@ -266,7 +360,7 @@ export function buildTradingLoadingState(pathname: string): TradingLoadingState 
     routeLabel: routeCopy.title,
     chips: [
       { label: "Route", value: pathname },
-      { label: "Workstream", value: routeCopy.title },
+      { label: "Area", value: routeCopy.title },
       { label: "Snapshots", value: "Pending" }
     ]
   };
@@ -378,6 +472,8 @@ export interface TradingOrderRow {
   limitPrice: string;
   status: string;
   submittedAt: string;
+  /** Who or what originated the order (Ticket, Position, Release, Strategy, Untyped). */
+  origin: string;
   statusTone: TradingDataTone;
   isSelected: boolean;
   detailPanelId: string;
@@ -430,6 +526,8 @@ export interface TradingBlotterViewModel {
   orderRows: TradingOrderRow[];
   fillRows: TradingFillRow[];
   selectedPosition: TradingBlotterDetail | null;
+  selectedPositionRecord: RecordIdentity | null;
+  selectedPositionReference: string | null;
   selectedOrder: TradingBlotterDetail | null;
   selectedFill: TradingBlotterDetail | null;
   /**
@@ -579,8 +677,8 @@ const tradingExecutionDetailId = "trading-execution-detail";
 const tradingOrderDetailId = tradingExecutionDetailId;
 const tradingFillDetailId = tradingExecutionDetailId;
 
-export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null): TradingBlotterViewModel {
-  const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
+export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null, requestedPositionRef: string | null = null): TradingBlotterViewModel {
+  const [selectedPositionId, setSelectedPositionId] = useLinkedRecordSelection(requestedPositionRef);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [selectedFillId, setSelectedFillId] = useState<string | null>(null);
   const [lastExecutionKind, setLastExecutionKind] = useState<TradingExecutionDetailKind | null>(null);
@@ -597,6 +695,7 @@ export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null
     () => buildTradingBlotterViewModel({
       data,
       selectedPositionId,
+      requestedPositionRef,
       selectedOrderId,
       selectedFillId,
       lastExecutionKind,
@@ -604,13 +703,14 @@ export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null
       selectOrder,
       selectFill
     }),
-    [data, lastExecutionKind, selectFill, selectOrder, selectedFillId, selectedOrderId, selectedPositionId]
+    [data, lastExecutionKind, requestedPositionRef, selectFill, selectOrder, selectedFillId, selectedOrderId, selectedPositionId, setSelectedPositionId]
   );
 }
 
 export function buildTradingBlotterViewModel({
   data,
   selectedPositionId = null,
+  requestedPositionRef = null,
   selectedOrderId = null,
   selectedFillId = null,
   lastExecutionKind = null,
@@ -620,6 +720,7 @@ export function buildTradingBlotterViewModel({
 }: {
   data: TradingWorkspaceResponse | null;
   selectedPositionId?: string | null;
+  requestedPositionRef?: string | null;
   selectedOrderId?: string | null;
   selectedFillId?: string | null;
   /** The execution table selected last; defaults to orders when there are any, else fills. */
@@ -631,7 +732,11 @@ export function buildTradingBlotterViewModel({
   const positions = data?.positions ?? [];
   const orders = data?.openOrders ?? [];
   const fills = data?.fills ?? [];
-  const effectivePositionId = resolveSelectedId(positions, selectedPositionId, positionRowId);
+  const positionKeys = positions.map((position, index) => ({ position, id: positionRowId(position, index), ref: positionReference(position) }));
+  const selectedPositionKey = positionKeys.find((entry) => entry.id === selectedPositionId) ?? (requestedPositionRef
+    ? findUniqueRecord(positionKeys, (entry) => entry.ref === requestedPositionRef)
+    : positionKeys[0]);
+  const effectivePositionId = selectedPositionKey?.id ?? null;
   const effectiveOrderId = resolveSelectedId(orders, selectedOrderId, orderRowId);
   const effectiveFillId = resolveSelectedId(fills, selectedFillId, fillRowId);
 
@@ -661,6 +766,9 @@ export function buildTradingBlotterViewModel({
     orderRows,
     fillRows,
     selectedPosition: selectedPositionRow ? buildPositionDetail(selectedPositionRow, data?.risk ?? null) : null,
+    selectedPositionRecord: selectedPositionRow && selectedPositionKey
+      ? positionRecordIdentity(selectedPositionKey.position, selectedPositionRow.markFreshness) : null,
+    selectedPositionReference: selectedPositionKey?.ref ?? null,
     selectedOrder,
     selectedFill,
     selectedExecution: selectedExecutionKind === "fill" ? selectedFill : selectedOrder,
@@ -677,13 +785,15 @@ export function buildTradingBlotterViewModel({
     hasPositions: positionRows.length > 0,
     hasOpenOrders: orderRows.length > 0,
     hasFills: fillRows.length > 0,
-    positionsTableLabel: "Live positions evidence",
+    positionsTableLabel: "Session positions evidence",
     ordersTableLabel: "Open orders evidence",
     fillsTableLabel: "Recent fills evidence",
     positionDetailId: tradingPositionDetailId,
     orderDetailId: tradingOrderDetailId,
     fillDetailId: tradingFillDetailId,
-    positionEmptyText: data ? "No live positions in the active paper session." : "Trading workspace data unavailable.",
+    positionEmptyText: data
+      ? requestedPositionRef && !selectedPositionKey ? "The linked position is unavailable in the current trading scope." : "No live positions in the active paper session."
+      : "Trading workspace data unavailable.",
     orderEmptyText,
     fillEmptyText,
     cancelAllDisabled: orderRows.length === 0,
@@ -711,7 +821,7 @@ export function useTradingReadinessViewModel({
   const refreshRef = useRef<(options?: { attempt?: number }) => Promise<void>>(async () => {});
   const readinessLifecycle = useRequestLifecycle({
     operation: "trading readiness handoff refresh",
-    runningMessage: "Refreshing trading readiness handoff evidence.",
+    runningMessage: "Refreshing trading readiness evidence.",
     successMessage: "Trading readiness refreshed.",
     failureMessage: "Trading readiness refresh failed.",
     staleMessage: "Older trading readiness response discarded.",
@@ -825,8 +935,8 @@ export function buildTradingReadinessState({
       href: evidenceWorkbenchPath("paper-readiness", "current"),
       ariaLabel: "Open paper cockpit readiness evidence"
     },
-    refreshButtonLabel: refreshing ? "Refreshing..." : "Refresh readiness",
-    refreshAriaLabel: refreshing ? "Refreshing trading readiness" : "Refresh trading readiness",
+    refreshButtonLabel: refreshing ? "Retrying..." : "Retry",
+    refreshAriaLabel: refreshing ? "Retrying trading readiness" : "Retry trading readiness",
     refreshBusyLabel: refreshing ? "Refreshing readiness..." : null,
     refreshDisabled: refreshing,
     refreshDisabledReason: refreshing ? "Trading readiness refresh is already running." : null,
@@ -998,7 +1108,7 @@ function buildTradingReadinessAnnouncement({
   }
 
   if (readiness) {
-    return `Trading readiness ${formatReadinessStatusValue(readiness.overallStatus).toLowerCase()} as of ${formatUtcDateTime(readiness.asOf)}.`;
+    return `Trading readiness ${formatReadinessStatusValue(readiness.overallStatus).toLowerCase()} as of ${formatTradingDateTime(readiness.asOf)}.`;
   }
 
   return "";
@@ -1067,6 +1177,7 @@ function buildOrderRow(
     limitPrice: order.limitPrice,
     status: order.status,
     submittedAt: order.submittedAt,
+    origin: orderOriginLabel(order.origin),
     statusTone: orderStatusTone(order.status),
     isSelected: id === selectedId,
     detailPanelId: tradingOrderDetailId,
@@ -1141,23 +1252,10 @@ function orderStatusTone(status: TradingOrder["status"]): TradingDataTone {
   return "muted";
 }
 
-export type ExecutionEvidenceTone = "success" | "warning" | "danger";
-
 export interface ExecutionEvidenceFieldRow {
   id: string;
   label: string;
   value: string;
-}
-
-export interface ExecutionAuditRow {
-  id: string;
-  action: string;
-  outcome: string;
-  outcomeTone: ExecutionEvidenceTone;
-  message: string;
-  metadataText: string;
-  technicalMetadataText: string | null;
-  ariaLabel: string;
 }
 
 export interface ExecutionControlsPanel {
@@ -1325,80 +1423,14 @@ export function buildExecutionEvidenceState({
     auditEmptyText: loading ? "Loading execution audit entries..." : "No execution audit entries available.",
     auditCountLabel: `${auditRows.length} audit ${auditRows.length === 1 ? "entry" : "entries"}`,
     controlsEmptyText: loading ? "Loading execution controls snapshot..." : "Snapshot unavailable.",
-    refreshButtonLabel: loading ? "Refreshing..." : "Refresh evidence",
-    refreshAriaLabel: loading ? "Refreshing execution evidence" : "Refresh execution audit and controls evidence",
+    refreshButtonLabel: loading ? "Retrying..." : "Retry",
+    refreshAriaLabel: loading ? "Retrying execution evidence" : "Retry execution audit and controls evidence",
     refreshBusyLabel: loading ? "Refreshing evidence..." : null,
     refreshDisabled: loading,
     refreshDisabledReason: loading ? "Execution evidence refresh is already running." : null,
     statusAnnouncement: buildExecutionEvidenceAnnouncement({ auditRows, controlsPanel, loading, errorText }),
     requestStatus: requestStatus ?? idleExecutionEvidenceStatus
   };
-}
-
-function buildExecutionAuditRow(entry: ExecutionAuditEntry): ExecutionAuditRow {
-  const metadataText = formatExecutionAuditMetadata(entry);
-  const technicalMetadataText = formatExecutionAuditTechnicalMetadata(entry);
-  const message = entry.message?.trim() || "No operator message recorded.";
-  const action = formatExecutionAuditAction(entry.action);
-
-  return {
-    id: entry.auditId,
-    action,
-    outcome: entry.outcome,
-    outcomeTone: mapExecutionOutcomeTone(entry.outcome),
-    message,
-    metadataText,
-    technicalMetadataText,
-    ariaLabel: `${action} ${entry.outcome}. ${message} ${metadataText}`.trim()
-  };
-}
-
-function formatExecutionAuditMetadata(entry: ExecutionAuditEntry): string {
-  const occurredAt = new Date(entry.occurredAt);
-  if (Number.isNaN(occurredAt.getTime())) {
-    return "Recorded time unavailable";
-  }
-
-  return `Recorded ${formatUtcTimestamp(occurredAt)}`;
-}
-
-function formatExecutionAuditTechnicalMetadata(entry: ExecutionAuditEntry): string | null {
-  const parts = [
-    entry.occurredAt,
-    entry.metadata?.sessionId ? `session ${entry.metadata.sessionId}` : null,
-    entry.orderId ? `order ${entry.orderId}` : null,
-    entry.symbol ? `symbol ${entry.symbol}` : null,
-    entry.runId ? `run ${entry.runId}` : null
-  ].filter(Boolean);
-
-  return parts.length > 0 ? parts.join(" · ") : null;
-}
-
-function formatExecutionAuditAction(action: string): string {
-  const normalized = action.trim();
-  if (normalized === "ReplayPaperSession") {
-    return "Paper session replay";
-  }
-
-  const words = normalized
-    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-    .replace(/[._-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  return words ? `${words.charAt(0).toUpperCase()}${words.slice(1)}` : "Execution activity";
-}
-
-function mapExecutionOutcomeTone(outcome: string): ExecutionEvidenceTone {
-  const normalized = outcome.toLowerCase();
-  if (normalized.includes("fail") || normalized.includes("reject") || normalized.includes("error")) {
-    return "danger";
-  }
-
-  if (normalized.includes("complete") || normalized.includes("accept") || normalized.includes("success")) {
-    return "success";
-  }
-
-  return "warning";
 }
 
 function buildExecutionEvidenceAnnouncement({
@@ -1897,11 +1929,11 @@ function buildPaperSessionRows({
     return {
       sessionId: session.sessionId,
       strategyId: session.strategyId,
-      initialCashText: formatUsdValue(session.initialCash),
+      initialCashText: formatCurrency(session.initialCash),
       statusLabel,
       isActive: session.isActive,
       isSelected: selectedSessionId === session.sessionId,
-      ariaLabel: `${session.sessionId}, ${session.strategyId}, ${statusLabel}, ${formatUsdValue(session.initialCash)} initial cash`,
+      ariaLabel: `${session.sessionId}, ${session.strategyId}, ${statusLabel}, ${formatCurrency(session.initialCash)} initial cash`,
       restoreButtonLabel: rowBusy && busyCommand?.kind === "restoring" ? "Restoring…" : "Restore",
       verifyButtonLabel: rowBusy && busyCommand?.kind === "verifying" ? "Verifying…" : "Verify replay",
       closeButtonLabel: rowBusy && busyCommand?.kind === "closing" ? "Closing…" : "Close",
@@ -1958,14 +1990,14 @@ function buildPaperSessionDetailPanel(
     ariaLabel: `Paper session detail for ${detail.summary.sessionId}`,
     infoRows: [
       { label: "Strategy", value: detail.summary.strategyId },
-      { label: "Initial cash", value: formatUsdValue(detail.summary.initialCash) },
+      { label: "Initial cash", value: formatCurrency(detail.summary.initialCash) },
       { label: "Tracked symbols", value: detail.symbols.length > 0 ? detail.symbols.join(", ") : "None" },
       { label: "Orders retained", value: String(detail.orderHistory?.length ?? 0) }
     ],
     metricRows: detail.portfolio
       ? [
-          { label: "Cash", value: formatUsdValue(detail.portfolio.cash) },
-          { label: "Portfolio value", value: formatUsdValue(detail.portfolio.portfolioValue) },
+          { label: "Cash", value: formatCurrency(detail.portfolio.cash) },
+          { label: "Portfolio value", value: formatCurrency(detail.portfolio.portfolioValue) },
           { label: "Open positions", value: String(detail.portfolio.positions.length) }
         ]
       : [],
@@ -2044,10 +2076,6 @@ function parsePaperSessionCash(value: string): number | null {
 
 function getPaperSessionStatus(session: PaperSessionSummary): string {
   return session.isActive ? "Active" : "Closed";
-}
-
-function formatUsdValue(value: number): string {
-  return formatCurrency(value);
 }
 
 export type SessionReplayCommandKind =
@@ -3150,101 +3178,15 @@ function capitalizeWord(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-export type OrderTicketField = "symbol" | "side" | "type" | "quantity" | "limitPrice";
-export type OrderTicketPhase = "idle" | "submitting" | "submitted" | "parked" | "error";
-
 export interface OrderTicketServices {
   submitOrder: (request: OrderSubmitRequest) => Promise<OrderResult>;
+  previewOrder?: (request: OrderSubmitRequest, signal?: AbortSignal) => Promise<ServerOrderPreview>;
 }
 
-export interface OrderTicketFieldControl {
-  field: OrderTicketField;
-  id: string;
-  label: string;
-  value: string;
-  describedBy: string;
-  ariaLabel: string;
-  invalid: boolean;
-  required: boolean;
-}
-
-export interface OrderTicketSelectControl extends OrderTicketFieldControl {
-  options: Array<{ value: string; label: string }>;
-}
-
-export interface OrderTicketControls {
-  symbol: OrderTicketFieldControl;
-  side: OrderTicketSelectControl;
-  type: OrderTicketSelectControl;
-  quantity: OrderTicketFieldControl;
-  limitPrice: OrderTicketFieldControl | null;
-}
-
-export interface OrderTicketAcknowledgementState {
-  id: string;
-  label: string;
-  description: string;
-  checked: boolean;
-  disabled: boolean;
-  disabledReason: string | null;
-}
-
-export interface OrderTicketState {
-  form: OrderSubmitRequest;
-  open: boolean;
-  phase: OrderTicketPhase;
-  orderId: string | null;
-  /** Governed-approval queue entry holding a parked order, when phase is "parked". */
-  escalationId: string | null;
-  /** Non-blocking risk warnings the rails raised for the last submitted order. */
-  riskWarnings: string[];
-  /** Operator-facing text for a parked order; null in every other phase. */
-  parkedText: string | null;
-  errorText: string | null;
-  validationError: string | null;
-  invalidField: OrderTicketField | null;
-  canSubmit: boolean;
-  canClose: boolean;
-  requiresLimitPrice: boolean;
-  priceLabel: string;
-  formId: string;
-  requirementId: string;
-  controls: OrderTicketControls;
-  openButtonLabel: string;
-  submitButtonLabel: string;
-  submitAriaLabel: string;
-  submitDisabledReason: string | null;
-  submitBusy: boolean;
-  submitBusyLabel: string | null;
-  closeButtonLabel: string;
-  closeAriaLabel: string;
-  closeDisabledReason: string | null;
-  acknowledgement: OrderTicketAcknowledgementState;
-  requirementText: string;
-  successText: string | null;
-  statusAnnouncement: string;
-}
-
-export interface BuildOrderTicketStateOptions {
-  form: OrderSubmitRequest;
-  open: boolean;
-  phase: OrderTicketPhase;
-  orderId: string | null;
-  errorText: string | null;
-  escalationId?: string | null;
-  riskWarnings?: string[];
-  acknowledged?: boolean;
-}
-
-export const emptyOrderTicketForm: OrderSubmitRequest = {
-  symbol: "",
-  side: "Buy",
-  type: "Market",
-  quantity: 0,
-  limitPrice: null
-};
+type OrderSubmissionIdentity = { account: string; id: string };
 
 const defaultOrderTicketServices: OrderTicketServices = {
+  previewOrder: previewExecutionOrder,
   submitOrder: (request) => workstationApi.submitOrder(request)
 };
 
@@ -3252,23 +3194,33 @@ export function useOrderTicketViewModel({
   services = defaultOrderTicketServices,
   onOrderAccepted,
   fundAccountId,
+  scopedPaperIntentKey,
   positions = [],
-  risk = null
+  risk = null,
+  manualOrderEntry = null
 }: {
   services?: OrderTicketServices;
   onOrderAccepted?: () => Promise<void> | void;
   fundAccountId?: string | null;
+  scopedPaperIntentKey?: string | null;
   positions?: TradingPosition[];
   risk?: TradingRiskState | null;
+  /** The server's verdict on manual orders for the active routing path (refused live). */
+  manualOrderEntry?: TradingManualOrderEntry | null;
 } = {}) {
-  const [form, setForm] = useState<OrderSubmitRequest>(emptyOrderTicketForm);
-  const [open, setOpen] = useState(false);
-  const [phase, setPhase] = useState<OrderTicketPhase>("idle");
+  const normalizedAccountScope = normalizeFundAccountGuid(fundAccountId) ?? null;
+  const paperIntentStorageKey = scopedPaperIntentKey && normalizedAccountScope
+    ? `meridian.workstation.paper-order-intent.v1.${scopedPaperIntentKey}.${normalizedAccountScope}`
+    : null;
+  const [restoredRequest] = useState(() => readPendingPaperIntent(paperIntentStorageKey, normalizedAccountScope));
+  const pendingPaperIntent = useRef<OrderSubmitRequest | null>(restoredRequest);
+  const [form, setForm] = useState<OrderSubmitRequest>(restoredRequest ?? emptyOrderTicketForm);
+  const [open, setOpen] = useState(restoredRequest !== null);
+  const [phase, setPhase] = useState<OrderTicketPhase>(restoredRequest ? "reconciliation" : "idle");
   const [escalationId, setEscalationId] = useState<string | null>(null);
   const [riskWarnings, setRiskWarnings] = useState<string[]>([]);
   const [orderId, setOrderId] = useState<string | null>(null);
-  const [errorText, setErrorText] = useState<string | null>(null);
-  const normalizedAccountScope = normalizeFundAccountGuid(fundAccountId) ?? null;
+  const [errorText, setErrorText] = useState<string | null>(restoredRequest ? unresolvedPaperIntentMessage : null);
   const [editor, setEditor] = useState<{
     scope: string | null;
     values: Partial<Record<"quantity" | "limitPrice", string>>;
@@ -3283,6 +3235,47 @@ export function useOrderTicketViewModel({
     setEditor({ scope: normalizedAccountScope, values: {}, acknowledged: false });
   }
   const submittingRef = useRef(false);
+  const unconfirmedSubmissionRef = useRef<OrderSubmissionIdentity | null>(null);
+  const [unconfirmedSubmission, setUnconfirmedSubmission] = useState<OrderSubmissionIdentity | null>(null);
+  const [serverPreview, setServerPreview] = useState<ServerOrderPreview | null>(null);
+  const [serverPreviewError, setServerPreviewError] = useState<string | null>(null);
+  const [serverPreviewLoading, setServerPreviewLoading] = useState(false);
+  const [sessionIntent, setSessionIntent] = useState<SessionIntent>("RegularOnly");
+  const [previewRevision, setPreviewRevision] = useState(0);
+  const [previewNow, setPreviewNow] = useState(Date.now());
+  const draftClientId = useRef<string | null>(null);
+  const serverPreviewExpired = serverPreview !== null && Date.parse(serverPreview.expiresAt) <= previewNow;
+  const serverPreviewBlocked = unconfirmedSubmission !== null
+    || (Boolean(services.previewOrder) && (serverPreviewLoading || !serverPreview?.canSubmit || serverPreviewExpired));
+  const manualEntryDisabledReason = manualOrderEntryDisabledReason(manualOrderEntry)
+    ?? (services.previewOrder && !normalizedAccountScope ? "Select a fund account before submitting a Paper ticket." : null);
+  const scopedTermsBlocker = paperIntentStorageKey &&
+    (form.type !== "Market" || !Number.isSafeInteger(form.quantity) || sessionIntent !== "RegularOnly")
+    ? "This paper book supports regular-session market orders in whole shares."
+    : null;
+  useEffect(() => {
+    setServerPreview(null); setServerPreviewError(null);
+    if (services.previewOrder) setAcknowledged(false);
+    draftClientId.current = null;
+  }, [form, fundAccountId, sessionIntent, services.previewOrder]);
+  useEffect(() => {
+    if (!open || pendingPaperIntent.current || !services.previewOrder || validateOrderTicketForm(form) || !normalizeFundAccountGuid(fundAccountId)) return;
+    const controller = new AbortController();
+    setServerPreviewLoading(true); setServerPreviewError(null);
+    const timer = window.setTimeout(() => {
+      draftClientId.current ??= `meridian-${crypto.randomUUID()}`;
+      void services.previewOrder!({ ...buildOrderSubmitRequest(form, fundAccountId), sessionIntent, clientOrderId: draftClientId.current }, controller.signal)
+        .then((result) => { if (!controller.signal.aborted) { setServerPreview(result); setAcknowledged(false); setPreviewNow(Date.now()); } })
+        .catch((error: unknown) => { if (!controller.signal.aborted) { setServerPreview(null); setServerPreviewError(toErrorMessage(error, "Authoritative preview is unavailable.")); } })
+        .finally(() => { if (!controller.signal.aborted) setServerPreviewLoading(false); });
+    }, 250);
+    return () => { controller.abort(); window.clearTimeout(timer); };
+  }, [form, fundAccountId, open, services, sessionIntent, previewRevision]);
+  useEffect(() => {
+    if (!open || !services.previewOrder) return;
+    const timer = window.setInterval(() => setPreviewNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [open, services.previewOrder]);
 
   const resetEditor = useCallback(() => {
     setEditor({ scope: normalizedAccountScope, values: {}, acknowledged: false });
@@ -3312,6 +3305,7 @@ export function useOrderTicketViewModel({
 
   const openTicket = useCallback(() => {
     setOpen(true);
+    if (phase === "reconciliation") return;
     setErrorText(null);
     if (phase !== "submitted") {
       return;
@@ -3327,6 +3321,7 @@ export function useOrderTicketViewModel({
     }
 
     setOpen(false);
+    if (phase === "reconciliation") return;
     setPhase("idle");
     setOrderId(null);
     setErrorText(null);
@@ -3343,6 +3338,7 @@ export function useOrderTicketViewModel({
   }, [closeTicket, open, openTicket]);
 
   const updateField = useCallback((field: OrderTicketField, value: string) => {
+    if (pendingPaperIntent.current) return;
     setForm((current) => updateOrderTicketForm(current, field, value));
     // Keep local editor text such as "188.0" while the existing model parses it as 188.
     // Rendering String(188) after that keystroke would make the next "5" become 1885.
@@ -3362,6 +3358,7 @@ export function useOrderTicketViewModel({
   }, [normalizedAccountScope]);
 
   const normalizeSymbol = useCallback(() => {
+    if (pendingPaperIntent.current) return;
     setForm((current) => ({
       ...current,
       symbol: normalizeOrderSymbol(current.symbol)
@@ -3383,11 +3380,12 @@ export function useOrderTicketViewModel({
   }, [onOrderAccepted]);
 
   const submitOrderTicket = useCallback(async () => {
-    if (phase === "submitting" || submittingRef.current) {
+    if (phase === "submitting" || submittingRef.current || unconfirmedSubmissionRef.current || manualEntryDisabledReason) {
       return;
     }
 
-    const validationError = validateOrderTicketForm(form);
+    const pending = pendingPaperIntent.current;
+    const validationError = pending ? null : scopedTermsBlocker ?? validateOrderTicketForm(form);
     if (validationError) {
       setPhase("error");
       setOrderId(null);
@@ -3395,13 +3393,21 @@ export function useOrderTicketViewModel({
       return;
     }
 
-    if (!acknowledged) {
+    if (!pending && !acknowledged) {
       setPhase("error");
       setOrderId(null);
       setErrorText("Review the order preview and acknowledge before submitting.");
       return;
     }
 
+    const draft = buildOrderSubmitRequest(form, fundAccountId);
+    const clientOrderId = services.previewOrder ? draftClientId.current : null;
+    const submission = clientOrderId && draft.fundAccountId ? { account: draft.fundAccountId, id: clientOrderId } : null;
+    if (!pending && services.previewOrder && (!submission || serverPreviewBlocked || !serverPreview || Date.parse(serverPreview.expiresAt) <= Date.now())) {
+      setErrorText("Run checks again and review the authoritative order checks before submitting.");
+      setAcknowledged(false);
+      return;
+    }
     submittingRef.current = true;
     setPhase("submitting");
     setOrderId(null);
@@ -3409,8 +3415,35 @@ export function useOrderTicketViewModel({
     setRiskWarnings([]);
     setErrorText(null);
 
+    const request = pending ?? (submission ? { ...draft, sessionIntent, clientOrderId: submission.id } : draft);
+    let refusal: string;
+    let submitted = false;
     try {
-      const result = await services.submitOrder(buildOrderSubmitRequest(form, fundAccountId));
+      if (!pending && paperIntentStorageKey) {
+        request.intentId = crypto.randomUUID();
+        window.sessionStorage.setItem(paperIntentStorageKey, JSON.stringify(request));
+        pendingPaperIntent.current = request;
+      }
+      submitted = true;
+      const result = await services.submitOrder(request);
+      if (typeof result?.success !== "boolean") {
+        throw new Error("Meridian did not confirm the order submission outcome.");
+      }
+      if (result.requiresOrderReconciliation) {
+        throw new Error(result.errorMessage ?? "Order submission requires reconciliation.");
+      }
+      if (request.intentId) {
+        const resolved = result.intentStatus === "Retained" || (!pending && result.intentStatus === "Blocked");
+        if (!resolved) {
+          setPhase("reconciliation");
+          setOrderId(result.orderId);
+          setErrorText(result.errorMessage ?? unresolvedPaperIntentMessage);
+          await refreshAfterSettledOutcome();
+          return;
+        }
+        clearPendingPaperIntent(paperIntentStorageKey);
+        pendingPaperIntent.current = null;
+      }
       if (result.success) {
         setPhase("submitted");
         setOrderId(result.orderId);
@@ -3442,15 +3475,37 @@ export function useOrderTicketViewModel({
         return;
       }
 
-      setPhase("error");
-      setErrorText(result.errorMessage ?? result.reason ?? "Order failed.");
+      refusal = formatAuthorityRefusal(result.authorityDecision) ?? result.errorMessage ?? result.reason ?? "Order failed.";
     } catch (err) {
-      setPhase("error");
-      setErrorText(toErrorMessage(err, "Order submission failed."));
+      if (pendingPaperIntent.current) {
+        setPhase("reconciliation");
+        setErrorText(unresolvedPaperIntentMessage);
+        return;
+      }
+      const confirmedRefusal = workstationApi.readOrderSubmissionRefusal(err);
+      if (submitted && submission && confirmedRefusal === null) {
+        unconfirmedSubmissionRef.current = submission;
+        setUnconfirmedSubmission(submission);
+        setPhase("error");
+        setErrorText(`Submission outcome is unconfirmed for ${submission.id}. Inspect the journal and use Run checks again before another submission.`);
+        return;
+      }
+      refusal = !submitted && paperIntentStorageKey ? "The browser could not save the paper intent. Enable session storage to submit it."
+        : confirmedRefusal ?? toErrorMessage(err, "Order submission failed.");
     } finally {
       submittingRef.current = false;
     }
-  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, resetEditor, services]);
+
+    if (submission && draftClientId.current === submission.id) {
+      // Retire the refused identity so its journal evidence cannot settle a later attempt.
+      draftClientId.current = null;
+      setServerPreview(null);
+      setAcknowledged(false);
+      setPreviewRevision((value) => value + 1);
+    }
+    setPhase("error");
+    setErrorText(refusal);
+  }, [acknowledged, form, fundAccountId, manualEntryDisabledReason, paperIntentStorageKey, refreshAfterSettledOutcome, phase, resetEditor, scopedTermsBlocker, services, serverPreviewBlocked, serverPreview, sessionIntent]);
 
   return {
     ...state,
@@ -3462,6 +3517,30 @@ export function useOrderTicketViewModel({
         : null
     },
     preview,
+    ticketAccountId: normalizedAccountScope,
+    serverPreview, serverPreviewError: unconfirmedSubmission ? `Submission ${unconfirmedSubmission.id} is unconfirmed. Run checks again to inspect its retained outcome; do not resubmit.` : serverPreviewError,
+    serverPreviewLoading, serverPreviewExpired, sessionIntent,
+    setSessionIntent,
+    refreshServerPreview: () => {
+      const submission = unconfirmedSubmissionRef.current;
+      if (!submission) { setPreviewRevision((value) => value + 1); return; }
+      void getJournalOrder(submission.account, submission.id).then((order) => {
+        if (unconfirmedSubmissionRef.current !== submission || order.orderId !== submission.id
+          || !["Filled", "Cancelled", "Rejected", "Expired"].includes(order.status)) return;
+        unconfirmedSubmissionRef.current = null;
+        setUnconfirmedSubmission(null); setForm(emptyOrderTicketForm); setAcknowledged(false);
+        setOrderId(order.orderId); setPhase(order.status === "Filled" ? "submitted" : "error");
+        setErrorText(`Retained outcome for ${order.orderId}: ${order.status}. Review its journal before creating a new order.`);
+        void refreshAfterSettledOutcome();
+      }).catch(() => { /* Absence is not proof that nothing reached the broker. */ });
+    },
+    canSubmit: manualEntryDisabledReason === null && (phase === "reconciliation" ||
+      (state.canSubmit && !serverPreviewBlocked && scopedTermsBlocker === null)),
+    // The manual-entry verdict comes first: on a live routing path no check the operator can run
+    // makes a manual order routable.
+    submitDisabledReason: manualEntryDisabledReason ?? (phase === "reconciliation" ? null : scopedTermsBlocker
+      ?? (serverPreviewBlocked ? "Current authoritative order checks are required." : state.submitDisabledReason)),
+    manualEntryDisabledReason,
     openTicket,
     closeTicket,
     toggleTicket,
@@ -3470,224 +3549,6 @@ export function useOrderTicketViewModel({
     setAcknowledged,
     submitOrder: submitOrderTicket
   };
-}
-
-export function buildOrderTicketState({
-  form,
-  open,
-  phase,
-  orderId,
-  errorText,
-  escalationId = null,
-  riskWarnings = [],
-  acknowledged = false
-}: BuildOrderTicketStateOptions): OrderTicketState {
-  const validationError = validateOrderTicketForm(form);
-  const requiresLimitPrice = orderTypeRequiresPrice(form.type);
-  const successText = phase === "submitted"
-    ? `Order submitted${orderId ? ` - ${orderId}` : ""}.`
-    : null;
-  const parkedText = phase === "parked"
-    ? `Order parked for governed risk approval${escalationId ? ` - escalation ${escalationId}` : ""}. `
-      + "It routes only once the risk desk approves it."
-    : null;
-  const invalidField = getOrderTicketInvalidField(form);
-  const requirementId = "order-ticket-requirements";
-  const acknowledgement = buildOrderTicketAcknowledgementState(acknowledged, phase, validationError);
-  const submitDisabledReason = buildOrderTicketSubmitDisabledReason(phase, validationError, acknowledgement);
-  const closeDisabledReason = phase === "submitting" ? "Order submission is in progress." : null;
-
-  return {
-    form,
-    open,
-    phase,
-    orderId,
-    escalationId,
-    riskWarnings,
-    parkedText,
-    errorText,
-    validationError,
-    invalidField,
-    canSubmit: submitDisabledReason === null,
-    canClose: phase !== "submitting",
-    requiresLimitPrice,
-    priceLabel: `${form.type} price`,
-    formId: "trading-order-ticket",
-    requirementId,
-    controls: buildOrderTicketControls(form, invalidField, requirementId),
-    openButtonLabel: open ? "Close order ticket" : "New order",
-    submitButtonLabel: phase === "submitting" ? "Submitting…" : "Submit order",
-    submitAriaLabel: phase === "submitting" ? "Submitting order request" : "Submit order request",
-    submitDisabledReason,
-    submitBusy: phase === "submitting",
-    submitBusyLabel: phase === "submitting" ? "Submitting…" : null,
-    closeButtonLabel: "Cancel",
-    closeAriaLabel: closeDisabledReason ?? "Close order ticket without submitting",
-    closeDisabledReason,
-    acknowledgement,
-    requirementText: buildOrderRequirementText(form, phase, validationError),
-    successText,
-    statusAnnouncement: buildOrderTicketStatusAnnouncement({ phase, errorText, orderId, escalationId, riskWarnings })
-  };
-}
-
-function buildOrderTicketControls(
-  form: OrderSubmitRequest,
-  invalidField: OrderTicketField | null,
-  requirementId: string
-): OrderTicketControls {
-  return {
-    symbol: {
-      field: "symbol",
-      id: "order-ticket-symbol",
-      label: "Symbol",
-      value: form.symbol,
-      describedBy: requirementId,
-      ariaLabel: "Order symbol",
-      invalid: invalidField === "symbol",
-      required: true
-    },
-    side: {
-      field: "side",
-      id: "order-ticket-side",
-      label: "Side",
-      value: form.side,
-      describedBy: requirementId,
-      ariaLabel: "Order side",
-      invalid: false,
-      required: true,
-      options: [
-        { value: "Buy", label: "Buy" },
-        { value: "Sell", label: "Sell" }
-      ]
-    },
-    type: {
-      field: "type",
-      id: "order-ticket-type",
-      label: "Type",
-      value: form.type,
-      describedBy: requirementId,
-      ariaLabel: "Order type",
-      invalid: false,
-      required: true,
-      options: [
-        { value: "Market", label: "Market" },
-        { value: "Limit", label: "Limit" },
-        { value: "Stop", label: "Stop" }
-      ]
-    },
-    quantity: {
-      field: "quantity",
-      id: "order-ticket-quantity",
-      label: "Quantity",
-      value: form.quantity ? String(form.quantity) : "",
-      describedBy: requirementId,
-      ariaLabel: "Order quantity",
-      invalid: invalidField === "quantity",
-      required: true
-    },
-    limitPrice: orderTypeRequiresPrice(form.type)
-      ? {
-          field: "limitPrice",
-          id: "order-ticket-limit-price",
-          label: `${form.type} price`,
-          value: form.limitPrice ? String(form.limitPrice) : "",
-          describedBy: requirementId,
-          ariaLabel: `${form.type} order price`,
-          invalid: invalidField === "limitPrice",
-          required: true
-        }
-      : null
-  };
-}
-
-export function updateOrderTicketForm(
-  current: OrderSubmitRequest,
-  field: OrderTicketField,
-  value: string
-): OrderSubmitRequest {
-  if (field === "symbol") {
-    return { ...current, symbol: value };
-  }
-
-  if (field === "side") {
-    return { ...current, side: value === "Sell" ? "Sell" : "Buy" };
-  }
-
-  if (field === "type") {
-    const type = value === "Limit" || value === "Stop" ? value : "Market";
-    return {
-      ...current,
-      type,
-      limitPrice: orderTypeRequiresPrice(type) ? current.limitPrice : null
-    };
-  }
-
-  if (field === "quantity") {
-    return { ...current, quantity: parsePositiveDecimal(value) ?? 0 };
-  }
-
-  return { ...current, limitPrice: parsePositiveDecimal(value) };
-}
-
-export function buildOrderSubmitRequest(form: OrderSubmitRequest, fundAccountId?: string | null): OrderSubmitRequest {
-  const request: OrderSubmitRequest = {
-    symbol: normalizeOrderSymbol(form.symbol),
-    side: form.side,
-    type: form.type,
-    quantity: form.quantity
-  };
-  const normalizedFundAccountId = normalizeFundAccountGuid(fundAccountId ?? form.fundAccountId);
-
-  if (orderTypeRequiresPrice(form.type)) {
-    request.limitPrice = form.limitPrice;
-  }
-
-  if (normalizedFundAccountId) {
-    request.fundAccountId = normalizedFundAccountId;
-  }
-
-  return request;
-}
-
-export function validateOrderTicketForm(form: OrderSubmitRequest): string | null {
-  if (!normalizeOrderSymbol(form.symbol)) {
-    return "Enter a symbol before submitting an order.";
-  }
-
-  if (!Number.isFinite(form.quantity) || form.quantity <= 0) {
-    return "Enter an order quantity greater than zero.";
-  }
-
-  if (orderTypeRequiresPrice(form.type) && (!Number.isFinite(form.limitPrice) || (form.limitPrice ?? 0) <= 0)) {
-    return `Enter a ${form.type.toLowerCase()} price greater than zero.`;
-  }
-
-  return null;
-}
-
-function getOrderTicketInvalidField(form: OrderSubmitRequest): OrderTicketField | null {
-  if (!normalizeOrderSymbol(form.symbol)) {
-    return "symbol";
-  }
-
-  if (!Number.isFinite(form.quantity) || form.quantity <= 0) {
-    return "quantity";
-  }
-
-  if (orderTypeRequiresPrice(form.type) && (!Number.isFinite(form.limitPrice) || (form.limitPrice ?? 0) <= 0)) {
-    return "limitPrice";
-  }
-
-  return null;
-}
-
-function normalizeOrderSymbol(symbol: string): string {
-  return symbol.trim().toUpperCase();
-}
-
-function orderTypeRequiresPrice(type: OrderSubmitRequest["type"]): boolean {
-  return type === "Limit" || type === "Stop";
 }
 
 export type OrderPreviewLevel = "info" | "warning" | "danger";
@@ -3773,7 +3634,7 @@ export function buildOrderPreview({ form, positions, risk }: BuildOrderPreviewOp
 
   const riskNote = buildOrderPreviewRiskNote(risk);
   const referencePriceLabel = referencePrice === null ? "—" : formatPrice(referencePrice);
-  const notionalLabel = notional === null ? "—" : formatMoney(notional);
+  const notionalLabel = notional === null ? "—" : formatMoneyValue(notional, { context: "trading", decimals: 2 });
   const resultingPositionLabel = available
     ? describeResultingPosition(resultingSignedQuantity, symbol)
     : "—";
@@ -4042,7 +3903,7 @@ function buildOrderPreviewSummary({
 }): string {
   const qtyText = formatQuantity(quantity);
   const priceText = referencePrice !== null
-    ? ` ≈ ${formatMoney(referencePrice * quantity)} @ ${formatPrice(referencePrice)}${priceSource === "limit" || priceSource === "stop" ? "" : " (" + describePriceSourceLabel(priceSource).toLowerCase() + ")"}`
+    ? ` ≈ ${formatMoneyValue(referencePrice * quantity, { context: "trading", decimals: 2 })} @ ${formatPrice(referencePrice)}${priceSource === "limit" || priceSource === "stop" ? "" : " (" + describePriceSourceLabel(priceSource).toLowerCase() + ")"}`
     : "";
   return `${side} ${qtyText} ${symbol} ${type.toLowerCase()}${priceText}`;
 }
@@ -4063,35 +3924,11 @@ function formatPrice(value: number): string {
   return formatQuantityValue(value, { minDecimals: 2, maxDecimals: 2 });
 }
 
-function formatMoney(value: number): string {
-  return formatMoneyValue(value, { context: "trading", decimals: 2 });
-}
-
 function formatQuantity(value: number): string {
   if (!Number.isFinite(value)) {
     return "0";
   }
   return formatQuantityValue(Math.abs(value), { maxDecimals: 4 });
-}
-
-export type PromotionGateField =
-  | "runId"
-  | "approvedBy"
-  | "approvalReason"
-  | "rejectionReason"
-  | "reviewNotes"
-  | "manualOverrideId"
-  | "evidenceReferences";
-
-export interface PromotionGateForm {
-  runId: string;
-  approvedBy: string;
-  approvalReason: string;
-  rejectionReason: string;
-  reviewNotes: string;
-  manualOverrideId: string;
-  evidenceReferences: string;
-  approvalChecklist: string[];
 }
 
 export type PromotionGatePhase = "idle" | "evaluating" | "approving" | "rejecting";
@@ -4154,6 +3991,7 @@ export interface PromotionGateServices {
   approvePromotion: (request: ApprovePromotionRequest) => Promise<PromotionDecisionResult>;
   rejectPromotion: (request: RejectPromotionRequest) => Promise<PromotionDecisionResult>;
   getPromotionHistory: () => Promise<PromotionRecord[]>;
+  revokeLiveAuthorization?: typeof workstationApi.revokeLiveAuthorization;
 }
 
 export interface PromotionGateState {
@@ -4195,43 +4033,12 @@ export interface BuildPromotionGateStateOptions {
   history: PromotionRecord[];
 }
 
-export const emptyPromotionGateForm: PromotionGateForm = {
-  runId: "",
-  approvedBy: "",
-  approvalReason: "",
-  rejectionReason: "",
-  reviewNotes: "",
-  manualOverrideId: "",
-  evidenceReferences: "",
-  approvalChecklist: []
-};
-
-export const paperPromotionApprovalChecklist: string[] = [
-  "DK1_TRUST_PACKET_REVIEWED",
-  "RUN_LINEAGE_REVIEWED",
-  "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED",
-  "RISK_CONTROLS_REVIEWED"
-];
-
-export const livePromotionApprovalChecklist: string[] = [
-  ...paperPromotionApprovalChecklist,
-  "PAPER_VALIDATION_REVIEWED",
-  "RECONCILIATION_EVIDENCE_REVIEWED",
-  "BROKER_EXECUTION_RECONCILIATION_REVIEWED",
-  "ACCOUNTING_RECORDS_REVIEWED",
-  "GOVERNED_REPORTING_REVIEWED",
-  "GOVERNANCE_SIGNOFF_REVIEWED",
-  "EXCEPTION_HANDLING_REVIEWED",
-  "ROLLBACK_KILL_SWITCH_REVIEWED",
-  "AUDIT_RETENTION_REVIEWED",
-  "LIVE_OVERRIDE_REVIEWED"
-];
-
 const defaultPromotionServices: PromotionGateServices = {
   evaluatePromotion: (runId) => workstationApi.evaluatePromotion(runId),
   approvePromotion: (request) => workstationApi.approvePromotion(request),
   rejectPromotion: (request) => workstationApi.rejectPromotion(request),
-  getPromotionHistory: () => workstationApi.getPromotionHistory()
+  getPromotionHistory: () => workstationApi.getPromotionHistory(),
+  revokeLiveAuthorization: (id, reason) => workstationApi.revokeLiveAuthorization(id, reason)
 };
 
 export function usePromotionGateViewModel(
@@ -4276,9 +4083,12 @@ export function usePromotionGateViewModel(
     };
   }, [services]);
 
-  useEffect(() => () => {
-    mountedRef.current = false;
-    commandRevisionRef.current += 1;
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      commandRevisionRef.current += 1;
+    };
   }, []);
 
   const state = useMemo(
@@ -4293,7 +4103,7 @@ export function usePromotionGateViewModel(
     }
   }, [isCurrentCommandRevision, services]);
 
-  const updateField = useCallback((field: PromotionGateField, value: string) => {
+  const updateField = useCallback((field: PromotionGateField | import("./trading-screen.promotion-evidence").LiveAuthorizationField, value: string) => {
     commandRevisionRef.current += 1;
     setForm((current) => ({ ...current, [field]: value }));
     setErrorText(null);
@@ -4303,7 +4113,7 @@ export function usePromotionGateViewModel(
 
     if (field === "runId") {
       setEvaluation(null);
-      setForm((current) => ({ ...current, approvalChecklist: [] }));
+      setForm((current) => ({ ...current, approvalChecklist: [], liveSymbols: "", liveNotional: "", liveExpiry: "" }));
     }
   }, []);
 
@@ -4421,12 +4231,22 @@ export function usePromotionGateViewModel(
     }
   }, [form, isCurrentCommandRevision, nextCommandRevision, refreshHistory, services]);
 
+  const revokeLiveAuthorization = useCallback(async (id: string, reason: string) => {
+    if (!services.revokeLiveAuthorization) throw new Error("Live authorization revocation is unavailable.");
+    const receipt = await services.revokeLiveAuthorization(id, reason);
+    setHistory((rows) => rows.map((row) => row.promotionId === receipt.authorizationId
+      ? { ...row, liveAuthorizationStatus: { state: "Revoked", reason: receipt.reason } }
+      : row));
+    setOutcome({ level: "success", message: `Live authorization revoked by ${receipt.actor}.` });
+  }, [services]);
+
   return {
     ...state,
     updateField,
     evaluateGateChecks,
     promoteToPaper,
-    rejectPromotion: rejectPromotionDecision
+    rejectPromotion: rejectPromotionDecision,
+    revokeLiveAuthorization
   };
 }
 
@@ -4768,9 +4588,9 @@ function buildPromotionEvaluationPanel(
     eligibleLabel: evaluation.isEligible ? "Eligible: Yes" : "Eligible: No",
     eligibleTone: evaluation.isEligible ? "success" : "warning",
     metrics: [
-      { id: "sharpe", label: "Sharpe", value: evaluation.sharpeRatio.toFixed(2) },
-      { id: "max-drawdown", label: "Max DD", value: `${evaluation.maxDrawdownPercent.toFixed(1)}%` },
-      { id: "total-return", label: "Return", value: `${evaluation.totalReturn.toFixed(1)}%` }
+      { id: "sharpe", label: "Sharpe", value: formatDecimal(evaluation.sharpeRatio, 2) },
+      { id: "max-drawdown", label: "Max DD", value: formatPercent(evaluation.maxDrawdownPercent, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) },
+      { id: "total-return", label: "Return", value: formatPercent(evaluation.totalReturn, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) }
     ],
     reason: evaluation.reason?.trim() ? evaluation.reason : null,
     warnings,
@@ -4780,7 +4600,7 @@ function buildPromotionEvaluationPanel(
 }
 
 function buildPromotionHistoryRows(history: PromotionRecord[]): PromotionHistoryRow[] {
-  return history.slice(0, 4).map((record) => {
+  return history.filter((record, index) => index < 4 || Boolean(record.liveAuthorization)).map((record) => {
     const parts = [
       record.promotedAt,
       record.strategyId,
@@ -4796,140 +4616,28 @@ function buildPromotionHistoryRows(history: PromotionRecord[]): PromotionHistory
     if (record.auditReference) parts.push(`audit: ${record.auditReference}`);
     if (record.manualOverrideId) parts.push(`override: ${record.manualOverrideId}`);
     if (record.reviewNotes) parts.push(`notes: ${record.reviewNotes}`);
+    if (record.liveAuthorizationStatus) {
+      parts.push(`Live authorization ${record.liveAuthorizationStatus.state}`);
+      if (record.liveAuthorizationStatus.reason) parts.push(record.liveAuthorizationStatus.reason);
+    }
+    if (record.liveAuthorization) {
+      const grant = record.liveAuthorization;
+      parts.push(`${grant.allowedSymbols.join(", ")} · ${grant.currency} ${grant.maxOrderNotional} per order · expires ${grant.expiresAt}`);
+    }
 
     const label = parts.join(" | ");
     return {
       id: record.promotionId,
       label,
-      ariaLabel: `Promotion ${record.promotionId}: ${label}`
+      ariaLabel: `Promotion ${record.promotionId}: ${label}`,
+      canRevoke: canRevokeLiveAuthorization(record)
     };
   });
 }
 
-export function validatePromotionApproval(
-  form: PromotionGateForm,
-  evaluation: PromotionEvaluationResult | null
-): string | null {
-  const trimmedForm = trimPromotionGateForm(form);
-
-  if (!trimmedForm.runId) {
-    return "Run id, operator, and approval reason are required.";
-  }
-
-  if (!evaluation) {
-    return "Evaluate gate checks before confirming promotion.";
-  }
-
-  if (!isPromotionEvaluationForRun(evaluation, trimmedForm.runId)) {
-    return `Evaluate gate checks for ${trimmedForm.runId} before confirming promotion.`;
-  }
-
-  if (!evaluation.isEligible) {
-    return evaluation.blockingReasons?.[0] ?? evaluation.reason ?? "Promotion gate is blocked.";
-  }
-
-  if (!trimmedForm.runId || !trimmedForm.approvedBy || !trimmedForm.approvalReason) {
-    return "Run id, operator, and approval reason are required.";
-  }
-
-  const liveTarget = isLivePromotionTarget(evaluation);
-  const requiredChecklist = liveTarget
-    ? livePromotionApprovalChecklist
-    : paperPromotionApprovalChecklist;
-  const evidenceReferences = parsePromotionEvidenceReferences(trimmedForm.evidenceReferences);
-
-  if (liveTarget) {
-    if (!trimmedForm.manualOverrideId) {
-      return "Live promotion approval requires an active AllowLivePromotion override id.";
-    }
-  }
-
-  const missingEvidence = getMissingPromotionEvidenceReferences(requiredChecklist, evidenceReferences);
-  if (missingEvidence.length > 0) {
-    return `${liveTarget ? "Live" : "Paper"} promotion evidence references are incomplete: ${missingEvidence.join(", ")}.`;
-  }
-
-  const invalidEvidence = getInvalidPromotionEvidenceReferences(
-    requiredChecklist,
-    evidenceReferences,
-    trimmedForm.manualOverrideId);
-  if (invalidEvidence.length > 0) {
-    return `${liveTarget ? "Live" : "Paper"} promotion evidence references are invalid: ${invalidEvidence.join(", ")}.`;
-  }
-
-  return null;
-}
-
-export function validatePromotionRejection(form: PromotionGateForm): string | null {
-  const trimmedForm = trimPromotionGateForm(form);
-
-  if (!trimmedForm.runId || !trimmedForm.approvedBy || !trimmedForm.rejectionReason) {
-    return "Run id, operator, and rejection reason are required.";
-  }
-
-  return null;
-}
-
-export function buildPromotionApprovalRequest(
-  form: PromotionGateForm,
-  evaluation: PromotionEvaluationResult | null = null
-): ApprovePromotionRequest {
-  const trimmedForm = trimPromotionGateForm(form);
-  const evidenceReferences = parsePromotionEvidenceReferences(trimmedForm.evidenceReferences);
-  const approvalChecklist = evaluation
-    ? buildPromotionApprovalChecklistTokens(evaluation)
-    : trimmedForm.approvalChecklist;
-  return {
-    runId: trimmedForm.runId,
-    approvedBy: trimmedForm.approvedBy,
-    approvalReason: trimmedForm.approvalReason,
-    approvalChecklist: approvalChecklist.length > 0 ? approvalChecklist : undefined,
-    evidenceReferences: evidenceReferences.length > 0 ? evidenceReferences : undefined,
-    reviewNotes: trimmedForm.reviewNotes || undefined,
-    manualOverrideId: trimmedForm.manualOverrideId || undefined
-  };
-}
-
-export function buildPromotionRejectionRequest(form: PromotionGateForm): RejectPromotionRequest {
-  const trimmedForm = trimPromotionGateForm(form);
-  return {
-    runId: trimmedForm.runId,
-    reason: trimmedForm.rejectionReason,
-    rejectedBy: trimmedForm.approvedBy,
-    reviewNotes: trimmedForm.reviewNotes || undefined,
-    manualOverrideId: trimmedForm.manualOverrideId || undefined
-  };
-}
-
-function trimPromotionGateForm(form: PromotionGateForm): PromotionGateForm {
-  return {
-    runId: form.runId.trim(),
-    approvedBy: form.approvedBy.trim(),
-    approvalReason: form.approvalReason.trim(),
-    rejectionReason: form.rejectionReason.trim(),
-    reviewNotes: form.reviewNotes.trim(),
-    manualOverrideId: form.manualOverrideId.trim(),
-    evidenceReferences: form.evidenceReferences.trim(),
-    approvalChecklist: form.approvalChecklist
-  };
-}
-
-function selectPromotionEvaluationForRun(
-  evaluation: PromotionEvaluationResult | null,
-  runId: string
-): PromotionEvaluationResult | null {
-  if (!evaluation || !isPromotionEvaluationForRun(evaluation, runId)) {
-    return null;
-  }
-
-  return evaluation;
-}
-
-function isPromotionEvaluationForRun(
-  evaluation: PromotionEvaluationResult,
-  runId: string
-): boolean {
-  return Boolean(runId) && evaluation.runId === runId;
+function canRevokeLiveAuthorization(record: PromotionRecord): boolean {
+  const state = record.liveAuthorizationStatus?.state;
+  return Boolean(record.liveAuthorization) && (state === "Active" || state === "Blocked");
 }
 
 function buildApprovalOutcome(result: PromotionDecisionResult): PromotionOutcome {
@@ -5070,200 +4778,11 @@ function buildPromotionStatusAnnouncement({
   return "";
 }
 
-export interface PromotionApprovalChecklistItem {
-  id: string;
-  label: string;
-  status: "ready" | "review" | "blocked";
-  description: string | null;
-  ariaLabel: string;
-}
-
 export interface PromotionHistoryRow {
   id: string;
   label: string;
   ariaLabel: string;
-}
-
-export function buildPromotionApprovalChecklist(
-  evaluation: PromotionEvaluationResult | null,
-  evidenceReferenceText = ""
-): PromotionApprovalChecklistItem[] {
-  const evidenceReferences = parsePromotionEvidenceReferences(evidenceReferenceText);
-  const evidenceStatus = (checklistId: string): PromotionApprovalChecklistItem["status"] => {
-    const reference = evidenceReferences.find((item) => getPromotionEvidenceReferenceKey(item) === checklistId);
-    return reference && getPromotionEvidenceReferenceValue(reference) ? "ready" : "review";
-  };
-  const items: Array<Omit<PromotionApprovalChecklistItem, "ariaLabel">> = [
-    {
-      id: "dk1-data-trust",
-      label: "DK1 data trust",
-      status: evidenceStatus("DK1_TRUST_PACKET_REVIEWED"),
-      description: "Requires operator-entered keyed evidence for the reviewed DK1 trust packet"
-    },
-    {
-      id: "run-lineage",
-      label: "Run lineage",
-      status: evidenceStatus("RUN_LINEAGE_REVIEWED"),
-      description: evaluation?.found
-        ? `Run found for ${evaluation.strategyName ?? evaluation.strategyId}; operator-entered lineage evidence is still required`
-        : "Run must be found and its retained lineage evidence reviewed"
-    },
-    {
-      id: "risk-metrics",
-      label: "Risk metrics",
-      status: evaluation && !evaluation.isEligible ? "blocked" : evidenceStatus("RISK_CONTROLS_REVIEWED"),
-      description: evaluation
-        ? `Eligibility metrics: Sharpe ${evaluation.sharpeRatio.toFixed(2)} · Max DD ${evaluation.maxDrawdownPercent.toFixed(1)}% · Return ${evaluation.totalReturn.toFixed(1)}%; keyed review evidence remains authoritative`
-        : "Metrics and retained risk-control evidence require review"
-    },
-    {
-      id: "portfolio-ledger-continuity",
-      label: "Portfolio/Ledger continuity",
-      status: evidenceStatus("PORTFOLIO_LEDGER_CONTINUITY_REVIEWED"),
-      description: evaluation?.ready
-        ? "Run state is eligible; operator-entered continuity evidence is still required"
-        : "Awaiting run state and retained continuity evidence review"
-    }
-  ];
-
-  if (isLivePromotionTarget(evaluation)) {
-    items.push(
-      {
-        id: "paper-validation",
-        label: "Paper validation",
-        status: evidenceStatus("PAPER_VALIDATION_REVIEWED"),
-        description: "Retained paper-run validation evidence reviewed"
-      },
-      {
-        id: "reconciliation-evidence",
-        label: "Reconciliation evidence",
-        status: evidenceStatus("RECONCILIATION_EVIDENCE_REVIEWED"),
-        description: "Portfolio, ledger, and operations reconciliation evidence reviewed"
-      },
-      {
-        id: "broker-execution-reconciliation",
-        label: "Broker order parity",
-        status: evidenceStatus("BROKER_EXECUTION_RECONCILIATION_REVIEWED"),
-        description: "Broker and OMS open-order reconciliation evidence reviewed"
-      },
-      {
-        id: "accounting-records",
-        label: "Accounting records",
-        status: evidenceStatus("ACCOUNTING_RECORDS_REVIEWED"),
-        description: "Accounting-record evidence is retained for the live readiness scope"
-      },
-      {
-        id: "governed-reporting",
-        label: "Governed reporting",
-        status: evidenceStatus("GOVERNED_REPORTING_REVIEWED"),
-        description: "Governed report-pack evidence supports the live readiness decision"
-      },
-      {
-        id: "governance-signoff",
-        label: "Governance sign-off",
-        status: evidenceStatus("GOVERNANCE_SIGNOFF_REVIEWED"),
-        description: "Required governance sign-off is retained"
-      },
-      {
-        id: "exception-handling",
-        label: "Exception handling",
-        status: evidenceStatus("EXCEPTION_HANDLING_REVIEWED"),
-        description: "Open exceptions and escalation posture have been reviewed"
-      },
-      {
-        id: "rollback-kill-switch",
-        label: "Rollback/kill-switch",
-        status: evidenceStatus("ROLLBACK_KILL_SWITCH_REVIEWED"),
-        description: "Rollback and kill-switch posture are ready before live operation"
-      },
-      {
-        id: "audit-retention",
-        label: "Audit retention",
-        status: evidenceStatus("AUDIT_RETENTION_REVIEWED"),
-        description: "Audit-retention evidence is retained for the approval"
-      },
-      {
-        id: "live-override",
-        label: "Live override",
-        status: evidenceStatus("LIVE_OVERRIDE_REVIEWED"),
-        description: "Active AllowLivePromotion override evidence is attached"
-      }
-    );
-  }
-
-  return items.map((item) => ({
-    ...item,
-    ariaLabel: `${item.label}: ${item.status}${item.description ? `. ${item.description}` : ""}`
-  }));
-}
-
-function buildPromotionApprovalChecklistTokens(evaluation: PromotionEvaluationResult | null): string[] {
-  return isLivePromotionTarget(evaluation)
-    ? livePromotionApprovalChecklist
-    : paperPromotionApprovalChecklist;
-}
-
-function parsePromotionEvidenceReferences(value: string): string[] {
-  return value
-    .split(/[\n,;]+/u)
-    .map((item) => item.trim())
-    .filter((item) => item.length > 0)
-    .filter((item, index, items) => items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index);
-}
-
-function getMissingPromotionEvidenceReferences(requiredTokens: string[], evidenceReferences: string[]): string[] {
-  const evidenceKeys = new Set(evidenceReferences.map((reference) => getPromotionEvidenceReferenceKey(reference)));
-  return requiredTokens.filter((token) => !evidenceKeys.has(token));
-}
-
-function getInvalidPromotionEvidenceReferences(
-  requiredTokens: string[],
-  evidenceReferences: string[],
-  manualOverrideId: string
-): string[] {
-  return requiredTokens.flatMap((token) => {
-    const reference = evidenceReferences.find((item) => getPromotionEvidenceReferenceKey(item) === token);
-    if (!reference) {
-      return [];
-    }
-
-    const retainedReference = getPromotionEvidenceReferenceValue(reference);
-    if (!retainedReference) {
-      return [`${token} must include retained evidence after ':'`];
-    }
-
-    if (token === "LIVE_OVERRIDE_REVIEWED" && manualOverrideId && !containsPromotionEvidenceReferenceToken(retainedReference, manualOverrideId)) {
-      return [`${token} must reference active manual override ${manualOverrideId}`];
-    }
-
-    return [];
-  });
-}
-
-function getPromotionEvidenceReferenceKey(reference: string): string {
-  const [key] = reference.split(":", 1);
-  return key.trim().replace(/[ -]/gu, "_").toUpperCase();
-}
-
-function getPromotionEvidenceReferenceValue(reference: string): string {
-  const separatorIndex = reference.indexOf(":");
-  return separatorIndex < 0 ? "" : reference.slice(separatorIndex + 1).trim();
-}
-
-function containsPromotionEvidenceReferenceToken(referenceValue: string, token: string): boolean {
-  if (referenceValue.toLowerCase() === token.toLowerCase()) {
-    return true;
-  }
-
-  return referenceValue
-    .split(/[/\\#?&=,;\s]+/u)
-    .filter((segment) => segment.length > 0)
-    .some((segment) => segment.toLowerCase() === token.toLowerCase());
-}
-
-function isLivePromotionTarget(evaluation: PromotionEvaluationResult | null): boolean {
-  return typeof evaluation?.targetMode === "string" &&
-    evaluation.targetMode.trim().toLowerCase() === "live";
+  canRevoke: boolean;
 }
 
 function toErrorMessage(err: unknown, fallback: string): string {

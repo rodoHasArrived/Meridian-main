@@ -31,15 +31,20 @@ public sealed class RecurringJournalRunner(
 
     public async Task<IReadOnlyList<AutomatedJournalScheduledRunResult>> RunDueAsync(
         DateTimeOffset now, string? tenant = null, string? company = null,
-        bool scopeSpecified = false, CancellationToken ct = default)
+        bool scopeSpecified = false, CancellationToken ct = default,
+        string? scheduleId = null, RecurringJournalScope? exactScope = null, int? expectedScheduleVersion = null)
     {
         // A process-independent lease spans the retained claim, intake and completion. A crash
         // releases the lease, but preserves the claim and deterministic downstream draft identity.
         await using var session = await store.OpenSessionAsync(ct).ConfigureAwait(false);
         var results = new List<AutomatedJournalScheduledRunResult>();
-        foreach (var definition in session.CurrentSchedules.Where(s => !scopeSpecified ||
-                     (Same(s.Scope.TenantId, tenant) && Same(s.Scope.CompanyId, company))))
+        foreach (var definition in session.CurrentSchedules.Where(s => (!scopeSpecified ||
+                     (Same(s.Scope.TenantId, tenant) && Same(s.Scope.CompanyId, company)))
+                     && (scheduleId is null || Same(s.ScheduleId, scheduleId))
+                     && (exactScope is null || s.Scope == exactScope)))
         {
+            if (expectedScheduleVersion is { } expected && definition.Version != expected)
+                throw new RecurringJournalDefinitionChangedException("The schedule changed. Refresh before running.");
             var template = session.GetCurrentTemplate(definition.Schedule.TemplateId);
             var schedule = definition.Schedule.ToSchedule();
             for (var index = 0; ; index++)
@@ -93,7 +98,7 @@ public sealed class RecurringJournalRunner(
                     }
                     var existing = await drafts.GetAsync(definition.Scope.FundProfileId, claim.DraftId, ct,
                         definition.Scope.TenantId, definition.Scope.CompanyId).ConfigureAwait(false);
-                    if (existing is null && claim.History.Any(h => h.State == RecurringOccurrenceState.Drafted))
+                    if (existing is null && (claim.DraftEvidenceDigest is not null || claim.History.Any(h => h.State == RecurringOccurrenceState.Drafted)))
                         throw new InvalidOperationException("The retained occurrence draft is missing. Restore durable draft state; automatic recreation is refused.");
                     // Amounts are calculated once, when the occurrence first becomes a draft. A
                     // retained draft is authoritative and is never recalculated on retry.
@@ -106,10 +111,24 @@ public sealed class RecurringJournalRunner(
                             now < new DateTimeOffset(date.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero))
                             throw new InvalidOperationException(
                                 $"This amount is measured at the close of {date:yyyy-MM-dd}; it is calculated once that day has ended.");
+                        RequireSingleCouponIncomeMethod(session, definition, calculation, date);
                         if (index > 0 && dependent is { DependsOnPostedHistory: true })
                             await RequirePreviousOccurrenceSettledAsync(session, definition, schedule.EffectiveDateFor(index - 1), ct).ConfigureAwait(false);
                         var outcome = await CalculateAsync(calculation, claim, period,
                             index == 0 ? period.StartDate : schedule.EffectiveDateFor(index - 1).AddDays(1), ct).ConfigureAwait(false);
+                        if (outcome.EconomicObligationKeys.Count > 0)
+                        {
+                            try
+                            {
+                                claim = await session.PinEconomicObligationsAsync(key, outcome.EconomicObligationKeys, ct).ConfigureAwait(false);
+                            }
+                            catch (NotSupportedException exception)
+                            {
+                                throw new InvalidOperationException("The recurring registry cannot retain economic obligation authority; this accrual is blocked.", exception);
+                            }
+                        }
+                        else if (claim.EconomicObligationKeys is not null)
+                            throw new InvalidOperationException("The recalculated occurrence lost its independently retained economic obligations.");
                         if (outcome.Draft is null)
                         {
                             claim = await session.SetOutcomeAsync(key, RecurringOccurrenceState.NoDraftRequired,
@@ -128,6 +147,7 @@ public sealed class RecurringJournalRunner(
                         if (problem is not null)
                             throw new InvalidOperationException(problem);
                         var retained = RecurringJournalEvidenceGuard.Deserialize(existing.RecurringJournalEvidenceJson!)!;
+                        RecurringJournalEconomicObligationGuard.RequireMatch(claim, retained);
                         if (retained.ScheduleVersion != definition.Version || retained.TemplateVersion != template.Version ||
                             retained.ScheduleId != definition.ScheduleId || retained.TemplateId != template.TemplateId ||
                             retained.ScheduleDefinitionJson != RecurringJournalIdentity.SerializeSchedule(claim.ScheduleDefinition) ||
@@ -143,7 +163,27 @@ public sealed class RecurringJournalRunner(
                         } } }]
                         };
                     }
+                    var trustedEvidenceDigest = prepared.Drafts[0].Metadata.Tags![RecurringJournalEvidenceGuard.DigestTag];
+                    var preparedEvidence = RecurringJournalEvidenceGuard.Deserialize(prepared.Drafts[0].Metadata.Tags![RecurringJournalEvidenceGuard.EvidenceTag])
+                        ?? throw new InvalidOperationException("The trusted recurring intake evidence is unavailable.");
+                    var hasCalculatedSources = !definition.Evidence.SequenceEqual(preparedEvidence.SourceEvidence);
+                    if (existing is not null && (claim.DraftEvidenceDigest is not null || hasCalculatedSources))
+                    {
+                        if (claim.DraftEvidenceDigest is null || !Sha256Digest.FixedEquals(claim.DraftEvidenceDigest, trustedEvidenceDigest))
+                            throw new InvalidOperationException("The existing recurring calculation draft has no matching independent claim pin; restore trusted intake provenance before retrying.");
+                    }
                     var admitted = await intake.IntakeDraftsAsync(prepared, ct).ConfigureAwait(false);
+                    if (existing is null && hasCalculatedSources)
+                    {
+                        var saved = await drafts.GetAsync(definition.Scope.FundProfileId, claim.DraftId, ct,
+                            definition.Scope.TenantId, definition.Scope.CompanyId).ConfigureAwait(false)
+                            ?? throw new InvalidOperationException("The calculated recurring intake did not retain its draft.");
+                        if (saved.RecurringJournalEvidenceJson != prepared.Drafts[0].Metadata.Tags![RecurringJournalEvidenceGuard.EvidenceTag]
+                            || !Sha256Digest.FixedEquals(saved.RecurringJournalEvidenceDigest, trustedEvidenceDigest)
+                            || RecurringJournalEvidenceGuard.Validate(saved) is not null)
+                            throw new InvalidOperationException("The saved recurring draft differs from the trusted calculated intake evidence.");
+                        claim = await session.PinDraftEvidenceAsync(key, trustedEvidenceDigest, ct).ConfigureAwait(false);
+                    }
                     claim = await session.SetOutcomeAsync(key, RecurringOccurrenceState.Drafted, null,
                         period.PeriodId, null, null, now, ct).ConfigureAwait(false);
                     var ready = Result(claim, instant, null);
@@ -209,11 +249,31 @@ public sealed class RecurringJournalRunner(
                 throw new InvalidOperationException(
                     $"The {previousDate:yyyy-MM-dd} occurrence was reversed or rebooked and its correction journal is not posted yet. This amount depends on it; post the correction first.");
             }
-            status = draft is null ? "missing its retained draft" : $"a {draft.Status} draft";
+            status = draft is null ? "missing its retained draft" : $"a draft in status {draft.Status}";
         }
 
         throw new InvalidOperationException(
             $"The {previousDate:yyyy-MM-dd} occurrence is {status}. This amount depends on what it posts; post or reject it first.");
+    }
+
+    // Both calculations recognize bond coupon income. The governed lot-level calculation is
+    // blocked while the same ledger scope still schedules the bridge accrual, so adopting it
+    // cannot book the same coupon twice; the existing accrual schedules are left as they run.
+    private static void RequireSingleCouponIncomeMethod(IRecurringJournalSession session,
+        RecurringScheduleDefinition definition, JournalTemplateCalculation calculation, DateOnly date)
+    {
+        if (!string.Equals(calculation.Kind, BondCouponIncomeCalculation.CalculationKind, StringComparison.OrdinalIgnoreCase))
+            return;
+        var conflicting = session.CurrentSchedules.FirstOrDefault(other =>
+            !Same(other.ScheduleId, definition.ScheduleId)
+            && other.Scope == definition.Scope
+            && (other.Schedule.EndsOn is null || other.Schedule.EndsOn >= date)
+            && string.Equals(session.GetCurrentTemplate(other.Schedule.TemplateId).Template.Calculation?.Kind,
+                FixedIncomeAccrualCalculation.CalculationKind, StringComparison.OrdinalIgnoreCase));
+        if (conflicting is not null)
+            throw new InvalidOperationException(
+                $"Schedule '{conflicting.ScheduleId}' already accrues fixed-income coupon income in this ledger book. " +
+                "End it before scheduling governed bond coupon income, so the same coupon is not recognized twice.");
     }
 
     private async Task<RecurringJournalCalculationResult> CalculateAsync(JournalTemplateCalculation calculation,
@@ -251,11 +311,20 @@ public sealed class RecurringJournalRunner(
         var scope = definition.Scope;
         var schedule = definition.Schedule.ToSchedule();
         var instant = new DateTimeOffset(claim.EffectiveDate.ToDateTime(schedule.PostingTime), TimeSpan.Zero);
+        // Calculations may retain additional immutable inputs, such as a cash-flow receipt.
+        // Freeze those references in the same recurring provenance document as the schedule's
+        // source evidence so they survive intake, restart, review and posting.
+        var sourceEvidence = definition.Evidence.Concat((calculated?.Metadata.EvidenceReferences ?? [])
+            .Where(reference => !definition.Evidence.Contains(reference)).Distinct()).ToArray();
         var evidence = new RecurringJournalEvidence(claim.OccurrenceKey, claim.DraftId,
             definition.ScheduleId, definition.Version, claim.TemplateDefinition.TemplateId, claim.TemplateDefinition.Version,
             RecurringJournalIdentity.SerializeSchedule(definition), RecurringJournalIdentity.SerializeTemplate(claim.TemplateDefinition),
             scope.FundProfileId, scope.LedgerBookId, scope.EntityId, scope.TenantId, scope.CompanyId,
-            scope.Currency, claim.EffectiveDate, period.PeriodId, period.Version, definition.Evidence);
+            scope.Currency, claim.EffectiveDate, period.PeriodId, period.Version, sourceEvidence)
+        {
+            EconomicObligationDigest = claim.EconomicObligationKeys is { } keys
+                ? RecurringJournalIdentity.EconomicObligationDigest(keys) : null
+        };
         var json = RecurringJournalEvidenceGuard.Serialize(evidence);
         var key = $"recurring|{claim.OccurrenceKey}";
         var recurringTags = new Dictionary<string, string>
@@ -264,7 +333,7 @@ public sealed class RecurringJournalRunner(
             [RecurringJournalEvidenceGuard.DigestTag] = Sha256Digest.ComputeUtf8(json)
         };
         var metadata = new JournalEntryMetadata(ActivityType: "RecurringJournal", LedgerBook: schedule.LedgerKey.LedgerBook,
-            EffectiveDate: claim.EffectiveDate, IdempotencyKey: key, EvidenceReferences: definition.Evidence,
+            EffectiveDate: claim.EffectiveDate, IdempotencyKey: key, EvidenceReferences: sourceEvidence,
             Tags: recurringTags);
         if (claim.TemplateDefinition.Template.Calculation is { } calculation)
         {
@@ -282,7 +351,7 @@ public sealed class RecurringJournalRunner(
                 LedgerBook = schedule.LedgerKey.LedgerBook,
                 EffectiveDate = claim.EffectiveDate,
                 IdempotencyKey = key,
-                EvidenceReferences = definition.Evidence,
+                EvidenceReferences = sourceEvidence,
                 Tags = tags
             };
             var calculatedEvent = (calculated?.Event ?? new AutomatedJournalEvent(AutomatedJournalEventKind.RecurringTemplate,
@@ -293,13 +362,13 @@ public sealed class RecurringJournalRunner(
                 SourceEventId = claim.OccurrenceKey,
                 EffectiveDate = claim.EffectiveDate,
                 IdempotencyKey = key,
-                EvidenceReferences = definition.Evidence
+                EvidenceReferences = sourceEvidence
             };
             return new(scope.FundProfileId, scope.Currency,
                 // The schedule's dimensions fill whatever the calculation left unset on a line.
                 [new AutomatedJournalDraft(calculatedEvent, description,
                     (calculated?.Lines ?? []).Select(line => (line.account, line.debit, line.credit, WithScheduleDimensions(line.dimensions, schedule.Dimensions))).ToArray(),
-                    calculatedMetadata.Normalize())],
+                    calculatedMetadata.Normalize()) { LineMemos = calculated?.LineMemos }],
                 definition.RegisteredBy, scope.LedgerBookId, period.PeriodId, scope.EntityId, scope.TenantId,
                 scope.CompanyId, RecurringJournalEntryId: claim.DraftId);
         }
@@ -310,7 +379,8 @@ public sealed class RecurringJournalRunner(
             SourceEventId: claim.OccurrenceKey, EffectiveDate: claim.EffectiveDate, IdempotencyKey: key,
             EvidenceReferences: definition.Evidence);
         return new(scope.FundProfileId, scope.Currency,
-            [new AutomatedJournalDraft(journalEvent, instance.Description, instance.Lines, instance.Metadata)],
+            [new AutomatedJournalDraft(journalEvent, instance.Description, instance.Lines, instance.Metadata)
+                { LineMemos = instance.LineMemos }],
             definition.RegisteredBy, scope.LedgerBookId, period.PeriodId, scope.EntityId, scope.TenantId,
             scope.CompanyId, RecurringJournalEntryId: claim.DraftId);
     }
@@ -392,7 +462,20 @@ public sealed class RecurringJournalRunner(
             CustomerId = line.CustomerId ?? schedule.CustomerId,
             VendorId = line.VendorId ?? schedule.VendorId,
             ProjectId = line.ProjectId ?? schedule.ProjectId,
-            PositionId = line.PositionId ?? schedule.PositionId
+            PositionId = line.PositionId ?? schedule.PositionId,
+            AccountingArrangementId = line.AccountingArrangementId is not null || line.AccountingArrangementRevisionId is not null
+                ? line.AccountingArrangementId : schedule.AccountingArrangementId,
+            AccountingArrangementRevisionId = line.AccountingArrangementId is not null || line.AccountingArrangementRevisionId is not null
+                ? line.AccountingArrangementRevisionId : schedule.AccountingArrangementRevisionId,
+            ChartAccountNodeId = line.ChartAccountNodeId is not null || line.AccountBindingRevisionId is not null
+                ? line.ChartAccountNodeId : schedule.ChartAccountNodeId,
+            AccountBindingRevisionId = line.ChartAccountNodeId is not null || line.AccountBindingRevisionId is not null
+                ? line.AccountBindingRevisionId : schedule.AccountBindingRevisionId,
+            IntercompanyTransactionId = line.IntercompanyTransactionId ?? schedule.IntercompanyTransactionId,
+            IntercompanyAgreementId = line.IntercompanyAgreementId.HasValue || line.IntercompanyAgreementVersion.HasValue
+                ? line.IntercompanyAgreementId : schedule.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = line.IntercompanyAgreementId.HasValue || line.IntercompanyAgreementVersion.HasValue
+                ? line.IntercompanyAgreementVersion : schedule.IntercompanyAgreementVersion
         };
     }
 

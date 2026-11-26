@@ -8,8 +8,9 @@ namespace Meridian.Application.ProviderRouting;
 /// Contains runtimes that do not yet carry authenticated connection ownership. Every vault access
 /// rechecks that the provider family is entirely legacy while holding the configuration lease.
 /// </summary>
-public sealed class LegacyProviderRuntimeCredentialStore(ConfigStore configStore, IProviderCredentialStore credentialStore)
-    : IProviderCredentialStore, ILegacyProviderCredentialImporter
+public sealed class LegacyProviderRuntimeCredentialStore(ConfigStore configStore, IProviderCredentialStore credentialStore,
+    ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
+    : IProviderCredentialStore
 {
     public string VaultPath => credentialStore.VaultPath;
 
@@ -35,24 +36,6 @@ public sealed class LegacyProviderRuntimeCredentialStore(ConfigStore configStore
     public Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default)
         => RunAsync(update.ProviderId, () => credentialStore.RecordVerificationAsync(update, ct), ct);
 
-    public async Task ImportLegacyAsync(IReadOnlyList<ProviderCredentialSaveRequest> requests, CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(requests);
-        var snapshot = requests.ToArray();
-        foreach (var request in snapshot)
-            ArgumentNullException.ThrowIfNull(request);
-
-        using var lease = await configStore.AcquireWriteLeaseAsync(ct).ConfigureAwait(false);
-        var config = configStore.LoadRequired();
-        // The sidecar may be erased after this call succeeds. Validate every provider before
-        // passing the complete snapshot to the atomic importer, under the same ownership lease.
-        foreach (var request in snapshot)
-            RequireLegacy(config, request.ProviderId);
-        var importer = credentialStore as ILegacyProviderCredentialImporter
-            ?? throw new InvalidOperationException("Credential store cannot atomically import legacy provider credentials.");
-        await importer.ImportLegacyAsync(snapshot, ct).ConfigureAwait(false);
-    }
-
     private async Task<T> RunAsync<T>(string providerId, Func<Task<T>> action, CancellationToken ct)
     {
         using var lease = await configStore.AcquireWriteLeaseAsync(ct).ConfigureAwait(false);
@@ -74,8 +57,10 @@ public sealed class LegacyProviderRuntimeCredentialStore(ConfigStore configStore
         RequireLegacy(config, providerId);
     }
 
-    private static void RequireLegacy(AppConfig config, string providerId)
+    private void RequireLegacy(AppConfig config, string providerId)
     {
+        if ((ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment()).ProhibitsLegacy(providerId))
+            throw new ProviderCredentialOwnershipRequiredException();
         ProviderCredentialScope? scope;
         try
         {

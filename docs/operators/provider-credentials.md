@@ -2,7 +2,7 @@
 title: Provider Credential Operations
 status: active
 owner: core-team
-reviewed: 2026-06-02
+reviewed: 2026-11-22
 audience: operators
 ---
 
@@ -33,6 +33,12 @@ its complete credential set; missing fields are not silently filled from another
 environment or configuration. Environment fallback is a Development/Test or explicitly enabled
 migration path and is disabled by default for packaged/customer builds. See
 [environment controls](../reference/environment-variables.md).
+
+Production and packaged/customer workstation compositions require an explicitly owned connection
+for credential-bearing providers, including providers with no previous owner. Provider-wide setup,
+legacy module credentials and execution paths that cannot carry a trusted owner refuse access;
+unassigned records remain available only for explicit ownership migration. Provider-wide readiness
+does not inherit those records. Unflagged development retains the legacy compatibility paths.
 
 Desktop initial setup and Backfill open **Manage owned credentials** in Settings. Select an existing
 connection explicitly before saving, rotating, verifying or removing credentials. These entry points
@@ -97,14 +103,27 @@ credential editing still selects an already-owned connection.
    stopped while reconstructing provider instances through the lifecycle supervisor. Verify the
    selected connection's actual provider account and environment before an operator releases activity.
    Binding and vault scope identify the intended owner; neither proves which upstream account a secret
-   reaches. Editing credentials does not hot-activate an already running collector.
+   reaches. Editing credentials does not hot-activate an already running collector. The retained
+   selection pins the exact tenant, connection, external account and environment, with a unique
+   selection identity. Deleting and recreating a connection ID for another account or environment
+   requires explicit rebinding. Older selections without these pins also refuse credential reads
+   until this bind command is repeated; the host never infers account ownership during upgrade.
 4. `GET .../runtime-credentials/status?providerId=alpaca` reports whether that binding has reached
    running provider instances of this host: a binding changed after host start is `pendingRestart`
    until it is applied or the host is deliberately restarted. `POST .../runtime-credentials/apply`
    asks the host's registered applier to recycle the provider's instances under the binding; the
    default host registers no in-process recycle and reports the binding as still pending. Both
    workstations show this state beside the bind action ("Check running instances", "Apply to running
-   instances"). Nothing activates hot.
+   instances"). An apply result for an earlier selection cannot mark a newer selection as applied,
+   even if the operator selects the original account again while application is in progress.
+   Production changes to a bound selection, credentials, or connection first require host authority
+   to stop new dispatches, drain in-flight work and dispose every instance holding the selected keys.
+   The default host cannot prove that boundary: it returns `ProviderCredentialMaintenanceRequired`
+   before changing credentials or ownership. Stop the installed host and perform reviewed offline
+   credential maintenance before restarting. A custom applier may acknowledge a change only after
+   its stop/drain operation succeeds. Cancellation or failure leaves the application state pending;
+   conditional provider-owned OAuth refresh may still retain its exact returned generation while
+   an in-flight request drains. Nothing activates hot.
 5. A separate provider-wide OAuth token (access and refresh token) moves under the owned scope with
    the record during `.../credentials/migrate` and moves back on rollback; the receipt records
    `oAuthTokenTransferred`. The moved token is unverified like the record. Two provider-wide tokens
@@ -133,6 +152,10 @@ after rollback. Their import requests do not yet select a tenant-authorized conn
 selected-connection verification remains available, but successful verification does not enable these
 default import adapters. Tenant-aware accounting import selection and its independent review remain
 rollout prerequisites. Separate OAuth-token runtime cutover also requires provider-specific evidence.
+QuickBooks journal posting uses the scoped vault connection pinned in its
+[book policy](external-gl-providers.md#set-the-book-policy). Posting rechecks the retained realm
+and environment and rotates credentials in that exact connection.
+
 The default Plaid workstation runtime is also legacy-only: owned families refuse link, item and transfer
 credential access before provider calls or fallback to configured options. A tenant-authorized Plaid
 item/connection runtime is required before that family can resume activity under owned credentials.
@@ -218,9 +241,56 @@ Use canonical provider-scoped routes for new tooling and operator automation:
 | `/api/providers/{providerId}/credentials?connectionId={connectionId}` | `PUT` | Save credentials for the selected owned connection. |
 | `/api/providers/{providerId}/credentials?connectionId={connectionId}` | `DELETE` | Remove credentials only from the selected owned connection. |
 | `/api/providers/{providerId}/verify?connectionId={connectionId}` | `POST` | Verify the selected connection's current credential generation. |
+| `/api/providers/{providerId}/verify-draft?connectionId={connectionId}` | `POST` | Test the proposed credentials for the selected connection before saving. |
 
 Omit `connectionId` only for an entirely legacy provider family. Compatibility routes under
 `/api/credentials/*` do not bypass ownership requirements and should not be used for new automation.
+
+In provider setup, **Test** checks the draft for Alpaca, Polygon, Tiingo, or Finnhub. It leaves the
+saved credential and its verification history intact. Choose **Save anyway** when setting up an
+offline connection. The saved-credential panel shows the vault's rotation date beginning 14 days
+before it is due. Re-verify the saved connection to retain verification evidence.
+
+The legacy `/api/providers/{providerId}/test-connection` route saves any credentials supplied in
+its request. Use `verify-draft` to check unsaved fields.
+
+The Alpaca equity feed selector verifies recent SIP trades with the selected owned runtime
+connection before saving SIP. Feed changes take effect when the host restarts.
+
+### Create a connection from a template
+
+Use a connection template to create a **new** owned connection with reviewed settings. Credential
+editing for an existing connection still starts from the explicit connection selection above.
+
+- **Browser:** **Data > Providers > Add provider** opens the template catalog.
+- **WPF:** the **Add Provider** wizard starts with the same tenant-owned catalog.
+
+Both clients call the shared `/api/provider-routing/templates` routes, which require
+`ManageCredentials`, `ManageProviders`, and `ModifyConfig` and a server-resolved tenant.
+
+1. Choose a template. Built-ins cover paper brokerage (Alpaca paper), historical equities (Tiingo),
+   options chains (Polygon), reference data (OpenFIGI), and research-only backfill (Stooq).
+2. Review the settings, required capabilities, expected data semantics, suggested binding priority,
+   and verification checklist. If the template changes after review, setup refuses to continue;
+   reload and review again.
+3. Open the scoped credential vault and enter credentials. Enter the provider account identity when
+   the template requires one; it belongs to this connection only. The draft stays out of the
+   connection inventory until it is saved.
+4. Run **Test**. Alpaca verifies the account; Tiingo, Polygon, and OpenFIGI request a sample with the
+   draft's credentials. Credential-free providers and adapters without scoped verification report
+   what their setup check covers. Saving requires a passing test of the current credentials.
+5. Save the connection, then complete the remaining checklist items. Activation and routing
+   bindings are separate operator actions; saving from a template does not activate either.
+
+Discard an abandoned setup from the dialog. Drafts expire after 24 hours, and the operator's next
+setup removes their expired drafts and the matching vault records.
+
+**Manage connection templates** imports and exports template JSON (schema version 1, up to 100
+templates, 64 KB maximum). Import validates the whole file before changing the library and reports
+each incompatible field. **Save as template** copies an owned connection's portable settings and
+binding recommendation; it requires a new template name and a portable scope and never copies
+secrets. See [provider connection templates](../../src/Meridian.Ui.Shared/README.md#provider-connection-templates)
+for the contract detail.
 
 ## Quick credential validation checklist
 

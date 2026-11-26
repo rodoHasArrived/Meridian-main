@@ -26,7 +26,7 @@ namespace Meridian.Wpf.ViewModels;
 /// All state, HTTP loading, timer management, and connection-event tracking live here
 /// so that the code-behind is thinned to lifecycle wiring only.
 /// </summary>
-public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivationLifetime, IDisposable, IPageActionBarProvider
+public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivationLifetime, IDisposable, IPageActionBarProvider, IPageRefreshTarget
 {
     private static readonly Brush ReadyPostureBrush = CreateFrozenBrush(63, 185, 80);
     private static readonly Brush WarningPostureBrush = CreateFrozenBrush(255, 193, 7);
@@ -230,6 +230,11 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
         EmptyText = "No connection events recorded."
     };
 
+    // ── IPageRefreshTarget implementation: the shell Refresh control reloads this page in place ──
+    private IAsyncRelayCommand? _refreshCommand;
+    public IAsyncRelayCommand RefreshCommand => _refreshCommand ??= new AsyncRelayCommand(() => RefreshAsync());
+    ICommand IPageRefreshTarget.RefreshCommand => RefreshCommand;
+
     // ── IPageActionBarProvider implementation ──────────────────────────────────────
     public string PageTitle => "Provider Health";
     public ObservableCollection<ActionEntry> Actions => _collectionsSection.Actions;
@@ -304,7 +309,6 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
 
         // Populate action bar.
         Actions.Clear();
-        Actions.Add(new ActionEntry("Refresh", new RelayCommand(() => _ = RefreshAsync()), "\uE72C", "Refresh provider data", IsPrimary: true));
         Actions.Add(new ActionEntry("Run Diagnostics", new RelayCommand(RunSelectedProviderDiagnostics), "\uE9D9", "Run selected provider diagnostics"));
         Actions.Add(new ActionEntry("Reconnect All", new RelayCommand(() => _notificationService.NotifyInfo("Reconnecting", "Initiating provider reconnection...")), "\uE71B", "Reconnect all providers"));
 
@@ -540,7 +544,8 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
         }
         catch (Exception ex)
         {
-            _loggingService.LogWarning($"Shared provider readiness endpoint unavailable; using local provider health projection. {ex.Message}");
+            _loggingService.LogWarning("Shared provider readiness endpoint unavailable; using local provider health projection. {Error}",
+                ("Error", ex.Message));
             return null;
         }
     }
@@ -777,13 +782,13 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
                     CredentialSourceText = $"Source: {StateText(row.CredentialSource)}",
                     VerificationStateText = StateText(row.VerificationState),
                     LastSuccessfulConnectionText = row.LastSuccessfulAt.HasValue
-                        ? $"Last good: {row.LastSuccessfulAt.Value:yyyy-MM-dd HH:mm} UTC"
+                        ? $"Last good: {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(row.LastSuccessfulAt.Value)}"
                         : row.IsConnected ? "Connected" : "Never",
                     LastVerifiedText = row.LastVerifiedAt.HasValue
-                        ? $"Last verified: {row.LastVerifiedAt.Value:yyyy-MM-dd HH:mm} UTC"
+                        ? $"Last verified: {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(row.LastVerifiedAt.Value)}"
                         : "Last verified: Never",
                     LastFailureText = row.LastFailureAt.HasValue
-                        ? $"Last failure: {row.LastFailureAt.Value:yyyy-MM-dd HH:mm} UTC"
+                        ? $"Last failure: {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(row.LastFailureAt.Value)}"
                         : "Last failure: None reported",
                     LastErrorText = string.IsNullOrWhiteSpace(row.LastError) ? "None reported" : row.LastError,
                     AffectedWorkflowsText = row.AffectedWorkflows.Count == 0 ? "Data readiness" : string.Join(", ", row.AffectedWorkflows),
@@ -1010,7 +1015,6 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
             PrimaryCommands =
             [
                 new("AddProvider", "Add Provider", "Add a provider configuration.", "\uE710", WorkspaceTone.Primary),
-                new("RefreshStatus", "Refresh Status", "Refresh provider health and routing posture.", "\uE72C"),
                 new(
                     "RunDiagnostics",
                     "Run Diagnostics",
@@ -1151,7 +1155,7 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
                 CredentialSourceText = CredentialSourceForProvider(providerId, credentialState),
                 VerificationStateText = verificationState,
                 LastSuccessfulConnectionText = lastSuccessful,
-                LastVerifiedText = lastRefreshUtc.HasValue ? $"Last verified: {lastRefreshUtc.Value:yyyy-MM-dd HH:mm} UTC" : "Last verified: Never",
+                LastVerifiedText = lastRefreshUtc.HasValue ? $"Last verified: {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(lastRefreshUtc.Value)}" : "Last verified: Never",
                 LastFailureText = health is "Healthy" ? "Last failure: None reported" : "Last failure: Not reported",
                 LastErrorText = health is "Blocked" ? "Provider is not configured for dependent workflows." : "None reported",
                 AffectedWorkflowsText = string.Join(", ", workflows),

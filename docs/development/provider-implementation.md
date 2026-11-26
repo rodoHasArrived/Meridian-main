@@ -74,9 +74,78 @@ Implement `GetDailyBarsAsync` and only advertise extended capabilities that the 
 implements. Default quote/trade/auction methods can return empty results; this is not evidence that
 those capabilities work. Preserve `IsSimulated` and per-bar provenance through composite providers.
 
+Corporate-action adapters should implement `ICorporateActionProvider.FetchWithOutcomeAsync`, returning explicit coverage and sanitized failure metadata. `Complete` describes the adapter's supported request scope, not release certification. Preserve usable observations from a partial fetch without claiming complete coverage; propagate caller cancellation. Collection-only implementations remain compatible but default to `Unknown` coverage, including empty results. Ingestion exposes these outcomes separately from the retained-evidence and approval gates.
+
 Define interval, timestamp, adjustment, symbol, ordering, pagination, and empty-result semantics.
 Test authentication failure, throttling, malformed rows, incomplete pages, and cancellation distinctly
 from a verified empty response. Repository pacing values are not a guarantee of commercial quotas.
+
+### Historical price bases
+
+`HistoricalBar.PriceBasis` describes the whole OHLC price set: `Raw`, `SplitAdjusted`,
+`DividendAdjusted`, `FullyAdjusted`, or `Unknown`. It does not prove source authenticity, volume
+units, adjustment vintage, currency, session identity, or accounting eligibility. Even matching
+bases require compatible source methodology and adjustment horizons before cross-provider comparison.
+
+`AdjustedHistoricalBar.PriceBasis` belongs to the primary OHLC fields; `AdjustedPriceBasis` belongs
+to the optional adjusted OHLC fields. Primary fields are not implicitly raw. Never deduce either
+basis from `AdjustedClose`, a split ratio, equality of prices, or the presence of optional fields.
+
+- `ToHistoricalBar()` / `preferAdjusted: true` select the complete optional set when present,
+  otherwise the complete primary set, retaining its declared basis.
+- `ToHistoricalBar(preferAdjusted: false)` requires an explicitly Raw set.
+- `ToHistoricalBar(HistoricalPriceBasis.X)` requires exactly that known basis. Unsupported requests
+  throw; the conversion neither reverses adjustments nor fabricates missing components.
+- Any partially populated optional OHLC set is refused when selected. Raw projection can still use
+  a separately complete, explicitly raw primary set.
+- Basis strings must name exactly one supported value. Compound enum strings, duplicate export
+  declarations and contradictory flags are refused. Property-level converters keep this rule when
+  callers install a generic enum converter.
+- `IsAdjusted` is a legacy coarse flag. Known new bases derive it consistently and contradictory
+  flags are rejected. Legacy JSON without `PriceBasis` stays Unknown even when its flag is false.
+
+| Historical adapter | Primary OHLC basis | Optional OHLC basis / notes |
+| --- | --- | --- |
+| Alpaca | Exact requested mode | Raw, split, dividend, or fully adjusted for `all` / split-and-dividend modes; unrepresentable partial spin-off combinations are Unknown |
+| Polygon | SplitAdjusted | SplitAdjusted; `adjusted=true` does not include dividends; contradictory response flags are rejected |
+| Tiingo | Raw | FullyAdjusted |
+| Yahoo Finance | SplitAdjusted | FullyAdjusted; ordinary history does not supply raw prices |
+| Alpha Vantage | Raw | FullyAdjusted |
+| Interactive Brokers | FullyAdjusted | Daily `ADJUSTED_LAST` request; no raw claim |
+| Finnhub | SplitAdjusted | Daily stock candles |
+| Twelve Data | SplitAdjusted | Request explicitly pins `adjust=splits` |
+| Nasdaq Data Link | Unknown | Configurable datasets require dataset-specific verification; complete sets are selected atomically |
+| Stooq / Robinhood / NYSE compatibility | Unknown | No verified retained adjustment declaration |
+| FRED compatibility | Unknown | Economic-observation compatibility values are not original exchange prices |
+| Synthetic | Unknown | Simulation remains separately declared; the model does not establish a verified market-price basis |
+
+Documented vendor semantics: [Polygon/Massive](https://massive.com/knowledge-base/article/is-massives-stock-data-adjusted-for-splits-or-dividends),
+[Alpaca](https://docs.alpaca.markets/us/reference/stockbarsingle-1),
+[Tiingo](https://www.tiingo.com/documentation/end-of-day),
+[Yahoo](https://help.yahoo.com/kb/SLN28256.html),
+[IBKR](https://www.interactivebrokers.com/docs/tws-api/doc/md/historical-bars),
+[Alpha Vantage](https://www.alphavantage.co/documentation/),
+[Finnhub](https://github.com/Finnhub-Stock-API/finnhub-ruby/blob/master/docs/DefaultApi.md), and
+[Twelve Data](https://support.twelvedata.com/en/articles/5179064-are-the-prices-adjusted).
+Synthetic fixture validation proves Meridian's mapping behavior; every live provider remains
+**live-untested** until an authorized real-provider run establishes otherwise.
+
+**Retention and migration.** Unknown basis is omitted from typed JSON, preserving legacy payload
+shape and row digests. New known basis declarations participate in row and adjustment-plan identities.
+No historical record is reclassified in place. Reacquire or independently verify old data before
+using it in a raw-only workflow. Historical Parquet writes use `*_historicalbar_v2_YYYYMMDD.parquet`
+with explicit basis columns, leaving v1 files unchanged; catalog discovery recognizes both generations.
+
+Raw accounting marks, canonical replay, Designer replay and active corporate-action adjustment
+require explicit Raw inputs. The daily accounting-source guard returns unavailable for a non-raw
+latest observation. Dedicated raw accounting-close retrieval and its retained provenance remain a
+separate capability; this contract does not add new raw requests or accept accounting treatment.
+Research outputs preserve their basis, including rows whose adjustment factor happens to be one.
+Replay rejects a change of historical basis within an effective symbol before consuming the mixed
+bar; an Unknown-only generic research series remains distinct from raw-only accounting eligibility.
+Projected primary and adjusted columns retain their own distinct basis companions. Derived price
+features require a consistent known historical basis; a raw/adjusted transition cannot become an
+investment return. Incompatible mixed export schemas fail explicitly instead of dropping bar fields.
 
 ### Registration in CompositeHistoricalDataProvider
 

@@ -114,7 +114,12 @@ public sealed record ContractualCashFlowRequest(
     IReadOnlyList<CashFlowPrepaymentAssumption>? Prepayments = null,
     IReadOnlyList<CashFlowCurvePin>? CurvePins = null,
     ContractualCashFlowContract? ContractOverride = null,
-    string EngineVersion = ContractualCashFlowVersions.Engine);
+    string EngineVersion = ContractualCashFlowVersions.Engine)
+{
+    /// <summary>An explicitly selected supported product profile; absent preserves generic analytical behavior.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? CalculationProfile { get; init; }
+}
 
 public static class ContractualCashFlowVersions
 {
@@ -172,7 +177,19 @@ public sealed record ContractualCashFlowRun(
     Guid RunId, string SubjectKind, Guid SubjectId, DateTimeOffset RecordedAt,
     ContractualCashFlowContract Contract, ContractualCashFlowRequest Request,
     ContractualCashFlowResult Result,
-    string Actor = "");
+    string Actor = "")
+{
+    /// <summary>Server-stamped review scope for new non-posting draft checks; old packets remain unbound.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public ContractualCashFlowAttestationContextDto? AttestationContext { get; init; }
+}
+
+public sealed record ContractualCashFlowAttestationContextDto(
+    string TenantId,
+    string CompanyId,
+    string PreparedBy,
+    Meridian.Contracts.Workstation.OperationsActionOriginDto Origin,
+    int SchemaVersion = 1);
 
 public sealed record CreateContractualCashFlowRunRequest(Guid RunId, ContractualCashFlowRequest Projection);
 

@@ -138,7 +138,11 @@ public sealed class SecurityAssetClassTermsUpgraderTests
         SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", Json(V1Text), out var declared, out var current).Should().BeTrue();
         (declared, current).Should().Be((1, 6));
 
-        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", Json(UnstampedText), out declared, out current).Should().BeTrue();
+        // An untagged payload is not the flat codec by declaration, so nothing is pending for it
+        // (ADR-024 amendment 2026-11-13 step 5: the family is never inferred by shape).
+        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", Json(UnstampedText), out _, out _).Should().BeFalse();
+        var declaredUnversioned = UnstampedText.Replace("\"schemaVersion\":1,", "\"schemaVersion\":1,\"termsFormat\":\"flat\",", StringComparison.Ordinal);
+        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", Json(declaredUnversioned), out declared, out current).Should().BeTrue();
         (declared, current).Should().Be((1, 6));
 
         SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("MBS", Json(V1Text), out declared, out current).Should().BeTrue("an alias reads as its class");
@@ -148,7 +152,7 @@ public sealed class SecurityAssetClassTermsUpgraderTests
         (declared, current).Should().Be((2, 6));
 
         SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("Bond", Json(V1Text), out _, out current).Should().BeTrue();
-        current.Should().Be(3);
+        current.Should().Be(5);
     }
 
     // ── The missing test: version 1 reads exactly as version 2 ──────────────────────────────────
@@ -280,7 +284,7 @@ public sealed class SecurityAssetClassTermsUpgraderTests
     public void TransformStep_OnAPayloadWithoutSchemaVersion_StampsTheEnvelopeLast_AndAddsNoSchemaVersion()
     {
         var descriptor = WithRename(static () => 0);
-        var input = Json("""{"tranche":"A-1","seniority":"Senior","assetClassTermsVersion":2}""");
+        var input = Json("""{"tranche":"A-1","seniority":"Senior","termsFormat":"flat","assetClassTermsVersion":2}""");
 
         SecurityAssetClassTermsUpgrader.TryUpgradeForRead(descriptor, input, out var upgraded).Should().BeTrue();
 
@@ -436,7 +440,7 @@ public sealed class SecurityAssetClassTermsUpgraderTests
             .Select(static field => field.Key).Should().Equal("cashFlowContract");
         foreach (var assetClass in new[] { "Bond", "CertificateOfDeposit" })
         {
-            SecurityAssetTermsSchema.Fields(assetClass).Where(static field => field.SinceTermsVersion > 1 && field.Key != "rateUnit")
+            SecurityAssetTermsSchema.Fields(assetClass).Where(static field => field.SinceTermsVersion > 1 && field.SinceTermsVersion <= 4 && field.Key != "rateUnit")
                 .Select(static field => (field.Key, field.SinceTermsVersion))
                 .Should().Equal(("scheduleConventions", 2), ("callSchedule", 3), ("putSchedule", 3), ("cashFlowContract", 4));
         }
@@ -474,8 +478,8 @@ public sealed class SecurityAssetClassTermsUpgraderTests
     public void GetReadsTermsThrough_ResolvesThroughTheCatalog()
     {
         SecurityAssetClassCatalog.GetReadsTermsThrough("StructuredCredit").Should().Be(6);
-        SecurityAssetClassCatalog.GetReadsTermsThrough("Bond").Should().Be(4);
-        SecurityAssetClassCatalog.GetReadsTermsThrough("CertificateOfDeposit").Should().Be(5);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("Bond").Should().Be(5);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("CertificateOfDeposit").Should().Be(6);
         SecurityAssetClassCatalog.GetReadsTermsThrough("Swap").Should().Be(4);
         SecurityAssetClassCatalog.GetReadsTermsThrough("DirectLoan").Should().Be(3);
         SecurityAssetClassCatalog.GetReadsTermsThrough("Equity").Should().Be(1);

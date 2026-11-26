@@ -1,5 +1,7 @@
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading;
 using Meridian.Contracts.Integrity;
@@ -23,7 +25,7 @@ public static partial class AtomicFileWriter
     private static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
 
     // Share the same bounded publication gates between sync and async overwrite surfaces.
-    // Temp-file creation and fsync stay concurrent; only Windows publication/recovery is serialized.
+    // Temp-file creation and fsync stay concurrent; only publication and backup ownership are serialized.
     private static readonly SemaphoreSlim[] WindowsPublicationLocks = Enumerable.Range(0, 64)
         .Select(static _ => new SemaphoreSlim(1, 1))
         .ToArray();
@@ -346,6 +348,26 @@ public static partial class AtomicFileWriter
         Func<Stream, Task> appendAction,
         CancellationToken ct = default)
     {
+        // Each append copies the whole file and replaces it. Two concurrent appends to one path
+        // would both copy the same bytes and the second replace would drop the first's lines, so
+        // appends to one path are serialized in this process. Callers that also hold the JSONL
+        // archive gate take it first; this gate is innermost and never re-entered.
+        var appendGate = await AppendGate.EnterAsync(destinationPath, ct).ConfigureAwait(false);
+        try
+        {
+            await AppendCoreAsync(destinationPath, appendAction, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            appendGate.Dispose();
+        }
+    }
+
+    private static async Task AppendCoreAsync(
+        string destinationPath,
+        Func<Stream, Task> appendAction,
+        CancellationToken ct)
+    {
         var directory = Path.GetDirectoryName(destinationPath);
         if (!string.IsNullOrEmpty(directory))
         {
@@ -525,6 +547,7 @@ public static partial class AtomicFileWriter
         bool keepBackup = true,
         CancellationToken ct = default)
     {
+        destinationPath = Path.GetFullPath(destinationPath);
         var directory = Path.GetDirectoryName(destinationPath);
         if (!string.IsNullOrEmpty(directory))
         {
@@ -536,57 +559,116 @@ public static partial class AtomicFileWriter
 
         try
         {
-            // Write new content to temp
-            await File.WriteAllTextAsync(tempPath, newContent, Encoding.UTF8, ct);
+            await File.WriteAllTextAsync(tempPath, newContent, Utf8NoBom, ct);
             await SyncFileAsync(tempPath, ct);
+            ct.ThrowIfCancellationRequested();
 
-            // If destination exists, create backup
-            if (File.Exists(destinationPath))
+            // Serialize backup ownership with all other publishers for this destination.
+            var gate = WindowsPublicationGate(Path.GetFullPath(destinationPath));
+            await gate.WaitAsync(ct).ConfigureAwait(false);
+            try
             {
-                if (File.Exists(backupPath))
+                ct.ThrowIfCancellationRequested();
+                for (var attempt = 1; ; attempt++)
                 {
-                    File.Delete(backupPath);
+                    try
+                    {
+                        if (OperatingSystem.IsWindows())
+                            await ReplaceWindowsAsync(tempPath, destinationPath, backupPath, keepBackup, ct);
+                        else if (File.Exists(destinationPath))
+                            File.Replace(tempPath, destinationPath, keepBackup ? backupPath : null);
+                        else
+                            File.Move(tempPath, destinationPath, overwrite: false);
+                        break;
+                    }
+                    catch (Exception exception) when (attempt < ReplaceAttempts && IsTransientReplaceFailure(exception))
+                    {
+                        await Task.Delay(ReplaceRetryDelay * attempt).ConfigureAwait(false);
+                    }
                 }
-                await MoveWithRetryAsync(destinationPath, backupPath, overwrite: false);
-
-                // Make the backup rename durable before the destination is overwritten, so a
-                // crash mid-sequence can never leave both the original and its backup missing.
-                await SyncDirectoryAsync(directory!, ct);
+                // Commit has happened; cancellation or backup cleanup must not report a
+                // committed replacement as a failed write.
+                await SyncCommittedDirectoryAsync(directory!);
+                if (!keepBackup)
+                    TryDeleteFile(backupPath);
             }
-
-            // Move temp to destination
-            await MoveWithRetryAsync(tempPath, destinationPath, overwrite: false);
-
-            // Sync directory (post-commit: non-cancellable)
-            await SyncCommittedDirectoryAsync(directory!);
-
-            // Optionally remove backup
-            if (!keepBackup && File.Exists(backupPath))
+            finally
             {
-                File.Delete(backupPath);
+                gate.Release();
             }
-
             Log.Debug("Atomically replaced file");
         }
-        catch (Exception writeException)
+        catch
         {
-            // On failure, try to restore the backup without masking the original exception.
-            if (File.Exists(backupPath) && !File.Exists(destinationPath))
+            TryDeleteFile(tempPath);
+            throw;
+        }
+    }
+
+    [SupportedOSPlatform("windows")]
+    private static async Task ReplaceWindowsAsync(
+        string tempPath, string destinationPath, string backupPath, bool keepBackup, CancellationToken ct)
+    {
+        string? backupTempPath = null;
+        WindowsRename? backupPublication = null;
+        try
+        {
+            var destinationExists = File.Exists(destinationPath);
+            FileSecurity? destinationSecurity = null;
+            if (destinationExists)
+            {
+                // File.Replace used to preserve the destination DACL. Keep that contract when
+                // publishing by rename, and fail before commit if it cannot be preserved.
+                destinationSecurity = new FileInfo(destinationPath).GetAccessControl();
+                ApplyWindowsAccessRules(tempPath, destinationSecurity);
+            }
+
+            using var publication = WindowsRename.Prepare(tempPath, destinationPath);
+            if (destinationExists && keepBackup)
+            {
+                backupTempPath = Path.Combine(Path.GetDirectoryName(destinationPath)!,
+                    $".atomic-recovery.{Guid.NewGuid():N}.bak");
+                await using (var source = new FileStream(destinationPath, FileMode.Open, FileAccess.Read,
+                    FileShare.Read | FileShare.Delete, 65536, FileOptions.Asynchronous | FileOptions.SequentialScan))
+                await using (var backup = new FileInfo(backupTempPath).Create(FileMode.CreateNew,
+                    FileSystemRights.Write, FileShare.None, 65536, FileOptions.Asynchronous, destinationSecurity))
+                {
+                    await source.CopyToAsync(backup, ct).ConfigureAwait(false);
+                    backup.Flush(flushToDisk: true);
+                }
+                // Creation enforces the original DACL immediately, but Windows can drop its
+                // auto-inherited flag. Persist the complete access descriptor before publication.
+                ApplyWindowsAccessRules(backupTempPath, destinationSecurity!);
+                // Acquire both source and destination handles before the live commit, so a
+                // denied/read-only backup fails without changing either published generation.
+                backupPublication = WindowsRename.Prepare(backupTempPath, backupPath);
+            }
+
+            ct.ThrowIfCancellationRequested();
+            publication.Publish();
+            if (backupPublication is not null)
             {
                 try
                 {
-                    MoveWithRetry(backupPath, destinationPath, overwrite: false);
+                    backupPublication.Publish();
                 }
-                catch (Exception restoreException)
+                catch (Exception exception)
                 {
-                    Log.Error("Failed to restore file backup ({FailureType})", restoreException.GetType().Name);
+                    // The live rename already committed. Retain the flushed old generation if
+                    // a later filesystem fault prevents backup publication; never invite a retry
+                    // by reporting the committed live write as failed.
+                    Log.Error("Committed replacement retained its previous generation in {BackupName} " +
+                        "because backup publication failed (error {ErrorCode})",
+                        Path.GetFileName(backupTempPath), exception.HResult);
+                    backupTempPath = null;
                 }
             }
-
-            TryDeleteFile(tempPath);
-
-            // Re-throw the original failure with its stack trace intact.
-            ExceptionDispatchInfo.Throw(writeException);
+        }
+        finally
+        {
+            backupPublication?.Dispose();
+            if (backupTempPath is not null)
+                TryDeleteFile(backupTempPath);
         }
     }
 
@@ -597,6 +679,75 @@ public static partial class AtomicFileWriter
     // before the failure is reported. POSIX rename never fails for open handles, and EACCES there is
     // a real permission problem, so no retry applies off Windows.
     private const int ReplaceAttempts = 10;
+    /// <summary>One semaphore per full path while any append to it is pending; removed when idle.</summary>
+    private static class AppendGate
+    {
+        private static readonly StringComparer PathComparer =
+            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        private static readonly Dictionary<string, (SemaphoreSlim Semaphore, int References)> Gates = new(PathComparer);
+
+        public static async ValueTask<IDisposable> EnterAsync(string path, CancellationToken ct)
+        {
+            var key = Path.GetFullPath(path);
+            SemaphoreSlim semaphore;
+            lock (Gates)
+            {
+                if (Gates.TryGetValue(key, out var entry))
+                {
+                    semaphore = entry.Semaphore;
+                    Gates[key] = (semaphore, entry.References + 1);
+                }
+                else
+                {
+                    semaphore = new SemaphoreSlim(1, 1);
+                    Gates[key] = (semaphore, 1);
+                }
+            }
+
+            try
+            {
+                await semaphore.WaitAsync(ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                Release(key, entered: false);
+                throw;
+            }
+
+            return new Lease(key);
+        }
+
+        private static void Release(string key, bool entered)
+        {
+            lock (Gates)
+            {
+                var entry = Gates[key];
+                if (entered)
+                    entry.Semaphore.Release();
+                if (entry.References == 1)
+                {
+                    Gates.Remove(key);
+                    entry.Semaphore.Dispose();
+                }
+                else
+                {
+                    Gates[key] = (entry.Semaphore, entry.References - 1);
+                }
+            }
+        }
+
+        private sealed class Lease(string key) : IDisposable
+        {
+            private int _released;
+
+            public void Dispose()
+            {
+                if (Interlocked.Exchange(ref _released, 1) == 0)
+                    Release(key, entered: true);
+            }
+        }
+    }
+
     private static readonly TimeSpan ReplaceRetryDelay = TimeSpan.FromMilliseconds(20);
 
     private static bool IsTransientReplaceFailure(Exception exception)
@@ -618,13 +769,13 @@ public static partial class AtomicFileWriter
         {
             for (var attempt = 1; ; attempt++)
             {
-                var retrySafe = true;
                 try
                 {
-                    PublishWindowsTempFile(tempPath, destination, out retrySafe);
+                    using var publication = WindowsRename.Prepare(tempPath, destination);
+                    publication.Publish();
                     return;
                 }
-                catch (Exception exception) when (attempt < ReplaceAttempts && retrySafe && IsTransientReplaceFailure(exception))
+                catch (Exception exception) when (attempt < ReplaceAttempts && IsTransientReplaceFailure(exception))
                 {
                     Thread.Sleep(ReplaceRetryDelay * attempt);
                 }
@@ -652,13 +803,13 @@ public static partial class AtomicFileWriter
         {
             for (var attempt = 1; ; attempt++)
             {
-                var retrySafe = true;
                 try
                 {
-                    PublishWindowsTempFile(tempPath, destination, out retrySafe);
+                    using var publication = WindowsRename.Prepare(tempPath, destination);
+                    publication.Publish();
                     return;
                 }
-                catch (Exception exception) when (attempt < ReplaceAttempts && retrySafe && IsTransientReplaceFailure(exception))
+                catch (Exception exception) when (attempt < ReplaceAttempts && IsTransientReplaceFailure(exception))
                 {
                     await Task.Delay(ReplaceRetryDelay * attempt).ConfigureAwait(false);
                 }
@@ -671,54 +822,21 @@ public static partial class AtomicFileWriter
     }
 
     private static SemaphoreSlim WindowsPublicationGate(string destinationPath)
-        => WindowsPublicationLocks[(StringComparer.OrdinalIgnoreCase.GetHashCode(destinationPath) & int.MaxValue)
-            % WindowsPublicationLocks.Length];
-
-    // One publication attempt: File.Replace immediately supports a retained deletion-sharing
-    // reader. A temporary reader denying deletion still gets the bounded outer retry. Never
-    // retry after a partial replacement leaves a retained backup that could not be restored.
-    private static void PublishWindowsTempFile(string tempPath, string destinationPath, out bool retrySafe)
     {
-        retrySafe = true;
-        try
+        // Extended Win32 spellings address the same file as ordinary drive/UNC paths.
+        // Normalize them before choosing a gate, including any dot segments after the prefix.
+        if (OperatingSystem.IsWindows())
         {
-            File.Move(tempPath, destinationPath, overwrite: true);
+            if (destinationPath.StartsWith(@"\\?\UNC\", StringComparison.OrdinalIgnoreCase))
+                destinationPath = @"\\" + destinationPath[8..];
+            else if (destinationPath.StartsWith(@"\\?\", StringComparison.Ordinal)
+                && destinationPath.Length >= 7 && char.IsAsciiLetter(destinationPath[4])
+                && destinationPath[5] == ':' && destinationPath[6] == '\\')
+                destinationPath = destinationPath[4..];
+            destinationPath = Path.GetFullPath(destinationPath);
         }
-        catch (UnauthorizedAccessException) when (File.Exists(destinationPath))
-        {
-            var backupName = $".atomic-recovery.{Guid.NewGuid():N}.tmp";
-            var backupPath = Path.Combine(Path.GetDirectoryName(destinationPath)!, backupName);
-            try
-            {
-                File.Replace(tempPath, destinationPath, backupPath);
-            }
-            catch
-            {
-                if (File.Exists(backupPath))
-                {
-                    retrySafe = false;
-                    if (!File.Exists(destinationPath))
-                    {
-                        try
-                        {
-                            // Preserve a generation another process may already have published.
-                            MoveWithRetry(backupPath, destinationPath, overwrite: false);
-                            retrySafe = true;
-                        }
-                        catch (Exception restoreException)
-                        {
-                            Log.Error(
-                                "Failed to restore interrupted atomic publication (error {ErrorCode}); " +
-                                "its previous generation is retained in {BackupName}",
-                                restoreException.HResult, backupName);
-                        }
-                    }
-                }
-                throw;
-            }
-            // Publication committed; best-effort cleanup cannot turn success into failure.
-            TryDeleteFile(backupPath);
-        }
+        return WindowsPublicationLocks[(StringComparer.OrdinalIgnoreCase.GetHashCode(destinationPath) & int.MaxValue)
+            % WindowsPublicationLocks.Length];
     }
 
     private static void MoveWithRetry(string sourcePath, string destinationPath, bool overwrite)
@@ -791,7 +909,7 @@ public static partial class AtomicFileWriter
             if (OperatingSystem.IsWindows())
             {
                 var sourceSecurity = new FileInfo(sourcePath).GetAccessControl();
-                new FileInfo(targetPath).SetAccessControl(sourceSecurity);
+                ApplyWindowsAccessRules(targetPath, sourceSecurity);
                 return;
             }
 
@@ -820,15 +938,49 @@ public static partial class AtomicFileWriter
         fs.Flush(flushToDisk: true);
     }
 
+    // A failed directory fsync used to log a Warning and return as if it succeeded. These make
+    // every failure visible (Error log + counter) even where the caller must not throw.
+    private static readonly Prometheus.Counter DirectorySyncFailuresTotal = Prometheus.Metrics.CreateCounter(
+        "mdc_storage_directory_fsync_failures_total",
+        "Directory open/fsync failures; the durability of renames, creates or deletes in that directory is unconfirmed",
+        new Prometheus.CounterConfiguration { LabelNames = ["operation"] });
+
+    private static long _directorySyncFailureCount;
+
+    // Test seam: returns (operation, errno) to simulate a failure for a directory. Flows with the
+    // async context, so a test's injection never leaks into concurrently running tests.
+    internal static readonly AsyncLocal<Func<string, (string Operation, int Errno)?>?> DirectorySyncFaultInjector = new();
+
+    /// <summary>Directory open/fsync failures observed by this process.</summary>
+    public static long DirectorySyncFailureCount => Interlocked.Read(ref _directorySyncFailureCount);
+
     /// <summary>
     /// Fsyncs a directory so that prior rename/link operations within it are durable after a crash
     /// or power loss. No-op on platforms where directory metadata is journaled automatically.
     /// </summary>
+    /// <remarks>
+    /// Best effort for callers whose operation has already committed: a failure is retried once
+    /// for transient errors, then logged at Error and counted in
+    /// <c>mdc_storage_directory_fsync_failures_total</c>, but not thrown. Use
+    /// <see cref="SyncDirectoryOrThrowAsync"/> where the sync precedes an acknowledgement or the
+    /// removal of the only other copy, so the failure aborts that step instead.
+    /// </remarks>
     public static Task SyncDirectoryAsync(string directory, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         SyncDirectory(directory);
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Fsyncs a directory and throws <see cref="DirectorySyncException"/> when it cannot be
+    /// confirmed durable. Use before acknowledging data or deleting the only other copy.
+    /// </summary>
+    public static Task SyncDirectoryOrThrowAsync(string directory, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var failure = TrySyncDirectoryCore(directory);
+        return failure is null ? Task.CompletedTask : Task.FromException(failure);
     }
 
     /// <summary>
@@ -840,7 +992,9 @@ public static partial class AtomicFileWriter
     private static Task SyncCommittedDirectoryAsync(string directory)
         => SyncDirectoryAsync(directory, CancellationToken.None);
 
-    private static void SyncDirectory(string directory)
+    private static void SyncDirectory(string directory) => TrySyncDirectoryCore(directory);
+
+    private static DirectorySyncException? TrySyncDirectoryCore(string directory)
     {
         // A bare relative path (e.g. "file.txt") yields an empty directory; treat it as the
         // current directory rather than faulting.
@@ -854,32 +1008,73 @@ public static partial class AtomicFileWriter
             Directory.CreateDirectory(directory);
         }
 
+        if (DirectorySyncFaultInjector.Value?.Invoke(directory) is { } injected)
+        {
+            return RecordDirectorySyncFailure(directory, injected.Operation, injected.Errno);
+        }
+
         if (!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS())
         {
             // On Windows, NTFS journals directory metadata changes automatically.
-            return;
+            return null;
         }
 
         // On POSIX systems, fsync the directory file descriptor to ensure
         // that rename/link operations are durable after a crash or power loss.
-        int fd = PosixInterop.open(directory, PosixInterop.O_RDONLY);
-        if (fd < 0)
+        int fd = -1;
+        for (var attempt = 1; fd < 0; attempt++)
         {
-            Log.Warning("Unable to open directory for fsync (errno {Errno})", Marshal.GetLastPInvokeError());
-            return;
+            fd = PosixInterop.open(directory, PosixInterop.O_RDONLY);
+            if (fd >= 0)
+                break;
+
+            var errno = Marshal.GetLastPInvokeError();
+            if (attempt == 1 && PosixInterop.IsTransientOpenError(errno))
+                continue;
+            return RecordDirectorySyncFailure(directory, "open", errno);
         }
 
         try
         {
-            if (PosixInterop.fsync(fd) < 0)
+            for (var attempt = 1; ; attempt++)
             {
-                Log.Warning("Directory fsync failed (errno {Errno})", Marshal.GetLastPInvokeError());
+                if (PosixInterop.fsync(fd) == 0)
+                    return null;
+
+                var errno = Marshal.GetLastPInvokeError();
+                if (attempt == 1 && errno == PosixInterop.EINTR)
+                    continue;
+                if (PosixInterop.IsDirectoryFsyncUnsupported(errno))
+                {
+                    // Some filesystems (procfs, several FUSE/9p mounts) cannot fsync a directory
+                    // at all. Failing would make the store unusable there without making it any
+                    // more durable, so, like PostgreSQL, this is reported but not thrown.
+                    DirectorySyncFailuresTotal.WithLabels("fsync_unsupported").Inc();
+                    Log.Warning("Directory fsync failed (errno {Errno})", errno);
+                    return null;
+                }
+
+                return RecordDirectorySyncFailure(directory, "fsync", errno);
             }
         }
         finally
         {
             PosixInterop.close(fd);
         }
+    }
+
+    private static DirectorySyncException RecordDirectorySyncFailure(string directory, string operation, int errno)
+    {
+        Interlocked.Increment(ref _directorySyncFailureCount);
+        DirectorySyncFailuresTotal.WithLabels(operation).Inc();
+        var failure = new DirectorySyncException(directory, operation, errno);
+        // The path and exception are deliberately not logged (they can name private account
+        // directories); AtomicFileWriterLogPrivacyTests pins these templates.
+        if (operation == "open")
+            Log.Error("Unable to open directory for fsync (errno {Errno})", errno);
+        else
+            Log.Error("Directory fsync failed (errno {Errno})", errno);
+        return failure;
     }
 
     private static partial class PosixInterop
@@ -894,6 +1089,24 @@ public static partial class AtomicFileWriter
 
         [LibraryImport("libc", SetLastError = true)]
         internal static partial int close(int fd);
+
+        // Same values on Linux and macOS.
+        internal const int EINTR = 4;
+        internal const int ENFILE = 23;
+        internal const int EMFILE = 24;
+
+        // EINTR, and running out of descriptors (EMFILE per process, ENFILE system-wide), can
+        // clear on an immediate retry; other errors will not.
+        internal static bool IsTransientOpenError(int errno) => errno is EINTR or EMFILE or ENFILE;
+
+        internal const int EBADF = 9;
+        internal const int EINVAL = 22;
+
+        // The filesystem does not support fsync on directories: EINVAL/EBADF (as PostgreSQL
+        // treats them) and ENOTSUP/EOPNOTSUPP (95 on Linux; 45 and 102 on macOS).
+        internal static bool IsDirectoryFsyncUnsupported(int errno) =>
+            errno is EINVAL or EBADF ||
+            (OperatingSystem.IsMacOS() ? errno is 45 or 102 : errno == 95);
     }
 
     private static void TryDeleteFile(string path)
@@ -910,4 +1123,28 @@ public static partial class AtomicFileWriter
             Log.Warning("Failed to delete temporary file ({FailureType})", ex.GetType().Name);
         }
     }
+}
+
+/// <summary>
+/// A directory could not be fsynced, so renames, creates or deletes in it are not confirmed
+/// durable. Thrown by <see cref="AtomicFileWriter.SyncDirectoryOrThrowAsync"/>.
+/// </summary>
+public sealed class DirectorySyncException : IOException
+{
+    public DirectorySyncException(string directory, string operation, int errno)
+        : base($"Directory {operation} for fsync failed (errno {errno}); its entries are not confirmed durable.")
+    {
+        Directory = directory;
+        Operation = operation;
+        Errno = errno;
+    }
+
+    /// <summary>The directory that could not be synced.</summary>
+    public string Directory { get; }
+
+    /// <summary><c>open</c> or <c>fsync</c>.</summary>
+    public string Operation { get; }
+
+    /// <summary>The POSIX error number, or the value a test injected.</summary>
+    public int Errno { get; }
 }

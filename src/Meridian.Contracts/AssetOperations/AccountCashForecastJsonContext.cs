@@ -10,4 +10,5 @@ namespace Meridian.Contracts.AssetOperations;
 [JsonSerializable(typeof(AccountCashForecastSnapshotDto))]
 [JsonSerializable(typeof(AccountCashForecastScopeDto))]
 [JsonSerializable(typeof(AccountCashForecastSnapshotDto[]))]
+[JsonSerializable(typeof(AccountCashFlowDto))]
 public partial class AccountCashForecastJsonContext : JsonSerializerContext;

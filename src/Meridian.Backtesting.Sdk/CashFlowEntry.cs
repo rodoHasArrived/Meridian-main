@@ -73,6 +73,18 @@ public sealed record AssetEventCashFlow(
     decimal PositionFactor = 1m,
     string? Description = null) : CashFlowEntry(Timestamp, Amount)
 {
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public int PositionEvidenceVersion { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.SecurityMaster.SecurityLotUnitKind? QuantityUnit { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? LotMultiplier { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? FunctionalCurrency { get; init; }
+
+    /// <summary>Basis returned as capital, excluded from income.</summary>
+    public decimal BasisReturned { get; init; }
+
     /// <summary>Exact non-whole successor quantity settled as cash in lieu.</summary>
     public decimal FractionalUnits { get; init; }
 

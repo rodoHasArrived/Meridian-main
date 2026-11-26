@@ -25,20 +25,35 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from threading import Lock
-from typing import Sequence
+from typing import Sequence, TextIO
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_evidence import collect_trx
 
 CORE_TEST_PROJECT_PATH = "tests/Meridian.Tests/Meridian.Tests.csproj"
 
-# Hosted observations are scheduling hints only. Filters and report order remain
+# xUnit runs one class serially and WorkstationEndpointsTests starts a host per test, so the
+# class is the longest unit in the roster. Separate processes are the only way to overlap it.
+# Each fragment below names one extra process; the base shard keeps everything they leave.
+WORKSTATION_ENDPOINTS_CLASS = "Meridian.Tests.Ui.WorkstationEndpointsTests"
+WORKSTATION_ENDPOINTS_SPLITS = [
+    ("core-ui-workstation-endpoints-map", ("MapWorkstationEndpoints_",)),
+    ("core-ui-workstation-endpoints-a-c", ("A", "B", "C")),
+]
+
+# Hosted observations (seconds) are scheduling hints only. Filters and report order remain
 # authoritative; unknown shards retain their roster order.
 SHARD_DURATION_HINTS = {
-    "core-ui-workstation-endpoints": 307, "core-execution-strategy": 207,
-    "core-ui-other": 205, "core-platform-domain-root": 74, "quantscript": 64,
-    "core-application": 40, "core-remainder": 31,
+    "core-ui-other": 346, "core-ui-workstation-endpoints-map": 345,
+    "core-ui-workstation-endpoints": 265, "core-ui-workstation-endpoints-a-c": 215,
+    "core-platform-domain-root": 161, "quantscript": 72, "core-execution-strategy": 53,
+    "core-application": 49, "core-market-instruments": 42, "core-infrastructure": 36,
+    "core-storage": 34, "core-remainder": 31,
 }
+
+# Roster entries without an observation still cost a process start, so they spread across
+# hosted shards instead of all landing on whichever shard is momentarily lightest.
+UNOBSERVED_SHARD_SECONDS = 5
 
 # Test projects that cannot execute on the ubuntu PR lane and are exercised by the
 # windows-desktop workflows instead: Meridian.Wpf.Tests compiles an empty stub off-Windows
@@ -58,13 +73,32 @@ SUPPORT_TEST_PROJECTS = {
     "tests/Meridian.TestSupport/Meridian.TestSupport.csproj",
 }
 
+def build_workstation_endpoint_shards() -> list[tuple[str, str, str]]:
+    """Split WorkstationEndpointsTests by method-name prefix into disjoint process shards.
+
+    Every split shard selects its own prefixes and excludes the prefixes of the splits before
+    it. The base shard selects the class and excludes every split prefix, so a test that
+    matches no prefix, including one added later, still runs exactly once.
+    """
+    shards: list[tuple[str, str, str]] = []
+    claimed: list[str] = []
+    for name, method_prefixes in WORKSTATION_ENDPOINTS_SPLITS:
+        selected = [f"{WORKSTATION_ENDPOINTS_CLASS}.{prefix}" for prefix in method_prefixes]
+        positive = "|".join(f"FullyQualifiedName~{fragment}" for fragment in selected)
+        terms = [f"({positive})", *(f"FullyQualifiedName!~{fragment}" for fragment in claimed)]
+        shards.append((name, CORE_TEST_PROJECT_PATH, "&".join(terms)))
+        claimed.extend(selected)
+    terms = [
+        f"FullyQualifiedName~{WORKSTATION_ENDPOINTS_CLASS}",
+        *(f"FullyQualifiedName!~{fragment}" for fragment in claimed),
+    ]
+    shards.append(("core-ui-workstation-endpoints", CORE_TEST_PROJECT_PATH, "&".join(terms)))
+    return shards
+
+
 DEFAULT_TEST_PROJECTS = [
     ("core-application", "tests/Meridian.Tests/Meridian.Tests.csproj", "FullyQualifiedName~Meridian.Tests.Application"),
-    (
-        "core-ui-workstation-endpoints",
-        "tests/Meridian.Tests/Meridian.Tests.csproj",
-        "FullyQualifiedName~Meridian.Tests.Ui.WorkstationEndpointsTests",
-    ),
+    *build_workstation_endpoint_shards(),
     (
         "core-ui-other",
         "tests/Meridian.Tests/Meridian.Tests.csproj",
@@ -135,8 +169,11 @@ DEFAULT_TEST_PROJECTS = [
         "tests/Meridian.Tests/Meridian.Tests.csproj",
         "FullyQualifiedName~Meridian.Tests.Reporting",
     ),
+    ("storage-unit", "tests/Meridian.Storage.Tests/Meridian.Storage.Tests.csproj", None),
+    ("execution-unit", "tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj", None),
     ("contracts-unit", "tests/Meridian.Contracts.UnitTests/Meridian.Contracts.UnitTests.csproj", None),
     ("core-unit", "tests/Meridian.Core.UnitTests/Meridian.Core.UnitTests.csproj", None),
+    ("demo", "tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj", None),
     ("fsharp", "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj", None),
     ("ui", "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj", None),
     ("backtesting", "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj", None),
@@ -169,8 +206,15 @@ def build_core_remainder_filter(projects: Sequence[tuple[str, str, str | None]])
                 seen.add(prefix)
                 excluded.append(prefix)
 
+    # The operator is "contains": a fragment that contains a shorter excluded fragment is
+    # already excluded by it, so shards split inside one namespace add no terms here.
+    minimal = [
+        prefix for prefix in excluded
+        if not any(other != prefix and other in prefix for other in excluded)
+    ]
+
     terms = ["FullyQualifiedName~Meridian.Tests"]
-    terms.extend(f"FullyQualifiedName!~{prefix}" for prefix in sorted(excluded))
+    terms.extend(f"FullyQualifiedName!~{prefix}" for prefix in sorted(minimal))
     return "&".join(terms)
 
 
@@ -245,6 +289,39 @@ def portable_isolation_key(value: str) -> str:
     return value
 
 
+def parse_shard(value: str) -> tuple[int, int] | None:
+    """Parse INDEX/TOTAL (1-based). An empty value selects the complete roster."""
+    if not value:
+        return None
+    match = re.fullmatch(r"([1-9][0-9]*)/([1-9][0-9]*)", value)
+    if not match or int(match.group(1)) > int(match.group(2)):
+        raise argparse.ArgumentTypeError("shard must be INDEX/TOTAL with 1 <= INDEX <= TOTAL")
+    return int(match.group(1)), int(match.group(2))
+
+
+def partition_projects(projects: Sequence["TestProject"], total: int) -> list[list["TestProject"]]:
+    """Split the roster into `total` disjoint groups that together contain every entry once.
+
+    Assignment depends only on the roster and its duration hints, so every hosted shard
+    computes the same partition independently. Longest entries are placed first on the
+    lightest group; ties keep roster order and the lowest group. Groups retain roster order.
+    """
+    if total < 1:
+        raise ValueError("total must be a positive integer")
+    order = {project.name: position for position, project in enumerate(projects)}
+    weights = {
+        project.name: SHARD_DURATION_HINTS.get(project.name, UNOBSERVED_SHARD_SECONDS)
+        for project in projects
+    }
+    groups: list[list[TestProject]] = [[] for _ in range(total)]
+    loads = [0] * total
+    for project in sorted(projects, key=lambda p: (-weights[p.name], order[p.name])):
+        target = loads.index(min(loads))
+        groups[target].append(project)
+        loads[target] += weights[project.name]
+    return [sorted(group, key=lambda p: order[p.name]) for group in groups]
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Meridian .NET CI test projects with aggregate reporting.")
     parser.add_argument("--configuration", default="Release", help="dotnet test configuration.")
@@ -284,6 +361,16 @@ def parse_args() -> argparse.Namespace:
         default=[],
         metavar="NAME=PATH",
         help="Override/default-add a test project entry. Repeatable; when present, replaces defaults.",
+    )
+    parser.add_argument(
+        "--shard",
+        type=parse_shard,
+        default=os.environ.get("MERIDIAN_CI_DOTNET_SHARD", ""),
+        metavar="INDEX/TOTAL",
+        help=(
+            "Run one deterministic slice of the default roster (MERIDIAN_CI_DOTNET_SHARD). "
+            "The TOTAL slices are disjoint and together run every roster entry once."
+        ),
     )
     parser.add_argument("--dry-run", action="store_true", help="Print commands and write summaries without running tests.")
     return parser.parse_args()
@@ -445,6 +532,15 @@ def write_build_solution_filter(
     }, indent=2) + "\n", encoding="utf-8")
 
 
+def print_console_safe(text: str, *, file: TextIO | None = None) -> None:
+    """Display diagnostics in the console's encoding without changing UTF-8 log artifacts."""
+    stream = file if file is not None else sys.stdout
+    encoding = getattr(stream, "encoding", None)
+    if encoding:
+        text = text.encode(encoding, errors="backslashreplace").decode(encoding)
+    print(text, file=stream, flush=True)
+
+
 def run_default_build(
     projects: Sequence[TestProject], *, repo_root: Path, configuration: str,
     results_dir: Path, dry_run: bool, isolation_key: str | None = None,
@@ -484,7 +580,7 @@ def run_default_build(
             with log_path.open("rb") as log:
                 log.seek(0, os.SEEK_END)
                 log.seek(max(0, log.tell() - 16 * 1024))
-                print(log.read(16 * 1024).decode("utf-8", errors="replace"), flush=True)
+                print_console_safe(log.read(16 * 1024).decode("utf-8", errors="replace"))
         except OSError as exc:
             print(f"Unable to read build log: {exc}", file=sys.stderr, flush=True)
     return result
@@ -622,7 +718,7 @@ def run_tests(
                     with log_path.open("rb") as log:
                         log.seek(0, os.SEEK_END)
                         log.seek(max(0, log.tell() - 16 * 1024))
-                        print(log.read(16 * 1024).decode("utf-8", errors="replace"), flush=True)
+                        print_console_safe(log.read(16 * 1024).decode("utf-8", errors="replace"))
                 except OSError as exc:
                     print(f"Unable to read shard log: {exc}", file=sys.stderr, flush=True)
         return result
@@ -639,6 +735,7 @@ def write_summaries(
     results: Sequence[TestResult], *, summary_output: Path, json_output: Path,
     build_results: Sequence[TestResult] = (),
     test_duration_seconds: float | None = None,
+    shard: tuple[int, int] | None = None,
 ) -> None:
     summary_output.parent.mkdir(parents=True, exist_ok=True)
     json_output.parent.mkdir(parents=True, exist_ok=True)
@@ -661,6 +758,7 @@ def write_summaries(
         "runAttempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
         "cacheHit": os.environ.get("MERIDIAN_DEPENDENCY_CACHE_HIT", "not reported"),
         "queueSeconds": None,
+        "shard": {"index": shard[0], "total": shard[1]} if shard else None,
     })
     if build_results:
         # Keep successful test totals and results compatible with artifact consumers.
@@ -733,6 +831,18 @@ def main() -> int:
             )
             return 2
 
+    shard = getattr(args, "shard", None)
+    if shard is not None:
+        if args.project:
+            print("--shard selects from the default roster and cannot be combined with --project.", file=sys.stderr)
+            return 2
+        # Coverage wiring above was checked against the complete roster; only then narrow it.
+        projects = partition_projects(projects, shard[1])[shard[0] - 1]
+        print(f"Shard {shard[0]}/{shard[1]}: {', '.join(project.name for project in projects) or 'no roster entries'}", flush=True)
+        if not projects:
+            print("Shard count exceeds the roster; this shard would prove nothing.", file=sys.stderr)
+            return 2
+
     results_dir = Path(args.results_dir)
     use_group_build = not args.project and args.configuration == "Release"
     if not use_group_build:
@@ -753,7 +863,8 @@ def main() -> int:
                                             isolation_key=getattr(args, "isolation_key", None)))
     build_failures = [result for result in build_results if result.exit_code != 0]
     if build_failures:
-        write_summaries(build_results, summary_output=Path(args.summary_output), json_output=Path(args.json_output))
+        write_summaries(build_results, summary_output=Path(args.summary_output), json_output=Path(args.json_output),
+                        shard=shard)
         print("Failing .NET test project builds:", file=sys.stderr)
         for result in build_failures:
             print(f"- {result.name}: {result.path} exited {result.exit_code}", file=sys.stderr)
@@ -773,6 +884,7 @@ def main() -> int:
         results, summary_output=Path(args.summary_output), json_output=Path(args.json_output),
         build_results=build_results if use_group_build else (),
         test_duration_seconds=time.perf_counter() - test_started,
+        shard=shard,
     )
 
     failed = [result for result in results if result.exit_code != 0]

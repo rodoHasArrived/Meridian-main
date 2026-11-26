@@ -1,6 +1,6 @@
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatTimestamp } from "@/lib/format";
 
-export function formatSettingsUtcMinute(
+export function formatSettingsMinute(
   value: string | Date | null | undefined,
   unavailableLabel = "Unavailable"
 ): string {
@@ -13,7 +13,7 @@ export function formatSettingsUtcMinute(
     return unavailableLabel;
   }
 
-  return formatUtcTimestamp(date);
+  return formatTimestamp(date);
 }
 
 export function formatSettingsDateOnly(value: string | null | undefined, unavailableLabel = "No date"): string {

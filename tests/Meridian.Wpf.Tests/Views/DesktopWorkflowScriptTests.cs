@@ -20,6 +20,12 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("Find-DescendantByAutomationId -Window $Window -AutomationId 'PageTitleText'");
         script.Should().Contain("Transient UI Automation timeouts are expected while WPF pages load");
         script.Should().Contain("function Get-ShellAutomationState");
+        script.Should().Contain("function Test-ShellRenderedPageReady");
+        script.Should().Contain("$frameState.IsOffscreen");
+        script.Should().Contain("$frameState.ItemType -ne 'ActiveWorkspacePane'");
+        script.Should().Contain("$renderedPageTag = $frameState.ItemStatus");
+        script.Should().Contain("[string]::Equals($State.RenderedPageTag, $State.PageTag, [System.StringComparison]::Ordinal)");
+        script.Should().Contain("desktop.content.not_active");
         script.Should().Contain("function Resolve-WorkflowPageTag");
         script.Should().Contain("'ResearchShell' { return 'StrategyShell' }");
         script.Should().Contain("'DataOperationsShell' { return 'DataShell' }");
@@ -35,6 +41,7 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("expectedPageTag = $expectedPageTag");
         script.Should().Contain("$pageReadiness = Wait-ForShellPage");
         script.Should().Contain("$stepResult.observedPageTag = $pageReadiness.State.PageTag");
+        script.Should().Contain("$stepResult.observedRenderedPageTag = $captureRetry.Value.state.RenderedPageTag");
     }
 
     [Fact]
@@ -271,16 +278,25 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
-    public void MainWindow_ShouldRebindLaunchNavigationToTheMainContentFrame()
+    public void MainWindow_ShouldDelegateLaunchNavigationToMainPage()
     {
         var mainWindow = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\MainWindow.xaml.cs"));
-        var mainPage = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\MainPage.xaml.cs"));
 
         mainWindow.Should().Contain("request.HasPageNavigation && RootFrame.Content is MainPage mainPage");
         mainWindow.Should().Contain("mainPage.NavigateToLaunchPage(request.PageTag!)");
-        mainPage.Should().Contain("public bool NavigateToLaunchPage(string pageTag)");
-        mainPage.Should().Contain("_navigationService.Initialize(ContentFrame, WorkspaceChromePresentationMode.Docked)");
-        mainPage.Should().Contain("return _navigationService.NavigateTo(pageTag)");
+    }
+
+    [Fact]
+    public void MainWindow_ShouldUseVisibleShellNavigationForImmediateAndDeferredRestore()
+    {
+        var mainWindow = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\MainWindow.xaml.cs"));
+
+        mainWindow.Should().Contain("NavigateToShellPage(restorePlan.DeferredPageTag)");
+        mainWindow.Should().Contain("NavigateToShellPage(restorePlan.TargetPageTag)");
+        mainWindow.Should().Contain("private bool NavigateToShellPage(string pageTag)");
+        mainWindow.Should().Contain("=> RootFrame.Content is MainPage mainPage");
+        mainWindow.Should().Contain("? mainPage.NavigateToLaunchPage(pageTag)");
+        mainWindow.Should().Contain(": _navigationService.NavigateTo(pageTag)");
     }
 
     [Fact]
@@ -373,7 +389,7 @@ public sealed class DesktopWorkflowScriptTests
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\validate-wpf-dev.ps1"));
         var sharedBuildScript = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\SharedBuild.ps1"));
-        var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\wpf-dev-validation.yml"));
+        var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\targeted-test.yml"));
         var makefile = File.ReadAllText(GetRepositoryFilePath(@"make\desktop.mk"));
         var guide = File.ReadAllText(GetRepositoryFilePath(@"docs\engineering\README.md"));
 
@@ -412,10 +428,9 @@ public sealed class DesktopWorkflowScriptTests
         sharedBuildScript.Should().Contain("function Invoke-MeridianWpfTempProjectCleanup");
         sharedBuildScript.Should().Contain("-Filter '*_wpftmp.csproj'");
 
-        workflow.Should().Contain("python build/scripts/ci/run-windows-ci-tests.py @sliceArgs");
-        workflow.Should().Contain("@('--slice', 'dev-loop'");
-        workflow.Should().Contain("$sliceArgs += '--build-only'");
-        workflow.Should().Contain("$sliceArgs += @('--filter', $env:TEST_FILTER)");
+        workflow.Should().Contain("& scripts/dev/validate-wpf-dev.ps1 @devArgs");
+        workflow.Should().Contain("$devArgs.BuildOnly = $true");
+        workflow.Should().Contain("$devArgs.Filter = $env:DOTNET_FILTER");
 
         var sharedCiRunner = File.ReadAllText(GetRepositoryFilePath(@"build\scripts\ci\run-windows-ci-tests.py"));
         sharedCiRunner.Should().Contain("\"restore\"");

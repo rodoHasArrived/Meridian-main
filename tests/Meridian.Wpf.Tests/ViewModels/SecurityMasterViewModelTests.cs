@@ -158,6 +158,20 @@ public sealed class SecurityMasterViewModelTests
         });
     }
 
+    /// <summary>
+    /// Reads the whole <c>SecurityMasterViewModel</c> partial class (the primary file and its
+    /// <c>SecurityMasterViewModel.*.cs</c> partials) so source assertions do not depend on which
+    /// partial file owns a member.
+    /// </summary>
+    private static string ReadSecurityMasterViewModelSource()
+    {
+        var primary = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs");
+        var directory = Path.GetDirectoryName(primary)!;
+        var partials = Directory.GetFiles(directory, "SecurityMasterViewModel.*.cs")
+            .OrderBy(path => path, StringComparer.Ordinal);
+        return string.Join("\n", new[] { primary }.Concat(partials).Select(File.ReadAllText));
+    }
+
     private static string BackfillOnlyUsersJson()
         => $$"""[{"username":"backfill-operator","passwordHash":"{{PasswordHashing.HashPassword("pw")}}","role":"ReadOnly","permissions":["ViewSecurityMaster","TriggerBackfill"]}]""";
 
@@ -546,7 +560,7 @@ public sealed class SecurityMasterViewModelTests
     public void SecurityMasterPageSource_BindsSearchRecoveryAction()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml"));
-        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs"));
+        var viewModel = ReadSecurityMasterViewModelSource();
 
         xaml.Should().Contain("SecurityMasterClearSearchButton");
         xaml.Should().Contain("SecurityMasterSearchButton");
@@ -576,7 +590,7 @@ public sealed class SecurityMasterViewModelTests
     [Fact]
     public void SecurityMasterWorkflowSection_ShouldOwnImportPollingAndBadgeStateWithAdapterBindings()
     {
-        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs"));
+        var viewModel = ReadSecurityMasterViewModelSource();
         var sections = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.Sections.cs"));
 
         sections.Should().Contain("internal sealed class SecurityMasterWorkflowSectionViewModel");
@@ -600,7 +614,7 @@ public sealed class SecurityMasterViewModelTests
     [Fact]
     public void SecurityMasterSearchSection_ShouldOwnSearchFilterAndRecoveryStateWithAdapterBindings()
     {
-        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs"));
+        var viewModel = ReadSecurityMasterViewModelSource();
         var sections = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.Sections.cs"));
 
         sections.Should().Contain("public string SearchQuery { get; set; } = string.Empty;");
@@ -625,7 +639,7 @@ public sealed class SecurityMasterViewModelTests
     [Fact]
     public void SecurityMasterPrintSection_ShouldOwnCorporateActionFormStateWithAdapterBindings()
     {
-        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs"));
+        var viewModel = ReadSecurityMasterViewModelSource();
         var sections = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.Sections.cs"));
 
         sections.Should().Contain("public bool IsRecordCorpActionVisible { get; set; }");
@@ -1185,7 +1199,7 @@ public sealed class SecurityMasterViewModelTests
     public void SecurityMasterPageSource_BindsScheduleBookAndOpenLotReadModel()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml"));
-        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs"));
+        var viewModel = ReadSecurityMasterViewModelSource();
 
         xaml.Should().Contain("SecurityMasterScheduleBookPanel");
         xaml.Should().Contain("SecurityMasterOpenLotReadModelPanel");

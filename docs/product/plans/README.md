@@ -27,15 +27,15 @@ with retained evidence and carries no ranking.
 | Plan | Purpose | Status |
 |---|---|---|
 | [What To Work On Next (2026-11-01)](next-work-determination-2026-11-01.md) | Prioritization input: `rc.2` bar still not met; `Production Certification` no longer runs on `main` pushes, so the precondition must be dispatched; delivery-system backlog largely closed and the product lane is next. Opens on a `main` head red from generated-doc drift that #3354 repaired the same day. | Latest dated snapshot |
-| [What To Work On Next (2026-10-27)](next-work-determination-2026-10-27.md) | Prioritization input: the `rc.2` bar is not met (untagged, signing secrets unrefused) although its engineering half is green on `main`. | Historical snapshot |
+| [What To Work On Next (2026-10-27)](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/next-work-determination-2026-10-27.md) | Prioritization input: the `rc.2` bar is not met (untagged, signing secrets unrefused) although its engineering half is green on `main`. | Historical snapshot |
 | [What To Work On Next (2026-10-25)](next-work-determination-2026-10-25.md) | Prioritization input: `rc.2` bar not met; pins `zod` to clear the dashboard advisory. | Historical snapshot |
-| [What To Work On Next (2026-10-24)](next-work-determination-2026-10-24.md) | Prioritization input: `rc.1` exists; finds it uncertifiable and names the `rc.2` blockers. | Historical snapshot |
-| [What To Work On Next (2026-10-20)](next-work-determination-2026-10-20.md) | Prioritization input: CI-green bar met, so the RC tag has a target; records W9 close-out drift. | Historical snapshot |
-| [What To Work On Next (2026-10-16)](next-work-determination-2026-10-16.md) | Carries the unmerged 2026-10-15 ranking forward and adds delivery-system findings. | Historical snapshot |
+| [What To Work On Next (2026-10-24)](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/next-work-determination-2026-10-24.md) | Prioritization input: `rc.1` exists; finds it uncertifiable and names the `rc.2` blockers. | Historical snapshot |
+| [What To Work On Next (2026-10-20)](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/next-work-determination-2026-10-20.md) | Prioritization input: CI-green bar met, so the RC tag has a target; records W9 close-out drift. | Historical snapshot |
+| [What To Work On Next (2026-10-16)](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/next-work-determination-2026-10-16.md) | Carries the unmerged 2026-10-15 ranking forward and adds delivery-system findings. | Historical snapshot |
 | [Certification Unblock Verification (2026-10-12)](certification-unblock-verification-2026-10-12.md) | Verification record: #3133 clears the `GHSA-vfj7-8cjw-p6xm` blocker; no ranking. | Historical snapshot |
-| [What To Work On Next (2026-10-05)](next-work-determination-2026-10-05.md) | Prioritization input carried forward by later determinations; the 2026-10-10 draft (#3132) was closed unmerged. | Historical snapshot |
-| [What To Work On Next (2026-10-04)](next-work-determination-2026-10-04.md) | Prioritization input, superseded by 2026-10-05. | Historical snapshot |
-| [What To Work On Next (2026-10-02)](next-work-determination-2026-10-02.md) | Prioritization input, superseded by 2026-10-05. | Historical snapshot |
+| [What To Work On Next (2026-10-05)](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/next-work-determination-2026-10-05.md) | Prioritization input carried forward by later determinations; the 2026-10-10 draft (#3132) was closed unmerged. | Historical snapshot |
+| [What To Work On Next (2026-10-04)](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/next-work-determination-2026-10-04.md) | Prioritization input, superseded by 2026-10-05. | Historical snapshot |
+| [What To Work On Next (2026-10-02)](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/next-work-determination-2026-10-02.md) | Prioritization input, superseded by 2026-10-05. | Historical snapshot |
 | [What To Work On Next (2026-09-27)](next-work-determination-2026-09-27.md) | Prioritization input, superseded by 2026-10-05; kept in place because `program-state.yml` and the readiness tracker cite it. | Historical snapshot |
 
 ## Delivery Plans and Slates
@@ -49,6 +49,6 @@ with retained evidence and carries no ranking.
 | [Production-Readiness Backlog (2026-08)](production-readiness-backlog-2026-08.md) | Ten-item production-readiness ordering |
 
 When a newer determination or slate supersedes one of these, update this index. Archive the old
-file under [`archive/docs/plans/`](../../../archive/docs/plans/README.md) once active evidence
+file under [`archive/docs/plans/`](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/README.md) once active evidence
 references no longer require its path; otherwise label it superseded and explain why it remains.
 Update the register when a document is added, moved, or retired.

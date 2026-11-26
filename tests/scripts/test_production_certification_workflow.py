@@ -27,6 +27,20 @@ class ProductionCertificationWorkflowTests(unittest.TestCase):
         cls.integrations = INTEGRATIONS_PATH.read_text(encoding="utf-8")
         cls.coverlet_settings = COVERLET_SETTINGS_PATH.read_text(encoding="utf-8")
 
+    def test_documentation_evidence_uses_the_merge_gate_generation_and_drift_policy(self) -> None:
+        workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
+        steps = workflow["jobs"]["documentation-evidence"]["steps"]
+        commands = [" ".join(step.get("run", "").split()) for step in steps]
+        generation = "python build/scripts/run-maintained-generation.py --docs-only --report artifacts/docs/generation.json"
+        freshness = "python build/scripts/ci/check-generated-output.py"
+        self.assertIn(generation, commands)
+        self.assertIn(freshness, commands)
+        self.assertLess(commands.index(generation), commands.index(freshness))
+        # check-generated-output accepts declared CI-only outputs; a bare git diff does not.
+        self.assertNotIn("git diff --exit-code", commands)
+        publish = next(command for command in commands if "production-certification.json" in command)
+        self.assertIn("cp docs/status/docs-automation-summary.json artifacts/docs/production-certification.json", publish)
+
     def test_runs_on_schedule_dispatch_and_release_calls_but_not_ordinary_main_pushes(self) -> None:
         # BaseLoader keeps the YAML 1.1 word "on" as a string, as GitHub does.
         workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
@@ -50,8 +64,14 @@ class ProductionCertificationWorkflowTests(unittest.TestCase):
         })
         self.assertIn("image: postgres:17", self.integrations)
         self.assertIn('MERIDIAN_DISABLE_DOCKER_TESTS: "false"', self.integrations)
+        # Direct Lending and Demo collect in their own steps. The Meridian suite collects in
+        # every process its runner starts, with the same settings file.
         self.assertEqual(self.integrations.count('--collect:"XPlat Code Coverage"'), 2)
         self.assertEqual(self.integrations.count("--settings tests/coverlet.runsettings"), 2)
+        self.assertIn("python build/scripts/ci/run-meridian-integrations.py", self.integrations)
+        runner = (REPO_ROOT / "build/scripts/ci/run-meridian-integrations.py").read_text(encoding="utf-8")
+        self.assertIn('"--collect", "XPlat Code Coverage", "--settings", settings,', runner)
+        self.assertIn('parser.add_argument("--settings", default="tests/coverlet.runsettings")', runner)
         self.assertIn('"Category=Integration&Category!=LiveProvider"', self.integrations)
         self.assertIn('"Category=Integration"', self.integrations)
 
@@ -70,6 +90,7 @@ class ProductionCertificationWorkflowTests(unittest.TestCase):
         self.assertIn("validate-test-results.py", self.integrations)
         self.assertIn("--require-trx-prefix meridian-integrations", self.integrations)
         self.assertIn("--require-trx-prefix direct-lending-integrations", self.integrations)
+        self.assertIn("--require-trx-prefix demo-integrations", self.integrations)
 
     def test_postgres_client_tools_match_the_service_major(self) -> None:
         # Integrations use clients inside the service container; the recovery drill

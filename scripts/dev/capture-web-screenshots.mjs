@@ -6,6 +6,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
+import { runIntercompanyWorkQueueSmoke } from "../../src/Meridian.Ui/dashboard/scripts/smoke-intercompany-work-queue.mjs";
 import {
   createScreenshotApiResolver,
   loadScreenshotScenarioModule,
@@ -47,6 +48,64 @@ function parseArgs(argv) {
   }
 
   return { values, valueLists, flags };
+}
+
+export function parseCaptureWorkers(value = 1) {
+  const workers = Number(value);
+  if (!Number.isInteger(workers) || workers < 1 || workers > 8) {
+    throw new Error("--workers must be an integer between 1 and 8.");
+  }
+  return workers;
+}
+
+/** Run isolated captures with bounded concurrency and one manifest writer. */
+export async function runCaptureWorkers(captures, workers, capture, checkpoint) {
+  const workerCount = Math.min(parseCaptureWorkers(workers), captures.length);
+  const completed = new Array(captures.length);
+  let nextIndex = 0;
+  let fatalError = null;
+  let checkpointTail = Promise.resolve();
+  const shellMountFailureLimit = 3;
+  const isShellMountFailure = (result) => result?.status === "failed"
+    && /App shell failed to mount/.test(String(result.error));
+
+  async function worker() {
+    while (!fatalError && nextIndex < captures.length) {
+      const index = nextIndex++;
+      try {
+        completed[index] = await capture(captures[index], index);
+      } catch (error) {
+        fatalError ??= error;
+        return;
+      }
+
+      // Captures may finish out of order. Snapshot in catalog order and serialize
+      // writes so the manifest's shared temporary file never has competing owners.
+      checkpointTail = checkpointTail.then(async () => {
+        const results = completed.filter(Boolean);
+        await checkpoint(results);
+        if (
+          completed.slice(0, shellMountFailureLimit).length === shellMountFailureLimit
+          && Array.from({ length: shellMountFailureLimit }, (_, index) => completed[index]).every(isShellMountFailure)
+          && results.every(isShellMountFailure)
+        ) {
+          fatalError ??= new Error(
+            `Aborting capture run: the app shell failed to mount on the first ${results.length} route(s). `
+            + "This is a shell-level failure (activation gate, missing shell fixtures, or a dev server "
+            + "compile error), so every remaining route would fail the same way. See the manifest logs."
+          );
+        }
+      }).catch((error) => { fatalError ??= error; });
+      await checkpointTail;
+    }
+  }
+
+  // Drain every started capture before returning or throwing. Browser teardown
+  // must not race a worker that is still closing its context or writing evidence.
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+  await checkpointTail;
+  if (fatalError) throw fatalError;
+  return completed.filter(Boolean);
 }
 
 async function pathExists(candidate) {
@@ -451,7 +510,30 @@ function assertCaptureRouteStateIdentity(captures) {
   }
 }
 
-async function findMissingCaptureRoutePaths(captures, routeCatalogPath, appShellPath) {
+/** A retained concrete capture covers a route pattern only at exact segment boundaries. */
+export function screenshotRouteMatches(pattern, capturePath) {
+  const expected = screenshotCoveragePath(pattern);
+  const actual = screenshotCoveragePath(capturePath);
+  if (!expected || !actual) return false;
+  const expectedUrl = new URL(expected, "http://meridian.local");
+  const actualUrl = new URL(actual, "http://meridian.local");
+  if (expectedUrl.hash !== actualUrl.hash) return false;
+  const expectedSegments = expectedUrl.pathname.split("/");
+  const actualSegments = actualUrl.pathname.split("/");
+  if (expectedSegments.length !== actualSegments.length) return false;
+  return expectedSegments.every((segment, index) => {
+    const value = actualSegments[index];
+    if (!/^:[A-Za-z_][A-Za-z0-9_]*$/.test(segment)) return segment === value;
+    if (!value) return false;
+    try {
+      const decoded = decodeURIComponent(value);
+      return decoded.length > 0 && !decoded.startsWith(":") && !/[\/\\]/.test(decoded)
+        && !/%(?:2f|5c)/i.test(decoded);
+    } catch { return false; }
+  });
+}
+
+export async function findMissingCaptureRoutePaths(captures, routeCatalogPath, appShellPath) {
   const capturedPaths = new Set(
     captures
       .map((capture) => screenshotCoveragePath(capture.path))
@@ -468,7 +550,7 @@ async function findMissingCaptureRoutePaths(captures, routeCatalogPath, appShell
       .filter((routePath) => routePath.length > 0)
   );
   return [...expectedPaths]
-    .filter((routePath) => !capturedPaths.has(routePath))
+    .filter((routePath) => ![...capturedPaths].some((capturedPath) => screenshotRouteMatches(routePath, capturedPath)))
     .sort();
 }
 
@@ -533,15 +615,44 @@ const NUMBERED_COMPOUND_HEADS = new Set([
   "class", "day", "form", "fy", "level", "mid", "phase", "post", "pre", "rule", "section", "series",
   "step", "tier", "top", "type", "year"
 ]);
+// A "Latency" term followed by a clock time or "Never": latency is a duration. Line-anchored, so
+// "Latency / Last Response", "P99 LATENCY" and "Latency statistics: …" pass.
+const LATENCY_NOT_DURATION_PATTERN = /^latency\n(?:never|[a-z]{3} \d{1,2}, \d{1,2}:\d{2}(?: [ap]m)?(?: utc)?)$/gim;
+// Placeholders standing in for optional context: an undeclared basis printed as a failure, or a
+// missing harness fixture behind the saved-views notice.
+const UNAVAILABLE_PLACEHOLDER_PATTERN = /\b(?:basis|saved views) unavailable\b/gi;
+// The article "a" directly before a word that starts with a vowel sound ("a Operator session").
+// Generated sentences get the article from withIndefiniteArticle in the dashboard's lib/format.
+// Words that start with a vowel letter but a consonant sound ("a user", "a one-time") pass.
+const ARTICLE_BEFORE_VOWEL_PATTERN = /(?<![\w'’/-])a ([aeiou][a-z]+)/gi;
+const CONSONANT_SOUND_VOWEL_START = /^(?:uni|us[aeu]|ut[eio]|eu|one|once|ubiq)/i;
 export const CAPTURE_CONTENT_ISSUE_KINDS = [
+  "article-before-vowel",
   "opaque-identifier",
   "singular-count-plural-noun",
   "api-path",
   "internal-term",
   "slug-identifier",
+  "latency-not-duration",
+  "unavailable-placeholder",
   "disabled-primary-without-reason",
-  "status-contradiction"
+  "status-contradiction",
+  "truncated-badge",
+  "position-source-missing",
+  "primary-task-below-fold",
+  "repeated-unavailable",
+  "single-failure-notice",
+  "detail-value-wraps",
+  "table-overflow-without-cue",
+  "monospace-prose",
+  "nav-row-budget",
+  "chart-without-table",
+  "detail-rail-clipped",
+  "chart-label-overlap"
 ];
+
+/** How often the same "… unavailable" line may repeat in a route's main content. */
+export const MAX_REPEATED_UNAVAILABLE_LINES = 2;
 
 /**
  * True for a hyphenated token that is a record identifier rather than an English compound. Tuned
@@ -570,17 +681,57 @@ export function isSlugIdentifier(token) {
  *     none of which is part of the rendered text.
  *   - singular-count-plural-noun: "1 rows" style counts. Use pluralizeCount from the dashboard's
  *     lib/format.
+ *   - article-before-vowel: "a" before a vowel sound ("a Operator session"). Generated sentences
+ *     use withIndefiniteArticle from the dashboard's lib/format.
  *   - api-path: a request path such as "/api/ledger/...". Failed requests go through ErrorNotice,
  *     which keeps the path under "Technical details".
  *   - internal-term: "lane", "payload", "mutation", "caller-visible".
  *   - slug-identifier: a slug-shaped record identifier (see isSlugIdentifier).
+ *   - latency-not-duration: a line reading just "Latency" followed by a line holding a clock time
+ *     ("Jul 13, 06:55 PM UTC") or "Never". Latency is a duration; a last-response time belongs
+ *     under its own label. Recorded as "Latency: <value>".
+ *   - unavailable-placeholder: "Basis unavailable" or "Saved views unavailable". An undeclared
+ *     basis is left off the figures strip (the figure's passport states it); the saved-views
+ *     notice in a capture means the harness is missing a fixture.
  *   - disabled-primary-without-reason: a disabled primary button with no title or description
  *     saying why. Passed in by the caller, which reads it from the DOM.
  *   - status-contradiction: the status bar says "up to date" while the page's posture strip says
  *     its freshness needs review or is blocked. Also read from the DOM by the caller.
+ *   - truncated-badge: a visible status badge whose text is clipped ("OPE" for "Open"). Badges
+ *     never truncate; a long one wraps. Read from the DOM by the caller.
+ *   - position-source-missing: a positions table that does not name where its rows come from
+ *     (paper session, live holdings or a retained run). Read from the DOM by the caller.
+ *   - primary-task-below-fold: the route declares `primaryTask: { selector, maxTop }` and that
+ *     element starts lower than `maxTop` pixels. The main task sits under the page heading.
+ *     Measured by the caller.
+ *   - repeated-unavailable: the same line containing "unavailable" appears more than
+ *     MAX_REPEATED_UNAVAILABLE_LINES times. A value missing on every row is said once (a column
+ *     note), not repeated per row.
+ *   - single-failure-notice: the route declares `maxAlerts` and shows more alerts or Retry
+ *     buttons than that. One backend failure shows one notice with one Retry. Counted by the caller.
+ *   - detail-value-wraps: a date or figure value (`[data-detail-value="date"|"number"]`) that
+ *     wraps onto more than one line. Dates and amounts read on one line. Measured by the caller.
+ *   - table-overflow-without-cue: a table that overflows sideways without a cue: neither inside a
+ *     table-workbench frame nor marked `data-overflow-right` (the edge shadow). Measured by the caller.
+ *   - monospace-prose: on routes that declare `monospaceProse: true`, visible text set in a
+ *     monospace face that is more than three words with no digits. The data face is for
+ *     figures, IDs and code; labels and sentences use the body face. Measured by the caller.
+ *   - nav-row-budget: the route declares `maxSidebarSubRows` and the sidebar shows more visible
+ *     sub-rows than that. An expanded workspace adds a handful of rows (Accounting adds one per
+ *     group); the rest of the workspaces stay on screen. Counted by the caller.
+ *   - chart-without-table: on routes that declare `chartTables: true`, a visible chart graphic
+ *     (`[role="img"]` at least 200px wide) whose section holds neither a table nor a
+ *     `[data-chart-table]` alternative. Every chart has a table a screen reader or a copy-paste can
+ *     use. Read from the DOM by the caller.
+ *   - detail-rail-clipped: a detail panel (the workbench inspector, an aside or a dense-row detail
+ *     panel), or a box inside one, that hides content below its visible area with no way to see it:
+ *     it neither scrolls nor shows the `data-more-below` cue. Hidden fields look absent. Measured by
+ *     the caller.
+ *   - chart-label-overlap: two text labels in the same chart whose boxes overlap, such as the last
+ *     two x-axis dates. Measured by the caller.
  * Returns one entry per distinct offending excerpt.
  */
-export function findCaptureContentIssues(text, { unexplainedDisabledActions = [], statusContradictions = [] } = {}) {
+export function findCaptureContentIssues(text, { unexplainedDisabledActions = [], statusContradictions = [], truncatedBadges = [], unsourcedPositionTables = [], primaryTaskIssues = [], failureNoticeIssues = [], wrappedDetailValues = [], uncuedOverflowTables = [], monospaceProse = [], navRowIssues = [], chartsWithoutTables = [], clippedDetailPanels = [], overlappingChartLabels = [] } = {}) {
   const issues = [];
   const seen = new Set();
   const record = (kind, excerpt) => {
@@ -601,6 +752,12 @@ export function findCaptureContentIssues(text, { unexplainedDisabledActions = []
       record("singular-count-plural-noun", match[0]);
     }
   }
+  for (const match of content.matchAll(ARTICLE_BEFORE_VOWEL_PATTERN)) {
+    // Only the lowercase article: a capital "A" is usually a label ("Class A income").
+    if (match[0].startsWith("a ") && !CONSONANT_SOUND_VOWEL_START.test(match[1])) {
+      record("article-before-vowel", match[0]);
+    }
+  }
   for (const match of content.matchAll(API_PATH_PATTERN)) {
     record("api-path", match[0]);
   }
@@ -612,11 +769,53 @@ export function findCaptureContentIssues(text, { unexplainedDisabledActions = []
       record("slug-identifier", match[0]);
     }
   }
+  for (const match of content.matchAll(LATENCY_NOT_DURATION_PATTERN)) {
+    record("latency-not-duration", match[0].replace(/\n/g, ": "));
+  }
+  for (const match of content.matchAll(UNAVAILABLE_PLACEHOLDER_PATTERN)) {
+    record("unavailable-placeholder", match[0]);
+  }
   for (const label of unexplainedDisabledActions) {
     record("disabled-primary-without-reason", String(label || "(unlabelled button)"));
   }
   for (const contradiction of statusContradictions) {
     record("status-contradiction", String(contradiction));
+  }
+  for (const badge of truncatedBadges) {
+    record("truncated-badge", String(badge || "(unlabelled badge)"));
+  }
+  for (const table of unsourcedPositionTables) {
+    record("position-source-missing", String(table || "(unlabelled positions table)"));
+  }
+  for (const issue of primaryTaskIssues) {
+    record("primary-task-below-fold", String(issue));
+  }
+  for (const issue of failureNoticeIssues) {
+    record("single-failure-notice", String(issue));
+  }
+  for (const value of wrappedDetailValues) {
+    record("detail-value-wraps", String(value));
+  }
+  for (const table of uncuedOverflowTables) {
+    record("table-overflow-without-cue", String(table || "(unlabelled table)"));
+  }
+  for (const text of monospaceProse) {
+    record("monospace-prose", String(text));
+  }
+  for (const issue of navRowIssues) {
+    record("nav-row-budget", String(issue));
+  }
+  for (const chart of chartsWithoutTables) {
+    record("chart-without-table", String(chart || "(unlabelled chart)"));
+  }
+  for (const panel of clippedDetailPanels) {
+    record("detail-rail-clipped", String(panel || "(unlabelled detail panel)"));
+  }
+  for (const pair of overlappingChartLabels) {
+    record("chart-label-overlap", String(pair));
+  }
+  for (const line of findRepeatedUnavailableLines(content)) {
+    record("repeated-unavailable", line);
   }
 
   return issues;
@@ -657,7 +856,9 @@ export function describeCaptureContentIssues(captureName, issues) {
   const more = issues.length > 5 ? `; and ${issues.length - 5} more` : "";
   return `Capture ${captureName} renders ${issues.length} operator-copy issue(s) in its main content: ${shown}${more}. `
     + "Name records by display name and keep identifiers and request paths in technical details; use pluralizeCount "
-    + "for counts; write for operators, not about the system; give a disabled primary button a disabledReason. "
+    + "for counts and withIndefiniteArticle for a/an before a generated name; write for operators, not about the system; give a disabled primary button a disabledReason; "
+    + "show latency only as a duration; leave an undeclared basis off the strip; never clip a status badge; "
+    + "a 'Saved views unavailable' notice in a capture means a missing fixture. "
     + "A route that cannot comply yet lists the kind with a reason under allowedContentIssues in the route catalog.";
 }
 
@@ -749,7 +950,363 @@ function assertNoCaptureBrowserError(pageErrors, captureName) {
   }
 }
 
-async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defaults, minBytes, minTextLength, timeoutMs, readinessTimeoutMs, textDir = null) {
+function canonicalJson(value) {
+  if (Array.isArray(value)) return value.map(canonicalJson);
+  if (value !== null && typeof value === "object") {
+    return Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonicalJson(value[key])]));
+  }
+  return value;
+}
+
+/** Lines containing "unavailable" that appear more than the allowed number of times, as "line ×n". */
+export function findRepeatedUnavailableLines(text, limit = MAX_REPEATED_UNAVAILABLE_LINES) {
+  const counts = new Map();
+  for (const raw of String(text ?? "").split(/\r?\n/)) {
+    const line = raw.replace(/\s+/g, " ").trim();
+    if (!/\bunavailable\b/i.test(line)) continue;
+    counts.set(line, (counts.get(line) ?? 0) + 1);
+  }
+  return [...counts].filter(([, count]) => count > limit).map(([line, count]) => `${line} ×${count}`);
+}
+
+/** A declared primary task that is missing or starts below `maxTop`, as an issue line, or null. */
+export function describePrimaryTaskPosition(primaryTask, measuredTop) {
+  if (!primaryTask?.selector) return null;
+  const maxTop = Number.isFinite(primaryTask.maxTop) ? primaryTask.maxTop : 600;
+  if (measuredTop === null || measuredTop === undefined) return `${primaryTask.selector} not found`;
+  return measuredTop > maxTop ? `${primaryTask.selector} starts at ${Math.round(measuredTop)}px (limit ${maxTop}px)` : null;
+}
+
+/** More alerts or Retry buttons than the route allows, as issue lines. */
+/** The sidebar row budget: one issue when more sub-rows are visible than the route allows. */
+export function describeNavRowBudget(maxSidebarSubRows, visibleSubRows) {
+  if (!Number.isInteger(maxSidebarSubRows) || !Number.isInteger(visibleSubRows)) return [];
+  return visibleSubRows > maxSidebarSubRows ? [`${visibleSubRows} sidebar sub-rows (limit ${maxSidebarSubRows})`] : [];
+}
+
+export function describeFailureNotices(maxAlerts, counts) {
+  if (!Number.isInteger(maxAlerts)) return [];
+  return [
+    counts.alerts > maxAlerts ? `${counts.alerts} alerts (limit ${maxAlerts})` : null,
+    counts.retries > maxAlerts ? `${counts.retries} Retry buttons (limit ${maxAlerts})` : null
+  ].filter(Boolean);
+}
+
+/**
+ * A positions table is one whose accessible name says "positions" (the same test the capture
+ * probe applies in the page). "Position contributions" or an accounts table is not a position book.
+ */
+export function isPositionsTableLabel(label) {
+  return /\bpositions\b/i.test(String(label ?? ""));
+}
+
+/**
+ * The status bar may say "up to date" only when neither the page's freshness fact nor the masthead
+ * pill's source items (provenance, provider health) need review.
+ */
+export function findStatusContradictions(probe) {
+  if (!/up to date/i.test(probe?.statusBar ?? "")) return [];
+  return [
+    probe?.pageFreshness ? `status bar "${probe.statusBar}" vs page "${probe.pageFreshness}"` : null,
+    probe?.shellFreshness ? `status bar "${probe.statusBar}" vs masthead "${probe.shellFreshness}"` : null
+  ].filter(Boolean);
+}
+
+/**
+ * Different registered figures that share a label and a population are the same figure to an
+ * operator ("Providers healthy · Providers in use" on Today and on Data). Within one dataset they
+ * must show the same value, whichever id or payload supplied them. Groups come from the shared
+ * KPI definitions fixture; a figure whose rendered population differs (e.g. "Providers visible to
+ * you") is a different group.
+ */
+export function checkKpiLabelConsistency(captures, definitions) {
+  const groupOf = new Map();
+  for (const definition of definitions ?? []) {
+    groupOf.set(definition.id, `${definition.label}\u0000${definition.population}`);
+  }
+  const observed = new Map();
+  const conflicts = [];
+  for (const capture of captures) {
+    if (capture.status !== "passed") continue;
+    for (const kpi of capture.kpis ?? []) {
+      const group = groupOf.get(kpi.id);
+      if (!group) continue;
+      const key = JSON.stringify([capture.scenario ?? null, group, kpi.population ?? null]);
+      const current = { id: kpi.id, value: kpi.value, display: kpi.display, route: capture.route };
+      const previous = observed.get(key);
+      if (!previous) {
+        observed.set(key, current);
+      } else if (previous.id !== current.id && previous.value !== current.value) {
+        conflicts.push({ group: group.replace("\u0000", " · "), previous, current });
+      }
+    }
+  }
+  return { conflicts };
+}
+
+/** Visible status badges on a route: their label and the severity (colour) they render with. */
+export async function collectSeverityBadges(page) {
+  const badges = await page.evaluate(() =>
+    Array.from(document.querySelectorAll("main .mds-sev[data-severity], main [data-severity].mds-badge"))
+      .filter((badge) => badge.getClientRects().length > 0)
+      .map((badge) => ({ label: (badge.textContent ?? "").replace(/\s+/g, " ").trim(), severity: badge.getAttribute("data-severity") }))
+      .filter((badge) => badge.label && badge.severity));
+  return Array.isArray(badges) ? badges : [];
+}
+
+/**
+ * One status label has one colour: within a dataset, the same badge text (case-insensitive) must
+ * render with the same severity on every route.
+ */
+export function checkSeverityLabelConsistency(captures) {
+  const observed = new Map();
+  const conflicts = [];
+  for (const capture of captures) {
+    if (capture.status !== "passed") continue;
+    for (const badge of capture.severityBadges ?? []) {
+      const key = JSON.stringify([capture.scenario ?? null, badge.label.toLowerCase()]);
+      const current = { severity: badge.severity, route: capture.route };
+      const previous = observed.get(key);
+      if (!previous) observed.set(key, current);
+      else if (previous.severity !== current.severity && !conflicts.some((conflict) => conflict.key === key)) {
+        conflicts.push({ key, label: badge.label, previous, current });
+      }
+    }
+  }
+  return { conflicts };
+}
+
+/** Compare observations only within the same dataset, operating scope and read revision. */
+export function checkKpiConsistency(captures) {
+  const observed = new Map();
+  const conflicts = [];
+  let observationCount = 0;
+  let comparisonCount = 0;
+  for (const capture of captures) {
+    if (capture.status !== "passed") continue;
+    for (const kpi of capture.kpis ?? []) {
+      observationCount += 1;
+      const scope = JSON.stringify(canonicalJson(JSON.parse(kpi.scope)));
+      const key = JSON.stringify([capture.scenario ?? null, kpi.id, scope, kpi.revision ?? null]);
+      const current = { ...kpi, scope, route: capture.route, capture: capture.name };
+      const previous = observed.get(key);
+      if (!previous) {
+        observed.set(key, current);
+        continue;
+      }
+      comparisonCount += 1;
+      if (previous.value !== current.value || previous.display !== current.display) {
+        conflicts.push({ id: kpi.id, scope, scenario: capture.scenario ?? null, previous, current });
+      }
+    }
+  }
+  return { observationCount, comparisonCount, conflicts };
+}
+
+function decimalToScaled(text, scale) {
+  const match = /^(-?)(\d+)(?:\.(\d+))?$/.exec(String(text ?? "").trim());
+  if (!match || (match[3]?.length ?? 0) > scale) return null;
+  return BigInt(`${match[2]}${(match[3] ?? "").padEnd(scale, "0")}`) * (match[1] ? -1n : 1n);
+}
+
+/**
+ * On one page, the holdings table and the headline must give the same total exposure: the sum of
+ * the table's row exposures has to equal both the table's own total line and the page's
+ * "Total exposure" headline figure. A table narrowed by a filter (fewer rows shown than loaded) is
+ * not a complete population and is skipped.
+ */
+/** The shared headline-figure catalog (tests/fixtures/kpi-definitions), or none when it is absent. */
+export async function loadKpiDefinitions(repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..")) {
+  try {
+    const raw = await fs.readFile(path.join(repoRoot, "tests", "fixtures", "kpi-definitions", "kpi-definitions.json"), "utf8");
+    return JSON.parse(raw).definitions ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export function checkHoldingsTotals(captures) {
+  const conflicts = [];
+  let checkedCount = 0;
+  const scale = 18;
+  for (const capture of captures) {
+    if (capture.status !== "passed") continue;
+    const headline = (capture.kpis ?? []).find((kpi) => kpi.id === "portfolio.total-exposure");
+    let headlineValue = null;
+    try { headlineValue = headline ? JSON.parse(headline.value) : null; } catch { headlineValue = null; }
+    for (const table of capture.holdingsTables ?? []) {
+      if (table.rowAmounts.length !== table.loadedCount) continue;
+      checkedCount += 1;
+      const report = (problem) => conflicts.push({ capture: capture.name, route: capture.route, problem });
+      const amounts = table.rowAmounts.map((amount) => decimalToScaled(amount, scale));
+      const headlineAvailable = headlineValue?.status === "available";
+      if (amounts.some((amount) => amount === null) || new Set(table.rowCurrencies).size > 1) {
+        // Rows that cannot be summed must not sit under a total that claims they were.
+        if (table.total) report(`the table shows a total of ${table.total} but its rows cannot be summed in one currency`);
+        else if (headlineAvailable) report(`the headline shows '${headline.display}' but the table rows cannot be summed in one currency`);
+        continue;
+      }
+      const sum = amounts.reduce((total, amount) => total + amount, 0n);
+      const tableTotal = decimalToScaled(table.total, scale);
+      if (table.total && tableTotal !== sum) {
+        report(`the table rows sum to a different amount than the table total (${table.total})`);
+      }
+      if (headlineAvailable && decimalToScaled(headlineValue.value, scale) !== sum) {
+        report(`the table rows sum to a different amount than the headline figure '${headline.display}'`);
+      }
+      if (headline && !headlineAvailable && table.total) {
+        report(`the table shows a total of ${table.total} but the headline figure shows '${headline.display}'`);
+      }
+    }
+  }
+  return { checkedCount, conflicts };
+}
+
+export async function collectHoldingsTables(page) {
+  return page.locator("[data-holdings-table]").evaluateAll((tables) => {
+    const visible = (element) => element.getClientRects().length > 0 && getComputedStyle(element).visibility !== "hidden";
+    return tables.filter(visible).map((table) => {
+      const cells = Array.from(table.querySelectorAll("[data-holding-exposure]")).filter(visible);
+      return {
+        loadedCount: Number(table.getAttribute("data-holdings-loaded-count")),
+        total: table.getAttribute("data-holdings-total") || null,
+        totalCurrency: table.getAttribute("data-holdings-total-currency") || null,
+        rowAmounts: cells.map((cell) => cell.getAttribute("data-holding-exposure") ?? ""),
+        rowCurrencies: cells.map((cell) => cell.getAttribute("data-holding-currency") ?? "")
+      };
+    });
+  });
+}
+
+export async function collectKpiSnapshots(page) {
+  const snapshots = await page.locator("[data-kpi-id]").evaluateAll((elements) => elements
+    .filter((element) => {
+      if (element.getClientRects().length === 0 || getComputedStyle(element).visibility === "hidden") return false;
+      // Closed native disclosures may retain layout boxes in Chromium. Their
+      // summary remains visible, but collapsed comparison content is not evidence.
+      for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        if (ancestor.tagName === "DETAILS" && !ancestor.hasAttribute("open")
+          && !ancestor.querySelector(":scope > summary")?.contains(element)) return false;
+      }
+      return true;
+    })
+    .map((element) => ({
+      id: element.getAttribute("data-kpi-id"),
+      scope: element.getAttribute("data-kpi-scope"),
+      value: element.getAttribute("data-kpi-value"),
+      display: element.getAttribute("data-kpi-display"),
+      renderedDisplay: element.querySelector("[data-kpi-rendered-value]")?.textContent?.trim() ?? null,
+      revision: element.getAttribute("data-kpi-revision"),
+      population: element.getAttribute("data-kpi-population")
+    })));
+  for (const snapshot of snapshots) {
+    if (!snapshot.id || !snapshot.scope || snapshot.value === null || snapshot.display === null) {
+      throw new Error(`Incomplete KPI screenshot contract for '${snapshot.id ?? "unknown"}'.`);
+    }
+    let scope;
+    try { scope = JSON.parse(snapshot.scope); } catch {
+      throw new Error(`KPI '${snapshot.id}' has invalid scope JSON: ${snapshot.scope}`);
+    }
+    if (scope === null || typeof scope !== "object" || Array.isArray(scope)) {
+      throw new Error(`KPI '${snapshot.id}' scope must be a JSON object.`);
+    }
+    if (snapshot.renderedDisplay == null || snapshot.renderedDisplay !== snapshot.display) {
+      throw new Error(`KPI '${snapshot.id}' display contract '${snapshot.display}' does not match `
+        + `its rendered value '${snapshot.renderedDisplay ?? "missing [data-kpi-rendered-value]"}'.`);
+    }
+  }
+  return snapshots;
+}
+
+/** Track data requests independently of transport quiet periods and UI busy labels. */
+export function createCaptureApiTracker(page) {
+  const pending = new Set();
+  const waiters = new Set();
+  let revision = 0;
+  const onRequest = (request) => {
+    if (new URL(request.url()).pathname.startsWith("/api/")) {
+      pending.add(request);
+      revision += 1;
+    }
+  };
+  const onFinished = (request) => {
+    if (pending.delete(request)) {
+      revision += 1;
+      if (pending.size === 0) for (const finish of [...waiters]) finish();
+    }
+  };
+  page.on("request", onRequest);
+  page.on("requestfinished", onFinished);
+  page.on("requestfailed", onFinished);
+  return {
+    get revision() { return revision; },
+    get pendingCount() { return pending.size; },
+    waitForIdle(timeoutMs) {
+      if (pending.size === 0) return Promise.resolve();
+      return new Promise((resolve, reject) => {
+        const finish = (error) => {
+          clearTimeout(timer);
+          waiters.delete(finish);
+          if (error) reject(error);
+          else resolve();
+        };
+        const timer = setTimeout(() => finish(new Error(
+          `Screenshot API requests did not finish within ${timeoutMs}ms.`
+        )), timeoutMs);
+        waiters.add(finish);
+      });
+    },
+    dispose() {
+      page.off("request", onRequest);
+      page.off("requestfinished", onFinished);
+      page.off("requestfailed", onFinished);
+      for (const finish of [...waiters]) finish(new Error("Screenshot API request tracker closed."));
+      pending.clear();
+    }
+  };
+}
+
+/** Wait for rendered content, not for an unrelated interval without network traffic. */
+export async function waitForCaptureReadiness(page, timeoutMs, apiTracker = null) {
+  const deadline = Date.now() + timeoutMs;
+  do {
+    await apiTracker?.waitForIdle(Math.max(1, deadline - Date.now()));
+    const revision = apiTracker?.revision;
+    await page.waitForFunction(async () => {
+      const snapshot = () => {
+        const root = document.querySelector("main") ?? document.body;
+        if (!root || document.fonts?.status === "loading") return null;
+        const visible = (element) => element.getClientRects().length > 0
+          && getComputedStyle(element).visibility !== "hidden";
+        if ((root.matches("[aria-busy='true']") && visible(root))
+          || Array.from(root.querySelectorAll("[aria-busy='true']")).some(visible)) return null;
+        if (Array.from(document.images).some((image) => visible(image) && !image.complete)) return null;
+        const elements = [root, ...root.querySelectorAll("*")].filter(visible);
+        return JSON.stringify([
+          root.innerText,
+          root.scrollWidth,
+          root.scrollHeight,
+          elements.map((element) => {
+            const bounds = element.getBoundingClientRect();
+            return [bounds.x, bounds.y, bounds.width, bounds.height];
+          })
+        ]);
+      };
+      const before = snapshot();
+      if (before === null) return false;
+      // Two painted frames expose font, grid and data-region layout changes without
+      // imposing networkidle's fixed 500ms quiet period on every route.
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      return snapshot() === before;
+    }, undefined, { timeout: Math.max(1, deadline - Date.now()) });
+    // Data can start loading while the DOM settles, even if its panel exposes no
+    // aria-busy marker. Recheck after those responses have painted their content.
+    if (!apiTracker || (apiTracker.pendingCount === 0 && apiTracker.revision === revision)) return;
+  } while (Date.now() < deadline);
+  throw new Error(`Screenshot content did not settle within ${timeoutMs}ms.`);
+}
+
+async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defaults, minBytes, minTextLength, timeoutMs, readinessTimeoutMs, textDir = null, apiTracker = null) {
   pageErrors.reset();
   const viewport = {
     width: Number(capture.viewport?.width ?? defaults.width ?? 1440),
@@ -806,7 +1363,6 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
       }
     }
   }
-  await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => undefined);
   for (const waitForAbsentText of collectCaptureWaitForAbsentTexts(capture)) {
     await waitForCaptureStep(
       page.getByText(waitForAbsentText, { exact: false })
@@ -818,6 +1374,12 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
       `waiting for transitional text '${waitForAbsentText}' to clear`
     );
   }
+  await waitForCaptureStep(
+    waitForCaptureReadiness(page, readinessTimeoutMs, apiTracker),
+    pageErrors,
+    capture.name,
+    "waiting for fonts, images and settled content layout"
+  );
   assertNoCaptureBrowserError(pageErrors, capture.name);
 
   const textLength = await page.evaluate(() => document.body.innerText.trim().length);
@@ -840,24 +1402,168 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
   const unexplainedDisabledActions = Array.isArray(disabledActionProbe) ? disabledActionProbe : [];
   // The status bar and the page's posture strip answer the same freshness question; the bar may
   // not say "up to date" while a strip on the page says its freshness needs review or is blocked.
+  // The masthead pill's provenance and provider items are the shell's freshness: the bar may not
+  // say "up to date" while either of them needs review either.
   const statusProbe = await page.evaluate(() => {
+    const text = (element) => (element?.textContent ?? "").replace(/\s+/g, " ").trim();
     const staleFact = Array.from(document.querySelectorAll(
       "main [data-trust-fact='freshness'][data-trust-tone='review'], main [data-trust-fact='freshness'][data-trust-tone='blocked']"
     )).find((element) => element.getClientRects().length > 0);
+    const staleShellItem = Array.from(document.querySelectorAll(
+      "[data-trust-strip-item='source'], [data-trust-strip-item='providers']"
+    )).find((element) => ["review", "blocked"].includes(element.getAttribute("data-trust-strip-tone") ?? ""));
     const footer = document.querySelector("footer.workstation-statusbar");
     return {
-      pageFreshness: staleFact ? (staleFact.textContent ?? "").replace(/\s+/g, " ").trim() : null,
-      statusBar: footer ? (footer.textContent ?? "").replace(/\s+/g, " ").trim() : ""
+      pageFreshness: staleFact ? text(staleFact) : null,
+      shellFreshness: staleShellItem ? text(staleShellItem) : null,
+      statusBar: footer ? text(footer) : ""
     };
   });
-  const statusContradictions = statusProbe?.pageFreshness && /up to date/i.test(statusProbe.statusBar ?? "")
-    ? [`status bar "${statusProbe.statusBar}" vs page "${statusProbe.pageFreshness}"`]
-    : [];
+  const statusContradictions = findStatusContradictions(statusProbe);
+  // Every positions table names its source (paper session, live holdings, a brokerage household,
+  // the execution gateway or a retained run). A positions table is one whose own accessible name
+  // says "positions"; captions describe interaction and per-position breakdowns ("position
+  // contributions") are not position books.
+  const positionSourceProbe = await page.evaluate(() =>
+    Array.from((document.querySelector("main") ?? document.body).querySelectorAll("table[aria-label]"))
+      .filter((table) => table.getClientRects().length > 0)
+      .filter((table) => /\bpositions\b/i.test(table.getAttribute("aria-label") ?? ""))
+      .filter((table) => !table.closest("[data-position-source]"))
+      .map((table) => (table.getAttribute("aria-label") ?? "").replace(/\s+/g, " ").trim())
+  );
+  const unsourcedPositionTables = Array.isArray(positionSourceProbe) ? positionSourceProbe : [];
+  // A clipped status badge ("OPE") reads as a different status. Badges are measured, not read:
+  // the text is all there in innerText even when the box cuts it off.
+  const truncatedBadgeProbe = await page.evaluate(() =>
+    Array.from(document.querySelectorAll(".mds-sev, .mds-badge"))
+      .filter((badge) => badge.getClientRects().length > 0)
+      .filter((badge) => badge.scrollWidth > badge.clientWidth + 1)
+      .map((badge) => (badge.textContent ?? "").replace(/\s+/g, " ").trim())
+  );
+  const truncatedBadges = Array.isArray(truncatedBadgeProbe) ? truncatedBadgeProbe : [];
+  // A detail panel that cuts its content off silently makes hidden fields look absent (UX Phase F).
+  // Flag the panel, or a tall box inside it, that overflows downward while neither scrolling nor
+  // showing the "More below" cue.
+  const clippedDetailProbe = await page.evaluate(() => {
+    const main = document.querySelector("main") ?? document.body;
+    const panels = Array.from(main.querySelectorAll("[data-workbench-slot='inspector'], aside, [role='complementary'], [data-dense-row-detail-panel]"))
+      .filter((panel) => panel.getClientRects().length > 0);
+    const name = (element) => (element.getAttribute("aria-label") || element.querySelector("h2, h3, h4")?.textContent || element.className || element.tagName)
+      .toString().replace(/\s+/g, " ").trim().slice(0, 80);
+    const clipped = new Set();
+    for (const panel of panels) {
+      for (const element of [panel, ...panel.querySelectorAll("*")]) {
+        if (element.getClientRects().length === 0 || element.clientHeight < 120) continue;
+        if (element.scrollHeight - element.clientHeight - element.scrollTop <= 4) continue;
+        const overflowY = getComputedStyle(element).overflowY;
+        const scrolls = overflowY === "auto" || overflowY === "scroll";
+        if (overflowY === "visible" || (scrolls && element.closest("[data-more-below]"))) continue;
+        if (scrolls && element === panel && element.hasAttribute("data-more-below")) continue;
+        if (scrolls && element !== panel) continue;
+        clipped.add(name(panel === element ? panel : element));
+      }
+    }
+    return Array.from(clipped);
+  });
+  const clippedDetailPanels = Array.isArray(clippedDetailProbe) ? clippedDetailProbe : [];
+  // Overlapping chart text (crowded x-axis dates) is unreadable: compare label boxes per chart.
+  const chartLabelOverlapProbe = await page.evaluate(() => {
+    const main = document.querySelector("main") ?? document.body;
+    const charts = Array.from(main.querySelectorAll("svg, [data-chart-label-layer]")).filter((chart) => chart.getClientRects().length > 0);
+    const overlaps = [];
+    for (const chart of charts) {
+      const labels = Array.from(chart.querySelectorAll(chart.tagName.toLowerCase() === "svg" ? "text" : "span"))
+        .filter((label) => (label.textContent ?? "").trim() && label.getClientRects().length > 0)
+        .map((label) => ({ text: (label.textContent ?? "").trim(), box: label.getBoundingClientRect() }));
+      for (let i = 0; i < labels.length; i += 1) {
+        for (let j = i + 1; j < labels.length; j += 1) {
+          const a = labels[i].box;
+          const b = labels[j].box;
+          const width = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+          const height = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+          if (width > 1 && height > 1) overlaps.push(`"${labels[i].text}" overlaps "${labels[j].text}"`);
+        }
+      }
+    }
+    return overlaps;
+  });
+  const overlappingChartLabels = Array.isArray(chartLabelOverlapProbe) ? chartLabelOverlapProbe : [];
   if (textDir) {
     await fs.mkdir(textDir, { recursive: true });
     await fs.writeFile(path.join(textDir, `${capture.name}.txt`), `${mainText}\n`);
   }
-  const contentIssues = partitionCaptureContentIssues(mainText, capture, { unexplainedDisabledActions, statusContradictions });
+  // The route's primary task sits under its heading: measured from the top of the page.
+  const primaryTaskTop = capture.primaryTask?.selector
+    ? await page.evaluate((selector) => {
+      const element = Array.from(document.querySelectorAll(selector)).find((candidate) => candidate.getClientRects().length > 0);
+      return element ? element.getBoundingClientRect().top + window.scrollY : null;
+    }, capture.primaryTask.selector)
+    : null;
+  const primaryTaskIssue = describePrimaryTaskPosition(capture.primaryTask, primaryTaskTop);
+  const primaryTaskIssues = primaryTaskIssue ? [primaryTaskIssue] : [];
+  // One backend failure, one notice: visible alerts and Retry buttons in the main content.
+  const failureNoticeCounts = Number.isInteger(capture.maxAlerts)
+    ? await page.evaluate(() => {
+      const main = document.querySelector("main") ?? document.body;
+      const visible = (element) => element.getClientRects().length > 0;
+      return {
+        alerts: Array.from(main.querySelectorAll("[role='alert']")).filter(visible).length,
+        retries: Array.from(main.querySelectorAll("button")).filter(visible)
+          .filter((button) => /^retry\b/i.test((button.textContent ?? "").trim())).length
+      };
+    })
+    : { alerts: 0, retries: 0 };
+  const failureNoticeIssues = describeFailureNotices(capture.maxAlerts, failureNoticeCounts);
+  // Dates and figures read on one line: a wrapped value box is taller than one line of its text.
+  const wrappedDetailValuesProbe = await page.evaluate(() =>
+    Array.from(document.querySelectorAll("main [data-detail-value='date'], main [data-detail-value='number']"))
+      .filter((element) => element.getClientRects().length > 0)
+      .filter((element) => {
+        const lineHeight = parseFloat(getComputedStyle(element).lineHeight) || parseFloat(getComputedStyle(element).fontSize) * 1.4;
+        return element.getBoundingClientRect().height > lineHeight * 1.5;
+      })
+      .map((element) => (element.textContent ?? "").replace(/\s+/g, " ").trim())
+  );
+  // A table that scrolls sideways shows a cue; the table-workbench frame draws it.
+  const uncuedOverflowTablesProbe = await page.evaluate(() =>
+    Array.from(document.querySelectorAll("main .dense-data-table-wrap"))
+      .filter((wrap) => wrap.getClientRects().length > 0 && wrap.scrollWidth > wrap.clientWidth + 1)
+      .filter((wrap) => !wrap.closest(".table-workbench-frame") && wrap.getAttribute("data-overflow-right") !== "true")
+      .map((wrap) => wrap.querySelector("table")?.getAttribute("aria-label") ?? "")
+  );
+  const wrappedDetailValues = Array.isArray(wrappedDetailValuesProbe) ? wrappedDetailValuesProbe : [];
+  const uncuedOverflowTables = Array.isArray(uncuedOverflowTablesProbe) ? uncuedOverflowTablesProbe : [];
+  // Labels and sentences in the data face, on routes that opt in.
+  const monospaceProseProbe = capture.monospaceProse
+    ? await page.evaluate(() => {
+      const found = new Set();
+      for (const element of document.querySelectorAll("main *")) {
+        if (element.getClientRects().length === 0 || !/mono/i.test(getComputedStyle(element).fontFamily)) continue;
+        const own = Array.from(element.childNodes).filter((node) => node.nodeType === 3).map((node) => node.textContent ?? "").join(" ").replace(/\s+/g, " ").trim();
+        if (own && !/\d/.test(own) && own.split(" ").length > 3) found.add(own);
+      }
+      return [...found];
+    })
+    : [];
+  const monospaceProse = Array.isArray(monospaceProseProbe) ? monospaceProseProbe : [];
+  // An expanded workspace keeps the others on screen: visible sidebar sub-rows, on routes that opt in.
+  const visibleSubRows = Number.isInteger(capture.maxSidebarSubRows)
+    ? await page.evaluate(() => Array.from(document.querySelectorAll(".operator-nav-subitem")).filter((row) => row.getClientRects().length > 0).length)
+    : null;
+  const navRowIssues = describeNavRowBudget(capture.maxSidebarSubRows, Number.isInteger(visibleSubRows) ? visibleSubRows : null);
+  // Every chart has a table alternative in its section, on routes that opt in.
+  const chartsWithoutTablesProbe = capture.chartTables
+    ? await page.evaluate(() =>
+      Array.from(document.querySelectorAll("main [role='img']"))
+        .filter((chart) => chart.getClientRects().length > 0 && chart.getBoundingClientRect().width >= 200)
+        .filter((chart) => {
+          const scope = chart.closest("section, [data-chart-card]") ?? chart.parentElement;
+          return !(scope?.querySelector("table, [data-chart-table]") || chart.closest("[data-chart-table]"));
+        })
+        .map((chart) => chart.getAttribute("aria-label") ?? ""))
+    : [];
+  const chartsWithoutTables = Array.isArray(chartsWithoutTablesProbe) ? chartsWithoutTablesProbe : [];
+  const contentIssues = partitionCaptureContentIssues(mainText, capture, { unexplainedDisabledActions, statusContradictions, truncatedBadges, unsourcedPositionTables, primaryTaskIssues, failureNoticeIssues, wrappedDetailValues, uncuedOverflowTables, monospaceProse, navRowIssues, chartsWithoutTables, clippedDetailPanels, overlappingChartLabels });
   if (contentIssues.blocking.length > 0) {
     throw new Error(describeCaptureContentIssues(capture.name, contentIssues.blocking));
   }
@@ -877,6 +1583,24 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
   if (actualPath !== expectedPath) {
     throw new Error(`Capture ${capture.name} ended on '${actualPath}', expected '${expectedPath}'.`);
   }
+
+  // A redirect capture may bind a complete retained view. Prove its declared
+  // query and anchor survived rather than accepting the destination page alone.
+  if (typeof capture.expectedRedirectPath === "string") {
+    const expectedRedirect = new URL(toRouteUrl(baseUrl, capture.expectedRedirectPath.trim()));
+    const actualRedirect = new URL(actualUrl);
+    if (expectedRedirect.search) {
+      const expectedQuery = new URLSearchParams(expectedRedirect.search);
+      const actualQuery = new URLSearchParams(actualRedirect.search);
+      expectedQuery.sort(); actualQuery.sort();
+      if (expectedQuery.toString() !== actualQuery.toString()) throw new Error(`Capture ${capture.name} lost its retained redirect query.`);
+    }
+    if (expectedRedirect.hash && expectedRedirect.hash !== actualRedirect.hash) throw new Error(`Capture ${capture.name} lost its retained redirect anchor.`);
+  }
+
+  const kpis = await collectKpiSnapshots(page);
+  const severityBadges = await collectSeverityBadges(page);
+  const holdingsTables = await collectHoldingsTables(page);
 
   await fs.mkdir(outputDir, { recursive: true });
   const buffer = await page.screenshot({ path: outputPath, fullPage: true });
@@ -901,6 +1625,10 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     viewport,
     bytes: buffer.length,
     textLength,
+    kpis,
+    severityBadges,
+    holdingsTables,
+    ...(capture.primaryTask?.selector ? { primaryTaskTop } : {}),
     // Exceptions the route catalog grants this capture, kept visible in the manifest.
     ...(contentIssues.allowed.length > 0 ? { allowedContentIssues: contentIssues.allowed } : {}),
     durationSeconds: Number(((Date.now() - started) / 1000).toFixed(2)),
@@ -931,11 +1659,13 @@ export async function captureRouteWithRetries(
     // page from the attempt that just failed.
     let context = null;
     let tracker = null;
+    let apiTracker = null;
     let attemptError = null;
     try {
       context = await browser.newContext();
       const page = await context.newPage();
       tracker = createPageErrorTracker(page);
+      apiTracker = createCaptureApiTracker(page);
       onTrackerChange(tracker);
       const resolver = createApiResolver();
       await setupScenarioApiMocking(page, resolver, tracker.record);
@@ -950,7 +1680,8 @@ export async function captureRouteWithRetries(
         minTextLength,
         timeoutMs,
         readinessTimeoutMs,
-        textDir
+        textDir,
+        apiTracker
       );
       resolver.assertNoUnexpectedRequests();
       result.attempts = attempt;
@@ -970,6 +1701,7 @@ export async function captureRouteWithRetries(
       }
     } finally {
       tracker?.dispose();
+      apiTracker?.dispose();
       onTrackerChange(null);
       try {
         if (context) await context.close();
@@ -1031,6 +1763,8 @@ export async function finalizeCaptureRun(manifest, manifestPath, startedUtc, log
 
 async function main() {
   const { values, valueLists, flags } = parseArgs(process.argv.slice(2));
+  if (flags.has("workers")) throw new Error("--workers requires an integer between 1 and 8.");
+  const workers = parseCaptureWorkers(values.get("workers"));
   const repoRoot = values.has("repo-root")
     ? path.resolve(values.get("repo-root"))
     : await findRepoRoot(process.cwd());
@@ -1101,7 +1835,7 @@ async function main() {
   const readinessTimeoutMs = Number(values.get("readiness-timeout-ms") ?? "30000");
   const minBytes = Number(values.get("min-bytes") ?? "12000");
   const minTextLength = Number(values.get("min-text-length") ?? "80");
-  // A transient render or network-idle hiccup on a single route should not fail
+  // A transient render or readiness hiccup on a single route should not fail
   // the whole catalog. Retry each capture a bounded number of times (fresh
   // context each attempt) before recording it as failed.
   const parsedCaptureRetries = Number(values.get("capture-retries") ?? "1");
@@ -1113,7 +1847,7 @@ async function main() {
   const startedUtc = new Date();
   let server = null;
   let browser = null;
-  let pageErrors = null;
+  const activeTrackers = new Set();
   const results = [];
 
   const manifest = {
@@ -1128,6 +1862,7 @@ async function main() {
     selectedCaptureCount: captures.length,
     totalCaptureCount: allCaptures.length,
     maxAttemptsPerCapture: captureAttempts,
+    workers: Math.min(workers, captures.length),
     scenario: selectedScenario?.id ?? null,
     accountingScenario: selectedScenario?.id ?? "accounting.normal",
     previewUrl: selectedScenario ? scenarioSource.module.scenarioPreviewUrl(selectedScenario) : null,
@@ -1185,12 +1920,35 @@ async function main() {
     }
     browser = await chromium.launch(launchOptions);
 
-    for (const capture of captures) {
+    // This feature regression uses a separate synthetic scope and leaves the
+    // screenshot catalog, selected scenarios, and route counts unchanged.
+    const queueContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    try {
+      const queuePage = await queueContext.newPage();
+      queuePage.setDefaultTimeout(readinessTimeoutMs);
+      queuePage.setDefaultNavigationTimeout(timeoutMs);
+      const queueErrors = [];
+      const queueResolver = createScreenshotApiResolver(scenarioSource.module, fixtureRoutes);
+      await setupScenarioApiMocking(queuePage, queueResolver, error => queueErrors.push(error));
+      manifest.intercompanyWorkQueue = await runIntercompanyWorkQueueSmoke({
+        page: queuePage, baseUrl, apiResolver: queueResolver,
+        screenshotDir: path.dirname(manifestPath), errors: queueErrors
+      });
+      console.log("Intercompany lifecycle queue synthetic browser regression passed.");
+      await writeCaptureManifest(manifest, manifestPath, logs);
+    } catch (cause) {
+      manifest.intercompanyWorkQueue = { status: "failed", error: cause instanceof Error ? cause.message : String(cause) };
+      throw new Error(`Intercompany lifecycle queue browser regression failed: ${manifest.intercompanyWorkQueue.error}`, { cause });
+    } finally {
+      await queueContext.close();
+    }
+
+    await runCaptureWorkers(captures, workers, async (capture) => {
       // Each capture renders in a fresh browser context so it shows the
       // route's default first-load state. The app shell persists
       // workflow-continuity, activity, and focus state across navigations,
       // so a shared context makes capture results depend on visit order.
-      let fatalError = null;
+      let activeTracker = null;
       try {
         const result = await captureRouteWithRetries(
           browser,
@@ -1205,12 +1963,14 @@ async function main() {
           readinessTimeoutMs,
           captureAttempts,
           (tracker) => {
-            pageErrors = tracker;
+            if (activeTracker) activeTrackers.delete(activeTracker);
+            activeTracker = tracker;
+            if (tracker) activeTrackers.add(tracker);
           },
           { textDir }
         );
-        results.push(result);
         console.log(`Captured ${capture.name} -> ${result.path}`);
+        return result;
       } catch (error) {
         // Fault isolation: a screen that still fails after its retries is
         // recorded with its error and skipped so the run continues through the
@@ -1230,32 +1990,15 @@ async function main() {
           attempts: captureAttempts,
           error: message
         };
-        results.push(failed);
         console.error(`::warning::Skipped ${capture.name} (${capture.path}): ${message.split(/\r?\n/)[0]}`);
-
-        // Systemic-failure circuit breaker: per-route fault isolation exists so one broken
-        // screen never blocks the rest of the catalog, but when the shared app shell itself
-        // never mounts, every remaining route is guaranteed to fail the same slow way
-        // (2 x timeoutMs each) until the CI job ceiling cancels the run. If the first few
-        // routes ALL failed to mount the shell, abort now with a pointed error instead.
-        const shellMountFailureLimit = 3;
-        if (
-          results.length >= shellMountFailureLimit
-          && results.every((result) => result.status === "failed"
-            && /App shell failed to mount/.test(String(result.error)))
-        ) {
-          fatalError = new Error(
-            `Aborting capture run: the app shell failed to mount on the first ${results.length} route(s). `
-            + "This is a shell-level failure (activation gate, missing shell fixtures, or a dev server "
-            + "compile error), so every remaining route would fail the same way. See the manifest logs."
-          );
-        }
+        return failed;
       }
+    }, async (completed) => {
       // Persist every completed route so a cancelled job still has a useful
       // partial manifest, including counts when the shell circuit breaker trips.
+      results.splice(0, results.length, ...completed);
       await writeCaptureManifest(manifest, manifestPath, logs);
-      if (fatalError) throw fatalError;
-    }
+    });
 
     const proxyErrors = logs.filter((line) => /http proxy error:\s*\/api\//i.test(line));
     const failedCaptures = results.filter((result) => result.status === "failed");
@@ -1275,6 +2018,27 @@ async function main() {
     }
 
     const problems = [];
+    manifest.kpiConsistency = checkKpiConsistency(results);
+    for (const conflict of manifest.kpiConsistency.conflicts) {
+      problems.push(`KPI '${conflict.id}' disagrees for scope ${conflict.scope}: `
+        + `${conflict.previous.route} shows '${conflict.previous.display}' (${conflict.previous.value}), `
+        + `${conflict.current.route} shows '${conflict.current.display}' (${conflict.current.value}).`);
+    }
+    manifest.severityConsistency = checkSeverityLabelConsistency(results);
+    for (const conflict of manifest.severityConsistency.conflicts) {
+      problems.push(`Status '${conflict.label}' renders as ${conflict.previous.severity} on ${conflict.previous.route} `
+        + `and ${conflict.current.severity} on ${conflict.current.route}; one label has one colour.`);
+    }
+    manifest.kpiLabelConsistency = checkKpiLabelConsistency(results, await loadKpiDefinitions());
+    for (const conflict of manifest.kpiLabelConsistency.conflicts) {
+      problems.push(`'${conflict.group}' disagrees across figures: ${conflict.previous.route} shows `
+        + `'${conflict.previous.display}' (${conflict.previous.id}), ${conflict.current.route} shows `
+        + `'${conflict.current.display}' (${conflict.current.id}).`);
+    }
+    manifest.holdingsTotals = checkHoldingsTotals(results);
+    for (const conflict of manifest.holdingsTotals.conflicts) {
+      problems.push(`Holdings total disagrees on ${conflict.route} (${conflict.capture}): ${conflict.problem}.`);
+    }
     if (missingCoverage.length > 0) {
       problems.push(`Live route(s) without a screenshot capture entry: ${missingCoverage.join(", ")}`);
     }
@@ -1307,7 +2071,7 @@ async function main() {
     throw error;
   } finally {
     await finalizeCaptureRun(manifest, manifestPath, startedUtc, logs, [
-      { name: "page error tracker", run: () => pageErrors?.dispose() },
+      { name: "page error trackers", run: () => { for (const tracker of activeTrackers) tracker.dispose(); } },
       { name: "browser", run: () => browser?.close() },
       { name: "dev server", run: () => stopProcess(server) },
       { name: "scenario module", run: () => scenarioSource.close() }

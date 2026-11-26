@@ -6,10 +6,20 @@ module_id: SRC-DESIGN-PORTFOLIO-RECORDS
 path: src/Meridian.PortfolioRecords
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.PortfolioRecords
+
+Accepted full custodian snapshots retain immutable content, source/review identity and explicit
+revision/supersession. `AccountBondHoldingsSource` selects account/date/knowledge-eligible authority;
+empty accepted populations mean flat holdings, while conflicts or missing history block. Explicit
+face/factor/inflation/quote units survive both account stores without creating lots or journals.
+Current position reads in both services select the accepted full statement for the exact requested
+date; superseded populations remain available through knowledge-cutoff snapshot history. When full
+statements are declared, a missing or competing accepted winner blocks the current read instead of
+reverting to legacy observations. Legacy-only observations keep their existing read behavior.
+See [reviewed bond imports](../../docs/operators/bond-workflows.md).
 
 Account reconciliation run summaries total only cash-denominated variances (Cash and Continuity checks) in `BreakAmountTotal`; the position-count check's line-count variance still counts as a break but no longer enters the monetary total.
 
@@ -51,6 +61,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `FundAccounts/` - in-memory and PostgreSQL-backed fund-account services for account snapshots,
   statement intake, account readiness, provider-link sync history, reconciliation runs, and margin
   snapshots.
+- `PrivateCapital/` - holder-side private-fund commitment register and source-reported lifecycle
+  observations, including canonical CSV validation, reviewed import previews, correction history,
+  and durable command receipts.
 
 Bank-statement file imports should enter through `IFundAccountService.IngestBankStatementAsync`
 after transport and CSV mapping validation; scheduled SFTP or API feed adapters should reuse that
@@ -63,9 +76,37 @@ otherwise the tenant-guarded local snapshot service. `IFundAccountService`,
 enforcement refuses unpartitioned local snapshots; explicit deployment-boundary compatibility is
 required for reviewed local migration access.
 
+Local snapshots fail startup if they are unreadable, malformed, use an unsupported format, or
+contain missing or duplicate account records. The error is logged and the original file remains
+unchanged. Restore a known-good snapshot or repair the retained file before restarting; only a
+missing file initializes a new empty local store.
+
 ## Important workflows
 
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
+
+`PrivateCapitalRecordService` retains a holder entity's investment in an explicit
+`PrivateFundInterest` Security Master identity and commitment currency. These are source-reported
+asset observations: commitment, called capital, unfunded commitment, cumulative distributions and
+NAV, with separate observation and NAV valuation dates. They are distinct from the issuer-side
+commitment revisions and approved capital-call capacity in `Meridian.FinancialOperations` and
+`Meridian.Ledger`. Accepting an observation does not issue a call, reserve capacity, move cash,
+post a journal or add NAV to the consolidated family balance sheet. Different currencies remain
+separate; distributions and NAV remain distinct values.
+
+Manual entry and canonical CSV use one preview/accept service. Exact decimal text is checked
+without rounding; blank amounts remain unavailable rather than zero, and source-reported called
+and unfunded values are not forced into an inferred roll-forward. The host validates authorized
+holder/security identities and the exact retained Evidence Vault document, content hash, source
+bytes and tenant/company scope. The durable preview retains original inputs alongside normalized
+rows. Acceptance rechecks source access and correction heads before atomically appending the
+whole batch and its replay receipt. An explicit superseded observation and rationale are required
+for corrections; competing stale corrections are refused and original records stay available.
+`InspectImportAsync` exposes retained source inputs, preview and receipt after restart.
+
+`AddPrivateCapitalRecords` selects the existing Fund Accounts PostgreSQL connection when configured,
+otherwise a durable local store partitioned by authenticated tenant and company. These stores are
+owned by `Meridian.Storage`; their guarantees and migration are described in its README.
 
 Statement ingestion validates every line's account and batch identity before writing; custodian
 lines must also match the batch's as-of date. Invalid line collections cannot partially persist a
@@ -126,6 +167,8 @@ lines, so an empty higher revision would otherwise leave the lower revision auth
 dotnet build src/Meridian.PortfolioRecords/Meridian.PortfolioRecords.csproj /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PortfolioRecords|FullyQualifiedName~FundAccountEndpointAuthorizationTests" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PostgresFundAccountStore" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PrivateCapitalRecord&Category!=Integration" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PostgresPrivateCapitalRecordStoreTests" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
 ## Optional conditional sections

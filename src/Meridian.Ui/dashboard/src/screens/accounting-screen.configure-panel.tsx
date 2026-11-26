@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Stepper } from "@/components/ui/stepper";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
-import { accountingToolingBadgeVariant, accountingToolingBorderClass } from "@/screens/accounting-screen.styles";
 import type {
   AccountingChartAccountEditorViewModel,
   AccountingConfigurationViewModel
@@ -30,6 +29,7 @@ import {
 import { usesTrackedCaps } from "@/design-system/label-case";
 import { TextArea } from "@/components/ui/text-area";
 import { Checkbox } from "@/components/ui/checkbox";
+import { statusBadgeVariant, statusPanelClass } from "@/design-system/status-styles";
 
 function toneTextClass(tone: ConfigureTone): string {
   switch (tone) {
@@ -138,7 +138,7 @@ export function ConfigureCommandBar(): JSX.Element {
                     className="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-secondary/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   >
                     <span className="text-foreground">{entry.label}</span>
-                    <span className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(entry.sectionLabel) && "font-mono uppercase tracking-[0.08em]")}>{entry.sectionLabel}</span>
+                    <span className={cn("text-xs text-muted-foreground", usesTrackedCaps(entry.sectionLabel) && "type-label--caps")}>{entry.sectionLabel}</span>
                   </button>
                 </li>
               ))}
@@ -186,12 +186,12 @@ export function ConfigureActivationRail({ view }: { view: AccountingConfiguratio
               <span className={cn("mt-1 h-2 w-2 shrink-0 rounded-full", toneDotClass(item.tone))} aria-hidden="true" />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-xs font-semibold text-foreground" title={item.label}>{item.label}</div>
-                <div className="truncate text-[11px] text-muted-foreground" title={item.detail}>{item.detail}</div>
+                <div className="truncate text-xs text-muted-foreground" title={item.detail}>{item.detail}</div>
               </div>
               <button
                 type="button"
                 onClick={() => scrollToConfigureAnchor(item.anchorId)}
-                className="mt-0.5 inline-flex shrink-0 items-center gap-0.5 rounded px-1 text-[11px] font-semibold text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="mt-0.5 inline-flex shrink-0 items-center gap-0.5 rounded px-1 text-xs font-semibold text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                 aria-label={`Go to ${item.label}`}
               >
                 Go
@@ -291,9 +291,9 @@ export function ConfigureKeyValueField({
           {addLabel}
         </Button>
       </div>
-      {description ? <p className="text-[11px] text-muted-foreground">{description}</p> : null}
+      {description ? <p className="text-xs text-muted-foreground">{description}</p> : null}
       {rows.length === 0 ? (
-        <p className="text-[11px] text-muted-foreground">No entries yet. Use “{addLabel}” to add one.</p>
+        <p className="text-xs text-muted-foreground">No entries yet. Use “{addLabel}” to add one.</p>
       ) : (
         <ul className="space-y-1.5">
           {rows.map((row, index) => (
@@ -401,7 +401,7 @@ export function ChartAccountPathBuilder({ editor }: { editor: AccountingChartAcc
         </Button>
       </div>
 
-      <div className="text-[11px] text-muted-foreground">
+      <div className="text-xs text-muted-foreground">
         Parent:{" "}
         {parentSegments.length > 0 ? (
           <span className="font-mono text-foreground">
@@ -425,14 +425,14 @@ export function ChartAccountPathBuilder({ editor }: { editor: AccountingChartAcc
               type="button"
               onClick={() => editor.updateDraft({ path: node.path })}
               title={`Set path to ${node.path}`}
-              className="inline-flex items-center gap-1 rounded border border-border/70 bg-background px-2 py-0.5 font-mono text-[11px] text-foreground hover:border-primary/40 hover:bg-primary/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="inline-flex items-center gap-1 rounded border border-border/70 bg-background px-2 py-0.5 font-mono text-xs text-foreground hover:border-primary/40 hover:bg-primary/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
             >
               {index > 0 ? <span aria-hidden="true" className="text-muted-foreground">›</span> : null}
               {node.label}
             </button>
           ))
         ) : (
-          <span className="text-[11px] italic text-muted-foreground">No path segments yet.</span>
+          <span className="text-xs italic text-muted-foreground">No path segments yet.</span>
         )}
       </div>
 
@@ -494,12 +494,12 @@ export function LedgerBookSetupWizard({ view }: { view: AccountingConfigurationV
             <div className="space-y-3" aria-label="Ledger book setup readiness review">
               <p className="text-sm text-muted-foreground">
                 Confirm the setup candidate below before creating the book. These values come from the shared
-                accounting configuration read model.
+                accounting configuration data.
               </p>
               <div className="grid gap-2">
                 {view.setupReadinessRows.map((row) => (
                   <div key={row.id} className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
-                    <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(row.label) && "uppercase tracking-[0.12em]")}>{row.label}</div>
+                    <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(row.label) && "type-label--caps")}>{row.label}</div>
                     <div className={cn("mt-1 text-sm font-semibold", toneTextClass(row.tone))}>{row.value}</div>
                     <p className="mt-1 text-xs text-muted-foreground">{row.detail}</p>
                   </div>
@@ -607,7 +607,7 @@ export function ConfigureChangePreviewPanel({ view }: { view: AccountingConfigur
           <div className="text-sm font-semibold text-foreground">Review pending draft changes</div>
           <p className="text-xs text-muted-foreground">{preview.currentVersionLabel} · {preview.headline}</p>
         </div>
-        <Badge variant={accountingToolingBadgeVariant(preview.activationTone)} dot>
+        <Badge variant={statusBadgeVariant(preview.activationTone)} dot>
           {preview.activationBadgeLabel}
         </Badge>
       </div>
@@ -617,7 +617,7 @@ export function ConfigureChangePreviewPanel({ view }: { view: AccountingConfigur
           <li key={row.id} className="rounded-md border border-border/60 bg-secondary/15 px-3 py-2">
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm font-semibold text-foreground">{row.label}</span>
-              <Badge variant={accountingToolingBadgeVariant(row.tone)}>{row.tone === "warning" ? "Pending" : "Saved"}</Badge>
+              <Badge variant={statusBadgeVariant(row.tone)}>{row.tone === "warning" ? "Pending" : "Saved"}</Badge>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">{row.statusLabel}</p>
           </li>
@@ -652,7 +652,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
               <CardDescription>Selected accounting scope and all activation evidence.</CardDescription>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={accountingToolingBadgeVariant(readinessSummary.tone)} dot>
+              <Badge variant={statusBadgeVariant(readinessSummary.tone)} dot>
                 {readinessSummary.statusLabel}
               </Badge>
               <Badge variant="outline">{readinessSummary.gateLabel}</Badge>
@@ -662,7 +662,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
         <CardContent className="space-y-4">
           <div className={cn(
             "rounded-md border px-3 py-3",
-            accountingToolingBorderClass(readinessSummary.tone)
+            statusPanelClass(readinessSummary.tone)
           )} role="status" aria-label="Accounting configuration overall readiness">
             <div className={cn("text-sm font-semibold", toneTextClass(readinessSummary.tone))}>
               {readinessSummary.issueSummaryLabel}
@@ -695,7 +695,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                   onClick={() => scrollToConfigureAnchor(item.anchorId)}
                   className={cn(
                     "flex w-full items-start justify-between gap-3 rounded-md border px-3 py-2 text-left transition-colors hover:bg-secondary/25 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
-                    accountingToolingBorderClass(item.tone)
+                    statusPanelClass(item.tone)
                   )}
                 >
                   <span>
@@ -740,7 +740,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
               <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">External GL</div>
               <div className="mt-2 text-sm font-semibold text-foreground">{view.productionReadiness.externalGlLabel}</div>
-              <p className="mt-1 text-xs text-muted-foreground">Import, mapping, reconciliation, and guarded export posture.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Import, mapping, reconciliation, and guarded export status.</p>
             </div>
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
               <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Dimensions</div>
@@ -774,20 +774,20 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
           {view.productionReadiness.productionGapRows.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5" role="region" aria-label="Accounting production gap checklist">
               {view.productionReadiness.productionGapRows.map((gap) => (
-                <div key={gap.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(gap.tone))}>
+                <div key={gap.id} className={cn("rounded-md border px-3 py-3", statusPanelClass(gap.tone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <div className="font-semibold text-foreground">{gap.label}</div>
-                      <div className="mt-1 font-mono text-[11px] text-muted-foreground">{gap.id}</div>
+                      <div className="mt-1 font-mono text-xs text-muted-foreground">{gap.id}</div>
                     </div>
-                    <Badge variant={accountingToolingBadgeVariant(gap.tone)}>{gap.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(gap.tone)}>{gap.statusLabel}</Badge>
                   </div>
-                  <div className="mt-2 text-[11px] text-muted-foreground">{gap.severityLabel} | {gap.areaLabel}</div>
+                  <div className="mt-2 text-xs text-muted-foreground">{gap.severityLabel} | {gap.areaLabel}</div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{gap.summary}</p>
                   <p className="mt-2 text-xs leading-5 text-foreground">{gap.requiredAction}</p>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{gap.issueDetailLabel}</p>
-                  <div className="mt-2 font-mono text-[11px] text-muted-foreground">{gap.blockingIssueLabel}</div>
-                  <div className="mt-1 font-mono text-[11px] text-muted-foreground">{gap.routeLabel}</div>
+                  <div className="mt-2 font-mono text-xs text-muted-foreground">{gap.blockingIssueLabel}</div>
+                  <div className="mt-1 font-mono text-xs text-muted-foreground">{gap.routeLabel}</div>
                 </div>
               ))}
             </div>
@@ -796,10 +796,10 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
           {view.productionReadiness.tenantAdministrationControls.length > 0 ? (
             <div className="grid gap-2 md:grid-cols-4" role="region" aria-label="Accounting tenant administration readiness controls">
               {view.productionReadiness.tenantAdministrationControls.map((control) => (
-                <div key={control.id} className={cn("rounded-md border px-3 py-2", accountingToolingBorderClass(control.tone))}>
+                <div key={control.id} className={cn("rounded-md border px-3 py-2", statusPanelClass(control.tone))}>
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-semibold text-foreground">{control.label}</span>
-                    <Badge variant={accountingToolingBadgeVariant(control.tone)}>{control.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(control.tone)}>{control.statusLabel}</Badge>
                   </div>
                 </div>
               ))}
@@ -1193,7 +1193,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
             {view.externalGlMappingProfile.mappingRows.length > 0 ? (
               <div className="mt-3 grid gap-2 md:grid-cols-3" role="region" aria-label="Retained external GL mapping profiles">
                 {view.externalGlMappingProfile.mappingRows.map((row) => (
-                  <div key={row.id} className={cn("rounded-md border px-3 py-2", accountingToolingBorderClass(row.tone))}>
+                  <div key={row.id} className={cn("rounded-md border px-3 py-2", statusPanelClass(row.tone))}>
                     <div className="text-sm font-semibold text-foreground">{row.label}</div>
                     <div className="mt-1 text-xs text-muted-foreground">{row.statusLabel}</div>
                   </div>
@@ -1210,19 +1210,19 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
           {view.productionReadiness.migrationPlanRows.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" role="region" aria-label="Accounting migration rollout plan">
               {view.productionReadiness.migrationPlanRows.map((item) => (
-                <div key={item.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(item.tone))}>
+                <div key={item.id} className={cn("rounded-md border px-3 py-3", statusPanelClass(item.tone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <div className="font-semibold text-foreground">{item.title}</div>
-                      <div className="mt-1 font-mono text-[11px] text-muted-foreground">{item.id}</div>
+                      <div className="mt-1 font-mono text-xs text-muted-foreground">{item.id}</div>
                     </div>
-                    <Badge variant={accountingToolingBadgeVariant(item.tone)}>{item.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(item.tone)}>{item.statusLabel}</Badge>
                   </div>
-                  <div className="mt-2 font-mono text-[11px] text-muted-foreground">{item.certificationLabel} | {item.latestRunLabel}</div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">{item.scopeLabel}</div>
-                  <div className="mt-2 font-mono text-[11px] text-muted-foreground">{item.metricsLabel} | {item.evidenceLabel}</div>
+                  <div className="mt-2 font-mono text-xs text-muted-foreground">{item.certificationLabel} | {item.latestRunLabel}</div>
+                  <div className="mt-1 text-xs text-muted-foreground">{item.scopeLabel}</div>
+                  <div className="mt-2 font-mono text-xs text-muted-foreground">{item.metricsLabel} | {item.evidenceLabel}</div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.requiredAction}</p>
-                  <div className="mt-2 text-[11px] text-muted-foreground">{item.blockingIssueLabel}</div>
+                  <div className="mt-2 text-xs text-muted-foreground">{item.blockingIssueLabel}</div>
                 </div>
               ))}
             </div>
@@ -1231,17 +1231,17 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
           {view.productionReadiness.migrationArtifactRows.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" role="region" aria-label="Retained accounting migration run artifacts">
               {view.productionReadiness.migrationArtifactRows.map((artifact) => (
-                <div key={artifact.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(artifact.tone))}>
+                <div key={artifact.id} className={cn("rounded-md border px-3 py-3", statusPanelClass(artifact.tone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <div className="font-semibold text-foreground">{artifact.kindLabel}</div>
-                      <div className="mt-1 font-mono text-[11px] text-muted-foreground">{artifact.id}</div>
+                      <div className="mt-1 font-mono text-xs text-muted-foreground">{artifact.id}</div>
                     </div>
-                    <Badge variant={accountingToolingBadgeVariant(artifact.tone)}>{artifact.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(artifact.tone)}>{artifact.statusLabel}</Badge>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{artifact.title}</p>
-                  <div className="mt-2 font-mono text-[11px] text-muted-foreground">{artifact.recordCountLabel} | {artifact.issueCountLabel} | {artifact.evidenceLabel}</div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">{artifact.detail}</div>
+                  <div className="mt-2 font-mono text-xs text-muted-foreground">{artifact.recordCountLabel} | {artifact.issueCountLabel} | {artifact.evidenceLabel}</div>
+                  <div className="mt-1 text-xs text-muted-foreground">{artifact.detail}</div>
                 </div>
               ))}
             </div>
@@ -1249,23 +1249,23 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
 
           {view.productionReadiness.migrationWorkerPlanRows.length > 0 ? (
             <div className="space-y-2" role="region" aria-label="Retained accounting migration worker plans">
-              <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(view.productionReadiness.migrationWorkerPlanSummaryLabel) && "uppercase tracking-[0.14em]")}>
+              <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(view.productionReadiness.migrationWorkerPlanSummaryLabel) && "type-label--caps")}>
                 {view.productionReadiness.migrationWorkerPlanSummaryLabel}
               </div>
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {view.productionReadiness.migrationWorkerPlanRows.map((plan) => (
-                  <div key={plan.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(plan.tone))}>
+                  <div key={plan.id} className={cn("rounded-md border px-3 py-3", statusPanelClass(plan.tone))}>
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
                         <div className="font-semibold text-foreground">{plan.kindLabel}</div>
-                        <div className="mt-1 font-mono text-[11px] text-muted-foreground">{plan.id}</div>
+                        <div className="mt-1 font-mono text-xs text-muted-foreground">{plan.id}</div>
                       </div>
-                      <Badge variant={accountingToolingBadgeVariant(plan.tone)}>{plan.tone === "success" ? "Reconciled" : "Mismatch"}</Badge>
+                      <Badge variant={statusBadgeVariant(plan.tone)}>{plan.tone === "success" ? "Reconciled" : "Mismatch"}</Badge>
                     </div>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{plan.title}</p>
-                    <div className="mt-2 font-mono text-[11px] text-muted-foreground">{plan.countLabel} | {plan.evidenceLabel}</div>
-                    <div className="mt-1 text-[11px] text-muted-foreground">{plan.scopeLabel}</div>
-                    <div className="mt-1 text-[11px] text-muted-foreground">{plan.detail}</div>
+                    <div className="mt-2 font-mono text-xs text-muted-foreground">{plan.countLabel} | {plan.evidenceLabel}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{plan.scopeLabel}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{plan.detail}</div>
                   </div>
                 ))}
               </div>
@@ -1275,14 +1275,14 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
           {view.productionReadiness.components.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4" aria-label="Accounting production readiness components">
               {view.productionReadiness.components.map((component) => (
-                <div key={component.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(component.tone))}>
+                <div key={component.id} className={cn("rounded-md border px-3 py-3", statusPanelClass(component.tone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="font-semibold text-foreground">{component.label}</div>
-                    <Badge variant={accountingToolingBadgeVariant(component.tone)}>{component.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(component.tone)}>{component.statusLabel}</Badge>
                   </div>
                   <div className="mt-2 font-mono text-xs text-muted-foreground">{component.scoreLabel} | {component.issueCountLabel}</div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{component.summary}</p>
-                  <div className="mt-2 font-mono text-[11px] text-muted-foreground">{component.evidenceLabel} | {component.routeLabel}</div>
+                  <div className="mt-2 font-mono text-xs text-muted-foreground">{component.evidenceLabel} | {component.routeLabel}</div>
                 </div>
               ))}
             </div>
@@ -1293,10 +1293,10 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
           {view.productionReadiness.blockerIssues.length > 0 ? (
             <div className="space-y-2" aria-label="Accounting production readiness blockers">
               {view.productionReadiness.blockerIssues.map((issue) => (
-                <div key={issue.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(issue.tone))}>
+                <div key={issue.id} className={cn("rounded-md border px-3 py-2 text-sm", statusPanelClass(issue.tone))}>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="font-semibold text-foreground">{issue.label}</span>
-                    <Badge variant={accountingToolingBadgeVariant(issue.tone)}>{issue.tone === "danger" ? "Blocker" : "Review"}</Badge>
+                    <Badge variant={statusBadgeVariant(issue.tone)}>{issue.tone === "danger" ? "Blocker" : "Review"}</Badge>
                   </div>
                   <p className="mt-1 text-muted-foreground">{issue.message}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{issue.suggestedAction} | {issue.evidenceLabel}</p>

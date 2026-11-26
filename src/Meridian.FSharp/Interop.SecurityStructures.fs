@@ -6,6 +6,8 @@ open Meridian.FSharp.Domain
 /// Typed structural modules use the same flat member spellings as the codec. No raw JSON is
 /// retained in the domain, and no sort, numeric conversion or schedule normalization occurs here.
 module StructuralTermsJson =
+    let workflow (terms: BondWorkflowTerms) = BondWorkflowTermsJson.write terms
+
     let coupon (terms: BondCouponTerms) =
         let kind, rate, index, spread, cap, floor, steps, inflation, basis, ratio, dc =
             match terms.Structure with

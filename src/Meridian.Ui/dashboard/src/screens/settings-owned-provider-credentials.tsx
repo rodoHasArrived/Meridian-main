@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { describeApiError } from "@/lib/api-errors";
-import { deleteProviderCredentials, getProviderConnections, getProviderRoutingConnections, putProviderCredentials, verifyProviderConnection } from "@/lib/api";
-import { credentialOwnershipKey, ownedCredentialConnections } from "@/lib/provider-credential-scope";
+import { deleteProviderCredentials, getProviderConnections, getProviderRoutingConnections, putProviderCredentials, verifyDraftProviderConnection, verifyProviderConnection } from "@/lib/api";
+import { credentialOwnershipKey, ownedCredentialConnections, supportsProviderDraft } from "@/lib/provider-credential-scope";
 import type { ProviderConnectionRow, ProviderRoutingConnection, SessionInfo } from "@/types";
 import type { SettingsProviderConnectionRow } from "./settings-screen.view-model";
 import { ProviderOwnershipPanel } from "./settings-provider-ownership-panel";
 import { Select } from "@/components/ui/select";
+import type { ProviderCredentialDraftResult } from "@/types/workstation-2";
 
 interface Editor {
   connectionId: string;
@@ -21,8 +23,9 @@ interface Editor {
   message: string;
   acknowledged: boolean;
   confirmClear: boolean;
+  draftStatus: ProviderCredentialDraftResult["status"] | null;
 }
-const emptyEditor: Editor = { connectionId: "", choices: [], status: null, values: {}, editing: false, busy: null, message: "", acknowledged: false, confirmClear: false };
+const emptyEditor: Editor = { connectionId: "", choices: [], status: null, values: {}, editing: false, busy: null, message: "", acknowledged: false, confirmClear: false, draftStatus: null };
 
 /** Credential targets come only from the authenticated server's retained connection inventory. */
 export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
@@ -31,6 +34,7 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
   onRefresh?: () => void | Promise<void>;
 }) {
   const [editor, setEditor] = useState<Editor>(emptyEditor);
+  const [failed, setFailed] = useState(false);
   const epoch = useRef(0);
   const request = useRef<AbortController | null>(null);
   const selected = editor.choices.find(choice => choice.connectionId === editor.connectionId);
@@ -41,11 +45,17 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
   const scopeKey = selected ? credentialOwnershipKey(selected) : "";
   const acknowledgementEnvironment = selected?.credentialEnvironment?.trim().toLowerCase();
   const isLive = acknowledgementEnvironment === "live" || acknowledgementEnvironment === "production";
+  const saveLabel = editor.draftStatus && editor.draftStatus !== "Verified" ? "Save anyway" : "Save";
+  const rotationDue = editor.status?.rotationDueAt ? new Date(editor.status.rotationDueAt) : null;
+  const rotationDate = rotationDue && rotationDue.getTime() <= Date.now() + 14 * 24 * 60 * 60 * 1000
+    ? rotationDue.toISOString().slice(0, 10)
+    : null;
 
   function begin() {
     request.current?.abort();
     const controller = new AbortController();
     request.current = controller;
+    setFailed(false);
     return { epoch: ++epoch.current, controller };
   }
   function current(token: ReturnType<typeof begin>) { return epoch.current === token.epoch && !token.controller.signal.aborted; }
@@ -62,7 +72,7 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
       const choices = ownedCredentialConnections(rows, row.providerId);
       setEditor({ ...emptyEditor, choices, message: choices.length ? "Select an owned connection before editing credentials." : "No owned connection is available. Ask your provider administrator to establish the account and environment before setup." });
     } catch (error) {
-      if (current(token)) setEditor({ ...emptyEditor, message: describeApiError(error, "Owned connections are unavailable. Credential actions are blocked.").summary });
+      if (current(token)) { setFailed(true); setEditor({ ...emptyEditor, message: describeApiError(error, "Owned connections are unavailable. Credential actions are blocked.").summary }); }
     }
   }
   /**
@@ -85,7 +95,7 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
       const status = await readStatus(retained, token);
       if (current(token)) setEditor(previous => ({ ...previous, choices, connectionId: retained.connectionId, status, busy: null, values: {}, editing: false, acknowledged: false, message: "Owned connections refreshed; selected connection status reloaded." }));
     } catch (error) {
-      if (current(token)) setEditor(previous => ({ ...previous, status: null, values: {}, busy: null, message: describeApiError(error, "Selected connection is unavailable. Refresh owned connections before retrying.").summary }));
+      if (current(token)) { setFailed(true); setEditor(previous => ({ ...previous, status: null, values: {}, busy: null, message: describeApiError(error, "Selected connection is unavailable. Refresh owned connections before retrying.").summary })); }
     }
   }
   useEffect(() => {
@@ -114,10 +124,10 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
       const status = await readStatus(choice, token);
       if (current(token)) setEditor(previous => ({ ...previous, status, busy: null, message: "Selected connection status loaded." }));
     } catch (error) {
-      if (current(token)) setEditor(previous => ({ ...previous, status: null, busy: null, message: describeApiError(error, "Selected connection is unavailable. Refresh owned connections before retrying.").summary }));
+      if (current(token)) { setFailed(true); setEditor(previous => ({ ...previous, status: null, busy: null, message: describeApiError(error, "Selected connection is unavailable. Refresh owned connections before retrying.").summary })); }
     }
   }
-  async function mutate(action: "save" | "verify" | "clear") {
+  async function mutate(action: "save" | "verify" | "clear" | "draft") {
     if (!ready || busy || !selected) return;
     if (action === "save" && isLive && !editor.acknowledged) return;
     const values = { ...editor.values };
@@ -138,6 +148,15 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
       }
       const scoped = options(token, selected.connectionId);
       let message: string;
+      if (action === "draft") {
+        const credentials = Object.fromEntries(fields.filter(field => values[field.name]?.trim()).map(field => [field.name, values[field.name]]));
+        const result = await verifyDraftProviderConnection(row.providerId, credentials, selected.credentialEnvironment, scoped);
+        if (!current(token)) return;
+        if (result.providerId.toLowerCase() !== row.providerId.toLowerCase()) throw new Error("Verification response names another provider.");
+        const label = result.status === "Unavailable" ? "Verification unavailable" : result.status;
+        setEditor(previous => ({ ...previous, busy: null, draftStatus: result.status, message: `${label}. ${result.message}` }));
+        return;
+      }
       if (action === "save") {
         const credentials = Object.fromEntries(fields.filter(field => values[field.name]?.length).map(field => [field.name, values[field.name]]));
         const result = await putProviderCredentials(row.providerId, { credentials, environment: selected.credentialEnvironment }, scoped);
@@ -155,10 +174,17 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
       if (!current(token)) return;
       const status = await readStatus(selected, token);
       if (!current(token)) return;
-      setEditor(previous => ({ ...previous, status, busy: null, values: {}, editing: action === "clear", acknowledged: false, message }));
+      setEditor(previous => ({ ...previous, status, busy: null, values: {}, editing: action === "clear", acknowledged: false, draftStatus: null, message }));
       await onRefresh?.();
     } catch (error) {
-      if (current(token)) setEditor(previous => ({ ...previous, status: null, values: {}, busy: null, message: describeApiError(error, "Credential operation was not confirmed. Refresh the selected connection before retrying.").summary }));
+      if (current(token)) {
+        if (action === "draft") {
+          setEditor(previous => ({ ...previous, busy: null, draftStatus: "Unavailable", message: "Verification unavailable. The host could not confirm the draft test." }));
+        } else {
+          setFailed(true);
+          setEditor(previous => ({ ...previous, status: null, values: {}, busy: null, message: describeApiError(error, "Credential operation was not confirmed. Refresh the selected connection before retrying.").summary }));
+        }
+      }
     }
   }
 
@@ -171,12 +197,16 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
           {editor.choices.map(choice => <option key={choice.connectionId} value={choice.connectionId}>{choice.displayName} · {choice.externalAccountId} · {choice.credentialEnvironment}</option>)}
         </Select>
       </label>
-      <Button variant="outline" size="sm" onClick={() => void loadConnections()} aria-label={`Refresh connections for ${row.displayName}`}>Refresh connections</Button>
+      <PanelReload what={`connections for ${row.displayName}`} failed={failed} busy={busy} reload={() => busy || (editor.editing && !failed) ? undefined : refreshOwnership()} />
     </div>
     {row.credentialStatus === "not-required" ? <p className="text-xs text-muted-foreground">No credential fields are required for this provider.</p> : null}
     {selected ? <p className="text-xs text-muted-foreground">Account {selected.externalAccountId} · Environment {selected.credentialEnvironment}</p> : null}
+    {rotationDate ? <p className="text-xs" role="status">Credential rotation due {rotationDate} UTC.</p> : null}
     <div className="flex flex-wrap gap-2">
-      <Button variant="outline" size="sm" disabled={!ready || busy} onClick={() => setEditor(previous => ({ ...previous, editing: !previous.editing, values: {} }))} aria-label={editor.editing ? `Close editor for ${row.displayName}` : `Edit ${row.displayName} credentials`}>{editor.editing ? "Close editor" : "Edit"}</Button>
+      <Button variant="outline" size="sm" disabled={!ready || busy} onClick={() => setEditor(previous => ({ ...previous, editing: !previous.editing, values: {}, draftStatus: null }))} aria-label={editor.editing ? `Close editor for ${row.displayName}` : `Edit ${row.displayName} credentials`}>{editor.editing ? "Close editor" : "Edit"}</Button>
+      {editor.editing && supportsProviderDraft(row.providerId) ? <Button variant="outline" size="sm"
+        disabled={!ready || busy || !Object.values(editor.values).some(value => value.trim())}
+        onClick={() => void mutate("draft")}>Test draft credentials</Button> : null}
       <Button size="sm" disabled={!ready || busy || fields.length === 0 || (isLive && !editor.acknowledged)}
         disabledReason={!ready
           ? "Select an owned connection first."
@@ -185,7 +215,7 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
             : isLive && !editor.acknowledged
               ? "Acknowledge the live-credential warning first."
               : "Wait for the current credential request to finish."}
-        onClick={() => void mutate("save")} aria-label={`Save ${row.displayName} credentials`}>Save</Button>
+        onClick={() => void mutate("save")} aria-label={saveLabel === "Save anyway" ? saveLabel : `Save ${row.displayName} credentials`}>{saveLabel}</Button>
       <Button variant="outline" size="sm" disabled={!ready || busy} onClick={() => void mutate("verify")} aria-label={`Re-verify ${row.displayName} connection`}>Re-verify</Button>
       <Button variant="destructive" size="sm" disabled={!ready || busy || fields.length === 0} onClick={() => setEditor(previous => ({ ...previous, confirmClear: true }))} aria-label={`Clear credentials for ${row.displayName}`}>Clear credentials</Button>
     </div>
@@ -193,7 +223,7 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
       {fields.map(field => <label key={field.name} className="grid gap-1 text-xs font-medium text-muted-foreground">{field.label}
         <Input type={field.inputKind === "Text" ? "text" : field.inputKind === "Url" ? "url" : "password"} autoComplete="off" disabled={busy}
           aria-label={`${row.displayName} ${field.label}`} value={editor.values[field.name] ?? ""}
-          onChange={event => setEditor(previous => ({ ...previous, values: { ...previous.values, [field.name]: event.target.value }, message: "" }))} />
+          onChange={event => setEditor(previous => ({ ...previous, values: { ...previous.values, [field.name]: event.target.value }, draftStatus: null, message: "" }))} />
       </label>)}
       {isLive ? <Checkbox checked={editor.acknowledged} onCheckedChange={value => setEditor(previous => ({ ...previous, acknowledged: value }))} disabled={busy} label="I understand this save changes the selected live connection credentials." /> : null}
     </div> : null}

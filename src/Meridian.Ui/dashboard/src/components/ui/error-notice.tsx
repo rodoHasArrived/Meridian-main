@@ -11,6 +11,12 @@ export interface ErrorNoticeProps {
   title: ReactNode;
   /** Used when the service gave no reason of its own. */
   fallback?: string;
+  /** Replaces the derived reason when the caller knows what the failure means on this surface. */
+  summary?: ReactNode;
+  /** A next step beside Retry: a link to setup, diagnostics or an explanation. */
+  help?: ReactNode;
+  /** Offer Retry even for a rejected request, e.g. when a missing service may since have started. */
+  alwaysOfferRetry?: boolean;
   onRetry?: () => void;
   retryLabel?: string;
   retryBusy?: boolean;
@@ -26,6 +32,9 @@ export function ErrorNotice({
   error,
   title,
   fallback = "Try again, or open diagnostics if it keeps happening.",
+  summary,
+  help,
+  alwaysOfferRetry = false,
   onRetry,
   retryLabel = "Retry",
   retryBusy = false,
@@ -34,7 +43,7 @@ export function ErrorNotice({
   const presentation = presentApiError(typeof error === "string" ? new Error(error) : error, fallback);
   // A rejected request (validation, permission, conflict) fails the same way on a second try, so
   // the action is offered only when repeating it can succeed.
-  const showRetry = Boolean(onRetry) && presentation.retryable;
+  const showRetry = Boolean(onRetry) && (presentation.retryable || alwaysOfferRetry);
 
   return (
     <div
@@ -46,24 +55,21 @@ export function ErrorNotice({
       )}
     >
       <p className="font-semibold text-foreground">{title}</p>
-      <p className="mt-0.5 break-words leading-5 text-foreground">{presentation.summary}</p>
+      <p className="mt-0.5 break-words leading-5 text-foreground">{summary ?? presentation.summary}</p>
       {presentation.details.length > 0 ? (
         <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs leading-5 text-muted-foreground">
           {presentation.details.map((detail) => <li key={detail} className="break-words">{detail}</li>)}
         </ul>
       ) : null}
-      {showRetry ? (
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className="mt-2"
-          busy={retryBusy}
-          busyLabel="Retrying…"
-          onClick={onRetry}
-        >
-          {retryLabel}
-        </Button>
+      {showRetry || help ? (
+        <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
+          {showRetry ? (
+            <Button type="button" size="sm" variant="outline" busy={retryBusy} busyLabel="Retrying…" onClick={onRetry}>
+              {retryLabel}
+            </Button>
+          ) : null}
+          {help}
+        </div>
       ) : null}
       {presentation.technicalDetails.length > 0 ? (
         <TechnicalDetails label="Technical details" className="mt-2" contentClassName="py-2">

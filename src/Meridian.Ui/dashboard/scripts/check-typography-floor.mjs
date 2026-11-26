@@ -1,7 +1,7 @@
 // Typography floor ratchet.
 //
 // The workstation type scale starts at 12px. Sub-12px text (Tailwind arbitrary-size utilities
-// or CSS `font-size` below 12px) is tolerated only where it already exists. This script
+// or CSS `font-size` below 12px or 0.75rem) is tolerated only where it already exists. This script
 // counts those occurrences per file and compares them with a checked-in baseline:
 //
 //   - a file gaining occurrences, or a new file containing any, fails the check;
@@ -28,6 +28,10 @@ const baselinePath = join(here, "typography-floor-baseline.json");
 const TAILWIND_SUB12 = new RegExp("text-" + "\\[(?:[0-9]|10|11)(?:\\.\\d+)?px\\]", "g");
 // CSS font-size declarations below 12px, e.g. `font-size: 11px;` or `font-size: 10.5px`.
 const CSS_SUB12 = /font-size\s*:\s*(?:[0-9]|10|11)(?:\.\d+)?px/g;
+// The same floor written in rem: below 0.75rem (12px at the 16px root), as a Tailwind arbitrary
+// size or a CSS declaration. Assembled at runtime for the same content-scanner reason as above.
+const TAILWIND_SUB12_REM = new RegExp("text-" + "\\[0?\\.(?:[0-6]\\d*|7[0-4]\\d*|7)rem\\]", "g");
+const CSS_SUB12_REM = /font-size\s*:\s*0?\.(?:[0-6]\d*|7[0-4]\d*|7)rem/g;
 
 const SOURCE_EXTENSIONS = new Set([".ts", ".tsx", ".css"]);
 // Test files hold fixture strings that exercise class detection; they are not rendered UI.
@@ -48,15 +52,20 @@ async function listSourceFiles(dir) {
   return files;
 }
 
+// An attribute selector such as `[class*="text-[10px]"]` or `[style*="font-size: 10px"]` names
+// small text in order to override it back up to the floor; it does not set a small size.
+const FLOOR_GUARD_SELECTOR = /\[(?:class|style)\*="[^"\n]*"\]/g;
+
 function countMatches(text, pattern) {
-  return (text.match(pattern) ?? []).length;
+  return (text.replace(FLOOR_GUARD_SELECTOR, "").match(pattern) ?? []).length;
 }
 
 async function measure() {
   const counts = {};
   for (const file of await listSourceFiles(srcRoot)) {
     const text = await readFile(file, "utf8");
-    const total = countMatches(text, TAILWIND_SUB12) + countMatches(text, CSS_SUB12);
+    const total = countMatches(text, TAILWIND_SUB12) + countMatches(text, CSS_SUB12)
+      + countMatches(text, TAILWIND_SUB12_REM) + countMatches(text, CSS_SUB12_REM);
     if (total > 0) {
       // Forward slashes keep the baseline stable across operating systems.
       const key = relative(dashboardRoot, file).split(sep).join("/");

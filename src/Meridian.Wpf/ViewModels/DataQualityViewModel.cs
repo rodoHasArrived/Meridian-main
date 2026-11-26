@@ -33,7 +33,7 @@ public readonly struct TrendStatistics
 /// <summary>
 /// Exposes symbol quality, gaps, alerts, anomalies, and issue drilldowns for desktop review.
 /// </summary>
-public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActionBarProvider
+public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActionBarProvider, Meridian.Wpf.Contracts.IPageRefreshTarget
 {
     private static readonly string[] s_anomalyTypeNames =
     {
@@ -214,6 +214,11 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
     private bool _hasNoDrilldownIssues = true;
     public bool HasNoDrilldownIssues { get => _hasNoDrilldownIssues; private set => SetProperty(ref _hasNoDrilldownIssues, value); }
 
+    // ── IPageRefreshTarget implementation: the shell Refresh control reloads this page in place ──
+    private IAsyncRelayCommand? _refreshCommand;
+    public IAsyncRelayCommand RefreshCommand => _refreshCommand ??= new AsyncRelayCommand(() => RefreshAsync());
+    System.Windows.Input.ICommand Meridian.Wpf.Contracts.IPageRefreshTarget.RefreshCommand => RefreshCommand;
+
     // ── IPageActionBarProvider implementation ──────────────────────────────────────
     public string PageTitle => "Data Quality";
     public ObservableCollection<ActionEntry> Actions { get; } = new();
@@ -240,7 +245,6 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
     {
         // Populate action bar.
         Actions.Clear();
-        Actions.Add(new ActionEntry("Refresh", new RelayCommand(() => _ = RefreshAsync()), "\uE72C", "Refresh data quality metrics", IsPrimary: true));
         Actions.Add(new ActionEntry("Export Report", new RelayCommand(() => _notificationService.NotifyInfo("Export", "Report export started")), "\uE8A5", "Export quality report"));
 
         return _refreshCoordinator.StartAsync(TimeSpan.FromSeconds(30), ct);

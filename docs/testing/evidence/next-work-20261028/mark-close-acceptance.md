@@ -42,9 +42,12 @@ Browser plugin unavailable; the installed Playwright 1.64.1 and system Chromium
 `http://127.0.0.1:4173/workstation`, with explicitly simulated API responses.
 Viewports were 1440 × 900 and 1366 × 768; no phone/tablet surface was exercised.
 
-- Four focused component/view-model files passed **80 tests**: mark preview, portfolio
-  freshness, accounting close cockpit and Operations Continuity. Exact command/result is
-  retained in [component-tests.log](mark-close-browser/component-tests.log).
+- The original receipt reported **80 tests** across four focused component/view-model files:
+  mark preview, portfolio freshness, accounting close cockpit and Operations Continuity.
+  **Evidence correction (2026-11-12):** the cited `mark-close-browser/component-tests.log` is
+  absent from this checkout and no committed copy was found in Git history. Its exact
+  command/result cannot be inspected here, so this reported count is not retained execution proof.
+  The other browser observations below retain their own stated evidence and scope.
 - The maintained reviewed-source close capture passed **24 asserted observations**,
   including changed evidence refusal, same-workflow-version repair, publication-evidence
   mismatch, delayed old responses, keyboard basics and both desktop sizes. This is a

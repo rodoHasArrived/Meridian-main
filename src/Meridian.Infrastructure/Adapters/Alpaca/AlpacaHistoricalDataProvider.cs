@@ -36,7 +36,7 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
     EnvironmentVariables = new[] { "ALPACA_SECRET_KEY", "APCA_API_SECRET_KEY", "ALPACA__SECRETKEY" },
     DisplayName = "API Secret Key",
     Description = "Alpaca API secret key from https://app.alpaca.markets/brokerage/papers")]
-public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
+public sealed partial class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string BaseUrl = "https://data.alpaca.markets/v2/stocks";
     // Largest page Alpaca serves for quotes and trades.
@@ -62,9 +62,11 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
 
 
-    public override int Priority => _priority;
-    public override TimeSpan RateLimitDelay => TimeSpan.FromMilliseconds(300);
-    public override int MaxRequestsPerWindow => _maxRequestsPerWindow;
+    public override int Priority => RuntimeOptions?.Priority ?? _priority;
+    public override TimeSpan RateLimitDelay => TimeSpan.FromMinutes(1) / (RuntimeOptions?.Requests ?? _maxRequestsPerWindow);
+    public override int MaxRequestsPerWindow => RuntimeOptions?.Requests ?? _maxRequestsPerWindow;
+    internal string HistoricalFeed => _feed;
+    internal string HistoricalAdjustment => _adjustment;
     public override TimeSpan RateLimitWindow => TimeSpan.FromMinutes(1);
 
     /// <summary>
@@ -93,7 +95,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         int rateLimitPerMinute = 200,
         HttpClient? httpClient = null,
         ILogger? log = null)
-        : base(httpClient, log)
+        : base(httpClient, log, runtimeOptions: new BackfillProviderRuntimeOptions(priority, rateLimitPerMinute, TimeSpan.FromMinutes(1)))
     {
         _keyId = keyId ?? Environment.GetEnvironmentVariable(EnvKeyId);
         _secretKey = secretKey ?? Environment.GetEnvironmentVariable(EnvSecretKey);
@@ -148,9 +150,22 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
                 => throw new ArgumentException("'raw' cannot be combined with other Alpaca adjustments.", nameof(adjustment)),
             _ when parts.Contains("all") && parts.Length > 1
                 => throw new ArgumentException("'all' cannot be combined with other Alpaca adjustments.", nameof(adjustment)),
-            _ => normalized
+            _ => string.Join(',', parts)
         };
     }
+
+    private HistoricalPriceBasis RequestedPriceBasis => _adjustment switch
+    {
+        "raw" => HistoricalPriceBasis.Raw,
+        "split" => HistoricalPriceBasis.SplitAdjusted,
+        "dividend" => HistoricalPriceBasis.DividendAdjusted,
+        "all" => HistoricalPriceBasis.FullyAdjusted,
+        _ when _adjustment.Split(',').Contains("split") && _adjustment.Split(',').Contains("dividend")
+            => HistoricalPriceBasis.FullyAdjusted,
+        // The shared basis vocabulary cannot represent spin-off-only or partial
+        // combinations containing spin-offs. Do not label them raw or fully adjusted.
+        _ => HistoricalPriceBasis.Unknown
+    };
 
     public override async Task<bool> IsAvailableAsync(CancellationToken ct = default)
     {
@@ -162,11 +177,9 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
         try
         {
-            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
             // Quick health check with a known symbol
             var url = $"{BaseUrl}/AAPL/bars?timeframe=1Day&start=2024-01-02&end=2024-01-03&limit=1&feed={_feed}";
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, "AAPL", "availability", ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
@@ -193,17 +206,18 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         var normalizedSymbol = NormalizeSymbol(symbol);
         var allBars = new List<AdjustedHistoricalBar>();
         string? nextPageToken = null;
+        var pagination = new PaginationCursorGuard("Alpaca");
 
         do
         {
-            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
+            pagination.Visit(nextPageToken);
 
             var url = BuildUrl(normalizedSymbol, from, to, nextPageToken);
             Log.Information("Requesting Alpaca history for {Symbol} ({Url})", symbol, url);
 
             try
             {
-                using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+                using var response = await ExecuteGetAsync(url, symbol, "history", ct).ConfigureAwait(false);
                 await HandleHttpResponseOrThrowAsync(response, symbol, "bars", ct).ConfigureAwait(false);
 
                 var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
@@ -254,7 +268,9 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
                         AdjustedClose: isAdjusted ? bar.Close : null,
                         AdjustedVolume: isAdjusted ? bar.Volume : null,
                         SplitFactor: null,
-                        DividendAmount: null
+                        DividendAmount: null,
+                        PriceBasis: RequestedPriceBasis,
+                        AdjustedPriceBasis: isAdjusted ? RequestedPriceBasis : HistoricalPriceBasis.Unknown
                     ));
                 }
 
@@ -304,11 +320,12 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
         var allQuotes = new List<HistoricalQuote>();
         string? nextPageToken = null;
+        var pagination = new PaginationCursorGuard("Alpaca");
         long sequenceNumber = 0;
 
         do
         {
-            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
+            pagination.Visit(nextPageToken);
 
             // Each page asks only for what the limit still allows, so nothing fetched is discarded
             // and the page token returned to the caller continues exactly where the result ends.
@@ -317,7 +334,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
             try
             {
-                using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+                using var response = await ExecuteGetAsync(url, symbolList.First(), "quotes", ct).ConfigureAwait(false);
                 await HandleHttpResponseOrThrowAsync(response, symbolList.First(), "quotes", ct).ConfigureAwait(false);
 
                 var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
@@ -423,11 +440,12 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
         var allTrades = new List<HistoricalTrade>();
         string? nextPageToken = null;
+        var pagination = new PaginationCursorGuard("Alpaca");
         long sequenceNumber = 0;
 
         do
         {
-            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
+            pagination.Visit(nextPageToken);
 
             // Each page asks only for what the limit still allows, so nothing fetched is discarded
             // and the page token returned to the caller continues exactly where the result ends.
@@ -436,7 +454,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
             try
             {
-                using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+                using var response = await ExecuteGetAsync(url, symbolList.First(), "trades", ct).ConfigureAwait(false);
                 await HandleHttpResponseOrThrowAsync(response, symbolList.First(), "trades", ct).ConfigureAwait(false);
 
                 var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
@@ -543,17 +561,18 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
         var allAuctions = new List<HistoricalAuction>();
         string? nextPageToken = null;
+        var pagination = new PaginationCursorGuard("Alpaca");
 
         do
         {
-            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
+            pagination.Visit(nextPageToken);
 
             var url = BuildAuctionsUrl(symbolList, start, end, nextPageToken);
             Log.Information("Requesting Alpaca auctions for {Symbols} ({Url})", string.Join(",", symbolList), url);
 
             try
             {
-                using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+                using var response = await ExecuteGetAsync(url, symbolList.First(), "auctions", ct).ConfigureAwait(false);
                 await HandleHttpResponseOrThrowAsync(response, symbolList.First(), "auctions", ct).ConfigureAwait(false);
 
                 var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
@@ -659,13 +678,13 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
             throw new InvalidOperationException("Alpaca API credentials are required. Set ALPACA_KEY_ID and ALPACA_SECRET_KEY environment variables or provide them in configuration.");
     }
 
-    private string BuildUrl(string symbol, DateOnly? from, DateOnly? to, string? pageToken)
+    private string BuildUrl(string symbol, DateOnly? from, DateOnly? to, string? pageToken, string? adjustment = null)
     {
         var startDate = from?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "2000-01-01";
         var endDate = to?.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
             ?? DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-        var url = $"{BaseUrl}/{symbol}/bars?timeframe=1Day&start={startDate}&end={endDate}&limit=10000&feed={Uri.EscapeDataString(_feed)}&adjustment={Uri.EscapeDataString(_adjustment)}";
+        var url = $"{BaseUrl}/{symbol}/bars?timeframe=1Day&start={startDate}&end={endDate}&limit=10000&feed={Uri.EscapeDataString(_feed)}&adjustment={Uri.EscapeDataString(adjustment ?? _adjustment)}";
 
         if (!string.IsNullOrEmpty(pageToken))
         {

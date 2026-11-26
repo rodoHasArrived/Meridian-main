@@ -77,6 +77,40 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_OperatorScopePreference_KeepsEntityAndFundDimensions()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "scope-preference", Guid.NewGuid().ToString("N"));
+        var store = new FileOperatorScopePreferenceStore(root, NullLogger<FileOperatorScopePreferenceStore>.Instance);
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IOperatorScopePreferenceStore>(store),
+            currentUserPermissions: UserPermission.ViewTrades);
+        var client = app.GetTestClient();
+
+        var save = await client.PutAsJsonAsync(OperatorScopePreferencePath, new OperatorScopePreferenceSaveRequest(
+            new OperatingScopeValuesDto(
+                EntityId: " 22222222-2222-2222-2222-222222222222 ",
+                FundId: "33333333-3333-3333-3333-333333333333",
+                From: "2026-11-01",
+                To: "2026-11-14")));
+        save.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var saved = await ReadJsonAsync(client, OperatorScopePreferencePath);
+        var scope = saved.RootElement.GetProperty("defaultScope");
+        scope.GetProperty("entityId").GetString().Should().Be("22222222-2222-2222-2222-222222222222");
+        scope.GetProperty("fundId").GetString().Should().Be("33333333-3333-3333-3333-333333333333");
+        scope.GetProperty("from").GetString().Should().Be("2026-11-01");
+        scope.GetProperty("to").GetString().Should().Be("2026-11-14");
+    }
+
+    [Fact]
+    public void FileOperatorScopePreferenceStore_Normalize_TreatsEntityOrFundAloneAsAScope()
+    {
+        FileOperatorScopePreferenceStore.Normalize(new OperatingScopeValuesDto(FundId: "  "))
+            .Should().BeNull();
+        FileOperatorScopePreferenceStore.Normalize(new OperatingScopeValuesDto(EntityId: " entity-1 "))
+            .Should().Be(new OperatingScopeValuesDto(EntityId: "entity-1"));
+    }
+
+    [Fact]
     public async Task FileOperatorScopePreferenceStore_SurvivesReopeningTheStore()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "scope-preference", Guid.NewGuid().ToString("N"));

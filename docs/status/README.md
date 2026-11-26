@@ -2,7 +2,7 @@
 
 **Status:** automation-owned-support
 **Owner:** core-team
-**Reviewed:** 2026-09-23
+**Reviewed:** 2026-11-15
 
 This folder holds generated repository reports, compatibility entry points, and retained evidence
 contracts. Delivery status comes from the [roadmap registry](../roadmap/README.md); release readiness
@@ -20,7 +20,7 @@ rerun it from the repository root. Paths in the command column are relative to t
 
 | Reports | Owning command or source |
 | --- | --- |
-| [Roadmap summary](ROADMAP_SUMMARY.md) | `python build/scripts/docs/render-roadmap-docs.py --summary`; compatibility copy of the [canonical summary](../roadmap/generated/ROADMAP_SUMMARY.md). |
+| [Roadmap summary](../roadmap/generated/ROADMAP_SUMMARY.md) | `python build/scripts/docs/render-roadmap-docs.py --summary`; rendered under `docs/roadmap/generated/`. |
 | [Program state](program-state-summary.md) and [JSON](program-state-summary.json) | `python scripts/generate_program_state_summary.py`; same roadmap/program registries. |
 | [TODO scan](TODO.md) | `python build/scripts/docs/scan-todos.py --output docs/status/TODO.md --json-output docs/status/todo-scan-results.json`; scan JSON is ignored local output. |
 | [Changelog](CHANGELOG.md) | `python build/scripts/docs/generate-changelog.py --output docs/status/CHANGELOG.md --recent 50`; Git history, not a release certification. |
@@ -43,6 +43,14 @@ rerun it from the repository root. Paths in the command column are relative to t
 | [UI route wiring](ui-route-wiring-report.md) and [JSON](ui-route-wiring-report.json) | `python build/scripts/docs/generate-ui-route-wiring-report.py`; static wiring scan. |
 | [WPF screen tracker](wpf-screen-development-tracker.md) and [JSON](wpf-screen-development-tracker.json) | `npm run generate-wpf-screen-tracker`; registry/source/test-reference/screenshot inventory, not proof of executed UI tests. |
 | [Workflow manifest](workflow-manifest.json), [drift report](workflow-drift-report.md), and [validation summary](workflow-validation-summary.json) | `python build/scripts/docs/generate-workflow-manifest.py`; workflow declarations and file inventory. |
+
+Several of these reports are gitignored local outputs (see the `/docs/status/` entries in
+`.gitignore`), including program state, the TODO scan, example validation, automation summary,
+AI inventory and handoff reports, prompt routing, the API contract, paper replay, evidence
+continuity and governance dashboards,
+the WPF screen tracker, the workflow drift report and validation summary. Their links resolve
+only after the owning command has run in your checkout. A fresh clone shows them as missing,
+which `repair-links.py` reports as broken links.
 
 Unless a full path is shown, Python report owners above live in `build/scripts/docs/`. Some dashboard
 generators deliberately emit `1970-01-01T00:00:00+00:00` as a stable timestamp for reproducible output.
@@ -69,7 +77,6 @@ Retain these paths while generators, validators, checklists, or guidance consume
 
 | Compatibility path | Current source |
 | --- | --- |
-| [ROADMAP.md](ROADMAP.md) | [Roadmap registry](../roadmap/README.md) |
 | [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md) | [Product](../product/README.md) and [roadmap register](../roadmap/generated/roadmap-register.md) |
 | [provider-validation-matrix.md](provider-validation-matrix.md) | [Canonical provider validation matrix](../reference/provider-validation-matrix.md) |
 | [contract-compatibility-matrix.md](contract-compatibility-matrix.md) | [Canonical contract compatibility matrix](../reference/contract-compatibility-matrix.md) |
@@ -81,7 +88,7 @@ preserves earlier versions; this index links only to current files.
 ## Retired in the September 2026 Review
 
 - The unreferenced accounting productization checklist moved to the
-  [historical summary archive](../../archive/docs/summaries/accounting-productization-checklist.md).
+  [historical summary archive](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/summaries/accounting-productization-checklist.md).
   Use the canonical readiness tracker and roadmap registry for current work.
 - Removed `metrics-dashboard.md`: the April snapshot reported 0% from zero measured runs, and
   the current generator still contains placeholder collectors. Its output contract remains in the

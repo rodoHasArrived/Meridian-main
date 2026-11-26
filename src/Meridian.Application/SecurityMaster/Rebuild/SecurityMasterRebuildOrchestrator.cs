@@ -89,7 +89,19 @@ public sealed class SecurityMasterRebuildOrchestrator
                 {
                     var records = await _projectionService.BuildWarmSetAsync(token).ConfigureAwait(false);
                     Interlocked.Exchange(ref _cacheReadbackPending, 1);
-                    await _store.PersistProjectionBatchAsync(ProjectionName, latestSequence, records, token).ConfigureAwait(false);
+                    // The full warm persists what the bare adapter decode returns, as the scoped and
+                    // incremental paths persist SecurityMasterAggregateRebuilder.RebuildAsync output:
+                    // declare the family on each row first, because migration 068's
+                    // ck_securities_terms_format_declared refuses an untagged row (ADR-024 amendment
+                    // 2026-11-13). The rows are decoded from event history, so the frozen legacy
+                    // classifier decides the family. Only the in-memory rows are tagged; no event is rewritten.
+                    var persistable = records
+                        .Select(static record => record with
+                        {
+                            AssetSpecificTerms = SecurityTermsLegacyEventClassifier.StampDeclaredFormat(record.AssetSpecificTerms)
+                        })
+                        .ToArray();
+                    await _store.PersistProjectionBatchAsync(ProjectionName, latestSequence, persistable, token).ConfigureAwait(false);
                     // A newer writer may have committed after BuildWarmSet read. The durable
                     // version guard skips our stale rows; publish the effective committed set,
                     // including its membership, rather than reinstalling the prepared snapshot.

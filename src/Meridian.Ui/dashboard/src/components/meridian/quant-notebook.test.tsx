@@ -89,8 +89,8 @@ describe("QuantNotebook", () => {
   it("renders charts and trades retained from a successful server response", () => {
     const result = mapQuantRunResponseToCellResult("cell-1", serverResponse as QuantRunResponse);
     render(<QuantNotebook vm={makeVm({ cells: [makeCell({ output: result.output })] })} />);
-    expect(screen.getByRole("img", { name: "AAPL Drawdown" })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "AAPL Cumulative Return" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "AAPL Drawdown" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "AAPL Cumulative Return" })).toBeInTheDocument();
     const trades = screen.getByRole("table", { name: "Script-emitted trades" });
     expect(trades).toHaveTextContent("AAPL");
     expect(trades).toHaveTextContent("Sell");

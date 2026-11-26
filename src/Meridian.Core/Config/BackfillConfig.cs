@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Catalog;
 
 namespace Meridian.Core.Config;
@@ -14,13 +15,14 @@ namespace Meridian.Core.Config;
 /// <param name="EnableFallback">When true and using composite provider, automatically try alternative providers on failure.</param>
 /// <param name="PreferAdjustedPrices">Prefer providers that return adjusted prices (for splits/dividends).</param>
 /// <param name="EnableSymbolResolution">Use OpenFIGI to normalize symbols across providers.</param>
-/// <param name="ProviderPriority">Custom provider priority order for fallback (overrides defaults).</param>
+/// <param name="ProviderPriority">Deprecated. Accepted when reading existing files. Routing uses the priority on each provider.</param>
 /// <param name="EnableRateLimitRotation">Automatically rotate to next provider when approaching rate limits.</param>
 /// <param name="RateLimitRotationThreshold">Usage threshold (0.0-1.0) at which to start rotating providers.</param>
 /// <param name="SkipExistingData">Check existing archives and skip dates that already have data.</param>
 /// <param name="FillGapsOnly">Only fill detected gaps in existing data (vs. full backfill).</param>
 /// <param name="Jobs">Job management configuration.</param>
 /// <param name="Providers">Configuration for individual data providers.</param>
+/// <param name="OperationalBudgets">Provider administrator policies keyed by historical provider ID.</param>
 public sealed record BackfillConfig(
     bool Enabled = false,
     string Provider = "composite",
@@ -39,8 +41,17 @@ public sealed record BackfillConfig(
     BackfillJobsConfig? Jobs = null,
     BackfillProvidersConfig? Providers = null,
     SymbolResolutionMode SymbolResolutionMode = SymbolResolutionMode.Compare,
-    AutoGapRemediationConfig? AutoRemediation = null
+    AutoGapRemediationConfig? AutoRemediation = null,
+    IReadOnlyDictionary<string, ProviderValidationProfile>? ValidationProfiles = null,
+    ProviderValidationProfileAudit[]? ValidationProfileAudit = null,
+    Dictionary<string, BackfillOperationalBudgetConfig>? OperationalBudgets = null
 );
+
+/// <summary>Shared historical backfill policy managed in the host configuration.</summary>
+public sealed record BackfillOperationalBudgetConfig(
+    int ReserveHeadroomPercent = 0,
+    int? MaxConcurrentRequests = null,
+    string[]? ApprovedEquivalentProviders = null);
 
 /// <summary>
 /// Host configuration for automatic, quality-triggered backfill remediation. Primitive time
@@ -141,7 +152,8 @@ public sealed record BackfillProvidersConfig(
     FinnhubConfig? Finnhub = null,
     FredConfig? Fred = null,
     SyntheticMarketDataConfig? Synthetic = null,
-    RobinhoodConfig? Robinhood = null
+    RobinhoodConfig? Robinhood = null,
+    TwelveDataConfig? TwelveData = null
 );
 
 /// <summary>
@@ -152,8 +164,9 @@ public sealed record BackfillProvidersConfig(
 /// <param name="RateLimitPerHour">Maximum requests per hour.</param>
 public sealed record YahooFinanceConfig(
     bool Enabled = true,
-    int Priority = 10,
-    int RateLimitPerHour = 2000
+    int Priority = BackfillProviderCatalog.YahooPriority,
+    int RateLimitPerHour = BackfillProviderCatalog.YahooPerHour,
+    string TierId = "free"
 );
 
 /// <summary>
@@ -167,7 +180,7 @@ public sealed record NasdaqDataLinkConfig(
     bool Enabled = true,
     string? ApiKey = null,
     string Database = "WIKI",
-    int Priority = 30
+    int Priority = BackfillProviderCatalog.NasdaqPriority
 );
 
 /// <summary>
@@ -178,7 +191,7 @@ public sealed record NasdaqDataLinkConfig(
 /// <param name="DefaultMarket">Default market suffix (e.g., "us" for US equities).</param>
 public sealed record StooqConfig(
     bool Enabled = true,
-    int Priority = 20,
+    int Priority = BackfillProviderCatalog.StooqPriority,
     string DefaultMarket = "us"
 );
 
@@ -191,7 +204,9 @@ public sealed record StooqConfig(
 public sealed record OpenFigiConfig(
     bool Enabled = true,
     string? ApiKey = null,
-    bool CacheResults = true
+    bool CacheResults = true,
+    string TierId = "free",
+    int? RateLimitPerMinute = null
 );
 
 /// <summary>
@@ -210,8 +225,9 @@ public sealed record AlpacaBackfillConfig(
     string? SecretKey = null,
     string Feed = "iex",
     string Adjustment = "all",
-    int Priority = 5,
-    int RateLimitPerMinute = 200
+    int Priority = BackfillProviderCatalog.AlpacaPriority,
+    int RateLimitPerMinute = BackfillProviderCatalog.AlpacaPerMinute,
+    string TierId = "free"
 );
 
 /// <summary>
@@ -226,8 +242,9 @@ public sealed record AlpacaBackfillConfig(
 public sealed record TiingoConfig(
     bool Enabled = true,
     string? ApiToken = null,
-    int Priority = 15,
-    int RateLimitPerHour = 50
+    int Priority = BackfillProviderCatalog.TiingoPriority,
+    int RateLimitPerHour = BackfillProviderCatalog.TiingoPerHour,
+    string TierId = "free"
 );
 
 /// <summary>
@@ -242,8 +259,9 @@ public sealed record TiingoConfig(
 public sealed record PolygonConfig(
     bool Enabled = true,
     string? ApiKey = null,
-    int Priority = 12,
-    int RateLimitPerMinute = 5
+    int Priority = BackfillProviderCatalog.PolygonPriority,
+    int RateLimitPerMinute = BackfillProviderCatalog.PolygonPerMinute,
+    string TierId = "free"
 );
 
 /// <summary>
@@ -255,14 +273,19 @@ public sealed record PolygonConfig(
 /// <param name="ApiKey">API key (falls back to ALPHA_VANTAGE_API_KEY env var).</param>
 /// <param name="Priority">Priority in fallback chain (lower = tried first).</param>
 /// <param name="RateLimitPerMinute">Maximum requests per minute.</param>
-/// <param name="RateLimitPerDay">Maximum requests per day (free tier is very limited).</param>
+/// <param name="RateLimitPerDay">Deprecated compatibility field. Daily limits are configured in ProviderQuotas.AlphaVantage.</param>
 public sealed record AlphaVantageConfig(
     bool Enabled = true,
     string? ApiKey = null,
-    int Priority = 25,
-    int RateLimitPerMinute = 5,
-    int RateLimitPerDay = 25
-);
+    int Priority = BackfillProviderCatalog.AlphaVantagePriority,
+    int RateLimitPerMinute = BackfillProviderCatalog.AlphaVantagePerMinute,
+    int RateLimitPerDay = BackfillProviderCatalog.AlphaVantageFreeDailyRequests
+)
+{
+    /// <summary>Declared vendor tier used to validate physical request pacing.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? TierId { get; init; }
+}
 
 /// <summary>
 /// Finnhub provider configuration.
@@ -276,8 +299,9 @@ public sealed record AlphaVantageConfig(
 public sealed record FinnhubConfig(
     bool Enabled = true,
     string? ApiKey = null,
-    int Priority = 18,
-    int RateLimitPerMinute = 60
+    int Priority = BackfillProviderCatalog.FinnhubPriority,
+    int RateLimitPerMinute = BackfillProviderCatalog.FinnhubPerMinute,
+    string TierId = "free"
 );
 
 /// <summary>
@@ -287,7 +311,7 @@ public sealed record FinnhubConfig(
 /// <param name="Enabled">Enable this provider.</param>
 /// <param name="ApiKey">API key (falls back to FRED_API_KEY env var).</param>
 /// <param name="Priority">Priority in fallback chain (lower = tried first).</param>
-/// <param name="RateLimitPerMinute">Maximum requests per minute.</param>
+/// <param name="RateLimitPerMinute">Deprecated compatibility field. The adapter owns its request pacing.</param>
 public sealed record FredConfig(
     bool Enabled = true,
     string? ApiKey = null,
@@ -307,4 +331,12 @@ public sealed record RobinhoodConfig(
     bool Enabled = false,
     int Priority = 35,
     int RateLimitPerHour = 100
+);
+
+/// <summary>Twelve Data options; credentials are resolved separately from the provider settings UI.</summary>
+public sealed record TwelveDataConfig(
+    bool Enabled = true,
+    int Priority = BackfillProviderCatalog.TwelveDataPriority,
+    int RateLimitPerMinute = BackfillProviderCatalog.TwelveDataPerMinute,
+    string TierId = "free"
 );

@@ -107,7 +107,7 @@ public sealed class AlphaVantageCorporateActionProviderTests
         var provider = new AlphaVantageCorporateActionProvider(
             factory,
             configuration,
-            NullLogger<AlphaVantageCorporateActionProvider>.Instance);
+            NullLogger<AlphaVantageCorporateActionProvider>.Instance, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var results = await provider.FetchAsync("AAPL", Guid.NewGuid(), CancellationToken.None);
 
@@ -163,7 +163,7 @@ public sealed class AlphaVantageCorporateActionProviderTests
         var provider = new AlphaVantageCorporateActionProvider(
             factory,
             configuration,
-            NullLogger<AlphaVantageCorporateActionProvider>.Instance);
+            NullLogger<AlphaVantageCorporateActionProvider>.Instance, rateLimiterRegistry: AlphaVantageTestBudget.Create());
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
@@ -189,7 +189,7 @@ public sealed class AlphaVantageCorporateActionProviderTests
         return new AlphaVantageCorporateActionProvider(
             factory,
             configuration,
-            NullLogger<AlphaVantageCorporateActionProvider>.Instance);
+            NullLogger<AlphaVantageCorporateActionProvider>.Instance, rateLimiterRegistry: AlphaVantageTestBudget.Create());
     }
 
     private static HttpResponseMessage JsonResponse(string json)

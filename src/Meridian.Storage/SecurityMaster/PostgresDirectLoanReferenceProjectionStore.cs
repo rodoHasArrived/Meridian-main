@@ -12,91 +12,84 @@ public sealed class PostgresDirectLoanReferenceProjectionStore : IDirectLoanRefe
     internal const string CovenantTable = "direct_loan_covenant_projection";
     internal const string PrincipalScheduleTable = "direct_loan_principal_schedule_projection";
 
-    private readonly PostgresReferenceProjectionReader _reader;
+    internal static readonly RegistryProjectionQuery ByBorrower = new(nameof(ByBorrower),
+        """
+        where lower(borrower) = lower(@borrower)
+        order by maturity_date nulls last, display_name
+        """);
+
+    internal static readonly RegistryProjectionQuery ByReferenceIndex = new(nameof(ByReferenceIndex),
+        """
+        where lower(reference_index) = lower(@reference_index)
+        order by maturity_date nulls last, display_name
+        """);
+
+    internal static readonly RegistryProjectionQuery MaturityLadder = new(nameof(MaturityLadder),
+        """
+        where maturity_date between @from_date and @to_date
+        order by maturity_date, display_name
+        """);
+
+    /// <summary>One loan's child rows in declared order; shared by both child tables.</summary>
+    internal static readonly RegistryProjectionQuery ChildrenBySecurity = new(nameof(ChildrenBySecurity),
+        """
+        where security_id = @security_id
+        order by ordinal
+        """);
+
+    internal static readonly RegistryProjectionQuery PrincipalPaymentsDue = new(nameof(PrincipalPaymentsDue),
+        """
+        where payment_date between @from_date and @to_date
+        order by payment_date, security_id, ordinal
+        """);
+
+    private readonly RegistryReferenceProjectionStore<DirectLoanProjectionRow> _loans;
+    private readonly RegistryReferenceProjectionStore<DirectLoanCovenantRow> _covenants;
+    private readonly RegistryReferenceProjectionStore<DirectLoanPrincipalPaymentRow> _principalSchedule;
 
     public PostgresDirectLoanReferenceProjectionStore(SecurityMasterOptions options)
     {
-        _reader = new PostgresReferenceProjectionReader(options);
+        _loans = CreateLoanStore(options);
+        _covenants = CreateCovenantStore(options);
+        _principalSchedule = CreatePrincipalScheduleStore(options);
     }
 
+    internal static RegistryReferenceProjectionStore<DirectLoanProjectionRow> CreateLoanStore(SecurityMasterOptions options)
+        => new(options, AssetClass, MapLoanRow, [ByBorrower, ByReferenceIndex, MaturityLadder]);
+
+    internal static RegistryReferenceProjectionStore<DirectLoanCovenantRow> CreateCovenantStore(SecurityMasterOptions options)
+        => new(options, AssetClass, MapCovenantRow, [ChildrenBySecurity], CovenantTable);
+
+    internal static RegistryReferenceProjectionStore<DirectLoanPrincipalPaymentRow> CreatePrincipalScheduleStore(SecurityMasterOptions options)
+        => new(options, AssetClass, MapPrincipalPaymentRow, [ChildrenBySecurity, PrincipalPaymentsDue], PrincipalScheduleTable);
+
     public Task<DirectLoanProjectionRow?> GetDirectLoanAsync(Guid securityId, CancellationToken ct = default)
-        => _reader.QuerySingleAsync(
-            _reader.SelectSql(AssetClass, "where security_id = @security_id"),
-            [new NpgsqlParameter("security_id", securityId)],
-            MapLoanRow,
-            ct);
+        => _loans.GetBySecurityIdAsync(securityId, ct);
 
     public Task<IReadOnlyList<DirectLoanProjectionRow>> GetByBorrowerAsync(string borrower, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where lower(borrower) = lower(@borrower)
-                order by maturity_date nulls last, display_name
-                """),
-            [new NpgsqlParameter("borrower", borrower.Trim())],
-            MapLoanRow,
-            ct);
+        => _loans.ListAsync(ByBorrower, [new NpgsqlParameter("borrower", borrower.Trim())], ct);
 
     public Task<IReadOnlyList<DirectLoanProjectionRow>> GetByReferenceIndexAsync(string referenceIndex, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where lower(reference_index) = lower(@reference_index)
-                order by maturity_date nulls last, display_name
-                """),
-            [new NpgsqlParameter("reference_index", referenceIndex.Trim())],
-            MapLoanRow,
-            ct);
+        => _loans.ListAsync(ByReferenceIndex, [new NpgsqlParameter("reference_index", referenceIndex.Trim())], ct);
 
     public Task<IReadOnlyList<DirectLoanProjectionRow>> GetMaturityLadderAsync(DateOnly from, DateOnly to, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where maturity_date between @from_date and @to_date
-                order by maturity_date, display_name
-                """),
-            [
-                new NpgsqlParameter("from_date", from.ToDateTime(TimeOnly.MinValue)),
-                new NpgsqlParameter("to_date", to.ToDateTime(TimeOnly.MinValue))
-            ],
-            MapLoanRow,
-            ct);
+        => _loans.ListAsync(MaturityLadder, DateWindow(from, to), ct);
 
     public Task<IReadOnlyList<DirectLoanCovenantRow>> GetCovenantsAsync(Guid securityId, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectChildSql(AssetClass, CovenantTable,
-                """
-                where security_id = @security_id
-                order by ordinal
-                """),
-            [new NpgsqlParameter("security_id", securityId)],
-            MapCovenantRow,
-            ct);
+        => _covenants.ListAsync(ChildrenBySecurity, [new NpgsqlParameter("security_id", securityId)], ct);
 
     public Task<IReadOnlyList<DirectLoanPrincipalPaymentRow>> GetPrincipalScheduleAsync(Guid securityId, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectChildSql(AssetClass, PrincipalScheduleTable,
-                """
-                where security_id = @security_id
-                order by ordinal
-                """),
-            [new NpgsqlParameter("security_id", securityId)],
-            MapPrincipalPaymentRow,
-            ct);
+        => _principalSchedule.ListAsync(ChildrenBySecurity, [new NpgsqlParameter("security_id", securityId)], ct);
 
     public Task<IReadOnlyList<DirectLoanPrincipalPaymentRow>> GetPrincipalPaymentsDueAsync(DateOnly from, DateOnly to, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectChildSql(AssetClass, PrincipalScheduleTable,
-                """
-                where payment_date between @from_date and @to_date
-                order by payment_date, security_id, ordinal
-                """),
-            [
-                new NpgsqlParameter("from_date", from.ToDateTime(TimeOnly.MinValue)),
-                new NpgsqlParameter("to_date", to.ToDateTime(TimeOnly.MinValue))
-            ],
-            MapPrincipalPaymentRow,
-            ct);
+        => _principalSchedule.ListAsync(PrincipalPaymentsDue, DateWindow(from, to), ct);
+
+    private static NpgsqlParameter[] DateWindow(DateOnly from, DateOnly to)
+        =>
+        [
+            new NpgsqlParameter("from_date", from.ToDateTime(TimeOnly.MinValue)),
+            new NpgsqlParameter("to_date", to.ToDateTime(TimeOnly.MinValue))
+        ];
 
     internal static DirectLoanProjectionRow MapLoanRow(ProjectionRow row)
         => new(

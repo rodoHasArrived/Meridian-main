@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Execution.Models;
+using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Serialization;
 using Meridian.Storage.Archival;
@@ -120,8 +121,14 @@ public sealed record LivePromotionControlDecision(bool IsAllowed, string? Reject
 /// Control changes are persisted atomically because they are infrequent, while order
 /// evaluation stays entirely in-memory to keep routing latency predictable.
 /// </summary>
-public sealed class ExecutionOperatorControlService
+public sealed class ExecutionOperatorControlService : IRiskCircuitBreakerControl
 {
+    bool IRiskCircuitBreakerControl.IsCircuitBreakerOpen => GetSnapshot().CircuitBreaker.IsOpen;
+
+    async Task IRiskCircuitBreakerControl.SetCircuitBreakerAsync(bool isOpen, string? reason,
+        string? changedBy, string? correlationId, CancellationToken ct) =>
+        await SetCircuitBreakerAsync(isOpen, reason, changedBy, correlationId, ct).ConfigureAwait(false);
+
     private readonly ExecutionOperatorControlOptions _options;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly ILogger<ExecutionOperatorControlService> _logger;
@@ -187,7 +194,6 @@ public sealed class ExecutionOperatorControlService
     {
         lock (_lock)
         {
-            PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
             return BuildSnapshotLocked();
         }
     }
@@ -443,16 +449,21 @@ public sealed class ExecutionOperatorControlService
     /// <summary>
     /// Evaluates a new order against the current operator controls.
     /// </summary>
-    public ExecutionControlDecision EvaluateOrder(OrderRequest request, IPortfolioState? portfolioState, string? runId = null)
+    public ExecutionControlDecision EvaluateOrder(OrderRequest request, IPortfolioState? portfolioState, string? runId = null) =>
+        EvaluateOrder(request, portfolioState, runId, observationOnly: false);
+
+    public ExecutionControlDecision EvaluateOrder(OrderRequest request, IPortfolioState? portfolioState, string? runId, bool observationOnly)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         lock (_lock)
         {
             var now = DateTimeOffset.UtcNow;
-            PurgeExpiredOverridesLocked(now);
+            if (!observationOnly)
+                PurgeExpiredOverridesLocked(now);
 
             var forceBlock = _manualOverrides.Values.FirstOrDefault(overrideEntry =>
+                (overrideEntry.ExpiresAt is null || overrideEntry.ExpiresAt > now) &&
                 string.Equals(overrideEntry.Kind, ExecutionManualOverrideKinds.ForceBlockOrders, StringComparison.OrdinalIgnoreCase) &&
                 OverrideMatchesTarget(overrideEntry, ManualOverrideTarget.ForOrder(request, runId)));
 
@@ -601,10 +612,12 @@ public sealed class ExecutionOperatorControlService
         {
             // A probe that throws has established nothing. Refusing is the same answer as an
             // absent probe, and it keeps a faulting book from admitting an unbounded close.
+            // A custom probe may echo order text in its exception; retain the diagnostic
+            // without allowing the exception renderer to bypass log neutralization.
             _logger.LogWarning(
-                exception,
-                "Close-only admission refused: the working-reduction probe failed for {Symbol}",
-                normalizedSymbol);
+                "Close-only admission refused: the working-reduction probe failed for {Symbol} ({FailureType}: {FailureMessage})",
+                LogSanitizer.Sanitize(normalizedSymbol), exception.GetType().Name,
+                LogSanitizer.Sanitize(exception.Message));
             return false;
         }
 
@@ -918,6 +931,7 @@ public sealed class ExecutionOperatorControlService
             DefaultMaxPositionSize: _defaultMaxPositionSize,
             SymbolPositionLimits: new Dictionary<string, decimal>(_symbolPositionLimits, StringComparer.OrdinalIgnoreCase),
             ManualOverrides: _manualOverrides.Values
+                .Where(static entry => entry.ExpiresAt is null || entry.ExpiresAt > DateTimeOffset.UtcNow)
                 .OrderByDescending(static entry => entry.CreatedAt)
                 .ToArray(),
             AsOf: DateTimeOffset.UtcNow,
@@ -948,6 +962,9 @@ public sealed class ExecutionOperatorControlService
         {
             return null;
         }
+
+        if (overrideEntry.ExpiresAt is { } expiresAt && expiresAt <= DateTimeOffset.UtcNow)
+            return null;
 
         if (!string.Equals(overrideEntry.Kind, requiredKind, StringComparison.OrdinalIgnoreCase))
         {

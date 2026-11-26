@@ -49,7 +49,21 @@ describe("recent operating scopes (C1)", () => {
       provider: "alpaca",
       from: "2026-06-01",
       to: "2026-06-30"
-    })).toBe("AAPL · fund 1111…1111 · alpaca · 2026-06-01 to 2026-06-30");
+    })).toBe("account 1111…1111 · AAPL · alpaca · 2026-06-01 to 2026-06-30");
+    expect(describeOperatingScope({
+      entityId: "22222222-2222-2222-2222-222222222222",
+      fundId: "fund-1",
+      from: "2026-11-14",
+      to: "2026-11-14"
+    })).toBe("entity 2222…2222 · fund fund-1 · 2026-11-14");
     expect(describeOperatingScope({})).toBe("No scope");
+  });
+
+  it("remembers scopes that differ only by entity or fund separately", () => {
+    const storage = memoryStorage();
+    let recents = rememberRecentScope({ entityId: "entity-1" }, [], storage);
+    recents = rememberRecentScope({ entityId: "entity-1", fundId: "fund-1" }, recents, storage);
+    expect(recents).toEqual([{ entityId: "entity-1", fundId: "fund-1" }, { entityId: "entity-1" }]);
+    expect(readRecentScopes(storage)).toEqual(recents);
   });
 });

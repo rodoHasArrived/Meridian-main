@@ -217,6 +217,15 @@ public sealed class ApiClientService : IDisposable
             ct).ConfigureAwait(false);
     }
 
+    /// <summary>Downloads a text response through the current authenticated session.</summary>
+    public async Task<ApiResponse<string>> GetTextWithResponseAsync(string endpoint, CancellationToken ct = default)
+    {
+        using var lease = AcquireSession();
+        var url = BuildUrl(lease.Session.BaseUrl, endpoint);
+        return await SendWithResponseAsync<string>(
+            () => lease.Session.ApiClient.GetAsync(url, ct), ct, static text => text).ConfigureAwait(false);
+    }
+
     /// <summary>
     /// Performs a POST request with JSON body. Returns null ONLY for 404 (not found) and — for
     /// legacy compatibility — on other failures, which are now logged. New callers must use
@@ -254,7 +263,24 @@ public sealed class ApiClientService : IDisposable
             () => client.SendAsync(
                 CreateMutationRequest(lease.Session.BaseUrl, HttpMethod.Post, url, CreateJsonContent(body)),
                 ct),
-            ct).ConfigureAwait(false);
+            ct, allowEmpty: true).ConfigureAwait(false);
+    }
+
+    /// <summary>Downloads authoritative bytes with one captured authenticated endpoint session.</summary>
+    public async Task<ApiResponse<byte[]>> PostArtifactAsync(string endpoint, object body, CancellationToken ct = default)
+    {
+        using var lease = AcquireSession();
+        try
+        {
+            var url = BuildUrl(lease.Session.BaseUrl, endpoint);
+            using var request = CreateMutationRequest(lease.Session.BaseUrl, HttpMethod.Post, url, CreateJsonContent(body));
+            using var response = await lease.Session.ApiClient.SendAsync(request, ct).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+                return ApiResponse<byte[]>.Fail(await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false), (int)response.StatusCode);
+            return ApiResponse<byte[]>.Ok(await response.Content.ReadAsByteArrayAsync(ct).ConfigureAwait(false));
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (HttpRequestException ex) { return ApiResponse<byte[]>.Fail(ex.Message, isConnectionError: true); }
     }
 
     /// <summary>
@@ -265,7 +291,18 @@ public sealed class ApiClientService : IDisposable
         using var lease = AcquireSession();
         var url = BuildUrl(lease.Session.BaseUrl, endpoint);
         return await SendWithResponseAsync<T>(() => lease.Session.ApiClient.SendAsync(
-            CreateMutationRequest(lease.Session.BaseUrl, HttpMethod.Put, url, CreateJsonContent(body)), ct), ct).ConfigureAwait(false);
+            CreateMutationRequest(lease.Session.BaseUrl, HttpMethod.Put, url, CreateJsonContent(body)), ct), ct, allowEmpty: true).ConfigureAwait(false);
+    }
+
+    /// <summary>Uploads a multipart form using the current authenticated session and CSRF protection.</summary>
+    public async Task<ApiResponse<T>> PostMultipartWithResponseAsync<T>(
+        string endpoint, MultipartFormDataContent form, CancellationToken ct = default) where T : class
+    {
+        using var lease = AcquireSession();
+        var url = BuildUrl(lease.Session.BaseUrl, endpoint);
+        using var request = CreateMutationRequest(lease.Session.BaseUrl, HttpMethod.Post, url, form);
+        return await SendWithResponseAsync<T>(
+            () => lease.Session.ApiClient.SendAsync(request, ct), ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -281,7 +318,7 @@ public sealed class ApiClientService : IDisposable
             () => lease.Session.ApiClient.SendAsync(
                 CreateMutationRequest(lease.Session.BaseUrl, HttpMethod.Delete, url, content: null),
                 ct),
-            ct).ConfigureAwait(false);
+            ct, allowEmpty: true).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -331,7 +368,10 @@ public sealed class ApiClientService : IDisposable
             if (!response.IsSuccessStatusCode)
             {
                 LoggingService.Instance.LogWarning(
-                    $"Workstation API login failed with {(int)response.StatusCode} {response.StatusCode}.");
+                    "Workstation API login failed with {StatusCode} {Status}.",
+                    null,
+                    ("StatusCode", ((int)response.StatusCode).ToString()),
+                    ("Status", response.StatusCode.ToString()));
             }
 
             return response.IsSuccessStatusCode;
@@ -367,7 +407,9 @@ public sealed class ApiClientService : IDisposable
         catch (Exception ex)
         {
             LoggingService.Instance.LogWarning(
-                $"Workstation API logout failed ({ex.Message}); expiring local session cookies anyway.");
+                "Workstation API logout failed ({Error}); expiring local session cookies anyway.",
+                ex,
+                ("Error", ex.Message));
         }
         finally
         {
@@ -401,8 +443,13 @@ public sealed class ApiClientService : IDisposable
                 if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
                 {
                     LoggingService.Instance.LogWarning(
-                        $"API {method} {url} failed with {(int)response.StatusCode} {response.StatusCode}; returning null. " +
-                        "Callers on the legacy null-based seam cannot distinguish this failure from absent data.");
+                        "API {Method} {Url} failed with {StatusCode} {Status}; returning null. " +
+                        "Callers on the legacy null-based seam cannot distinguish this failure from absent data.",
+                        null,
+                        ("Method", method.ToString()),
+                        ("Url", url),
+                        ("StatusCode", ((int)response.StatusCode).ToString()),
+                        ("Status", response.StatusCode.ToString()));
                 }
 
                 return null;
@@ -417,7 +464,8 @@ public sealed class ApiClientService : IDisposable
         }
         catch (Exception ex)
         {
-            LoggingService.Instance.LogError($"API {method} {url} threw; returning null.", ex);
+            LoggingService.Instance.LogError("API {Method} {Url} threw; returning null.", ex,
+                ("Method", method.ToString()), ("Url", url));
             return null;
         }
     }
@@ -430,7 +478,9 @@ public sealed class ApiClientService : IDisposable
     /// </summary>
     private static async Task<ApiResponse<T>> SendWithResponseAsync<T>(
         Func<Task<HttpResponseMessage>> send,
-        CancellationToken ct) where T : class
+        CancellationToken ct,
+        Func<string, T?>? deserialize = null,
+        bool allowEmpty = false) where T : class
     {
         try
         {
@@ -447,7 +497,8 @@ public sealed class ApiClientService : IDisposable
                 };
             }
 
-            var data = JsonSerializer.Deserialize<T>(json, JsonOptions);
+            var data = deserialize is not null ? deserialize(json)
+                : allowEmpty && string.IsNullOrWhiteSpace(json) ? null : JsonSerializer.Deserialize<T>(json, JsonOptions);
             return new ApiResponse<T>
             {
                 Success = true,

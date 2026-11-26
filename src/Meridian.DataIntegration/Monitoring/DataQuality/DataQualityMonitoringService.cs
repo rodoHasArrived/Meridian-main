@@ -48,7 +48,10 @@ public sealed class DataQualityMonitoringService : IAsyncDisposable
         SequenceTracker = new SequenceErrorTracker(config.SequenceErrorConfig);
         AnomalyDetector = new AnomalyDetector(config.AnomalyConfig);
         LatencyHistogram = new LatencyHistogram(config.LatencyConfig);
-        CrossProvider = new CrossProviderComparisonService(config.CrossProviderConfig);
+        CrossProvider = new CrossProviderComparisonService(
+            config.CrossProviderConfig,
+            config.CrossProviderPolicy,
+            config.AssetClassResolver);
 
         ReportGenerator = new DataQualityReportGenerator(
             Completeness, GapAnalyzer, SequenceTracker, AnomalyDetector,
@@ -470,6 +473,12 @@ public sealed record DataQualityMonitoringConfig
     public AnomalyDetectionConfig? AnomalyConfig { get; init; }
     public LatencyHistogramConfig? LatencyConfig { get; init; }
     public CrossProviderConfig? CrossProviderConfig { get; init; }
+
+    /// <summary>User-editable cross-provider tolerances; when null the <see cref="CrossProviderConfig"/> thresholds apply.</summary>
+    public Meridian.Core.Config.CrossProviderTolerancePolicy? CrossProviderPolicy { get; init; }
+
+    /// <summary>Optional symbol to asset-class lookup used to select per-asset-class tolerance overrides.</summary>
+    public Func<string, string?>? AssetClassResolver { get; init; }
     public string? ReportOutputDirectory { get; init; }
 
     public static DataQualityMonitoringConfig Default => new();

@@ -4,13 +4,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Credentials;
+using Meridian.Core.IO;
+using Meridian.Storage.Archival;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Contracts;
 using HttpClientFactoryProvider = Meridian.Ui.Services.HttpClientFactoryProvider;
@@ -115,7 +117,7 @@ public sealed class CredentialExpirationEventArgs : EventArgs
 /// Implements the shared <see cref="ICredentialService"/> seam so shared UI services can
 /// consume this host implementation instead of the no-op default.
 /// </summary>
-public sealed class CredentialService : ICredentialService, IDisposable
+public sealed partial class CredentialService : ICredentialService, IDisposable
 {
     private const string ResourcePrefix = "Meridian";
     private const string CredentialVaultFileName = "credentials.enc";
@@ -128,12 +130,14 @@ public sealed class CredentialService : ICredentialService, IDisposable
     public const string OpenFigiApiKeyResource = $"{ResourcePrefix}.OpenFigi";
     public const string OAuthTokenResource = $"{ResourcePrefix}.OAuth";
     private const string OAuthRefreshTokenSuffix = ".refresh";
+    private static readonly TimeSpan VaultWriteTimeout = TimeSpan.FromSeconds(5);
 
     // Alpaca API endpoints for testing
     private const string AlpacaPaperBaseUrl = "https://paper-api.alpaca.markets";
     private const string AlpacaLiveBaseUrl = "https://api.alpaca.markets";
 
     private readonly HttpClient _httpClient;
+    private readonly HttpClient _oauthHttpClient;
     private readonly string _vaultPath;
     private readonly string _metadataPath;
     private readonly object _vaultLock = new();
@@ -178,8 +182,14 @@ public sealed class CredentialService : ICredentialService, IDisposable
     /// operator vault.
     /// </param>
     public CredentialService(string? storageDirectory = null)
+        : this(storageDirectory, new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false })
+    {
+    }
+
+    internal CredentialService(string? storageDirectory, HttpMessageHandler oauthHandler)
     {
         _httpClient = HttpClientFactoryProvider.CreateClient(HttpClientNames.CredentialTest);
+        _oauthHttpClient = new HttpClient(oauthHandler);
 
         var appDataDir = string.IsNullOrWhiteSpace(storageDirectory)
             ? Path.Combine(
@@ -188,7 +198,7 @@ public sealed class CredentialService : ICredentialService, IDisposable
             : storageDirectory;
         Directory.CreateDirectory(appDataDir);
 
-        _vaultPath = Path.Combine(appDataDir, CredentialVaultFileName);
+        _vaultPath = Path.GetFullPath(Path.Combine(appDataDir, CredentialVaultFileName));
         _metadataPath = Path.Combine(appDataDir, MetadataFileName);
 
         LoadVault();
@@ -201,7 +211,7 @@ public sealed class CredentialService : ICredentialService, IDisposable
     {
         if (_metadataLoaded)
             return;
-        await LoadMetadataAsync();
+        await LoadMetadataAsync(ct).ConfigureAwait(false);
         _metadataLoaded = true;
     }
 
@@ -210,6 +220,7 @@ public sealed class CredentialService : ICredentialService, IDisposable
         if (_disposed)
             return;
         _httpClient.Dispose();
+        _oauthHttpClient.Dispose();
         _disposed = true;
     }
 
@@ -219,10 +230,40 @@ public sealed class CredentialService : ICredentialService, IDisposable
     }
 
 
-    private sealed class StoredCredential
+    private sealed record StoredCredential
     {
-        public string Username { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
+        public string Username { get; init; } = string.Empty;
+        public string Password { get; init; } = string.Empty;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public Guid? OAuthGeneration { get; init; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public CredentialMetadata? OAuthMetadata { get; init; }
+    }
+
+    private Dictionary<string, StoredCredential> ReadVault()
+    {
+        try
+        {
+            using var file = new FileStream(_vaultPath, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+            using var encrypted = new MemoryStream();
+            file.CopyTo(encrypted);
+            var decrypted = ProtectedData.Unprotect(encrypted.ToArray(), null, DataProtectionScope.CurrentUser);
+            try
+            {
+                return JsonSerializer.Deserialize<Dictionary<string, StoredCredential>>(decrypted)
+                    ?? throw new JsonException("Credential vault has no records object.");
+            }
+            finally
+            {
+                CryptographicOperations.ZeroMemory(decrypted);
+            }
+        }
+        catch (FileNotFoundException)
+        {
+            return new();
+        }
     }
 
     private void LoadVault()
@@ -231,13 +272,8 @@ public sealed class CredentialService : ICredentialService, IDisposable
         {
             try
             {
-                if (File.Exists(_vaultPath))
-                {
-                    var encrypted = File.ReadAllBytes(_vaultPath);
-                    var decrypted = ProtectedData.Unprotect(encrypted, null, DataProtectionScope.CurrentUser);
-                    var json = Encoding.UTF8.GetString(decrypted);
-                    _vault = JsonSerializer.Deserialize<Dictionary<string, StoredCredential>>(json) ?? new();
-                }
+                _vault = ReadVault();
+                _vaultLoadFailed = false;
             }
             catch (Exception ex)
             {
@@ -245,43 +281,59 @@ public sealed class CredentialService : ICredentialService, IDisposable
                 // next save moves the unreadable file aside instead of permanently erasing every
                 // stored credential (a torn write or transient DPAPI error is often recoverable).
                 _vault = new();
-                _vaultLoadFailed = true;
-                Interlocked.Increment(ref _vaultAccessFailures);
-                LoggingService.Instance.LogWarning(
-                    "Credential vault could not be read; it will be preserved as a backup before the next save.",
-                    ("exception", ex.GetType().Name),
-                    ("message", ex.Message));
+                NoteVaultLoadFailure(ex);
             }
         }
     }
 
-    private void SaveVault()
+    private void NoteVaultLoadFailure(Exception ex)
     {
-        lock (_vaultLock)
-        {
-            try
-            {
-                if (_vaultLoadFailed)
-                {
-                    PreserveUnreadableVault();
-                    _vaultLoadFailed = false;
-                }
+        if (_vaultLoadFailed)
+            return;
 
-                var json = JsonSerializer.Serialize(_vault);
-                var bytes = Encoding.UTF8.GetBytes(json);
-                var encrypted = ProtectedData.Protect(bytes, null, DataProtectionScope.CurrentUser);
-                WriteVaultAtomically(encrypted);
-            }
-            catch (Exception ex)
-            {
-                // Vault persistence is best-effort; disk/DPAPI failures must not crash the caller.
-                LoggingService.Instance.LogDebug(
-                    "Failed to persist credential vault.",
-                    ("exception", ex.GetType().Name),
-                    ("message", ex.Message));
-            }
+        _vaultLoadFailed = true;
+        Interlocked.Increment(ref _vaultAccessFailures);
+        LoggingService.Instance.LogWarning(
+            "Credential vault could not be read.",
+            ("exception", ex.GetType().Name));
+    }
+
+    private Dictionary<string, StoredCredential> ReadVaultForWrite()
+    {
+        try
+        {
+            var latest = ReadVault();
+            _vaultLoadFailed = false;
+            return latest;
+        }
+        catch (Exception ex) when (ex is CryptographicException or JsonException)
+        {
+            // Preserve unreadable encrypted generations on explicit credential replacement.
+            // A transient I/O failure must leave the existing vault alone.
+            NoteVaultLoadFailure(ex);
+            return new();
         }
     }
+
+    private void PublishVault(Dictionary<string, StoredCredential> replacement, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(replacement);
+        try
+        {
+            var encrypted = ProtectedData.Protect(bytes, null, DataProtectionScope.CurrentUser);
+            WriteVaultAtomically(encrypted, ct);
+            _vault = replacement;
+            _vaultLoadFailed = false;
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(bytes);
+        }
+    }
+
+    private Task<FileStream> AcquireVaultWriteLeaseAsync(CancellationToken ct)
+        => ExclusiveFileLock.AcquireAsync(_vaultPath + ".lock", VaultWriteTimeout, ct);
 
     /// <summary>
     /// Moves an unreadable vault file to a timestamped backup next to it so it can be recovered.
@@ -303,7 +355,7 @@ public sealed class CredentialService : ICredentialService, IDisposable
     /// Writes the vault through a flushed temp file and an atomic rename so a crash or power loss
     /// mid-write can never leave a torn vault in place of the previous one.
     /// </summary>
-    private void WriteVaultAtomically(byte[] encrypted)
+    private void WriteVaultAtomically(byte[] encrypted, CancellationToken ct)
     {
         var tempPath = $"{_vaultPath}.{Guid.NewGuid():N}.tmp";
         try
@@ -314,6 +366,9 @@ public sealed class CredentialService : ICredentialService, IDisposable
                 stream.Flush(flushToDisk: true);
             }
 
+            ct.ThrowIfCancellationRequested();
+            if (_vaultLoadFailed)
+                PreserveUnreadableVault();
             File.Move(tempPath, _vaultPath, overwrite: true);
         }
         catch
@@ -332,11 +387,21 @@ public sealed class CredentialService : ICredentialService, IDisposable
     {
         try
         {
+            ArgumentNullException.ThrowIfNull(resource);
+            using var lease = ExclusiveFileLock.Acquire(_vaultPath + ".lock", VaultWriteTimeout);
             lock (_vaultLock)
             {
-                _vault[resource] = new StoredCredential { Username = username, Password = password };
+                var latest = ReadVaultForWrite();
+                var previous = latest.GetValueOrDefault(resource);
+                latest[resource] = new StoredCredential
+                {
+                    Username = username,
+                    Password = password,
+                    OAuthGeneration = IsOAuthResource(resource) ? Guid.NewGuid() : null,
+                    OAuthMetadata = previous?.OAuthMetadata
+                };
+                PublishVault(latest);
             }
-            SaveVault();
             LogCredentialOperation("SaveCredential", resource, true);
         }
         catch (Exception ex)
@@ -394,15 +459,17 @@ public sealed class CredentialService : ICredentialService, IDisposable
     {
         try
         {
-            bool removed;
+            ArgumentNullException.ThrowIfNull(resource);
+            using var lease = ExclusiveFileLock.Acquire(_vaultPath + ".lock", VaultWriteTimeout);
             lock (_vaultLock)
             {
-                removed = _vault.Remove(resource);
-            }
-
-            if (removed)
-            {
-                SaveVault();
+                var latest = ReadVault();
+                if (!latest.Remove(resource))
+                    return;
+                if (IsOAuthAccessResource(resource))
+                    latest.Remove(resource + OAuthRefreshTokenSuffix);
+                _vaultLoadFailed = false;
+                PublishVault(latest);
                 LogCredentialOperation("RemoveCredential", resource, true);
             }
         }
@@ -511,7 +578,7 @@ public sealed class CredentialService : ICredentialService, IDisposable
         {
             if (File.Exists(_metadataPath))
             {
-                var json = await File.ReadAllTextAsync(_metadataPath);
+                var json = await File.ReadAllTextAsync(_metadataPath, ct).ConfigureAwait(false);
                 var metadata = JsonSerializer.Deserialize<Dictionary<string, CredentialMetadata>>(json);
                 if (metadata != null)
                 {
@@ -522,7 +589,7 @@ public sealed class CredentialService : ICredentialService, IDisposable
                 }
             }
         }
-        catch (Exception)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             lock (_metadataLock)
             {
@@ -531,32 +598,46 @@ public sealed class CredentialService : ICredentialService, IDisposable
         }
     }
 
-    private async Task SaveMetadataAsync(CancellationToken ct = default)
+    private Dictionary<string, CredentialMetadata> ReadLegacyMetadata()
     {
         try
         {
-            Dictionary<string, CredentialMetadata> snapshot;
-            lock (_metadataLock)
-            {
-                snapshot = new Dictionary<string, CredentialMetadata>(_metadataCache);
-            }
-
-            var json = JsonSerializer.Serialize(snapshot, DesktopJsonOptions.PrettyPrint);
-            await File.WriteAllTextAsync(_metadataPath, json);
+            return JsonSerializer.Deserialize<Dictionary<string, CredentialMetadata>>(File.ReadAllText(_metadataPath))
+                ?? new();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is FileNotFoundException or JsonException)
+        {
+            return new();
+        }
+    }
+
+    private void SaveLegacyMetadata(Dictionary<string, CredentialMetadata> metadata, CancellationToken ct)
+    {
+        try
+        {
+            AtomicFileWriter.Write(_metadataPath, JsonSerializer.Serialize(metadata, DesktopJsonOptions.PrettyPrint), ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // Metadata persistence is best-effort; failures must not crash the caller.
             LoggingService.Instance.LogDebug(
                 "Failed to persist credential metadata.",
-                ("exception", ex.GetType().Name),
-                ("message", ex.Message));
+                ("exception", ex.GetType().Name));
         }
+
+        lock (_metadataLock)
+            _metadataCache = metadata;
     }
 
     public CredentialMetadata? GetMetadata(string resource)
     {
         ThrowIfDisposed();
+        lock (_vaultLock)
+        {
+            if (_vault.TryGetValue(resource, out var stored) && stored.OAuthMetadata is { } oauthMetadata)
+                return oauthMetadata;
+        }
+
         lock (_metadataLock)
         {
             return _metadataCache.TryGetValue(resource, out var metadata) ? metadata : null;
@@ -568,17 +649,34 @@ public sealed class CredentialService : ICredentialService, IDisposable
         ThrowIfDisposed();
 
         CredentialMetadata metadata;
-        lock (_metadataLock)
+        using (await AcquireVaultWriteLeaseAsync(ct).ConfigureAwait(false))
         {
-            if (!_metadataCache.TryGetValue(resource, out metadata!))
+            lock (_vaultLock)
             {
-                metadata = new CredentialMetadata { Resource = resource };
-                _metadataCache[resource] = metadata;
+                var latest = IsOAuthAccessResource(resource) ? ReadVault() : null;
+                var stored = latest?.GetValueOrDefault(resource);
+                var legacy = stored?.OAuthMetadata is null ? ReadLegacyMetadata() : null;
+                metadata = stored?.OAuthMetadata ?? legacy?.GetValueOrDefault(resource) ?? new CredentialMetadata { Resource = resource };
+                update(metadata);
+                if (stored is not null)
+                {
+                    latest![resource] = stored with { OAuthMetadata = metadata };
+                    _vaultLoadFailed = false;
+                    PublishVault(latest, ct);
+                }
+                else
+                {
+                    legacy![resource] = metadata;
+                    SaveLegacyMetadata(legacy, ct);
+                }
             }
-            update(metadata);
         }
 
-        await SaveMetadataAsync();
+        NotifyMetadataUpdated(resource, metadata);
+    }
+
+    private void NotifyMetadataUpdated(string resource, CredentialMetadata metadata)
+    {
         MetadataUpdated?.Invoke(this, new CredentialMetadataEventArgs(resource, metadata));
 
         if (metadata.ExpiresAt.HasValue)
@@ -598,11 +696,12 @@ public sealed class CredentialService : ICredentialService, IDisposable
         {
             m.LastAuthenticatedAt = DateTime.UtcNow;
             m.TestStatus = CredentialTestStatus.Success;
-        });
+        }, ct);
     }
 
     public List<CredentialInfo> GetAllCredentialsWithMetadata()
     {
+        LoadVault();
         var credentials = new List<CredentialInfo>();
         var resources = GetAllStoredResources();
 
@@ -885,141 +984,13 @@ public sealed class CredentialService : ICredentialService, IDisposable
 
 
 
-    public async Task SaveOAuthTokenAsync(
-        string providerId,
-        string accessToken,
-        string? refreshToken,
-        DateTime expiresAt,
-        string? tokenEndpoint = null,
-        string? clientId = null, CancellationToken ct = default)
-    {
-        var resource = $"{OAuthTokenResource}.{providerId}";
-        SaveCredential(resource, "oauth", accessToken);
-        var refreshTokenResource = $"{resource}{OAuthRefreshTokenSuffix}";
-
-        if (string.IsNullOrWhiteSpace(refreshToken))
-        {
-            RemoveCredential(refreshTokenResource);
-        }
-        else
-        {
-            SaveCredential(refreshTokenResource, "oauth_refresh", refreshToken);
-        }
-
-        await UpdateMetadataAsync(resource, m =>
-        {
-            m.CredentialType = CredentialType.OAuth2Token;
-            m.ExpiresAt = expiresAt;
-            m.RefreshToken = null;
-            m.TokenEndpoint = tokenEndpoint;
-            m.ClientId = clientId;
-            m.AutoRefreshEnabled = !string.IsNullOrEmpty(refreshToken);
-            m.CreatedAt = DateTime.UtcNow;
-        });
-    }
-
-    public string? GetOAuthToken(string providerId)
-    {
-        var resource = $"{OAuthTokenResource}.{providerId}";
-        return GetCredential(resource)?.Password;
-    }
-
-    public async Task<bool> RefreshOAuthTokenAsync(string providerId, CancellationToken ct = default)
-    {
-        var resource = $"{OAuthTokenResource}.{providerId}";
-        var metadata = GetMetadata(resource);
-        var refreshTokenResource = $"{resource}{OAuthRefreshTokenSuffix}";
-        var refreshToken = GetCredential(refreshTokenResource)?.Password;
-
-        if (metadata == null || string.IsNullOrEmpty(refreshToken) ||
-            string.IsNullOrEmpty(metadata.TokenEndpoint))
-        {
-            return false;
-        }
-
-        try
-        {
-            await UpdateMetadataAsync(resource, m => m.LastRefreshAttemptAt = DateTime.UtcNow);
-
-            var content = new FormUrlEncodedContent(new Dictionary<string, string>
-            {
-                ["grant_type"] = "refresh_token",
-                ["refresh_token"] = refreshToken,
-                ["client_id"] = metadata.ClientId ?? ""
-            });
-
-            var response = await _httpClient.PostAsync(metadata.TokenEndpoint, content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var json = await response.Content.ReadAsStringAsync();
-                var tokenResponse = JsonSerializer.Deserialize<OAuthTokenResponse>(json);
-
-                if (tokenResponse != null)
-                {
-                    await SaveOAuthTokenAsync(
-                        providerId,
-                        tokenResponse.AccessToken,
-                        tokenResponse.RefreshToken ?? refreshToken,
-                        tokenResponse.GetExpirationTime(),
-                        metadata.TokenEndpoint,
-                        metadata.ClientId);
-
-                    await UpdateMetadataAsync(resource, m =>
-                    {
-                        m.RefreshFailureCount = 0;
-                        m.LastAuthenticatedAt = DateTime.UtcNow;
-                    });
-
-                    return true;
-                }
-            }
-
-            await UpdateMetadataAsync(resource, m => m.RefreshFailureCount++);
-            return false;
-        }
-        catch (Exception)
-        {
-            await UpdateMetadataAsync(resource, m => m.RefreshFailureCount++);
-            return false;
-        }
-    }
-
-    public async Task<bool> EnsureTokenValidAsync(string providerId, int refreshThresholdMinutes = 5, CancellationToken ct = default)
-    {
-        var resource = $"{OAuthTokenResource}.{providerId}";
-        var metadata = GetMetadata(resource);
-
-        if (metadata == null)
-            return false;
-
-        if (!metadata.ExpiresAt.HasValue)
-            return true;
-
-        var remaining = metadata.ExpiresAt.Value - DateTime.UtcNow;
-        if (remaining.TotalMinutes > refreshThresholdMinutes)
-            return true;
-
-        if (remaining.TotalSeconds <= 0)
-        {
-            if (metadata.AutoRefreshEnabled)
-                return await RefreshOAuthTokenAsync(providerId);
-            return false;
-        }
-
-        if (metadata.AutoRefreshEnabled)
-            return await RefreshOAuthTokenAsync(providerId);
-
-        return true;
-    }
-
-
-
     // ICredentialService adapter: explicit implementations map the narrower shared UI seam
     // onto this host implementation, so shared services get real credentials without the
     // WPF surface (richer metadata, typed test results) leaking into the contract.
 
     private EventHandler<SharedCredentialExpirationEventArgs>? _sharedCredentialExpiring;
+
+    string ICredentialService.OAuthTokenResourcePrefix => OAuthTokenResource;
 
     event EventHandler<SharedCredentialExpirationEventArgs>? ICredentialService.CredentialExpiring
     {
@@ -1055,12 +1026,12 @@ public sealed class CredentialService : ICredentialService, IDisposable
     {
         ArgumentNullException.ThrowIfNull(updateAction);
 
-        var update = new SharedCredentialMetadataUpdate
+        return UpdateMetadataAsync(resource, metadata =>
         {
-            AutoRefreshEnabled = GetMetadata(resource)?.AutoRefreshEnabled ?? false
-        };
-        updateAction(update);
-        return UpdateMetadataAsync(resource, m => m.AutoRefreshEnabled = update.AutoRefreshEnabled, ct);
+            var update = new SharedCredentialMetadataUpdate { AutoRefreshEnabled = metadata.AutoRefreshEnabled };
+            updateAction(update);
+            metadata.AutoRefreshEnabled = update.AutoRefreshEnabled;
+        }, ct);
     }
 
     SharedCredentialMetadataInfo? ICredentialService.GetMetadata(string resource)

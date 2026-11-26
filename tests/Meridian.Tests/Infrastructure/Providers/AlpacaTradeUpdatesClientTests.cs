@@ -586,10 +586,17 @@ public sealed class AlpacaTradeUpdatesClientTests
 
         var reports = await gateway.ReconcileExecutionSnapshotsAsync(null, CancellationToken.None);
 
-        reports.Where(report => report.Source == "rest-fill-activity")
-            .Should().NotBeEmpty()
+        var fills = reports.Where(report => report.Source == "rest-fill-activity").ToArray();
+        fills.Should().NotBeEmpty()
             .And.OnlyContain(report => report.Report.LastFillQuantity > 0m,
                 "a restarted host books an untracked fill as the activity's own quantity, not its cumulative");
+        foreach (var fill in fills)
+        {
+            fill.Report.BrokerActivityId.Should().Be(fill.ProviderEventId);
+            AlpacaTradeUpdateStateCodec.ComputeContentHash(fill.Report, fill.Report.Timestamp).Should()
+                .Be(AlpacaTradeUpdateStateCodec.ComputeContentHash(
+                    fill.Report with { BrokerActivityId = null }, fill.Report.Timestamp));
+        }
     }
 
     [Fact]

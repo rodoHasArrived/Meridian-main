@@ -49,6 +49,28 @@ dotnet format whitespace --folder --include src/Meridian.Core/Example.cs
 This fix command edits working files. Review the result and stage only the intended hunks again,
 especially for partially staged files; the hook does not stage fixes for you.
 
+## Current pre-push checks
+
+`.githooks/pre-push` checks whitespace in the `.cs` and `.vb` files changed by the commits being
+pushed. For each pushed ref it diffs against the remote tip when Git knows it, or else against the
+parent of the oldest commit not yet on any remote-tracking ref. It reads those files and the
+`.editorconfig`, `.globalconfig`, and `global.json` blobs from the pushed commit (not the working
+tree) into a temporary directory and runs the same folder-mode command as pre-commit. Pushes with no
+such changes, and branch deletions, skip .NET formatting and do not require the SDK. A formatting
+failure blocks the push and prints a scoped fix command. Do not bypass it with `--no-verify`.
+
+Pre-push covers the whitespace part of the pre-push checklist in `CLAUDE.md` and `AGENTS.md`. Still
+run `python build/python/cli/buildctl.py regen --fix` and `make verify-fast` (or the touched lane)
+yourself, and commit regenerated reviewed files in the same push.
+
+## Claude Code edit hook
+
+`.claude/settings.json` registers a `PostToolUse` hook for `Edit`, `MultiEdit`, and `Write`. It runs
+`.claude/hooks/format-csharp.sh`, which fixes whitespace in an edited `*.cs` file inside the project
+with `dotnet format whitespace . --folder --include ./<file>` from that file's directory, so it does
+not load the solution. It never blocks the agent: a missing SDK, a non-C# path, or a formatter error
+exits successfully, with formatter output on stderr.
+
 ## Full-solution validation
 
 CI retains the full-solution whitespace check in `scripts/ci.sh`, after solution restore:
@@ -66,5 +88,17 @@ python3 -m unittest discover -s tests/scripts -p test_git_hooks.py -v
 ```
 
 These tests exercise installation in ordinary checkouts and linked worktrees, staged source and
-configuration snapshots, partial staging, filenames with spaces or newlines, and unchanged
+configuration snapshots, pre-push range selection and real pushes to a local bare remote, partial staging, filenames with spaces or newlines, and unchanged
 working files and index contents on success and failure.
+
+## Regeneration after merges
+
+The installer also enables `.githooks/post-merge`. After a successful merge, including a
+fast-forward, it runs `python build/python/cli/buildctl.py regen --fix`. Install Python docs
+requirements and both root/dashboard npm dependencies first. It regenerates local CI outputs
+and reviewed snapshots without staging or committing anything. A failed hook prints the rerun
+command; it cannot undo a merge that has already completed. Resolve source conflicts before
+running regeneration manually. Hooks apply to this clone, not GitHub's merge service.
+
+See [generated output ownership](../engineering/generated-output-delivery.md) for which files
+remain subject to commit review and freshness checks.

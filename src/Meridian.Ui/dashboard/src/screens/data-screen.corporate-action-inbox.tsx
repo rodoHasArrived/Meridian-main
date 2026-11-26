@@ -1,17 +1,20 @@
 import { exportTableQuery } from "@/lib/table-workbench";
 import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
-import { RefreshCcw, Search, ShieldAlert } from "lucide-react";
-import { useMemo } from "react";
+import { Search, ShieldAlert } from "lucide-react";
+import { useCallback, useMemo } from "react";
+import { CorporateActionCalendarPanel } from "@/screens/corporate-action-calendar";
 import { ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { LocalDateText } from "@/components/ui/local-date-text";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { CashDividendAttestationPanel } from "@/components/meridian/cash-dividend-attestation-panel";
 import type {
   CorporateActionAcceptanceReceipt,
   CorporateActionInboxFilters,
@@ -26,6 +29,7 @@ import type {
 } from "@/types";
 
 export const CORPORATE_ACTION_CASE_WORKSPACE_ID = "corporate-action-case-workspace";
+const EMPTY_CORPORATE_ACTION_ROWS: CorporateActionInboxRowModel[] = [];
 
 const queueColumns: TableWorkbenchColumn<CorporateActionInboxRowModel>[] = [
   {
@@ -38,14 +42,14 @@ const queueColumns: TableWorkbenchColumn<CorporateActionInboxRowModel>[] = [
           <Badge variant={row.tone === "warning" ? "warning" : "outline"}>{row.actionType}</Badge>
           <span className="font-mono font-semibold text-foreground">{row.ticker}</span>
         </span>
-        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.securityId}</span>
+        <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">{row.securityId}</span>
       </span>
     )
   },
   {
     id: "deadline",
     exportValue: (row) => row.exDateLabel,
-    label: "Ex-date / deadline",
+    label: "Ex-date",
     render: (row) => (
       <span className="block">
         <CalendarDateLabel className="block font-mono text-foreground" label={row.exDateLabel} />
@@ -60,7 +64,7 @@ const queueColumns: TableWorkbenchColumn<CorporateActionInboxRowModel>[] = [
     render: (row) => (
       <span className="block">
         <span className="block text-foreground">{row.statusLabel}</span>
-        <span className="block max-w-48 truncate font-mono text-[11px] text-muted-foreground" title={row.caseIdLabel}>
+        <span className="block max-w-48 truncate font-mono text-xs text-muted-foreground" title={row.caseIdLabel}>
           {row.caseIdLabel}
         </span>
       </span>
@@ -84,7 +88,7 @@ const queueColumns: TableWorkbenchColumn<CorporateActionInboxRowModel>[] = [
     render: (row) => (
       <span className="block">
         <Badge variant={row.tone === "warning" ? "warning" : "outline"}>{row.conflictLabel}</Badge>
-        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.versionLabel}</span>
+        <span className="mt-1 block font-mono text-xs text-muted-foreground">{row.versionLabel}</span>
       </span>
     )
   },
@@ -264,7 +268,7 @@ function LotPreview({ rows }: { rows: CorporateActionLotPreview[] }) {
 
 function JournalPreview({ rows }: { rows: CorporateActionJournalPreview[] }) {
   if (rows.length === 0) {
-    return <UnavailableState title="Journal preview unavailable" reason="No balanced, versioned journal projection was supplied. Accepting the canonical fact does not post accounting." />;
+    return <UnavailableState title="Journal preview unavailable" reason="No balanced, versioned journal preview was supplied. Accepting the canonical fact does not post accounting." />;
   }
   return (
     <div className="overflow-x-auto">
@@ -305,6 +309,10 @@ function Reconciliation({ rows }: { rows: CorporateActionReconciliationPreview[]
 function CaseWorkspace({ row, panel }: { row: CorporateActionInboxRowModel; panel: CorporateActionInboxViewModel }) {
   const durableCase = row.durableCase;
   const acceptDisabledReason = row.acceptCanonicalFactDisabledReason;
+  const nativeCaseId = durableCase?.caseId ?? row.compactCase?.caseId;
+  const nativeScope = durableCase?.scope ?? row.compactCase?.scope;
+  const boundCashDividendCase = nativeCaseId && nativeScope?.ledgerBookId
+    && /^[a-f0-9-]{36}$/i.test(nativeCaseId) && /^[a-f0-9-]{36}$/i.test(nativeScope.ledgerBookId);
 
   return (
     <DenseRowDetailPanel
@@ -354,12 +362,25 @@ function CaseWorkspace({ row, panel }: { row: CorporateActionInboxRowModel; pane
           {panel.acceptingKey === row.rowId ? "Accepting canonical fact…" : "Accept canonical fact"}
         </Button>
         <p className="self-center text-xs text-muted-foreground">
-          Election submission, treatment approval, and accounting posting remain outside this foundation workflow.
+          {boundCashDividendCase
+            ? "Source acceptance grants no accounting authority. The bounded cash-dividend attestation controls below use their own book policy and permissions."
+            : "Election submission, treatment approval, and accounting posting remain outside this foundation workflow."}
         </p>
       </div>
       {panel.acceptErrors[row.rowId] ? <StatusBanner role="alert" tone="danger" title="Canonical fact not accepted" detail={panel.acceptErrors[row.rowId]} /> : null}
+      {boundCashDividendCase && nativeScope ? <CashDividendAttestationPanel caseId={nativeCaseId} scope={nativeScope}
+        onCommitted={() => void panel.refresh()} /> : null}
       <WorkspaceSection title="Source facts and provenance"><SourceFacts row={row} /></WorkspaceSection>
       <WorkspaceSection title="Entitlement and election">
+        <h4 className="text-xs font-semibold">Actual election cutoffs</h4>
+        {row.electionCalendar?.evidenceState === "Available" && row.electionCalendar.cutoffs.length > 0 ? (
+          <ul className="mb-3 mt-2 space-y-2 text-xs">{row.electionCalendar.cutoffs.map((cutoff) => (
+            <li key={cutoff.id} className="break-words rounded-sm border border-border p-2">
+              <strong>{cutoff.label}</strong> · <span className="font-mono">{cutoff.deadlineAt}</span> (source offset)
+              <span className="mt-1 block text-muted-foreground">{cutoff.source} · {cutoff.evidenceReference}</span>
+            </li>
+          ))}</ul>
+        ) : <p className="mb-3 mt-1 text-xs text-muted-foreground">{row.electionCalendar?.evidenceState === "Available" ? "The source retained no actual election cutoffs." : "Actual election cutoff evidence is unavailable. Ex-date and offer expiry do not establish an election deadline."}</p>}
         {durableCase?.entitlement ? (
           <dl className="grid gap-2 text-xs sm:grid-cols-2">
             {Object.entries(durableCase.entitlement).map(([label, value]) => (
@@ -499,10 +520,16 @@ function AcceptCanonicalFactDialog({ panel }: { panel: CorporateActionInboxViewM
 }
 
 export function CorporateActionInboxRegion({ panel }: { panel: CorporateActionInboxViewModel }) {
-  const allRows = panel.model?.rows ?? [];
+  const allRows = panel.model?.rows ?? EMPTY_CORPORATE_ACTION_ROWS;
   const conflictCount = allRows.filter((row) => row.conflictLabel !== "None" && row.conflictLabel !== "Not supplied").length;
   const unassignedCount = allRows.filter((row) => row.assignmentLabel === "Unassigned").length;
   const durableCaseCount = allRows.filter((row) => row.durableCase !== null || row.compactCase !== null).length;
+  const calendarScope = [...new Set(allRows.map((row) => `${row.acceptanceScope?.tenantId ?? "unknown"}:${row.acceptanceScope?.companyId ?? "unknown"}`))].sort().join("|");
+  const selectQueueRow = panel.selectRow;
+  const selectCalendarCase = useCallback((caseId: string, proposalId: string) => {
+    const row = allRows.find((candidate) => candidate.compactCase?.caseId === caseId || candidate.durableCase?.caseId === caseId || candidate.proposalIdLabel === proposalId);
+    if (row) selectQueueRow(row.rowId);
+  }, [allRows, selectQueueRow]);
 
   return (
     <section aria-labelledby="corporate-action-inbox-title" className="workspace-region corporate-action-inbox-region">
@@ -521,23 +548,13 @@ export function CorporateActionInboxRegion({ panel }: { panel: CorporateActionIn
             </div>
             <div className="flex flex-wrap gap-2">
               <Button type="button" variant="outline" size="sm" disabled disabledReason={panel.bulkAcceptDisabledReason}>Bulk accept</Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => void panel.refresh()}
-                disabled={panel.loading}
-                aria-label="Refresh corporate action case queue"
-              >
-                <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-                <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
-              </Button>
+              <PanelReload reload={() => panel.pendingAcceptance || panel.acceptingKey ? undefined : panel.refresh()} failed={Boolean(panel.error)} busy={panel.loading} what="corporate action case queue" />
             </div>
           </div>
           <ToolbarStrip
             ariaLabel="Corporate action queue summary"
             items={[
-              { id: "staged", label: "Staged", value: String(panel.model?.stagedCount ?? 0), active: true },
+              { id: "staged", label: "Staged", value: String(panel.model?.stagedCount ?? 0) },
               { id: "conflicts", label: "Conflicts", value: String(conflictCount) },
               { id: "unassigned", label: "Unassigned", value: String(unassignedCount) },
               { id: "durable", label: "Durable cases", value: String(durableCaseCount) }
@@ -545,6 +562,7 @@ export function CorporateActionInboxRegion({ panel }: { panel: CorporateActionIn
           />
         </CardHeader>
         <CardContent className="space-y-4">
+          <CorporateActionCalendarPanel scopeKey={calendarScope} selectedCaseId={panel.selectedRow?.compactCase?.caseId ?? panel.selectedRow?.durableCase?.caseId} onCaseSelected={selectCalendarCase} onChanged={() => void panel.refresh()} />
           {panel.acceptanceReceipt ? <AcceptanceReceipt receipt={panel.acceptanceReceipt} onClose={panel.clearAcceptanceReceipt} /> : null}
           {panel.error && !panel.model ? (
             <StatusBanner role="alert" tone="danger" title="Corporate action case queue unavailable" detail={panel.error} />

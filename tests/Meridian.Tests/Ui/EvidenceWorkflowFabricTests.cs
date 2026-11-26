@@ -1520,7 +1520,8 @@ public sealed class EvidenceWorkflowFabricTests
             requestTenantId: "tenant-alpha",
             requestCompanyId: "company-alpha",
             strategyRunReadService: runReadService,
-            additionalContributor: sentinelContributor);
+            additionalContributor: sentinelContributor,
+            strategyRuns: store);
         var client = app.GetTestClient();
 
         var subjectsResponse = await client.GetAsync("/api/workstation/evidence/subjects");
@@ -3240,33 +3241,6 @@ public sealed class EvidenceWorkflowFabricTests
 
         Directory.Exists(Path.Combine(root, "workstation", "evidence")).Should().BeFalse();
     }
-
-#pragma warning disable CS0618 // Compatibility test intentionally invokes obsolete fail-closed slots.
-    [Fact]
-    public async Task FileEvidenceArtifactStore_ConcreteLegacyUnscopedSlots_FailClosed()
-    {
-        var root = Path.Combine(Path.GetTempPath(), $"evidence-legacy-slots-{Guid.NewGuid():N}");
-        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
-        Func<Task>[] legacyCalls =
-        [
-            () => store.TryOpenManifestAsync("report-pack", "current", "manifest.json"),
-            () => store.TryOpenManifestByVaultIdAsync("ev-000000000000000000000000"),
-            () => store.TryGetVaultIdentityAsync("ev-000000000000000000000000"),
-            () => store.ReviewDocumentAsync(
-                "ev-000000000000000000000000",
-                "document-missing",
-                new EvidenceVaultDocumentReviewRequestDto(
-                    EvidenceDocumentReviewStatusDto.Rejected,
-                    "legacy-reviewer"))
-        ];
-
-        foreach (var legacyCall in legacyCalls)
-        {
-            await legacyCall.Should().ThrowAsync<NotSupportedException>()
-                .WithMessage("*requires an authenticated tenant and company scope*");
-        }
-    }
-#pragma warning restore CS0618
 
     [Fact]
     public async Task FileEvidenceArtifactStore_DuringVaultApiIntake_RetainsCapturedDocumentWithReviewMetadata()
@@ -5151,7 +5125,8 @@ public sealed class EvidenceWorkflowFabricTests
         StrategyRunReadService? strategyRunReadService = null,
         IEvidenceContributor? additionalContributor = null,
         UserPermission? requestPermissions = null,
-        long? evidenceArtifactByteLimit = null)
+        long? evidenceArtifactByteLimit = null,
+        IStrategyRepository? strategyRuns = null)
     {
         Directory.CreateDirectory(root);
         var configPath = Path.Combine(root, "appsettings.json");
@@ -5189,6 +5164,8 @@ public sealed class EvidenceWorkflowFabricTests
         {
             builder.Services.AddSingleton(strategyRunReadService);
         }
+        if (strategyRuns is not null)
+            builder.Services.AddSingleton(strategyRuns);
 
         if (additionalContributor is not null)
         {

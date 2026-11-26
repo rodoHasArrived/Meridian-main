@@ -1,6 +1,7 @@
 using Meridian.Application.Backfill;
 using Meridian.Core.Config;
 using Meridian.Core.IO;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Storage.Backfill;
 using Meridian.Storage.Archival;
 using Meridian.Contracts.Coordination;
@@ -13,6 +14,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -30,6 +32,8 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
         services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
+        services.TryAddSingleton<BackfillRoutingRuntime>();
+        services.AddHostedService(sp => sp.GetRequiredService<BackfillRoutingRuntime>());
 
         // The background-worker stack is created by this factory outside the normal
         // BackfillCoordinator path. Resolve it from DI so it receives the same canonical,
@@ -38,7 +42,11 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
             new BackfillServiceFactory(
                 sp.GetRequiredService<IAtomicFileWriter>(),
                 dataRoot => new JsonlBackfillBarWriter(dataRoot),
-                symbolResolver: sp.GetService<ISymbolResolver>()));
+                symbolResolver: sp.GetService<ISymbolResolver>(),
+                captureRouting: sp.GetService<ConfigStore>() is null ? null : () => sp.GetRequiredService<BackfillRoutingRuntime>().Current,
+                retainReceiptAsync: (dataRoot, job, ct) => new BackfillStatusStore(dataRoot).WriteRetainedResultAsync(
+                    new(job.ProviderProvenance!, job.Status == BackfillJobStatus.Completed,
+                        job.Statistics.TotalBarsRetrieved, job.ProvenanceAccess), ct)));
 
         // BackfillCoordinator - uses ProviderRegistry for unified provider discovery and
         // the canonical-registry symbol resolution spine when registered.
@@ -55,7 +63,14 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
                 factory,
                 symbolResolver: symbolResolver,
                 symbolTimelineResolver: symbolTimelineResolver,
-                providerCatalog: sp.GetService<Meridian.Contracts.Api.IProviderCatalog>());
+                providerCatalog: sp.GetService<Meridian.Contracts.Api.IProviderCatalog>(),
+                cloneCredentials: sp.GetService<IProviderCredentialStore>() as IScopedProviderCredentialStore,
+                routingRuntime: sp.GetRequiredService<BackfillRoutingRuntime>())
+            {
+                ResolveSessionsAsync = new Meridian.Platform.Scheduling.HistoricalSessionScheduleResolver(
+                    sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityIdentityQueryService>()).ResolveAsync,
+                CaptureInputEvidence = symbol => sp.GetService<Meridian.Infrastructure.Adapters.Core.DataQualityMonitor>()?.GetCachedInputEvidence(symbol)
+            };
         });
         services.AddSingleton<IBackfillExecutionGateway, BackfillCoordinatorExecutionGateway>();
 
@@ -90,8 +105,43 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
             var configStore = sp.GetRequiredService<ConfigStore>();
             var config = configStore.Load();
             var history = sp.GetRequiredService<BackfillExecutionHistory>();
-            return new BackfillScheduleManager(logger, config.DataRoot, history);
+            return new BackfillScheduleManager(logger, configStore.GetDataRoot(config), history);
         });
+        services.AddHostedService<BackfillScheduleStartup>();
+
+        var scheduleConfig = new ConfigStore(options.ConfigPath).Load().Backfill?.Jobs?.Scheduling;
+        if (options.EnableProcessWideHostedServices && options.EnableCollectorServices && options.EnableProviderServices &&
+            scheduleConfig is { Enabled: true })
+        {
+            services.AddSingleton(sp =>
+            {
+                var store = sp.GetRequiredService<ConfigStore>();
+                var config = store.Load();
+                var active = sp.GetRequiredService<BackfillRoutingRuntime>().Current
+                    ?? throw new InvalidOperationException("Scheduled backfill requires an active historical routing runtime.");
+                return sp.GetRequiredService<BackfillServiceFactory>().CreateServices(config, config.Backfill ?? new(),
+                    store.GetDataRoot(config), active.Providers.Select(provider => provider.Provider),
+                    sp.GetService<Meridian.Contracts.Services.IConnectivityProbeService>());
+            });
+            services.AddSingleton(sp =>
+            {
+                var worker = sp.GetRequiredService<BackfillServices>();
+                var config = sp.GetRequiredService<ConfigStore>().Load();
+                return new ScheduledBackfillService(sp.GetRequiredService<ILogger<ScheduledBackfillService>>(),
+                    sp.GetRequiredService<BackfillScheduleManager>(), worker.JobManager, worker.Worker, worker.GapAnalyzer,
+                    sp.GetService<IScheduledWorkOwnershipService>(),
+                    new ScheduledBackfillOptions
+                    {
+                        ScheduleCheckInterval = TimeSpan.FromSeconds(scheduleConfig.ScheduleCheckIntervalSeconds),
+                        MaxExecutionDuration = TimeSpan.FromHours(scheduleConfig.MaxExecutionDurationHours),
+                        CatchUpMissedSchedules = scheduleConfig.CatchUpMissedSchedules,
+                        CatchUpWindow = TimeSpan.FromHours(scheduleConfig.CatchUpWindowHours),
+                        MaxConcurrentExecutions = scheduleConfig.MaxConcurrentExecutions,
+                        PauseDuringMarketHours = scheduleConfig.PauseDuringMarketHours
+                    },
+                    config.Backfill?.Symbols ?? config.Symbols?.Select(symbol => symbol.Symbol).ToArray());
+            });
+        }
         services.AddSingleton<IOptions<AutoGapRemediationPolicy>>(sp =>
         {
             var config = sp.GetRequiredService<ConfigStore>().Load().Backfill?.AutoRemediation;
@@ -113,6 +163,25 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
             sp.GetRequiredService<AutoGapRemediationService>());
 
         return services;
+    }
+
+    private sealed class BackfillScheduleStartup(BackfillScheduleManager manager, IServiceProvider services) : IHostedService
+    {
+        private ScheduledBackfillService? _scheduler;
+
+        public async Task StartAsync(CancellationToken cancellationToken)
+        {
+            await manager.LoadSchedulesAsync(cancellationToken).ConfigureAwait(false);
+            _scheduler = services.GetService<ScheduledBackfillService>();
+            if (_scheduler is not null)
+            {
+                await services.GetRequiredService<BackfillServices>().InitializeAsync(cancellationToken).ConfigureAwait(false);
+                await _scheduler.StartAsync(cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+            => _scheduler?.StopAsync(cancellationToken) ?? Task.CompletedTask;
     }
 
     internal static AutoGapRemediationPolicy CreateAutoGapRemediationPolicy(

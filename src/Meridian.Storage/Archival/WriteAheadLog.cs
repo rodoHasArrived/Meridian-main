@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using Meridian.Core.IO;
 using Meridian.Core.Logging;
 using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
@@ -17,6 +18,12 @@ namespace Meridian.Storage.Archival;
 /// </summary>
 public sealed class WriteAheadLog : IAsyncDisposable
 {
+    /// <summary>
+    /// Name of the lock file that marks a WAL directory as owned by one live instance. Its
+    /// extension is not <c>.wal</c>, so segment listings, recovery and retention never see it.
+    /// </summary>
+    public const string OwnerLockFileName = ".owner.lock";
+
     private readonly ILogger _log = LoggingSetup.ForContext<WriteAheadLog>();
     private readonly string _walDirectory;
     private readonly WalOptions _options;
@@ -48,9 +55,26 @@ public sealed class WriteAheadLog : IAsyncDisposable
     private bool _disposed;
     private CancellationTokenSource? _flushLoopCts;
     private Task? _flushLoopTask;
-    private Exception? _backgroundFlushFailure;
+    // A write or flush on the active segment failed. The handle may have dropped buffered
+    // records or left a torn tail, so it is never written again: the next write-path call
+    // abandons it, opens a fresh segment, and rewrites every record not yet confirmed flushed.
+    // Guarded by _writeLock.
+    private Exception? _segmentFault;
+    // Records written since the last successful flush, retained so a faulted segment can be
+    // rebuilt without losing records whose sequences were already handed to callers.
+    // Guarded by _writeLock.
+    private readonly List<WalRecord> _unflushedRecords = new();
+    private readonly bool _walDirectoryCreated;
+    private bool _walDirectoryParentSynced;
     private long _corruptedRecordCount;
     private long _skippedRecordCount;
+
+    // Exclusive handle on OwnerLockFileName, held from the first InitializeAsync/RepairAsync
+    // until dispose. Recovery, rotation and truncation all assume no other instance writes or
+    // deletes segments in this directory; without it, a second instance treats the live segment
+    // as closed and archives it away. A crashed holder releases when the OS closes its handles.
+    private FileStream? _ownerLock;
+    private readonly object _ownerLockGate = new();
 
     // WAL file header constants
     private const string LegacyWalMagic = "MDCWAL01";
@@ -63,6 +87,9 @@ public sealed class WriteAheadLog : IAsyncDisposable
     {
         _walDirectory = walDirectory;
         _options = options ?? new WalOptions();
+        _walDirectoryCreated = !Directory.Exists(_walDirectory);
+        // Not locked here: a host may compose a WAL it never initializes (for example the UI
+        // host's pipeline graph). Ownership is taken by InitializeAsync and RepairAsync.
         Directory.CreateDirectory(_walDirectory);
         WarmChecksumPath();
     }
@@ -132,19 +159,31 @@ public sealed class WriteAheadLog : IAsyncDisposable
     /// </summary>
     public event Action<long>? CorruptionDetected;
 
+    /// <summary>The directory this instance owns.</summary>
+    public string WalDirectory => _walDirectory;
+
     /// <summary>
     /// Initialize the WAL, recovering any uncommitted transactions.
     /// </summary>
+    /// <exception cref="WalDirectoryInUseException">Another live instance owns the directory.</exception>
     public async Task InitializeAsync(CancellationToken ct = default)
     {
+        AcquireOwnership();
         _log.Information("Initializing WAL in {WalDirectory}", _walDirectory);
+
+        if (!string.IsNullOrWhiteSpace(_options.LegacySegmentDirectory))
+        {
+            await AdoptLegacySegmentsAsync(_options.LegacySegmentDirectory, ct).ConfigureAwait(false);
+        }
 
         var recoveryStopwatch = System.Diagnostics.Stopwatch.StartNew();
         long totalRecoveredEvents = 0;
 
         // Find and recover any existing WAL files
+        // Ordinal, like every other segment listing: a culture-aware sort can order segment
+        // names differently on another host and replay records out of sequence.
         var walFiles = Directory.GetFiles(_walDirectory, "*.wal")
-            .OrderBy(f => f)
+            .OrderBy(f => f, StringComparer.Ordinal)
             .ToList();
 
         if (walFiles.Count > 0)
@@ -211,10 +250,24 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
     private async Task<WalRecord> AppendSerializedPayloadAsync(string payload, string recordType, CancellationToken ct)
     {
-        ThrowIfBackgroundFlushFailed();
+        // Records are stored one per line as pipe-separated fields; the record type is a middle
+        // field and the payload the last. A separator or line break there would be written but
+        // could never be parsed back on recovery, so refuse it before it is acknowledged.
+        if (recordType.AsSpan().IndexOfAny('|', '\r', '\n') >= 0)
+        {
+            throw new ArgumentException("A WAL record type cannot contain '|' or a line break.", nameof(recordType));
+        }
+
+        if (payload.AsSpan().IndexOfAny('\r', '\n') >= 0)
+        {
+            throw new ArgumentException("A WAL payload cannot contain a raw line break.", nameof(payload));
+        }
+
         await _writeLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            await RecoverFaultedSegmentAsync(ct).ConfigureAwait(false);
+
             // Check if we need to rotate the WAL file
             if (ShouldRotate())
             {
@@ -244,7 +297,19 @@ public sealed class WriteAheadLog : IAsyncDisposable
                 (_options.SyncMode == WalSyncMode.BatchedSync && _uncommittedRecords >= _options.SyncBatchSize) ||
                 (DateTime.UtcNow - _lastFlushTime) >= _options.MaxFlushDelay)
             {
-                await FlushInternalAsync(ct).ConfigureAwait(false);
+                try
+                {
+                    await FlushInternalAsync(ct).ConfigureAwait(false);
+                }
+                catch
+                {
+                    // The caller is told this append failed and will retry it, so it must not
+                    // also be carried into the segment rebuild. Earlier unflushed records were
+                    // acknowledged to their callers and stay retained.
+                    if (_unflushedRecords.Count > 0 && ReferenceEquals(_unflushedRecords[^1], record))
+                        _unflushedRecords.RemoveAt(_unflushedRecords.Count - 1);
+                    throw;
+                }
             }
 
             return record;
@@ -263,6 +328,8 @@ public sealed class WriteAheadLog : IAsyncDisposable
         await _writeLock.WaitAsync(ct);
         try
         {
+            await RecoverFaultedSegmentAsync(ct).ConfigureAwait(false);
+
             // Write a commit marker
             var commitRecord = new WalRecord
             {
@@ -294,10 +361,10 @@ public sealed class WriteAheadLog : IAsyncDisposable
     /// </summary>
     public async Task FlushAsync(CancellationToken ct = default)
     {
-        ThrowIfBackgroundFlushFailed();
         await _writeLock.WaitAsync(ct);
         try
         {
+            await RecoverFaultedSegmentAsync(ct).ConfigureAwait(false);
             await FlushInternalAsync(ct);
         }
         finally
@@ -305,6 +372,13 @@ public sealed class WriteAheadLog : IAsyncDisposable
             _writeLock.Release();
         }
     }
+
+    /// <summary>
+    /// Test seam: invoked at the start of every flush of the active segment so tests can inject
+    /// the I/O failure a full or failing disk would raise. Never set in production.
+    /// </summary>
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+    internal Action? FlushFault { get; set; }
 
     /// <summary>
     /// Internal flush that assumes the caller already holds <see cref="_writeLock"/>.
@@ -317,28 +391,143 @@ public sealed class WriteAheadLog : IAsyncDisposable
         if (_currentWriter == null || _currentWalFile == null)
             return;
 
-        await _currentWriter.FlushAsync().ConfigureAwait(false);
-
-        if (_options.SyncMode != WalSyncMode.NoSync)
+        try
         {
-            // The underlying FileStream was opened with FileOptions.WriteThrough, which bypasses
-            // the .NET managed buffer and pushes data to the OS kernel buffer on each write.
-            // FlushAsync submits any remaining OS buffer data without the millisecond-level
-            // blocking of a synchronous fsync(2) — sufficient for BatchedSync's balanced guarantee.
-            await _currentWalFile.FlushAsync(ct).ConfigureAwait(false);
+            FlushFault?.Invoke();
+            await _currentWriter.FlushAsync().ConfigureAwait(false);
 
-            if (_options.SyncMode == WalSyncMode.EveryWrite)
+            if (_options.SyncMode != WalSyncMode.NoSync)
             {
-                // EveryWrite is documented as the "most durable" mode, so it must force contents to
-                // physical disk (fsync) rather than trusting WriteThrough + async flush. There is no
-                // async flush-to-disk API, so this synchronous call is intentional: it is the cost
-                // callers accept when they opt into the strongest durability guarantee.
-                _currentWalFile.Flush(flushToDisk: true);
+                // The underlying FileStream was opened with FileOptions.WriteThrough, which bypasses
+                // the .NET managed buffer and pushes data to the OS kernel buffer on each write.
+                // FlushAsync submits any remaining OS buffer data without the millisecond-level
+                // blocking of a synchronous fsync(2) — sufficient for BatchedSync's balanced guarantee.
+                await _currentWalFile.FlushAsync(ct).ConfigureAwait(false);
+
+                if (_options.SyncMode == WalSyncMode.EveryWrite)
+                {
+                    // EveryWrite is documented as the "most durable" mode, so it must force contents to
+                    // physical disk (fsync) rather than trusting WriteThrough + async flush. There is no
+                    // async flush-to-disk API, so this synchronous call is intentional: it is the cost
+                    // callers accept when they opt into the strongest durability guarantee.
+                    _currentWalFile.Flush(flushToDisk: true);
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            // A failed or interrupted flush leaves the handle in an unknown state: StreamWriter
+            // discards its character buffer before the stream write that failed. Never trust
+            // this handle again — the next write-path call rebuilds from _unflushedRecords.
+            _segmentFault ??= ex;
+            throw;
         }
 
         _uncommittedRecords = 0;
+        _unflushedRecords.Clear();
         _lastFlushTime = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Replaces a faulted active segment. Assumes the caller holds <see cref="_writeLock"/>.
+    /// The broken handle is abandoned, a fresh segment is opened, and every record written
+    /// since the last successful flush is rewritten and flushed into it, so a transient I/O
+    /// failure costs one segment rotation instead of blocking the WAL until restart.
+    /// </summary>
+    /// <remarks>
+    /// Part of the faulted flush may have reached disk, so a rewritten record can appear in
+    /// both segments under the same sequence. Replay is at-least-once already; a duplicate is
+    /// the safe outcome and a missing record is not. The abandoned segment sorts before its
+    /// replacement and every sequence in it is at or below the replacement's embedded base, so
+    /// name-derived truncation bounds stay valid.
+    /// </remarks>
+    private async Task RecoverFaultedSegmentAsync(CancellationToken ct)
+    {
+        if (_segmentFault is null)
+            return;
+
+        ct.ThrowIfCancellationRequested();
+        var fault = _segmentFault;
+        string? replacementPath = null;
+        try
+        {
+            AbandonCurrentSegment();
+            await StartNewWalFileAsync(ct).ConfigureAwait(false);
+            replacementPath = _currentWalPath;
+
+            var writer = _currentWriter!;
+            foreach (var record in _unflushedRecords)
+            {
+                await WriteRecordCoreAsync(writer, record).ConfigureAwait(false);
+            }
+
+            await writer.FlushAsync().ConfigureAwait(false);
+            if (_options.SyncMode != WalSyncMode.NoSync)
+            {
+                // Rewritten records were already acknowledged to callers; force them down
+                // regardless of the batched mode before declaring the segment healthy.
+                await _currentWalFile!.FlushAsync(CancellationToken.None).ConfigureAwait(false);
+                _currentWalFile.Flush(flushToDisk: true);
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Still faulted: the next call tries again. Remove a replacement that never became
+            // durable so a long outage cannot litter the directory with one stub per attempt.
+            replacementPath ??= _currentWalFile is not null ? _currentWalPath : null;
+            AbandonCurrentSegment();
+            if (replacementPath is not null)
+            {
+                try
+                { File.Delete(replacementPath); }
+                catch (Exception deleteEx)
+                {
+                    _log.Debug(deleteEx, "Could not remove unusable replacement WAL segment {File}", replacementPath);
+                }
+            }
+
+            throw new IOException(
+                "The WAL segment faulted and could not be replaced yet; the write will be retried.", ex);
+        }
+
+        var rewritten = _unflushedRecords.Count;
+        _segmentFault = null;
+        _uncommittedRecords = 0;
+        _unflushedRecords.Clear();
+        _lastFlushTime = DateTime.UtcNow;
+        _log.Warning(
+            fault,
+            "Recovered from a WAL segment fault: rewrote {RecordCount} unflushed records into {File}",
+            rewritten, _currentWalPath);
+    }
+
+    // Caller holds _writeLock. The file handle is closed first on purpose: that makes the
+    // writer's own dispose-time flush fail, discarding its buffered characters instead of
+    // appending them to the abandoned segment. Everything in that buffer is either retained in
+    // _unflushedRecords (and rewritten to the replacement) or belongs to an append the caller was
+    // told had failed, so writing it here could only produce duplicates or resurrect a rejected
+    // record. Bytes the file stream already accepted are complete records or a torn tail that
+    // recovery skips.
+    private void AbandonCurrentSegment()
+    {
+        var writer = _currentWriter;
+        var file = _currentWalFile;
+        _currentWriter = null;
+        _currentWalFile = null;
+
+        try
+        { file?.Dispose(); }
+        catch (Exception ex)
+        {
+            _log.Debug(ex, "Ignoring failure while closing a faulted WAL file");
+        }
+
+        try
+        { writer?.Dispose(); }
+        catch (Exception ex)
+        {
+            _log.Debug(ex, "Ignoring failure while closing a faulted WAL writer");
+        }
     }
 
     private void StartDelayedFlushLoop()
@@ -364,11 +553,21 @@ public sealed class WriteAheadLog : IAsyncDisposable
                 await _writeLock.WaitAsync(ct).ConfigureAwait(false);
                 try
                 {
+                    // Also heals a segment faulted by an earlier tick or a foreground write, so
+                    // an idle WAL does not sit on unflushed records until the next append.
+                    await RecoverFaultedSegmentAsync(ct).ConfigureAwait(false);
+
                     if (_uncommittedRecords > 0 &&
                         DateTime.UtcNow - _lastFlushTime >= _options.MaxFlushDelay)
                     {
                         await FlushInternalAsync(ct).ConfigureAwait(false);
                     }
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    // One failed tick must not end the loop or block writers: the fault is
+                    // recorded on the segment and retried here and by the next write-path call.
+                    _log.Error(ex, "Lifecycle-owned delayed WAL flush failed; it will be retried");
                 }
                 finally
                 {
@@ -378,19 +577,6 @@ public sealed class WriteAheadLog : IAsyncDisposable
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-        }
-        catch (Exception ex)
-        {
-            _backgroundFlushFailure = ex;
-            _log.Error(ex, "Lifecycle-owned delayed WAL flush failed");
-        }
-    }
-
-    private void ThrowIfBackgroundFlushFailed()
-    {
-        if (_backgroundFlushFailure is not null)
-        {
-            throw new IOException("The delayed WAL flush loop failed; new writes are blocked.", _backgroundFlushFailure);
         }
     }
 
@@ -566,7 +752,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
                         // Persist the archive rename and verify the archive actually landed before
                         // deleting the only remaining copy of the records.
-                        await AtomicFileWriter.SyncDirectoryAsync(archiveDir, ct);
+                        await AtomicFileWriter.SyncDirectoryOrThrowAsync(archiveDir, ct);
 
                         var archiveInfo = new FileInfo(archivePath);
                         if (!archiveInfo.Exists || archiveInfo.Length == 0)
@@ -724,6 +910,29 @@ public sealed class WriteAheadLog : IAsyncDisposable
         await _currentWriter.WriteLineAsync($"{WalMagic}|{WalVersion}|{now:O}").ConfigureAwait(false);
         await _currentWriter.FlushAsync().ConfigureAwait(false);
 
+        if (_options.SyncMode != WalSyncMode.NoSync)
+        {
+            // Creating a file only updates the directory in memory. Until the directory itself
+            // is fsynced, power loss can drop the new entry — and with it every record later
+            // fsynced into this segment. Sync the header and the entry once per segment;
+            // post-create, so it must not observe cancellation.
+            await _currentWalFile.FlushAsync(CancellationToken.None).ConfigureAwait(false);
+            _currentWalFile.Flush(flushToDisk: true);
+            // Strict: records are acknowledged against this segment, so an unconfirmed entry must
+            // fault it (rotation/fault recovery then delete the stub and retry) rather than pass.
+            await AtomicFileWriter.SyncDirectoryOrThrowAsync(_walDirectory, CancellationToken.None).ConfigureAwait(false);
+
+            if (_walDirectoryCreated && !_walDirectoryParentSynced)
+            {
+                // The WAL directory was created by this instance: its own entry needs the same
+                // treatment or the whole directory can vanish.
+                var parent = Path.GetDirectoryName(Path.GetFullPath(_walDirectory));
+                if (!string.IsNullOrEmpty(parent))
+                    await AtomicFileWriter.SyncDirectoryOrThrowAsync(parent, CancellationToken.None).ConfigureAwait(false);
+                _walDirectoryParentSynced = true;
+            }
+        }
+
         _currentFileSize = _currentWalFile.Length;
         _currentFileCreationTime = now;
         _log.Debug("Started new WAL file: {File}", _currentWalPath);
@@ -731,16 +940,32 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
     private async Task RotateWalFileAsync(CancellationToken ct)
     {
-        if (_currentWriter != null)
+        try
         {
-            await _currentWriter.FlushAsync().ConfigureAwait(false);
-            await _currentWriter.DisposeAsync().ConfigureAwait(false);
-            // _currentWriter.DisposeAsync() already closes the underlying _currentWalFile stream
-            _currentWriter = null;
-            _currentWalFile = null;
-        }
+            if (_currentWriter != null)
+            {
+                // Completed segments are never reopened, so their records must be on disk before
+                // the handle is closed.
+                await FlushInternalAsync(ct).ConfigureAwait(false);
+                if (_currentWalFile is not null && _options.SyncMode != WalSyncMode.NoSync)
+                {
+                    _currentWalFile.Flush(flushToDisk: true);
+                }
+                await _currentWriter.DisposeAsync().ConfigureAwait(false);
+                // _currentWriter.DisposeAsync() already closes the underlying _currentWalFile stream
+                _currentWriter = null;
+                _currentWalFile = null;
+            }
 
-        await StartNewWalFileAsync(ct);
+            await StartNewWalFileAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            // A half-finished rotation leaves either an untrusted old handle or a partial new
+            // segment; both are replaced by the fault recovery on the next write-path call.
+            _segmentFault ??= ex;
+            throw;
+        }
     }
 
     private bool ShouldRotate()
@@ -757,9 +982,23 @@ public sealed class WriteAheadLog : IAsyncDisposable
             throw new InvalidOperationException("WAL not initialized");
         }
 
+        try
+        {
+            await WriteRecordCoreAsync(_currentWriter, record).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _segmentFault ??= ex;
+            throw;
+        }
+
+        _unflushedRecords.Add(record);
+    }
+
+    private async Task WriteRecordCoreAsync(StreamWriter writer, WalRecord record)
+    {
         // Write fields directly to avoid allocating a single large interpolated string.
         // The StreamWriter buffers internally, so multiple Write calls are coalesced.
-        var writer = _currentWriter;
         writer.Write(record.Sequence);
         writer.Write('|');
         writer.Write(record.Timestamp.ToString("O"));
@@ -839,6 +1078,15 @@ public sealed class WriteAheadLog : IAsyncDisposable
     {
         await using var stream = new FileStream(
             walFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        // A record is framed by a newline. A crash can leave a partial final write;
+        // distinguish that uncommitted suffix from corruption of a complete record.
+        var terminatedTail = true;
+        if (stream.Length > 0)
+        {
+            stream.Position = stream.Length - 1;
+            terminatedTail = stream.ReadByte() == '\n';
+            stream.Position = 0;
+        }
         using var reader = new StreamReader(stream);
 
         // Skip header
@@ -901,9 +1149,15 @@ public sealed class WriteAheadLog : IAsyncDisposable
             if (string.IsNullOrWhiteSpace(line))
                 continue;
 
+            var incompleteTail = !terminatedTail && reader.EndOfStream;
             var parts = line.Split('|', 5);
             if (parts.Length < 5)
             {
+                if (incompleteTail)
+                {
+                    _log.Information("Incomplete final WAL write ignored in {File}; complete preceding records remain recoverable", walFile);
+                    yield break;
+                }
                 _log.Warning(
                     "Malformed WAL record skipped in {File}: expected 5 fields but found {FieldCount}",
                     walFile, parts.Length);
@@ -914,6 +1168,11 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
             if (!long.TryParse(parts[0], out var sequence))
             {
+                if (incompleteTail)
+                {
+                    _log.Information("Incomplete final WAL write ignored in {File}; complete preceding records remain recoverable", walFile);
+                    yield break;
+                }
                 _log.Warning("Malformed WAL record skipped in {File}: unable to parse sequence", walFile);
                 Interlocked.Increment(ref _corruptedRecordCount);
                 Interlocked.Increment(ref _skippedRecordCount);
@@ -922,6 +1181,11 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
             if (!DateTime.TryParse(parts[1], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var timestamp))
             {
+                if (incompleteTail)
+                {
+                    _log.Information("Incomplete final WAL write ignored in {File}; complete preceding records remain recoverable", walFile);
+                    yield break;
+                }
                 _log.Warning(
                     "Malformed WAL record skipped in {File}: unable to parse timestamp for sequence {Sequence}",
                     walFile, sequence);
@@ -938,6 +1202,11 @@ public sealed class WriteAheadLog : IAsyncDisposable
             var expectedChecksum = WalChecksum.Compute(sequence, timestamp, recordType, payload, version);
             if (!string.Equals(checksum, expectedChecksum, StringComparison.Ordinal))
             {
+                if (incompleteTail)
+                {
+                    _log.Information("Incomplete final WAL write ignored in {File}; complete preceding records remain recoverable", walFile);
+                    yield break;
+                }
                 _log.Warning(
                     "Invalid checksum for WAL record with sequence {Sequence} in {File}, skipping",
                     sequence, walFile);
@@ -1008,12 +1277,31 @@ public sealed class WriteAheadLog : IAsyncDisposable
     /// and rewriting only valid records into new WAL files.
     /// Corrupted records are discarded and counted in the result.
     /// </summary>
+    /// <exception cref="WalDirectoryInUseException">Another live instance owns the directory.</exception>
     public async Task<WalRepairResult> RepairAsync(CancellationToken ct = default)
+    {
+        // A repair rewrites segments in place, which is only safe when no other process can be
+        // writing them; an instance that never initialized cannot tell which segment is live.
+        AcquireOwnership();
+        // Truncation deletes and rewrites committed segments. Rewriting a segment while a
+        // truncation runs could restore records it has just removed, so they would replay.
+        await _truncateLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return await RepairCoreAsync(ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _truncateLock.Release();
+        }
+    }
+
+    private async Task<WalRepairResult> RepairCoreAsync(CancellationToken ct)
     {
         _log.Information("Starting WAL repair in {WalDirectory}", _walDirectory);
 
         var walFiles = Directory.GetFiles(_walDirectory, "*.wal")
-            .OrderBy(f => f)
+            .OrderBy(f => f, StringComparer.Ordinal)
             .ToList();
 
         int totalRecords = 0;
@@ -1195,6 +1483,22 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
             _disposed = true;
 
+            if (_segmentFault is not null)
+            {
+                try
+                {
+                    // Last chance to persist records still held only in memory.
+                    await RecoverFaultedSegmentAsync(CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _log.Error(
+                        ex,
+                        "WAL disposed while its segment was faulted; {RecordCount} unflushed records were not persisted",
+                        _unflushedRecords.Count);
+                }
+            }
+
             if (_currentWriter != null)
             {
                 await FlushInternalAsync(CancellationToken.None).ConfigureAwait(false);
@@ -1216,6 +1520,95 @@ public sealed class WriteAheadLog : IAsyncDisposable
             _writeLock.Dispose();
             _truncateLock.Dispose();
             _flushLoopCts?.Dispose();
+            ReleaseOwnership();
+        }
+    }
+
+    private void AcquireOwnership()
+    {
+        lock (_ownerLockGate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_ownerLock is not null)
+                return;
+
+            _ownerLock = AcquireDirectoryLock(_walDirectory);
+        }
+    }
+
+    private void ReleaseOwnership()
+    {
+        lock (_ownerLockGate)
+        {
+            _ownerLock?.Dispose();
+            _ownerLock = null;
+        }
+    }
+
+    /// <summary>
+    /// Takes the owner lock of <paramref name="directory"/> without waiting: a WAL directory is
+    /// owned for a process's lifetime, so contention means a second writer, not a brief overlap.
+    /// </summary>
+    private static FileStream AcquireDirectoryLock(string directory)
+    {
+        var lockPath = Path.Combine(directory, OwnerLockFileName);
+        try
+        {
+            return ExclusiveFileLock.Acquire(lockPath, TimeSpan.Zero);
+        }
+        catch (TimeoutException ex)
+        {
+            throw new WalDirectoryInUseException(directory, ex);
+        }
+    }
+
+    /// <summary>
+    /// Moves segments left by the pre-ownership layout (one shared WAL directory) into this
+    /// instance's directory so they are recovered here. Holds the legacy directory's owner lock
+    /// while moving so no other adopter, or a WAL still opened directly on that directory, can
+    /// race the move. A segment whose name already exists here is left in place and reported.
+    /// </summary>
+    private async Task AdoptLegacySegmentsAsync(string legacyDirectory, CancellationToken ct)
+    {
+        if (!Directory.Exists(legacyDirectory) ||
+            string.Equals(Path.GetFullPath(legacyDirectory), Path.GetFullPath(_walDirectory), StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        var legacySegments = Directory.GetFiles(legacyDirectory, "*.wal");
+        if (legacySegments.Length == 0)
+            return;
+
+        using var legacyLock = AcquireDirectoryLock(legacyDirectory);
+        var moved = 0;
+        foreach (var segment in legacySegments.OrderBy(static f => f, StringComparer.Ordinal))
+        {
+            ct.ThrowIfCancellationRequested();
+            var destination = Path.Combine(_walDirectory, Path.GetFileName(segment));
+            if (File.Exists(destination))
+            {
+                _log.Error(
+                    "Legacy WAL segment {Segment} was not adopted because {Destination} already exists; it stays in place and is not recovered",
+                    segment,
+                    destination);
+                continue;
+            }
+
+            File.Move(segment, destination, overwrite: false);
+            moved++;
+        }
+
+        if (moved > 0)
+        {
+            // Both directory entries changed; make the move durable before recovering from it.
+            await AtomicFileWriter.SyncDirectoryOrThrowAsync(_walDirectory, CancellationToken.None).ConfigureAwait(false);
+            await AtomicFileWriter.SyncDirectoryOrThrowAsync(legacyDirectory, CancellationToken.None).ConfigureAwait(false);
+            _log.Information(
+                "Adopted {Count} WAL segments from legacy directory {LegacyDirectory} into {WalDirectory}",
+                moved,
+                legacyDirectory,
+                _walDirectory);
         }
     }
 
@@ -1286,6 +1679,14 @@ public sealed class WalRecord
 /// </summary>
 public sealed class WalOptions
 {
+    /// <summary>
+    /// A directory that held WAL segments under an earlier layout. When set, initialization moves
+    /// any <c>*.wal</c> segments found there into this WAL's directory (under that directory's
+    /// owner lock) before recovery, so they are replayed rather than stranded. Only one workload
+    /// should adopt a given legacy directory.
+    /// </summary>
+    public string? LegacySegmentDirectory { get; set; }
+
     /// <summary>
     /// Maximum WAL file size before rotation.
     /// </summary>
@@ -1385,3 +1786,23 @@ public sealed record WalRepairResult(
     int ValidRecords,
     int CorruptedRecords,
     int RepairedFiles);
+
+/// <summary>
+/// Thrown when a WAL directory is already owned by another live <see cref="WriteAheadLog"/>, in
+/// this process or another. Two owners would hand out the same sequence numbers and archive each
+/// other's live segments, so the second one is refused instead.
+/// </summary>
+public sealed class WalDirectoryInUseException : IOException
+{
+    public WalDirectoryInUseException(string walDirectory, Exception? innerException = null)
+        : base(
+            $"WAL directory '{walDirectory}' is owned by another running process or WAL instance. " +
+            "Stop that process first, or run this workload against a different data root.",
+            innerException)
+    {
+        WalDirectory = walDirectory;
+    }
+
+    /// <summary>The directory whose owner lock is held elsewhere.</summary>
+    public string WalDirectory { get; }
+}

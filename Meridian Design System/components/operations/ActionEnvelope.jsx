@@ -139,7 +139,7 @@ export function ActionEnvelope({
   const post = POSTURES[posture] || POSTURES.confirmed;
   const held = permission ? permission.held !== false : undefined;
   const submit = onSubmit || (ctx && action ? () => ctx.submit(action) : null);
-  const retry = onRetry || (ctx && action ? () => ctx.retry(action) : null);
+  const retry = onRetry || (ctx && action ? () => ctx.retry(action, live?.id) : null);
 
   return <section className={`mds-act${className ? " " + className : ""}`} data-state={state} aria-label={`${label || action} — ${m.label}`} {...rest}>
     <header className="mds-act__hd">
@@ -340,17 +340,27 @@ export function ActionEnvelopeProvider({ actions = {}, transport, timeoutMs = 80
     return run;
   }, [actions, patch, send]);
 
-  const retry = React.useCallback((actionId) => {
-    const prior = listRef.current.find((i) => i.action === actionId && (i.state === "unlanded" || i.state === "rejected"));
+  const retry = React.useCallback((actionId, instructionId) => {
+    const prior = listRef.current.find((i) => i.action === actionId &&
+      (instructionId === undefined || i.id === instructionId) &&
+      (i.state === "unlanded" || i.state === "rejected"));
     // A retry with nothing to retry used to fall through to submit(), minting a FRESH key — the one
     // thing the unlanded fate exists to prevent. It is now a no-op that says so.
     if (!prior) {
       if (typeof console !== "undefined") console.warn(`[Meridian] retry("${actionId}"): no unresolved instruction to retry. Use submit() to send one.`);
       return Promise.resolve(null);
     }
+    // Reserve the same key synchronously, just as submit does: a second retry before the
+    // in-flight render must join this attempt rather than dispatch the instruction twice.
+    const pending = reserved.current.get(prior.idempotencyKey);
+    if (pending) return pending.then((r) => ({ id: r.id, state: r.state, deduped: true }));
     const decl = sentDecls.current.get(prior.id) || actions[actionId] || {};
     // Same key, incremented attempt — the retry asks "did the first one land?", it does not resend.
-    return send(actionId, decl, (prior.receipt?.attempt || 1) + 1, prior.idempotencyKey, prior.id, prior.keyDeclared !== false);
+    const run = send(actionId, decl, (prior.receipt?.attempt || 1) + 1, prior.idempotencyKey, prior.id, prior.keyDeclared !== false);
+    reserved.current.set(prior.idempotencyKey, run);
+    const release = () => { if (reserved.current.get(prior.idempotencyKey) === run) reserved.current.delete(prior.idempotencyKey); };
+    run.then(release, release);
+    return run;
   }, [actions, send]);
 
   const value = React.useMemo(() => ({

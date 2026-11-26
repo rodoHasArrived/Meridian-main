@@ -38,6 +38,9 @@ public sealed class CorporateActionTermsTests
         CorporateActionTerms.From(Action(CorporateActionEventTypes.StockSplit) with { SplitRatio = 4m })
             .Should().Be(new SplitCorporateActionTerms(CorporateActionEventTypes.StockSplit, 4m));
 
+        CorporateActionTerms.From(Action(CorporateActionEventTypes.StockDividend) with { DistributionRatio = 0.05m })
+            .Should().Be(new SecurityDistributionCorporateActionTerms(CorporateActionEventTypes.StockDividend, SecurityId, 0.05m));
+
         var acquirer = Guid.NewGuid();
         CorporateActionTerms.From(Action(CorporateActionEventTypes.MergerAbsorption, new { cashConsiderationPerUnit = 12.5m })
                 with
@@ -117,6 +120,55 @@ public sealed class CorporateActionTermsTests
 
         terms.Should().BeOfType<CashDistributionCorporateActionTerms>()
             .Which.PositiveAmountPerUnit.Should().Be(0.40m);
+    }
+
+    [Theory]
+    [InlineData(CorporateActionEventTypes.UnitSplit, "successorLegs")]
+    [InlineData(CorporateActionEventTypes.Reorganization, "stockMovements")]
+    public void MultiLegSourceTerms_RetainEveryAllocationWithoutSelectingASingleSuccessor(
+        string eventType, string legsKey)
+    {
+        var action = Action(eventType, new Dictionary<string, object>
+        {
+            [legsKey] = new[]
+            {
+                new { symbol = "FIRST", sourceRate = 1m, newRate = 1m, distributionRatio = 1m },
+                new { symbol = "SECOND", sourceRate = 1m, newRate = 0.3333m, distributionRatio = 0.3333m },
+            },
+        });
+
+        var terms = CorporateActionTerms.From(action).Should().BeOfType<PayloadCorporateActionTerms>().Which;
+
+        terms.Payload!.Value.GetRawText().Should().Be(action.Payload!.Value.GetRawText());
+        terms.Payload.Value.GetProperty(legsKey).GetArrayLength().Should().Be(2);
+        action.NewSecurityId.Should().BeNull();
+        action.SplitRatio.Should().BeNull();
+    }
+
+    [Fact]
+    public void SecurityRedemption_SourceRateRemainsSeparateFromLegacyPercentOfParTerms()
+    {
+        var source = Action(CorporateActionEventTypes.SecurityRedemption, new { redemptionRate = 0.141134m });
+
+        var terms = CorporateActionTerms.From(source).Should().BeOfType<PayloadCorporateActionTerms>().Which;
+
+        CorporateActionPayloads.ReadDecimal(terms.Payload, CorporateActionPayloads.RedemptionRate).Should().Be(0.141134m);
+        source.RedemptionPricePercentOfPar.Should().BeNull();
+        CorporateActionTerms.From(Action("Redemption") with { RedemptionPricePercentOfPar = 100m })
+            .Should().BeOfType<RedemptionCorporateActionTerms>().Which.PricePercentOfPar.Should().Be(100m);
+    }
+
+    [Fact]
+    public void CapitalGainsTerms_KeepBothTaxComponentsWithoutCreatingOrdinaryDividendIncome()
+    {
+        var source = Action(CorporateActionEventTypes.CapitalGainsDistribution,
+            new { longTermRate = 0.45855m, shortTermRate = 0.11019m });
+
+        var terms = CorporateActionTerms.From(source).Should().BeOfType<PayloadCorporateActionTerms>().Which;
+
+        CorporateActionPayloads.ReadDecimal(terms.Payload, CorporateActionPayloads.LongTermRate).Should().Be(0.45855m);
+        CorporateActionPayloads.ReadDecimal(terms.Payload, CorporateActionPayloads.ShortTermRate).Should().Be(0.11019m);
+        source.DividendPerShare.Should().BeNull();
     }
 
     private static CorporateActionDto Action(string eventType, object? payload = null)

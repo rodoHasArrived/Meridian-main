@@ -27,7 +27,7 @@
         "artifacts/ci-summary/"
       ],
       "timeoutMinutes": 75,
-      "pathTriggerNotes": "Runs for pull requests to main, pushes to main, merge queue groups, and manual dispatch.",
+      "pathTriggerNotes": "Runs for all pull requests, pushes to main, merge queue groups, and manual dispatch. Requires change detection and permits only an explicitly classified docs-only PR to skip .NET.",
       "requiredCheckRole": "aggregator"
     },
     {
@@ -42,7 +42,7 @@
         "artifacts/ci-summary/"
       ],
       "timeoutMinutes": 45,
-      "pathTriggerNotes": "Covers solution restore, formatting, warning-suppression inventory, file-size ratchet, web-workstation .NET build, and non-integration .NET tests.",
+      "pathTriggerNotes": "Covers solution restore, formatting, warning-suppression inventory, file-size ratchet, web-workstation .NET build, and non-integration .NET tests. The hosted verify-dotnet job runs the lane as shard 1/1, builds its own same-revision workstation assets, and accepts the run only when it ran the complete roster once. Only recognized narrative/asset-only PRs skip this lane; metadata and unknown paths require it.",
       "requiredCheckRole": "evidence"
     },
     {
@@ -57,7 +57,7 @@
         "artifacts/test-results/browser/"
       ],
       "timeoutMinutes": 25,
-      "pathTriggerNotes": "Covers lockfile-strict dashboard install, generated UI route/catalog drift checks, lint, strict typecheck, tests, and production bundle build.",
+      "pathTriggerNotes": "Covers lockfile-strict dashboard install, UI route/catalog generation, lint, strict typecheck, tests, production bundle build and asset validation. The hosted verify-browser job runs the lane as shard 1/1 and accepts it only when it ran every dashboard test file once. The hosted .NET lane builds its own same-revision assets, so it does not wait for this lane.",
       "requiredCheckRole": "evidence"
     },
     {
@@ -75,7 +75,7 @@
         "artifacts/maintained-generation/"
       ],
       "timeoutMinutes": 35,
-      "pathTriggerNotes": "Covers docs delivery claims, status staleness, AI contract drift, lane vocabulary, roadmap registry, source READMEs, TODO scans, and the shared bounded documentation/diagram generation and complete freshness check.",
+      "pathTriggerNotes": "Covers docs delivery claims, status staleness, AI contract drift, lane vocabulary, roadmap registry, source READMEs, TODO scans, and the shared bounded documentation/diagram generation, CI-produced output artifacts and reviewed-document freshness check.",
       "requiredCheckRole": "evidence"
     },
     {

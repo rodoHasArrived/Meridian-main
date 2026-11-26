@@ -680,7 +680,7 @@ describe("useReportingScreenViewModel", () => {
       deliveryTargetLabel: "board-reporting-committee via SecurePortal (Pdf/Xlsx/Csv)",
       datasetSourceLabel: "Portfolio reporting cuts (2)",
       accessPolicySnapshotLabel: "sha256:schedule-policy-1",
-      releaseGateLabel: "1 handoff awaiting governance release; 1 enqueued",
+      releaseGateLabel: "1 delivery awaiting governance release; 1 enqueued",
       releaseGateVariant: "warning",
       nextAsOfLabel: "Jun 1, 2026",
       lastRunLabel: "Not run"
@@ -864,7 +864,7 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.workflowTaskPanel?.actions[1]).toMatchObject({
       id: "run",
       isDisabled: true,
-      disabledReason: "Excel export requires loader automation evidence before running governed export analysis. Preview remains available.",
+      disabledReason: "Excel export requires loader automation evidence before running export analysis. Preview remains available.",
       statusBadgeLabel: "Gated",
       statusBadgeAriaLabel: "Excel export analysis is gated by missing evidence"
     });
@@ -972,7 +972,7 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.workflowTaskPanel?.restatementReview.changedLines).toEqual([
       expect.objectContaining({
         lineKey: "nav.total",
-        valueBridge: "1250000 -> 1249500",
+        valueBridge: "1250000 → 1249500",
         evidenceLabel: "1 evidence link",
         evidenceHref: "/reporting/evidence?subject=pricing"
       })
@@ -987,7 +987,7 @@ describe("useReportingScreenViewModel", () => {
       title: "Publication review",
       statusLabel: "Restated",
       statusVariant: "success",
-      summaryText: "Publication signed off by Reporting ops on May 28, 3:20 PM UTC.",
+      summaryText: "Publication signed off by Reporting ops on May 28, 2026, 15:20 UTC.",
       evidenceSummary: "1 evidence link / 1 provenance line",
       hasLineProvenance: true
     });
@@ -1134,7 +1134,7 @@ describe("useReportingScreenViewModel", () => {
       targetsEmptyText: "No report-pack recipients loaded. Configure distribution records before approving this packet.",
       targetsEmptyAriaLabel: "No report-pack distribution recipients",
       hasProfiles: false,
-      profilesEmptyText: "No export profiles are configured. Add a governed profile before report-pack approval.",
+      profilesEmptyText: "No export profiles are configured. Add a profile before report-pack approval.",
       profilesEmptyAriaLabel: "No report-pack export profiles"
     });
   });
@@ -1273,10 +1273,10 @@ describe("useReportingScreenViewModel", () => {
       label: "Run export",
       variant: "default",
       isDisabled: true,
-      disabledReason: "Excel export requires loader automation evidence before running governed export analysis. Preview remains available.",
+      disabledReason: "Excel export requires loader automation evidence before running export analysis. Preview remains available.",
       statusBadgeLabel: "Gated",
       statusBadgeAriaLabel: "Excel export analysis is gated by missing evidence",
-      descriptionText: "Excel export requires loader automation evidence before running governed export analysis. Preview remains available."
+      descriptionText: "Excel export requires loader automation evidence before running export analysis. Preview remains available."
     });
     expect(result.current.rows.find((r) => r.id === "excel")?.isSelected).toBe(true);
     expect(result.current.rows.find((r) => r.id === "excel")?.isExpanded).toBe(true);
@@ -1314,7 +1314,7 @@ describe("useReportingScreenViewModel", () => {
     act(() => { result.current.selectProfile("board-packet"); });
 
     expect(result.current.selectedProfile?.readinessSummary).toBe(
-      "Loader and dictionary evidence are ready for governed packet generation."
+      "Loader and dictionary evidence are ready for packet generation."
     );
     expect(result.current.selectedProfile?.actions[1]).toMatchObject({
       id: "run",
@@ -1653,7 +1653,7 @@ describe("useReportingScreenViewModel", () => {
       titleId: "reporting-loading-title",
       detailId: "reporting-loading-detail",
       title: "Loading Reporting",
-      detail: "Waiting for governed report-pack and export evidence.",
+      detail: "Waiting for report-pack and export evidence.",
       badgeLabel: "Loading",
       routeLabel: "Daily Reporting Cockpit"
     });

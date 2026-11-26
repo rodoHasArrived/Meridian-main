@@ -39,8 +39,8 @@ public sealed class ProductionProhibitedDurableBindingTests
             typeof(Meridian.FinancialOperations.Reconciliation.InMemoryStatementRunRecoveryRepository)
         },
         {
-            typeof(Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore),
-            typeof(Meridian.Infrastructure.Reconciliation.InMemoryStatementRunMatchArtifactStore)
+            typeof(Meridian.DataIntegration.Reconciliation.IStatementRunMatchArtifactStore),
+            typeof(Meridian.DataIntegration.Reconciliation.InMemoryStatementRunMatchArtifactStore)
         },
         {
             typeof(Meridian.FinancialOperations.Reconciliation.IStatementReconciliationCheckpointStore),

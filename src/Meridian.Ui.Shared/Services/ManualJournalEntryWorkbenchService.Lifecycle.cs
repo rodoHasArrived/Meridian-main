@@ -496,7 +496,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
         bool allowIncomplete,
         CancellationToken ct,
         bool periodIsLocked = false,
-        bool allowHardClosedCloseLock = false)
+        bool allowHardClosedCloseLock = false,
+        ManualJournalEntryDraftDto? prospectiveOpeningCorrectionParent = null)
     {
         ArgumentNullException.ThrowIfNull(draft);
         EnsureAssetAccountingDraftMatchesSource(draft);
@@ -504,6 +505,15 @@ public sealed partial class ManualJournalEntryWorkbenchService
         var configuration = await _configurationService.GetWorkspaceAsync(fundProfileId, draft.LedgerBookId, ct, draft.TenantId, draft.CompanyId).ConfigureAwait(false);
         var chartByPath = BuildChartByPath(configuration.ChartOfAccounts);
         var issues = new List<AccountingConfigurationValidationIssueDto>();
+        var priorPeriodReason = await ValidatePriorPeriodAdjustmentAsync(draft, ct, allowHardClosedCloseLock).ConfigureAwait(false);
+        if (priorPeriodReason is not null)
+            issues.Add(Issue("manual-je.prior-period-authority-required", AccountingConfigurationValidationSeverityDto.Critical,
+                priorPeriodReason, "priorPeriodAdjustmentSource", "Prepare a fresh source-linked correction in an explicitly selected open period."));
+        var openingCorrectionReason = await ValidateOpeningCorrectionAsync(draft, chartByPath, ct,
+            prospectiveOpeningCorrectionParent, allowHardClosedCloseLock).ConfigureAwait(false);
+        if (openingCorrectionReason is not null)
+            issues.Add(Issue("manual-je.opening-correction-authority-required", AccountingConfigurationValidationSeverityDto.Critical,
+                openingCorrectionReason, "openingCorrectionSource", "Create a source-linked correction from the retained posted opening lifecycle."));
         if (draft.PrivateCapitalAuthorityJson is not null ||
             PrivateCapitalPostingAuthority.IsCapitalCall(draft.TreasuryContext?.IdempotencyKey, draft.TreasuryContext?.FundEventType))
         {
@@ -546,6 +556,9 @@ public sealed partial class ManualJournalEntryWorkbenchService
                     AccountingConfigurationValidationSeverityDto.Critical, recurringReason, "recurringJournalEvidence",
                     "Restore the retained source evidence and accounting scope before human approval."));
         }
+        if (IntercompanyAccrualEvidenceGuard.IsAccrualDraft(draft) && IntercompanyAccrualEvidenceGuard.Validate(draft) is { } accrualReason)
+            issues.Add(Issue("manual-je.intercompany-accrual-evidence", AccountingConfigurationValidationSeverityDto.Critical,
+                accrualReason, "intercompanyAccrualEvidence", "Recompute the accrual from its approved terms; computed lines are not hand-edited."));
         if (draft.RequiresValuationMarkEvidence || ValuationMarkEvidenceGuard.IsValuation(draft.TreasuryContext?.IdempotencyKey) ||
             draft.ValuationMarkEvidenceJson is not null)
         {
@@ -581,6 +594,14 @@ public sealed partial class ManualJournalEntryWorkbenchService
             entityId: draft.EntityId,
             investorId: treasuryContext?.InvestorId,
             capitalAccountId: treasuryContext?.CapitalAccountId);
+        if (headerDimensions?.IntercompanyAgreementId.HasValue == true ||
+            headerDimensions?.IntercompanyAgreementVersion.HasValue == true ||
+            headerDimensions?.AccountingArrangementId is not null || headerDimensions?.AccountingArrangementRevisionId is not null ||
+            headerDimensions?.ChartAccountNodeId is not null || headerDimensions?.AccountBindingRevisionId is not null ||
+            headerDimensions?.IntercompanyTransactionId is not null)
+            issues.Add(Issue("manual-je.agreement-line-reference-required", AccountingConfigurationValidationSeverityDto.Critical,
+                "Agreement provenance must identify each journal line rather than the journal header.",
+                "dimensions", "Move the agreement ID and approved version onto the applicable lines."));
 
         if (!Enum.IsDefined(draft.EntryType))
         {
@@ -744,7 +765,9 @@ public sealed partial class ManualJournalEntryWorkbenchService
             lines.Add(normalizedLine);
         }
 
-        ValidateTreasuryContext(treasuryContext, entryType, allowIncomplete, issues);
+        ValidateTreasuryContext(treasuryContext, entryType, allowIncomplete, issues,
+            intercompanyCounterpart: draft.IntercompanyProposalId is not null);
+        await ValidateAgreementDraftAsync(draft, lines, chartByPath, issues, ct).ConfigureAwait(false);
 
         var totalDebits = lines.Where(line => line.Side == AccountingTemplateLineSideDto.Debit).Sum(line => line.Amount);
         var totalCredits = lines.Where(line => line.Side == AccountingTemplateLineSideDto.Credit).Sum(line => line.Amount);
@@ -1018,7 +1041,14 @@ public sealed partial class ManualJournalEntryWorkbenchService
             VendorId: NormalizeOptional(dimensions?.VendorId),
             ProjectId: NormalizeOptional(dimensions?.ProjectId))
         {
-            PositionId = dimensions?.PositionId
+            PositionId = dimensions?.PositionId,
+            AccountingArrangementId = NormalizeOptional(dimensions?.AccountingArrangementId),
+            AccountingArrangementRevisionId = NormalizeOptional(dimensions?.AccountingArrangementRevisionId),
+            ChartAccountNodeId = NormalizeOptional(dimensions?.ChartAccountNodeId),
+            AccountBindingRevisionId = NormalizeOptional(dimensions?.AccountBindingRevisionId),
+            IntercompanyTransactionId = NormalizeOptional(dimensions?.IntercompanyTransactionId),
+            IntercompanyAgreementId = dimensions?.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions?.IntercompanyAgreementVersion
         };
 
         return LedgerDimensionTags.HasAnyDimension(normalized) ? normalized : null;
@@ -1055,11 +1085,19 @@ public sealed partial class ManualJournalEntryWorkbenchService
         }
     }
 
+    private static bool IsIntercompanyMirrorLabelOnly(bool intercompanyCounterpart, TreasuryLedgerContextDto? context)
+        => intercompanyCounterpart && context is not null &&
+            string.Equals(context.FundEventType?.Trim(), Meridian.FinancialOperations.Intercompany.IntercompanyProposalDraftBuilder.MirrorFundEventType, StringComparison.Ordinal) &&
+            string.IsNullOrWhiteSpace(context.FundEventId) &&
+            string.IsNullOrWhiteSpace(context.CapitalAccountId) &&
+            string.IsNullOrWhiteSpace(context.InvestorId);
+
     private static void ValidateTreasuryContext(
         TreasuryLedgerContextDto? context,
         ManualJournalEntryTypeDto entryType,
         bool allowIncomplete,
-        List<AccountingConfigurationValidationIssueDto> issues)
+        List<AccountingConfigurationValidationIssueDto> issues,
+        bool intercompanyCounterpart = false)
     {
         var requiresPrivateCapitalContext = RequiresPrivateCapitalTreasuryContext(entryType);
         if (allowIncomplete && context is null)
@@ -1101,11 +1139,15 @@ public sealed partial class ManualJournalEntryWorkbenchService
             issues.Add(Issue("manual-je.treasury-idempotency-missing", AccountingConfigurationValidationSeverityDto.Critical, "Treasury ledger context requires an idempotency key before approval submission.", "treasuryContext.idempotencyKey", "Use a stable source-event key for retry-safe posting."));
         }
 
-        var hasFundEventContext = requiresPrivateCapitalContext ||
+        // A delivered intercompany counterpart is identified by its retained proposal, and the delivery service
+        // labels its context as a mirror. That label alone is not a fund event: the counterpart has no fund event
+        // identity or capital account to attach, so requiring them would make every counterpart unsubmittable.
+        var mirrorLabelOnly = IsIntercompanyMirrorLabelOnly(intercompanyCounterpart, context);
+        var hasFundEventContext = requiresPrivateCapitalContext || (!mirrorLabelOnly && (
             !string.IsNullOrWhiteSpace(context.FundEventId) ||
             !string.IsNullOrWhiteSpace(context.FundEventType) ||
             !string.IsNullOrWhiteSpace(context.CapitalAccountId) ||
-            !string.IsNullOrWhiteSpace(context.InvestorId);
+            !string.IsNullOrWhiteSpace(context.InvestorId)));
         if (!allowIncomplete && hasFundEventContext)
         {
             RequireTreasuryContextText(issues, context.FundEventId, "manual-je.fund-event-missing", "fund event id", "treasuryContext.fundEventId");

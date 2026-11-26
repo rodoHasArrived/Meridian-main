@@ -12,6 +12,20 @@ namespace Meridian.Infrastructure.Http;
 public static class SharedResiliencePolicies
 {
     /// <summary>
+    /// Marks a request whose caller owns retries and per-attempt quota accounting.
+    /// Named-client circuit breakers still apply, but their retry handler must not multiply attempts.
+    /// </summary>
+    public static readonly HttpRequestOptionsKey<bool> ProviderOwnsRetries = new("Meridian.ProviderOwnsRetries");
+
+    private static readonly IAsyncPolicy<HttpResponseMessage> NoRetry = Policy.NoOpAsync<HttpResponseMessage>();
+
+    private static IAsyncPolicy<HttpResponseMessage> SelectRetryPolicy(
+        HttpRequestMessage request, IAsyncPolicy<HttpResponseMessage> retryPolicy) =>
+        request.Options.TryGetValue(ProviderOwnsRetries, out var providerOwnsRetries) && providerOwnsRetries
+            ? NoRetry
+            : retryPolicy;
+
+    /// <summary>
     /// Default timeout for HTTP requests.
     /// </summary>
     public static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
@@ -32,8 +46,9 @@ public static class SharedResiliencePolicies
     /// </summary>
     public static IHttpClientBuilder AddSharedResiliencePolicy(this IHttpClientBuilder builder)
     {
+        var retryPolicy = GetRetryPolicy();
         return builder
-            .AddPolicyHandler(GetRetryPolicy())
+            .AddPolicyHandler(request => SelectRetryPolicy(request, retryPolicy))
             .AddPolicyHandler(GetCircuitBreakerPolicy());
     }
 
@@ -46,8 +61,9 @@ public static class SharedResiliencePolicies
         int circuitBreakerThreshold = 5,
         TimeSpan? circuitBreakerDuration = null)
     {
+        var retryPolicy = GetRetryPolicy(retryCount);
         return builder
-            .AddPolicyHandler(GetRetryPolicy(retryCount))
+            .AddPolicyHandler(request => SelectRetryPolicy(request, retryPolicy))
             .AddPolicyHandler(GetCircuitBreakerPolicy(circuitBreakerThreshold, circuitBreakerDuration ?? TimeSpan.FromSeconds(30)));
     }
 
@@ -134,8 +150,9 @@ public static class SharedResiliencePolicies
                 breakerName: clientName,
                 onStateChanged: onStateChangedFactory(serviceProvider)));
 
+        var retryPolicy = GetRetryPolicy();
         return builder
-            .AddPolicyHandler(GetRetryPolicy())
+            .AddPolicyHandler(request => SelectRetryPolicy(request, retryPolicy))
             .AddPolicyHandler((serviceProvider, _) =>
                 serviceProvider.GetRequiredKeyedService<IAsyncPolicy<HttpResponseMessage>>(clientName));
     }

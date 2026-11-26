@@ -40,6 +40,9 @@ public interface ILedgerReportsApiClient
     Task<ApiResponse<List<LedgerJournalEntryDto>>> GetJournalEntriesAsync(Guid periodId, CancellationToken ct = default)
         => Task.FromResult(ApiResponse<List<LedgerJournalEntryDto>>.Fail("Posted journal detail is unavailable in this session."));
 
+    Task<ApiResponse<byte[]>> ExportJournalCsvAsync(Guid periodId, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<byte[]>.Fail("Journal CSV export is unavailable in this session."));
+
     /// <summary>Posting history and running balance for one account of a ledger period.</summary>
     Task<ApiResponse<LedgerAccountRunningBalanceDto>> GetAccountRunningBalanceAsync(
         Guid periodId, string accountName, string? symbol, string? financialAccountId,
@@ -52,6 +55,13 @@ public interface ILedgerReportsApiClient
 
     Task<ApiResponse<JsonDocument>> GetRetainedManifestAsync(string route, CancellationToken ct = default)
         => Task.FromResult(ApiResponse<JsonDocument>.Fail("Retained manifest is unavailable in this session."));
+
+    Task<ApiResponse<BookFxSettlementSetDto>> GetBookFxSettlementSetAsync(Guid setId, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<BookFxSettlementSetDto>.Fail("Book and FX settlement evidence is unavailable."));
+
+    Task<ApiResponse<PrivateCapitalUnitRegisterPreviewDto>> PreviewUnitRegisterAsync(
+        Guid bookId, PreviewPrivateCapitalUnitRegisterRequest request, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<PrivateCapitalUnitRegisterPreviewDto>.Fail("Unit register reconciliation is unavailable."));
 }
 
 /// <summary>
@@ -68,6 +78,15 @@ public sealed class LedgerReportsApiClient : ILedgerReportsApiClient
 
     public Task<ApiResponse<List<LedgerBookDto>>> GetBooksAsync(CancellationToken ct = default)
         => _apiClient.GetWithResponseAsync<List<LedgerBookDto>>(UiApiRoutes.LedgerBooks, ct);
+
+    public Task<ApiResponse<BookFxSettlementSetDto>> GetBookFxSettlementSetAsync(Guid setId, CancellationToken ct = default)
+        => _apiClient.GetWithResponseAsync<BookFxSettlementSetDto>(
+            UiApiRoutes.LedgerBookFxSettlementSet.Replace("{setId:guid}", setId.ToString("D"), StringComparison.Ordinal), ct);
+
+    public Task<ApiResponse<PrivateCapitalUnitRegisterPreviewDto>> PreviewUnitRegisterAsync(
+        Guid bookId, PreviewPrivateCapitalUnitRegisterRequest request, CancellationToken ct = default)
+        => _apiClient.PostWithResponseAsync<PrivateCapitalUnitRegisterPreviewDto>(
+            $"{UiApiRoutes.LedgerPrivateCapitalUnitRegisterPreview}?ledgerBookId={bookId:D}", request, ct);
 
     public Task<ApiResponse<List<LedgerPeriodDto>>> GetPeriodsAsync(
         Guid? ledgerBookId,
@@ -95,6 +114,9 @@ public sealed class LedgerReportsApiClient : ILedgerReportsApiClient
     public Task<ApiResponse<List<LedgerJournalEntryDto>>> GetJournalEntriesAsync(Guid periodId, CancellationToken ct = default)
         => _apiClient.GetWithResponseAsync<List<LedgerJournalEntryDto>>(
             BuildPeriodRoute(UiApiRoutes.LedgerPeriodJournalEntries, periodId), ct);
+
+    public Task<ApiResponse<byte[]>> ExportJournalCsvAsync(Guid periodId, CancellationToken ct = default)
+        => _apiClient.PostArtifactAsync(BuildPeriodRoute(UiApiRoutes.LedgerPeriodJournalExport, periodId), new { format = "csv" }, ct);
 
     public Task<ApiResponse<EvidencePacketDto>> GetAmountProofAsync(
         string subjectId, Guid ledgerBookId, Guid periodId, string fundProfileId, CancellationToken ct = default)

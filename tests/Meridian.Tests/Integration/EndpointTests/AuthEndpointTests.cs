@@ -239,6 +239,139 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         response.Headers.Location?.ToString().Should().Contain("error");
     }
 
+    [Theory]
+    [InlineData("https://evil.example/phish")]
+    [InlineData("//evil.example/phish")]
+    [InlineData("/\\evil.example/phish")]
+    [InlineData("/\t/evil.example/phish")]
+    [InlineData("javascript:alert(1)")]
+    [InlineData("workstation/")]
+    public async Task LoginForm_WithValidCredentialsAndNonLocalReturnUrl_RedirectsToWorkstation(string returnUrl)
+    {
+        var location = await LoginWithFormAndGetRedirectAsync(returnUrl);
+
+        location.Should().Be("/workstation/", "a non-local returnUrl must never be followed after sign-in");
+    }
+
+    [Theory]
+    [InlineData("/workstation/trading?tab=orders")]
+    [InlineData("/")]
+    public async Task LoginForm_WithValidCredentialsAndLocalReturnUrl_RedirectsToReturnUrl(string returnUrl)
+    {
+        var location = await LoginWithFormAndGetRedirectAsync(returnUrl);
+
+        location.Should().Be(returnUrl);
+    }
+
+    [Fact]
+    public async Task LoginForm_WithBadCredentialsAndNonLocalReturnUrl_DoesNotEchoReturnUrl()
+    {
+        using var noRedirectClient = Fixture.CreateNoRedirectClient();
+        var form = new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["username"] = $"nobody-{Guid.NewGuid():N}",
+            ["password"] = "wrong",
+            ["returnUrl"] = "https://evil.example/phish"
+        });
+
+        var response = await noRedirectClient.PostAsync("/api/auth/login", form);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+        response.Headers.Location?.ToString().Should().Be("/login?error=1");
+    }
+
+    [Fact]
+    public async Task LoginPage_WithNonLocalReturnUrl_DoesNotEmbedIt()
+    {
+        var response = await GetAsync("/login?returnUrl=https%3A%2F%2Fevil.example%2Fphish");
+        var html = await response.Content.ReadAsStringAsync();
+
+        html.Should().NotContain("evil.example");
+    }
+
+    [Theory]
+    [InlineData("Sec-Fetch-Site", "cross-site")]
+    [InlineData("Origin", "https://evil.example")]
+    public async Task Login_FromAnotherSite_IsRefusedWithoutIssuingCookies(string header, string value)
+    {
+        var originalUsername = Fixture.Configuration["MDC_USERNAME"];
+        var originalPasswordHash = Fixture.Configuration["MDC_PASSWORD_HASH"];
+        Fixture.Configuration["MDC_USERNAME"] = "test-admin";
+        Fixture.Configuration["MDC_PASSWORD_HASH"] = TestPasswordHash;
+
+        try
+        {
+            using var noRedirectClient = Fixture.CreateNoRedirectClient();
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/login")
+            {
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["username"] = "test-admin",
+                    ["password"] = "test-password"
+                })
+            };
+            request.Headers.Add(header, value);
+
+            var response = await noRedirectClient.SendAsync(request);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            response.Headers.Contains("Set-Cookie").Should().BeFalse(
+                "another site must not be able to sign this browser into an account of its choosing");
+        }
+        finally
+        {
+            Fixture.Configuration["MDC_USERNAME"] = originalUsername;
+            Fixture.Configuration["MDC_PASSWORD_HASH"] = originalPasswordHash;
+        }
+    }
+
+    [Theory]
+    [InlineData("Sec-Fetch-Site", "same-origin")]
+    [InlineData("Sec-Fetch-Site", "same-site")]
+    [InlineData("Sec-Fetch-Site", "none")]
+    public async Task Login_FromSameSite_IsNotTreatedAsCrossSite(string header, string value)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/login")
+        {
+            Content = JsonContent.Create(new { username = $"nobody-{Guid.NewGuid():N}", password = "wrong" })
+        };
+        request.Headers.Add(header, value);
+
+        var response = await Client.SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    private async Task<string?> LoginWithFormAndGetRedirectAsync(string returnUrl)
+    {
+        var originalUsername = Fixture.Configuration["MDC_USERNAME"];
+        var originalPasswordHash = Fixture.Configuration["MDC_PASSWORD_HASH"];
+        Fixture.Configuration["MDC_USERNAME"] = "test-admin";
+        Fixture.Configuration["MDC_PASSWORD_HASH"] = TestPasswordHash;
+
+        try
+        {
+            using var noRedirectClient = Fixture.CreateNoRedirectClient();
+            var form = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["username"] = "test-admin",
+                ["password"] = "test-password",
+                ["returnUrl"] = returnUrl
+            });
+
+            var response = await noRedirectClient.PostAsync("/api/auth/login", form);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+            response.Headers.Contains("Set-Cookie").Should().BeTrue("valid credentials still sign the user in");
+            return response.Headers.Location?.ToString();
+        }
+        finally
+        {
+            Fixture.Configuration["MDC_USERNAME"] = originalUsername;
+            Fixture.Configuration["MDC_PASSWORD_HASH"] = originalPasswordHash;
+        }
+    }
+
     // ================================================================
     // POST /api/auth/logout
     // ================================================================

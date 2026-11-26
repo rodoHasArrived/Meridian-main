@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.RateLimiting;
 using Meridian.Application.Composition;
 using Meridian.Application.Monitoring;
@@ -7,6 +8,9 @@ using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Serialization;
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
@@ -92,7 +96,28 @@ public static class UiEndpoints
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             WriteIndented = writeIndented,
-            TypeInfoResolver = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver()
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(
+                IntercompanyOperationsJsonContext.Default,
+                IntercompanyAccountingArrangementsJsonContext.Default,
+                FundStructureContractsJsonContext.Default,
+                EntityTimelineJsonContext.Default,
+                IntercompanyAccountContractsJsonContext.Default,
+                LegacyIntercompanyAttributionJsonContext.Default,
+                IntercompanyProposalJsonContext.Default,
+                IntercompanyAccrualJsonContext.Default,
+                IntercompanyFeeAccrualJsonContext.Default,
+                IntercompanyRateFixingJsonContext.Default,
+                IntercompanyAccrualScheduleJsonContext.Default,
+                IntercompanyConfirmationClosePolicyJsonContext.Default,
+                IntercompanyBalanceScheduleJsonContext.Default,
+                IntercompanyBalanceConfirmationJsonContext.Default,
+                IntercompanyObligationMonitorJsonContext.Default,
+                IntercompanyStructuredTermsJsonContext.Default,
+                IntercompanyExternalReviewJsonContext.Default,
+                ConsolidationFxJsonContext.Default,
+                ConsolidationTransitionJsonContext.Default,
+                Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext.Default,
+                new DefaultJsonTypeInfoResolver())
         };
 
     /// <summary>
@@ -141,7 +166,9 @@ public static class UiEndpoints
         app.MapProviderRoutingEndpoints(jsonOptions);
         app.MapPlaidEndpoints(jsonOptions);
         app.MapAccountingSystemEndpoints(jsonOptions);
+        app.MapExternalGlPostingEndpoints(jsonOptions);
         app.MapOnboardingEndpoints(jsonOptions);
+        app.MapPortfolioImportEndpoints();
 
         app.MapStorageEndpoints(jsonOptions);
         app.MapStorageQualityEndpoints(jsonOptions);
@@ -185,6 +212,8 @@ public static class UiEndpoints
 
         // Options / Derivatives endpoints
         app.MapOptionsEndpoints(jsonOptions);
+        app.MapOptionVisualizationEndpoints(jsonOptions);
+        app.MapPrivateCapitalRecordEndpoints(jsonOptions);
 
         // Direct lending endpoints
         app.MapDirectLendingEndpoints(jsonOptions);
@@ -201,6 +230,13 @@ public static class UiEndpoints
 
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);
+        app.MapIntercompanyAgreementEndpoints(jsonOptions);
+        app.MapIntercompanyAccountingArrangementEndpoints();
+        app.MapIntercompanyOperationsEndpoints(jsonOptions);
+        app.MapIntercompanyRateFixingEndpoints(jsonOptions);
+        app.MapIntercompanyBalanceConfirmationEndpoints(jsonOptions);
+        app.MapIntercompanyAccrualScheduleEndpoints(jsonOptions);
+        app.MapIntercompanyConfirmationClosePolicyEndpoints(jsonOptions);
         app.MapReportingGovernanceEndpoints(jsonOptions);
         app.MapReportingIncomeComparisonEndpoints(jsonOptions);
         app.MapSecureReportingDistributionEndpoints();
@@ -208,9 +244,11 @@ public static class UiEndpoints
         app.MapEnvironmentDesignerEndpoints(jsonOptions);
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
+        app.MapSecurityInstrumentTermsEndpoints(jsonOptions);
         app.MapBondReferenceEndpoints(jsonOptions);
         app.MapBondReferencePagingEndpoints(jsonOptions);
         app.MapBondAnalyticsEndpoints(jsonOptions);
+        app.MapBondWorkflowEndpoints();
         app.MapBondMigrationEndpoints(jsonOptions);
         app.MapOptionReferenceEndpoints(jsonOptions);
         app.MapOptionChainEndpoints(jsonOptions);
@@ -242,6 +280,9 @@ public static class UiEndpoints
         {
             app.MapDataQualityEndpoints(qualityService);
         }
+
+        // User-editable cross-provider tolerances (save applies live via the runtime applier)
+        app.MapCrossProviderToleranceEndpoints(jsonOptions);
 
         // Map SLA monitoring endpoints
         var slaMonitor = app.Services.GetService<DataFreshnessSlaMonitor>();
@@ -315,6 +356,13 @@ public static class UiEndpoints
     public const string DirectLendingMutationRateLimitPolicy = "direct-lending-mutation";
 
     /// <summary>
+    /// Per-IP limiter for the unauthenticated sign-in endpoint. Bounds how quickly one client
+    /// can guess credentials or churn the bounded failed-attempt table in
+    /// <c>LoginSessionService</c>.
+    /// </summary>
+    public const string LoginRateLimitPolicy = "login";
+
+    /// <summary>
     /// Registers a per-IP fixed-window rate limiter for mutation endpoints.
     /// Allows 10 requests per minute per IP with a small queue for bursts.
     /// Set the <c>MDC_DISABLE_RATE_LIMIT=true</c> environment variable to bypass rate
@@ -351,6 +399,19 @@ public static class UiEndpoints
                         Window = TimeSpan.FromMinutes(1),
                         QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                         QueueLimit = 2
+                    }));
+
+            options.AddPolicy(LoginRateLimitPolicy, httpContext => !forceEnable && CanBypassRateLimiting(httpContext)
+                ? RateLimitPartition.GetNoLimiter<string>("login-global")
+                : RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: $"login:{httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"}",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 10,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0,
+                        AutoReplenishment = true
                     }));
 
             options.AddPolicy(DirectLendingMutationRateLimitPolicy, httpContext => !forceEnable && CanBypassRateLimiting(httpContext)

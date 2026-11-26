@@ -73,7 +73,8 @@ public sealed class StrictTenantMutationPostgresTests
         var securityId = Guid.NewGuid();
         var book = new LedgerBookRecord(Guid.NewGuid(), "fund-alpha", Guid.NewGuid(),
             FundStructureNodeKindDto.Fund, "Alpha", "USD", now, now);
-        var strict = new PostgresLedgerJournalStore(database.Options, new WorkerAccessor(), TenantScopeEnforcementOptions.FailClosed);
+        var strict = new PostgresLedgerJournalStore(database.Options, new WorkerAccessor(), TenantScopeEnforcementOptions.FailClosed,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
         using var authority = FundScopeTenantAuthority.Enter("tenant-alpha", "wash-sale prior-deferral account regression");
         await strict.SaveLedgerBookAsync(book, ct);
         var period = await strict.SavePeriodAsync(new(Guid.NewGuid(), book.LedgerBookId, 2026, 5, "2026-05",
@@ -167,7 +168,8 @@ public sealed class StrictTenantMutationPostgresTests
         var registry = new PostgresFundProfileTenancyRegistry(database.Options);
         await registry.BindAsync("fund-alpha", "tenant-alpha");
         await registry.BindAsync("fund-beta", "tenant-beta");
-        var strict = new PostgresLedgerJournalStore(database.Options, new WorkerAccessor(), TenantScopeEnforcementOptions.FailClosed);
+        var strict = new PostgresLedgerJournalStore(database.Options, new WorkerAccessor(), TenantScopeEnforcementOptions.FailClosed,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
         var now = DateTimeOffset.Parse("2026-05-15T12:00:00Z");
         var alpha = new LedgerBookRecord(Guid.NewGuid(), "fund-alpha", Guid.NewGuid(), FundStructureNodeKindDto.Fund,
             "Alpha retained", "USD", now, now);

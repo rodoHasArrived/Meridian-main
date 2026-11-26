@@ -468,7 +468,7 @@ export function useCapitalCallIssuanceViewModel(
 
   const submitLabel = armed ? "Confirm — queue issuance drafts" : "Queue issuance drafts";
   const armedNotice = armed
-    ? "This drafts one governed journal entry per allocated commitment into the manual-journal approval queue. Nothing is posted. Select Confirm to proceed."
+    ? "This drafts one journal entry per allocated commitment into the manual-journal approval queue. Nothing is posted. Select Confirm to proceed."
     : null;
 
   return useMemo(() => ({

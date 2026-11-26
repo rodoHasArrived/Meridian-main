@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Contracts.AssetOperations;
 
 /// <summary>Exact operational scope; fund scope is deliberately not required.</summary>
@@ -66,7 +68,32 @@ public sealed record AccountCashForecastRequestDto(
     string? PreviousSnapshotId = null,
     string? CorrectionRationale = null,
     decimal MinimumCashThreshold = 0m,
-    int BucketDays = 1);
+    int BucketDays = 1)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? CalculationVersion { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<AccountSettledCashObservationDto>? NativeOpeningBalances { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<AccountSettledCashObservationDto>? NativeClosingBalances { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<AccountCashPaymentAllocationDto>? PaymentAllocations { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<AccountCashReceiptRevisionDto>? ReceiptRevisions { get; init; }
+}
+
+/// <summary>Signed cash in the obligation currency. Gross = net + nonnegative evidenced tax and fee cash costs.</summary>
+public sealed record AccountCashPaymentAllocationDto(
+    string AllocationId, string ExpectedFlowId, string ActualVersionId,
+    decimal NetAmount, decimal GrossAmount, decimal WithholdingTax = 0m, decimal Fees = 0m,
+    AccountCashProvenanceDto? DeductionEvidence = null);
+
+/// <summary>An evidenced revised date never changes the retained original expectation.</summary>
+public sealed record AccountCashReceiptRevisionDto(string ExpectedFlowId, DateOnly ReceiptDate, AccountCashProvenanceDto Evidence);
+
+public sealed record AccountCashResidualDto(string ExpectedFlowId, decimal ExpectedAmount, decimal ReceivedGrossAmount,
+    decimal RemainingAmount, string Currency, DateOnly? OriginalReceiptDate, DateOnly? RevisedReceiptDate,
+    bool IncludedInForecast, string Status);
 
 public sealed record AccountCashForecastIssueDto(string Code, string Message, string? InputId = null);
 
@@ -83,7 +110,13 @@ public sealed record AccountCashForecastSnapshotDto(
     decimal? ClosingVariance,
     bool IsCertified,
     PortfolioCashLadderDto ForecastLadder,
-    IReadOnlyList<AccountCashForecastIssueDto> Blockers);
+    IReadOnlyList<AccountCashForecastIssueDto> Blockers)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<PortfolioCashLadderDto>? CurrencyLadders { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<AccountCashResidualDto>? Residuals { get; init; }
+}
 
 /// <summary>
 /// Retains account-scoped cash forecast snapshots and retrieves their captured history.

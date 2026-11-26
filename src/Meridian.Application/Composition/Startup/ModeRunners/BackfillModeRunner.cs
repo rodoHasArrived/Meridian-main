@@ -1,10 +1,13 @@
+using System.Collections.Concurrent;
 using Meridian.Application.Backfill;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Startup.StartupModels;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
+using Meridian.Contracts.Backfill;
 using Meridian.Platform.Results;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
 using Serilog;
 using Meridian.Storage.Backfill;
 
@@ -21,14 +24,13 @@ public sealed class BackfillModeRunner
     private readonly BackfillHostFactory _hostFactory;
     private readonly BackfillProviderFactory _providerFactory;
     private readonly CompositeBackfillProviderFactory _compositeProviderFactory;
+    private readonly bool _useHostedRouting;
 
     public BackfillModeRunner(ILogger log)
         : this(
             log,
             static (deployment, configPath, ct) =>
-                HostStartupFactory.CreateForBackfillAsync(deployment, configPath, ct),
-            static host => host.CreateBackfillProviders(),
-            static (host, providers) => host.CreateCompositeBackfillProvider(providers))
+                HostStartupFactory.CreateForBackfillAsync(deployment, configPath, ct))
     {
     }
 
@@ -40,6 +42,7 @@ public sealed class BackfillModeRunner
     {
         _log = log;
         _hostFactory = hostFactory;
+        _useHostedRouting = providerFactory is null && compositeProviderFactory is null;
         _providerFactory = providerFactory ?? (static host => host.CreateBackfillProviders());
         _compositeProviderFactory = compositeProviderFactory
             ?? (static (host, providers) => host.CreateCompositeBackfillProvider(providers));
@@ -86,29 +89,43 @@ public sealed class BackfillModeRunner
         CancellationToken ct = default)
     {
         var backfillRequest = SharedStartupHelpers.BuildBackfillRequest(ctx.Config, ctx.CliArgs);
+        var runtime = _useHostedRouting ? backfillHost.GetService<BackfillRoutingRuntime>() : null;
+        var routing = runtime?.Current;
 
         // The provider factory delegate is synchronous. Read the credentials first so the
         // construction it performs does not wait on credential storage.
         IReadOnlyList<IHistoricalDataProvider> backfillProviders;
-        var preparedCredentials = await backfillHost.PrepareProviderCredentialsAsync(ct).ConfigureAwait(false);
-        using (preparedCredentials.Activate())
+        if (routing is not null)
         {
-            backfillProviders = _providerFactory(backfillHost);
+            backfillProviders = routing.Providers.Select(entry => entry.Provider).ToArray();
+        }
+        else
+        {
+            var preparedCredentials = await backfillHost.PrepareProviderCredentialsAsync(ct).ConfigureAwait(false);
+            using (preparedCredentials.Activate())
+            {
+                backfillProviders = _providerFactory(backfillHost);
+            }
         }
 
         var requestedProvider = backfillRequest.Provider?.Trim();
-        var useCompositeProvider = (ctx.Config.Backfill?.EnableFallback ?? true)
+        var useCompositeProvider = (routing is not null || (ctx.Config.Backfill?.EnableFallback ?? true))
             && (string.IsNullOrWhiteSpace(requestedProvider)
                 || string.Equals(requestedProvider, "composite", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(requestedProvider, "auto", StringComparison.OrdinalIgnoreCase));
 
         CompositeHistoricalDataProvider? composite = null;
+        var attempts = new ConcurrentQueue<BackfillRoutingAttempt>();
         try
         {
             IHistoricalDataProvider[] providersArray;
             if (useCompositeProvider)
             {
-                composite = _compositeProviderFactory(backfillHost, backfillProviders);
+                composite = routing is null
+                    ? _compositeProviderFactory(backfillHost, backfillProviders)
+                    : routing.CreateComposite([], backfillHost.GetService<ISymbolResolver>(), _log, null, attempts.Enqueue);
+                if (routing is not null)
+                    backfillRequest = backfillRequest with { Provider = composite.Name };
                 providersArray = [composite];
             }
             else
@@ -116,9 +133,20 @@ public sealed class BackfillModeRunner
                 providersArray = backfillProviders.ToArray();
             }
 
-            var backfill = new HistoricalBackfillService(providersArray, _log);
-            var result = await backfill.RunAsync(backfillRequest, pipeline, ct).ConfigureAwait(false);
             var statusStore = BackfillStatusStore.FromConfig(ctx.Config);
+            var backfill = new HistoricalBackfillService(providersArray, _log, checkpointStore: statusStore,
+                symbolTimelineResolver: backfillHost.GetService<Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver>(),
+                validationProfiles: ctx.Config.Backfill?.ValidationProfiles)
+            {
+                ResolveSessionsAsync = new Meridian.Platform.Scheduling.HistoricalSessionScheduleResolver(
+                    backfillHost.GetService<Meridian.Contracts.SecurityMaster.ISecurityIdentityQueryService>()).ResolveAsync,
+                DirectRoutingAdmission = runtime?.Admission,
+                CaptureRoutingAttempt = attempts.Enqueue,
+                CaptureInputEvidence = symbol => backfillHost.GetService<Meridian.Infrastructure.Adapters.Core.DataQualityMonitor>()?.GetCachedInputEvidence(symbol)
+            };
+            var result = await backfill.RunAsync(backfillRequest, pipeline, ct).ConfigureAwait(false);
+            if (!attempts.IsEmpty)
+                result = result with { RoutingAttempts = attempts.ToArray() };
             await statusStore.WriteAsync(result, ct).ConfigureAwait(false);
             await pipeline.FlushAsync(ct).ConfigureAwait(false);
             await statusWriter.WriteOnceAsync(ct).ConfigureAwait(false);
@@ -131,7 +159,7 @@ public sealed class BackfillModeRunner
             {
                 DisposeProvider(composite);
             }
-            else
+            else if (routing is null)
             {
                 foreach (var provider in backfillProviders)
                     DisposeProvider(provider);

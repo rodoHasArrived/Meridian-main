@@ -341,6 +341,41 @@ public sealed class LedgerReadServiceTests
         json.Should().Contain("StrategyId");
     }
 
+    [Fact]
+    public void BuildSummary_AsOf_UsesSameInclusiveCutForBalancesJournalAndCounts()
+    {
+        var entry = BuildCompletedRun();
+        var service = new LedgerReadService();
+        var firstPosting = entry.Metrics!.Ledger.Journal.Min(posting => posting.Timestamp);
+        var summary = service.BuildSummary(entry, firstPosting)!;
+
+        summary.AsOf.Should().Be(firstPosting);
+        summary.JournalEntryCount.Should().Be(1);
+        summary.LedgerEntryCount.Should().Be(2);
+        summary.AssetBalance.Should().Be(100_000m);
+        summary.EquityBalance.Should().Be(100_000m);
+        summary.RevenueBalance.Should().Be(0m);
+        summary.ExpenseBalance.Should().Be(0m);
+        summary.Journal.Should().ContainSingle().Which.Timestamp.Should().Be(firstPosting);
+        summary.TrialBalance.Should().HaveCount(2);
+        entry.Metrics.Ledger.Journal.Should().HaveCount(2, "historical reads must not mutate retained results");
+    }
+
+    [Fact]
+    public async Task BuildSummaryAsync_AsOfBeforeFirstPosting_ReturnsEmptyHistoricalLedger()
+    {
+        var entry = BuildCompletedRun();
+        var service = new LedgerReadService();
+        var beforeFirstPosting = entry.Metrics!.Ledger.Journal.Min(posting => posting.Timestamp).AddTicks(-1);
+        var summary = (await service.BuildSummaryAsync(entry, beforeFirstPosting))!;
+
+        summary.AsOf.Should().Be(beforeFirstPosting);
+        summary.Journal.Should().BeEmpty();
+        summary.TrialBalance.Should().BeEmpty();
+        summary.JournalEntryCount.Should().Be(0);
+        summary.AssetBalance.Should().Be(0m);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private static StrategyRunEntry BuildCompletedRun(

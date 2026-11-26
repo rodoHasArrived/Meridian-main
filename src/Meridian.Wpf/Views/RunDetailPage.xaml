@@ -5,6 +5,9 @@
       xmlns:workstation="clr-namespace:Meridian.Wpf.Workstation.Controls"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       AutomationProperties.Name="Strategy Run Detail">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="ReplayEvidenceVisibility" />
+    </Page.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16,24,32">
         <Grid MaxWidth="1260">
             <Grid.RowDefinitions>
@@ -152,6 +155,44 @@
                 <StackPanel Grid.Column="0">
                     <workstation:InspectorPanelControl Panel="{Binding RunSummaryInspector}"
                                                        AutomationProperties.AutomationId="RunDetailSummaryInspector" />
+
+                    <Expander Header="Replay data sources"
+                              Margin="0,12,0,0"
+                              Visibility="{Binding ShowReplayEvidence, Converter={StaticResource ReplayEvidenceVisibility}}"
+                              AutomationProperties.AutomationId="RunDetailReplayDataSources">
+                        <StackPanel Margin="0,8,0,0">
+                            <TextBlock Text="{Binding ReplayQualityStatus}" TextWrapping="Wrap" Margin="0,0,0,8" />
+                            <ItemsControl ItemsSource="{Binding ReplayQualityWarnings}">
+                                <ItemsControl.ItemTemplate><DataTemplate>
+                                    <StackPanel Margin="0,0,0,8">
+                                        <TextBlock Text="{Binding Kind}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+                                        <Expander Header="Supporting source assessments"><TextBlock Text="{Binding Evidence}" TextWrapping="Wrap" /></Expander>
+                                    </StackPanel>
+                                </DataTemplate></ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <workstation:DenseDataGridControl Table="{Binding ReplaySourceTable}"
+                                                              Height="168"
+                                                              GridAutomationId="RunDetailReplaySourceGrid"
+                                                              AutomationProperties.Name="Replayed bars by source" />
+                            <StackPanel Margin="0,12,0,0"
+                                        Visibility="{Binding HasReplayFingerprint, Converter={StaticResource ReplayEvidenceVisibility}}">
+                                <TextBlock Text="Completed input fingerprint"
+                                           Style="{StaticResource CardDescriptionStyle}" />
+                                <TextBox Text="{Binding ReplayProvenance.CompletedInputHashSha256, Mode=OneWay}"
+                                         IsReadOnly="True" TextWrapping="Wrap"
+                                         AutomationProperties.Name="Completed input fingerprint" />
+                            </StackPanel>
+                            <Expander Header="Verified backfill revisions" Margin="0,12,0,0"
+                                      Visibility="{Binding HasReplayRevisions, Converter={StaticResource ReplayEvidenceVisibility}}">
+                                <workstation:DenseDataGridControl Table="{Binding ReplayRevisionTable}"
+                                                                  Margin="0,8,0,0"
+                                                                  Height="200"
+                                                                  GridAutomationId="RunDetailReplayRevisionGrid"
+                                                                  AutomationProperties.Name="Verified backfill revisions" />
+                            </Expander>
+                        </StackPanel>
+                    </Expander>
 
                     <Border Style="{StaticResource CardStyle}"
                             Padding="16"

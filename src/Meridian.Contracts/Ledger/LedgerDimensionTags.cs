@@ -40,6 +40,8 @@ public static class LedgerDimensionTags
                || !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId)
                || dimensions.InstrumentId.HasValue
                || dimensions.PositionId.HasValue
+               || dimensions.IntercompanyAgreementId.HasValue
+               || dimensions.IntercompanyAgreementVersion.HasValue
                || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)
                || !string.IsNullOrWhiteSpace(dimensions.CostCenterId)
                || !string.IsNullOrWhiteSpace(dimensions.CounterpartyId)
@@ -55,7 +57,12 @@ public static class LedgerDimensionTags
                || !string.IsNullOrWhiteSpace(dimensions.AccountId)
                || !string.IsNullOrWhiteSpace(dimensions.CustomerId)
                || !string.IsNullOrWhiteSpace(dimensions.VendorId)
-               || !string.IsNullOrWhiteSpace(dimensions.ProjectId);
+               || !string.IsNullOrWhiteSpace(dimensions.ProjectId)
+            || !string.IsNullOrWhiteSpace(dimensions.AccountingArrangementId)
+            || !string.IsNullOrWhiteSpace(dimensions.AccountingArrangementRevisionId)
+            || !string.IsNullOrWhiteSpace(dimensions.ChartAccountNodeId)
+            || !string.IsNullOrWhiteSpace(dimensions.AccountBindingRevisionId)
+            || !string.IsNullOrWhiteSpace(dimensions.IntercompanyTransactionId);
     }
 
     /// <summary>

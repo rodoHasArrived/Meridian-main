@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.Views;
@@ -32,7 +33,8 @@ public sealed class WorkstationPageSmokeTests
             configureServices.Should().NotBeNull();
             InvokeConfigureServices(configureServices!, services);
 
-            using var serviceProvider = services.BuildServiceProvider();
+            using var navigationHost = new DesktopNavigationTestHost(services);
+            var serviceProvider = navigationHost.Services;
 
             Window? hostWindow = null;
             try
@@ -84,11 +86,10 @@ public sealed class WorkstationPageSmokeTests
             configureServices.Should().NotBeNull();
             InvokeConfigureServices(configureServices!, services);
 
-            using var serviceProvider = services.BuildServiceProvider();
+            using var navigationHost = new DesktopNavigationTestHost(services);
+            var serviceProvider = navigationHost.Services;
 
             var navigationService = NavigationService.Instance;
-            navigationService.ResetForTests();
-            navigationService.SetServiceProvider(serviceProvider);
 
             var frame = new Frame
             {
@@ -120,9 +121,76 @@ public sealed class WorkstationPageSmokeTests
             finally
             {
                 hostWindow?.Close();
-                navigationService.ResetForTests();
             }
         });
+    }
+
+    [Theory]
+    [InlineData("ServiceManager", typeof(ServiceManagerPage))]
+    [InlineData("Welcome", typeof(WelcomePage))]
+    [InlineData("OrderBook", typeof(OrderBookPage))]
+    public void ConsecutiveNavigationHosts_ShouldOwnFreshWorkspaceScopes(string pageTag, Type expectedPageType)
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+            WorkspaceScopeProbe? previousProbe = null;
+            var workspaceId = ShellNavigationCatalog.InferWorkspaceIdForPageTag(pageTag)!;
+
+            for (var hostIndex = 0; hostIndex < 2; hostIndex++)
+            {
+                var services = new ServiceCollection();
+                var configureServices = typeof(Meridian.Wpf.App)
+                    .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
+                configureServices.Should().NotBeNull();
+                InvokeConfigureServices(configureServices!, services);
+
+                var rootOwner = new object();
+                services.AddScoped(_ => new WorkspaceScopeProbe(rootOwner));
+                WorkspaceScopeProbe? currentProbe = null;
+                using (var navigationHost = new DesktopNavigationTestHost(services))
+                {
+                    var workspaceService = navigationHost.Services.GetRequiredService<WorkspaceService>();
+                    var workspaceScope = workspaceService.GetOrCreateWorkspaceScope(workspaceId);
+                    workspaceScope.Should().NotBeNull();
+                    currentProbe = workspaceScope!.ServiceProvider.GetRequiredService<WorkspaceScopeProbe>();
+                    currentProbe.Owner.Should().BeSameAs(rootOwner,
+                        "a cached scope must belong to this test's root provider");
+                    currentProbe.Should().NotBeSameAs(previousProbe);
+
+                    var frame = new Frame
+                    {
+                        NavigationUIVisibility = System.Windows.Navigation.NavigationUIVisibility.Hidden
+                    };
+                    var window = new Window { Width = 1280, Height = 900, Content = frame };
+                    try
+                    {
+                        window.Show();
+                        NavigationService.Instance.Initialize(frame);
+                        NavigationService.Instance.NavigateTo(pageTag).Should().BeTrue();
+                        RunMatUiAutomationFacade.DrainDispatcher();
+                        NavigationHostInspector.ResolveInnermostPage(frame.Content)
+                            .Should().BeOfType(expectedPageType);
+                        WorkspaceService.Instance.GetWorkspaceScope(workspaceId).Should().BeSameAs(workspaceScope);
+                    }
+                    finally
+                    {
+                        window.Close();
+                    }
+                }
+
+                currentProbe!.IsDisposed.Should().BeTrue("workspace scopes must end before their root provider");
+                WorkspaceService.Instance.GetWorkspaceScope(workspaceId).Should().BeNull();
+                previousProbe = currentProbe;
+            }
+        });
+    }
+
+    private sealed class WorkspaceScopeProbe(object owner) : IDisposable
+    {
+        public object Owner { get; } = owner;
+        public bool IsDisposed { get; private set; }
+        public void Dispose() => IsDisposed = true;
     }
 
     private static void InvokeConfigureServices(MethodInfo configureServices, IServiceCollection services)

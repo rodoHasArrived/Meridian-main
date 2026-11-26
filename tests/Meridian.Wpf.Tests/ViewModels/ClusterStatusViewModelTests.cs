@@ -117,9 +117,10 @@ public sealed class ClusterStatusViewModelTests
         xaml.Should().Contain("ClusterStatusSummaryInspector");
         xaml.Should().Contain("ClusterStatusSelectionInspector");
         xaml.Should().Contain("ClusterStatusActionInspector");
-        xaml.Should().Contain("Command=\"{Binding RefreshCommand}\"");
-        xaml.Should().Contain("ToolTip=\"{Binding RefreshTooltip}\"");
-        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+        // The shell Refresh reloads cluster status through the view model's RefreshCommand.
+        xaml.Should().NotContain("ClusterStatusRefreshButton");
+        xaml.Should().NotContain("Command=\"{Binding RefreshCommand}\"");
+        viewModel.Should().Contain("public IAsyncRelayCommand RefreshCommand { get; }");
         xaml.Should().Contain("Table=\"{Binding NodesTable}\"");
         xaml.Should().Contain("SelectedItem=\"{Binding SelectedNode, Mode=TwoWay}\"");
         xaml.Should().Contain("Inspector=\"{Binding SelectedNodeInspector}\"");

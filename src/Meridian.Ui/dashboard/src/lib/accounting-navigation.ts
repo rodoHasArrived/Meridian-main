@@ -39,14 +39,16 @@ export const ACCOUNTING_NAVIGATION_GROUPS: readonly AccountingNavigationGroupDef
     items: [
       {
         id: "today",
-        label: "Today",
+        // Not "Today": that name belongs to the global front door (the Daily Control Tower).
+        label: "Close cockpit",
         route: WORKSTATION_ROUTE_CATALOG.accounting,
         match: "exact"
       },
       {
         id: "operations-continuity",
-        label: "Operations continuity",
-        route: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity
+        label: "Close",
+        route: WORKSTATION_ROUTE_CATALOG.accountingClose,
+        activeRoutes: [{ route: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity }]
       },
       {
         id: "close-calendar",

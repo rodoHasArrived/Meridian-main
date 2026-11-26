@@ -15,7 +15,7 @@
  * Coexistence: `@/lib/reporting-periods` keeps the zone-free string math for the reporting period
  * switcher (`parseIsoDate`, `shiftIsoDate`, `compareIsoDate`, `todayIsoDate`), and `@/lib/format`
  * stays the only module that calls Intl — the two display helpers here go through it. Instants are
- * not this module's job: format those with `formatUtcTimestamp` / `formatUtcDate`.
+ * not this module's job: format those with `formatTimestamp` (display time zone) or `formatUtcDate`.
  */
 
 import { formatDateTime } from "@/lib/format";

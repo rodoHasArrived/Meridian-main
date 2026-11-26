@@ -13,8 +13,7 @@ namespace Meridian.Execution;
 /// <summary>
 /// Simulated execution gateway for paper trading. Orders are matched against observed
 /// market data under <see cref="PaperOrderMatchingPolicy"/>: market orders fill from the
-/// observed bid/ask/trade/bar in effect (callers may still supply a simulated mark via
-/// <see cref="OrderRequest.LimitPrice"/> on a market order, which becomes the observation),
+/// observed bid/ask/trade/bar in effect,
 /// limit orders fill only at or better than their limit price, stop orders trigger per the
 /// documented trade-preferred policy, and unmarketable limit/stop orders rest in this
 /// gateway and re-evaluate as new market data arrives — resting fills are delivered
@@ -39,21 +38,42 @@ public sealed class PaperTradingGateway :
     private readonly bool _allowScaffoldMarketFills;
     private readonly Interfaces.ILiveFeedAdapter? _liveFeed;
     private readonly PaperTradingCostModel _costModel;
+    private readonly Meridian.Contracts.FixedIncome.IBondAnalyticsService? _bondAnalytics;
+    private readonly bool _requireBondAccruedInterest;
     private readonly PaperSymbolEvaluationPump _evaluationPump;
     private readonly System.Threading.Channels.Channel<ExecutionReport> _restingReports;
+    private readonly CancellationTokenSource _disposeCts = new();
     // Limit/stop orders accepted and resting in this gateway, keyed by order id, so
     // cancel/modify can distinguish a real resting order from an unknown id and so market
     // data arrival can re-evaluate them for fills.
     private readonly ConcurrentDictionary<string, RestingPaperOrder> _restingOrders = new(StringComparer.Ordinal);
     private int _scaffoldPriceWarningIssued;
+    private readonly PaperObservationFreshnessPolicy _freshness;
     private bool _connected;
     private int _fillSequence;
     private int _disposed;
+    private bool _canonicalSyntheticPricing;
+
+    /// <summary>The canonical synthetic OMS supplies its reviewed, bounded simulated price.
+    /// Native paper orders continue to use market observations rather than caller limits.</summary>
+    internal void EnableCanonicalSyntheticPricing()
+    {
+        if (Volatile.Read(ref _fillSequence) != 0 || !_restingOrders.IsEmpty)
+            throw new InvalidOperationException("Canonical synthetic pricing requires an unused paper gateway.");
+        _canonicalSyntheticPricing = true;
+    }
 
     /// <summary>One resting limit/stop order, with its stop-trigger state.</summary>
     private sealed class RestingPaperOrder
     {
-        public RestingPaperOrder(OrderRequest request) => Request = request;
+        public RestingPaperOrder(OrderRequest request, string gatewayOrderId)
+        {
+            Request = request;
+            GatewayOrderId = gatewayOrderId;
+        }
+
+        /// <summary>The gateway id reported on the New report; every later report for this order reuses it.</summary>
+        public string GatewayOrderId { get; }
 
         /// <summary>Current request (replaced atomically under the instance lock on modify).</summary>
         public OrderRequest Request { get; set; }
@@ -85,9 +105,12 @@ public sealed class PaperTradingGateway :
         Adapters.PaperTradingGatewayOptions? options = null,
         Interfaces.ILiveFeedAdapter? liveFeed = null,
         PaperTradingCostOptions? costOptions = null,
-        ISecurityIdentityQueryService? securityIdentity = null)
+        ISecurityIdentityQueryService? securityIdentity = null,
+        Meridian.Contracts.FixedIncome.IBondAnalyticsService? bondAnalytics = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _bondAnalytics = bondAnalytics;
+        _requireBondAccruedInterest = options?.RequireBondAccruedInterest == true;
         _tradingParameters = new Adapters.PaperTradingGatewayTradingParameters(
             _logger,
             securityMaster,
@@ -95,6 +118,7 @@ public sealed class PaperTradingGateway :
             securityIdentity);
         _scaffoldMarketFillPrice = Adapters.PaperTradingGatewayScaffoldPricing.ResolveScaffoldMarketFillPrice(options);
         _allowScaffoldMarketFills = Adapters.PaperTradingGatewayScaffoldPricing.ResolveAllowScaffoldMarketFills(options);
+        _freshness = PaperObservationFreshnessPolicy.From(options);
         _liveFeed = liveFeed;
         _costModel = new PaperTradingCostModel(costOptions);
         _evaluationPump = new PaperSymbolEvaluationPump(EvaluateRestingOrdersForSymbolAsync, _logger);
@@ -134,9 +158,10 @@ public sealed class PaperTradingGateway :
                 if (string.Equals(metadataKey, key, StringComparison.OrdinalIgnoreCase)
                     && !string.IsNullOrWhiteSpace(assetClass))
                 {
-                    return assetClass.Trim().ToLowerInvariant() is
-                        "treasury" or "us_treasury" or "fixed_income_treasury" or
-                        "corporate" or "bond" or "corporate_bond" or "us_corporate";
+                    // The live gateway's fixed-income codes and aliases, from the shared table.
+                    return ProviderAssetClassCodeCatalog.IsFaceValueFixedIncomeInput(
+                        ProviderAssetClassCodeProviders.Alpaca,
+                        assetClass);
                 }
             }
         }
@@ -166,6 +191,8 @@ public sealed class PaperTradingGateway :
     /// <inheritdoc />
     public async Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default)
     {
+        if (_canonicalSyntheticPricing && (request.Type != OrderType.Market || request.LimitPrice is not > 0m))
+            throw new InvalidOperationException("Canonical synthetic pricing requires an immediate market order with an explicit positive simulated price.");
         var fillSeq = Interlocked.Increment(ref _fillSequence);
 
         var lotSizeError = await _tradingParameters.ValidateLotSizeAsync(request, ct).ConfigureAwait(false);
@@ -183,14 +210,13 @@ public sealed class PaperTradingGateway :
         var orderId = request.ClientOrderId ?? $"PAPER-{fillSeq}";
         var gatewayOrderId = $"PAPER-{fillSeq}";
 
-        // Market-style orders evaluate immediately. Callers may set a simulated price via
-        // LimitPrice on a market order; it becomes the observation. Otherwise the observed
-        // live market data applies.
+        // Native market orders use observed market data. Only the separately authorized
+        // canonical synthetic host treats its required explicit price as a simulated observation.
         if (request.Type is OrderType.Market)
         {
-            var observation = request.LimitPrice is { } callerPrice
-                ? PaperMarketObservation.FromCallerPrice(callerPrice)
-                : PaperMarketObservation.Capture(_liveFeed, request.Symbol);
+            var observation = _canonicalSyntheticPricing
+                ? PaperMarketObservation.FromCallerPrice(request.LimitPrice!.Value)
+                : _freshness.Capture(_liveFeed, request.Symbol);
 
             var match = PaperOrderMatchingPolicy.Evaluate(
                 request.Side, OrderType.Market, limitPrice: null, stopPrice: null,
@@ -203,10 +229,13 @@ public sealed class PaperTradingGateway :
                     .ConfigureAwait(false);
             }
 
-            if (!_allowScaffoldMarketFills)
+            // A stalled feed is not "no feed wired": scaffold pricing must not stand in.
+            if (observation.IsStale || !_allowScaffoldMarketFills)
             {
-                var rejectReason = Adapters.PaperTradingGatewayScaffoldPricing
-                    .BuildNoReferencePriceRejectReason(request.Symbol);
+                var rejectReason = observation.IsStale
+                    ? _freshness.BuildStaleObservationRejectReason(request.Symbol)
+                    : Adapters.PaperTradingGatewayScaffoldPricing
+                        .BuildNoReferencePriceRejectReason(request.Symbol);
                 _logger.LogWarning(
                     "Paper order rejected: {Symbol} {Side} {Quantity} — {RejectReason}",
                     LogSanitizer.Sanitize(request.Symbol), request.Side, request.Quantity, LogSanitizer.Sanitize(rejectReason));
@@ -226,7 +255,7 @@ public sealed class PaperTradingGateway :
         // are keyed solely by id, so a duplicate id would collide in the tracking map and
         // become impossible to cancel/modify independently — reject it instead of
         // accepting an order the gateway cannot manage.
-        var resting = new RestingPaperOrder(request with { ClientOrderId = orderId });
+        var resting = new RestingPaperOrder(request with { ClientOrderId = orderId }, gatewayOrderId);
         if (!_restingOrders.TryAdd(orderId, resting))
         {
             return BuildReport(request, orderId, gatewayOrderId, ExecutionReportType.Rejected,
@@ -234,14 +263,22 @@ public sealed class PaperTradingGateway :
                 "An order with this client order id is already resting in the paper gateway.");
         }
 
-        var initialObservation = PaperMarketObservation.Capture(_liveFeed, request.Symbol);
+        var initialObservation = _freshness.Capture(_liveFeed, request.Symbol);
         var initialMatch = PaperOrderMatchingPolicy.Evaluate(
             request.Side, request.Type, request.LimitPrice, request.StopPrice,
             stopAlreadyTriggered: false, initialObservation);
 
+        // The order is already visible to the background evaluator and to CancelOrderAsync,
+        // so every terminal outcome decided here must claim it through TryCompleteResting.
+        // If another path claimed it first, that path owns the terminal report (a fill on
+        // the resting stream or the cancel result); report the order as accepted only.
         if (initialMatch.Outcome is PaperMatchOutcome.Filled)
         {
-            _restingOrders.TryRemove(orderId, out _);
+            if (!TryCompleteResting(orderId, out _))
+            {
+                return BuildAcceptedReport(request, orderId, gatewayOrderId);
+            }
+
             return await BuildFillReportAsync(
                 request, orderId, gatewayOrderId, initialMatch.FillPrice!.Value, initialObservation, ct)
                 .ConfigureAwait(false);
@@ -249,17 +286,30 @@ public sealed class PaperTradingGateway :
 
         if (request.TimeInForce is TimeInForce.ImmediateOrCancel or TimeInForce.FillOrKill)
         {
-            _restingOrders.TryRemove(orderId, out _);
+            if (!TryCompleteResting(orderId, out _))
+            {
+                return BuildAcceptedReport(request, orderId, gatewayOrderId);
+            }
+
             return BuildReport(request, orderId, gatewayOrderId, ExecutionReportType.Cancelled,
                 OrderStatus.Cancelled, filledQuantity: 0m, fillPrice: null, costs: null,
                 $"{request.TimeInForce} order was not immediately fillable against observed market data.");
         }
 
-        resting.StopTriggered = initialMatch.StopTriggered;
+        if (initialMatch.StopTriggered)
+        {
+            lock (resting.SyncRoot)
+            {
+                resting.StopTriggered = true;
+            }
+        }
 
-        return BuildReport(request, orderId, gatewayOrderId, ExecutionReportType.New,
-            OrderStatus.Accepted, filledQuantity: 0m, fillPrice: null, costs: null, rejectReason: null);
+        return BuildAcceptedReport(request, orderId, gatewayOrderId);
     }
+
+    private ExecutionReport BuildAcceptedReport(OrderRequest request, string orderId, string gatewayOrderId) =>
+        BuildReport(request, orderId, gatewayOrderId, ExecutionReportType.New,
+            OrderStatus.Accepted, filledQuantity: 0m, fillPrice: null, costs: null, rejectReason: null);
 
     /// <inheritdoc />
     public Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default)
@@ -295,6 +345,22 @@ public sealed class PaperTradingGateway :
     public Task<ExecutionReport> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(modification);
+
+        // A zero or negative replacement would rest an order that can never be valid (and a
+        // zero-quantity order could "fill" for nothing); refuse it before touching the order.
+        if (modification.NewQuantity is <= 0m || modification.NewLimitPrice is <= 0m || modification.NewStopPrice is <= 0m)
+        {
+            return Task.FromResult(new ExecutionReport
+            {
+                OrderId = orderId,
+                ReportType = ExecutionReportType.Rejected,
+                Symbol = string.Empty,
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Rejected,
+                RejectReason = "Modified quantity and prices must be positive.",
+                Timestamp = DateTimeOffset.UtcNow
+            });
+        }
 
         if (!_restingOrders.TryGetValue(orderId, out var resting))
         {
@@ -404,7 +470,7 @@ public sealed class PaperTradingGateway :
                 stopTriggered = resting.StopTriggered;
             }
 
-            var observation = PaperMarketObservation.Capture(_liveFeed, request.Symbol);
+            var observation = _freshness.Capture(_liveFeed, request.Symbol);
             var match = PaperOrderMatchingPolicy.Evaluate(
                 request.Side, request.Type, request.LimitPrice, request.StopPrice,
                 stopTriggered, observation);
@@ -417,15 +483,10 @@ public sealed class PaperTradingGateway :
                 }
 
                 var report = await BuildFillReportAsync(
-                    request, orderId, gatewayOrderId: orderId, match.FillPrice!.Value, observation,
+                    request, orderId, resting.GatewayOrderId, match.FillPrice!.Value, observation,
                     CancellationToken.None).ConfigureAwait(false);
 
-                if (!_restingReports.Writer.TryWrite(report))
-                {
-                    _logger.LogWarning(
-                        "Paper resting fill for {OrderId} could not be queued because the report channel was unavailable.",
-                        LogSanitizer.Sanitize(orderId));
-                }
+                await EmitRestingReportAsync(report, orderId).ConfigureAwait(false);
             }
             else if (match.StopTriggered)
             {
@@ -434,6 +495,31 @@ public sealed class PaperTradingGateway :
                     resting.StopTriggered = true;
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Queues the fill of a resting order that has already been claimed as complete. The
+    /// report channel is bounded with wait-on-full semantics, so <c>TryWrite</c> fails
+    /// whenever the consumer is behind; dropping the report there would lose the fill for
+    /// good. Wait for capacity instead, giving up only when the gateway is disposed.
+    /// </summary>
+    private async ValueTask EmitRestingReportAsync(ExecutionReport report, string orderId)
+    {
+        if (_restingReports.Writer.TryWrite(report))
+        {
+            return;
+        }
+
+        try
+        {
+            await _restingReports.Writer.WriteAsync(report, _disposeCts.Token).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is OperationCanceledException or System.Threading.Channels.ChannelClosedException)
+        {
+            _logger.LogWarning(
+                "Paper resting fill for {OrderId} was dropped because the gateway was disposed before the report channel had capacity.",
+                LogSanitizer.Sanitize(orderId));
         }
     }
 
@@ -486,7 +572,10 @@ public sealed class PaperTradingGateway :
         var costs = _costModel.Compute(request.Quantity, fillPrice, observation.MidPrice, costMultiplier);
 
         var report = BuildReport(request, orderId, gatewayOrderId, ExecutionReportType.Fill,
-            OrderStatus.Filled, filledQuantity: request.Quantity, fillPrice, costs, rejectReason: null);
+            OrderStatus.Filled, filledQuantity: request.Quantity, fillPrice, costs, rejectReason: null) with
+        {
+            MarketDataEvidence = Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Freeze(observation.MarketDataEvidence)
+        };
         if (lotConvention is { } convention)
         {
             report = report with
@@ -496,16 +585,77 @@ public sealed class PaperTradingGateway :
                 LotMultiplier = convention.Multiplier,
                 UsesFaceValuePercentageOfPar = convention.UnitKind == SecurityLotUnitKind.FaceValue
             };
+            if (convention.UnitKind == SecurityLotUnitKind.FaceValue)
+                report = await StampAccruedInterestAsync(report, convention.SecurityId, fillPrice, ct).ConfigureAwait(false);
         }
         else if (request.OptionContract is not null)
         {
             report = report with { LotUnitKind = SecurityLotUnitKind.Contracts };
         }
 
+        if (_requireBondAccruedInterest
+            && (report.UsesFaceValuePercentageOfPar || UsesFaceValuePercentageOfPar(request))
+            && (report.AccruedInterestPer100 is null || report.SettlementDate is null))
+        {
+            // A terminal rejection goes through the same immediate/resting report path as a
+            // fill. No portfolio, cash or accounting event may observe a clean-only fill in
+            // this explicitly supported mode. Historical reports remain replayable unchanged.
+            return BuildReport(request, orderId, gatewayOrderId, ExecutionReportType.Rejected,
+                OrderStatus.Rejected, filledQuantity: 0m, fillPrice: null, costs: null,
+                "Bond settlement unavailable: required accrued interest could not be verified for the security and settlement date. "
+                + "Review the bond terms and analytics before resubmitting (PaperTrading:Gateway:RequireBondAccruedInterest).");
+        }
+
         _logger.LogInformation(
             "Paper fill: {Symbol} {Side} {Quantity} @ {Price} (commission {Commission}, fees {Fees}, slippage {Slippage})",
             LogSanitizer.Sanitize(request.Symbol), request.Side, request.Quantity, report.FillPrice,
             costs.Commission, costs.Fees, costs.SlippageCost);
+
+        return report;
+    }
+
+    /// <summary>
+    /// Prices the accrued interest a face-value bond fill settles with, through the shared bond
+    /// analytics kernel at the fill's clean price and its contractual settlement date. When no
+    /// analytics service is composed, or the kernel refuses the bond (unsupported coupon
+    /// structure, undeclared schedule, settlement outside its life), the fill keeps its clean
+    /// settlement and the refusal is logged rather than guessed at. The opt-in required-accrual
+    /// mode rejects that unstamped outcome before it can become an economic fill.
+    /// </summary>
+    private async Task<ExecutionReport> StampAccruedInterestAsync(
+        ExecutionReport report, Guid securityId, decimal cleanPricePer100, CancellationToken ct)
+    {
+        if (_bondAnalytics is null || securityId == Guid.Empty)
+            return report;
+
+        var tradeTime = report.Timestamp.ToUniversalTime();
+        var settlement = PaperBondSettlement.SettlementDate(DateOnly.FromDateTime(tradeTime.UtcDateTime));
+        try
+        {
+            var result = await _bondAnalytics.CalculateAsync(
+                new Meridian.Contracts.FixedIncome.BondAnalyticsRequest(
+                    securityId,
+                    new Meridian.Contracts.FixedIncome.BondCalculationContext(tradeTime, settlement),
+                    CleanPrice: cleanPricePer100),
+                ct).ConfigureAwait(false);
+            if (result is { IsBlocked: false, AccruedInterest: { } accruedPer100 } && accruedPer100 >= 0m
+                && (!_requireBondAccruedInterest ||
+                    (result.SecurityId == securityId && result.Context.AsOf == tradeTime
+                     && result.Context.SettlementDate == settlement && result.CleanPrice == cleanPricePer100
+                     && result.DirtyPrice == cleanPricePer100 + accruedPer100)))
+                return report with { AccruedInterestPer100 = accruedPer100, SettlementDate = settlement };
+
+            _logger.LogWarning(
+                "Paper bond settlement {Symbol}: accrued interest unavailable ({Blockers}); required-accrual mode {Required}",
+                LogSanitizer.Sanitize(report.Symbol),
+                result is null ? "SecurityUnknown" : string.Join(",", result.Blockers.Select(static b => b.Code)),
+                _requireBondAccruedInterest);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "Paper bond settlement {Symbol}: accrued interest calculation failed; required-accrual mode {Required}",
+                LogSanitizer.Sanitize(report.Symbol), _requireBondAccruedInterest);
+        }
 
         return report;
     }
@@ -562,7 +712,11 @@ public sealed class PaperTradingGateway :
             return;
         }
 
+        // Release an evaluation parked on a full report channel so disposal cannot hang when
+        // no consumer is draining.
+        await _disposeCts.CancelAsync().ConfigureAwait(false);
         await _evaluationPump.DisposeAsync().ConfigureAwait(false);
         _restingReports.Writer.TryComplete();
+        _disposeCts.Dispose();
     }
 }
