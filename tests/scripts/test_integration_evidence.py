@@ -277,7 +277,8 @@ class IntegrationEvidenceGateTests(unittest.TestCase):
     def test_job_gate_requires_exactly_one_successful_complete_evidence_path(self):
         workflow = yaml.load((ROOT / MODULE.WORKFLOW).read_text(), Loader=yaml.BaseLoader)
         gate = workflow["jobs"]["evidence-gate"]
-        self.assertEqual(gate["if"], "always()")
+        # Always runs, except for a fresh call whose caller verifies the evidence itself.
+        self.assertTrue(gate["if"].startswith("always() && (!inputs.caller-verifies-evidence"))
         self.assertEqual(gate["needs"], ["deterministic-integrations", "reuse-integrations"])
         script = gate["steps"][0]["run"]
         outputs = {"artifact-id": "12", "artifact-name": "evidence-12-1", "receipt-sha256": "a" * 64}

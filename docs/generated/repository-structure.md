@@ -133,6 +133,8 @@ Meridian-main
 │   │   ├── meridian-roadmap-strategist.md
 │   │   ├── meridian-simulated-user-panel.md
 │   │   └── meridian-test-writer.md
+│   ├── hooks
+│   │   └── format-csharp.sh
 │   ├── skills
 │   │   ├── _shared
 │   │   │   └── project-context.md
@@ -16459,6 +16461,7 @@ Meridian-main
 │   │   ├── test_generated_repair.py
 │   │   ├── test_generated_repair_outcomes.py
 │   │   ├── test_generated_repair_sandbox.py
+│   │   ├── test_generated_repair_triggers.py
 │   │   ├── test_git_hooks.py
 │   │   ├── test_golden_path_validation_workflow.py
 │   │   ├── test_ibapi_smoke_workflow.py
