@@ -1253,6 +1253,7 @@ Meridian-main
 │       ├── resolve-generated-merge-conflicts.py
 │       ├── run-maintained-generation.py
 │       ├── schema-control.py
+│       ├── ui-shared-inventory.py
 │       ├── validate-tooling-metadata.py
 │       └── validate_budget.py
 ├── config
@@ -1771,6 +1772,7 @@ Meridian-main
 │   │   │   ├── review-remediation-2026-11-12.md
 │   │   │   ├── security-master-integrity-implementation-plan.md
 │   │   │   ├── security-master-review-remediation-plan.md
+│   │   │   ├── ui-shared-decomposition-inventory.md
 │   │   │   ├── ui-shared-decomposition-plan.md
 │   │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
 │   │   │   ├── web-workstation-ux-review-plan-2026-11.md
@@ -9750,8 +9752,6 @@ Meridian-main
 │   │   │   │   │   ├── use-report-run-stream.ts
 │   │   │   │   │   ├── use-request-lifecycle.test.ts
 │   │   │   │   │   ├── use-request-lifecycle.ts
-│   │   │   │   │   ├── use-signed-in-username.test.ts
-│   │   │   │   │   ├── use-signed-in-username.ts
 │   │   │   │   │   ├── use-visible-interval.test.tsx
 │   │   │   │   │   ├── use-visible-interval.ts
 │   │   │   │   │   ├── use-workstation-data.test.ts
@@ -9779,8 +9779,6 @@ Meridian-main
 │   │   │   │   │   │   ├── asset-market-valuation.api.test.ts
 │   │   │   │   │   │   ├── asset-market-valuation.api.ts
 │   │   │   │   │   │   ├── audit-integrity.api.ts
-│   │   │   │   │   │   ├── auth.api.test.ts
-│   │   │   │   │   │   ├── auth.api.ts
 │   │   │   │   │   │   ├── banking-payments.api.test.ts
 │   │   │   │   │   │   ├── banking-payments.api.ts
 │   │   │   │   │   │   ├── bond-analytics.api.test.ts
@@ -13658,6 +13656,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterContractAdapterTests.cs
 │   │   │   ├── SecurityMasterContractOwnershipTests.cs
 │   │   │   ├── SecurityMasterSchemaBoundDecodeRatchetTests.cs
+│   │   │   ├── UiSharedServiceGrowthRatchetTests.cs
 │   │   │   ├── VendorNeutralDomainTests.cs
 │   │   │   └── VersionedContainerKeyLiteralRatchetTests.cs
 │   │   ├── AssetOperations
