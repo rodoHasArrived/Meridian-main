@@ -18,21 +18,6 @@ public sealed class ReplayCapabilityEndpointsTests : IDisposable
     private readonly string _root = Path.Combine(Path.GetTempPath(), $"replay-capabilities-{Guid.NewGuid():N}");
 
     [Theory]
-    [InlineData(UiApiRoutes.AlignmentCreate)]
-    [InlineData(UiApiRoutes.AlignmentPreview)]
-    public async Task Alignment_ReturnsUnavailableWithoutInventingJobOrEstimate(string route)
-    {
-        await using var app = await CreateAppAsync();
-        using var response = await app.GetTestClient().PostAsJsonAsync(route, new { symbols = new[] { "AAPL" } });
-
-        response.StatusCode.Should().Be(HttpStatusCode.NotImplemented);
-        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        body.RootElement.GetProperty("detail").GetString().Should().Contain("No job was created");
-        body.RootElement.TryGetProperty("jobId", out _).Should().BeFalse();
-        body.RootElement.TryGetProperty("estimatedOutputRows", out _).Should().BeFalse();
-    }
-
-    [Theory]
     [InlineData("pause")]
     [InlineData("resume")]
     [InlineData("seek")]
@@ -146,7 +131,6 @@ public sealed class ReplayCapabilityEndpointsTests : IDisposable
         });
         var json = new JsonSerializerOptions(JsonSerializerDefaults.Web);
         app.MapReplayEndpoints(json);
-        app.MapAlignmentEndpoints(json);
         await app.StartAsync();
         return app;
     }

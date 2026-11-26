@@ -273,7 +273,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         IBusinessDayCalendarSource? calendars,
         IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves = null,
         StructuredCashFlowTerms? resolvedTerms = null, bool unifiedEconomics = true, bool rejectNegativeInterest = true,
-        bool factorAwareEconomics = true)
+        bool factorAwareEconomics = true, bool reviewedAccrualProfiles = true)
     {
         var terms = resolvedTerms ?? StructuredCashFlowTermsResolver.Resolve(security);
         if (!unifiedEconomics && terms.Legs is not null)
@@ -292,6 +292,24 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
 
         if (!SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).SupportsCashflowScheduleByDefault)
             return Empty($"Calculated cash flows are unsupported for {security.AssetClass}; provide an authoritative schedule.");
+
+        var accrualPolicy = SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).RecurringAccrualPolicy;
+        var reviewedBullet = reviewedAccrualProfiles && SecurityRecurringAccrualPolicies.IsProfileDeclared(security, accrualPolicy);
+        if (reviewedBullet)
+        {
+            // Preserve the scalar unit/range reader's refusal and never infer a different unit.
+            // Once the expanded profile is declared, incomplete or supplemental terms cannot
+            // quietly fall back to the older normalized analytical walk.
+            if (terms.CouponRate is { } rawCoupon)
+            {
+                var field = SecurityRateFieldUnits.CouponFieldKey(security.AssetClass);
+                var normalized = RateUnitNormalizer.Normalize(security.AssetClass, field, rawCoupon, terms.RecordRateUnit);
+                if (!normalized.TryGetFraction(out _))
+                    return Empty(RateUnitNormalizer.DescribeRefusal(normalized, security.AssetClass, field));
+            }
+            if (SecurityRecurringAccrualPolicies.EvaluateTerms(security, accrualPolicy) is { } profileBlocker)
+                return Empty(profileBlocker.Reason) with { Blocker = profileBlocker };
+        }
 
         if (terms.MaturityDate is not DateOnly maturity)
         {
@@ -384,7 +402,9 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         }
 
         var periodMonths = Math.Max(1, 12 / SecurityTermConventions.LegacyCouponPaymentsPerYear(terms.PaymentFrequency));
-        var periods = BuildPaymentPeriods(issueDate, maturity, periodMonths)
+        var periods = (reviewedBullet
+                ? new[] { (AccrualStart: issueDate, PaymentDate: maturity) }
+                : BuildPaymentPeriods(issueDate, maturity, periodMonths))
             .Where(period => period.PaymentDate >= asOfDate)
             .ToArray();
         if (periods.Length == 0)
@@ -392,7 +412,8 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
             return Empty();
         }
 
-        if (factorAwareEconomics && SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).AssetClass is "Bond" or "StructuredCredit")
+        if (factorAwareEconomics && (accrualPolicy == SecurityRecurringAccrualPolicies.ExistingFixedIncome
+            || reviewedBullet))
         {
             return BuildFactorAwareFixedProjection(security, sourceKind, scenario, staleness,
                 sourceLastUpdatedUtc, asOf, asOfDate, terms, periods, principalBasis,

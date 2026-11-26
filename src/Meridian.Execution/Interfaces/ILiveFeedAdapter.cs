@@ -62,4 +62,9 @@ public interface ILiveFeedAdapter
 public readonly record struct MarketDataSnapshot(
     BboQuotePayload? Quote,
     Trade? Trade,
-    HistoricalBar? Bar);
+    HistoricalBar? Bar)
+{
+    public IReadOnlyList<Meridian.Contracts.Operations.MarketDataInputEvidence>? QuoteEvidence { get; init; }
+    public IReadOnlyList<Meridian.Contracts.Operations.MarketDataInputEvidence>? TradeEvidence { get; init; }
+    public IReadOnlyList<Meridian.Contracts.Operations.MarketDataInputEvidence>? BarEvidence { get; init; }
+}

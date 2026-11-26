@@ -37,13 +37,16 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             return null;
         }
 
-        var positions = CollectPositions(detail);
-        if (positions.Count == 0)
+        var positions = CollectPositions(detail, out var sourceIssues);
+        if (positions.Count == 0 && sourceIssues.Count == 0)
         {
             return null;
         }
 
         var (periodStart, periodEnd) = ResolvePeriod(detail);
+        if (positions.Count == 0)
+            return new(request.RunId, periodStart, periodEnd, [], [], AmountTolerance: request.AmountTolerance)
+            { SourceCoverageIssues = sourceIssues };
         var definitions = new Dictionary<Guid, SecurityEconomicDefinitionRecord>();
         foreach (var securityId in positions.Select(static position => position.SecurityId!.Value).Distinct())
         {
@@ -76,7 +79,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         var resolvedPositions = positions
             .Where(static position => position.SecurityId is not null)
             .GroupBy(
-                static position => $"{position.SecurityId!.Value:N}|{position.AccountId}|{position.Symbol}|{position.PositionId:N}",
+                static position => $"{position.SecurityId!.Value:N}|{position.AccountId}|{position.Symbol}|{position.PositionId:N}|{position.IsShort}|{position.SourceQuantityUnit}|{position.SourceQuantityMultiplier}|{position.SourceQuantityCurrency}",
                 StringComparer.OrdinalIgnoreCase)
             .Select(static group =>
             {
@@ -92,10 +95,10 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                     // The durable position's original face is identity-scoped (every row in the
                     // group shares the position id), so it carries through unsummed.
                     OriginalFaceAmount = first.OriginalFaceAmount,
-                    // ParAmount sums absolute magnitudes, so a group mixing long and short rows
-                    // would otherwise read as one large long exposure — any short row fails the
-                    // whole group closed.
-                    IsShort = group.Any(static position => position.IsShort)
+                    SourceQuantityUnit = first.SourceQuantityUnit,
+                    SourceQuantityMultiplier = first.SourceQuantityMultiplier,
+                    SourceQuantityCurrency = first.SourceQuantityCurrency,
+                    IsShort = first.IsShort
                 };
             })
             .Where(static position => position.ParAmount != 0m)
@@ -122,7 +125,8 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             resolvedPositions,
             FactorSchedule: factorSchedule.Count > 0 ? factorSchedule : null,
             ActualActivity: actualActivity,
-            AmountTolerance: request.AmountTolerance);
+            AmountTolerance: request.AmountTolerance)
+        { SourceCoverageIssues = sourceIssues };
     }
 
     private async Task<List<SecurityMasterAccountingPosition>> ResolveDurablePositionsAsync(
@@ -248,61 +252,65 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         }).ToList();
     }
 
-    private static List<SecurityMasterAccountingPosition> CollectPositions(StrategyRunDetail detail)
+    private static List<SecurityMasterAccountingPosition> CollectPositions(StrategyRunDetail detail,
+        out IReadOnlyList<SecurityMasterAccountingIssueDto> sourceIssues)
     {
         var positions = new List<SecurityMasterAccountingPosition>();
-        if (detail.Portfolio is not null)
+        var issues = new List<SecurityMasterAccountingIssueDto>();
+        sourceIssues = issues;
+        var native = detail.Portfolio is { } portfolio &&
+            (portfolio.HasRetainedAccountingPositionPopulation || portfolio.AccountingPositions.Count > 0)
+                ? portfolio.AccountingPositions : detail.Ledger?.AccountingPositions;
+        if (native is not null && (native.Count > 0 || detail.Portfolio?.HasRetainedAccountingPositionPopulation == true))
         {
-            foreach (var position in detail.Portfolio.Positions)
+            foreach (var position in native)
             {
-                if (position.Security is null || string.IsNullOrWhiteSpace(position.Symbol) || position.Quantity == 0)
-                {
+                if (position.Quantity == 0m && position.MonetaryBasis == 0m && position.CoverageFailure is null)
                     continue;
-                }
-
-                positions.Add(new SecurityMasterAccountingPosition(
-                    position.Symbol.Trim().ToUpperInvariant(),
-                    position.Security.SecurityId,
-                    ResolveAccountId(position.AccountScopeId, detail.Portfolio.AccountScopeId),
-                    Math.Abs((decimal)position.Quantity))
-                {
-                    // ParAmount is an absolute magnitude, so the direction must travel separately:
-                    // dropping it would present a short as a long holding and generate long-side
-                    // income and receivable events for a liability.
-                    IsShort = position.IsShort || position.Quantity < 0
-                });
+                if (position.CoverageFailure is null && position.SecurityId is not null && position.SecurityId != Guid.Empty
+                    && position.Quantity.HasValue && position.Quantity != 0m
+                    && !string.IsNullOrWhiteSpace(position.Symbol) && !string.IsNullOrWhiteSpace(position.FinancialAccountId)
+                    && Enum.TryParse<SecurityLotUnitKind>(position.QuantityUnit, out var unit) && Enum.IsDefined(unit)
+                    && position.Multiplier is > 0m && position.Currency is not null)
+                    positions.Add(new(position.Symbol.Trim().ToUpperInvariant(), position.SecurityId,
+                        position.FinancialAccountId, Math.Abs(position.Quantity.Value))
+                    {
+                        IsShort = position.IsShort || position.Quantity.Value < 0m,
+                        SourceQuantityUnit = unit,
+                        SourceQuantityMultiplier = position.Multiplier,
+                        SourceQuantityCurrency = position.Currency
+                    });
+                else
+                    AddIssue(position.Symbol, position.FinancialAccountId,
+                        position.CoverageFailure ?? "Retained native quantity, unit, multiplier, currency or security identity is incomplete.");
             }
-        }
-
-        if (positions.Count > 0)
-        {
+            var conflicting = positions.GroupBy(static position =>
+                    $"{position.SecurityId:N}|{position.AccountId}|{position.Symbol}|{position.IsShort}", StringComparer.OrdinalIgnoreCase)
+                .Where(static group => group.Select(static position => (position.SourceQuantityUnit,
+                    position.SourceQuantityMultiplier, Currency: position.SourceQuantityCurrency?.ToUpperInvariant())).Distinct().Count() > 1)
+                .ToArray();
+            foreach (var group in conflicting)
+            {
+                var first = group.First();
+                AddIssue(first.Symbol, first.AccountId, "Retained native conventions disagree for the same position; no aggregate quantity was calculated.");
+                foreach (var position in group)
+                    positions.Remove(position);
+            }
             return positions;
         }
-
-        if (detail.Ledger is null)
-        {
-            return positions;
-        }
-
-        foreach (var line in detail.Ledger.TrialBalance)
-        {
-            if (line.Security is null || string.IsNullOrWhiteSpace(line.Symbol) || line.Balance == 0m)
-            {
-                continue;
-            }
-
-            positions.Add(new SecurityMasterAccountingPosition(
-                line.Symbol.Trim().ToUpperInvariant(),
-                line.Security.SecurityId,
-                ResolveAccountId(line.AccountScopeId ?? line.FinancialAccountId, detail.Ledger.AccountScopeId),
-                Math.Abs(line.Balance),
-                PositionId: line.Dimensions?.PositionId)
-            {
-                IsShort = line.Balance < 0m
-            });
-        }
-
+        if (detail.Portfolio is not null)
+            foreach (var position in detail.Portfolio.Positions.Where(static position => position.Quantity != 0))
+                AddIssue(position.Symbol, position.AccountScopeId ?? detail.Portfolio.AccountScopeId,
+                    "Legacy portfolio display quantity has no retained native-unit and security-identity evidence.");
+        if (detail.Ledger is not null)
+            foreach (var line in detail.Ledger.TrialBalance.Where(static line => line.Symbol is not null && line.Balance != 0m))
+                AddIssue(line.Symbol!, line.FinancialAccountId ?? line.AccountScopeId ?? detail.Ledger.AccountScopeId,
+                    "A monetary trial-balance amount cannot establish native units, par or position direction.");
         return positions;
+
+        void AddIssue(string symbol, string? accountId, string reason) => issues.Add(new(
+            "SM_RECON_POSITION_QUANTITY_UNAVAILABLE", "reconciliation-position-coverage", symbol, accountId,
+            $"Expected corporate-action and income-event coverage is unavailable: {reason}", ReconciliationBreakSeverity.High));
     }
 
     private static SecurityMasterAccountingSecurity ToAccountingSecurity(SecurityEconomicDefinitionRecord definition)

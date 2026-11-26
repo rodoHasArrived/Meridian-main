@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
 
@@ -279,15 +280,6 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
 
     // ── Readable before writable (ADR-024) ─────────────────────────────────────────────────────
 
-    // The reason every write surface gives for a term this node reads but does not yet write
-    // (SecurityTermsEnvelope.DescribeNotYetWritable), spelled out so a reworded refusal fails here.
-    private static string NotYetWritable(string assetClass, string path, int since, int writes)
-        => assetClass == "Swap"
-            ? $"'{path}' is readable but authoring is not enabled on this node; a rate-unit declaration does not activate calculation-only terms."
-            : $"'{path}' is an asset-class terms version {since} term of '{assetClass}'. This node reads it but writes " +
-           $"assetClassTermsVersion {writes}, so a create, amend, import or field edit cannot set it yet. " +
-           "Leave it absent, null or empty (ADR-024).";
-
     [Theory]
     [InlineData("Bond", 2, 1, null)]
     [InlineData("Bond", 2, 1, "{}")]
@@ -344,13 +336,16 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     [InlineData("assetSpecificTerms.swapLegs",
         """[{"legId":"fixed","legType":"Fixed","scheduleConventions":{"direction":"Backward"}}]""",
         "legs[0].scheduleConventions")]
-    public void WholeSwapLegsReplacement_CarryingALegBlock_IsRefused(string fieldPath, string value, string blockPath)
+    public void WholeSwapLegsReplacement_WithDeclaredBlocks_ValidatesShapeAndCanonicalizesTheArrayPath(string fieldPath, string value, string blockPath)
     {
-        // legs itself is writable; the block inside one of its elements is a version 2 term. false is
-        // populated, so {accrualAdjusted:false} is refused like any other value.
-        SecurityAssetTermsFieldEditValidator.TryValidate("Swap", fieldPath, value, out _, out var error)
-            .Should().BeFalse();
-        error.Should().Be(NotYetWritable("Swap", blockPath, 2, 1));
+        // This local check permits a schema-shaped array, including explicit false. The merged
+        // canonical command still requires the complete supported profile, pinned by the workbench
+        // and SecurityVanillaSwapProfileTests authoring tests.
+        SecurityAssetTermsFieldEditValidator.TryValidate("Swap", fieldPath, value, out var canonicalPath, out var error)
+            .Should().BeTrue(error);
+        canonicalPath.Should().Be("assetSpecificTerms.legs");
+        blockPath.Should().StartWith("legs[");
+        error.Should().BeNull();
     }
 
     [Theory]
@@ -371,11 +366,17 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     [InlineData("assetSpecificTerms.legs.1.scheduleConventions.businessDayConvention", "ModifiedFollowing", "legs.1.scheduleConventions.businessDayConvention")]
     [InlineData("assetSpecificTerms.legs.scheduleConventions", "{}", "legs.scheduleConventions")]
     [InlineData("assetSpecificTerms.swapLegs.0.ScheduleConventions", null, "legs.0.ScheduleConventions")]
-    public void NestedSwapLegScheduleConventions_IsRefused(string fieldPath, string? value, string blockPath)
+    public void NestedSwapLegScheduleConventions_RequireWholeReplacement_WhileClearsRemoveOverlays(string fieldPath, string? value, string blockPath)
     {
-        SecurityAssetTermsFieldEditValidator.TryValidate("Swap", fieldPath, value, out _, out var error)
-            .Should().BeFalse();
-        error.Should().Be(NotYetWritable("Swap", blockPath, 2, 1));
+        var accepted = SecurityAssetTermsFieldEditValidator.TryValidate("Swap", fieldPath, value, out var canonicalPath, out var error);
+        accepted.Should().Be(string.IsNullOrWhiteSpace(value));
+        if (accepted)
+        {
+            canonicalPath.Should().Be($"assetSpecificTerms.{blockPath}");
+            error.Should().BeNull();
+        }
+        else
+            error.Should().Be("Declared schedule containers carry window, convention and scalar consistency rules; replace the whole container instead of editing a member.");
     }
 
     [Theory]
@@ -384,8 +385,8 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     [InlineData("assetSpecificTerms.legs.1", """{"legId":"float","legType":"Floating","scheduleConventions":{}}""")]
     public void NestedSwapLegEdit_WithoutAPopulatedLegBlock_IsStillAccepted(string fieldPath, string? value)
     {
-        // Only the readable-only element field is refused; the leg's other nested paths keep their
-        // dynamic pass-through.
+        // Clears and leg replacements keep their dynamic pass-through. The merged command checks
+        // complete leg declarations and cross-leg economics before any canonical write.
         SecurityAssetTermsFieldEditValidator.TryValidate("Swap", fieldPath, value, out var canonicalPath, out var error)
             .Should().BeTrue(error);
         canonicalPath.Should().Be(fieldPath);
@@ -401,14 +402,41 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     [InlineData("assetSpecificTerms.legs.0",
         """{"legId":"fixed","legType":"Fixed","scheduleConventions":{"accrualAdjusted":false}}""",
         "legs.0.scheduleConventions")]
-    public void NestedSwapLegElementReplacement_CarryingAPopulatedLegBlock_IsRefused(
+    public void NestedSwapLegElementReplacement_WithDeclaredBlocks_PreservesTheCanonicalLegPath(
         string fieldPath, string value, string blockPath)
     {
-        // Replacing one leg sets the leg's scheduleConventions as surely as legs.0.scheduleConventions
-        // does, so it is refused like that path and like a whole-legs value carrying the same block.
-        SecurityAssetTermsFieldEditValidator.TryValidate("Swap", fieldPath, value, out _, out var error)
-            .Should().BeFalse("a leg element carrying a populated block sets a term this node only reads");
-        error.Should().Be(NotYetWritable("Swap", blockPath, 2, 1));
+        SecurityAssetTermsFieldEditValidator.TryValidate("Swap", fieldPath, value, out var canonicalPath, out var error)
+            .Should().BeTrue(error);
+        canonicalPath.Should().Be($"assetSpecificTerms.{blockPath[..blockPath.LastIndexOf('.')]}");
+        error.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("""[{"scheduleConventions":{"unsupportedRule":true}}]""", "*Unknown or case-variant member 'unsupportedRule'*")]
+    [InlineData("""[{"scheduleConventions":{"PaymentLagBusinessDays":0}}]""", "*Unknown or case-variant member 'PaymentLagBusinessDays'*")]
+    [InlineData("""[{"scheduleConventions":{"paymentLagBusinessDays":"many"}}]""", "*paymentLagBusinessDays*declared type or vocabulary*")]
+    [InlineData("""[{"scheduleConventions":12}]""", "*scheduleConventions*declared type or vocabulary*")]
+    public void WholeSwapLegsReplacement_RejectsInvalidConventionMemberNamesAndTypes(string value, string reason)
+    {
+        SecurityAssetTermsFieldEditValidator.TryValidate("Swap", "assetSpecificTerms.legs", value, out _, out var error)
+            .Should().BeFalse();
+        error.Should().Match(reason);
+    }
+
+    [Fact]
+    public void LocallyAcceptedCaseVariantLegContainer_CannotPassCanonicalProfileAdmission()
+    {
+        var terms = JsonNode.Parse(Workbench.AheadOfWriteFixtures.SwapAtWriteVersion)!;
+        terms[SecurityTermsEnvelope.AssetClassTermsVersionKey] = 2;
+        var legs = terms["legs"]!.AsArray();
+        legs[0]!["ScheduleConventions"] = JsonNode.Parse("""{"couponRateUnit":"Percent"}""");
+        legs[1]!["scheduleConventions"] = JsonNode.Parse("""{"couponRateUnit":"Fraction"}""");
+        SecurityAssetTermsFieldEditValidator.TryValidate("Swap", "assetSpecificTerms.legs", legs.ToJsonString(), out _, out var error)
+            .Should().BeTrue(error);
+
+        var admit = () => ScheduleTermsWriteRules.Validate("Swap", JsonSerializer.SerializeToElement(terms));
+        admit.Should().Throw<InvalidOperationException>()
+            .WithMessage("Invalid declared schedule terms: Unknown, case-variant or repeated member 'legs.ScheduleConventions'.");
     }
 
     [Theory]

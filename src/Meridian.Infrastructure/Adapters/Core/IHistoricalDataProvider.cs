@@ -168,6 +168,22 @@ public interface IHistoricalDataProvider : IProviderMetadata, IDisposable
         CancellationToken ct = default);
 
     /// <summary>
+    /// Returns the latest explicitly raw close within the requested inclusive session window.
+    /// The default is unavailable: generic OHLCV or adjusted research bars cannot establish a raw
+    /// accounting price. Implementations retain actual provider/feed and original-record evidence
+    /// without changing their configured research adjustment behavior.
+    /// </summary>
+    Task<AccountingClosePrice?> GetRawAccountingCloseAsync(
+        string symbol,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult<AccountingClosePrice?>(null);
+    }
+
+    /// <summary>
     /// Get extended bar data with adjustment information when supported.
     /// Default implementation converts standard bars to adjusted bars without adjustment data.
     /// </summary>
@@ -179,7 +195,8 @@ public interface IHistoricalDataProvider : IProviderMetadata, IDisposable
     {
         var bars = await GetDailyBarsAsync(symbol, from, to, ct).ConfigureAwait(false);
         return bars.Select(b => new AdjustedHistoricalBar(
-            b.Symbol, b.SessionDate, b.Open, b.High, b.Low, b.Close, b.Volume, b.Source, b.SequenceNumber
+            b.Symbol, b.SessionDate, b.Open, b.High, b.Low, b.Close, b.Volume, b.Source, b.SequenceNumber,
+            PriceBasis: b.PriceBasis
         )).ToList();
     }
 

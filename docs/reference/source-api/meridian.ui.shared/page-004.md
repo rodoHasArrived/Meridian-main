@@ -622,7 +622,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.HistoricalEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L14).
+Source: [src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L17).
 
 Extension methods for registering historical data query API endpoints. Shared between web dashboard and desktop application hosts.
 
@@ -634,8 +634,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapHistoricalEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L19) | Maps all historical data query API endpoints. |
-| <code>public static void MapAlignmentEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:172](../../../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L172) | Maps the /api/alignment endpoints for time series alignment operations. |
+| <code>public static void MapHistoricalEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L22) | Maps all historical data query API endpoints. |
+| <code>public static void MapAlignmentEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:175](../../../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L175) | Maps the /api/alignment endpoints for time series alignment operations. |
 
 ## HttpContextWorkstationTenantContextAccessor
 
@@ -795,6 +795,24 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapIntercompanyAgreementEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs#L21) |  |
+
+## IntercompanyAgreementWorkQueueEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.IntercompanyAgreementWorkQueueEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementWorkQueueEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementWorkQueueEndpoints.cs#L15).
+
+Scoped operator casework. These commands grant no legal, close or posting authority.
+
+```csharp
+public static class IntercompanyAgreementWorkQueueEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapIntercompanyAgreementWorkQueueEndpoints(this WebApplication app, JsonSerializerOptions options);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementWorkQueueEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementWorkQueueEndpoints.cs#L17) |  |
 
 ## IntercompanyBalanceConfirmationEndpoints
 
@@ -1069,7 +1087,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapEntityControlEndpoints(this WebApplication app, JsonSerializerOptions options);</code> | [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.EntityControls.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.EntityControls.cs#L17) |  |
 
-Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Export.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Export.cs#L14).
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Export.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Export.cs#L16).
 
 ```csharp
 public static partial class LedgerEndpoints
@@ -1221,21 +1239,3 @@ Declared public members:
 | <code>public const string CurrentUserPermissionsKey = &quot;CurrentUserPermissions&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:93](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L93) | Key for the authenticated user&#x27;s Meridian.Identity.Auth.UserPermission flags stored in Microsoft.AspNetCore.Http.HttpContext.Items. |
 | <code>public LoginSessionMiddleware(RequestDelegate next, AuthenticationConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:98](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L98) |  |
 | <code>public async Task InvokeAsync(HttpContext context, LoginSessionService sessionService);</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:104](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L104) |  |
-
-## LoginSessionMiddlewareExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.LoginSessionMiddlewareExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:420](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L420).
-
-Extension methods for registering the login session middleware.
-
-```csharp
-public static class LoginSessionMiddlewareExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IApplicationBuilder UseLoginSessionAuthentication(this IApplicationBuilder app) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:426](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L426) | Adds session-based authentication middleware. Authentication is optional in Development/Test and required elsewhere by default. |

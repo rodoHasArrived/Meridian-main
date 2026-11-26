@@ -6,7 +6,7 @@ module_id: SRC-FSHARP
 path: src/Meridian.FSharp
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.FSharp
@@ -171,6 +171,16 @@ See the [Security Master extensibility review](../../docs/architecture/security-
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
+
+## Bounded CD terms compatibility (2026-11-25)
+
+The SecurityKind union cases remain unchanged. CD version 6 carries optional issue date, principal and
+payment frequency through the existing economic modules, generated flat writer and legacy upgrade
+path; `CertificateOfDepositTerms` gains a `Notional` module for the principal. Their introduction
+stamps prevent older residue from activating in an unrelated amendment.
+Existing event/module replay and absent-field serialization remain compatibility authorities; the
+new recurring calculation profile belongs to the shared C# policy/kernel consumers. See
+[CD accrual boundary](../../docs/domain/recurring-journal.md#declared-certificateofdeposit-accrual-profile).
 
 ## Roadmap traceability
 

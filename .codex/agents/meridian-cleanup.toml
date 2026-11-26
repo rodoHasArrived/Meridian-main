@@ -193,8 +193,6 @@ Clean up XAML code-behind files without performing a full MVVM extraction\r
   WinRT APIs) — UWP was fully removed; update any remaining mentions to WPF\r
 - File paths that no longer exist in the repository (verify with a file search\r
   before removing)\r
-- Changelog entries older than 12 months in `docs/archived/` that describe\r
-  changes already reflected in current code\r
 - Duplicate "## Overview" or "## Introduction" sections when the same content\r
   appears in a parent document with a cross-reference\r
 \r
@@ -257,7 +255,7 @@ public sealed class MyProviderClient : IMarketDataClient { ... }\r
 - Abstract base classes (`BaseHistoricalDataProvider`, etc.) — attributes belong\r
   on concrete implementations only\r
 - Test doubles, fakes, and mocks in `tests/`\r
-- The template scaffolding in `Adapters/_Template/`\r
+- The template scaffolding in `docs/examples/provider-template/`\r
 \r
 ---\r
 \r

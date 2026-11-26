@@ -268,7 +268,11 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
             }
 
             var fillQueueCapacity = Math.Max(1, _options.FillReportQueueCapacity);
-            var context = new LiveStrategyExecutionContext(_orderGateway, _feedAdapter, _portfolioState, universe);
+            var runPortfolioState = paperOrders is null ? _portfolioState
+                : new DesignerPaperPortfolioState(paperOrders, _feedAdapter);
+            var context = new LiveStrategyExecutionContext(_orderGateway, _feedAdapter, runPortfolioState, universe,
+                accountingFinancialAccountId: run.RunType == RunType.Paper ? run.FundAccountId?.ToString("D") : null,
+                accountingStrategyRunId: run.RunType == RunType.Paper ? run.RunId : null);
             var restorePaused = run.TerminalStatus == Meridian.Contracts.Workstation.StrategyRunStatus.Paused;
             if (restorePaused)
             {
@@ -344,7 +348,7 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                 });
 
                 if (_portfolioRegistry is not null &&
-                    _portfolioState is Meridian.Execution.Models.IMultiAccountPortfolioState runPortfolio)
+                    runPortfolioState is Meridian.Execution.Models.IMultiAccountPortfolioState runPortfolio)
                 {
                     _portfolioRegistry.Register(run.RunId, runPortfolio);
                 }

@@ -1246,6 +1246,7 @@ erDiagram
         text[] notes
         timestamp_with_time_zone created_at
         uuid projected_cash_flow_id
+        jsonb evidence_json
     }
     security_master_reconciliation_run {
         uuid reconciliation_run_id PK
@@ -1254,6 +1255,7 @@ erDiagram
         timestamp_with_time_zone requested_at
         timestamp_with_time_zone completed_at
         text status
+        jsonb evidence_json
     }
     security_master_repo_projection {
         uuid security_id PK
@@ -2038,8 +2040,8 @@ erDiagram
 | `read_model_checkpoint` | table | 6 | `projection_name` | 0 | 1 | - |
 | `real_estate_holding_projection` | table | 12 | `security_id` | 0 | 2 | Relational projection of RealEstateHolding terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `reconciliation_exception` | table | 9 | `exception_id` | 1 | 2 | - |
-| `reconciliation_result` | table | 16 | `reconciliation_result_id` | 4 | 2 | - |
-| `reconciliation_run` | table | 6 | `reconciliation_run_id` | 2 | 1 | - |
+| `reconciliation_result` | table | 17 | `reconciliation_result_id` | 4 | 2 | - |
+| `reconciliation_run` | table | 7 | `reconciliation_run_id` | 2 | 1 | - |
 | `repo_projection` | table | 11 | `security_id` | 0 | 3 | Relational projection of Repo asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `schema_migrations` | table | 4 | `filename` | 0 | 1 | - |
 | `securities` | table | 23 | `security_id` | 0 | 6 | - |

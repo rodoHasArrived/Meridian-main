@@ -6,6 +6,63 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionProposal
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionProposal</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:27](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L27).
+
+One normalized corporate-action announcement with its cross-provider consensus evidence.
+
+```csharp
+public sealed record CorporateActionProposal(Guid SecurityId, string Ticker, string ActionType, DateOnly ExDate, DateOnly? RecordDate, DateOnly? PayableDate, decimal? Amount, string? Currency, decimal? SplitFromFactor, decimal? SplitToFactor, string WinningSource, IReadOnlyList<string> AgreeingSources, IReadOnlyList<string> DissentingSources, bool AutoApplied, Guid? ProposalId = null, long? Version = null, string? ProposalState = null, CorporateActionSourceProposalActionAvailabilityDto? ActionAvailability = null, string? ObservationSource = null, string? ObservationDescription = null, string? SourceEventId = null, string? SourceEventVersion = null, DateTimeOffset? ObservationObservedAtUtc = null, string? EvidenceHash = null, string? EvidenceReference = null, IReadOnlyList<CorporateActionDissentFieldDto>? DissentingFields = null, CorporateActionProviderReleaseStatusDto ProviderReleaseStatus = CorporateActionProviderReleaseStatusDto.ReviewOnly)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JsonElement? Payload { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:56](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L56) |  |
+| <code>public decimal? DistributionRatio { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:58](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L58) |  |
+| <code>public decimal? ExchangeRatio { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:60](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L60) |  |
+| <code>public CorporateActionRetainedSourceEvidenceDto? SourceEvidence { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:62](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L62) |  |
+
+## CorporateActionProposalMapper
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionProposalMapper</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:15](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L15).
+
+Maps an ingest proposal onto the corporate-action event contract, mirroring the orchestrator&#x27;s auto-apply mapping so operator applies land identically.
+
+```csharp
+public static class CorporateActionProposalMapper
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static CorporateActionDto ToCorporateAction(CorporateActionProposal proposal);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:17](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L17) |  |
+
+## CorporateActionProviderFetchOutcome
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionProviderFetchOutcome</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:78](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L78).
+
+Per-provider, per-security coverage, independent of proposal acceptance authority.
+
+```csharp
+public sealed record CorporateActionProviderFetchOutcome(string ProviderId, string Ticker, CorporateActionFetchStatus Status, int ActionsFetched, IReadOnlyList<CorporateActionFetchFailure> Failures)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionFetchCoverage? Coverage { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:85](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L85) |  |
+
 ## CorporateActionScopeFanOutDecision
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionScopeFanOutDecision</code>. Kind: `record`.
@@ -138,24 +195,6 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;CorporateActionScopeFanOutDecision&gt; ResolveDecisionScopeAsync(Guid securityId, DateOnly effectiveDate, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs:74](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs#L74) | Resolves the exact scope a decision on securityId may be applied to for the deciding tenant/company, or refuses with stated reasons. |
-
-## LivePositionCorporateActionAdjusterAdapter
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.LivePositionCorporateActionAdjusterAdapter</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs:8](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs#L8).
-
-```csharp
-public sealed class LivePositionCorporateActionAdjusterAdapter : ILivePositionCorporateActionAdjuster
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LivePositionCorporateActionAdjusterAdapter(CanonicalAdjuster adjuster);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs:12](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs#L12) |  |
-| <code>public async Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs:17](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs#L17) |  |
-| <code>public async Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, decimal totalCostBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs:23](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs#L23) |  |
 
 ## NullCorporateActionRestatementTrigger
 
@@ -922,41 +961,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public LedgerPeriodLockReader(ILogger&lt;LedgerPeriodLockReader&gt; logger, ILedgerJournalStore? journalStore = null);</code> | [src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs:43](../../../../src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs#L43) |  |
 | <code>public async Task&lt;LedgerPeriodStatusDto&gt; GetPeriodStatusAsync(Guid ledgerBookId, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs:51](../../../../src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs#L51) |  |
-
-## NullCorporateActionCaseAccountingService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.NullCorporateActionCaseAccountingService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:232](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L232).
-
-Rejects corporate-action accounting mutations when the accounting service is unavailable.
-
-```csharp
-public sealed class NullCorporateActionCaseAccountingService : ICorporateActionCaseAccountingService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;CorporateActionAccountingProjectionMutationResultDto&gt; AttachProjectionAsync(AttachCorporateActionAccountingProjectionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:239](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L239) |  |
-| <code>public Task&lt;CorporateActionAccountingApprovalResultDto&gt; ApproveAsync(ApproveCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:242](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L242) |  |
-| <code>public Task&lt;CorporateActionAccountingPostingResultDto&gt; PostAsync(PostCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:245](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L245) |  |
-
-## NullCorporateActionCommandService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.NullCorporateActionCommandService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:144](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L144).
-
-Rejects corporate-action appends when their command service is unavailable.
-
-```csharp
-public sealed class NullCorporateActionCommandService : ICorporateActionCommandService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;CorporateActionAppendResult&gt; AppendAsync(Guid securityId, CorporateActionDto action, string? actor, string source, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:146](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L146) |  |

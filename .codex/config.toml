@@ -109,9 +109,6 @@ config_file = "agents/desktop-test-generation.toml"
 [agents."diagnostics-audit-timeline"]
 config_file = "agents/diagnostics-audit-timeline.toml"
 
-[agents."meridian-archive-organizer"]
-config_file = "agents/meridian-archive-organizer.toml"
-
 [agents."meridian-blueprint"]
 config_file = "agents/meridian-blueprint.toml"
 

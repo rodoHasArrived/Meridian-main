@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { FinancialValue } from "./financial-value";
+import { FinancialValue, FinancialValueConditionGroup } from "./financial-value";
 import type { LedgerAmountSelection } from "@/types/ledger-amount-proof";
 import { createAmountPassport } from "@/test/amount-passport-fixtures";
 import { axe } from "jest-axe";
@@ -11,6 +11,44 @@ vi.mock("@/components/meridian/proof-drawer", () => ({
 }));
 
 describe("FinancialValue", () => {
+  it("groups only unknown conditions while preserving each exact value, accessible reason and passport", async () => {
+    const reference = createAmountPassport(undefined, "Cash", "25").reference;
+    const { container } = render(<FinancialValueConditionGroup description="The selected source has not recorded these conditions.">
+      <FinancialValue value="25.00" currency="USD" amountPassport={reference} reason="Cash condition was not retained." />
+      <FinancialValue value="0" currency="USD" reason="Fee condition was not retained." />
+      <FinancialValue value="3.125" currency="KWD" condition="stale" reason="The observation is old." />
+      <FinancialValue value="10" currency="USD" condition="confirmed" />
+    </FinancialValueConditionGroup>);
+    expect(screen.getAllByText(/Data condition unavailable:/)).toHaveLength(1);
+    const cash = screen.getByRole("group", { name: "25.00 USD · Data condition unavailable" });
+    expect(cash).toHaveAccessibleDescription("Data condition unavailable: The selected source has not recorded these conditions. Cash condition was not retained.");
+    expect(cash).toHaveAttribute("title", "Cash condition was not retained.");
+    expect(screen.getByRole("group", { name: "0.00 USD · Data condition unavailable" })).toBeInTheDocument();
+    expect(screen.getByText("Stale")).toBeInTheDocument();
+    expect(screen.getByText("10.00 USD")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open Amount passport for financial value: 25.00 USD · Data condition unavailable" })).toBeInTheDocument();
+    expect((await axe(container, { runOnly: { type: "rule", values: ["aria-allowed-attr", "label-content-name-mismatch"] } })).violations).toEqual([]);
+  });
+
+  it("does not add a missing-condition claim for an inactive group", () => {
+    render(<FinancialValueConditionGroup active={false} description="No retained condition."><FinancialValue value="12" condition="confirmed" /></FinancialValueConditionGroup>);
+    expect(screen.queryByText(/Data condition unavailable/)).not.toBeInTheDocument();
+  });
+
+  it("prefers an explicit source condition notice over an inherited group while preserving proof descriptions", () => {
+    const reference = createAmountPassport(undefined, "Cash", "25").reference;
+    render(<FinancialValueConditionGroup description="The wider population has missing conditions.">
+      <p id="cash-condition">Cash reconciliation condition was not supplied.</p>
+      <FinancialValue value="25" currency="USD" conditionContextId="cash-condition" amountPassport={reference} reason="Cash source reason." />
+      <FinancialValue value="10" currency="USD" reason="Other source reason." />
+    </FinancialValueConditionGroup>);
+    const control = screen.getByRole("button", { name: "Open Amount passport for financial value: 25.00 USD · Data condition unavailable" });
+    expect(control).toHaveAccessibleDescription("Cash reconciliation condition was not supplied. Cash source reason.");
+    expect(screen.getByRole("group", { name: "10.00 USD · Data condition unavailable" })).toHaveAccessibleDescription(
+      "Data condition unavailable: The wider population has missing conditions. Other source reason."
+    );
+    expect(control.getAttribute("aria-describedby")?.split(" ")).toContain("cash-condition");
+  });
   it("uses a visible shared notice for unavailable values while retaining each value and reason accessibly", async () => {
     const { container } = render(<>
       <p id="unknown-balances">Data condition unavailable. Reconciliation evidence was not supplied for these balances.</p>

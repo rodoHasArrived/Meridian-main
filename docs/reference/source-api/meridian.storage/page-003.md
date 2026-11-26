@@ -228,7 +228,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Storage.Export.LedgerJournalExporter</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Export/LedgerJournalExporter.cs:17](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L17).
+Source: [src/Meridian.Storage/Export/LedgerJournalExporter.cs:18](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L18).
 
 Exports one row per immutable journal line, retaining the full audit envelopes. Decimal amounts are invariant decimal text in both formats so Parquet readers cannot truncate monetary precision. Mapping changes only the external account column and never the source journal.
 
@@ -240,10 +240,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static byte[] ExportCsv(IReadOnlyLedger ledger, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, LedgerQuery? query = null, IReadOnlyDictionary&lt;Guid, string&gt;? postingMetadata = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:27](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L27) |  |
-| <code>public static async Task&lt;byte[]&gt; ExportParquetAsync(IReadOnlyLedger ledger, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, LedgerQuery? query = null, CancellationToken ct = default, IReadOnlyDictionary&lt;Guid, string&gt;? postingMetadata = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:41](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L41) |  |
-| <code>public static byte[] ExportCsv(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, Guid? ledgerBookId = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:69](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L69) | Preserves governed posting metadata (book, period, source event, rules and approval). |
-| <code>public static Task&lt;byte[]&gt; ExportParquetAsync(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, CancellationToken ct = default, Guid? ledgerBookId = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:75](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L75) |  |
+| <code>public static byte[] ExportCsv(IReadOnlyLedger ledger, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, LedgerQuery? query = null, IReadOnlyDictionary&lt;Guid, string&gt;? postingMetadata = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:28](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L28) |  |
+| <code>public static async Task&lt;byte[]&gt; ExportParquetAsync(IReadOnlyLedger ledger, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, LedgerQuery? query = null, CancellationToken ct = default, IReadOnlyDictionary&lt;Guid, string&gt;? postingMetadata = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:42](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L42) |  |
+| <code>public static byte[] ExportCsv(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, Guid? ledgerBookId = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:70](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L70) | Preserves governed posting metadata (book, period, source event, rules and approval). |
+| <code>public static Task&lt;byte[]&gt; ExportParquetAsync(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, CancellationToken ct = default, Guid? ledgerBookId = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:76](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L76) |  |
 
 ## NormalizationType
 
@@ -427,7 +427,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Export.TimestampFormat</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Export/ExportProfile.cs:337](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L337).
+Source: [src/Meridian.Storage/Export/ExportProfile.cs:340](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L340).
 
 Supported timestamp formats.
 
@@ -439,17 +439,17 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Iso8601</code> | [src/Meridian.Storage/Export/ExportProfile.cs:340](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L340) | ISO 8601 string format. |
-| <code>UnixSeconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:342](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L342) | Unix timestamp in seconds. |
-| <code>UnixMilliseconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:344](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L344) | Unix timestamp in milliseconds. |
-| <code>UnixNanoseconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:346](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L346) | Unix timestamp in nanoseconds (for pandas datetime64&#91;ns&#93;). |
-| <code>ExcelSerial</code> | [src/Meridian.Storage/Export/ExportProfile.cs:348](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L348) | Excel serial date format. |
+| <code>Iso8601</code> | [src/Meridian.Storage/Export/ExportProfile.cs:343](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L343) | ISO 8601 string format. |
+| <code>UnixSeconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:345](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L345) | Unix timestamp in seconds. |
+| <code>UnixMilliseconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:347](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L347) | Unix timestamp in milliseconds. |
+| <code>UnixNanoseconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:349](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L349) | Unix timestamp in nanoseconds (for pandas datetime64&#91;ns&#93;). |
+| <code>ExcelSerial</code> | [src/Meridian.Storage/Export/ExportProfile.cs:351](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L351) | Excel serial date format. |
 
 ## TimestampSettings
 
 Qualified name: <code>Meridian.Storage.Export.TimestampSettings</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Export/ExportProfile.cs:322](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L322).
+Source: [src/Meridian.Storage/Export/ExportProfile.cs:325](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L325).
 
 Timestamp handling settings.
 
@@ -461,9 +461,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;format&quot;)] public TimestampFormat Format { get; set; } = TimestampFormat.Iso8601;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:325](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L325) |  |
-| <code>[JsonPropertyName(&quot;timezone&quot;)] public string Timezone { get; set; } = &quot;UTC&quot;;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:328](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L328) |  |
-| <code>[JsonPropertyName(&quot;includeNanoseconds&quot;)] public bool IncludeNanoseconds { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:331](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L331) |  |
+| <code>[JsonPropertyName(&quot;format&quot;)] public TimestampFormat Format { get; set; } = TimestampFormat.Iso8601;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:328](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L328) |  |
+| <code>[JsonPropertyName(&quot;timezone&quot;)] public string Timezone { get; set; } = &quot;UTC&quot;;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:331](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L331) |  |
+| <code>[JsonPropertyName(&quot;includeNanoseconds&quot;)] public bool IncludeNanoseconds { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:334](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L334) |  |
 
 ## TimeStats
 
@@ -656,74 +656,6 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;PrivateCapitalStoredRecord&gt;&gt; ReadAsync(PrivateCapitalScope scope, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/FilePrivateCapitalRecordStore.cs:23](../../../../src/Meridian.Storage/FundAccounts/FilePrivateCapitalRecordStore.cs#L23) |  |
 | <code>public async Task AppendAsync(PrivateCapitalScope scope, Func&lt;IReadOnlyList&lt;PrivateCapitalStoredRecord&gt;, IReadOnlyList&lt;PrivateCapitalStoredRecord&gt;&gt; prepare, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/FilePrivateCapitalRecordStore.cs:35](../../../../src/Meridian.Storage/FundAccounts/FilePrivateCapitalRecordStore.cs#L35) |  |
 
-## FundAccountLegacyBankStatement
-
-Qualified name: <code>Meridian.Storage.FundAccounts.FundAccountLegacyBankStatement</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:115](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L115).
-
-```csharp
-public sealed record FundAccountLegacyBankStatement(BankStatementBatchDto Batch, IReadOnlyList<BankStatementLineDto> Lines);
-```
-
-## FundAccountLegacyCustodianStatement
-
-Qualified name: <code>Meridian.Storage.FundAccounts.FundAccountLegacyCustodianStatement</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:111](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L111).
-
-```csharp
-public sealed record FundAccountLegacyCustodianStatement(CustodianStatementBatchDto Batch, IReadOnlyList<CustodianPositionLineDto> Lines);
-```
-
-## FundAccountLegacyImportAccount
-
-Qualified name: <code>Meridian.Storage.FundAccounts.FundAccountLegacyImportAccount</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:102](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L102).
-
-```csharp
-public sealed record FundAccountLegacyImportAccount(AccountSummaryDto Account, IReadOnlyList<AccountBalanceSnapshotDto> BalanceSnapshots, IReadOnlyList<FundAccountLegacyCustodianStatement> CustodianStatements, IReadOnlyList<FundAccountLegacyBankStatement> BankStatements, IReadOnlyList<FundAccountLegacyReconciliationRun> ReconciliationRuns, IReadOnlyList<AccountSyncHistoryEntryDto> SyncHistory, IReadOnlyList<MarginSnapshotDto> MarginSnapshots);
-```
-
-## FundAccountLegacyImportRequest
-
-Qualified name: <code>Meridian.Storage.FundAccounts.FundAccountLegacyImportRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:98](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L98).
-
-```csharp
-public sealed record FundAccountLegacyImportRequest(string SourceHash, IReadOnlyList<FundAccountLegacyImportAccount> Accounts);
-```
-
-## FundAccountLegacyImportResult
-
-Qualified name: <code>Meridian.Storage.FundAccounts.FundAccountLegacyImportResult</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:123](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L123).
-
-```csharp
-public enum FundAccountLegacyImportResult : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Imported = 0</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:125](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L125) |  |
-| <code>AlreadyImported = 1</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:126](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L126) |  |
-| <code>StoreNotEmpty = 2</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:127](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L127) |  |
-
-## FundAccountLegacyReconciliationRun
-
-Qualified name: <code>Meridian.Storage.FundAccounts.FundAccountLegacyReconciliationRun</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:119](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L119).
-
-```csharp
-public sealed record FundAccountLegacyReconciliationRun(AccountReconciliationRunDto Run, IReadOnlyList<AccountReconciliationResultDto> Results);
-```
-
 ## FundAccountMigrationRunner
 
 Qualified name: <code>Meridian.Storage.FundAccounts.FundAccountMigrationRunner</code>. Kind: `class`.
@@ -800,8 +732,6 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;AccountSyncHistoryEntryDto&gt;&gt; GetSyncHistoryAsync(Guid accountId, string? capability, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:77](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L77) |  |
 | <code>Task UpsertMarginSnapshotAsync(MarginSnapshotDto snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:80](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L80) |  |
 | <code>Task&lt;IReadOnlyList&lt;MarginSnapshotDto&gt;&gt; GetMarginSnapshotsAsync(Guid accountId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:81](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L81) |  |
-| <code>Task&lt;bool&gt; IsEmptyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:84](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L84) |  |
-| <code>Task&lt;FundAccountLegacyImportResult&gt; ImportLegacySnapshotIfEmptyAsync(FundAccountLegacyImportRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:91](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L91) | Imports one legacy JSON snapshot as a single database transaction when the store is empty. The source hash is committed in the same transaction so startup can safely recover a process failure between database commit and source-file archival. |
 
 ## IPrivateCapitalRecordStore
 
@@ -859,8 +789,6 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;AccountSyncHistoryEntryDto&gt;&gt; GetSyncHistoryAsync(Guid accountId, string? capability, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs:1313](../../../../src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs#L1313) |  |
 | <code>public async Task UpsertMarginSnapshotAsync(MarginSnapshotDto snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs:1373](../../../../src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs#L1373) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;MarginSnapshotDto&gt;&gt; GetMarginSnapshotsAsync(Guid accountId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs:1496](../../../../src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs#L1496) |  |
-| <code>public async Task&lt;FundAccountLegacyImportResult&gt; ImportLegacySnapshotIfEmptyAsync(FundAccountLegacyImportRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs:1571](../../../../src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs#L1571) |  |
-| <code>public async Task&lt;bool&gt; IsEmptyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs:1708](../../../../src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs#L1708) |  |
 
 ## PostgresPrivateCapitalRecordStore
 
@@ -974,12 +902,92 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;IntercompanyRateFixingDto&gt;&gt; ListAsync(string tenantId, string indexReference, DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs:22](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs#L22) |  |
 | <code>public async Task&lt;IntercompanyRateFixingDto&gt; AppendAsync(IntercompanyRateFixingDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs:31](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs#L31) |  |
 
-## FundStructureLegacyImportRequest
+## FundStructureMigrationRunner
 
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureLegacyImportRequest</code>. Kind: `record`.
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureMigrationRunner</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:138](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L138).
+Source: [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:8](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L8).
+
+Applies the PostgreSQL migrations used by fund structure persistence.
 
 ```csharp
-public sealed record FundStructureLegacyImportRequest(string SourceHash, IReadOnlyList<OrganizationSummaryDto> Organizations, IReadOnlyList<BusinessSummaryDto> Businesses, IReadOnlyList<ClientSummaryDto> Clients, IReadOnlyList<FundSummaryDto> Funds, IReadOnlyList<SleeveSummaryDto> Sleeves, IReadOnlyList<VehicleSummaryDto> Vehicles, IReadOnlyList<LegalEntitySummaryDto> Entities, IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios, IReadOnlyList<OwnershipLinkDto> OwnershipLinks, IReadOnlyList<FundStructureAssignmentDto> Assignments, IReadOnlyList<Guid> LinkedAccountIds);
+public sealed class FundStructureMigrationRunner
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FundStructureMigrationRunner(FundStructureStoreOptions options);</code> | [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:12](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L12) |  |
+| <code>public Task EnsureMigratedAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:30](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L30) |  |
+
+## FundStructureStoreOptions
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureStoreOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs:6](../../../../src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs#L6).
+
+Configures the PostgreSQL connection and schema for fund structure storage.
+
+```csharp
+public sealed class FundStructureStoreOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ConnectionString { get; set; } = string.Empty;</code> | [src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs:8](../../../../src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs#L8) |  |
+| <code>public string Schema { get; set; } = &quot;fund_structure&quot;;</code> | [src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs:9](../../../../src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs#L9) |  |
+
+## FundStructureTenantBackfillEvidence
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:10](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L10).
+
+```csharp
+public sealed record FundStructureTenantBackfillEvidence(Guid BookId, string FundProfileId, Guid NodeId, string? TenantId, string? CompanyId, JsonElement RetainedBook, JsonElement? RetainedRegistryEntry);
+```
+
+## FundStructureTenantBackfillException
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillException</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:22](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L22).
+
+```csharp
+public sealed record FundStructureTenantBackfillException(Guid NodeId, string NodeKind, string Reason, IReadOnlyList<string> CandidateTenantIds);
+```
+
+## FundStructureTenantBackfillReceipt
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:28](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L28).
+
+```csharp
+public sealed record FundStructureTenantBackfillReceipt(Guid RunId, string PlanHash, string OperatorId, string ReviewReference, DateTimeOffset AppliedAt, int StampedRows, int QuarantinedRows, JsonElement Plan);
+```
+
+## FundStructureTenantBackfillRow
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:6](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L6).
+
+Maintenance-only snapshot; this is not an operator-session read API.
+
+```csharp
+public sealed record FundStructureTenantBackfillRow(string Table, Guid Id, string Kind, bool IsNode, string? TenantId, IReadOnlyList<Guid> Parents, IReadOnlyList<Guid> Children, JsonElement RetainedRow, bool IsInferred = false);
+```
+
+## FundStructureTenantBackfillSnapshot
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:14](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L14).
+
+```csharp
+public sealed record FundStructureTenantBackfillSnapshot(string SourceIdentity, string SchemaIdentity, IReadOnlyList<FundStructureTenantBackfillRow> Rows, IReadOnlyList<FundStructureTenantBackfillEvidence> Evidence, IReadOnlyList<JsonElement> RetainedQuarantine, bool SupportsAtomicApply = true);
 ```

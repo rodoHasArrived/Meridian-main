@@ -19,11 +19,8 @@ public sealed partial class ProviderConnectionLifecycleService
             throw new ArgumentException("Select an existing Alpaca data source.");
 
         if (feed != "sip")
-        {
-            await _configStore.UpdateAsync(config => AlpacaFeedConfiguration.WithFeed(config, feed, sourceId), ct)
+            return await _configStore.UpdateWithChangeStatusAsync(config => AlpacaFeedConfiguration.WithFeed(config, feed, sourceId), ct)
                 .ConfigureAwait(false);
-            return _configStore.GetChangeStatus();
-        }
 
         if (string.IsNullOrWhiteSpace(tenantId))
             throw new UnauthorizedAccessException("Alpaca credential ownership could not be established.");
@@ -47,7 +44,7 @@ public sealed partial class ProviderConnectionLifecycleService
         if (entitlement.Status != ProviderCredentialDraftStatusDto.Verified)
             throw new AlpacaFeedVerificationException(entitlement.Message);
 
-        await core.UpdateRequiredCheckedAsync(async (current, token) =>
+        var (_, status) = await core.UpdateRequiredCheckedWithChangeStatusAsync(async (current, token) =>
         {
             var checkedAuthority = await ReadAlpacaSipCredentialAsync(current, tenantId, token).ConfigureAwait(false);
             if (checkedAuthority.Binding != authority.Binding || checkedAuthority.Scope != authority.Scope ||
@@ -57,7 +54,7 @@ public sealed partial class ProviderConnectionLifecycleService
             UiConfigurationSaveGuard.Validate(current, next, confirmDataSemantics: false, wholeDocument: false, verifiedAlpacaSip: true);
             return (next, true);
         }, ct).ConfigureAwait(false);
-        return _configStore.GetChangeStatus();
+        return status;
     }
 
     // Call under the configuration lease used by owned credential writes and binding changes.

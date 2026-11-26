@@ -1134,7 +1134,7 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
             return string.Equals(bar.Symbol, request.Symbol, StringComparison.Ordinal) && source == bar.Source
                 ? bar
                 : new HistoricalBar(request.Symbol, bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close,
-                    bar.Volume, source, bar.SequenceNumber, bar.IsAdjusted);
+                    bar.Volume, source, bar.SequenceNumber, bar.IsAdjusted, bar.PriceBasis);
         });
         var partitions = normalized.GroupBy(bar => bar.SessionDate);
         foreach (var partition in partitions)

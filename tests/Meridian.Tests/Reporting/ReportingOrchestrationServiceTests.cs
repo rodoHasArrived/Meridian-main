@@ -226,32 +226,6 @@ public sealed class ReportingOrchestrationServiceTests
     }
 
     [Fact]
-    public async Task ExecuteDueSchedulesAsync_FailsClosedOutsideHostedScheduleAuthority()
-    {
-        var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
-        var schedules = new[]
-        {
-            new ReportingScheduleContract(
-                "sched-investor",
-                "investor-monthly-statement",
-                "0 8 1 * *",
-                new DateOnly(2026, 5, 1),
-                FixedNow.AddMinutes(-5),
-                1,
-                "scheduler")
-        };
-
-#pragma warning disable CS0618 // Verify the fail-closed behavior of the retained compatibility member.
-        Func<Task> act = async () =>
-            await sut.ExecuteDueSchedulesAsync(schedules, FixedNow, CancellationToken.None);
-#pragma warning restore CS0618
-
-        await act.Should().ThrowAsync<NotSupportedException>()
-            .WithMessage("*host reporting-schedule adapter*");
-        sut.GetManifest("sched-investor-20260501").Should().BeNull();
-    }
-
-    [Fact]
     public async Task ExecuteAsync_RetriesTransientFailuresAndAuditsAttemptCount()
     {
         var renderer = new FailingOnceRenderer();

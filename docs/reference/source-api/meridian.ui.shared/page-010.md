@@ -6,56 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## CapitalCallFundingInput
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallFundingInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs:12](../../../../src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs#L12).
-
-One operator-attested cash receipt against an issued capital call. The amount is what the LP remitted (full or partial); the fundable ceiling is never taken from the caller — it is recomputed server-side as posted issuance minus posted funding for the capital account before any draft is produced. Each line must carry retained remittance/bank evidence.
-
-```csharp
-public sealed record CapitalCallFundingInput(string CommitmentId, string CapitalAccountId, string InvestorId, decimal FundedAmount, IReadOnlyList<string>? EvidenceLinks = null, string? FundingReceiptId = null, string? BankLineId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs:21](../../../../src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs#L21) |  |
-
-## CapitalCallNoticeRecipientBinding
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallNoticeRecipientBinding</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:15](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L15).
-
-Deployment-owned investor-to-recipient mapping; investor IDs are never assumed to be user IDs.
-
-```csharp
-public sealed record CapitalCallNoticeRecipientBinding(string TenantId, string CompanyId, string FundProfileId, string InvestorId, string RecipientPrincipalId, string? ReviewGroupPrincipalId = null);
-```
-
-## CapitalCallNoticeReportingService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallNoticeReportingService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:136](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L136).
-
-Creates a governed Draft notice; approval, release, grants, and delivery use existing Reporting controls.
-
-```csharp
-public sealed class CapitalCallNoticeReportingService(CapitalCallNoticeSourceValidator source, ILedgerJournalStore journals, ReportingRunCommandService reporting, IReportingRunStore? runStore = null, IReportingGovernanceRepository? governance = null, IReportingDeliveryStore? deliveries = null, IReportingAuthoritativeSource? authoritativeSource = null, IReportingReconciliationEvidenceRetentionStore? reconciliationRetention = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string TemplateId = &quot;capital-call-notice&quot;;</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:146](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L146) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;PrivateCapitalNoticeSummaryDto&gt;&gt; ReadNoticeSummariesAsync(PrivateCapitalScopeDto scope, ReportAccessQueryContext access, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:150](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L150) | Projects retained notice associations; callers cannot attach an arbitrary reporting run to a call. |
-| <code>public async Task&lt;ReportingRunResultDto&gt; GenerateAsync(PrivateCapitalScopeDto scope, string callId, string investorId, Guid operationId, string actor, ReportAccessQueryContext access, ReportingGovernanceCallerContext caller, string? commitmentId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:206](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L206) |  |
-
 ## CapitalCallNoticeSourceValidator
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallNoticeSourceValidator</code>. Kind: `class`.
@@ -288,7 +238,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ConfigStore</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/ConfigStore.cs:13](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L13).
+Source: [src/Meridian.Ui.Shared/Services/ConfigStore.cs:14](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L14).
 
 ConfigStore for web dashboard hosting. Delegates all operations to the core CoreConfigStore and only provides a web-specific default config path (4 directories up from BaseDirectory).
 
@@ -300,28 +250,28 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ConfigStore() : this(GetWebDefaultPath());</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:19](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L19) |  |
-| <code>public ConfigStore(string? configPath, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:21](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L21) |  |
-| <code>public string ConfigPath =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:27](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L27) |  |
-| <code>public static Meridian.Core.Config.AppConfig LoadConfig(string path) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:29](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L29) |  |
-| <code>public Meridian.Core.Config.AppConfig Load() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:32](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L32) |  |
-| <code>public Meridian.Contracts.Configuration.ConfigurationChangeStatus GetChangeStatus() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:34](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L34) |  |
-| <code>public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:36](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L36) |  |
-| <code>public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:39](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L39) |  |
-| <code>public System.Threading.Tasks.Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:52](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L52) | Read-modify-write under the configuration lock; see the core store for the contract. |
-| <code>public System.Threading.Tasks.Task&lt;T&gt; UpdateWithConfirmationAsync&lt;T&gt;(Func&lt;Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)&gt; update, bool confirmDataSemantics, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:58](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L58) | Explicit confirmation is required for edits changing the meaning of newly stored data. |
-| <code>public System.Threading.Tasks.Task UpdateAsync(Func&lt;Meridian.Core.Config.AppConfig, Meridian.Core.Config.AppConfig&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:72](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L72) | Read-modify-write under the configuration lock; see the core store for the contract. |
-| <code>public Meridian.DataIntegration.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:77](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L77) |  |
-| <code>public string? TryLoadStatusJson() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:80](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L80) |  |
-| <code>public string GetDataRoot(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:82](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L82) |  |
-| <code>public string GetStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:85](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L85) |  |
-| <code>public string GetBackfillStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:88](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L88) |  |
+| <code>public ConfigStore() : this(GetWebDefaultPath());</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:20](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L20) |  |
+| <code>public ConfigStore(string? configPath, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:22](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L22) |  |
+| <code>public string ConfigPath =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:28](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L28) |  |
+| <code>public static Meridian.Core.Config.AppConfig LoadConfig(string path) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:30](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L30) |  |
+| <code>public Meridian.Core.Config.AppConfig Load() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:33](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L33) |  |
+| <code>public Meridian.Contracts.Configuration.ConfigurationChangeStatus GetChangeStatus() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:35](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L35) |  |
+| <code>public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:37](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L37) |  |
+| <code>public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:40](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L40) |  |
+| <code>public System.Threading.Tasks.Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:53](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L53) | Read-modify-write under the configuration lock; see the core store for the contract. |
+| <code>public async System.Threading.Tasks.Task&lt;T&gt; UpdateWithConfirmationAsync&lt;T&gt;(Func&lt;Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)&gt; update, bool confirmDataSemantics, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:69](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L69) | Explicit confirmation is required for edits changing the meaning of newly stored data. |
+| <code>public System.Threading.Tasks.Task UpdateAsync(Func&lt;Meridian.Core.Config.AppConfig, Meridian.Core.Config.AppConfig&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:89](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L89) | Read-modify-write under the configuration lock; see the core store for the contract. |
+| <code>public Meridian.DataIntegration.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:94](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L94) |  |
+| <code>public string? TryLoadStatusJson() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:97](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L97) |  |
+| <code>public string GetDataRoot(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:99](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L99) |  |
+| <code>public string GetStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:102](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L102) |  |
+| <code>public string GetBackfillStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:105](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L105) |  |
 
 ## ConfigStoreExtensions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ConfigStoreExtensions</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/ConfigStore.cs:98](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L98).
+Source: [src/Meridian.Ui.Shared/Services/ConfigStore.cs:115](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L115).
 
 Configures the core ConfigStore default path resolver for web dashboard hosting.
 
@@ -333,7 +283,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void UseWebDefaultPath();</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:100](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L100) |  |
+| <code>public static void UseWebDefaultPath();</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:117](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L117) |  |
 
 ## ConfiguredReportingHttpRelayClient
 
@@ -932,4 +882,46 @@ One deterministic seeded trade print for durable market history.
 
 ```csharp
 public sealed record SampleTradePrint(DateTimeOffset Timestamp, decimal Price, long Size);
+```
+
+## DemoTenantProvisioner
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantProvisioner</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs:28](../../../../src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs#L28).
+
+Loads the DemoTenantBlueprint into the real, desk-read workstation stores so a user who chooses &quot;Use sample data&quot; lands in a genuinely populated workspace rather than an empty one behind a badge. Seeding is best-effort and idempotent: a re-run never duplicates casework or runs, and a store that is unavailable in a lightweight host is skipped without failing onboarding.
+
+```csharp
+public sealed class DemoTenantProvisioner(IReconciliationBreakQueueRepository? reconciliationBreaks = null, IStrategyRepository? strategyRuns = null, ILogger<DemoTenantProvisioner>? logger = null, IFundAccountService? fundAccounts = null, IPositionSnapshotStore? positionSnapshots = null, IManualJournalEntryDraftStore? journalDrafts = null, IGovernanceReportPackRepository? reportPacks = null, IManualJournalMutationRecoveryStore? mutationRecovery = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;DemoTenantProvisioningReport&gt; ProvisionAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs:38](../../../../src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs#L38) |  |
+
+## DemoTenantProvisioningReport
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantProvisioningReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs:463](../../../../src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs#L463).
+
+Summary of what the demo-tenant provisioning step wrote. The Loaded flags report whether each surface is present in its desk store after provisioning (freshly seeded or already there), which is what onboarding advertises — distinct from ReconciliationBreaksSeeded, which counts only the breaks created on this run.
+
+```csharp
+public sealed record DemoTenantProvisioningReport(int ReconciliationBreaksSeeded, bool ReconciliationLoaded, bool StrategyRunLoaded, IReadOnlyList<string> Warnings, bool FundAccountLoaded = false, bool PortfolioPositionsLoaded = false, int JournalDraftsSeeded = 0, bool ReportPackLoaded = false);
+```
+
+## DemoWorkspaceResetReport
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DemoWorkspaceResetReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:425](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L425).
+
+Outcome of tearing down the demo workspace.
+
+```csharp
+public sealed record DemoWorkspaceResetReport(string DemoRoot, bool Deleted);
 ```

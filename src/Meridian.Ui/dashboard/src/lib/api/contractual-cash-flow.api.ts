@@ -32,6 +32,15 @@ export function previewContractualCashFlows(
   return apiPostJson<ContractualCashFlowResult>(subjectRoute(kind, "preview", subjectId), request, { ...options, allowDevelopmentFallback: false });
 }
 
+/** Supported two-leg same-currency IRS analytics through the existing retained-contract engine. */
+export function previewVanillaInterestRateSwap(
+  securityId: string,
+  request: ContractualCashFlowRequest,
+  options: ApiRequestOptions = {}
+): Promise<ContractualCashFlowResult> {
+  return previewContractualCashFlows("Security", securityId, { ...request, calculationProfile: "vanilla-irs-v1" }, options);
+}
+
 /**
  * Retains a complete replay packet under a client-generated run identity. A retry with the same identity
  * and request returns the retained run; a blocked projection comes back as a result without a run id.

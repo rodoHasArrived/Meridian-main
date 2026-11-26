@@ -162,7 +162,6 @@ Documentation for market data providers.
 - `docs/operators/provider-backfill-operations.md` - historical data backfill operations
 - `docs/reference/provider-capability-matrix.md` - provider feature comparison
 - `docs/reference/provider-integration-status.md` - current provider status
-- `archive/docs/providers/` - historical setup and comparison source material
 
 **When to Update:**
 
@@ -199,7 +198,6 @@ Implementation roadmaps, blueprints, and sprint backlogs.
 **Files (selection):**
 
 - `meridian-6-week-roadmap.md` - Active sprint roadmap
-- `archive/docs/plans/readability-refactor-roadmap.md` - Archived readability refactor plan
 - `trading-workstation-migration-blueprint.md` - WPF workstation blueprint
 - `ufl-*.md` - Unified financial ledger target-state documents
 
@@ -712,7 +710,7 @@ Controls the size of the in-memory buffer before flushing to disk.
 **When adding a new component:**
 
 1. Update `docs/architecture/overview.md` - Add component description
-2. Update `docs/diagrams/c4-level2-containers.dot` - Add container node
+2. Update `docs/diagrams/architecture/c4/c4-level2-containers.dot` - Add container node
 3. Regenerate diagram: `dot -Tpng c4-level2-containers.dot -o c4-level2-containers.png`
 4. Update `docs/architecture/c4-diagrams.md` - Reference new component
 5. Document in `docs/architecture/why-this-architecture.md` if significant design decision

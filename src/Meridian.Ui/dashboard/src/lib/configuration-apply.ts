@@ -18,15 +18,43 @@ const uniqueDetails = (entries: ConfigurationApplyEntry[]) =>
 export function describeConfigurationApply(status: ConfigurationChangeStatus | null | undefined): ConfigurationApplyMessage {
   const entries = status?.lastApply?.entries ?? [];
   const deferred = entries.filter(entry => entry.kind === "Deferred");
+  const failed = entries.filter(entry => entry.kind === "Failed");
   const reconfigured = entries.filter(entry => entry.kind === "ProviderReconfigured");
   const live = entries.filter(entry => entry.kind === "AppliedLive");
   const noEffect = entries.filter(entry => entry.kind === "NoRuntimeEffect");
 
-  if (!status || status.requiresRestart || deferred.length > 0) {
+  if (status?.runtimeState === "Failed" || failed.length > 0) {
+    return {
+      tone: "warning",
+      title: "Collector application failed",
+      detail: "The configuration is saved. The collector reported an error applying one or more settings.",
+      notes: uniqueDetails(failed)
+    };
+  }
+
+  if (status?.runtimeState === "Unknown") {
+    return {
+      tone: "warning",
+      title: "Collector application unconfirmed",
+      detail: "The host has no active collector acknowledgement for the current saved configuration.",
+      notes: []
+    };
+  }
+
+  if (status?.runtimeState === "Saved" && !status.collectorAcknowledgement) {
+    return {
+      tone: "warning",
+      title: "Configuration saved",
+      detail: "Setting activation status shows whether the collector has acknowledged this revision.",
+      notes: []
+    };
+  }
+
+  if (!status || status.requiresRestart || deferred.length > 0 || status.runtimeState === "Deferred") {
     return {
       tone: "warning",
       title: "Pending host restart",
-      detail: entries.length > 0 && deferred.length < entries.length
+      detail: (live.length > 0 || reconfigured.length > 0)
         ? "Part of this save is already live; the rest applies after the host restarts."
         : "Saved configuration applies after the host restarts and rebuilds streaming providers. The active provider shown below is live runtime evidence; saving does not switch it.",
       notes: uniqueDetails([...deferred, ...reconfigured, ...live, ...noEffect])
@@ -46,7 +74,9 @@ export function describeConfigurationApply(status: ConfigurationChangeStatus | n
     return {
       tone: "success",
       title: "Applied live",
-      detail: "The running host now uses the saved settings; no restart is needed.",
+      detail: status.collectorAcknowledgement
+        ? "The collector confirmed the saved provider settings for this revision."
+        : "The running host now uses the saved settings; no restart is needed.",
       notes: uniqueDetails([...live, ...noEffect])
     };
   }

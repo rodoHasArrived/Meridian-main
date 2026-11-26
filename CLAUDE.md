@@ -136,7 +136,6 @@ gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotn
 - `.claude/settings.local.json` - tracked repo-local allowlist used by this project.
 - `.claude/agents/` - lightweight Claude agent entrypoints that route to shared skills and docs.
 - `.claude/skills/` - portable Agent Skill packages for Claude-compatible hosts.
-- `.claude/plugins/` - checked-in Claude plugin packages with plugin manifests, agents, and skills.
 - `.claude/skills/_shared/project-context.md` - canonical Claude-side project grounding.
 
 Keep Claude-specific files focused on host mechanics and discovery. Shared policy belongs in

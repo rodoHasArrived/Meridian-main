@@ -6,77 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## BackfillProviderHealth
-
-Qualified name: <code>Meridian.Contracts.Api.BackfillProviderHealth</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:40](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L40).
-
-Individual backfill provider health status.
-
-```csharp
-public sealed class BackfillProviderHealth
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;isAvailable&quot;)] public bool IsAvailable { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:46](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L46) | Gets or sets whether the provider is currently available. |
-| <code>[JsonPropertyName(&quot;latencyMs&quot;)] public float? LatencyMs { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:52](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L52) | Gets or sets the most recent latency measurement in milliseconds. |
-| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:58](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L58) | Gets or sets the last error message reported by the provider, if any. |
-| <code>[JsonPropertyName(&quot;lastChecked&quot;)] public DateTime? LastChecked { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:64](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L64) | Gets or sets the last time the provider was checked. |
-
-## BackfillProviderInfo
-
-Qualified name: <code>Meridian.Contracts.Api.BackfillProviderInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Api/StatusModels.cs:219](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L219).
-
-Backfill provider information.
-
-```csharp
-public sealed class BackfillProviderInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:222](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L222) |  |
-| <code>[JsonPropertyName(&quot;displayName&quot;)] public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:225](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L225) |  |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:228](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L228) |  |
-| <code>[JsonPropertyName(&quot;isAvailable&quot;)] public bool IsAvailable { get; set; } = true;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:231](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L231) |  |
-| <code>[JsonPropertyName(&quot;requiresApiKey&quot;)] public bool RequiresApiKey { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:234](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L234) |  |
-| <code>[JsonPropertyName(&quot;supportsIntraday&quot;)] public bool SupportsIntraday { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:237](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L237) |  |
-| <code>[JsonPropertyName(&quot;supportedGranularities&quot;)] public string[] SupportedGranularities { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/StatusModels.cs:240](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L240) |  |
-
-## BackfillRemediationSlaDto
-
-Qualified name: <code>Meridian.Contracts.Api.BackfillRemediationSlaDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:284](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L284).
-
-Typed remediation SLA evidence projected for browser and desktop queues.
-
-```csharp
-public sealed class BackfillRemediationSlaDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;tier&quot;)] public BackfillRemediationSlaTierDto Tier { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:287](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L287) |  |
-| <code>[JsonPropertyName(&quot;status&quot;)] public BackfillRemediationSlaStatusDto Status { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:290](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L290) |  |
-| <code>[JsonPropertyName(&quot;dueAtUtc&quot;)] public DateTimeOffset DueAtUtc { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:293](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L293) |  |
-| <code>[JsonPropertyName(&quot;requiresOwnerAssignment&quot;)] public bool RequiresOwnerAssignment { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:296](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L296) |  |
-| <code>[JsonPropertyName(&quot;downstreamWorkflow&quot;)] public string DownstreamWorkflow { get; set; } = &quot;unassigned&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:299](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L299) |  |
-| <code>[JsonPropertyName(&quot;reasonCode&quot;)] public string ReasonCode { get; set; } = &quot;Unknown&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:302](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L302) |  |
-| <code>[JsonPropertyName(&quot;provider&quot;)] public string Provider { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:305](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L305) |  |
-| <code>[JsonPropertyName(&quot;triggerSource&quot;)] public string? TriggerSource { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:308](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L308) |  |
-| <code>[JsonPropertyName(&quot;isCompatibilityDerived&quot;)] public bool IsCompatibilityDerived { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:311](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L311) |  |
-
 ## BackfillRemediationSlaStatusDto
 
 Qualified name: <code>Meridian.Contracts.Api.BackfillRemediationSlaStatusDto</code>. Kind: `enum`.
@@ -855,3 +784,48 @@ Request to update failover settings.
 ```csharp
 public record FailoverSettingsRequest(bool EnableFailover, int FailoverTimeoutSeconds);
 ```
+
+## FieldError
+
+Qualified name: <code>Meridian.Contracts.Api.FieldError</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ErrorResponse.cs:267](../../../../src/Meridian.Contracts/Api/ErrorResponse.cs#L267).
+
+Represents a field-level validation error.
+
+```csharp
+public sealed record FieldError([property : JsonPropertyName("field")] string Field, [property : JsonPropertyName("message")] string Message, [property : JsonPropertyName("code")] string? Code = null, [property : JsonPropertyName("attemptedValue")] object? AttemptedValue = null);
+```
+
+## ForceFailoverRequest
+
+Qualified name: <code>Meridian.Contracts.Api.ForceFailoverRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:74](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L74).
+
+Request to force a failover to a specific provider.
+
+```csharp
+public record ForceFailoverRequest(string TargetProviderId);
+```
+
+## FreshnessStates
+
+Qualified name: <code>Meridian.Contracts.Api.FreshnessStates</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Api/StatusModels.cs:375](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L375).
+
+Freshness state constants for metric staleness indicators.
+
+```csharp
+public static class FreshnessStates
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Fresh = &quot;Fresh&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:378](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L378) | Data is fresh and within acceptable thresholds. |
+| <code>public const string Warning = &quot;Warning&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:381](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L381) | Data is approaching staleness (&gt;70% of threshold). |
+| <code>public const string Stale = &quot;Stale&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:384](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L384) | Data has exceeded the staleness threshold. |
+| <code>public const string NoData = &quot;NoData&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:387](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L387) | No data has been received yet. |

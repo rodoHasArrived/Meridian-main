@@ -716,16 +716,19 @@ public static partial class EvidenceEndpoints
 
     internal static async Task<bool> CanReadAccountBoundStrategyEvidenceAsync(string subjectKind, string subjectId, HttpContext context)
     {
-        if (!string.Equals(subjectKind.Trim(), EvidenceSubjectResolver.StrategyRunKind, StringComparison.OrdinalIgnoreCase) ||
-            context.RequestServices.GetService<IStrategyRepository>() is not { } runs)
+        if (!string.Equals(subjectKind.Trim(), EvidenceSubjectResolver.StrategyRunKind, StringComparison.OrdinalIgnoreCase))
             return true;
+        if (context.RequestServices.GetService<IStrategyRepository>() is not { } runs)
+            return false;
 
         var runId = subjectId.Trim().TrimEnd('.');
         if (runId.Length == 0)
             return false;
         var ct = context.RequestAborted;
         var run = await runs.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
-        if (run is null || DesignerStrategyVersion.Read(run) is null)
+        if (run is null)
+            return false;
+        if (DesignerStrategyVersion.Read(run) is null)
             return true;
 
         var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);

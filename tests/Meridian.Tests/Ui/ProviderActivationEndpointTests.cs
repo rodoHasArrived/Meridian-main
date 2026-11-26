@@ -32,7 +32,8 @@ public sealed class ProviderActivationEndpointTests
         var source = new DataSourceConfig("polygon-stream", "Polygon", DataSourceKind.Polygon);
         await File.WriteAllTextAsync(store.ConfigPath, JsonSerializer.Serialize(
             new AppConfig(DataSources: new DataSourcesConfig(Sources: [source])), AppConfigJsonOptions.Write));
-        using var applier = ConfigurationRuntimeAppliers.Attach(store.ConfigPath, new SingleSourceProviderConfigApplier());
+        await using var applier = new CollectorConfigurationRuntime(store, new SingleSourceProviderConfigApplier(),
+            store.LoadRequired(), Log.Logger, CancellationToken.None);
         var clientMock = new Mock<IMarketDataClient> { CallBase = true };
         clientMock.SetupGet(client => client.IsEnabled).Returns(true);
         using var activation = new StreamingProviderActivation(store.ConfigPath,
@@ -45,6 +46,9 @@ public sealed class ProviderActivationEndpointTests
         {
             DataSources = config.DataSources! with { Sources = [source with { Enabled = false }] }
         });
+        var saved = store.GetChangeStatus();
+        saved.CollectorAcknowledgement!.Revision.Should().Be(saved.Revision);
+        saved.CollectorAcknowledgement.Entries.Should().ContainSingle().Which.Kind.Should().Be(ConfigurationApplyKind.NoRuntimeEffect);
         var status = await client.GetFromJsonAsync<ProviderActivationResponse>("/api/providers/activation");
 
         status!.Providers.Should().Contain(entry => entry.ProviderId == "ibkr" &&
