@@ -1,11 +1,11 @@
 {
-  "total_files": 1288,
+  "total_files": 1289,
   "orphaned_count": 379,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 86,
-  "signal_digest": "sha256:ac8c621f9cc5297bb585c7c90e2f0e10a89d713e3058397e40ae223446384207",
+  "signal_digest": "sha256:8651e18642a7a8294da9beb24d2a6e41d42fbfd6060ecdc990315da862671ce2",
   "orphaned_files": [
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
@@ -1212,6 +1212,13 @@
     },
     {
       "path": "docs/adr/032-intercompany-confirmation-close-policy.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/033-intercompany-confirmation-cross-company-and-adjustments.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
