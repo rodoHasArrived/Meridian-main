@@ -106,7 +106,7 @@ public sealed record DeclaredScheduleResolution(
 /// and a negative lag. Not every member without effect is refused: a Term tenor ignores the roll.
 /// </para>
 /// </remarks>
-public static class ScheduleSpecFactory
+public static partial class ScheduleSpecFactory
 {
     /// <summary>
     /// The version of this mapping from a declared block to a schedule spec. It is
@@ -502,7 +502,8 @@ public static class ScheduleSpecFactory
         string assetClass,
         ScheduleConventionTerms block,
         out DeclaredSpellings spellings,
-        [NotNullWhen(false)] out DeclaredScheduleResolution? resolution)
+        [NotNullWhen(false)] out DeclaredScheduleResolution? resolution,
+        string blockPath = SecurityVersionedTerms.ScheduleConventionsKey)
     {
         spellings = default;
         resolution = null;
@@ -534,7 +535,7 @@ public static class ScheduleSpecFactory
         ScheduleDirection? direction = null;
         if (block.Direction is { } rawDirection)
         {
-            if (!AllowedByBlockSchema(assetClass, DirectionMember, rawDirection)
+            if (!AllowedByBlockSchema(assetClass, DirectionMember, rawDirection, blockPath)
                 || !Enum.TryParse<ScheduleDirection>(rawDirection, ignoreCase: false, out var parsedDirection)
                 || !Enum.IsDefined(parsedDirection))
             {
@@ -557,13 +558,13 @@ public static class ScheduleSpecFactory
             stubPolicy = parsedStub;
         }
 
-        if (block.CouponRateUnit is { } rawUnit && !AllowedByBlockSchema(assetClass, CouponRateUnitMember, rawUnit))
+        if (block.CouponRateUnit is { } rawUnit && !AllowedByBlockSchema(assetClass, CouponRateUnitMember, rawUnit, blockPath))
         {
             resolution = Unrecognized(CouponRateUnitMember, rawUnit, block);
             return false;
         }
 
-        if (block.CouponCashBasis is { } rawBasis && !AllowedByBlockSchema(assetClass, CouponCashBasisMember, rawBasis))
+        if (block.CouponCashBasis is { } rawBasis && !AllowedByBlockSchema(assetClass, CouponCashBasisMember, rawBasis, blockPath))
         {
             resolution = Unrecognized(CouponCashBasisMember, rawBasis, block);
             return false;
@@ -627,8 +628,9 @@ public static class ScheduleSpecFactory
             : null;
 
     // A member of the block's closed vocabulary, checked exactly; a member the schema does not declare fails closed.
-    private static bool AllowedByBlockSchema(string assetClass, string member, string raw)
-        => SecurityAssetTermsSchema.ElementFields(assetClass, SecurityVersionedTerms.ScheduleConventionsKey)
+    private static bool AllowedByBlockSchema(string assetClass, string member, string raw,
+        string blockPath = SecurityVersionedTerms.ScheduleConventionsKey)
+        => SecurityAssetTermsSchema.ElementFields(assetClass, blockPath)
                .FirstOrDefault(field => field.Key == member) is { } field
            && field.Allows(raw);
 

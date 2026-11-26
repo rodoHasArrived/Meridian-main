@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IEnvironmentValidationService
+
+Qualified name: <code>Meridian.Contracts.Services.IEnvironmentValidationService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IEnvironmentValidationService.cs:8](../../../../src/Meridian.Contracts/Services/IEnvironmentValidationService.cs#L8).
+
+Validates an environment design and returns its validation findings.
+
+```csharp
+public interface IEnvironmentValidationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;EnvironmentValidationResultDto&gt; ValidateAsync(EnvironmentDraftDto draft, EnvironmentPublishPlanDto? publishPlan = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentValidationService.cs:10](../../../../src/Meridian.Contracts/Services/IEnvironmentValidationService.cs#L10) |  |
+
 ## IFundAccountTraversalQueryService
 
 Qualified name: <code>Meridian.Contracts.Services.IFundAccountTraversalQueryService</code>. Kind: `interface`.
@@ -918,22 +936,3 @@ A request to enumerate every accounting scope affected by a security-level fact.
 ```csharp
 public sealed record ScopeFanOutRequest(Guid SecurityId, IReadOnlyList<ScopeFanOutIdentifier> Identifiers, DateOnly EffectiveDate);
 ```
-
-## ScopeFanOutResult
-
-Qualified name: <code>Meridian.Contracts.Tenancy.ScopeFanOutResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:97](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L97).
-
-The result of a fan-out resolution. IsAuthoritative is the only field a caller may gate a mutation on. Scopes is meaningful only when it is true: a non-authoritative result may still carry partially resolved scopes for diagnostics, and acting on those would apply a decision to some affected scopes while silently missing others.
-
-```csharp
-public sealed record ScopeFanOutResult(bool IsAuthoritative, IReadOnlyList<AuthoritativeScopeAssignment> Scopes, IReadOnlyList<string> Blockers)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ScopeFanOutResult NotAuthoritative(string blocker) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:103](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L103) | A fail-closed result carrying a single stated reason. |
-| <code>public static ScopeFanOutResult Authoritative(IReadOnlyList&lt;AuthoritativeScopeAssignment&gt; scopes) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:107](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L107) | An authoritative result over the supplied affected scopes (possibly none). |

@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-23
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.Ui/dashboard
@@ -3609,6 +3609,13 @@ The private-capital retained source and election-calendar companion formats are 
 
 See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 `docs/source/data/diagram-index.yml`.
+
+## Vanilla interest-rate swap preview
+
+`previewVanillaInterestRateSwap` in `src/lib/api/contractual-cash-flow.api.ts` calls the existing
+Security contractual cash-flow preview with `calculationProfile: "vanilla-irs-v1"`. It is an
+analytical read with no development fallback and no posting action. See
+[contractual projections](../../../docs/domain/contractual-cash-flow-projection.md).
 
 ## Roadmap traceability
 

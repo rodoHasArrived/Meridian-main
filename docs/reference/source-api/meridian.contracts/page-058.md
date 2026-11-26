@@ -57,6 +57,26 @@ Declared public members:
 | <code>public bool IsBlocked =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L93) |  |
 | <code>public static SecurityValuationResult Blocked(SecurityValuationRequest request, SecurityDetailDto security, SecurityValuationModelKind model, string modelKey, string modelVersion, DateTimeOffset knowledgeAsOf, IReadOnlyList&lt;SecurityValuationBlockerDto&gt; blockers, IReadOnlyList&lt;SecurityValuationInputDto&gt;? inputs = null, IReadOnlyList&lt;string&gt;? diagnostics = null);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L96) | A blocked result for model: no price, value or market value, and the blockers given. |
 
+## SecurityVanillaSwapProfile
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityVanillaSwapProfile</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityVanillaSwapProfile.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVanillaSwapProfile.cs#L10).
+
+Bounded authoring and analytical routing over the existing fixed/floating leg contract. This adapter creates the existing calculation contract and never grants posting authority.
+
+```csharp
+public static class SecurityVanillaSwapProfile
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Id = &quot;vanilla-irs-v1&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVanillaSwapProfile.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVanillaSwapProfile.cs#L12) |  |
+| <code>public static ContractualCashFlowContract FromSecurity(SecurityDetailDto security);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVanillaSwapProfile.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVanillaSwapProfile.cs#L14) |  |
+| <code>public static void ValidateContract(ContractualCashFlowContract contract);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVanillaSwapProfile.cs:156](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVanillaSwapProfile.cs#L156) | Rechecks the bounded shape on normalized retained packets during replay. |
+
 ## SecurityVersionedScalarTerms
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityVersionedScalarTerms</code>. Kind: `class`.
@@ -818,21 +838,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;PublishedEnvironmentRuntimeDto?&gt; GetCurrentRuntimeAsync(Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs:10](../../../../src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs#L10) |  |
 | <code>Task&lt;PublishedEnvironmentRuntimeDto?&gt; GetRuntimeForVersionAsync(Guid versionId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs:12](../../../../src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs#L12) |  |
-
-## IEnvironmentValidationService
-
-Qualified name: <code>Meridian.Contracts.Services.IEnvironmentValidationService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEnvironmentValidationService.cs:8](../../../../src/Meridian.Contracts/Services/IEnvironmentValidationService.cs#L8).
-
-Validates an environment design and returns its validation findings.
-
-```csharp
-public interface IEnvironmentValidationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;EnvironmentValidationResultDto&gt; ValidateAsync(EnvironmentDraftDto draft, EnvironmentPublishPlanDto? publishPlan = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentValidationService.cs:10](../../../../src/Meridian.Contracts/Services/IEnvironmentValidationService.cs#L10) |  |

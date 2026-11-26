@@ -6264,8 +6264,10 @@ Meridian-main
 │   │   │   ├── RateUnitNormalizer.cs
 │   │   │   ├── ScheduleConventionTerms.cs
 │   │   │   ├── ScheduleSpecFactory.cs
+│   │   │   ├── ScheduleSpecFactory.Legs.cs
 │   │   │   ├── ScheduleTermsWriteRules.cs
 │   │   │   ├── ScheduleTermsWriteRules.Gaps.cs
+│   │   │   ├── ScheduleTermsWriteRules.Legs.cs
 │   │   │   ├── ScheduleTermsWriteRules.Scalars.cs
 │   │   │   ├── SecurityAssetClassCatalog.cs
 │   │   │   ├── SecurityAssetClassModules.cs
@@ -6339,6 +6341,7 @@ Meridian-main
 │   │   │   ├── SecurityUnderlyingGraph.cs
 │   │   │   ├── SecurityValidationDtos.cs
 │   │   │   ├── SecurityValuation.cs
+│   │   │   ├── SecurityVanillaSwapProfile.cs
 │   │   │   ├── SecurityVersionedScalarTerms.cs
 │   │   │   ├── SecurityVersionedTerms.cs
 │   │   │   ├── StructuredCashFlowTerms.cs
@@ -9752,8 +9755,6 @@ Meridian-main
 │   │   │   │   │   ├── use-report-run-stream.ts
 │   │   │   │   │   ├── use-request-lifecycle.test.ts
 │   │   │   │   │   ├── use-request-lifecycle.ts
-│   │   │   │   │   ├── use-signed-in-username.test.ts
-│   │   │   │   │   ├── use-signed-in-username.ts
 │   │   │   │   │   ├── use-visible-interval.test.tsx
 │   │   │   │   │   ├── use-visible-interval.ts
 │   │   │   │   │   ├── use-workstation-data.test.ts
@@ -9781,8 +9782,6 @@ Meridian-main
 │   │   │   │   │   │   ├── asset-market-valuation.api.test.ts
 │   │   │   │   │   │   ├── asset-market-valuation.api.ts
 │   │   │   │   │   │   ├── audit-integrity.api.ts
-│   │   │   │   │   │   ├── auth.api.test.ts
-│   │   │   │   │   │   ├── auth.api.ts
 │   │   │   │   │   │   ├── banking-payments.api.test.ts
 │   │   │   │   │   │   ├── banking-payments.api.ts
 │   │   │   │   │   │   ├── bond-analytics.api.test.ts
@@ -14990,6 +14989,7 @@ Meridian-main
 │   │   │   ├── SecurityValidationGateServiceTests.cs
 │   │   │   ├── SecurityValidationServiceTests.cs
 │   │   │   ├── SecurityValuationServiceTests.cs
+│   │   │   ├── SecurityVanillaSwapProfileTests.cs
 │   │   │   ├── SecurityVersionedScalarCodecCompatibilityTests.cs
 │   │   │   ├── SecurityVersionedTermsTests.cs
 │   │   │   ├── SpecializedProjectionGoldenTests.cs
