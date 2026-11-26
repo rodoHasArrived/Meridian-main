@@ -189,6 +189,7 @@ Legacy provider sidecars are imported as one validated, insert-only vault snapsh
 `LegacyCredentialFileMigration` serializes source discovery, import and cleanup across processes for
 both provider setup and OAuth callers. Successful imports retain both encrypted generations before
 the helper moves the plaintext source to `.migrated`, synchronizes the directory, then erases it.
+A failed directory sync throws before any erase, including when a restart resumes the cleanup.
 A restart completes cleanup without deserializing partly erased bytes. Empty migration lock files
 remain in place so every process continues to acquire the same lock identity.
 
@@ -524,3 +525,9 @@ The immutable statement match artifact retains the executed tolerance policy, th
 evidence, and the exact operands of accepted match groups. The recovery checkpoint binds these
 fields through the artifact hash. Legacy artifacts preserve their original byte shape when these
 fields are absent. Recovery adopts a verified older artifact as written.
+Match artifacts, casework commit envelopes and completion markers are acknowledged only after a
+strict directory sync, which also runs when an earlier identical record is returned, so a retry
+confirms an interrupted publication. Statement source evidence is synced the same way before its
+import is published. The create-once import and recovery-checkpoint claims stay best effort: a retry
+would report them as duplicates. `FileProviderCredentialStore` strictly syncs its audit journal
+before each vault write; audit appends and post-commit journal updates stay best effort.

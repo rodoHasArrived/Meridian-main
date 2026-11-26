@@ -13681,6 +13681,7 @@ Meridian-main
 │   │   │   │   ├── QuickBooks
 │   │   │   │   │   ├── QuickBooksCredentialLifecycleTests.cs
 │   │   │   │   │   └── QuickBooksOnlineProviderCredentialConnectionStoreTests.cs
+│   │   │   │   ├── CredentialDirectorySyncTests.cs
 │   │   │   │   ├── ExternalGlConnectionLifecycleTests.cs
 │   │   │   │   ├── ExternalGlCredentialConcurrencyTests.cs
 │   │   │   │   ├── ExternalGlCredentialRecoveryTests.cs
@@ -14275,6 +14276,7 @@ Meridian-main
 │   │   │   │   ├── WebSocketResiliencePolicyTests.cs
 │   │   │   │   └── WebSocketSendSessionTests.cs
 │   │   │   └── Shared
+│   │   │       ├── DirectorySyncFaults.cs
 │   │   │       ├── SymbolNormalizationTests.cs
 │   │   │       └── TempDirectoryFixture.cs
 │   │   ├── Instruments

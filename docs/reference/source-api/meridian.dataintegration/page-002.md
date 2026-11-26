@@ -146,7 +146,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static async Task MigrateAsync(string sourcePath, Func&lt;string, CancellationToken, Task&gt; importSnapshot, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs:19](../../../../src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs#L19) | Imports a legacy JSON snapshot once it has been exclusively claimed. The callback must retain the imported data in both encrypted generations and finish its audit before returning. Completed imports move out of the discovery path before erasure, so cleanup can resume after interruption without parsing an erased or partially erased source. |
-| <code>public static void RestrictAccess(string sourcePath);</code> | [src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs:53](../../../../src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs#L53) | Restricts retained legacy credential and interrupted-migration snapshots without claiming their unassigned contents. Permission failures propagate to the scoped startup boundary. |
+| <code>public static void RestrictAccess(string sourcePath);</code> | [src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs:61](../../../../src/Meridian.DataIntegration/Credentials/LegacyCredentialFileMigration.cs#L61) | Restricts retained legacy credential and interrupted-migration snapshots without claiming their unassigned contents. Permission failures propagate to the scoped startup boundary. |
 
 ## OAuthProviderConfig
 

@@ -549,7 +549,7 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
         check = check with { PublicationId = operationId };
         var entry = PendingAuditEntry.Intent(providerId, action, check, auditLine);
         journal.Add(entry);
-        await WritePendingAuditAsync(journal, ct).ConfigureAwait(false);
+        await WritePendingAuditAsync(journal, ct, beforeVaultWrite: true).ConfigureAwait(false);
 
         try
         {
@@ -818,13 +818,14 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
         return lines.Where(static line => !string.IsNullOrWhiteSpace(line)).Select(PendingAuditEntry.Parse).ToList();
     }
 
-    private async Task WritePendingAuditAsync(List<PendingAuditEntry> entries, CancellationToken ct)
+    private async Task WritePendingAuditAsync(List<PendingAuditEntry> entries, CancellationToken ct, bool beforeVaultWrite = false)
     {
         if (entries.Count == 0)
         {
             if (File.Exists(_pendingAuditPath))
             {
                 File.Delete(_pendingAuditPath);
+                // Best effort: the journal is already cleared; replay deduplicates by operation id.
                 await AtomicFileWriter.SyncDirectoryAsync(_directoryPath, CancellationToken.None).ConfigureAwait(false);
             }
             return;
@@ -833,7 +834,12 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
         var created = !File.Exists(_pendingAuditPath);
         var content = string.Join("\n", entries.Select(static entry => entry.Serialize())) + "\n";
         await AtomicFileWriter.WriteAsync(_pendingAuditPath, content, ct).ConfigureAwait(false);
-        if (created)
+        // Strict before the vault write, even for an existing journal, so a retry confirms an earlier
+        // attempt's entry (replay discards an unproven intent). Best effort afterwards: a journal
+        // failure after the vault write is a deferred audit, never a failed mutation.
+        if (beforeVaultWrite)
+            await AtomicFileWriter.SyncDirectoryOrThrowAsync(_directoryPath, CancellationToken.None).ConfigureAwait(false);
+        else if (created)
             await AtomicFileWriter.SyncDirectoryAsync(_directoryPath, CancellationToken.None).ConfigureAwait(false);
     }
 
@@ -1005,6 +1011,7 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
         await stream.WriteAsync(Encoding.UTF8.GetBytes(line + "\n"), ct).ConfigureAwait(false);
         await stream.FlushAsync(ct).ConfigureAwait(false);
         stream.Flush(flushToDisk: true);
+        // Best effort: the record is appended, and a throw would make replay append it twice.
         if (created)
             await AtomicFileWriter.SyncDirectoryAsync(_directoryPath, CancellationToken.None).ConfigureAwait(false);
     }

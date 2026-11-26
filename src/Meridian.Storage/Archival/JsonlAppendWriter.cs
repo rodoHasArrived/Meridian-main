@@ -77,6 +77,8 @@ public static class JsonlAppendWriter
         if (created && !string.IsNullOrEmpty(directory))
         {
             // Make the new directory entry durable; the data itself is already flushed.
+            // Best effort: the lines are appended, and a throw would make the caller retry and
+            // append them twice.
             await AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).ConfigureAwait(false);
         }
     }

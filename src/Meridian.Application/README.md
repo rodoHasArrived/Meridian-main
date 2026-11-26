@@ -302,6 +302,8 @@ Backfill resume checkpoints are written only after the final pipeline flush succ
 them, and syncs the ledger directory on first commit and after each compaction rename, because WAL
 recovery trusts those lines to suppress replay. A failed fsync or directory sync fails the commit
 and leaves the claims pending, so the caller retries instead of publishing unconfirmed entries.
+`BackfillScheduleManager.DeleteScheduleAsync` acknowledges a deletion only once the tombstone rename
+is synced; on a sync failure it renames the schedule back and rethrows, so a retry starts clean.
 Pipeline durability state is split per `PipelineWorkload`: `CompositionOptions.PipelineWorkload` (`Collector` by default, `Backfill` for
 `CompositionOptions.BackfillOnly`) selects `_wal/{collector|backfill}` and
 `_dedup/{collector|backfill}` through `PipelineDurabilityPaths`, so a collector and a backfill can

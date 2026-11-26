@@ -30,7 +30,11 @@ public static class LegacyCredentialFileMigration
         using var migrationLock = await AcquireLockAsync(sourcePath + ".migration.lock", ct).ConfigureAwait(false);
         if (File.Exists(cleanupPath))
         {
+            // Strict for the same reason as below: an earlier attempt may have stopped before its
+            // rename was confirmed durable, and erasing is irreversible.
+            await AtomicFileWriter.SyncDirectoryOrThrowAsync(directory, CancellationToken.None).ConfigureAwait(false);
             SecurelyRemove(cleanupPath);
+            // Best effort: the erase has committed; nothing later depends on the entry.
             await AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).ConfigureAwait(false);
         }
         // Another process may have finished the import while this caller awaited the lock.
@@ -41,8 +45,12 @@ public static class LegacyCredentialFileMigration
         var json = await File.ReadAllTextAsync(sourcePath, ct).ConfigureAwait(false);
         await importSnapshot(json, ct).ConfigureAwait(false);
         File.Move(sourcePath, cleanupPath);
-        await AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).ConfigureAwait(false);
+        // Strict: the erase below is irreversible. If the rename were lost after a crash, the
+        // erased bytes could reappear at the discovery path and be imported. On a throw the
+        // snapshot is retained under the cleanup name, and a retry erases it without re-importing.
+        await AtomicFileWriter.SyncDirectoryOrThrowAsync(directory, CancellationToken.None).ConfigureAwait(false);
         SecurelyRemove(cleanupPath);
+        // Best effort: the erase has committed.
         await AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).ConfigureAwait(false);
     }
 

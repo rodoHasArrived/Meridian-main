@@ -355,8 +355,14 @@ and counted in `mdc_storage_directory_fsync_failures_total` (label `operation`),
 `SyncDirectoryOrThrowAsync` throws `DirectorySyncException` instead and guards steps that
 acknowledge data or delete the only other copy: WAL segment creation, archiving before truncation
 and legacy adoption, `JsonlStorageSink` flushes of new files, dedup-ledger commits, tier migration
-and JSONL archiving before deleting the source. Filesystems that cannot fsync a directory at all
-(`EINVAL`, `EBADF`, `ENOTSUP`) are counted as `fsync_unsupported` and never thrown.
+and JSONL archiving before deleting the source. Maintenance also uses it before mutating a source:
+each compression or repair backup, the published or resumed compression archive and its checksum
+sidecar before the source is deleted, and a repair's `.corrupt-lines` quarantine before the
+rewrite. Package import syncs moved and identical destination files before reporting success, and
+backfill receipts sync before `WriteAsync` records the run. `JsonlAppendWriter` and ETL
+audit/reject appends stay best effort, because a retry would append the lines twice. Filesystems
+that cannot fsync a directory at all (`EINVAL`, `EBADF`, `ENOTSUP`) are counted as
+`fsync_unsupported` and never thrown.
 
 `JsonlAppendWriter` appends lines to an append-only JSONL log in place and fsyncs them, truncating a
 torn final line first; `JsonlStorageSink` uses the same torn-tail repair for its day files. Use it
