@@ -155,6 +155,8 @@ Meridian-main
 │   │   ├── meridian-roadmap-strategist.md
 │   │   ├── meridian-simulated-user-panel.md
 │   │   └── meridian-test-writer.md
+│   ├── hooks
+│   │   └── format-csharp.sh
 │   ├── plugins
 │   │   ├── csharp-dotnet-development
 │   │   │   ├── .github
@@ -845,7 +847,8 @@ Meridian-main
 │   └── Dockerfile
 ├── .githooks
 │   ├── post-merge
-│   └── pre-commit
+│   ├── pre-commit
+│   └── pre-push
 ├── .github
 │   ├── actions
 │   │   ├── close-superseded-refresh-prs
