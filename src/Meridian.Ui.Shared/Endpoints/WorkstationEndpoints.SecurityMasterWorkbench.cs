@@ -32,6 +32,7 @@ public static partial class WorkstationEndpoints
     /// </summary>
     internal static void MapSecurityMasterWorkbenchEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        MapSecurityMasterImpactEndpoints(app, jsonOptions);
         var group = app.MapGroup(SecurityMasterApiRoutePrefix)
             .WithTags("SecurityMasterWorkbench")
             .RequireWorkstationTenantScope();
@@ -425,6 +426,10 @@ public static partial class WorkstationEndpoints
         {
             var result = await action().ConfigureAwait(false);
             return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status200OK);
+        }
+        catch (SecurityMasterImpactPreviewException ex)
+        {
+            return Results.Problem(statusCode: StatusCodes.Status409Conflict, title: ex.Code, detail: ex.Message);
         }
         catch (SecurityMasterConcurrencyException ex)
         {

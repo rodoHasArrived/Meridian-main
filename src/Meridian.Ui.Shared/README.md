@@ -42,6 +42,13 @@ Designer canonical replay requires `HistoricalPriceBasis.Raw` on every retained 
 Legacy `IsAdjusted=false` without precise basis is insufficient, so previously ambiguous stored prices
 cannot enter raw-price replay or receive a second corporate-action adjustment.
 
+Tenant-scoped endpoints create a retained Security Master impact receipt for a draft or submitted
+revision (`POST /api/security-master/{securityId}/revisions/{revisionId}/impact-preview`, Modify
+permission) and read one back by content hash (`GET /api/security-master/impact-previews/{receiptId}`).
+The scope comes from the authenticated workstation tenant/company through
+`WorkstationImpactScopeAccessor`; refusals surface as typed `Impact*` problem responses. Receipts
+are stored under the workstation data directory, separated by scope.
+
 ## Cancel-all incident reads
 
 `GET /api/execution/cancel-incidents?fundAccountId=...` lists recent retained incident summaries;

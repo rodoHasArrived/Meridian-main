@@ -1494,6 +1494,13 @@ erDiagram
         bigint base_version
         text field_base_value
         boolean field_base_recorded
+        text drafted_by
+        text submitted_by
+        uuid repair_batch_id
+        text repair_evidence_id
+        text repair_evidence_sha256
+        text reviewed_impact_receipt_id
+        bigint reviewed_canonical_version
     }
     security_master_security_master_terms_capability_floor {
         boolean singleton PK

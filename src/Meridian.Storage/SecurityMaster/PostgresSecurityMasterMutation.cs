@@ -11,9 +11,10 @@ public interface ISecurityMasterMutationParticipant
 }
 
 /// <summary>
-/// A transaction shared only by the overlay and governed revision stores. The durable generation
-/// fences readers on other instances, including the first edit (there need not be an overlay yet).
-/// No external workflow, event publication or downstream handler is enlisted in this transaction.
+/// A transaction shared by governed revisions, overlays and participating canonical writes. The
+/// durable generation fences other workbench instances. Canonical event/projection/provenance
+/// writes join an active scope; derived cache/history work waits for the outermost commit.
+/// External approval workflows remain separately committed and require exact-evidence reconciliation.
 /// </summary>
 public static class PostgresSecurityMasterMutation
 {
@@ -60,6 +61,10 @@ public static class PostgresSecurityMasterMutation
         {
             var result = await operation().ConfigureAwait(false);
             await transaction.CommitAsync(ct).ConfigureAwait(false);
+            session.Active = false;
+            Current.Value = null;
+            while (session.AfterCommit.TryDequeue(out var afterCommit))
+                await afterCommit().ConfigureAwait(false);
             return result;
         }
         finally
@@ -97,6 +102,10 @@ public static class PostgresSecurityMasterMutation
         {
             var result = await operation().ConfigureAwait(false);
             await transaction.CommitAsync(ct).ConfigureAwait(false);
+            session.Active = false;
+            Current.Value = null;
+            while (session.AfterCommit.TryDequeue(out var afterCommit))
+                await afterCommit().ConfigureAwait(false);
             return result;
         }
         finally
@@ -182,6 +191,33 @@ public static class PostgresSecurityMasterMutation
         }
     }
 
+    public static bool IsActiveFor(Guid securityId) => Current.Value is { Active: true } session && session.SecurityId == securityId;
+
+    public static bool HasImpactCanonicalFence(SecurityMasterOptions options, Guid securityId)
+        => IsActiveFor(options, securityId) && Current.Value!.ImpactCanonicalFence;
+
+    /// <summary>Records locks already acquired on this session's canonical stream and row.</summary>
+    public static void MarkImpactCanonicalFence(SecurityMasterOptions options, Guid securityId)
+    {
+        var session = Current.Value ?? throw new InvalidOperationException("An active canonical impact transaction is required.");
+        EnsureScope(session, options, securityId);
+        session.ImpactCanonicalFence = true;
+    }
+
+    /// <summary>Defers derived cache/history work until the actual outer transaction commits.</summary>
+    public static Task AfterCommitAsync(Guid securityId, Func<Task> operation)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        if (Current.Value is { Active: true } session)
+        {
+            if (session.SecurityId != securityId)
+                throw new InvalidOperationException("Post-commit work must belong to the active security.");
+            session.AfterCommit.Enqueue(operation);
+            return Task.CompletedTask;
+        }
+        return operation();
+    }
+
     public static NpgsqlTransaction RequireTransaction(SecurityMasterOptions options, Guid securityId)
     {
         var session = Current.Value ?? throw new InvalidOperationException("A Security Master mutation transaction is required.");
@@ -204,7 +240,9 @@ public static class PostgresSecurityMasterMutation
     private sealed record Session(SecurityMasterOptions Options, Guid SecurityId, NpgsqlConnection Connection, NpgsqlTransaction Transaction)
     {
         public bool Active { get; set; } = true;
+        public bool ImpactCanonicalFence { get; set; }
         public SemaphoreSlim ConnectionGate { get; } = new(1, 1);
+        public System.Collections.Concurrent.ConcurrentQueue<Func<Task>> AfterCommit { get; } = new();
     }
 
     /// <summary>

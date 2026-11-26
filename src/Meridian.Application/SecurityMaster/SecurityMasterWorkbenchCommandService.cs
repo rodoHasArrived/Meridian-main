@@ -78,8 +78,13 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         ISecurityFieldProvenanceStore? fieldProvenance = null,
         ISecurityMasterStore? projectionStore = null,
         Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null,
-        ISecurityMasterGovernanceRequirements? governanceRequirements = null)
+        ISecurityMasterGovernanceRequirements? governanceRequirements = null,
+        ISecurityMasterImpactPreviewService? impactPreview = null,
+        ISecurityMasterImpactScopeAccessor? impactScope = null)
     {
+        _impactPreview = impactPreview;
+        _impactScope = impactScope;
+        _requireImpactPreview = () => governanceRequirements?.Current.Profile == SecurityMasterGovernanceProfile.Institutional;
         if (governanceRequirements is not null)
         {
             // The effective requirement (its own setting or the Institutional profile), read at each
@@ -105,8 +110,12 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         _assetProfileCatalog = assetProfileCatalog;
     }
 
-    public async Task<SecurityMasterEditResultDto> UpdateSecurityFieldAsync(
+    public Task<SecurityMasterEditResultDto> UpdateSecurityFieldAsync(
         UpdateSecurityFieldRequest request, CancellationToken ct = default)
+        => UpdateSecurityFieldCoreAsync(request, null, ct);
+
+    private async Task<SecurityMasterEditResultDto> UpdateSecurityFieldCoreAsync(
+        UpdateSecurityFieldRequest request, SecurityMasterRevisionDraftContext? repairContext, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         if (string.IsNullOrWhiteSpace(request.Justification))
@@ -241,7 +250,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                     // CLEAR): without it, discarding a later same-path revision could never restore
                     // this revision's value — an approved predecessor would deadlock unpublishable.
                     draftRevision = await CreateFieldEditDraftAsync(
-                        request, validatedPath, new SecurityMasterRevisionFieldValue(isClear ? null : request.NewValue), currentVersion, ct)
+                        request, validatedPath, new SecurityMasterRevisionFieldValue(isClear ? null : request.NewValue), currentVersion, ct, repairContext)
                         .ConfigureAwait(false);
                 }
                 catch (Exception ex)
@@ -560,6 +569,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             }
 
             EnsureReviewerIsIndependentOfDrafter(request.Reviewer, revision);
+            await EnsureRevisionWorkflowPurposeAsync(revision, workflowId, ct).ConfigureAwait(false);
 
             // The submission rationale carries a durable REVISION-IDENTITY marker into the
             // workflow's approval evidence. Reconciling a stranded half-submission (below) is only
@@ -636,7 +646,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             nameof(request));
     }
 
-    public async Task<SecurityMasterEditResultDto> ApproveRevisionAsync(
+    private async Task<SecurityMasterEditResultDto> ApproveRevisionCoreAsync(
         ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -656,6 +666,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         }
 
         EnsureApproverIsIndependentOfSubmitter(request, revision);
+        await EnsureRevisionWorkflowPurposeAsync(revision, request.WorkflowId, ct).ConfigureAwait(false);
 
         var dto = new OperationsApprovalDecisionRequestDto(
             ExpectedVersion: request.ExpectedWorkflowVersion,
@@ -749,7 +760,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             "Revision approved through the operations-continuity gate.");
     }
 
-    public async Task<SecurityMasterPublishResultDto> PublishRevisionAsync(
+    private async Task<SecurityMasterPublishResultDto> PublishRevisionCoreAsync(
         PublishSecurityMasterRevisionRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -780,9 +791,9 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         // Resolve the durable accounting books the edit could have touched so the period-aware resolver
         // can route each by its accounting-period lock status. Without this feed the resolver sees an
         // empty affected set and short-circuits to no restatement.
-        var affectedLedgerBookIds = await _affectedLedgerBookResolver
-            .ResolveAsync(downstreamImpact, ct)
-            .ConfigureAwait(false);
+        if (revision.ReviewedImpactReceiptId is not null)
+            downstreamImpact = downstreamImpact with { FundProfileId = fundScope, IsScoped = fundScope is not null };
+        var affectedLedgerBookIds = await ResolveReviewedBooksAsync(revision, downstreamImpact, ct).ConfigureAwait(false);
 
         // Carry the edit's effective date and changed field from the durable revision so period-aware
         // / restatement handlers can scope impact analysis to the actual (possibly back-dated) edit
@@ -904,6 +915,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                         "security-level override decision would co-approve unreviewed values. Approve or discard the other " +
                         "staged revisions — or withdraw ungoverned overlay keys — and retry; the revision remains Approved.");
                 }
+
+                await ValidatePublicationImpactAsync(request, ct).ConfigureAwait(false);
 
                 await _revisions.TransitionAsync(
                     request.RevisionId,
@@ -1937,41 +1950,6 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
 
         return revision;
     }
-
-    private static SecurityMasterEditResultDto BuildLifecycleResult(
-        Guid securityId, Guid revisionId, long version, SecurityMasterRevisionStateDto state,
-        string actor, string? reason, string eventType, string summary)
-        => new(
-            securityId,
-            revisionId,
-            version,
-            state,
-            BuildChangeEntry(version, eventType, actor, effectiveFrom: null, sourceRecordId: null,
-                reason: reason, summary: summary, changedFields: []));
-
-    private static SecurityMasterChangeHistoryItemDto BuildChangeEntry(
-        long streamVersion,
-        string eventType,
-        string actor,
-        DateTimeOffset? effectiveFrom,
-        string? sourceRecordId,
-        string? reason,
-        string summary,
-        IReadOnlyList<string> changedFields)
-        => new(
-            ChangeId: $"{streamVersion}:{eventType}",
-            StreamVersion: streamVersion,
-            EventType: eventType,
-            ChangedAtUtc: DateTimeOffset.UtcNow,
-            EffectiveAtUtc: effectiveFrom,
-            Actor: actor,
-            Origin: "User",
-            SourceSystem: OperatorSourceSystem,
-            SourceRecordId: sourceRecordId,
-            Reason: reason,
-            Summary: summary,
-            ChangedFields: changedFields,
-            ChangedFieldsSummary: changedFields.Count == 0 ? "No structured field diff." : string.Join(", ", changedFields));
 
     private static SecurityMasterDownstreamImpactDto EmptyDownstreamImpact()
         => new(

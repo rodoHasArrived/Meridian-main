@@ -595,6 +595,15 @@
       "sha256": "54feb10eaf23439837a00c7c0bea029ffe990101e185b95596e52d6d13a00091"
     },
     {
+      "filename": "069_security_revision_review_context.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 69,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/069_security_revision_review_context.sql",
+      "schema": "security_master",
+      "sha256": "1ffd0947e38c3e2a594a899667852af30e6a187a28c617e9dc8f8b002e658de6"
+    },
+    {
       "filename": "070_otc_decimal_precision.sql",
       "immutable": true,
       "migration_set_id": "security-master",
@@ -1820,7 +1829,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "878ada2eb817d681b42e72452e07ecebfcc82aa6a963c586397a3159c7580032",
+  "fingerprint": "98054bb16468efd70490d5c3b78c0103956e0ad02d1d9feb5b59d5c609e32ff5",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -2082,7 +2091,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 202,
+    "files": 203,
     "migration_sets": 11,
     "waivers": 60,
     "warnings": 0

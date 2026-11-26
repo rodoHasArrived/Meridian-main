@@ -7,14 +7,17 @@ namespace Meridian.Application.SecurityMaster;
 /// field-edit revisions. Submission already refuses a reviewer equal to the submitter; with the
 /// requirement in force (its setting on, or the Institutional governance profile, as
 /// <see cref="ISecurityMasterGovernanceRequirements"/> reports), the drafter cannot be named as
-/// reviewer, and the submitter cannot approve. A historical identifier window proposal always
-/// requires independent review, whatever the setting: it is the governed way to backdate an
-/// identifier, which an import can never do, so the proposer can neither review nor approve it.
+/// reviewer, and the submitter cannot approve. Two kinds of revision always require independent
+/// review, whatever the setting: a repair-batch revision, and a historical identifier window
+/// proposal. The window proposal is the governed way to backdate an identifier, which an import
+/// can never do, so its proposer can neither review nor approve it.
 /// </summary>
 public sealed partial class SecurityMasterWorkbenchCommandService
 {
     private bool RequiresIndependentReview(SecurityMasterRevisionRecord revision)
-        => _requireIndependentReviewer() || SecurityMasterHistoricalIdentifierWindow.IsWindowRevision(revision);
+        => _requireIndependentReviewer()
+            || revision.RepairBatchId is not null
+            || SecurityMasterHistoricalIdentifierWindow.IsWindowRevision(revision);
 
     /// <summary>
     /// The drafter is the revision's actor until it is submitted (each transition records its own
@@ -24,7 +27,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
     private void EnsureReviewerIsIndependentOfDrafter(string reviewer, SecurityMasterRevisionRecord draft)
     {
         if (RequiresIndependentReview(draft)
-            && string.Equals(reviewer.Trim(), draft.Actor?.Trim(), StringComparison.OrdinalIgnoreCase))
+            && string.Equals(reviewer.Trim(), (draft.DraftedBy ?? draft.Actor)?.Trim(), StringComparison.OrdinalIgnoreCase))
         {
             throw new ArgumentException(
                 "The reviewer must be independent from the actor who drafted the revision; self-approval is not permitted.",
@@ -47,7 +50,12 @@ public sealed partial class SecurityMasterWorkbenchCommandService
 
         var approvingReviewer = (string.IsNullOrWhiteSpace(request.Reviewer) ? request.Actor : request.Reviewer)?.Trim();
         var approvingActor = request.Actor?.Trim();
-        var maker = new[] { submitted.Actor?.Trim(), TryGetWindowProposer(submitted)?.Trim() };
+        var maker = new[]
+        {
+            (submitted.SubmittedBy ?? submitted.Actor)?.Trim(),
+            submitted.DraftedBy?.Trim(),
+            TryGetWindowProposer(submitted)?.Trim()
+        };
         if (maker.Any(m => !string.IsNullOrEmpty(m)
             && (string.Equals(approvingReviewer, m, StringComparison.OrdinalIgnoreCase)
                 || (SecurityMasterHistoricalIdentifierWindow.IsWindowRevision(submitted)

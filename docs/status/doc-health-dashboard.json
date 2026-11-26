@@ -1,11 +1,11 @@
 {
-  "total_files": 1294,
+  "total_files": 1292,
   "orphaned_count": 379,
   "no_heading_count": 231,
   "stale_count": 0,
-  "todo_count": 298,
+  "todo_count": 297,
   "health_score": 86,
-  "signal_digest": "sha256:9daa990cf9d3d90c868596c82c77355fdfde1d260b368d04ecc9a343733952e0",
+  "signal_digest": "sha256:ade44bd8645fcb1d8b4bc91b73a86bbb349c014139f9ccb9593283fd622113a9",
   "orphaned_files": [
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
@@ -2345,13 +2345,6 @@
       "stale": false
     },
     {
-      "path": "docs/domain/partnership-waterfall-allocation.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/domain/README.md",
       "has_heading": true,
       "todo_count": 1,
@@ -2374,13 +2367,6 @@
     },
     {
       "path": "docs/domain/security.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/domain/short-carry-charges.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4517,7 +4503,7 @@
     {
       "path": "docs/reference/source-api/meridian.contracts/page-051.md",
       "has_heading": true,
-      "todo_count": 1,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },

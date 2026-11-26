@@ -11,6 +11,13 @@ last_reviewed: 2026-11-25
 
 # src/Meridian.Ui/dashboard
 
+The Security Master passport editor requires an explicit fund profile before staging a draft and
+freezes it with the draft. It can create a retained impact receipt for the working revision and
+shows its books, periods, before/after projections and typed gaps. Approve and Publish stay disabled
+until the receipt matching that security, revision and fund has been loaded and inspected. A
+displayed identifier does not establish inspection, and the server rechecks canonical and dependency
+authority. Server `Impact*` refusals render as an impact-review banner.
+
 ## Cancel-all incident history
 
 Trading → Risk includes account-scoped retained cancel-all history, with recent incident selection
