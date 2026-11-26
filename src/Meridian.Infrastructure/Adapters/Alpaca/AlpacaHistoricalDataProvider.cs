@@ -36,7 +36,7 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
     EnvironmentVariables = new[] { "ALPACA_SECRET_KEY", "APCA_API_SECRET_KEY", "ALPACA__SECRETKEY" },
     DisplayName = "API Secret Key",
     Description = "Alpaca API secret key from https://app.alpaca.markets/brokerage/papers")]
-public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
+public sealed partial class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string BaseUrl = "https://data.alpaca.markets/v2/stocks";
     // Largest page Alpaca serves for quotes and trades.
@@ -150,9 +150,22 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
                 => throw new ArgumentException("'raw' cannot be combined with other Alpaca adjustments.", nameof(adjustment)),
             _ when parts.Contains("all") && parts.Length > 1
                 => throw new ArgumentException("'all' cannot be combined with other Alpaca adjustments.", nameof(adjustment)),
-            _ => normalized
+            _ => string.Join(',', parts)
         };
     }
+
+    private HistoricalPriceBasis RequestedPriceBasis => _adjustment switch
+    {
+        "raw" => HistoricalPriceBasis.Raw,
+        "split" => HistoricalPriceBasis.SplitAdjusted,
+        "dividend" => HistoricalPriceBasis.DividendAdjusted,
+        "all" => HistoricalPriceBasis.FullyAdjusted,
+        _ when _adjustment.Split(',').Contains("split") && _adjustment.Split(',').Contains("dividend")
+            => HistoricalPriceBasis.FullyAdjusted,
+        // The shared basis vocabulary cannot represent spin-off-only or partial
+        // combinations containing spin-offs. Do not label them raw or fully adjusted.
+        _ => HistoricalPriceBasis.Unknown
+    };
 
     public override async Task<bool> IsAvailableAsync(CancellationToken ct = default)
     {
@@ -255,7 +268,9 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
                         AdjustedClose: isAdjusted ? bar.Close : null,
                         AdjustedVolume: isAdjusted ? bar.Volume : null,
                         SplitFactor: null,
-                        DividendAmount: null
+                        DividendAmount: null,
+                        PriceBasis: RequestedPriceBasis,
+                        AdjustedPriceBasis: isAdjusted ? RequestedPriceBasis : HistoricalPriceBasis.Unknown
                     ));
                 }
 
@@ -663,13 +678,13 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
             throw new InvalidOperationException("Alpaca API credentials are required. Set ALPACA_KEY_ID and ALPACA_SECRET_KEY environment variables or provide them in configuration.");
     }
 
-    private string BuildUrl(string symbol, DateOnly? from, DateOnly? to, string? pageToken)
+    private string BuildUrl(string symbol, DateOnly? from, DateOnly? to, string? pageToken, string? adjustment = null)
     {
         var startDate = from?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "2000-01-01";
         var endDate = to?.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
             ?? DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-        var url = $"{BaseUrl}/{symbol}/bars?timeframe=1Day&start={startDate}&end={endDate}&limit=10000&feed={Uri.EscapeDataString(_feed)}&adjustment={Uri.EscapeDataString(_adjustment)}";
+        var url = $"{BaseUrl}/{symbol}/bars?timeframe=1Day&start={startDate}&end={endDate}&limit=10000&feed={Uri.EscapeDataString(_feed)}&adjustment={Uri.EscapeDataString(adjustment ?? _adjustment)}";
 
         if (!string.IsNullOrEmpty(pageToken))
         {

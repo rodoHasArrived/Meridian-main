@@ -171,6 +171,7 @@ public sealed partial class StructuredCashFlowScheduleRowVersionTests
         AssetClass = "StructuredCredit",
         AssetSpecificTerms = JsonSerializer.SerializeToElement(new
         {
+            termsFormat = SecurityTermsFormats.Flat,
             assetClassTermsVersion = 6,
             rateUnit = "Percent",
             issueDate = "2026-01-01",

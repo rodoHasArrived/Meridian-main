@@ -109,7 +109,7 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
     public override async Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
     {
         var adjustedBars = await GetAdjustedDailyBarsAsync(symbol, from, to, ct).ConfigureAwait(false);
-        return adjustedBars.Select(b => b.ToHistoricalBar(preferAdjusted: false)).ToList();
+        return adjustedBars.Select(b => b.ToHistoricalBar()).ToList();
     }
 
     public override async Task<IReadOnlyList<AdjustedHistoricalBar>> GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
@@ -186,14 +186,15 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
                     Volume: volume,
                     Source: Name,
                     SequenceNumber: sessionDate.DayNumber,
-                    // Finnhub doesn't provide adjusted prices directly
+                    // Daily stock candles are split-adjusted; no separate raw set is provided.
                     AdjustedOpen: null,
                     AdjustedHigh: null,
                     AdjustedLow: null,
                     AdjustedClose: null,
                     AdjustedVolume: null,
                     SplitFactor: null,
-                    DividendAmount: null
+                    DividendAmount: null,
+                    PriceBasis: HistoricalPriceBasis.SplitAdjusted
                 ));
             }
 

@@ -243,6 +243,7 @@ public sealed class BondCalculationReplayTests
         AssetClass = "Swap",
         AssetSpecificTerms = JsonSerializer.SerializeToElement(new
         {
+            termsFormat = SecurityTermsFormats.Flat,
             assetClassTermsVersion = 4,
             rateUnit = "Fraction",
             effectiveDate = "2026-01-01",
@@ -263,6 +264,7 @@ public sealed class BondCalculationReplayTests
         JsonSerializer.SerializeToElement(new { }),
         JsonSerializer.SerializeToElement(new
         {
+            termsFormat = SecurityTermsFormats.Flat,
             assetClassTermsVersion = 2,
             issueDate = "2026-01-01",
             maturity = "2028-01-01",

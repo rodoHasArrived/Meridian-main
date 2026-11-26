@@ -140,7 +140,7 @@ public sealed class InMemoryOperationsContinuityRepository : IOperationsContinui
         ct.ThrowIfCancellationRequested();
         lock (_lock)
         {
-            IEnumerable<OperationsContinuityWorkflow> query = _workflows.Values;
+            IEnumerable<OperationsContinuityWorkflow> query = _workflows.Values.Where(static workflow => workflow.Purpose == OperationsWorkflowPurposeDto.Close);
             if (fundAccountId.HasValue)
             {
                 query = query.Where(workflow => workflow.FundAccountId == fundAccountId.Value);
@@ -174,9 +174,7 @@ public sealed class InMemoryOperationsContinuityRepository : IOperationsContinui
     internal void EnsureWorkflowStartAvailableUnsafe(OperationsContinuityWorkflow workflow)
     {
         if (_workflows.ContainsKey(workflow.WorkflowId) || _workflows.Values.Any(existing =>
-                !existing.IsClosed && existing.FundAccountId == workflow.FundAccountId &&
-                string.Equals(existing.PeriodId, workflow.PeriodId, StringComparison.OrdinalIgnoreCase) &&
-                (existing.LedgerBookId is null || workflow.LedgerBookId is null || existing.LedgerBookId == workflow.LedgerBookId)))
+                !existing.IsClosed && existing.SharesStartScope(workflow)))
             throw new InvalidOperationException("An operations continuity workflow already exists for this identity or accounting scope.");
     }
 }
@@ -415,7 +413,7 @@ public sealed class FileOperationsContinuityRepository :
             rows[workflowId] = SelectLatest(snapshot, envelope.Workflow)!;
         }
 
-        IEnumerable<OperationsContinuityWorkflow> query = rows.Values;
+        IEnumerable<OperationsContinuityWorkflow> query = rows.Values.Where(static workflow => workflow.Purpose == OperationsWorkflowPurposeDto.Close);
         if (fundAccountId.HasValue)
         {
             query = query.Where(workflow => workflow.FundAccountId == fundAccountId.Value);

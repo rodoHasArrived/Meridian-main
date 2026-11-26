@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LoginSessionMiddlewareExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.LoginSessionMiddlewareExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:420](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L420).
+
+Extension methods for registering the login session middleware.
+
+```csharp
+public static class LoginSessionMiddlewareExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IApplicationBuilder UseLoginSessionAuthentication(this IApplicationBuilder app) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:426](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L426) | Adds session-based authentication middleware. Authentication is optional in Development/Test and required elsewhere by default. |
+
 ## MaintenanceOptionsDto
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.MaintenanceOptionsDto</code>. Kind: `record`.
@@ -794,16 +812,4 @@ JSON-friendly script-emitted trade row.
 
 ```csharp
 public sealed record QuantTradeDto(string Timestamp, string Symbol, string Side, decimal Quantity, decimal Price, decimal Commission);
-```
-
-## RegisterFixedAssetRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.RegisterFixedAssetRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs#L21).
-
-Registers or replaces one fixed asset on a fund book&#x27;s depreciation register.
-
-```csharp
-public sealed record RegisterFixedAssetRequest(string FundProfileId, Guid LedgerBookId, FixedAssetRecord Asset, string EvidenceUri, DateOnly? RetiredOn = null);
 ```

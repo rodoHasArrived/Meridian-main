@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Domain.Events;
 
 namespace Meridian.Contracts.Domain.Models;
@@ -53,12 +54,20 @@ public sealed record HistoricalBar : MarketEventPayload
     public long SequenceNumber { get; }
 
     /// <summary>
-    /// Gets the price-adjustment regime of this bar: <see langword="true"/> when OHLCV values
-    /// are split/dividend adjusted, <see langword="false"/> when they are raw exchange prices,
-    /// and <see langword="null"/> when the regime is unknown (the honest default for sources
-    /// that do not declare it).
+    /// Gets the legacy coarse adjustment flag. New observations derive this from
+    /// <see cref="PriceBasis"/>. A retained legacy flag alone does not establish the precise
+    /// basis and must not be used to admit raw accounting or corporate-action replay inputs.
     /// </summary>
     public bool? IsAdjusted { get; }
+
+    /// <summary>
+    /// Gets the declared basis of the complete OHLC set. Legacy records without this field
+    /// remain unknown, including records previously labeled raw by an ambiguous conversion.
+    /// Unknown is omitted to preserve legacy serialized evidence.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [JsonConverter(typeof(HistoricalPriceBasisJsonConverter))]
+    public HistoricalPriceBasis PriceBasis { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HistoricalBar"/> record.
@@ -73,6 +82,7 @@ public sealed record HistoricalBar : MarketEventPayload
     /// <param name="Source">The data source identifier.</param>
     /// <param name="SequenceNumber">The sequence number for ordering.</param>
     /// <param name="IsAdjusted">The adjustment regime; null when unknown.</param>
+    /// <param name="PriceBasis">The explicitly declared OHLC price basis; unknown for legacy data.</param>
     public HistoricalBar(
         string Symbol,
         DateOnly SessionDate,
@@ -83,7 +93,8 @@ public sealed record HistoricalBar : MarketEventPayload
         long Volume,
         string Source = "stooq",
         long SequenceNumber = 0,
-        bool? IsAdjusted = null)
+        bool? IsAdjusted = null,
+        HistoricalPriceBasis PriceBasis = HistoricalPriceBasis.Unknown)
     {
         if (string.IsNullOrWhiteSpace(Symbol))
             throw new ArgumentException("Symbol is required", nameof(Symbol));
@@ -103,6 +114,18 @@ public sealed record HistoricalBar : MarketEventPayload
         if (Volume < 0)
             throw new ArgumentOutOfRangeException(nameof(Volume), "Volume cannot be negative.");
 
+        if (!Enum.IsDefined(PriceBasis))
+            throw new ArgumentOutOfRangeException(nameof(PriceBasis), "Unsupported historical price basis.");
+
+        bool? declaredAdjustment = PriceBasis switch
+        {
+            HistoricalPriceBasis.Unknown => null,
+            HistoricalPriceBasis.Raw => false,
+            _ => true
+        };
+        if (declaredAdjustment.HasValue && IsAdjusted.HasValue && declaredAdjustment != IsAdjusted)
+            throw new ArgumentException("The legacy adjustment flag contradicts the declared price basis.", nameof(IsAdjusted));
+
         this.Symbol = Symbol;
         this.SessionDate = SessionDate;
         this.Open = Open;
@@ -112,7 +135,8 @@ public sealed record HistoricalBar : MarketEventPayload
         this.Volume = Volume;
         this.Source = Source;
         this.SequenceNumber = SequenceNumber;
-        this.IsAdjusted = IsAdjusted;
+        this.IsAdjusted = declaredAdjustment ?? IsAdjusted;
+        this.PriceBasis = PriceBasis;
     }
 
     /// <summary>

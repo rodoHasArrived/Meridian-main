@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementValidationResultDto
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementValidationResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:436](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L436).
+
+```csharp
+public sealed record StatementValidationResultDto(string SourcePath, string AccountId, string ImportFingerprint, bool IsBlocked, IReadOnlyList<StatementValidationIssueDto> Issues);
+```
+
+## StatementValidationService
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementValidationService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L9).
+
+Validates statement entities against configured rules and reference-data checks.
+
+```csharp
+public sealed class StatementValidationService(IStatementValidationReferenceData referenceData)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;StatementValidationResultDto&gt; ValidateAsync(StatementValidationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:54](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L54) |  |
+
+## TableReconciliationFxRateProvider
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.TableReconciliationFxRateProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:104](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L104).
+
+A deterministic table-backed provider. Resolves a pair by identity, direct quote, inverse quote, or triangulation through an optional pivot currency. Quotes are date-effective: for a requested asOf the most recent quote at or before that date is used, and a pair whose quotes are all later than asOf resolves to no rate so a backdated run fails closed rather than converting a historical statement at a later (or today&#x27;s) rate. Non-positive rates are rejected on construction.
+
+```csharp
+public sealed class TableReconciliationFxRateProvider : IReconciliationFxRateProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TableReconciliationFxRateProvider(IEnumerable&lt;ReconciliationFxQuote&gt; quotes, string? pivotCurrency = null, string? source = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:110](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L110) |  |
+| <code>public bool TryGetRate(string fromCurrency, string toCurrency, DateOnly asOf, out decimal rate);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:129](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L129) |  |
+| <code>public bool TryResolveRate(string fromCurrency, string toCurrency, DateOnly asOf, out ReconciliationFxRateResolution resolution);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:136](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L136) |  |
+
 ## TransactionToleranceRule
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.TransactionToleranceRule</code>. Kind: `record`.

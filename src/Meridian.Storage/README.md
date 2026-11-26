@@ -11,6 +11,26 @@ last_reviewed: 2026-11-25
 
 # src/Meridian.Storage
 
+Backfill batch receipts optionally retain market-data input evidence. The existing content address
+binds repair purpose, repair operation identity and quality snapshot before rows receive that
+revision ID. Tampering with those facts invalidates the receipt. Older receipts omit the optional
+member and keep their existing content addresses; absent quality or repair status remains unknown.
+
+Historical bar evidence retains the precise OHLC price basis through JSON, batch row digests and
+Parquet. Known basis declarations change row identity even when numeric prices coincide; Unknown
+keeps the legacy row digest. Parquet historical-bar v2 files retain readable `PriceBasis` plus the
+legacy flag, while existing v1 files remain unchanged and discoverable. Catalog date parsing accepts
+both filename generations. Structured research exports retain basis companions with exported OHLC;
+legacy data is explicitly Unknown. See the [migration notes](../../docs/development/provider-implementation.md#historical-price-bases).
+
+Ledger migration `V_ledger_084__security_revision_workflow_scope.sql` replaces the open-workflow
+unique index in one transaction: a workflow whose `purpose` is absent or `Close` keeps account/period
+uniqueness, and each `SecurityMasterRevision` subject is unique by its revision UUID. A check refuses
+unknown or explicit-null purposes and incomplete subject authority, and a trigger keeps purpose,
+subject, evidence and a revision workflow's accounting scope immutable. No rows are deleted or
+rewritten. The scoped schema-control waiver explains the index replacement; it authorizes neither
+live execution nor data deletion.
+
 Security Master projection storage composes one `SecurityTermsStorageContribution` for each of
 the 32 asset classes through `SecurityTermsStorageModules` (`SecurityMaster/AssetPacks/`). A
 declarative class contributes its `SecurityTermsProjectionDescriptor`; Option and CustomAsset
@@ -348,9 +368,29 @@ of directories created for it, at the first durability barrier.
 
 WAL record types containing `|` or a line break, and payloads containing a raw line break, are
 refused before they are written, because recovery could not parse them back. `RepairAsync` holds
-the truncate lock, and every segment listing sorts ordinally. `AtomicFileWriter.AppendAsync`
+the truncate lock, and every segment listing sorts ordinally. A WAL directory has one live owner:
+`InitializeAsync` and `RepairAsync` take an exclusive `.owner.lock` in the directory and throw
+`WalDirectoryInUseException` when another process, or another instance in the same process, holds
+it; constructing a WAL takes no lock, and a crashed owner releases with its handles.
+`WalOptions.LegacySegmentDirectory` moves `*.wal` segments left in an older shared directory into
+the owned one, under that directory's lock, before recovery. `AtomicFileWriter.AppendAsync`
 serializes appends to one path within the process, so concurrent copy-on-write appends keep
 every line.
+
+`AtomicFileWriter.SyncDirectoryAsync` is best effort for operations that have already committed:
+a failed directory open or fsync is retried once for `EINTR`/`EMFILE`/`ENFILE`, then logged at Error
+and counted in `mdc_storage_directory_fsync_failures_total` (label `operation`), but not thrown.
+`SyncDirectoryOrThrowAsync` throws `DirectorySyncException` instead and guards steps that
+acknowledge data or delete the only other copy: WAL segment creation, archiving before truncation
+and legacy adoption, `JsonlStorageSink` flushes of new files, dedup-ledger commits, tier migration
+and JSONL archiving before deleting the source. Maintenance also uses it before mutating a source:
+each compression or repair backup, the published or resumed compression archive and its checksum
+sidecar before the source is deleted, and a repair's `.corrupt-lines` quarantine before the
+rewrite. Package import syncs moved and identical destination files before reporting success, and
+backfill receipts sync before `WriteAsync` records the run. `JsonlAppendWriter` and ETL
+audit/reject appends stay best effort, because a retry would append the lines twice. Filesystems
+that cannot fsync a directory at all (`EINVAL`, `EBADF`, `ENOTSUP`) are counted as
+`fsync_unsupported` and never thrown.
 
 `JsonlAppendWriter` appends lines to an append-only JSONL log in place and fsyncs them, truncating a
 torn final line first; `JsonlStorageSink` uses the same torn-tail repair for its day files. Use it
@@ -1470,6 +1510,12 @@ requeue an unpublished occurrence with the same execution identity, and an expir
 marked running is retained as an interrupted/ambiguous failure instead of being replayed blindly.
 
 ### Market data and evidence
+
+The alignment archive read opens closed JSONL captures, including compressed partitions. It
+refuses corrupt data and limits file count, decoded text, candidate events and read time. Its
+record IDs identify the logical relative archive path, line number and SHA-256 digest of the
+line text so equivalent plain and gzip copies carry the same lineage.
+
 
 Market data and evidence records enter through storage sinks. File-backed writes use the
 write-ahead log or atomic file helpers so a crash is less likely to leave a half-written record.

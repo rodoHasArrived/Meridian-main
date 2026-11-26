@@ -590,6 +590,8 @@ public sealed class FileStatementRunRecoveryRepository : IStatementRunRecoveryRe
                 var json = StatementRunRecoveryJson.Serialize(checkpoint);
                 await AtomicFileWriter.WriteAsync(temporaryPath, json, ct).ConfigureAwait(false);
                 File.Move(temporaryPath, path, overwrite: false);
+                // Best effort: the create-once move is the commit. A retry would find the file and
+                // return false (already claimed), and the catch below would also turn a throw into false.
                 await AtomicFileWriter
                     .SyncDirectoryAsync(Path.GetDirectoryName(path)!, CancellationToken.None)
                     .ConfigureAwait(false);

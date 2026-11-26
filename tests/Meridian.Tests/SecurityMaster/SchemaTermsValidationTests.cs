@@ -368,7 +368,7 @@ public sealed class SchemaTermsValidationTests
     }
 
     [Fact]
-    public void Admission_DoesNotValidateReadableAheadContainersOrProfileClassTerms()
+    public void Admission_ValidatesWritableLegConventionTypesButLeavesProfileClassTermsToProfileValidator()
     {
         var swap = Context("Swap", new Dictionary<string, object?>
         {
@@ -379,8 +379,13 @@ public sealed class SchemaTermsValidationTests
                 scheduleConventions = new { paymentLagBusinessDays = "many" } } }
         });
         var schema = new SchemaTermsAssetClassValidator("Swap");
-        schema.ValidateForWrite(swap).Should().BeEmpty();
-        schema.Validate(swap).Should().Contain(issue => issue.AffectedFields.Contains("assetSpecificTerms.legs.0.scheduleConventions.paymentLagBusinessDays"));
+        // Leg conventions are now writable within the bounded vanilla profile. The schema must
+        // inspect their types before tolerant decoding, while full profile admission remains separate.
+        var writeIssue = schema.ValidateForWrite(swap).Should().ContainSingle().Subject;
+        writeIssue.Code.Should().Be(SchemaTermsAssetClassValidator.TypeCode);
+        writeIssue.AffectedFields.Should().Equal("assetSpecificTerms.legs.0.scheduleConventions.paymentLagBusinessDays");
+        schema.Validate(swap).Should().ContainSingle(issue => issue.Code == SchemaTermsAssetClassValidator.TypeCode
+            && issue.AffectedFields.Contains("assetSpecificTerms.legs.0.scheduleConventions.paymentLagBusinessDays"));
 
         var profile = Context("StructuredCredit", new Dictionary<string, object?>
         {

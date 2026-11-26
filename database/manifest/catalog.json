@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "02dcbdcc1c4427ced3cd67ab90193c698ca65334090c6a94452783df0da829d7",
+  "database_fingerprint": "f3994d37c71daf706637ed87fdac1c9f3f8eeea81c393cc3ddb235868793ff30",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -6083,6 +6083,18 @@
       "target": "ledger.operations_continuity_workflows_pkey",
       "target_kind": "index",
       "target_name": "operations_continuity_workflows_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "f37f516d5bd45da831e75d189622cdc01e79b8a2ae431b37034e51b2620d4ca5",
+      "kind": "normal",
+      "source": "ledger.operations_workflow_purpose_check on ledger.operations_continuity_workflows",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.operations_continuity_workflows.workflow_json",
+      "target_kind": "table column",
+      "target_name": "operations_continuity_workflows",
       "target_schema": "ledger"
     },
     {
@@ -24047,7 +24059,7 @@
       "object": "column:security_master.otc_collateral_agreements.eligible_collateral"
     },
     {
-      "fingerprint": "b8cdf27dd72d4e075cd623bebeb081fbb5397af32973a01de6404275a4385adf",
+      "fingerprint": "f2b7d36c12fcea540ff13aa8d5dc80ea7983fa1fd499765e5c731905f4bbded3",
       "object": "column:security_master.otc_collateral_agreements.independent_amount"
     },
     {
@@ -24055,7 +24067,7 @@
       "object": "column:security_master.otc_collateral_agreements.master_agreement_id"
     },
     {
-      "fingerprint": "fdd34faf0ceb9430f83bd61984b715081bfdf3deddfdfa964ea0edc2381836a2",
+      "fingerprint": "25f3ca51d15ad2cb7a2cf94afdee67e99e490d5d8d12dbb843f5fb3d21ba3119",
       "object": "column:security_master.otc_collateral_agreements.minimum_transfer_amount"
     },
     {
@@ -24063,7 +24075,7 @@
       "object": "column:security_master.otc_collateral_agreements.notes"
     },
     {
-      "fingerprint": "518518d1638b59ae548b82e7372bc22072608e2cbe9b4e95c4d36e26413b0c64",
+      "fingerprint": "a7121639844a218e0680f52e946b13f670d14f24aa878d369131ac1eb762918c",
       "object": "column:security_master.otc_collateral_agreements.rounding_amount"
     },
     {
@@ -24071,11 +24083,11 @@
       "object": "column:security_master.otc_collateral_agreements.termination_date"
     },
     {
-      "fingerprint": "4fee1e3d31ac1bf71f455a705b7920e066ecd45dc2d60a5d16c6985ef588aac7",
+      "fingerprint": "14969bf8aede362cc23046af29ce391a0b0b1debbcf91a43b5e271da9dfbc4a9",
       "object": "column:security_master.otc_collateral_agreements.threshold_ours"
     },
     {
-      "fingerprint": "e9e7e109a7042abc424cb5abce4e292a3a3208ab47ac092868b9bc2142c969be",
+      "fingerprint": "fe38cf487c0ddc9b3b0f312ac005a3095f9d54903f3ef7ea2ae81f7aee78566f",
       "object": "column:security_master.otc_collateral_agreements.threshold_theirs"
     },
     {
@@ -24115,7 +24127,7 @@
       "object": "column:security_master.otc_collateral_balances.eligible_collateral_description"
     },
     {
-      "fingerprint": "d8bdb1b7daa0e3cb61dd8849350eb9538ae4f04d72e7c6d08c98ce3ceb5690ba",
+      "fingerprint": "fccbb4818c38c3e1c8d13bc4a5badba319b084e975ff0bf638f3f35566108698",
       "object": "column:security_master.otc_collateral_balances.haircut_percent"
     },
     {
@@ -24127,7 +24139,7 @@
       "object": "column:security_master.otc_collateral_balances.notes"
     },
     {
-      "fingerprint": "60a7d8fd8bbb4b4d96de844f4cb67e22c292b0f60b073deb182de5a1402aa52d",
+      "fingerprint": "e435c9161a04a3f95f22a22b8c1847ec5002236a29d0c9b91eface32af41c8af",
       "object": "column:security_master.otc_collateral_balances.quantity"
     },
     {
@@ -24139,7 +24151,7 @@
       "object": "column:security_master.otc_collateral_balances.security_id"
     },
     {
-      "fingerprint": "c20dc77f750bd3f1890c429e801750d18a8905eb87fde9153bf672cb5d721f62",
+      "fingerprint": "a0610939a63d6e42afefbf020d7dec2b3d60bec6d97abe668fad3f9af8c15be1",
       "object": "column:security_master.otc_collateral_balances.unit_value"
     },
     {
@@ -24151,7 +24163,7 @@
       "object": "column:security_master.otc_collateral_balances.updated_by"
     },
     {
-      "fingerprint": "d853d0164e33ad3b6ad3a96d88f5615216b3dc71d53f8509cbc48f815c5212ca",
+      "fingerprint": "e561848bdb15c1107e0b1c7351fa1cbca6a28257ffb57ff57d009946cff924d0",
       "object": "column:security_master.otc_collateral_balances.valued_amount"
     },
     {
@@ -24227,7 +24239,7 @@
       "object": "column:security_master.otc_contracts.notes"
     },
     {
-      "fingerprint": "a58f9c1c1729c1a62856bd831f968ebde6bf7971a3b03e122f6ee7a53aa87218",
+      "fingerprint": "69fe92f5d4980bceb2428034ab45a316b03fbec89664a0ff295139dcd71c72aa",
       "object": "column:security_master.otc_contracts.notional"
     },
     {
@@ -24283,15 +24295,15 @@
       "object": "column:security_master.otc_exposure_snapshots.currency"
     },
     {
-      "fingerprint": "cecac1aa04eb51f87ee3b75913d7ef1ca33a55602c5a9cc914ba3d8c67a8053f",
+      "fingerprint": "05de88c23e5d69ee2b96df2c8c9b4e29afddc2d22678b51a796d18c98a552c2d",
       "object": "column:security_master.otc_exposure_snapshots.gross_negative"
     },
     {
-      "fingerprint": "f74827a531378042a6db133d4f9c4b8d8dbb6f521c0e83f622ba5484194c75f1",
+      "fingerprint": "4761d91f7a6782e4b6f56342169ff8978df8c140c1ea312a26caa8f8fa5550b6",
       "object": "column:security_master.otc_exposure_snapshots.gross_positive"
     },
     {
-      "fingerprint": "ffedbe6d78209e00fe46c8c3199790c643d32b0fbdd8a081b9d7757527538c21",
+      "fingerprint": "198708d529f3b9e3c6651ced596265ece86ee6e4ece556aebf7ce477a504604c",
       "object": "column:security_master.otc_exposure_snapshots.net_exposure"
     },
     {
@@ -24335,11 +24347,11 @@
       "object": "column:security_master.otc_exposure_snapshots.version"
     },
     {
-      "fingerprint": "54c3c47714adc2bb070fab2c2c9c21df8fd8a02d5a15c6ff994d6e1ff66dcd86",
+      "fingerprint": "8e5f502d7baca7aebbe740516822c5d92e1c8e80d787fadd254e60816c18a2ed",
       "object": "column:security_master.otc_margin_calls.amount_agreed"
     },
     {
-      "fingerprint": "376c70f1b522aa297f4a8f7ae50cb9d52cedb80b9f1e07e03b6ef2b4a018e245",
+      "fingerprint": "b5ce73293a81c418165dc1f9115ed3b785221a602ed48a9dc4eaf791cbe38437",
       "object": "column:security_master.otc_margin_calls.amount_called"
     },
     {
@@ -24383,7 +24395,7 @@
       "object": "column:security_master.otc_margin_calls.notes"
     },
     {
-      "fingerprint": "1cfbfd57f2558cbc0768f99bce34ecc42adeaf367b4a58e023fb591b128f9414",
+      "fingerprint": "e5271f6051e34da247787e3ff39deb589f7181f8f88381da5f897cd9d2a91567",
       "object": "column:security_master.otc_margin_calls.settled_amount"
     },
     {
@@ -24959,6 +24971,10 @@
       "object": "column:security_master.reconciliation_result.created_at"
     },
     {
+      "fingerprint": "7a0a91bf66e0e9940a5516ad9e9728d83d5d6ff90ac3978f60039eacec2df07d",
+      "object": "column:security_master.reconciliation_result.evidence_json"
+    },
+    {
       "fingerprint": "7b889fbc5348e0ba6ed6cb5d8e9b64c6e3efb2d7ee47fbfd33ee1f63b634e4f5",
       "object": "column:security_master.reconciliation_result.expected_amount"
     },
@@ -25009,6 +25025,10 @@
     {
       "fingerprint": "80f387deb77485588e3742efae2cd24bba211d059d934e9f68b33a5e39188029",
       "object": "column:security_master.reconciliation_run.completed_at"
+    },
+    {
+      "fingerprint": "531e1fd7257c27984b51a10d40c6006dd931707f7a5160e28e1cf307153151f8",
+      "object": "column:security_master.reconciliation_run.evidence_json"
     },
     {
       "fingerprint": "7b3945594546ae08dfea3e52d9299cbf09acab26020bda7d54e7aca3b1ccff80",
@@ -28865,6 +28885,10 @@
     {
       "fingerprint": "76cde6ff908af01dbac299f7e34997267c274d8cedc5d95e1e60bdaba6a970db",
       "object": "constraint:ledger.operations_continuity_workflows.operations_continuity_workflows_pkey"
+    },
+    {
+      "fingerprint": "bb6d5ff970d1ec2fdde2f38a8d7c7f11453ceb082862382dc54523aef19afa31",
+      "object": "constraint:ledger.operations_continuity_workflows.operations_workflow_purpose_check"
     },
     {
       "fingerprint": "119ad2fdb0605b0e4d10427a933641df92083c652cd280597215a5dbc2a758ba",
@@ -33443,6 +33467,10 @@
       "object": "dependency:ledger.operations_continuity_audit_workflow_id_fkey on ledger.operations_continuity_audit->ledger.operations_continuity_workflows_pkey:normal"
     },
     {
+      "fingerprint": "f37f516d5bd45da831e75d189622cdc01e79b8a2ae431b37034e51b2620d4ca5",
+      "object": "dependency:ledger.operations_workflow_purpose_check on ledger.operations_continuity_workflows->ledger.operations_continuity_workflows.workflow_json:normal"
+    },
+    {
       "fingerprint": "3d86d46c218bdda04fbc7318c2d4970f595643fb12c3068561472361a69e5e1d",
       "object": "dependency:ledger.period_close_events_period_id_fkey on ledger.period_close_events->ledger.accounting_periods.period_id:normal"
     },
@@ -36299,6 +36327,10 @@
       "object": "function:ledger.protect_open_lot_current_factor()"
     },
     {
+      "fingerprint": "4417893c9932c986c3d47408f81bfe8b0b5b2a6324628550b40be02601302d88",
+      "object": "function:ledger.protect_operations_workflow_subject()"
+    },
+    {
       "fingerprint": "6bc9cd1a91d16c35f8ea033855df575429c5db2829ab49dc337ea7480d68b34b",
       "object": "function:ledger.protect_private_capital_authority()"
     },
@@ -37859,8 +37891,12 @@
       "object": "index:ledger.ux_operations_continuity_audit_previous_hash"
     },
     {
-      "fingerprint": "af6e075f52eb3fde4b7605917f3c3d5e3a27982a21123b38207397f7ca4151a5",
+      "fingerprint": "4d83c31ac66ad65b8f19310adb2c34a61edd5e8cdf7bffbbaf5ec124447a38f2",
       "object": "index:ledger.ux_operations_continuity_open_workflow"
+    },
+    {
+      "fingerprint": "8e48061f0612b2fec7adbe8cdc03d18b2166450bc83ec1224fe89dc86656b07d",
+      "object": "index:ledger.ux_operations_continuity_revision_subject"
     },
     {
       "fingerprint": "11edd1ec6fb218a05914cd9438d2788b4c70931638f937fb2475bae5cf008c55",
@@ -40619,7 +40655,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "8d39a0241d05b29a6f8988a8aa92014729f9bc65352f7a74ba59c284235851d0",
+      "fingerprint": "c28a2c135ad88f1fef218522d68104969783aa83e843ebb3f37ce720a7ec473a",
       "object": "schema:ledger"
     },
     {
@@ -40639,7 +40675,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "8e270b88700cd0b1008981abc91379dae378828e05266c978b9f5fe2f3b340ba",
+      "fingerprint": "5ed9bd94ff664313eab8ada94a9d819c53d3f0009a55d6fae2a95a672e0a0135",
       "object": "schema:security_master"
     },
     {
@@ -41003,11 +41039,11 @@
       "object": "table:ledger.external_gl_book_policy"
     },
     {
-      "fingerprint": "f1a6df11fa11fb92cb841abc5dbe6dbc1eb191630b11d7dcb1f0ca6c6914bb68",
+      "fingerprint": "5cfc5f675526b00a474e6836658c0a65f02111dea10daa4fe2c333a25ef9fe44",
       "object": "table:ledger.external_gl_mapping_profiles"
     },
     {
-      "fingerprint": "b012c77c59afa722f3a5ce1e188bafc26764b8585c874af356e410141934a39b",
+      "fingerprint": "041964df0d2acfc16868e26f965b2f8fe204e8cd5e5855dd893bfdb36d06083f",
       "object": "table:ledger.external_gl_posting_decisions"
     },
     {
@@ -41015,11 +41051,11 @@
       "object": "table:ledger.external_gl_posting_outbox"
     },
     {
-      "fingerprint": "545da76a89a54bfc1922df6ccc915cff91db5b2da9824892dc819143afe7f04d",
+      "fingerprint": "7a0a982a51991b859687dac629de0c4321e5fbeeea3ef302ea20c3112f6ad14b",
       "object": "table:ledger.external_gl_posting_packages"
     },
     {
-      "fingerprint": "9dbb50b1548416eb3a0a8fea353bf15e1e538e525bfe9cde69e2eecba99fc650",
+      "fingerprint": "9a6324937efa0ef9f794f553986d4733707a502fde927aaa75907b8497ef87d1",
       "object": "table:ledger.external_gl_posting_receipts"
     },
     {
@@ -41155,7 +41191,7 @@
       "object": "table:ledger.operations_continuity_audit"
     },
     {
-      "fingerprint": "a58c2e170e7d6a88108e8369e1fb7437a1ea527a0c3806387c9e4062b5219c6c",
+      "fingerprint": "5eb57ed1f520d98512677b114ab60ba11878fa84669a296799896949704901b3",
       "object": "table:ledger.operations_continuity_workflows"
     },
     {
@@ -41571,11 +41607,11 @@
       "object": "table:security_master.option_series_projection"
     },
     {
-      "fingerprint": "0d178525d83cfabb5406a603c7f50928a0fe6fa5159d046f39f1d4a3a58dd992",
+      "fingerprint": "8799f73bf8f2c7b5cf0da73a90389f3533599c523cd7af22337e25e5fc0be452",
       "object": "table:security_master.otc_collateral_agreements"
     },
     {
-      "fingerprint": "c9b1f57a3dec6886b558ac7527175e95254b8e9554d33ed4aa5eac929941b899",
+      "fingerprint": "b458f3bb1db166eb48ce09d13456e6e92b66854315d7c30cc48d1bae8da502ea",
       "object": "table:security_master.otc_collateral_balances"
     },
     {
@@ -41583,15 +41619,15 @@
       "object": "table:security_master.otc_contract_lifecycle_events"
     },
     {
-      "fingerprint": "bceb7fae6a7da3b672220ce611acbf50de835019343d2fe26424c55b084a5ff1",
+      "fingerprint": "e4d1cb31dacbde6ac06dab448ddb84bfad2a088c56a2275d94a4a71063dbeec5",
       "object": "table:security_master.otc_contracts"
     },
     {
-      "fingerprint": "8e665d106d55deedfafe7a75f933e2115b1b76a6033289c25362064435d9b2a3",
+      "fingerprint": "7215e60bada604e105c5a99ed21de880282e678bbb8db482f73b0d696c1961c5",
       "object": "table:security_master.otc_exposure_snapshots"
     },
     {
-      "fingerprint": "c05aefe01a0938879da899bc3a028b1684e271c7b7314c9cf38b9416aa871f4e",
+      "fingerprint": "a6c136bf019b0b1f66e63d0ffeab382fbc22aedd5ee0b7bd3fa9a80f16516207",
       "object": "table:security_master.otc_margin_calls"
     },
     {
@@ -41647,11 +41683,11 @@
       "object": "table:security_master.reconciliation_exception"
     },
     {
-      "fingerprint": "53ff7040b61aa83c6e47e7577bcfd943c9532ab53730e491c5ac9045ad41358c",
+      "fingerprint": "9192a81abbe0f3bf088f4215b8e30828b0038cacd7940b6563ce1e112bd2c589",
       "object": "table:security_master.reconciliation_result"
     },
     {
-      "fingerprint": "0fb5fefb5ec56cbdad1886ce6cbc92fa9fc90ebf2a626cf8a600599ce43d73dc",
+      "fingerprint": "a00c895faeb6acdf3215a2476bc57eeb869a0329d2bd4174d3b34fea97f1e06f",
       "object": "table:security_master.reconciliation_run"
     },
     {
@@ -42007,6 +42043,14 @@
       "object": "trigger:ledger.external_gl_mapping_profiles.external_gl_immutable_mapping"
     },
     {
+      "fingerprint": "451f51f35ae753a30c642f845dea4de89ea9b97005dafa98f3824928deb1450c",
+      "object": "trigger:ledger.external_gl_mapping_profiles.external_gl_mapping_no_truncate"
+    },
+    {
+      "fingerprint": "33d6a1d6d32408249db34dd4d4d6eac0bd3e57e7a5bda8fcd0dba4baeffb0b96",
+      "object": "trigger:ledger.external_gl_posting_decisions.external_gl_decision_no_truncate"
+    },
+    {
       "fingerprint": "4fef6196f1027700ef2911adc1c3171e43c9d195de02d9e33e78abbc8671af6e",
       "object": "trigger:ledger.external_gl_posting_decisions.external_gl_immutable_decision"
     },
@@ -42015,8 +42059,16 @@
       "object": "trigger:ledger.external_gl_posting_packages.external_gl_immutable_package"
     },
     {
+      "fingerprint": "4d1c47771fdd2c829ea63887b19198bac0dc40b61508d8d2aa833ea56fc0fbf8",
+      "object": "trigger:ledger.external_gl_posting_packages.external_gl_package_no_truncate"
+    },
+    {
       "fingerprint": "23a2d21d16b08bd06c027e5edbbcc5a0d5bfc7df4b8ec7965529d91ddc868b2c",
       "object": "trigger:ledger.external_gl_posting_receipts.external_gl_immutable_receipt"
+    },
+    {
+      "fingerprint": "081b58d15e80424c178412f227a70220f3d1b3dde01e8a571261f0891a03dfe1",
+      "object": "trigger:ledger.external_gl_posting_receipts.external_gl_receipt_no_truncate"
     },
     {
       "fingerprint": "5e80e91f217377b69ff20500297a0e6412f2e4040552b0a236e8e6cde920272f",
@@ -42201,6 +42253,10 @@
     {
       "fingerprint": "a4d70ce81f9ae40021746acd809fee5555586cefcf3ecf2787fdac2374eb79b9",
       "object": "trigger:ledger.open_lot_backfill_reviews.protect_open_lot_backfill_evidence"
+    },
+    {
+      "fingerprint": "d73d8e8f7d6eb348c2aa7a9b0be6cd7356845f62dd64d84599403d5ee2ea5816",
+      "object": "trigger:ledger.operations_continuity_workflows.operations_workflow_subject_immutable"
     },
     {
       "fingerprint": "155dacffb9b52dc3901f76e7b4f3b71f3b6f2ce640579c431b81fd4d659a9acc",
@@ -89796,6 +89852,18 @@
           "target_schema": "ledger"
         },
         {
+          "fingerprint": "f37f516d5bd45da831e75d189622cdc01e79b8a2ae431b37034e51b2620d4ca5",
+          "kind": "normal",
+          "source": "ledger.operations_workflow_purpose_check on ledger.operations_continuity_workflows",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.operations_continuity_workflows.workflow_json",
+          "target_kind": "table column",
+          "target_name": "operations_continuity_workflows",
+          "target_schema": "ledger"
+        },
+        {
           "fingerprint": "3d86d46c218bdda04fbc7318c2d4970f595643fb12c3068561472361a69e5e1d",
           "kind": "normal",
           "source": "ledger.period_close_events_period_id_fkey on ledger.period_close_events",
@@ -90616,7 +90684,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "8d39a0241d05b29a6f8988a8aa92014729f9bc65352f7a74ba59c284235851d0",
+      "fingerprint": "c28a2c135ad88f1fef218522d68104969783aa83e843ebb3f37ce720a7ec473a",
       "foreign_tables": [],
       "functions": [
         {
@@ -91112,6 +91180,37 @@
           "security_definer": false,
           "security_labels": [],
           "signature": "protect_open_lot_current_factor()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
+          "definition_hash": "4d0e52cefd09a4facea7ad3a902e6374bbcd093a2fc8228100004f6728568182",
+          "fingerprint": "4417893c9932c986c3d47408f81bfe8b0b5b2a6324628550b40be02601302d88",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "protect_operations_workflow_subject",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "ledger",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "protect_operations_workflow_subject()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -101382,7 +101481,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "f1a6df11fa11fb92cb841abc5dbe6dbc1eb191630b11d7dcb1f0ca6c6914bb68",
+          "fingerprint": "5cfc5f675526b00a474e6836658c0a65f02111dea10daa4fe2c333a25ef9fe44",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -101462,6 +101561,23 @@
               "function_signature": "refuse_external_gl_evidence_mutation()",
               "level": "row",
               "name": "external_gl_immutable_mapping",
+              "relation": "external_gl_mapping_profiles",
+              "schema": "ledger",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER external_gl_mapping_no_truncate BEFORE TRUNCATE ON ledger.external_gl_mapping_profiles FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+              "definition_hash": "6cc3d89d62bf8bb8680c91896aa2c5746b3b93f59ee644647befd82a59c120ec",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "451f51f35ae753a30c642f845dea4de89ea9b97005dafa98f3824928deb1450c",
+              "function_schema": "ledger",
+              "function_signature": "refuse_external_gl_evidence_mutation()",
+              "level": "statement",
+              "name": "external_gl_mapping_no_truncate",
               "relation": "external_gl_mapping_profiles",
               "schema": "ledger",
               "timing": "before"
@@ -101684,7 +101800,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "b012c77c59afa722f3a5ce1e188bafc26764b8585c874af356e410141934a39b",
+          "fingerprint": "041964df0d2acfc16868e26f965b2f8fe204e8cd5e5855dd893bfdb36d06083f",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -101726,6 +101842,23 @@
           "security_labels": [],
           "sequence": null,
           "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER external_gl_decision_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_decisions FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+              "definition_hash": "27bf1bb522acd6371ea3f2df7415ee821c7a89dfa81ddd9072041bfef674a2b0",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "33d6a1d6d32408249db34dd4d4d6eac0bd3e57e7a5bda8fcd0dba4baeffb0b96",
+              "function_schema": "ledger",
+              "function_signature": "refuse_external_gl_evidence_mutation()",
+              "level": "statement",
+              "name": "external_gl_decision_no_truncate",
+              "relation": "external_gl_posting_decisions",
+              "schema": "ledger",
+              "timing": "before"
+            },
             {
               "comment": null,
               "definition": "CREATE TRIGGER external_gl_immutable_decision BEFORE DELETE OR UPDATE ON ledger.external_gl_posting_decisions FOR EACH ROW EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
@@ -102520,7 +102653,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "545da76a89a54bfc1922df6ccc915cff91db5b2da9824892dc819143afe7f04d",
+          "fingerprint": "7a0a982a51991b859687dac629de0c4321e5fbeeea3ef302ea20c3112f6ad14b",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -102599,6 +102732,23 @@
               "function_signature": "refuse_external_gl_evidence_mutation()",
               "level": "row",
               "name": "external_gl_immutable_package",
+              "relation": "external_gl_posting_packages",
+              "schema": "ledger",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER external_gl_package_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_packages FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+              "definition_hash": "e5d7b95142733e0c9c222fcaa1d19fa5aa8d14b81dbcafa5b8d8c4552bf708f0",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "4d1c47771fdd2c829ea63887b19198bac0dc40b61508d8d2aa833ea56fc0fbf8",
+              "function_schema": "ledger",
+              "function_signature": "refuse_external_gl_evidence_mutation()",
+              "level": "statement",
+              "name": "external_gl_package_no_truncate",
               "relation": "external_gl_posting_packages",
               "schema": "ledger",
               "timing": "before"
@@ -102747,7 +102897,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "9dbb50b1548416eb3a0a8fea353bf15e1e538e525bfe9cde69e2eecba99fc650",
+          "fingerprint": "9a6324937efa0ef9f794f553986d4733707a502fde927aaa75907b8497ef87d1",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -102825,6 +102975,23 @@
               "function_signature": "refuse_external_gl_evidence_mutation()",
               "level": "row",
               "name": "external_gl_immutable_receipt",
+              "relation": "external_gl_posting_receipts",
+              "schema": "ledger",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER external_gl_receipt_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_receipts FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+              "definition_hash": "4c199d7be768ce37c2ad29edfa37db6b36f8ee9d606854271adf8a165f663e00",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "081b58d15e80424c178412f227a70220f3d1b3dde01e8a571261f0891a03dfe1",
+              "function_schema": "ledger",
+              "function_signature": "refuse_external_gl_evidence_mutation()",
+              "level": "statement",
+              "name": "external_gl_receipt_no_truncate",
               "relation": "external_gl_posting_receipts",
               "schema": "ledger",
               "timing": "before"
@@ -117073,6 +117240,26 @@
           "constraints": [
             {
               "columns": [
+                "workflow_json"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK ((NOT workflow_json ? 'purpose'::text OR jsonb_typeof(workflow_json -> 'purpose'::text) = 'string'::text) AND (COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = ANY (ARRAY['Close'::text, 'SecurityMasterRevision'::text])) AND (COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'Close'::text AND (workflow_json ->> 'subjectRevisionId'::text) IS NULL AND (workflow_json ->> 'subjectMaker'::text) IS NULL AND (workflow_json ->> 'subjectEvidenceId'::text) IS NULL AND (workflow_json ->> 'subjectEvidenceSha256'::text) IS NULL OR COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'SecurityMasterRevision'::text AND (workflow_json ->> 'subjectRevisionId'::text) IS NOT NULL AND (workflow_json ->> 'subjectMaker'::text) IS NOT NULL AND length(TRIM(BOTH FROM workflow_json ->> 'subjectMaker'::text)) > 0 AND (workflow_json ->> 'subjectEvidenceId'::text) IS NOT NULL AND length(TRIM(BOTH FROM workflow_json ->> 'subjectEvidenceId'::text)) > 0 AND (workflow_json ->> 'subjectEvidenceSha256'::text) IS NOT NULL AND (workflow_json ->> 'subjectEvidenceSha256'::text) ~ '^[a-f0-9]{64}$'::text))",
+              "delete_action": null,
+              "fingerprint": "bb6d5ff970d1ec2fdde2f38a8d7c7f11453ceb082862382dc54523aef19afa31",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "operations_workflow_purpose_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
                 "workflow_id"
               ],
               "comment": null,
@@ -117094,7 +117281,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "a58c2e170e7d6a88108e8369e1fb7437a1ea527a0c3806387c9e4062b5219c6c",
+          "fingerprint": "5eb57ed1f520d98512677b114ab60ba11878fa84669a296799896949704901b3",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -117213,9 +117400,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_open_workflow ON ledger.operations_continuity_workflows USING btree (fund_account_id, period_id) WHERE (derived_status <> 'Closed'::text)",
+              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_open_workflow ON ledger.operations_continuity_workflows USING btree (fund_account_id, period_id) WHERE ((derived_status <> 'Closed'::text) AND (COALESCE((workflow_json ->> 'purpose'::text), 'Close'::text) = 'Close'::text))",
               "expression": null,
-              "fingerprint": "af6e075f52eb3fde4b7605917f3c3d5e3a27982a21123b38207397f7ca4151a5",
+              "fingerprint": "4d83c31ac66ad65b8f19310adb2c34a61edd5e8cdf7bffbbaf5ec124447a38f2",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -117227,7 +117414,29 @@
               "name": "ux_operations_continuity_open_workflow",
               "options": [],
               "owner": "meridian",
-              "predicate": "derived_status <> 'Closed'::text",
+              "predicate": "derived_status <> 'Closed'::text AND COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'Close'::text",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_revision_subject ON ledger.operations_continuity_workflows USING btree ((((workflow_json ->> 'subjectRevisionId'::text))::uuid)) WHERE ((workflow_json ->> 'purpose'::text) = 'SecurityMasterRevision'::text)",
+              "expression": "(workflow_json ->> 'subjectRevisionId'::text)::uuid",
+              "fingerprint": "8e48061f0612b2fec7adbe8cdc03d18b2166450bc83ec1224fe89dc86656b07d",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "((workflow_json ->> 'subjectRevisionId'::text)::uuid)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_operations_continuity_revision_subject",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "(workflow_json ->> 'purpose'::text) = 'SecurityMasterRevision'::text",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -117248,7 +117457,25 @@
           "schema": "ledger",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER operations_workflow_subject_immutable BEFORE UPDATE ON ledger.operations_continuity_workflows FOR EACH ROW EXECUTE FUNCTION ledger.protect_operations_workflow_subject()",
+              "definition_hash": "08edfce8fe454a57baa448d0bb7076b3db155495e701ad1910efbad81833e447",
+              "enabled": "origin",
+              "events": [
+                "update"
+              ],
+              "fingerprint": "d73d8e8f7d6eb348c2aa7a9b0be6cd7356845f62dd64d84599403d5ee2ea5816",
+              "function_schema": "ledger",
+              "function_signature": "protect_operations_workflow_subject()",
+              "level": "row",
+              "name": "operations_workflow_subject_immutable",
+              "relation": "operations_continuity_workflows",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -133203,7 +133430,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "f1a6df11fa11fb92cb841abc5dbe6dbc1eb191630b11d7dcb1f0ca6c6914bb68",
+          "fingerprint": "5cfc5f675526b00a474e6836658c0a65f02111dea10daa4fe2c333a25ef9fe44",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -133283,6 +133510,23 @@
               "function_signature": "refuse_external_gl_evidence_mutation()",
               "level": "row",
               "name": "external_gl_immutable_mapping",
+              "relation": "external_gl_mapping_profiles",
+              "schema": "ledger",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER external_gl_mapping_no_truncate BEFORE TRUNCATE ON ledger.external_gl_mapping_profiles FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+              "definition_hash": "6cc3d89d62bf8bb8680c91896aa2c5746b3b93f59ee644647befd82a59c120ec",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "451f51f35ae753a30c642f845dea4de89ea9b97005dafa98f3824928deb1450c",
+              "function_schema": "ledger",
+              "function_signature": "refuse_external_gl_evidence_mutation()",
+              "level": "statement",
+              "name": "external_gl_mapping_no_truncate",
               "relation": "external_gl_mapping_profiles",
               "schema": "ledger",
               "timing": "before"
@@ -133452,7 +133696,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "b012c77c59afa722f3a5ce1e188bafc26764b8585c874af356e410141934a39b",
+          "fingerprint": "041964df0d2acfc16868e26f965b2f8fe204e8cd5e5855dd893bfdb36d06083f",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -133494,6 +133738,23 @@
           "security_labels": [],
           "sequence": null,
           "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER external_gl_decision_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_decisions FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+              "definition_hash": "27bf1bb522acd6371ea3f2df7415ee821c7a89dfa81ddd9072041bfef674a2b0",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "33d6a1d6d32408249db34dd4d4d6eac0bd3e57e7a5bda8fcd0dba4baeffb0b96",
+              "function_schema": "ledger",
+              "function_signature": "refuse_external_gl_evidence_mutation()",
+              "level": "statement",
+              "name": "external_gl_decision_no_truncate",
+              "relation": "external_gl_posting_decisions",
+              "schema": "ledger",
+              "timing": "before"
+            },
             {
               "comment": null,
               "definition": "CREATE TRIGGER external_gl_immutable_decision BEFORE DELETE OR UPDATE ON ledger.external_gl_posting_decisions FOR EACH ROW EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
@@ -134288,7 +134549,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "545da76a89a54bfc1922df6ccc915cff91db5b2da9824892dc819143afe7f04d",
+          "fingerprint": "7a0a982a51991b859687dac629de0c4321e5fbeeea3ef302ea20c3112f6ad14b",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -134367,6 +134628,23 @@
               "function_signature": "refuse_external_gl_evidence_mutation()",
               "level": "row",
               "name": "external_gl_immutable_package",
+              "relation": "external_gl_posting_packages",
+              "schema": "ledger",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER external_gl_package_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_packages FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+              "definition_hash": "e5d7b95142733e0c9c222fcaa1d19fa5aa8d14b81dbcafa5b8d8c4552bf708f0",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "4d1c47771fdd2c829ea63887b19198bac0dc40b61508d8d2aa833ea56fc0fbf8",
+              "function_schema": "ledger",
+              "function_signature": "refuse_external_gl_evidence_mutation()",
+              "level": "statement",
+              "name": "external_gl_package_no_truncate",
               "relation": "external_gl_posting_packages",
               "schema": "ledger",
               "timing": "before"
@@ -134515,7 +134793,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "9dbb50b1548416eb3a0a8fea353bf15e1e538e525bfe9cde69e2eecba99fc650",
+          "fingerprint": "9a6324937efa0ef9f794f553986d4733707a502fde927aaa75907b8497ef87d1",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -134593,6 +134871,23 @@
               "function_signature": "refuse_external_gl_evidence_mutation()",
               "level": "row",
               "name": "external_gl_immutable_receipt",
+              "relation": "external_gl_posting_receipts",
+              "schema": "ledger",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER external_gl_receipt_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_receipts FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+              "definition_hash": "4c199d7be768ce37c2ad29edfa37db6b36f8ee9d606854271adf8a165f663e00",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "081b58d15e80424c178412f227a70220f3d1b3dde01e8a571261f0891a03dfe1",
+              "function_schema": "ledger",
+              "function_signature": "refuse_external_gl_evidence_mutation()",
+              "level": "statement",
+              "name": "external_gl_receipt_no_truncate",
               "relation": "external_gl_posting_receipts",
               "schema": "ledger",
               "timing": "before"
@@ -148537,6 +148832,26 @@
           "constraints": [
             {
               "columns": [
+                "workflow_json"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK ((NOT workflow_json ? 'purpose'::text OR jsonb_typeof(workflow_json -> 'purpose'::text) = 'string'::text) AND (COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = ANY (ARRAY['Close'::text, 'SecurityMasterRevision'::text])) AND (COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'Close'::text AND (workflow_json ->> 'subjectRevisionId'::text) IS NULL AND (workflow_json ->> 'subjectMaker'::text) IS NULL AND (workflow_json ->> 'subjectEvidenceId'::text) IS NULL AND (workflow_json ->> 'subjectEvidenceSha256'::text) IS NULL OR COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'SecurityMasterRevision'::text AND (workflow_json ->> 'subjectRevisionId'::text) IS NOT NULL AND (workflow_json ->> 'subjectMaker'::text) IS NOT NULL AND length(TRIM(BOTH FROM workflow_json ->> 'subjectMaker'::text)) > 0 AND (workflow_json ->> 'subjectEvidenceId'::text) IS NOT NULL AND length(TRIM(BOTH FROM workflow_json ->> 'subjectEvidenceId'::text)) > 0 AND (workflow_json ->> 'subjectEvidenceSha256'::text) IS NOT NULL AND (workflow_json ->> 'subjectEvidenceSha256'::text) ~ '^[a-f0-9]{64}$'::text))",
+              "delete_action": null,
+              "fingerprint": "bb6d5ff970d1ec2fdde2f38a8d7c7f11453ceb082862382dc54523aef19afa31",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "operations_workflow_purpose_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
                 "workflow_id"
               ],
               "comment": null,
@@ -148558,7 +148873,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "a58c2e170e7d6a88108e8369e1fb7437a1ea527a0c3806387c9e4062b5219c6c",
+          "fingerprint": "5eb57ed1f520d98512677b114ab60ba11878fa84669a296799896949704901b3",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -148677,9 +148992,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_open_workflow ON ledger.operations_continuity_workflows USING btree (fund_account_id, period_id) WHERE (derived_status <> 'Closed'::text)",
+              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_open_workflow ON ledger.operations_continuity_workflows USING btree (fund_account_id, period_id) WHERE ((derived_status <> 'Closed'::text) AND (COALESCE((workflow_json ->> 'purpose'::text), 'Close'::text) = 'Close'::text))",
               "expression": null,
-              "fingerprint": "af6e075f52eb3fde4b7605917f3c3d5e3a27982a21123b38207397f7ca4151a5",
+              "fingerprint": "4d83c31ac66ad65b8f19310adb2c34a61edd5e8cdf7bffbbaf5ec124447a38f2",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -148691,7 +149006,29 @@
               "name": "ux_operations_continuity_open_workflow",
               "options": [],
               "owner": "meridian",
-              "predicate": "derived_status <> 'Closed'::text",
+              "predicate": "derived_status <> 'Closed'::text AND COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'Close'::text",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_revision_subject ON ledger.operations_continuity_workflows USING btree ((((workflow_json ->> 'subjectRevisionId'::text))::uuid)) WHERE ((workflow_json ->> 'purpose'::text) = 'SecurityMasterRevision'::text)",
+              "expression": "(workflow_json ->> 'subjectRevisionId'::text)::uuid",
+              "fingerprint": "8e48061f0612b2fec7adbe8cdc03d18b2166450bc83ec1224fe89dc86656b07d",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "((workflow_json ->> 'subjectRevisionId'::text)::uuid)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_operations_continuity_revision_subject",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "(workflow_json ->> 'purpose'::text) = 'SecurityMasterRevision'::text",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -148712,7 +149049,25 @@
           "schema": "ledger",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER operations_workflow_subject_immutable BEFORE UPDATE ON ledger.operations_continuity_workflows FOR EACH ROW EXECUTE FUNCTION ledger.protect_operations_workflow_subject()",
+              "definition_hash": "08edfce8fe454a57baa448d0bb7076b3db155495e701ad1910efbad81833e447",
+              "enabled": "origin",
+              "events": [
+                "update"
+              ],
+              "fingerprint": "d73d8e8f7d6eb348c2aa7a9b0be6cd7356845f62dd64d84599403d5ee2ea5816",
+              "function_schema": "ledger",
+              "function_signature": "protect_operations_workflow_subject()",
+              "level": "row",
+              "name": "operations_workflow_subject_immutable",
+              "relation": "operations_continuity_workflows",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -154705,6 +155060,40 @@
         },
         {
           "comment": null,
+          "definition": "CREATE TRIGGER external_gl_mapping_no_truncate BEFORE TRUNCATE ON ledger.external_gl_mapping_profiles FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+          "definition_hash": "6cc3d89d62bf8bb8680c91896aa2c5746b3b93f59ee644647befd82a59c120ec",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "451f51f35ae753a30c642f845dea4de89ea9b97005dafa98f3824928deb1450c",
+          "function_schema": "ledger",
+          "function_signature": "refuse_external_gl_evidence_mutation()",
+          "level": "statement",
+          "name": "external_gl_mapping_no_truncate",
+          "relation": "external_gl_mapping_profiles",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER external_gl_decision_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_decisions FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+          "definition_hash": "27bf1bb522acd6371ea3f2df7415ee821c7a89dfa81ddd9072041bfef674a2b0",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "33d6a1d6d32408249db34dd4d4d6eac0bd3e57e7a5bda8fcd0dba4baeffb0b96",
+          "function_schema": "ledger",
+          "function_signature": "refuse_external_gl_evidence_mutation()",
+          "level": "statement",
+          "name": "external_gl_decision_no_truncate",
+          "relation": "external_gl_posting_decisions",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
           "definition": "CREATE TRIGGER external_gl_immutable_decision BEFORE DELETE OR UPDATE ON ledger.external_gl_posting_decisions FOR EACH ROW EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
           "definition_hash": "d679156e7bfde5e20631a1eaa18c6ca5a5c2fa4c30f0c504184a20a5c5518e41",
           "enabled": "origin",
@@ -154741,6 +155130,23 @@
         },
         {
           "comment": null,
+          "definition": "CREATE TRIGGER external_gl_package_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_packages FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+          "definition_hash": "e5d7b95142733e0c9c222fcaa1d19fa5aa8d14b81dbcafa5b8d8c4552bf708f0",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "4d1c47771fdd2c829ea63887b19198bac0dc40b61508d8d2aa833ea56fc0fbf8",
+          "function_schema": "ledger",
+          "function_signature": "refuse_external_gl_evidence_mutation()",
+          "level": "statement",
+          "name": "external_gl_package_no_truncate",
+          "relation": "external_gl_posting_packages",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
           "definition": "CREATE TRIGGER external_gl_immutable_receipt BEFORE DELETE OR UPDATE ON ledger.external_gl_posting_receipts FOR EACH ROW EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
           "definition_hash": "f54413b3d6d1a3ffbf2f2e7beb9f238b1f86631841c59d172f804587fb470ad2",
           "enabled": "origin",
@@ -154753,6 +155159,23 @@
           "function_signature": "refuse_external_gl_evidence_mutation()",
           "level": "row",
           "name": "external_gl_immutable_receipt",
+          "relation": "external_gl_posting_receipts",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER external_gl_receipt_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_receipts FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+          "definition_hash": "4c199d7be768ce37c2ad29edfa37db6b36f8ee9d606854271adf8a165f663e00",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "081b58d15e80424c178412f227a70220f3d1b3dde01e8a571261f0891a03dfe1",
+          "function_schema": "ledger",
+          "function_signature": "refuse_external_gl_evidence_mutation()",
+          "level": "statement",
+          "name": "external_gl_receipt_no_truncate",
           "relation": "external_gl_posting_receipts",
           "schema": "ledger",
           "timing": "before"
@@ -155559,6 +155982,23 @@
           "level": "row",
           "name": "protect_open_lot_backfill_evidence",
           "relation": "open_lot_backfill_reviews",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER operations_workflow_subject_immutable BEFORE UPDATE ON ledger.operations_continuity_workflows FOR EACH ROW EXECUTE FUNCTION ledger.protect_operations_workflow_subject()",
+          "definition_hash": "08edfce8fe454a57baa448d0bb7076b3db155495e701ad1910efbad81833e447",
+          "enabled": "origin",
+          "events": [
+            "update"
+          ],
+          "fingerprint": "d73d8e8f7d6eb348c2aa7a9b0be6cd7356845f62dd64d84599403d5ee2ea5816",
+          "function_schema": "ledger",
+          "function_signature": "protect_operations_workflow_subject()",
+          "level": "row",
+          "name": "operations_workflow_subject_immutable",
+          "relation": "operations_continuity_workflows",
           "schema": "ledger",
           "timing": "before"
         },
@@ -187462,7 +187902,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "8e270b88700cd0b1008981abc91379dae378828e05266c978b9f5fe2f3b340ba",
+      "fingerprint": "5ed9bd94ff664313eab8ada94a9d819c53d3f0009a55d6fae2a95a672e0a0135",
       "foreign_tables": [],
       "functions": [
         {
@@ -214239,9 +214679,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "4fee1e3d31ac1bf71f455a705b7920e066ecd45dc2d60a5d16c6985ef588aac7",
+              "fingerprint": "14969bf8aede362cc23046af29ce391a0b0b1debbcf91a43b5e271da9dfbc4a9",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -214255,9 +214695,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "e9e7e109a7042abc424cb5abce4e292a3a3208ab47ac092868b9bc2142c969be",
+              "fingerprint": "fe38cf487c0ddc9b3b0f312ac005a3095f9d54903f3ef7ea2ae81f7aee78566f",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -214271,9 +214711,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "fdd34faf0ceb9430f83bd61984b715081bfdf3deddfdfa964ea0edc2381836a2",
+              "fingerprint": "25f3ca51d15ad2cb7a2cf94afdee67e99e490d5d8d12dbb843f5fb3d21ba3119",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -214287,9 +214727,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "b8cdf27dd72d4e075cd623bebeb081fbb5397af32973a01de6404275a4385adf",
+              "fingerprint": "f2b7d36c12fcea540ff13aa8d5dc80ea7983fa1fd499765e5c731905f4bbded3",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -214303,9 +214743,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "518518d1638b59ae548b82e7372bc22072608e2cbe9b4e95c4d36e26413b0c64",
+              "fingerprint": "a7121639844a218e0680f52e946b13f670d14f24aa878d369131ac1eb762918c",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -214535,7 +214975,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "0d178525d83cfabb5406a603c7f50928a0fe6fa5159d046f39f1d4a3a58dd992",
+          "fingerprint": "8799f73bf8f2c7b5cf0da73a90389f3533599c523cd7af22337e25e5fc0be452",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -214760,9 +215200,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "60a7d8fd8bbb4b4d96de844f4cb67e22c292b0f60b073deb182de5a1402aa52d",
+              "fingerprint": "e435c9161a04a3f95f22a22b8c1847ec5002236a29d0c9b91eface32af41c8af",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -214776,9 +215216,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "c20dc77f750bd3f1890c429e801750d18a8905eb87fde9153bf672cb5d721f62",
+              "fingerprint": "a0610939a63d6e42afefbf020d7dec2b3d60bec6d97abe668fad3f9af8c15be1",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -214792,9 +215232,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "d853d0164e33ad3b6ad3a96d88f5615216b3dc71d53f8509cbc48f815c5212ca",
+              "fingerprint": "e561848bdb15c1107e0b1c7351fa1cbca6a28257ffb57ff57d009946cff924d0",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -214808,9 +215248,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "d8bdb1b7daa0e3cb61dd8849350eb9538ae4f04d72e7c6d08c98ce3ceb5690ba",
+              "fingerprint": "fccbb4818c38c3e1c8d13bc4a5badba319b084e975ff0bf638f3f35566108698",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -215069,7 +215509,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c9b1f57a3dec6886b558ac7527175e95254b8e9554d33ed4aa5eac929941b899",
+          "fingerprint": "b458f3bb1db166eb48ce09d13456e6e92b66854315d7c30cc48d1bae8da502ea",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -215744,9 +216184,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "a58f9c1c1729c1a62856bd831f968ebde6bf7971a3b03e122f6ee7a53aa87218",
+              "fingerprint": "69fe92f5d4980bceb2428034ab45a316b03fbec89664a0ff295139dcd71c72aa",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -216069,7 +216509,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "bceb7fae6a7da3b672220ce611acbf50de835019343d2fe26424c55b084a5ff1",
+          "fingerprint": "e4d1cb31dacbde6ac06dab448ddb84bfad2a088c56a2275d94a4a71063dbeec5",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -216404,9 +216844,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "ffedbe6d78209e00fe46c8c3199790c643d32b0fbdd8a081b9d7757527538c21",
+              "fingerprint": "198708d529f3b9e3c6651ced596265ece86ee6e4ece556aebf7ce477a504604c",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -216420,9 +216860,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "f74827a531378042a6db133d4f9c4b8d8dbb6f521c0e83f622ba5484194c75f1",
+              "fingerprint": "4761d91f7a6782e4b6f56342169ff8978df8c140c1ea312a26caa8f8fa5550b6",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -216436,9 +216876,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "cecac1aa04eb51f87ee3b75913d7ef1ca33a55602c5a9cc914ba3d8c67a8053f",
+              "fingerprint": "05de88c23e5d69ee2b96df2c8c9b4e29afddc2d22678b51a796d18c98a552c2d",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -216681,7 +217121,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "8e665d106d55deedfafe7a75f933e2115b1b76a6033289c25362064435d9b2a3",
+          "fingerprint": "7215e60bada604e105c5a99ed21de880282e678bbb8db482f73b0d696c1961c5",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -216951,9 +217391,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "376c70f1b522aa297f4a8f7ae50cb9d52cedb80b9f1e07e03b6ef2b4a018e245",
+              "fingerprint": "b5ce73293a81c418165dc1f9115ed3b785221a602ed48a9dc4eaf791cbe38437",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -216967,9 +217407,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "54c3c47714adc2bb070fab2c2c9c21df8fd8a02d5a15c6ff994d6e1ff66dcd86",
+              "fingerprint": "8e5f502d7baca7aebbe740516822c5d92e1c8e80d787fadd254e60816c18a2ed",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -217063,9 +217503,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "1cfbfd57f2558cbc0768f99bce34ecc42adeaf367b4a58e023fb591b128f9414",
+              "fingerprint": "e5271f6051e34da247787e3ff39deb589f7181f8f88381da5f897cd9d2a91567",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -217378,7 +217818,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c05aefe01a0938879da899bc3a028b1684e271c7b7314c9cf38b9416aa871f4e",
+          "fingerprint": "a6c136bf019b0b1f66e63d0ffeab382fbc22aedd5ee0b7bd3fa9a80f16516207",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -222112,6 +222552,22 @@
               "security_labels": [],
               "type_name": "uuid",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "7a0a91bf66e0e9940a5516ad9e9728d83d5d6ff90ac3978f60039eacec2df07d",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "evidence_json",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -222227,7 +222683,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "53ff7040b61aa83c6e47e7577bcfd943c9532ab53730e491c5ac9045ad41358c",
+          "fingerprint": "9192a81abbe0f3bf088f4215b8e30828b0038cacd7940b6563ce1e112bd2c589",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -222451,6 +222907,22 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "531e1fd7257c27984b51a10d40c6006dd931707f7a5160e28e1cf307153151f8",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "evidence_json",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -222522,7 +222994,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "0fb5fefb5ec56cbdad1886ce6cbc92fa9fc90ebf2a626cf8a600599ce43d73dc",
+          "fingerprint": "a00c895faeb6acdf3215a2476bc57eeb869a0329d2bd4174d3b34fea97f1e06f",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -266129,9 +266601,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "4fee1e3d31ac1bf71f455a705b7920e066ecd45dc2d60a5d16c6985ef588aac7",
+              "fingerprint": "14969bf8aede362cc23046af29ce391a0b0b1debbcf91a43b5e271da9dfbc4a9",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -266145,9 +266617,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "e9e7e109a7042abc424cb5abce4e292a3a3208ab47ac092868b9bc2142c969be",
+              "fingerprint": "fe38cf487c0ddc9b3b0f312ac005a3095f9d54903f3ef7ea2ae81f7aee78566f",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -266161,9 +266633,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "fdd34faf0ceb9430f83bd61984b715081bfdf3deddfdfa964ea0edc2381836a2",
+              "fingerprint": "25f3ca51d15ad2cb7a2cf94afdee67e99e490d5d8d12dbb843f5fb3d21ba3119",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -266177,9 +266649,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "b8cdf27dd72d4e075cd623bebeb081fbb5397af32973a01de6404275a4385adf",
+              "fingerprint": "f2b7d36c12fcea540ff13aa8d5dc80ea7983fa1fd499765e5c731905f4bbded3",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -266193,9 +266665,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "518518d1638b59ae548b82e7372bc22072608e2cbe9b4e95c4d36e26413b0c64",
+              "fingerprint": "a7121639844a218e0680f52e946b13f670d14f24aa878d369131ac1eb762918c",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -266425,7 +266897,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "0d178525d83cfabb5406a603c7f50928a0fe6fa5159d046f39f1d4a3a58dd992",
+          "fingerprint": "8799f73bf8f2c7b5cf0da73a90389f3533599c523cd7af22337e25e5fc0be452",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -266650,9 +267122,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "60a7d8fd8bbb4b4d96de844f4cb67e22c292b0f60b073deb182de5a1402aa52d",
+              "fingerprint": "e435c9161a04a3f95f22a22b8c1847ec5002236a29d0c9b91eface32af41c8af",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -266666,9 +267138,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "c20dc77f750bd3f1890c429e801750d18a8905eb87fde9153bf672cb5d721f62",
+              "fingerprint": "a0610939a63d6e42afefbf020d7dec2b3d60bec6d97abe668fad3f9af8c15be1",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -266682,9 +267154,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "d853d0164e33ad3b6ad3a96d88f5615216b3dc71d53f8509cbc48f815c5212ca",
+              "fingerprint": "e561848bdb15c1107e0b1c7351fa1cbca6a28257ffb57ff57d009946cff924d0",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -266698,9 +267170,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "d8bdb1b7daa0e3cb61dd8849350eb9538ae4f04d72e7c6d08c98ce3ceb5690ba",
+              "fingerprint": "fccbb4818c38c3e1c8d13bc4a5badba319b084e975ff0bf638f3f35566108698",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -266959,7 +267431,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c9b1f57a3dec6886b558ac7527175e95254b8e9554d33ed4aa5eac929941b899",
+          "fingerprint": "b458f3bb1db166eb48ce09d13456e6e92b66854315d7c30cc48d1bae8da502ea",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -267634,9 +268106,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "a58f9c1c1729c1a62856bd831f968ebde6bf7971a3b03e122f6ee7a53aa87218",
+              "fingerprint": "69fe92f5d4980bceb2428034ab45a316b03fbec89664a0ff295139dcd71c72aa",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -267959,7 +268431,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "bceb7fae6a7da3b672220ce611acbf50de835019343d2fe26424c55b084a5ff1",
+          "fingerprint": "e4d1cb31dacbde6ac06dab448ddb84bfad2a088c56a2275d94a4a71063dbeec5",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -268294,9 +268766,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "ffedbe6d78209e00fe46c8c3199790c643d32b0fbdd8a081b9d7757527538c21",
+              "fingerprint": "198708d529f3b9e3c6651ced596265ece86ee6e4ece556aebf7ce477a504604c",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -268310,9 +268782,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "f74827a531378042a6db133d4f9c4b8d8dbb6f521c0e83f622ba5484194c75f1",
+              "fingerprint": "4761d91f7a6782e4b6f56342169ff8978df8c140c1ea312a26caa8f8fa5550b6",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -268326,9 +268798,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "cecac1aa04eb51f87ee3b75913d7ef1ca33a55602c5a9cc914ba3d8c67a8053f",
+              "fingerprint": "05de88c23e5d69ee2b96df2c8c9b4e29afddc2d22678b51a796d18c98a552c2d",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -268571,7 +269043,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "8e665d106d55deedfafe7a75f933e2115b1b76a6033289c25362064435d9b2a3",
+          "fingerprint": "7215e60bada604e105c5a99ed21de880282e678bbb8db482f73b0d696c1961c5",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -268841,9 +269313,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "376c70f1b522aa297f4a8f7ae50cb9d52cedb80b9f1e07e03b6ef2b4a018e245",
+              "fingerprint": "b5ce73293a81c418165dc1f9115ed3b785221a602ed48a9dc4eaf791cbe38437",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -268857,9 +269329,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "54c3c47714adc2bb070fab2c2c9c21df8fd8a02d5a15c6ff994d6e1ff66dcd86",
+              "fingerprint": "8e5f502d7baca7aebbe740516822c5d92e1c8e80d787fadd254e60816c18a2ed",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -268953,9 +269425,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric",
+              "data_type": "numeric(28,10)",
               "default": null,
-              "fingerprint": "1cfbfd57f2558cbc0768f99bce34ecc42adeaf367b4a58e023fb591b128f9414",
+              "fingerprint": "e5271f6051e34da247787e3ff39deb589f7181f8f88381da5f897cd9d2a91567",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -269268,7 +269740,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c05aefe01a0938879da899bc3a028b1684e271c7b7314c9cf38b9416aa871f4e",
+          "fingerprint": "a6c136bf019b0b1f66e63d0ffeab382fbc22aedd5ee0b7bd3fa9a80f16516207",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -274002,6 +274474,22 @@
               "security_labels": [],
               "type_name": "uuid",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "7a0a91bf66e0e9940a5516ad9e9728d83d5d6ff90ac3978f60039eacec2df07d",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "evidence_json",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -274117,7 +274605,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "53ff7040b61aa83c6e47e7577bcfd943c9532ab53730e491c5ac9045ad41358c",
+          "fingerprint": "9192a81abbe0f3bf088f4215b8e30828b0038cacd7940b6563ce1e112bd2c589",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -274341,6 +274829,22 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "531e1fd7257c27984b51a10d40c6006dd931707f7a5160e28e1cf307153151f8",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "evidence_json",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -274412,7 +274916,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "0fb5fefb5ec56cbdad1886ce6cbc92fa9fc90ebf2a626cf8a600599ce43d73dc",
+          "fingerprint": "a00c895faeb6acdf3215a2476bc57eeb869a0329d2bd4174d3b34fea97f1e06f",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [

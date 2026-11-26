@@ -193,7 +193,10 @@ public sealed record FundReconciliationDetailModel(
     IReadOnlyList<FundReconciliationCheckDetailRow> ExceptionRows,
     IReadOnlyList<FundReconciliationCheckDetailRow> AllCheckRows,
     IReadOnlyList<FundReconciliationSecurityCoverageRow> SecurityCoverageRows,
-    IReadOnlyList<FundReconciliationAuditTrailRow> AuditRows);
+    IReadOnlyList<FundReconciliationAuditTrailRow> AuditRows)
+{
+    public string? BreakAmountDisplayOverride { get; init; }
+}
 
 public sealed record FundReconciliationCheckDetailRow(
     string RowKey,
@@ -208,7 +211,8 @@ public sealed record FundReconciliationCheckDetailRow(
     string Reason,
     string ExpectedAsOfText,
     string ActualAsOfText,
-    bool IsHighlighted = false);
+    bool IsHighlighted = false,
+    string ToleranceText = "Not retained");
 
 public sealed record FundReconciliationSecurityCoverageRow(
     string Source,

@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingGovernanceCallerContext
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingGovernanceCallerContext</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:19](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L19).
+
+Request identity resolved from the authenticated workstation session. Organization identity is deliberately absent: the coordinator resolves it from the server-owned run scope, so an HTTP caller cannot authorize itself into another reporting organization.
+
+```csharp
+public sealed record ReportingGovernanceCallerContext(string ActorId, string TenantId, string? CompanyId, UserPermission Permissions, ReportingCommandOrigin Origin, string CorrelationId, ImmutableArray<string> PrincipalIds = default)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Matches(ReportingAccessPrincipalScope principal) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L28) |  |
+
 ## ReportingGovernanceCoordinatorService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingGovernanceCoordinatorService</code>. Kind: `class`.
@@ -834,7 +852,7 @@ public sealed record ReportPackDeliveryArtifactContent(string ArtifactName, stri
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackDeliveryService</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:659](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L659).
+Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:666](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L666).
 
 Coordinates report-pack delivery attempts, retained packages, and artifact access.
 
@@ -846,17 +864,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportPackDeliveryService(ReportPackWorkflowService workflowService, IReportPackDeliveryRecordStore? store = null);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:668](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L668) |  |
-| <code>public IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; ListAttempts(int limit = 100);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:678](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L678) |  |
-| <code>public IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; GetHistory(Guid reportId, int limit = 100);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:691](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L691) |  |
-| <code>public ReportPackDeliveryPackageDto GetPackage(Guid reportId, Guid attemptId, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:704](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L704) |  |
-| <code>public ReportPackDeliveryPackageDto GetPortalPackage(string packageId, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:713](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L713) |  |
-| <code>public ReportPackDeliveryArtifactContent GetArtifact(Guid reportId, Guid attemptId, string artifactName, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:734](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L734) |  |
-| <code>public ReportPackDeliveryAttemptDto Deliver(Guid reportId, ReportPackDeliveryRequestDto request, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:777](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L777) |  |
-| <code>public ReportPackDeliveryAttemptDto? DeliverLatestForTemplate(string templateId, ReportingScheduleDeliveryTargetDto target, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:796](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L796) |  |
-| <code>public ReportPackDeliveryAttemptDto DeliverReportingRun(ReportingOutputManifest manifest, ReportingScheduleDeliveryTargetDto target, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:831](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L831) |  |
-| <code>public ReportPackDeliveryAttemptDto RecordFailure(Guid reportId, ReportPackDeliveryFailureRequestDto request, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:885](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L885) |  |
-| <code>public static IReadOnlyList&lt;string&gt; ValidateDeliverablePackage(ReportPackDeliveryAttemptDto? attempt);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:905](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L905) |  |
+| <code>public ReportPackDeliveryService(ReportPackWorkflowService workflowService, IReportPackDeliveryRecordStore? store = null);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:675](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L675) |  |
+| <code>public IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; ListAttempts(int limit = 100);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:685](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L685) |  |
+| <code>public IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; GetHistory(Guid reportId, int limit = 100);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:698](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L698) |  |
+| <code>public ReportPackDeliveryPackageDto GetPackage(Guid reportId, Guid attemptId, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:711](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L711) |  |
+| <code>public ReportPackDeliveryPackageDto GetPortalPackage(string packageId, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:720](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L720) |  |
+| <code>public ReportPackDeliveryArtifactContent GetArtifact(Guid reportId, Guid attemptId, string artifactName, string? token);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:741](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L741) |  |
+| <code>public ReportPackDeliveryAttemptDto Deliver(Guid reportId, ReportPackDeliveryRequestDto request, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:784](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L784) |  |
+| <code>public ReportPackDeliveryAttemptDto? DeliverLatestForTemplate(string templateId, ReportingScheduleDeliveryTargetDto target, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:803](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L803) |  |
+| <code>public ReportPackDeliveryAttemptDto DeliverReportingRun(ReportingOutputManifest manifest, ReportingScheduleDeliveryTargetDto target, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:838](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L838) |  |
+| <code>public ReportPackDeliveryAttemptDto RecordFailure(Guid reportId, ReportPackDeliveryFailureRequestDto request, string fallbackActor);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:892](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L892) |  |
+| <code>public static IReadOnlyList&lt;string&gt; ValidateDeliverablePackage(ReportPackDeliveryAttemptDto? attempt);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:912](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L912) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.Evidence.cs:6](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.Evidence.cs#L6).
 
@@ -868,14 +886,4 @@ Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.Guards.cs:6](
 
 ```csharp
 public sealed partial class ReportPackDeliveryService
-```
-
-## ReportPackDeliveryStoreOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackDeliveryStoreOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:17](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L17).
-
-```csharp
-public sealed record ReportPackDeliveryStoreOptions(string SnapshotPath);
 ```

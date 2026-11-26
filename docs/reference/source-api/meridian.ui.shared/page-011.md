@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DemoWorkspaceSeeder
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DemoWorkspaceSeeder</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:44](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L44).
+
+Provisions and tears down the isolated Meridian demo workspace used by the --seed-demo / --reset-demo host verbs and by the --demo serve mode.
+
+```csharp
+public sealed class DemoWorkspaceSeeder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DemoWorkspaceSeeder(string baseDataRoot, ILoggerFactory? loggerFactory = null);</code> | [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:69](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L69) | Creates a seeder for the demo root derived from baseDataRoot. |
+| <code>public string DemoRoot =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:79](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L79) | The isolated demo root this seeder operates on. |
+| <code>public async Task&lt;DemoWorkspaceSeedReport&gt; SeedAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:85](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L85) | Seeds the demo workspace durably and idempotently. Creates the demo root, writes the demo sentinel, and provisions the reconciliation and strategy desks through the real desk stores. |
+| <code>public Task&lt;DemoWorkspaceResetReport&gt; ResetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:383](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L383) | Tears down the demo workspace, guarded so only the dedicated, sentinel-marked demo root can be deleted. A missing demo root is a no-op, not an error. |
+
 ## DemoWorkspaceSeedReport
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DemoWorkspaceSeedReport</code>. Kind: `record`.
@@ -879,22 +900,3 @@ Source: [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:14](../
 ```csharp
 public sealed record Snapshot(IReadOnlyList<OnboardingWorkspaceDto> Workspaces);
 ```
-
-## FilePrivateCapitalLifecycleSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FilePrivateCapitalLifecycleSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:26](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L26).
-
-Reads a versioned retained source cut under the workstation data directory. Provisioners replace the document atomically and retain prior snapshot revisions. No writes or approval authority.
-
-```csharp
-public sealed class FilePrivateCapitalLifecycleSource(string dataDirectory) : IPrivateCapitalLifecycleSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;PrivateCapitalLifecycleRead&gt; ReadAsync(string familyOfficeId, IReadOnlySet&lt;string&gt; entityIds, DateOnly asOf, DateTimeOffset knownAt, CancellationToken ct = default, Func&lt;DateOnly, CancellationToken, Task&lt;IReadOnlySet&lt;string&gt;&gt;&gt;? historicalEntityScope = null);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:31](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L31) |  |
-| <code>public static PrivateCapitalLifecycleRead Project(PrivateCapitalLifecycleDocumentDto document, string familyOfficeId, IReadOnlySet&lt;string&gt; entityIds, DateOnly asOf, DateTimeOffset knownAt, IReadOnlyDictionary&lt;DateOnly, IReadOnlySet&lt;string&gt;&gt;? historicalEntityScopes = null);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:68](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L68) |  |

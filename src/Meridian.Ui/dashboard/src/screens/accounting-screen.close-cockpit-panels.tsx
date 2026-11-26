@@ -12,6 +12,8 @@ import { FreshnessChip } from "@/components/ui/freshness-chip";
 import { Input } from "@/components/ui/input";
 import { SkeletonCardRow, SkeletonGrid, SkeletonTimeline } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { isOpaqueIdentifier } from "@/lib/identifiers";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { AccountingChip } from "@/screens/accounting-screen.workbench-context";
 import type {
   AccountingCloseReportPackageViewModel,
@@ -20,7 +22,6 @@ import type {
   CloseCommandCenterViewState
 } from "@/screens/accounting-screen.view-model";
 import { usesTrackedCaps } from "@/design-system/label-case";
-import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TextArea } from "@/components/ui/text-area";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { statusBadgeVariant, statusPanelClass } from "@/design-system/status-styles";
@@ -168,7 +169,7 @@ export function CloseCommandCenterPanel({
               <CardDescription className="mt-2">{view.summary}</CardDescription>
             </div>
             <div className="grid gap-2 text-sm">
-              <CloseCommandCenterValue label="Fund account" value={view.fundAccountLabel} />
+              <CloseScopeIdentity label="Fund account" value={view.fundAccountLabel} />
               <CloseCommandCenterValue label="Updated" value={view.updatedLabel} />
               <FreshnessChip
                 className="w-fit"
@@ -1483,6 +1484,14 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
   );
 }
 
+
+function CloseScopeIdentity({ label, value }: { label: string; value: string }) {
+  if (!isOpaqueIdentifier(value)) return <CloseCommandCenterValue label={label} value={value} />;
+  return <div>
+    <CloseCommandCenterValue label={label} value="Display name not recorded" />
+    <TechnicalDetails label={`${label} identifier`}><p className="break-all font-mono text-xs">{value}</p></TechnicalDetails>
+  </div>;
+}
 
 function CloseCommandCenterValue({ label, value }: { label: string; value: string }) {
   return (

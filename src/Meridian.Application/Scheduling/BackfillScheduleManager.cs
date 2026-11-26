@@ -332,7 +332,10 @@ public sealed class BackfillScheduleManager
 
                 try
                 {
-                    await AtomicFileWriter.SyncDirectoryAsync(
+                    // Strict: the deletion is acknowledged only once the tombstone rename is durable.
+                    // On a throw the rename is rolled back below and the schedule stays retained, so a
+                    // retry starts from the original state.
+                    await AtomicFileWriter.SyncDirectoryOrThrowAsync(
                             _schedulesDirectory,
                             CancellationToken.None)
                         .ConfigureAwait(false);
@@ -342,6 +345,7 @@ public sealed class BackfillScheduleManager
                     try
                     {
                         File.Move(tombstonePath, filePath);
+                        // Best effort: the restore has committed; a throw would report it as failed.
                         await AtomicFileWriter.SyncDirectoryAsync(
                                 _schedulesDirectory,
                                 CancellationToken.None)
@@ -695,6 +699,7 @@ public sealed class BackfillScheduleManager
         try
         {
             File.Delete(tombstonePath);
+            // Best effort: the tombstone is ignored on load, so its removal needs no acknowledgement.
             await AtomicFileWriter.SyncDirectoryAsync(
                     _schedulesDirectory,
                     CancellationToken.None)

@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ILedgerBookControlStore
+
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerBookControlStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:43](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L43).
+
+```csharp
+public interface ILedgerBookControlStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;LedgerBookControlProfileDto?&gt; GetBookControlsAsync(Guid bookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:45](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L45) |  |
+| <code>Task&lt;LedgerBookControlPreflightDto&gt; PrepareBookControlsAsync(Guid bookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:46](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L46) |  |
+| <code>Task&lt;LedgerBookControlProfileDto&gt; ActivateBookControlsAsync(Guid bookId, long expectedVersion, string preflightDigest, string actor, string reason, string evidenceReference, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:47](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L47) |  |
+
+## ILedgerBookFxSettlementStore
+
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerBookFxSettlementStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs:6](../../../../src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs#L6).
+
+Retains a reviewed FX sale set and captures approved journal consequences without appending journals.
+
+```csharp
+public interface ILedgerBookFxSettlementStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BookFxSettlementSetDto?&gt; GetBookFxSettlementSetAsync(Guid setId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs:8](../../../../src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs#L8) |  |
+| <code>Task&lt;BookFxSettlementSetDto&gt; RetainBookFxSettlementSetAsync(RetainBookFxSettlementSetRequestDto request, string actor, string controllerRole, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs:11](../../../../src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs#L11) |  |
+| <code>Task&lt;BookFxSettlementLegReceiptDto&gt; CaptureBookFxSettlementLegAsync(Guid setId, CaptureBookFxSettlementLegRequestDto request, string actor, string controllerRole, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs:14](../../../../src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs#L14) |  |
+
 ## ILedgerEntityControlJournalValidation
 
 Qualified name: <code>Meridian.Storage.Ledger.ILedgerEntityControlJournalValidation</code>. Kind: `interface`.
@@ -684,6 +722,34 @@ Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:306](../../../../src
 public sealed record LedgerJournalEntryWrite(JournalEntry Entry, Guid AggregateId, Guid PeriodId, Guid? CommandId = null, Guid? CorrelationId = null, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, Guid? SourceEventId = null, Guid? SourceJournalEntryId = null, LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null, AccountingPostingCommandDto? PostingCommand = null, Guid? LedgerBookId = null);
 ```
 
+## LedgerJournalExportCapture
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerJournalExportCapture</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerJournalExportSelection.cs:8](../../../../src/Meridian.Storage/Ledger/LedgerJournalExportSelection.cs#L8).
+
+```csharp
+public sealed record LedgerJournalExportCapture(IReadOnlyList<LedgerJournalEntryRecord> Journals, string SnapshotSha256);
+```
+
+## LedgerJournalExportSelection
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerJournalExportSelection</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerJournalExportSelection.cs:11](../../../../src/Meridian.Storage/Ledger/LedgerJournalExportSelection.cs#L11).
+
+Selects complete journals from one authorized, immutable period capture.
+
+```csharp
+public static class LedgerJournalExportSelection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LedgerJournalExportCapture Select(LedgerReportingSnapshot snapshot, Guid bookId, Guid periodId, DateOnly? from = null, DateOnly? to = null, IReadOnlyList&lt;Guid&gt;? journalEntryIds = null);</code> | [src/Meridian.Storage/Ledger/LedgerJournalExportSelection.cs:13](../../../../src/Meridian.Storage/Ledger/LedgerJournalExportSelection.cs#L13) |  |
+
 ## LedgerJournalStoreHydrationExtensions
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerJournalStoreHydrationExtensions</code>. Kind: `class`.
@@ -824,75 +890,3 @@ Source: [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:114](../../../
 ```csharp
 public sealed record LedgerPeriodCloseSnapshotPayload(int SchemaVersion, LedgerAccountingPeriod Period, PeriodCloseEventRecord CloseEvent, IReadOnlyList<LedgerJournalEntryRecord> Entries);
 ```
-
-## LedgerPeriodPostingGuard
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodPostingGuard</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs:10](../../../../src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs#L10).
-
-Rejects journal postings that violate the selected accounting period&#x27;s scope, dates, or state.
-
-```csharp
-public static class LedgerPeriodPostingGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void Validate(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period) =&gt; …;</code> | [src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs:12](../../../../src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs#L12) |  |
-
-## LedgerPeriodTransitionException
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodTransitionException</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerBookServiceException.cs:51](../../../../src/Meridian.Storage/Ledger/LedgerBookServiceException.cs#L51).
-
-Signals an invalid transition between accounting period states.
-
-```csharp
-public sealed class LedgerPeriodTransitionException : LedgerBookServiceException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerPeriodTransitionException(string message) : base(message);</code> | [src/Meridian.Storage/Ledger/LedgerBookServiceException.cs:53](../../../../src/Meridian.Storage/Ledger/LedgerBookServiceException.cs#L53) |  |
-
-## LedgerPostingAuthorityContext
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPostingAuthorityContext</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:26](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L26).
-
-```csharp
-public sealed record LedgerPostingAuthorityContext(LedgerJournalEntryWrite Write, LedgerBookRecord Book, LedgerBookControlProfileDto Controls, string? TenantId)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IList&lt;LedgerControlDecisionDto&gt; Decisions { get; } = new List&lt;LedgerControlDecisionDto&gt;();</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:32](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L32) |  |
-| <code>public LegalEntityReadAuthorityProof? StructureAuthorityProof { get; private set; }</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:33](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L33) |  |
-| <code>public bool IsReviewOnly { get; internal set; }</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:34](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L34) |  |
-| <code>public IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt; VerifiedCanonicalAgreementRevisions { get; internal set; } = [];</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:35](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L35) |  |
-| <code>public void RetainStructureAuthority(IAsyncDisposable lease);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:36](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L36) |  |
-
-## LedgerPostingIdentity
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPostingIdentity</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:226](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L226).
-
-```csharp
-public sealed record LedgerPostingIdentity(Guid JournalEntryId, Guid AggregateId, Guid? CommandId, Guid? SourceEventId, string? IdempotencyKey)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static LedgerPostingIdentity FromWrite(LedgerJournalEntryWrite write);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:233](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L233) |  |

@@ -217,6 +217,54 @@ public sealed class AssetPositionMarketValuationServiceTests
     }
 
     [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task RetainedFactorIsCheckedWhenCurrentFaceIsAbsent(bool conflictingModelFactor, bool missingCarryingAmount)
+    {
+        var f = new AssetPositionValuationFixture();
+        var modelFactor = conflictingModelFactor ? .75m : .5m;
+        f.Security = ValuationTestSecurities.DatedFactorBond(modelFactor, f.Request.ValuationDate, f.Security.SecurityId);
+        var state = f.State with
+        {
+            OriginalFaceAmount = 1000m,
+            CurrentFaceAmount = null,
+            CurrentFactor = .5m,
+            CarryingAmount = missingCarryingAmount ? null : 450m
+        };
+        f.Snapshot = f.Snapshot with { BookPositions = [f.Position with { CurrentEconomicState = state }], PositionEconomicStates = [state] };
+        var dcf = Substitute.For<ISecurityValuationModel>();
+        dcf.Kind.Returns(SecurityValuationModelKind.DiscountedCashFlow);
+        var modelAmount = Meridian.FSharp.Calculations.SecurityCalculations.bondMarketValue(1000m, modelFactor, 102m);
+        dcf.ValueAsync(Arg.Any<SecurityValuationRequest>(), Arg.Any<SecurityDetailDto>(), Arg.Any<CancellationToken>())
+            .Returns(call => new SecurityValuationResult(f.Request.SecurityId, SecurityValuationModelKind.DiscountedCashFlow,
+                "discounted-cash-flow", "v2", f.AsOf, f.AsOf, "USD", 102m, SecurityPriceUnit.PercentOfPar,
+                modelAmount, call.Arg<SecurityValuationRequest>().Quantity, modelAmount, f.AsOf.AddDays(-1), SecurityValuationObservability.ObservableInputs,
+                [new SecurityValuationInputDto("DiscountCurveVersion", "USD-OIS", Guid.NewGuid(), 1)], ["DirtyValue: full coupon"], []));
+        var service = new AssetPositionMarketValuationService(f.Store, f.Query, [dcf], f.Pricing);
+
+        var result = await service.ValueAsync(f.Request, f.Book);
+
+        result.UnrealizedPnl.Should().BeNull();
+        if (conflictingModelFactor)
+        {
+            result.Status.Should().Be("Blocked");
+            result.MarketValue.Should().BeNull();
+            result.Blockers.Should().Contain(blocker => blocker.Code == "OutstandingFaceMismatch");
+        }
+        else
+        {
+            result.Status.Should().Be("Partial");
+            result.MarketValue.Should().Be(510m);
+            result.Blockers.Should().Contain(blocker => blocker.Code == "CarryingAccrualBasisUnavailable"
+                && blocker.Metric == "UnrealizedPnl");
+            if (missingCarryingAmount)
+                result.CarryingAmount.Should().BeNull();
+        }
+    }
+
+    [Theory]
     [InlineData("future-effective")]
     [InlineData("missing-retained")]
     public async Task NeverValuesCurrentProjectionOnlyOrFutureEffectiveTerms(string failure)

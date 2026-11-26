@@ -34,7 +34,9 @@ public sealed class ProviderConfigReconciler : IConfigurationRuntimeApplier, IDi
     private readonly ILogger _log;
     private readonly TimeSpan _handOffTimeout;
     private readonly SemaphoreSlim _gate = new(1, 1);
-    private AppConfig _applied;
+    private readonly DataSourcesConfig _startup;
+    private readonly Dictionary<string, ConfigurationApplyKind> _lastOutcomes = new(StringComparer.Ordinal);
+    private AppConfig _observed;
 
     public ProviderConfigReconciler(
         StreamingFailoverService failover,
@@ -45,7 +47,8 @@ public sealed class ProviderConfigReconciler : IConfigurationRuntimeApplier, IDi
     {
         _failover = failover ?? throw new ArgumentNullException(nameof(failover));
         ArgumentNullException.ThrowIfNull(liveProviderIds);
-        _applied = startupConfig ?? throw new ArgumentNullException(nameof(startupConfig));
+        _observed = startupConfig ?? throw new ArgumentNullException(nameof(startupConfig));
+        _startup = startupConfig.DataSources ?? new DataSourcesConfig();
         _log = (log ?? throw new ArgumentNullException(nameof(log))).ForContext<ProviderConfigReconciler>();
         _liveProviderIds = new HashSet<string>(
             liveProviderIds.Select(ProviderIdentity.NormalizeId),
@@ -66,8 +69,8 @@ public sealed class ProviderConfigReconciler : IConfigurationRuntimeApplier, IDi
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var paths = ConfigurationChangeTracker.ChangedPaths(_applied, next).Where(Handles).ToArray();
-            return paths.Length == 0 ? [] : await ApplyCoreAsync(_applied, next, paths, ct).ConfigureAwait(false);
+            var paths = ConfigurationChangeTracker.CollectorChanges(_observed, next).Select(change => change.Path).ToArray();
+            return paths.Length == 0 ? [] : await ApplyCoreAsync(_observed, next, paths, ct).ConfigureAwait(false);
         }
         finally
         {
@@ -87,19 +90,22 @@ public sealed class ProviderConfigReconciler : IConfigurationRuntimeApplier, IDi
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            // Diff against what the runtime actually holds; the saved "previous" may already be applied.
-            var pending = new HashSet<string>(
-                ConfigurationChangeTracker.ChangedPaths(_applied, next).Where(Handles), StringComparer.Ordinal);
-            var applied = pending.Count == 0
+            // Reconcile the latest document against this collector's observations. A deferred
+            // setting remains unresolved even when a later revision carries the same value.
+            var unproven = changedPaths.Where(path => Handles(path)
+                && (!_lastOutcomes.TryGetValue(path, out var outcome) || !ConfigurationRevisionJournal.HasTakenEffect(outcome)));
+            var pending = ConfigurationChangeTracker.CollectorChanges(_observed, next).Select(change => change.Path)
+                .Concat(unproven).Distinct(StringComparer.Ordinal).ToArray();
+            var applied = pending.Length == 0
                 ? []
-                : await ApplyCoreAsync(_applied, next, pending.ToArray(), ct).ConfigureAwait(false);
+                : await ApplyCoreAsync(_observed, next, pending, ct).ConfigureAwait(false);
             var byPath = applied.ToDictionary(entry => entry.Path, StringComparer.Ordinal);
 
-            // Paths already live from an earlier apply are reported as applied, not re-run.
+            // An unchanged, resolved path need not be applied twice.
             return changedPaths.Where(Handles)
                 .Select(path => byPath.TryGetValue(path, out var entry)
                     ? entry
-                    : new ConfigurationApplyEntry(path, ConfigurationApplyKind.AppliedLive, "Already applied to the running host."))
+                    : new ConfigurationApplyEntry(path, _lastOutcomes[path], "Already applied to the running host."))
                 .ToArray();
         }
         finally
@@ -121,7 +127,7 @@ public sealed class ProviderConfigReconciler : IConfigurationRuntimeApplier, IDi
         IReadOnlyDictionary<string, FailoverRuleApplyOutcome>? ruleOutcomes = null;
         var referenceError = FindUnknownRuleProvider(next);
         if (referenceError is null &&
-            next.EnableFailover == previous.EnableFailover &&
+            next.EnableFailover == _startup.EnableFailover &&
             paths.Any(path => Segment(path, 1) is "FailoverRules" or "HealthCheckIntervalSeconds"))
         {
             ruleOutcomes = _failover.ApplyConfiguration(next)
@@ -139,9 +145,9 @@ public sealed class ProviderConfigReconciler : IConfigurationRuntimeApplier, IDi
             {
                 "FailoverRules" when referenceError is not null
                     => Deferred(path, referenceError),
-                "FailoverRules" when next.EnableFailover != previous.EnableFailover
+                "FailoverRules" when next.EnableFailover != _startup.EnableFailover
                     => Deferred(path, "Turning failover on or off takes effect after a host restart."),
-                "FailoverRules" => RuleEntry(path, previous, next, ruleOutcomes),
+                "FailoverRules" => RuleEntry(path, _startup, previous, next, ruleOutcomes),
                 "HealthCheckIntervalSeconds" when ruleOutcomes is not null
                     => new(path, ConfigurationApplyKind.AppliedLive, "Health checks now run at the saved interval."),
                 "FailoverRuleAudit"
@@ -149,7 +155,9 @@ public sealed class ProviderConfigReconciler : IConfigurationRuntimeApplier, IDi
                 "FailoverTimeoutSeconds" or "AutoRecover" or "DefaultHistoricalSourceId"
                     => new(path, ConfigurationApplyKind.NoRuntimeEffect,
                         "Saved; the streaming failover runtime does not read this setting."),
-                "Sources" => await SourceEntryAsync(path, previous, next, sourceOutcomes, ct).ConfigureAwait(false),
+                "Sources" => await SourceEntryAsync(path, _startup, next, sourceOutcomes, ct).ConfigureAwait(false),
+                "EnableFailover" when next.EnableFailover == _startup.EnableFailover
+                    => new(path, ConfigurationApplyKind.AppliedLive, "The saved failover mode matches this collector."),
                 _ => Deferred(path, section switch
                 {
                     "EnableFailover" => "Turning failover on or off takes effect after a host restart.",
@@ -162,7 +170,9 @@ public sealed class ProviderConfigReconciler : IConfigurationRuntimeApplier, IDi
             entries.Add(entry);
         }
 
-        _applied = nextConfig;
+        _observed = nextConfig;
+        foreach (var entry in entries)
+            _lastOutcomes[entry.Path] = entry.Kind;
         _log.Information(
             "Provider configuration reconciled: {Applied} applied live, {Reconfigured} provider changes, {NoEffect} without runtime effect, {Deferred} deferred to restart",
             entries.Count(e => e.Kind == ConfigurationApplyKind.AppliedLive),
@@ -177,6 +187,7 @@ public sealed class ProviderConfigReconciler : IConfigurationRuntimeApplier, IDi
 
     private static ConfigurationApplyEntry RuleEntry(
         string path,
+        DataSourcesConfig startup,
         DataSourcesConfig previous,
         DataSourcesConfig next,
         IReadOnlyDictionary<string, FailoverRuleApplyOutcome>? outcomes)
@@ -184,20 +195,19 @@ public sealed class ProviderConfigReconciler : IConfigurationRuntimeApplier, IDi
         if (outcomes is null)
             return Deferred(path, "The failover rules could not be applied; restart the host to use them.");
 
-        if (Segment(path, 2) is { } indexText && int.TryParse(indexText, out var index))
+        var deferred = outcomes.Values.FirstOrDefault(outcome => !outcome.Applied);
+        if (Segment(path, 2) is { } indexText && int.TryParse(indexText, out var index)
+            && At(next.FailoverRules, index) is { } rule
+            && ProviderIdentity.EqualsId(rule.Id, At(previous.FailoverRules, index)?.Id)
+            && ProviderIdentity.EqualsId(rule.Id, At(startup.FailoverRules, index)?.Id))
         {
-            var candidates = new[] { At(next.FailoverRules, index)?.Id, At(previous.FailoverRules, index)?.Id }
-                .Where(id => id is not null)
-                .Select(id => outcomes.TryGetValue(id!, out var outcome) ? outcome : null)
-                .Where(outcome => outcome is not null)
-                .ToArray();
-            if (candidates.FirstOrDefault(outcome => !outcome!.Applied) is { } deferred)
-                return Deferred(path, deferred.Reason ?? "This rule change takes effect after a host restart.");
+            // Only a stable slot proves that an indexed path identifies the same runtime
+            // rule. After structural edits a deferred removal can outlive the saved index.
+            deferred = outcomes.TryGetValue(rule.Id, out var ownOutcome) && !ownOutcome.Applied
+                ? ownOutcome : null;
         }
-        else if (outcomes.Values.FirstOrDefault(outcome => !outcome.Applied) is { } anyDeferred)
-        {
-            return Deferred(path, anyDeferred.Reason ?? "This rule change takes effect after a host restart.");
-        }
+        if (deferred is not null)
+            return Deferred(path, deferred.Reason ?? "This rule change takes effect after a host restart.");
 
         return new(path, ConfigurationApplyKind.AppliedLive, "The failover coordinator now uses the saved rule.");
     }

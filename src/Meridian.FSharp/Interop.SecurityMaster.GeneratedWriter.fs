@@ -120,9 +120,12 @@ module internal GeneratedFlatWriter =
     let writeCertificateOfDeposit (schemaVersion: int) (writesScheduleConventions: bool) (writesCallPutSchedules: bool) (terms: CertificateOfDepositTerms) : string =
         let payload =
             {| schemaVersion = schemaVersion
+               issueDate = terms.Dates.IssueDate
                maturity = terms.Maturity
+               principal = terms.Notional.Notional
                issuerName = terms.IssuerName
                couponRate = terms.CouponTerms.CouponRate
+               paymentFrequency = terms.CouponTerms.PaymentFrequency |> Option.map PaymentFrequency.label
                dayCount = terms.CouponTerms.DayCount |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel
                callableDate = terms.CallableDate |}
         if writesCallPutSchedules then
@@ -136,6 +139,7 @@ module internal GeneratedFlatWriter =
                 {| payload with scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions |})
         else
             JsonSerializer.Serialize(payload)
+        |> fun json -> Meridian.Contracts.SecurityMaster.SecurityVersionedScalarTerms.OmitAbsent(json, [| "issueDate"; "principal"; "paymentFrequency" |])
 
     let writeCommercialPaper (schemaVersion: int) (terms: CommercialPaperTerms) : string =
         JsonSerializer.Serialize(

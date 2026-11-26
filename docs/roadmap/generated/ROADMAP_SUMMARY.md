@@ -24,7 +24,7 @@ Snapshot date: 2026-11-25
 | ID | Title | Status | Health | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |
 | W1-DATA-001 | Provider trust gate and data confidence baseline | done | green | critical | Data Confidence and Validation |
-| W1-DATA-ALIGN-001 | Time-series alignment execution service | planned | yellow | low | Data Confidence and Validation |
+| W1-DATA-ALIGN-001 | Time-series alignment execution service | in_progress | on_track | low | Data Confidence and Validation |
 | W1-DATA-DEDUP-001 | Archive deduplication maintenance task | planned | yellow | low | Data Confidence and Validation |
 | W1-DATA-PROVCFG-001 | Provider configuration, connection templates and quota-aware backfill | in_progress | green | medium | Data Confidence and Validation |
 | W2-PROMO-001 | Paper promotion evidence and operator acceptance | done | green | high | Execution and Fund Accounts |

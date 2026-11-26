@@ -6,6 +6,104 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CashFlowExerciseStyle
+
+Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowExerciseStyle</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:8](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L8).
+
+```csharp
+public enum CashFlowExerciseStyle
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>European</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:8](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L8) |  |
+| <code>American</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:8](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L8) |  |
+| <code>Bermudan</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:8](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L8) |  |
+
+## CashFlowNoticeWindow
+
+Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowNoticeWindow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:146](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L146).
+
+```csharp
+public sealed record CashFlowNoticeWindow(DateOnly? Earliest, DateOnly? Latest);
+```
+
+## CashFlowPrepaymentAssumption
+
+Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowPrepaymentAssumption</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:96](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L96).
+
+Intervals are &#91;StartDate, EndDate); Amount assumptions pay on StartDate.
+
+```csharp
+public sealed record CashFlowPrepaymentAssumption(string StreamId, DateOnly StartDate, DateOnly EndDate, CashFlowPrepaymentMethod Method, decimal Value, DateOnly? SeasoningOrigin = null, CashFlowRecastPolicy Policy = CashFlowRecastPolicy.PreservePayments);
+```
+
+## CashFlowPrepaymentMethod
+
+Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowPrepaymentMethod</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:12](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L12).
+
+```csharp
+public enum CashFlowPrepaymentMethod
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Cpr</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:12](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L12) |  |
+| <code>Smm</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:12](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L12) |  |
+| <code>Psa</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:12](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L12) |  |
+| <code>Amount</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:12](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L12) |  |
+
+## CashFlowRecastPolicy
+
+Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowRecastPolicy</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:14](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L14).
+
+```csharp
+public enum CashFlowRecastPolicy
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>PreservePayments</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:14](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L14) |  |
+| <code>Recast</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:14](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L14) |  |
+
+## ContractualCashFlowAttestationContextDto
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowAttestationContextDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:201](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L201).
+
+```csharp
+public sealed record ContractualCashFlowAttestationContextDto(string TenantId, string CompanyId, string PreparedBy, Meridian.Contracts.Workstation.OperationsActionOriginDto Origin, int SchemaVersion = 1);
+```
+
+## ContractualCashFlowContract
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowContract</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:21](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L21).
+
+Versioned calculation contract. Rates are fractions, prices are clean percentages.
+
+```csharp
+public sealed record ContractualCashFlowContract(DateOnly IssueDate, DateOnly MaturityDate, string Currency, IReadOnlyList<ContractualCashFlowStream> Streams, IReadOnlyList<ContractualExerciseEntry>? Exercises = null, int Version = 1);
+```
+
 ## ContractualCashFlowEngine
 
 Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowEngine</code>. Kind: `class`.
@@ -33,7 +131,8 @@ Declared public members:
 | <code>public static ContractualCashFlowResult Replay(ContractualCashFlowRun run);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:121](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L121) |  |
 | <code>public static bool Verify(ContractualCashFlowRun run);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:128](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L128) |  |
 | <code>public static void Validate(ContractualCashFlowContract contract, ContractualCashFlowRequest request);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:141](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L141) |  |
-| <code>public static void ValidateRequest(ContractualCashFlowRequest request);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:216](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L216) |  |
+| <code>public static void ValidateRequest(ContractualCashFlowRequest request);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:222](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L222) |  |
+| <code>public static void ValidateScheduleShape(ContractualCashFlowContract contract, ContractualCashFlowStream stream);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:251](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L251) | Validates the same schedule mapping used by calculations without resolving live calendars. |
 
 Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.Exercise.cs:8](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.Exercise.cs#L8).
 
@@ -63,7 +162,7 @@ public static partial class ContractualCashFlowEngine
 
 Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowEvent</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:151](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L151).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:156](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L156).
 
 ```csharp
 public sealed record ContractualCashFlowEvent(string EventId, string StreamId, string? PeriodId, DateOnly Date, DateOnly? AccrualStart, DateOnly? AccrualEnd, decimal OpeningBalance, decimal CashInterest, decimal CapitalizedInterest, decimal ScheduledPrincipal, decimal ForecastPrepayment, decimal RedeemedPrincipal, decimal RedemptionPremium, decimal PrepaymentPenalty, decimal ClosingBalance, CashFlowLegDirection Direction)
@@ -73,13 +172,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal NetCash =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:159](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L159) |  |
+| <code>public decimal NetCash =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:164](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L164) |  |
 
 ## ContractualCashFlowEvidence
 
 Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowEvidence</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:167](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L167).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:172](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L172).
 
 ```csharp
 public sealed record ContractualCashFlowEvidence(string EngineVersion, string MappingVersion, string PrepaymentVersion, string KernelVersion, string InputHash, string OutputHash, string SourceTermsHash, string SourceVersion, bool HasContractOverride, IReadOnlyList<CashFlowCalendarSnapshot> Calendars, IReadOnlyList<CashFlowCurveSnapshot> Curves, IReadOnlyList<string> Warnings);
@@ -130,14 +229,20 @@ Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:108](.
 ContractOverride is explicitly hypothetical; it never changes authoritative terms.
 
 ```csharp
-public sealed record ContractualCashFlowRequest(DateOnly ValuationDate, DateTimeOffset KnowledgeCutoff, DateOnly? Horizon = null, StructuredCashFlowScenario RateScenario = StructuredCashFlowScenario.Base, IReadOnlyList<SelectedCashFlowExercise>? Exercises = null, IReadOnlyList<CashFlowPrepaymentAssumption>? Prepayments = null, IReadOnlyList<CashFlowCurvePin>? CurvePins = null, ContractualCashFlowContract? ContractOverride = null, string EngineVersion = ContractualCashFlowVersions.Engine);
+public sealed record ContractualCashFlowRequest(DateOnly ValuationDate, DateTimeOffset KnowledgeCutoff, DateOnly? Horizon = null, StructuredCashFlowScenario RateScenario = StructuredCashFlowScenario.Base, IReadOnlyList<SelectedCashFlowExercise>? Exercises = null, IReadOnlyList<CashFlowPrepaymentAssumption>? Prepayments = null, IReadOnlyList<CashFlowCurvePin>? CurvePins = null, ContractualCashFlowContract? ContractOverride = null, string EngineVersion = ContractualCashFlowVersions.Engine)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? CalculationProfile { get; init; }</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:121](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L121) | An explicitly selected supported product profile; absent preserves generic analytical behavior. |
 
 ## ContractualCashFlowResult
 
 Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:172](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L172).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:177](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L177).
 
 ```csharp
 public sealed record ContractualCashFlowResult(IReadOnlyList<ContractualCashFlowEvent> Events, IReadOnlyList<CashFlowExerciseEligibility> ExerciseEligibility, IReadOnlyList<CashFlowExerciseCalculation> ExerciseCalculations, IReadOnlyList<CashFlowCalculationBlocker> Blockers, ContractualCashFlowEvidence Evidence)
@@ -147,15 +252,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ContractualCashFlowContract? ResolvedContract { get; init; }</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:179](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L179) |  |
-| <code>public bool IsPostable =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:180](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L180) |  |
-| <code>public bool IsCalculated =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:181](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L181) |  |
+| <code>public ContractualCashFlowContract? ResolvedContract { get; init; }</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:184](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L184) |  |
+| <code>public bool IsPostable =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:185](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L185) |  |
+| <code>public bool IsCalculated =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:186](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L186) |  |
 
 ## ContractualCashFlowRun
 
 Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowRun</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:185](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L185).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:190](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L190).
 
 Complete immutable replay packet; no live term/calendar/curve lookup is needed.
 
@@ -167,7 +272,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public ContractualCashFlowAttestationContextDto? AttestationContext { get; init; }</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:193](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L193) | Server-stamped review scope for new non-posting draft checks; old packets remain unbound. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public ContractualCashFlowAttestationContextDto? AttestationContext { get; init; }</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:198](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L198) | Server-stamped review scope for new non-posting draft checks; old packets remain unbound. |
 
 ## ContractualCashFlowRunComparer
 
@@ -239,7 +344,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowVersions</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:119](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L119).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:124](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L124).
 
 ```csharp
 public static class ContractualCashFlowVersions
@@ -249,11 +354,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string Engine = &quot;contractual-cashflow-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:121](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L121) |  |
-| <code>public const string Mapping = &quot;contractual-cashflow-mapping-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:122](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L122) |  |
-| <code>public const string Prepayment = &quot;survival-cpr-smm-psa-v2&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:127](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L127) | The prepayment arithmetic new runs use: decimal survival, so a whole-month SMM or a full-year CPR is exact. |
-| <code>public const string PrepaymentV1 = &quot;survival-cpr-smm-psa-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:133](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L133) | The original double-precision prepayment arithmetic. Retained only so runs recorded under it replay and verify byte-identically; new runs never use it. |
-| <code>public static bool IsSupportedPrepayment(string? version) =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:136](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L136) | Whether this build can calculate (and therefore replay) the prepayment version. |
+| <code>public const string Engine = &quot;contractual-cashflow-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:126](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L126) |  |
+| <code>public const string Mapping = &quot;contractual-cashflow-mapping-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:127](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L127) |  |
+| <code>public const string Prepayment = &quot;survival-cpr-smm-psa-v2&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:132](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L132) | The prepayment arithmetic new runs use: decimal survival, so a whole-month SMM or a full-year CPR is exact. |
+| <code>public const string PrepaymentV1 = &quot;survival-cpr-smm-psa-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:138](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L138) | The original double-precision prepayment arithmetic. Retained only so runs recorded under it replay and verify byte-identically; new runs never use it. |
+| <code>public static bool IsSupportedPrepayment(string? version) =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:141](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L141) | Whether this build can calculate (and therefore replay) the prepayment version. |
 
 ## ContractualCouponAmount
 
@@ -291,7 +396,7 @@ public sealed record ContractualMakeWholeTerms(MakeWholeFormula Formula, string 
 
 Qualified name: <code>Meridian.Contracts.CashFlows.CreateContractualCashFlowRunRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:203](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L203).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:208](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L208).
 
 ```csharp
 public sealed record CreateContractualCashFlowRunRequest(Guid RunId, ContractualCashFlowRequest Projection);
@@ -358,7 +463,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:211](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L211).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:216](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L216).
 
 ```csharp
 public interface IContractualCashFlowPreviewService
@@ -368,14 +473,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;ContractualCashFlowResult?&gt; PreviewSecurityAsync(Guid securityId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:213](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L213) |  |
-| <code>Task&lt;ContractualCashFlowResult?&gt; PreviewLoanAsync(Guid loanId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:214](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L214) |  |
+| <code>Task&lt;ContractualCashFlowResult?&gt; PreviewSecurityAsync(Guid securityId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:218](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L218) |  |
+| <code>Task&lt;ContractualCashFlowResult?&gt; PreviewLoanAsync(Guid loanId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:219](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L219) |  |
 
 ## IContractualCashFlowRunStore
 
 Qualified name: <code>Meridian.Contracts.CashFlows.IContractualCashFlowRunStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:205](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L205).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:210](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L210).
 
 ```csharp
 public interface IContractualCashFlowRunStore
@@ -385,8 +490,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;ContractualCashFlowRun?&gt; GetAsync(string subjectKind, Guid subjectId, Guid runId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:207](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L207) |  |
-| <code>Task&lt;ContractualCashFlowRun&gt; SaveAsync(ContractualCashFlowRun run, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:208](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L208) |  |
+| <code>Task&lt;ContractualCashFlowRun?&gt; GetAsync(string subjectKind, Guid subjectId, Guid runId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:212](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L212) |  |
+| <code>Task&lt;ContractualCashFlowRun&gt; SaveAsync(ContractualCashFlowRun run, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:213](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L213) |  |
 
 ## IExerciseNoticeVerifier
 
@@ -780,165 +885,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;int&gt; SaveOperatorMappingsAsync(IReadOnlyList&lt;CanonicalSymbolDefinition&gt; definitions, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:142](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L142) |  |
 | <code>Task&lt;int&gt; RemoveOperatorMappingsAsync(string canonical, string? provider, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:146](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L146) |  |
-
-## ICanonicalSymbolRegistry
-
-Qualified name: <code>Meridian.Contracts.Catalog.ICanonicalSymbolRegistry</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:11](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L11).
-
-Service for canonical symbol naming standardization. Provides a unified interface for resolving symbols across providers using canonical names, aliases, and industry identifiers (ISIN, FIGI, SEDOL, CUSIP).
-
-```csharp
-public interface ICanonicalSymbolRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string? ResolveToCanonical(string input);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:17](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L17) | Resolves any symbol input (alias, ISIN, FIGI, SEDOL, provider-specific format) to its canonical representation. Returns null if no match is found. |
-| <code>CanonicalSymbol? ResolveToCanonical(SymbolId input) =&gt; …;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:23](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L23) | Typed overload: resolves a raw SymbolId to its CanonicalSymbol. Returns null if no match is found. |
-| <code>string? TryResolve(string symbol, string provider);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:33](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L33) | Resolves a provider-specific symbol to canonical form. Checks provider-specific mappings first, then falls back to generic resolution. |
-| <code>CanonicalSymbol? TryResolve(ProviderSymbol providerSymbol) =&gt; …;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:40](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L40) | Typed overload: resolves a ProviderSymbol to its CanonicalSymbol. Checks provider-specific mappings first, then falls back to generic resolution. Returns null if unresolved. |
-| <code>Task RegisterAsync(CanonicalSymbolDefinition definition, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:48](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L48) | Registers a symbol with its canonical entry, updating aliases and identifier indexes. |
-| <code>Task&lt;int&gt; RegisterBatchAsync(IEnumerable&lt;CanonicalSymbolDefinition&gt; definitions, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:53](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L53) | Registers multiple symbols in batch. |
-| <code>CanonicalSymbolDefinition? GetDefinition(string symbolOrIdentifier);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:58](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L58) | Gets the canonical definition for a symbol. Accepts any known identifier. |
-| <code>IReadOnlyList&lt;CanonicalSymbolDefinition&gt; GetAll();</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:63](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L63) | Gets all registered canonical definitions. |
-| <code>IReadOnlyList&lt;CanonicalSymbolDefinition&gt; GetByAssetClass(string assetClass);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:68](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L68) | Gets canonical definitions filtered by asset class. |
-| <code>IReadOnlyList&lt;CanonicalSymbolDefinition&gt; GetByExchange(string exchange);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:73](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L73) | Gets canonical definitions filtered by exchange. |
-| <code>string? TryResolveWithProvider(string symbol, string provider);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:80](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L80) | Resolves a symbol to its canonical form using a provider hint for disambiguation. Checks provider-specific mappings first, then falls back to general resolution. Returns null if no match is found. |
-| <code>string? GetProviderSymbol(string symbolOrIdentifier, string provider);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:87](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L87) | Gets the outbound provider symbol for a canonical symbol or any known identifier. Returns null when the security is unknown or no explicit provider mapping has been registered. |
-| <code>Task SetProviderSymbolAsync(string canonical, string provider, string providerSymbol, string source = SymbolMappingSources.Operator, bool isOverride = true, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:93](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L93) | Adds or replaces one provider-scoped symbol mapping without replacing the security definition or mappings owned by other providers. |
-| <code>Task&lt;bool&gt; RemoveProviderSymbolAsync(string canonical, string provider, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:104](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L104) | Removes one provider-scoped mapping while retaining the canonical security definition. |
-| <code>bool IsKnown(string identifier);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:109](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L109) | Checks if a given identifier (canonical, alias, ISIN, FIGI, etc.) is known. |
-| <code>Task&lt;bool&gt; RemoveAsync(string canonical, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:114](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L114) | Removes a symbol from the registry by its canonical name. |
-| <code>int Count { get; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:119](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L119) | Gets the total count of registered canonical symbols. |
-
-## ICanonicalSymbolRegistryMigrationWriter
-
-Qualified name: <code>Meridian.Contracts.Catalog.ICanonicalSymbolRegistryMigrationWriter</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:126](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L126).
-
-Optional atomic-write capability used by startup migrations without expanding the stable symbol-resolution contract implemented by external registry adapters.
-
-```csharp
-public interface ICanonicalSymbolRegistryMigrationWriter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;int&gt; ApplyMigrationAsync(string migrationId, string fingerprint, IEnumerable&lt;CanonicalSymbolDefinition&gt; definitions, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:132](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L132) | Atomically merges one legacy migration batch and its completion fingerprint. A failed or cancelled write leaves both the retained registry and the in-memory resolver unchanged. |
-
-## ICanonicalSymbolRegistrySecurityMasterWriter
-
-Qualified name: <code>Meridian.Contracts.Catalog.ICanonicalSymbolRegistrySecurityMasterWriter</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:153](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L153).
-
-Optional atomic reconciliation of Security-Master-owned symbol authority.
-
-```csharp
-public interface ICanonicalSymbolRegistrySecurityMasterWriter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;int&gt; ReconcileSecurityMasterAsync(IReadOnlyCollection&lt;Guid&gt; securityIds, IEnumerable&lt;CanonicalSymbolDefinition&gt; definitions, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:162](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L162) | Replaces Security Master identifiers, aliases, canonical tickers and non-override provider mappings for the supplied security IDs only. Definitions describe active securities; an ID without a definition withdraws its Security Master mappings and removes its canonical entry only when no independent authority remains. Retained independent mappings do not authorize the withdrawn Security Master canonical spelling. Unknown legacy provenance is preserved. |
-
-## IdentifierIndex
-
-Qualified name: <code>Meridian.Contracts.Catalog.IdentifierIndex</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:410](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L410).
-
-Index of industry identifiers to canonical symbols.
-
-```csharp
-public sealed class IdentifierIndex
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;isinToSymbol&quot;)] public Dictionary&lt;string, string&gt; IsinToSymbol { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:416](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L416) | ISIN to canonical symbol. |
-| <code>[JsonPropertyName(&quot;figiToSymbol&quot;)] public Dictionary&lt;string, string&gt; FigiToSymbol { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:422](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L422) | FIGI to canonical symbol. |
-| <code>[JsonPropertyName(&quot;cusipToSymbol&quot;)] public Dictionary&lt;string, string&gt; CusipToSymbol { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:428](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L428) | CUSIP to canonical symbol. |
-| <code>[JsonPropertyName(&quot;sedolToSymbol&quot;)] public Dictionary&lt;string, string&gt; SedolToSymbol { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:434](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L434) | SEDOL to canonical symbol. |
-
-## IndexedFileEntry
-
-Qualified name: <code>Meridian.Contracts.Catalog.IndexedFileEntry</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:135](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L135).
-
-Individual file entry in the directory index.
-
-```csharp
-public sealed class IndexedFileEntry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;fileName&quot;)] public string FileName { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:141](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L141) | File name (without path). |
-| <code>[JsonPropertyName(&quot;relativePath&quot;)] public string RelativePath { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:147](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L147) | Relative path from storage root. |
-| <code>[JsonPropertyName(&quot;format&quot;)] public string Format { get; set; } = &quot;jsonl&quot;;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:153](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L153) | File format (jsonl, parquet, csv). |
-| <code>[JsonPropertyName(&quot;isCompressed&quot;)] public bool IsCompressed { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:159](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L159) | Whether the file is compressed. |
-| <code>[JsonPropertyName(&quot;compressionType&quot;)] public string? CompressionType { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:165](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L165) | Compression type if compressed. |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string? Symbol { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:171](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L171) | Symbol this file contains data for. |
-| <code>[JsonPropertyName(&quot;eventType&quot;)] public string? EventType { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:177](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L177) | Event type in this file. |
-| <code>[JsonPropertyName(&quot;source&quot;)] public string? Source { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:183](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L183) | Data source/provider. |
-| <code>[JsonPropertyName(&quot;date&quot;)] public DateTime? Date { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:189](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L189) | Date of the data (for date-partitioned files). |
-| <code>[JsonPropertyName(&quot;schemaVersion&quot;)] public string? SchemaVersion { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:195](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L195) | Schema version used in this file. |
-| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:201](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L201) | Compressed size on disk in bytes. |
-| <code>[JsonPropertyName(&quot;uncompressedSizeBytes&quot;)] public long UncompressedSizeBytes { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:207](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L207) | Uncompressed size in bytes. |
-| <code>[JsonPropertyName(&quot;eventCount&quot;)] public long EventCount { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:213](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L213) | Number of events/records in the file. |
-| <code>[JsonPropertyName(&quot;checksumSha256&quot;)] public string ChecksumSha256 { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:219](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L219) | SHA256 checksum for integrity verification. |
-| <code>[JsonPropertyName(&quot;firstTimestamp&quot;)] public DateTime? FirstTimestamp { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:225](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L225) | Timestamp of the first event. |
-| <code>[JsonPropertyName(&quot;lastTimestamp&quot;)] public DateTime? LastTimestamp { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:231](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L231) | Timestamp of the last event. |
-| <code>[JsonPropertyName(&quot;firstSequence&quot;)] public long? FirstSequence { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:237](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L237) | Sequence number of the first event. |
-| <code>[JsonPropertyName(&quot;lastSequence&quot;)] public long? LastSequence { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:243](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L243) | Sequence number of the last event. |
-| <code>[JsonPropertyName(&quot;sequenceGaps&quot;)] public int SequenceGaps { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:249](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L249) | Number of sequence gaps detected within this file. |
-| <code>[JsonPropertyName(&quot;lastModified&quot;)] public DateTime LastModified { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:255](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L255) | File last modified time. |
-| <code>[JsonPropertyName(&quot;indexedAt&quot;)] public DateTime IndexedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:261](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L261) | When this entry was indexed. |
-| <code>[JsonPropertyName(&quot;verificationStatus&quot;)] public string VerificationStatus { get; set; } = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:267](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L267) | Verification status. |
-| <code>[JsonPropertyName(&quot;metadata&quot;)] public Dictionary&lt;string, string&gt;? Metadata { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:273](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L273) | Additional metadata. |
-
-## ISymbolResolutionMismatchReader
-
-Qualified name: <code>Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:355](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L355).
-
-Read-only comparison evidence emitted while symbol resolution runs in SymbolResolutionMode.Compare mode.
-
-```csharp
-public interface ISymbolResolutionMismatchReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>long TotalCount { get; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:358](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L358) | Total mismatches observed since this process started. |
-| <code>IReadOnlyList&lt;SymbolResolutionMismatch&gt; GetRecent();</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:361](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L361) | The most recent bounded set of mismatches, newest first. |
-
-## ProviderSymbolDefinition
-
-Qualified name: <code>Meridian.Contracts.Catalog.ProviderSymbolDefinition</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:290](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L290).
-
-A provider-scoped symbol together with provenance used to merge learned and curated values safely.
-
-```csharp
-public sealed record ProviderSymbolDefinition([property : JsonPropertyName("symbol")] string Symbol, [property : JsonPropertyName("source")] string Source = SymbolMappingSources.Registry, [property : JsonPropertyName("isOverride")] bool IsOverride = false, [property : JsonPropertyName("updatedAt")] DateTimeOffset? UpdatedAt = null);
-```

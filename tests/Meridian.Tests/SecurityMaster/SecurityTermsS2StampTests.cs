@@ -13,7 +13,7 @@ public sealed class SecurityTermsS2StampTests
 {
     [Theory]
     [InlineData("Bond", 5, 1)]
-    [InlineData("CertificateOfDeposit", 5, 1)]
+    [InlineData("CertificateOfDeposit", 6, 1)]
     [InlineData("StructuredCredit", 6, 2)]
     [InlineData("Swap", 4, 1)]
     public void WritableCeiling_AndDocumentFloor_AreSeparate(string assetClass, int writes, int floor)

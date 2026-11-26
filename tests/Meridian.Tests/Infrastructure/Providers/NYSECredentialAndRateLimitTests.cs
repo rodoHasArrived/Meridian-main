@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using FluentAssertions;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.NYSE;
 using Meridian.Infrastructure.DataSources;
@@ -12,6 +13,30 @@ namespace Meridian.Tests.Infrastructure.Providers;
 
 public sealed class NYSECredentialAndRateLimitTests
 {
+    [Fact]
+    public async Task CompatibilityHistory_DoesNotInferRawBasisFromAdjustedFieldNames()
+    {
+        await using var source = CreateSource(new QueueHttpHandler(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{"access_token":"test-token","token_type":"bearer","expires_in":3600}""")
+            },
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                    {"bars":[{"date":"2024-01-02","open":100,"high":110,"low":90,"close":100,"volume":1000,
+                      "adjustedOpen":50,"adjustedHigh":55,"adjustedLow":45,"adjustedClose":50,"adjustedVolume":2000}]}
+                    """)
+            }));
+        var session = new DateOnly(2024, 1, 2);
+
+        var bar = (await source.GetDailyBarsAsync("SPY", session, session)).Should().ContainSingle().Subject;
+
+        bar.Close.Should().Be(50m);
+        bar.PriceBasis.Should().Be(HistoricalPriceBasis.Unknown);
+        bar.IsAdjusted.Should().BeNull();
+    }
+
     [Fact]
     public async Task ValidateCredentialsAsync_WhenOauthFails_ReturnsFalse()
     {

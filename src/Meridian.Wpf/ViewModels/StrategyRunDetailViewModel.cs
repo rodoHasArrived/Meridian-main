@@ -82,6 +82,8 @@ public sealed class StrategyRunDetailViewModel : BindableBase
                 OnPropertyChanged(nameof(ReplayRevisionTable));
                 OnPropertyChanged(nameof(HasReplayFingerprint));
                 OnPropertyChanged(nameof(HasReplayRevisions));
+                OnPropertyChanged(nameof(ReplayQualityStatus));
+                OnPropertyChanged(nameof(ReplayQualityWarnings));
             }
         }
     }
@@ -95,6 +97,36 @@ public sealed class StrategyRunDetailViewModel : BindableBase
     public bool HasReplayFingerprint => ReplayProvenance?.CompletedInputHashSha256 is not null;
 
     public bool HasReplayRevisions => ReplayProvenance?.Revisions.Count > 0;
+
+    public string ReplayQualityStatus => ReplayProvenance?.DataQualityWarnings is null
+        ? "Data-quality coverage was not retained. Repair, gap-fill and quality assessment status remain unknown."
+        : ReplayProvenance.DataQualityWarnings.Count == 0 ? "No source-quality warnings were reported for the retained inputs."
+        : "Retained input dependencies require review.";
+
+    public IReadOnlyList<ReplayDataQualityWarningRow> ReplayQualityWarnings =>
+        BuildReplayQualityWarnings(ReplayProvenance?.DataQualityWarnings);
+
+    internal static IReadOnlyList<ReplayDataQualityWarningRow> BuildReplayQualityWarnings(
+        IReadOnlyList<Meridian.Contracts.Operations.MarketDataQualityWarningDto>? warnings) =>
+        warnings?.Select(warning => new ReplayDataQualityWarningRow(
+            warning.Kind switch { "Repaired" => "Repaired data", "GapFilled" => "Gap-filled data",
+                "LowQuality" => "Low-quality data", "Unknown" => "Unknown source quality", _ => warning.Kind },
+            $"{warning.Message} Affected fills: {warning.AffectedFillCount}.",
+            string.Join(Environment.NewLine, warning.Evidence.Select(DescribeReplayInput)))).ToArray() ?? [];
+
+    private static string DescribeReplayInput(Meridian.Contracts.Operations.MarketDataInputEvidence source) =>
+        string.Join("; ", new[]
+        {
+            $"Provider {source.ProviderId ?? "Unknown"}", $"event {source.EventReference ?? "Unknown"}",
+            $"observed {source.ObservedAt?.ToString("O") ?? "Unknown"}", $"dataset {source.DatasetId ?? "Unknown"}",
+            $"revision {source.BackfillRevisionId ?? "Unknown"}", $"hash {source.ContentHash ?? "Unknown"}",
+            $"repaired {source.Repaired?.ToString() ?? "Unknown"}", $"gap-filled {source.GapFilled?.ToString() ?? "Unknown"}",
+            $"receipt {source.RepairReceiptId ?? "Unknown"}",
+            $"quality {source.QualityScore?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "Unassessed"}",
+            $"retained threshold {source.QualityThreshold?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "Unknown"}",
+            $"assessed {source.QualityAssessedAt?.ToString("O") ?? "Unknown"}",
+            $"range {source.AssessmentFrom?.ToString("yyyy-MM-dd") ?? "Unknown"} to {source.AssessmentTo?.ToString("yyyy-MM-dd") ?? "Unknown"}"
+        });
 
     public WorkstationTableModel<StrategyRunReplaySourceCountDto> ReplaySourceTable => new(
         ReplayProvenance?.SourceMix ?? [],
@@ -300,7 +332,7 @@ public sealed class StrategyRunDetailViewModel : BindableBase
         LedgerReferenceText = detail.Summary.LedgerReference ?? "Not linked";
         RunSummaryInspector = BuildRunSummaryInspector(detail);
         ReplayProvenance = detail.ReplayProvenance;
-        ShowReplayEvidence = detail.Summary.Mode == StrategyRunMode.Backtest;
+        ShowReplayEvidence = detail.Summary.Mode == StrategyRunMode.Backtest || detail.ReplayProvenance?.DataQualityWarnings is not null;
 
         Parameters.Clear();
         foreach (var parameter in detail.Parameters.OrderBy(static entry => entry.Key, StringComparer.OrdinalIgnoreCase))
@@ -504,3 +536,5 @@ public sealed class StrategyRunDetailViewModel : BindableBase
 }
 
 public sealed record ParameterItemViewModel(string Name, string Value);
+
+public sealed record ReplayDataQualityWarningRow(string Kind, string Message, string Evidence);

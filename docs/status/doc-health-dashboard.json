@@ -1,11 +1,11 @@
 {
-  "total_files": 1289,
+  "total_files": 1292,
   "orphaned_count": 379,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 304,
   "health_score": 86,
-  "signal_digest": "sha256:9f60322e61b954872b67f900b6628b9ba8657ade97278c63bcaae803821f5149",
+  "signal_digest": "sha256:8b0fa3b9a3244fdc1dff15f5e456ad54b18aeed2a31d7b23e6d5059044ade2eb",
   "orphaned_files": [
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
@@ -2674,6 +2674,13 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/plans/governed-strategy-oms-execution-plan.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/plans/intercompany-entity-controls.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2695,7 +2702,21 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/plans/security-master-integrity-implementation-plan.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/plans/security-master-review-remediation-plan.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/ui-shared-decomposition-inventory.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4475,14 +4496,14 @@
     {
       "path": "docs/reference/source-api/meridian.contracts/page-050.md",
       "has_heading": true,
-      "todo_count": 1,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
     {
       "path": "docs/reference/source-api/meridian.contracts/page-051.md",
       "has_heading": true,
-      "todo_count": 0,
+      "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },

@@ -165,17 +165,18 @@ public sealed class AssetPositionMarketValuationService(
             basis = face ? "Registered discounted-cash-flow model: original holding face, outstanding factor applied once, dirty value including the next full coupon; clean value and accrued interest are not separated."
                 : "Registered discounted-cash-flow model on retained unit quantity; model input conventions and diagnostics are retained.";
         }
-        if (face && state.CurrentFaceAmount is { } currentFace)
+        if (face && (state.CurrentFaceAmount is not null || state.CurrentFactor is not null))
         {
             try
             {
                 var comparisonDiagnostics = new List<string>();
-                var fromCurrentFace = SecurityValuationMarketValues.Compute(security, currentFace, value.Price,
-                    SecurityPriceUnit.PercentOfPar, request.ValuationDate, comparisonDiagnostics, factor: 1m);
                 var factorFace = state.CurrentFactor is { } retainedFactor
                     ? SecurityValuationMarketValues.Compute(security, quantity, 100m, SecurityPriceUnit.PercentOfPar,
-                        request.ValuationDate, comparisonDiagnostics, factor: retainedFactor) : currentFace;
-                if (currentFace < 0m || factorFace != currentFace || fromCurrentFace != value.MarketValue)
+                        request.ValuationDate, comparisonDiagnostics, factor: retainedFactor) : state.CurrentFaceAmount;
+                var currentFace = state.CurrentFaceAmount ?? factorFace;
+                var fromCurrentFace = SecurityValuationMarketValues.Compute(security, currentFace, value.Price,
+                    SecurityPriceUnit.PercentOfPar, request.ValuationDate, comparisonDiagnostics, factor: 1m);
+                if (currentFace is null or < 0m || factorFace != currentFace || fromCurrentFace != value.MarketValue)
                 { Block("OutstandingFaceMismatch", "The model's factor-adjusted holding value does not reconcile with the retained current face/factor; no duplicate or conflicting factor is applied."); return Result(); }
             }
             catch (OverflowException)

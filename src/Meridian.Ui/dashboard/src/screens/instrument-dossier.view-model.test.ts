@@ -38,7 +38,7 @@ describe("instrument dossier identity and URL contracts", () => {
     ] } as BrokerageHouseholdPortfolio;
     const result = instrumentPositions(instrument, "account-1", brokerage, []);
     expect(result.rows).toHaveLength(1);
-    expect(result.rows[0]).toMatchObject({ account: "custody-1", quantity: 5, value: 10, currency: "USD", markStatus: "Current", markReason: "Policy policy-2 · observed 2026-11-21 · valuation 2026-11-21" });
+    expect(result.rows[0]).toMatchObject({ account: "custody-1", quantity: 5, value: 10, currency: "USD", markStatus: "Current", markReason: "Observed 2026-11-21 · valuation 2026-11-21", markPolicyVersion: "policy-2" });
   });
 
   it("matches cases by retained instrument, account and period rather than reason text", () => {
