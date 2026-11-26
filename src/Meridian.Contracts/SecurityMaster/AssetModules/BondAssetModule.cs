@@ -58,7 +58,7 @@ internal static class BondAssetModule
                 ])
             {
                 StampFloor = 1,
-                SupportsRecurringFixedIncomeAccrual = true,
+                RecurringAccrualPolicy = SecurityRecurringAccrualPolicies.ExistingFixedIncome,
                 CashFlowTermRoles =
                 [
                     new(SecurityCashFlowTermRole.Maturity, "maturity"),
