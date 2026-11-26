@@ -1,11 +1,11 @@
-using System.Security.Cryptography;
-using System.Text;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.Ledger;
 
@@ -375,12 +375,9 @@ public sealed class LedgerSecurityKeyRekeyService
         return await _atomicStore.AppendAssetPostingAsync(command, ct).ConfigureAwait(false);
     }
 
-    private static string RequireText(string? value, string name)
-        => string.IsNullOrWhiteSpace(value) ? throw new ArgumentException($"{name} is required.", name) : value.Trim();
-
     private static Guid DeterministicGuid(string key, string purpose)
     {
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes($"{key}|{purpose}"));
+        var hash = Sha256Digest.ComputeBytesUtf8($"{key}|{purpose}");
         hash[6] = (byte)((hash[6] & 0x0F) | 0x50);
         hash[8] = (byte)((hash[8] & 0x3F) | 0x80);
         return new Guid(hash.AsSpan(0, 16));
