@@ -15293,6 +15293,7 @@ Meridian-main
 │   │   │   ├── DailyValuationPositionServiceTests.cs
 │   │   │   ├── DailyValuationScheduleIdentityTests.cs
 │   │   │   ├── DataOperationsAssuranceServiceTests.cs
+│   │   │   ├── DataRootReadinessTests.cs
 │   │   │   ├── DegradedModeEvaluationTests.cs
 │   │   │   ├── DemoTenantProvisionerTests.cs
 │   │   │   ├── DesignerPaperRehearsalTests.cs
