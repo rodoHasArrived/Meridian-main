@@ -985,7 +985,7 @@ This source reference records literal `MapGet`, `MapPost`, `MapPut`, `MapDelete`
 
 Handler parameters retain C# binding types, including injected services and infrastructure parameters; they are not all request-body fields. Body-read operations list explicitly decoded types. Response entries quote declared `.Produces*` metadata and observed `Results`/`TypedResults` factories, not an exhaustive response schema or status guarantee. A dash means the declaration supplies no extractable metadata; follow the source and detailed contracts above.
 
-**499 declarations** from **63 source files**.
+**501 declarations** from **64 source files**.
 
 
 ### HostAdapters
@@ -1916,6 +1916,15 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorTriage.cs
 | `/operator/triage` (relative declaration on `group`)<br>Caller-derived mounts: `/api/workstation/operator/triage` | GET | `async (Guid? fundAccountId, HttpContext context) => …` | `Results.Json` | `WithName("GetOperatorInboxTriage")` | [L21](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorTriage.cs#L21) |
 | `/operator/triage/{workItemId}/actions` (relative declaration on `group`)<br>Caller-derived mounts: `/api/workstation/operator/triage/{workItemId}/actions` | POST | `async (string workItemId, OperatorTriageCommand request, HttpContext context) => …` | `Results.Json` | `WithName("ApplyOperatorInboxTriage")` | [L53](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorTriage.cs#L53) |
 | `/operator/triage/bulk` (relative declaration on `group`)<br>Caller-derived mounts: `/api/workstation/operator/triage/bulk` | POST | `async (OperatorTriageBulkCommand request, HttpContext context) => …` | `Results.BadRequest`; `Results.Json` | `WithName("BulkAssignOperatorInboxTriage")` | [L69](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorTriage.cs#L69) |
+
+### WorkstationEndpoints.SecurityMasterImpact
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterImpact.cs](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterImpact.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/security-master/{securityId}/revisions/{revisionId}/impact-preview` | POST | `async (Guid securityId, Guid revisionId, CreateSecurityMasterImpactPreviewRequest request, HttpContext context) => …` | — | — | [L16](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterImpact.cs#L16) |
+| `/api/security-master/impact-previews/{receiptId}` | GET | `async (string receiptId, HttpContext context) => …` | `Results.NotFound`; `Results.Json`; `Results.Problem` | — | [L25](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterImpact.cs#L25) |
 
 ### UiServer
 

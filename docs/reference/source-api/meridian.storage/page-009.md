@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DuckDbQueryService
+
+Qualified name: <code>Meridian.Storage.Query.DuckDbQueryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Query/DuckDbQueryService.cs:23](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L23).
+
+Read-only SQL analytics over the local market-data store, backed by an in-memory DuckDB session per query. The catalog is exposed as a meridian_files view (symbol, event type, date, format, absolute path, size, event count) so operators can discover files and feed paths into read_parquet/read_json_auto without leaving SQL. Statements are guarded: single SELECT-family statement, keyword blocklist, row cap, and timeout — a runaway query can never touch the ingestion hot path or mutate the store. File access is sandboxed to the storage root via DuckDB&#x27;s allowed_directories with external access otherwise disabled and the configuration locked, so reader functions cannot reach arbitrary host files.
+
+```csharp
+public sealed partial class DuckDbQueryService(IStorageCatalogService catalogService, StorageOptions storageOptions, ILogger<DuckDbQueryService>? logger = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string QueryableRoot =&gt; …;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:28](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L28) |  |
+| <code>public async Task&lt;DataQueryResult&gt; ExecuteAsync(string? sql, DataQueryOptions options, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:34](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L34) | Executes sql and returns a bounded, string-projected result set. Guard violations and execution errors are returned as a failed result, not thrown, so the endpoint can map them to a 400 with the message intact. |
+| <code>public async Task&lt;DataQueryResult&gt; ExecuteRetainedAsync(string? sql, DataQueryOptions options, IDataQueryResultSink sink, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:41](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L41) | Executes once, retaining every result row while MaxRows remains the browser preview limit. |
+
 ## IDataQueryResultSink
 
 Qualified name: <code>Meridian.Storage.Query.IDataQueryResultSink</code>. Kind: `interface`.
@@ -826,7 +846,7 @@ public sealed record CommodityProjectionRow(Guid SecurityId, string DisplayName,
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.ConnectionLease</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:213](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L213).
+Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:251](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L251).
 
 Holds a mutation connection and optional transaction, releasing its gate and any owned connection on disposal.
 
@@ -838,9 +858,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public NpgsqlConnection Connection { get; } = connection;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:216](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L216) |  |
-| <code>public NpgsqlTransaction? Transaction { get; } = transaction;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:217](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L217) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:218](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L218) |  |
+| <code>public NpgsqlConnection Connection { get; } = connection;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:254](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L254) |  |
+| <code>public NpgsqlTransaction? Transaction { get; } = transaction;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:255](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L255) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:256](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L256) |  |
 
 ## CorporateActionCalendarReadSet
 
@@ -917,15 +937,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] public Meridian.Contracts.SecurityMaster.SecurityCurveRatePolicy RatePolicy { get; init; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:107](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L107) |  |
-
-## CurveVersionPublishedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CurveVersionPublishedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:111](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L111).
-
-Curves / CurveVersionPublished.
-
-```csharp
-public sealed record CurveVersionPublishedPayload(Guid CurveId, Guid CurveVersionId, string CurveKey, string Kind, string Currency, string? IndexName, long Version, DateOnly AsOf, int PointCount, string ContentSha256, string Source, DateTimeOffset? SourcedAt) : ISecurityGovernancePayload;
-```

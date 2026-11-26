@@ -827,6 +827,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;GovernedLedgerPostingResult&gt; PostAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs:15](../../../../src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs#L15) |  |
 
+## IImpactDependencyGuard
+
+Qualified name: <code>Meridian.Storage.Ledger.IImpactDependencyGuard</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/IImpactDependencyGuard.cs:4](../../../../src/Meridian.Storage/Ledger/IImpactDependencyGuard.cs#L4).
+
+Fences authoritative ledger mutations while a reference-data review transition commits.
+
+```csharp
+public interface IImpactDependencyGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IAsyncDisposable&gt; AcquireImpactDependencyLeaseAsync(string tenantId, string fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IImpactDependencyGuard.cs:6](../../../../src/Meridian.Storage/Ledger/IImpactDependencyGuard.cs#L6) |  |
+
 ## IIntercompanyAgreementBatchPostingAuthority
 
 Qualified name: <code>Meridian.Storage.Ledger.IIntercompanyAgreementBatchPostingAuthority</code>. Kind: `interface`.
@@ -921,22 +939,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;IReadOnlyDictionary&lt;LedgerAccount, decimal&gt;&gt; ReadTrialBalanceAsOfAsync(Guid ledgerBookId, DateTimeOffset asOfUtc, string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerBalanceSnapshotSource.cs:11](../../../../src/Meridian.Storage/Ledger/ILedgerBalanceSnapshotSource.cs#L11) |  |
-
-## ILedgerBookControlPreflight
-
-Qualified name: <code>Meridian.Storage.Ledger.ILedgerBookControlPreflight</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:52](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L52).
-
-Preflight participants must resolve their own authoritative facts, never caller claims.
-
-```csharp
-public interface ILedgerBookControlPreflight
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string ControlName =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:54](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L54) |  |
-| <code>Task&lt;LedgerBookControlPreflightLease&gt; CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:55](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L55) |  |

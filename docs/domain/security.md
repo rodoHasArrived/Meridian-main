@@ -245,3 +245,19 @@ Calculation replay uses an explicit frozen retained-terms reader for historical 
 format declarations. It classifies only the verified retained view and preserves original receipt
 bytes and hashes. Current-state reads and new captures require the declared format; malformed or
 unsupported declarations remain refusals, retained as blocked receipts with no cash events.
+
+## Retained review impact
+
+Impact previews bind a draft's exact base and proposed terms to typed before/after calculation
+evidence, conservative candidate books and known periods. Unavailable evidence remains unavailable.
+`LotImpactUnverified` explicitly prevents exact live-lot or cross-fund impact claims, and released
+report dependencies are recorded as unavailable until a report-lineage query is supplied. Approval
+and publication recheck the retained dependency fingerprint; stale approved evidence requires a
+fresh draft and workflow. PostgreSQL participants share a short, broad dependency guard and
+canonical publication joins the ambient mutation. Dispatch occurs after commit. This bounded path
+does not make every historical downstream handler transactional.
+
+An individual passport draft freezes an explicitly selected fund profile; server authorization
+establishes tenant/company ownership. The browser requires the retained content-hash receipt for that
+security/revision/fund to be loaded and inspected before approve or publish. A displayed identifier
+alone does not establish inspection, and the server still rechecks canonical/dependency authority.

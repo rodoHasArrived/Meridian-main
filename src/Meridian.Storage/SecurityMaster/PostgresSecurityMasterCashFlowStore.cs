@@ -6,9 +6,10 @@ namespace Meridian.Storage.SecurityMaster;
 /// <summary>
 /// Persists security cash flow source definitions in PostgreSQL.
 /// </summary>
-public sealed class PostgresSecurityMasterCashFlowStore : ISecurityMasterCashFlowStore
+public sealed class PostgresSecurityMasterCashFlowStore : ISecurityMasterCashFlowStore, ISecurityMasterImpactGuardParticipant
 {
     private readonly SecurityMasterOptions _options;
+    public SecurityMasterOptions ImpactGuardOptions => _options;
 
     public PostgresSecurityMasterCashFlowStore(SecurityMasterOptions options)
     {

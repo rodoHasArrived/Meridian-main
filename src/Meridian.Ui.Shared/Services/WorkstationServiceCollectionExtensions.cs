@@ -771,6 +771,19 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<BacktestToLivePromoter>();
         services.TryAddSingleton<PromotionService>();
         services.TryAddSingleton<ISecurityMasterWorkbenchQueryService, SecurityMasterWorkbenchQueryService>();
+        services.TryAddSingleton<ISecurityMasterImpactScopeAccessor, WorkstationImpactScopeAccessor>();
+        services.TryAddSingleton<ISecurityMasterImpactPreviewStore>(sp =>
+            new FileSecurityMasterImpactPreviewStore(Path.Combine(ResolveWorkstationDataDirectory(sp), "security-master", "impact-previews")));
+        services.TryAddScoped<ISecurityMasterImpactPreviewService>(sp =>
+            sp.GetService<Meridian.Storage.SecurityMaster.ISecurityMasterStore>() is { } securityStore
+                ? new SecurityMasterImpactPreviewService(sp.GetRequiredService<ISecurityMasterRevisionStore>(), securityStore,
+                    sp.GetRequiredService<ISecurityMasterWorkbenchQueryService>(), sp.GetRequiredService<IAffectedLedgerBookResolver>(),
+                    sp.GetRequiredService<ISecurityMasterCashFlowService>(), sp.GetRequiredService<ISecurityMasterImpactPreviewStore>(),
+                    sp.GetRequiredService<IFundProfileTenancyRegistry>(), sp.GetService<Meridian.Storage.Ledger.ILedgerJournalStore>(),
+                    sp.GetService<Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog>(),
+                    sp.GetService<ISecurityMasterReleasedReportImpactQuery>())
+                : null!);
+
         // Durable governed-revision lifecycle state is process-wide, so it is a singleton consulted by
         // the scoped command service (publish refuses to run unless the revision is durably Approved).
         services.TryAddSingleton<

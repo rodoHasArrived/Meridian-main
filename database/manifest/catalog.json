@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "f3994d37c71daf706637ed87fdac1c9f3f8eeea81c393cc3ddb235868793ff30",
+  "database_fingerprint": "1da27b754b62f74b7c50aa0014d1ce9530e62f4083b7ba8a3f64d4193027b6da",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -14042,6 +14042,126 @@
       "target_schema": "security_master"
     },
     {
+      "fingerprint": "048b6549fb470eba64fce3074c115da93a03e786c5f517c64d364bf741e4276b",
+      "kind": "normal",
+      "source": "security_master.security_revision_impact_binding_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.reviewed_canonical_version",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "6a48d92184cc161dd3497165fa4c0760fa7f5bf4ac0ce6ead0687d9d52885593",
+      "kind": "normal",
+      "source": "security_master.security_revision_impact_binding_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.reviewed_impact_receipt_id",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "690682e3c0e3fa28abb9bc2b22bab27ed3e414a8668017ea1ea7688d3863adf1",
+      "kind": "normal",
+      "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.base_version",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "227d7609768235ef9987aa5b66f86f4dfcdc6a06ed769af95aca3ed0feff1c65",
+      "kind": "normal",
+      "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.drafted_by",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "43b3127e070f63dcad1dc41f22aa2357ba11a28c480d6a9560b71b1001325432",
+      "kind": "normal",
+      "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.field_base_recorded",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "ffa28a7b895c8f4eb46aeadaebe2855f01737363d426a4bb621a8928b3acce83",
+      "kind": "normal",
+      "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.field_base_value",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "c0190f11f02dc4e5600f89402c89040f749bbd3124f98c84517a4ec902a9ab47",
+      "kind": "normal",
+      "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.field_value_recorded",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "fbc5ed02a7fb6db60823b36d804d7f7761495847978fdb60c68f30f808634312",
+      "kind": "normal",
+      "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.repair_batch_id",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "559a9f1572265798bd34fbd0befd9c8e5d30bf2d2ca4dc49aa257ef7eb72cfa7",
+      "kind": "normal",
+      "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.repair_evidence_id",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "3fb84cf0d9327f6a28447993343a638e33146aff00d7c070683b26ec2211a7dd",
+      "kind": "normal",
+      "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_revisions.repair_evidence_sha256",
+      "target_kind": "table column",
+      "target_name": "security_master_revisions",
+      "target_schema": "security_master"
+    },
+    {
       "fingerprint": "a7fda3f752daddca237d109b4af28c582b1b22ea2f18be1d49c9d491a84d216f",
       "kind": "normal",
       "source": "security_master.security_underlying_links_security_id_fkey on security_master.security_underlying_links",
@@ -25819,6 +25939,10 @@
       "object": "column:security_master.security_master_revisions.created_at"
     },
     {
+      "fingerprint": "91e9904e09615bedec2ee18b9bef99823c75c542bac6d007161d4622516d7d98",
+      "object": "column:security_master.security_master_revisions.drafted_by"
+    },
+    {
       "fingerprint": "8a76668a96ebe0be7e4d97b62872d23774c0542880d4c2fd9058ea004a88f5ee",
       "object": "column:security_master.security_master_revisions.field_base_recorded"
     },
@@ -25851,6 +25975,26 @@
       "object": "column:security_master.security_master_revisions.fund_profile_id"
     },
     {
+      "fingerprint": "8f05ab124c8e21d965ca75bae6db5a3c0fb9c172b2a5dfb502a7d5d7513ccaf8",
+      "object": "column:security_master.security_master_revisions.repair_batch_id"
+    },
+    {
+      "fingerprint": "478c56fb58ccb2a4dd6045ed312ec5520c74f6bd71a4d66a8883bda9ea3147cc",
+      "object": "column:security_master.security_master_revisions.repair_evidence_id"
+    },
+    {
+      "fingerprint": "5b03b1896c2955d8cf35a685f3ff365e1d366e2c64398deb0efae19f1954fff7",
+      "object": "column:security_master.security_master_revisions.repair_evidence_sha256"
+    },
+    {
+      "fingerprint": "1cc423c684997139e1e11233bd981019a11da9675d65ec061342912654716f3a",
+      "object": "column:security_master.security_master_revisions.reviewed_canonical_version"
+    },
+    {
+      "fingerprint": "65e1261f976516ac97869e8dae4d212957a75d0e021ca101830bba5013d1989b",
+      "object": "column:security_master.security_master_revisions.reviewed_impact_receipt_id"
+    },
+    {
       "fingerprint": "c9a52e1b1c0e9187f02f3725d0ef3b6dcac4a883743c55ef7d1cbb32bbebe125",
       "object": "column:security_master.security_master_revisions.revision_id"
     },
@@ -25861,6 +26005,10 @@
     {
       "fingerprint": "2c28e4ba6deb7a4953dbe110adf914ac3ccb7f5b4ede50df5c6abacbaf254b14",
       "object": "column:security_master.security_master_revisions.state"
+    },
+    {
+      "fingerprint": "7790767d6a015a0c6493a0a9022947c6bf391180e69d5904328da60ea03ce0b0",
+      "object": "column:security_master.security_master_revisions.submitted_by"
     },
     {
       "fingerprint": "e5ac0a2be735e34813994de4464847b9845a4e23d74d60e1ee93be4d2a03b2a1",
@@ -31227,6 +31375,14 @@
       "object": "constraint:security_master.security_master_revisions.security_master_revisions_pkey"
     },
     {
+      "fingerprint": "9237f4f9e9f37c474fcf125c4780ec7e42629bec5df5a5299de06da78552cee5",
+      "object": "constraint:security_master.security_master_revisions.security_revision_impact_binding_check"
+    },
+    {
+      "fingerprint": "ce17ead7d0107ee898f44f3563fcdfe3e547872e846f3ee11642a12161487c48",
+      "object": "constraint:security_master.security_master_revisions.security_revision_repair_context_check"
+    },
+    {
       "fingerprint": "5acbd046229482cdf96bd12520b843b07e1a84204ba2e701c59c4e9b955cd23f",
       "object": "constraint:security_master.security_master_terms_capability_floor.security_master_terms_capabi_minimum_declared_mapping_ver_check"
     },
@@ -36119,6 +36275,46 @@
       "object": "dependency:security_master.security_raw_prices_unit_check on security_master.security_raw_prices->security_master.security_raw_prices.price_unit:normal"
     },
     {
+      "fingerprint": "048b6549fb470eba64fce3074c115da93a03e786c5f517c64d364bf741e4276b",
+      "object": "dependency:security_master.security_revision_impact_binding_check on security_master.security_master_revisions->security_master.security_master_revisions.reviewed_canonical_version:normal"
+    },
+    {
+      "fingerprint": "6a48d92184cc161dd3497165fa4c0760fa7f5bf4ac0ce6ead0687d9d52885593",
+      "object": "dependency:security_master.security_revision_impact_binding_check on security_master.security_master_revisions->security_master.security_master_revisions.reviewed_impact_receipt_id:normal"
+    },
+    {
+      "fingerprint": "690682e3c0e3fa28abb9bc2b22bab27ed3e414a8668017ea1ea7688d3863adf1",
+      "object": "dependency:security_master.security_revision_repair_context_check on security_master.security_master_revisions->security_master.security_master_revisions.base_version:normal"
+    },
+    {
+      "fingerprint": "227d7609768235ef9987aa5b66f86f4dfcdc6a06ed769af95aca3ed0feff1c65",
+      "object": "dependency:security_master.security_revision_repair_context_check on security_master.security_master_revisions->security_master.security_master_revisions.drafted_by:normal"
+    },
+    {
+      "fingerprint": "43b3127e070f63dcad1dc41f22aa2357ba11a28c480d6a9560b71b1001325432",
+      "object": "dependency:security_master.security_revision_repair_context_check on security_master.security_master_revisions->security_master.security_master_revisions.field_base_recorded:normal"
+    },
+    {
+      "fingerprint": "ffa28a7b895c8f4eb46aeadaebe2855f01737363d426a4bb621a8928b3acce83",
+      "object": "dependency:security_master.security_revision_repair_context_check on security_master.security_master_revisions->security_master.security_master_revisions.field_base_value:normal"
+    },
+    {
+      "fingerprint": "c0190f11f02dc4e5600f89402c89040f749bbd3124f98c84517a4ec902a9ab47",
+      "object": "dependency:security_master.security_revision_repair_context_check on security_master.security_master_revisions->security_master.security_master_revisions.field_value_recorded:normal"
+    },
+    {
+      "fingerprint": "fbc5ed02a7fb6db60823b36d804d7f7761495847978fdb60c68f30f808634312",
+      "object": "dependency:security_master.security_revision_repair_context_check on security_master.security_master_revisions->security_master.security_master_revisions.repair_batch_id:normal"
+    },
+    {
+      "fingerprint": "559a9f1572265798bd34fbd0befd9c8e5d30bf2d2ca4dc49aa257ef7eb72cfa7",
+      "object": "dependency:security_master.security_revision_repair_context_check on security_master.security_master_revisions->security_master.security_master_revisions.repair_evidence_id:normal"
+    },
+    {
+      "fingerprint": "3fb84cf0d9327f6a28447993343a638e33146aff00d7c070683b26ec2211a7dd",
+      "object": "dependency:security_master.security_revision_repair_context_check on security_master.security_master_revisions->security_master.security_master_revisions.repair_evidence_sha256:normal"
+    },
+    {
       "fingerprint": "a7fda3f752daddca237d109b4af28c582b1b22ea2f18be1d49c9d491a84d216f",
       "object": "dependency:security_master.security_underlying_links_security_id_fkey on security_master.security_underlying_links->security_master.securities.security_id:normal"
     },
@@ -36505,6 +36701,10 @@
     {
       "fingerprint": "de4703e5e0d23d433e867b384f85fbc83c5d846d1bf97a55f09ae9a2be911fbe",
       "object": "function:security_master.guard_close_price_snapshot_append()"
+    },
+    {
+      "fingerprint": "48c0248dd82f3ca5d0a9f2c6210f6a30d9f645b584e346f893473b908cba1767",
+      "object": "function:security_master.protect_security_revision_review_context()"
     },
     {
       "fingerprint": "8c3a738ba4673a8ab767d318ef962674213704c16942ff0b5ee2ea0fb402420d",
@@ -40675,7 +40875,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "5ed9bd94ff664313eab8ada94a9d819c53d3f0009a55d6fae2a95a672e0a0135",
+      "fingerprint": "89a45b169b8ce11676012834f4be987b1f63517ca5f9eeb9d4b6e1ef3dfdc296",
       "object": "schema:security_master"
     },
     {
@@ -41759,7 +41959,7 @@
       "object": "table:security_master.security_master_quality_reports"
     },
     {
-      "fingerprint": "d9277a8c4c44f67c59e559db4daee5c32bb7bfafb77cc5f75933d5f34ee593f4",
+      "fingerprint": "8038a31b4f240b1d01ea8687593fd1e0a3740b8a2ee0e3e278dd4a6e8bd6ad60",
       "object": "table:security_master.security_master_revisions"
     },
     {
@@ -42521,6 +42721,10 @@
     {
       "fingerprint": "483544fd5f1a7f59077deafe3a250de7fc659bce376058346718b22a76eccbd3",
       "object": "trigger:security_master.security_identifier_revisions.security_identifier_revisions_no_truncate"
+    },
+    {
+      "fingerprint": "9c68073ca1eaa56cff81e63eac9541cb51e48e8737ab354cc4499606a1142eb8",
+      "object": "trigger:security_master.security_master_revisions.security_revision_review_context_immutable"
     },
     {
       "fingerprint": "b34b65eb6dc61b5f3c65b55225b1c6f08a2f1af97d6113c0362a3d267aa249e7",
@@ -187562,6 +187766,126 @@
           "target_schema": "security_master"
         },
         {
+          "fingerprint": "048b6549fb470eba64fce3074c115da93a03e786c5f517c64d364bf741e4276b",
+          "kind": "normal",
+          "source": "security_master.security_revision_impact_binding_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.reviewed_canonical_version",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "6a48d92184cc161dd3497165fa4c0760fa7f5bf4ac0ce6ead0687d9d52885593",
+          "kind": "normal",
+          "source": "security_master.security_revision_impact_binding_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.reviewed_impact_receipt_id",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "690682e3c0e3fa28abb9bc2b22bab27ed3e414a8668017ea1ea7688d3863adf1",
+          "kind": "normal",
+          "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.base_version",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "227d7609768235ef9987aa5b66f86f4dfcdc6a06ed769af95aca3ed0feff1c65",
+          "kind": "normal",
+          "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.drafted_by",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "43b3127e070f63dcad1dc41f22aa2357ba11a28c480d6a9560b71b1001325432",
+          "kind": "normal",
+          "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.field_base_recorded",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "ffa28a7b895c8f4eb46aeadaebe2855f01737363d426a4bb621a8928b3acce83",
+          "kind": "normal",
+          "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.field_base_value",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "c0190f11f02dc4e5600f89402c89040f749bbd3124f98c84517a4ec902a9ab47",
+          "kind": "normal",
+          "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.field_value_recorded",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "fbc5ed02a7fb6db60823b36d804d7f7761495847978fdb60c68f30f808634312",
+          "kind": "normal",
+          "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.repair_batch_id",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "559a9f1572265798bd34fbd0befd9c8e5d30bf2d2ca4dc49aa257ef7eb72cfa7",
+          "kind": "normal",
+          "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.repair_evidence_id",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "3fb84cf0d9327f6a28447993343a638e33146aff00d7c070683b26ec2211a7dd",
+          "kind": "normal",
+          "source": "security_master.security_revision_repair_context_check on security_master.security_master_revisions",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_master_revisions.repair_evidence_sha256",
+          "target_kind": "table column",
+          "target_name": "security_master_revisions",
+          "target_schema": "security_master"
+        },
+        {
           "fingerprint": "a7fda3f752daddca237d109b4af28c582b1b22ea2f18be1d49c9d491a84d216f",
           "kind": "normal",
           "source": "security_master.security_underlying_links_security_id_fkey on security_master.security_underlying_links",
@@ -187902,7 +188226,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "5ed9bd94ff664313eab8ada94a9d819c53d3f0009a55d6fae2a95a672e0a0135",
+      "fingerprint": "89a45b169b8ce11676012834f4be987b1f63517ca5f9eeb9d4b6e1ef3dfdc296",
       "foreign_tables": [],
       "functions": [
         {
@@ -188026,6 +188350,37 @@
           "security_definer": false,
           "security_labels": [],
           "signature": "guard_close_price_snapshot_append()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
+          "definition_hash": "13e68c22205a0b754596f6b50530fe2b49851f7b5750908021c7dc6d4608d24d",
+          "fingerprint": "48c0248dd82f3ca5d0a9f2c6210f6a30d9f645b584e346f893473b908cba1767",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "protect_security_revision_review_context",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "security_master",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "protect_security_revision_review_context()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -230257,10 +230612,170 @@
               "security_labels": [],
               "type_name": "bool",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "91e9904e09615bedec2ee18b9bef99823c75c542bac6d007161d4622516d7d98",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "drafted_by",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "7790767d6a015a0c6493a0a9022947c6bf391180e69d5904328da60ea03ce0b0",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "submitted_by",
+              "nullable": true,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "8f05ab124c8e21d965ca75bae6db5a3c0fb9c172b2a5dfb502a7d5d7513ccaf8",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "repair_batch_id",
+              "nullable": true,
+              "ordinal_position": 19,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "478c56fb58ccb2a4dd6045ed312ec5520c74f6bd71a4d66a8883bda9ea3147cc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "repair_evidence_id",
+              "nullable": true,
+              "ordinal_position": 20,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5b03b1896c2955d8cf35a685f3ff365e1d366e2c64398deb0efae19f1954fff7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "repair_evidence_sha256",
+              "nullable": true,
+              "ordinal_position": 21,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "65e1261f976516ac97869e8dae4d212957a75d0e021ca101830bba5013d1989b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reviewed_impact_receipt_id",
+              "nullable": true,
+              "ordinal_position": 22,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "1cc423c684997139e1e11233bd981019a11da9675d65ec061342912654716f3a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reviewed_canonical_version",
+              "nullable": true,
+              "ordinal_position": 23,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "reviewed_impact_receipt_id",
+                "reviewed_canonical_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK ((reviewed_impact_receipt_id IS NULL) = (reviewed_canonical_version IS NULL) AND (reviewed_impact_receipt_id IS NULL OR reviewed_impact_receipt_id ~ '^[a-f0-9]{64}$'::text AND reviewed_canonical_version >= 1))",
+              "delete_action": null,
+              "fingerprint": "9237f4f9e9f37c474fcf125c4780ec7e42629bec5df5a5299de06da78552cee5",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_revision_impact_binding_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "repair_batch_id",
+                "drafted_by",
+                "repair_evidence_id",
+                "repair_evidence_sha256",
+                "base_version",
+                "field_base_value",
+                "field_base_recorded",
+                "field_value_recorded"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (repair_batch_id IS NULL OR drafted_by IS NOT NULL AND length(TRIM(BOTH FROM drafted_by)) > 0 AND repair_evidence_id IS NOT NULL AND length(TRIM(BOTH FROM repair_evidence_id)) > 0 AND repair_evidence_sha256 IS NOT NULL AND repair_evidence_sha256 ~ '^[a-f0-9]{64}$'::text AND base_version IS NOT NULL AND base_version >= 1 AND field_base_value IS NOT NULL AND field_base_recorded AND field_value_recorded)",
+              "delete_action": null,
+              "fingerprint": "ce17ead7d0107ee898f44f3563fcdfe3e547872e846f3ee11642a12161487c48",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_revision_repair_context_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "revision_id"
@@ -230284,7 +230799,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "d9277a8c4c44f67c59e559db4daee5c32bb7bfafb77cc5f75933d5f34ee593f4",
+          "fingerprint": "8038a31b4f240b1d01ea8687593fd1e0a3740b8a2ee0e3e278dd4a6e8bd6ad60",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -230347,7 +230862,25 @@
           "schema": "security_master",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER security_revision_review_context_immutable BEFORE UPDATE ON security_master.security_master_revisions FOR EACH ROW EXECUTE FUNCTION security_master.protect_security_revision_review_context()",
+              "definition_hash": "12e4f9714b95b1c191199027da9b03b67b260fca3ace6c960350f786a8b31578",
+              "enabled": "origin",
+              "events": [
+                "update"
+              ],
+              "fingerprint": "9c68073ca1eaa56cff81e63eac9541cb51e48e8737ab354cc4499606a1142eb8",
+              "function_schema": "security_master",
+              "function_signature": "protect_security_revision_review_context()",
+              "level": "row",
+              "name": "security_revision_review_context_immutable",
+              "relation": "security_master_revisions",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -282020,10 +282553,170 @@
               "security_labels": [],
               "type_name": "bool",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "91e9904e09615bedec2ee18b9bef99823c75c542bac6d007161d4622516d7d98",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "drafted_by",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "7790767d6a015a0c6493a0a9022947c6bf391180e69d5904328da60ea03ce0b0",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "submitted_by",
+              "nullable": true,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "8f05ab124c8e21d965ca75bae6db5a3c0fb9c172b2a5dfb502a7d5d7513ccaf8",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "repair_batch_id",
+              "nullable": true,
+              "ordinal_position": 19,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "478c56fb58ccb2a4dd6045ed312ec5520c74f6bd71a4d66a8883bda9ea3147cc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "repair_evidence_id",
+              "nullable": true,
+              "ordinal_position": 20,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5b03b1896c2955d8cf35a685f3ff365e1d366e2c64398deb0efae19f1954fff7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "repair_evidence_sha256",
+              "nullable": true,
+              "ordinal_position": 21,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "65e1261f976516ac97869e8dae4d212957a75d0e021ca101830bba5013d1989b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reviewed_impact_receipt_id",
+              "nullable": true,
+              "ordinal_position": 22,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "1cc423c684997139e1e11233bd981019a11da9675d65ec061342912654716f3a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reviewed_canonical_version",
+              "nullable": true,
+              "ordinal_position": 23,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "reviewed_impact_receipt_id",
+                "reviewed_canonical_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK ((reviewed_impact_receipt_id IS NULL) = (reviewed_canonical_version IS NULL) AND (reviewed_impact_receipt_id IS NULL OR reviewed_impact_receipt_id ~ '^[a-f0-9]{64}$'::text AND reviewed_canonical_version >= 1))",
+              "delete_action": null,
+              "fingerprint": "9237f4f9e9f37c474fcf125c4780ec7e42629bec5df5a5299de06da78552cee5",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_revision_impact_binding_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "repair_batch_id",
+                "drafted_by",
+                "repair_evidence_id",
+                "repair_evidence_sha256",
+                "base_version",
+                "field_base_value",
+                "field_base_recorded",
+                "field_value_recorded"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (repair_batch_id IS NULL OR drafted_by IS NOT NULL AND length(TRIM(BOTH FROM drafted_by)) > 0 AND repair_evidence_id IS NOT NULL AND length(TRIM(BOTH FROM repair_evidence_id)) > 0 AND repair_evidence_sha256 IS NOT NULL AND repair_evidence_sha256 ~ '^[a-f0-9]{64}$'::text AND base_version IS NOT NULL AND base_version >= 1 AND field_base_value IS NOT NULL AND field_base_recorded AND field_value_recorded)",
+              "delete_action": null,
+              "fingerprint": "ce17ead7d0107ee898f44f3563fcdfe3e547872e846f3ee11642a12161487c48",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_revision_repair_context_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "revision_id"
@@ -282047,7 +282740,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "d9277a8c4c44f67c59e559db4daee5c32bb7bfafb77cc5f75933d5f34ee593f4",
+          "fingerprint": "8038a31b4f240b1d01ea8687593fd1e0a3740b8a2ee0e3e278dd4a6e8bd6ad60",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -282110,7 +282803,25 @@
           "schema": "security_master",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER security_revision_review_context_immutable BEFORE UPDATE ON security_master.security_master_revisions FOR EACH ROW EXECUTE FUNCTION security_master.protect_security_revision_review_context()",
+              "definition_hash": "12e4f9714b95b1c191199027da9b03b67b260fca3ace6c960350f786a8b31578",
+              "enabled": "origin",
+              "events": [
+                "update"
+              ],
+              "fingerprint": "9c68073ca1eaa56cff81e63eac9541cb51e48e8737ab354cc4499606a1142eb8",
+              "function_schema": "security_master",
+              "function_signature": "protect_security_revision_review_context()",
+              "level": "row",
+              "name": "security_revision_review_context_immutable",
+              "relation": "security_master_revisions",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -291449,6 +292160,23 @@
           "level": "statement",
           "name": "security_identifier_revisions_no_truncate",
           "relation": "security_identifier_revisions",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_revision_review_context_immutable BEFORE UPDATE ON security_master.security_master_revisions FOR EACH ROW EXECUTE FUNCTION security_master.protect_security_revision_review_context()",
+          "definition_hash": "12e4f9714b95b1c191199027da9b03b67b260fca3ace6c960350f786a8b31578",
+          "enabled": "origin",
+          "events": [
+            "update"
+          ],
+          "fingerprint": "9c68073ca1eaa56cff81e63eac9541cb51e48e8737ab354cc4499606a1142eb8",
+          "function_schema": "security_master",
+          "function_signature": "protect_security_revision_review_context()",
+          "level": "row",
+          "name": "security_revision_review_context_immutable",
+          "relation": "security_master_revisions",
           "schema": "security_master",
           "timing": "before"
         },

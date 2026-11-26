@@ -68,6 +68,23 @@ source requires an explicit Raw basis and records `basis=Raw` in new evidence re
 or unknown latest observations produce an unavailable mark rather than an older raw substitution.
 This guard does not supply the dedicated raw accounting-close capability or expand its provider
 coverage. Legacy `IsAdjusted=false` alone cannot qualify an accounting mark.
+
+`SecurityMasterImpactPreviewService` retains an immutable, content-addressed impact receipt for a
+governed Security Master draft: full previous and proposed terms (built by the shared
+`SecurityMasterProposedTermsBuilder` that publication also uses), typed before/after cash-flow
+projections where calculable, conservative candidate ledger books for the draft's fund, known
+accounting periods and an explicit `LotImpactUnverified` issue. Unavailable evidence stays
+unavailable; it is never reported as zero impact. No released-report lineage query is registered
+in this increment, so the receipt records report impact as `Unavailable`. Approval binds the
+reviewed receipt to the revision once, and approval and publication revalidate canonical terms and
+the dependency fingerprint. A stale approved receipt requires a fresh draft and workflow. A receipt
+is required under the Institutional governance profile, for a revision that carries repair context,
+or whenever the caller supplies one. Finalization then requires PostgreSQL revision, canonical and
+cash-flow source stores on one database plus the ledger dependency guard; canonical publication
+joins the ambient mutation transaction and derived cache/conflict work runs after commit. Revisions
+retain their immutable maker (`DraftedBy`), first submitter and optional repair batch/evidence
+context, and a repair revision's reviewer must differ from both maker and submitter.
+
 Security Master validation composes one built-in contribution for each of the 32 asset classes
 through `SecurityAssetValidationModules` (`SecurityMaster/Validation/Modules/`). Each class-owned
 factory keeps the rules the class had in `AssetClassValidatorRegistry`; the registry keeps shared
