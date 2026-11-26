@@ -1802,7 +1802,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "f5f240d3dbe8f276a12d7e6d283bebf2642ee7f7812e4845f99e68aaded88a72",
+  "fingerprint": "9e08c582e11edda1036a5ec6247e5bfca28c750a53d97751c00cc24ec6f42c47",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -2367,8 +2367,8 @@
     {
       "category": "destructive_changes",
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_084__security_revision_workflow_scope.sql",
-      "reason": "Row-preserving replacement of only ux_operations_continuity_open_workflow: the same transaction recreates close-lane uniqueness for workflows whose purpose is absent or Close and adds canonical-UUID uniqueness for each Security Master revision subject. New checks reject unknown or explicit-null purposes and malformed subject authority; subject and owning scope are immutable. No table, column, workflow or audit row is deleted or rewritten. This SQL was authored as ordinal 073 in the unmerged security-pack change and renumbered unchanged to 083 because 073 was taken on main; the 2026-11-14 AI schema/storage review recorded there applied to that text. On 2026-11-25 the renumbered file was re-probed on a disposable local PostgreSQL 16 database carrying ledger migrations 001-082: legacy Close preservation, duplicate-close and duplicate-subject refusal, distinct subject coexistence, purpose/subject check refusals and immutable subject scope. Apply through the existing transactional/advisory-lock runner with purpose-aware consumers; do not delete retained revision workflows to restore the former all-purpose index. This exact path/rule exception is technical review, not a claim of independent human approval or live rollout.",
-      "review_after": "2027-05-25",
+      "reason": "Row-preserving replacement of only ux_operations_continuity_open_workflow: the same transaction recreates close-lane uniqueness for workflows whose purpose is absent or Close and adds canonical-UUID uniqueness for each Security Master revision subject. New checks reject unknown or explicit-null purposes and malformed subject authority; subject and owning scope are immutable. No table, column, workflow or audit row is deleted or rewritten. This SQL was authored as ordinal 073 in the unmerged security-pack change (#3603) and is renumbered unchanged to 084 because main later took 073 and then 083. On 2026-11-26 the renumbered file was applied through the migration runner on a disposable local PostgreSQL 16 database carrying ledger migrations 001-083, and the three SecurityRevisionWorkflowPostgresTests passed against it: missing purpose retains Close uniqueness while distinct revision subjects coexist; null, unknown and incomplete purposes are refused at the database boundary; a retained subject and its accounting scope cannot be rewritten. Apply through the existing transactional/advisory-lock runner with purpose-aware consumers; do not delete retained revision workflows to restore the former all-purpose index. This exact path/rule exception is technical review, not a claim of independent human approval or live rollout.",
+      "review_after": "2027-05-26",
       "rule_id": "migration-drop-object"
     },
     {
