@@ -90,6 +90,44 @@ public sealed class QualityMonitoringPublisherTests
     }
 
     [Fact]
+    public async Task Observe_FeedsProviderLatency_FromOneInSixteenTimedSamples()
+    {
+        // The latency tracker locks and keeps a rolling window, so the quality consumer records
+        // only a sample of timed events into it; untimed events never reach it.
+        await using var quality = new DataQualityMonitoringService();
+        using var latency = new Meridian.DataIntegration.Monitoring.ProviderLatencyService();
+        var inner = new RecordingPublisher();
+        await using var sut = new QualityMonitoringPublisher(inner, quality, latency: latency);
+
+        for (var i = 1; i <= 32; i++)
+        {
+            sut.TryPublish(CreateTradeEvent("SPY", sequence: i)
+                .StampReceiveTime(exchangeTs: DateTimeOffset.UtcNow.AddMilliseconds(-40))).Should().BeTrue();
+        }
+
+        for (var i = 33; i <= 40; i++)
+            sut.TryPublish(CreateTradeEvent("SPY", sequence: i)).Should().BeTrue();
+
+        await WaitUntilAsync(() => sut.TradesObserved == 40);
+        var summary = latency.GetSummary();
+        summary.TotalSamples.Should().Be(2, "32 timed trades at a stride of 16, and untimed trades are skipped");
+        summary.Providers.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task Observe_WithoutALatencyService_StillObservesEveryTrade()
+    {
+        await using var quality = new DataQualityMonitoringService();
+        var inner = new RecordingPublisher();
+        await using var sut = new QualityMonitoringPublisher(inner, quality);
+
+        for (var i = 1; i <= 20; i++)
+            sut.TryPublish(CreateTradeEvent("SPY", sequence: i).StampReceiveTime(exchangeTs: DateTimeOffset.UtcNow)).Should().BeTrue();
+
+        await WaitUntilAsync(() => sut.TradesObserved == 20);
+    }
+
+    [Fact]
     public async Task DisposeAsync_DrainsPendingSamplesBeforeCompleting()
     {
         await using var quality = new DataQualityMonitoringService();

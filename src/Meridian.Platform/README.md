@@ -92,6 +92,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   and the default implementation of the contracts-owned `IEventMetrics` interface.
 - `Tracing/TracedEventMetrics.cs` - OpenTelemetry-compatible event-pipeline metrics decorator
   that wraps the default metrics implementation while emitting platform telemetry.
+- `Tracing/RunScopedEventMetrics.cs` - self-contained `IEventMetrics` for pipelines outside the
+  live feed (each backfill run), so they neither reset nor add to the process-wide counters.
 - `ApiDocumentation/ApiDocumentationService.cs` - lightweight OpenAPI, Swagger HTML, and
   markdown documentation model generation for host diagnostics and API explorer surfaces.
 

@@ -15,6 +15,8 @@ using Meridian.Domain.Events;
 using Meridian.Storage;
 using Meridian.Storage.Sinks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.Application.Composition;
 
@@ -44,6 +46,38 @@ public sealed class PipelineFeatureRegistrationTests : IDisposable
         var outputDirectory = GetReportOutputDirectory(monitoring.ReportGenerator);
         outputDirectory.Should().Be(Path.Combine(dataRoot, "reports"));
         Directory.Exists(outputDirectory).Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(typeof(EventPipeline))]
+    [InlineData(typeof(JsonlStorageSink))]
+    public async Task Register_GivesThePipelineAndJsonlSinkTheHostLogger_NotNullLogger(Type componentType)
+    {
+        // Without a logger these fall back to NullLogger, and their backpressure, flush-failure and
+        // consumer-fault lines never reach the host's log providers.
+        var root = CreateTempDirectory();
+        var configPath = WriteConfig(root, new AppConfig(DataRoot: "persistent-data"));
+        var captured = new CapturingLoggerProvider();
+
+        var services = new ServiceCollection();
+        services.AddLogging(logging => logging.AddProvider(captured));
+        services.AddSingleton(new StorageOptions { RootPath = Path.Combine(root, "persistent-data") });
+
+        var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
+        new ConfigurationFeatureRegistration().Register(services, options);
+        new PipelineFeatureRegistration().Register(services, options);
+
+        await using var provider = services.BuildServiceProvider();
+        var component = provider.GetRequiredService(componentType);
+
+        var field = componentType.GetField("_logger", BindingFlags.Instance | BindingFlags.NonPublic);
+        field.Should().NotBeNull();
+        var logger = field!.GetValue(component).Should().BeAssignableTo<ILogger>().Subject;
+        logger.GetType().IsGenericType.Should().BeTrue();
+        logger.GetType().GetGenericTypeDefinition().Should().NotBe(typeof(NullLogger<>));
+
+        logger.LogWarning("wiring probe");
+        captured.Categories.Should().Contain(componentType.FullName!);
     }
 
     [Fact]
@@ -282,6 +316,29 @@ public sealed class PipelineFeatureRegistrationTests : IDisposable
         File.WriteAllText(path, json);
         _tempFiles.Add(path);
         return path;
+    }
+
+    private sealed class CapturingLoggerProvider : ILoggerProvider
+    {
+        private readonly System.Collections.Concurrent.ConcurrentQueue<string> _categories = new();
+
+        public IReadOnlyCollection<string> Categories => _categories;
+
+        public ILogger CreateLogger(string categoryName) => new CategoryLogger(categoryName, _categories);
+
+        public void Dispose()
+        {
+        }
+
+        private sealed class CategoryLogger(string category, System.Collections.Concurrent.ConcurrentQueue<string> categories) : ILogger
+        {
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+            public bool IsEnabled(LogLevel logLevel) => true;
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+                => categories.Enqueue(category);
+        }
     }
 
     public void Dispose()

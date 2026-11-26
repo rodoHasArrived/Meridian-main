@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SensitiveActionPolicyEngine
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SensitiveActionPolicyEngine</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:34](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L34).
+
+Evaluates sensitive-action policy requirements from the actor, role, MFA, and approval context.
+
+```csharp
+public sealed class SensitiveActionPolicyEngine
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PolicyDecision Evaluate(SensitiveActionType action, AccessContext context);</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:36](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L36) |  |
+
+## SensitiveActionType
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SensitiveActionType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:10](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L10).
+
+```csharp
+public enum SensitiveActionType
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>RuleEdit</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:12](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L12) |  |
+| <code>BreakClosure</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:13](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L13) |  |
+| <code>PaymentRelease</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:14](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L14) |  |
+| <code>OverrideApproval</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:15](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L15) |  |
+
 ## SettlementInstruction
 
 Qualified name: <code>Meridian.Ui.Shared.Services.SettlementInstruction</code>. Kind: `record`.
@@ -806,45 +843,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>QuoteStreamSubscription? TrySubscribe(StreamTopic topic, string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs:17](../../../../src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs#L17) | Subscribe to a topic&#x27;s coalesced snapshot feed. Returns null when the session&#x27;s concurrent-stream cap is exceeded. Dispose the subscription to unsubscribe and release the session&#x27;s stream slot. |
-
-## QuoteStreamBroadcaster
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamBroadcaster</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:18](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L18).
-
-Event-driven quote fan-out. A thin quote-typed configuration of StreamBroadcaster{T}: woken by the collector via NotifyQuoteChanged, it rebuilds each active topic&#x27;s snapshot on the shared coalescing loop (latest-wins) and pushes it to every subscriber of that topic. One snapshot build is shared across all subscribers of a topic, and the market-data storage hot path is untouched: NotifyQuoteChanged only sets a wake signal.
-
-```csharp
-public sealed class QuoteStreamBroadcaster : IQuoteStreamBroadcaster, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public QuoteStreamBroadcaster(IServiceProvider services, StreamConnectionRegistry registry, QuoteStreamOptions options) : this(services, registry, options, LiveDataEndpoints.TryBuildQuotesSnapshotResponse);</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:22](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L22) |  |
-| <code>public void NotifyQuoteChanged(string symbol) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:52](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L52) |  |
-| <code>public QuoteStreamSubscription? TrySubscribe(StreamTopic topic, string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:55](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L55) |  |
-| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:66](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L66) |  |
-
-## QuoteStreamOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:7](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L7).
-
-Tuning knobs for the workstation quote-stream fan-out. Bindable from configuration under SectionName.
-
-```csharp
-public sealed class QuoteStreamOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SectionName = &quot;Workstation:QuoteStream&quot;;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:10](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L10) | Configuration section name. |
-| <code>public int CoalesceIntervalMs { get; set; } = 250;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:16](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L16) | Maximum push cadence: dirty topics are rebuilt and fanned out at most this often. Also the floor for how quickly a change reaches subscribers. |
-| <code>public int MaxConcurrentStreamsPerSession { get; set; } = 4;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:19](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L19) | Maximum concurrent stream connections per session. |
-| <code>public int SubscriberChannelCapacity { get; set; } = 1;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L25) | Per-subscriber channel capacity. 1 means latest-snapshot-wins (drop-oldest), so a slow client can never block the broadcaster — it only drops intermediate snapshots. |

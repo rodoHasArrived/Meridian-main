@@ -380,8 +380,8 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public JsonObject GenerateSchema();</code> | [src/Meridian.Core/Config/ConfigJsonSchemaGenerator.cs:26](../../../../src/Meridian.Core/Config/ConfigJsonSchemaGenerator.cs#L26) | Generates the schema document for AppConfig. |
-| <code>public string GenerateSchemaJson() =&gt; …;</code> | [src/Meridian.Core/Config/ConfigJsonSchemaGenerator.cs:258](../../../../src/Meridian.Core/Config/ConfigJsonSchemaGenerator.cs#L258) | Generates the schema JSON text. |
-| <code>public void WriteSchema(string outputPath);</code> | [src/Meridian.Core/Config/ConfigJsonSchemaGenerator.cs:264](../../../../src/Meridian.Core/Config/ConfigJsonSchemaGenerator.cs#L264) | Writes the generated schema to disk. |
+| <code>public string GenerateSchemaJson() =&gt; …;</code> | [src/Meridian.Core/Config/ConfigJsonSchemaGenerator.cs:259](../../../../src/Meridian.Core/Config/ConfigJsonSchemaGenerator.cs#L259) | Generates the schema JSON text. |
+| <code>public void WriteSchema(string outputPath);</code> | [src/Meridian.Core/Config/ConfigJsonSchemaGenerator.cs:265](../../../../src/Meridian.Core/Config/ConfigJsonSchemaGenerator.cs#L265) | Writes the generated schema to disk. |
 
 ## ConfigTemplate
 

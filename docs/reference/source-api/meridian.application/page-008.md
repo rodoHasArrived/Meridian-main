@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionIngestOrchestrator
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestOrchestrator</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:95](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L95).
+
+Fans out to every registered ICorporateActionProvider for mastered symbols, normalizes announcements, computes cross-provider consensus over full economic value keys, and records every distinct observation in the durable proposal inbox. Provider agreement is retained as evidence and never appends or approves accounting by itself. The legacy append path remains only for hosts/tests that have not registered durable operations.
+
+```csharp
+public sealed class CorporateActionIngestOrchestrator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionIngestOrchestrator(IEnumerable&lt;ICorporateActionProvider&gt; providers, ISecurityMasterStore store, ISecurityMasterEventStore eventStore, ISecurityMasterCorporateActionCommandService commandService, ILogger&lt;CorporateActionIngestOrchestrator&gt; logger, ICorporateActionOperationsService? operationsService = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:104](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L104) |  |
+| <code>public async Task&lt;CorporateActionIngestResult&gt; IngestAsync(CorporateActionIngestRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:120](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L120) |  |
+
+## CorporateActionIngestRequest
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:17](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L17).
+
+Request for a corporate-action ingest sweep. When Symbols is null or empty the sweep covers every active security with a ticker identifier. Announcements whose distinct agreeing sources reach MinimumSourcesToApply are confidence-scored, but production ingest still records a durable proposal for explicit operator acceptance.
+
+```csharp
+public sealed record CorporateActionIngestRequest(IReadOnlyList<string>? Symbols = null, bool DryRun = false, int MinimumSourcesToApply = 2, string? Actor = null, string? CorrelationId = null);
+```
+
 ## CorporateActionIngestResult
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestResult</code>. Kind: `record`.
@@ -925,36 +956,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;MultiAssetCoverageSummaryDto&gt; GetReadinessAsync(SecurityMasterOperationalReadinessRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:39](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs#L39) |  |
-
-## ISecurityMasterRateRepairDraftWriter
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterRateRepairDraftWriter</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.RateRepair.cs:5](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.RateRepair.cs#L5).
-
-```csharp
-public interface ISecurityMasterRateRepairDraftWriter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityMasterEditResultDto&gt; StageRateRepairAsync(UpdateSecurityFieldRequest request, SecurityMasterRevisionDraftContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.RateRepair.cs:7](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.RateRepair.cs#L7) |  |
-
-## ISecurityMasterReleasedReportImpactQuery
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterReleasedReportImpactQuery</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:10](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L10).
-
-```csharp
-public interface ISecurityMasterReleasedReportImpactQuery
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityReleasedReportImpact&gt; EvaluateAsync(Guid securityId, string? fundProfileId, DateTimeOffset effectiveFrom, SecurityMasterImpactScope scope, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:12](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L12) |  |
-| <code>Task&lt;bool&gt; CanReadRetainedRunIdsAsync(IReadOnlyList&lt;string&gt; runIds, SecurityMasterImpactScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:14](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L14) |  |

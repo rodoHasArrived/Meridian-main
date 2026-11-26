@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReportingCertifiedArtifactProducer
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingCertifiedArtifactProducer</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:134](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L134).
+
+Narrow bridge to the renderer that owns the exact output bytes. Implementations must return the bytes actually rendered for the supplied manifest; callers and HTTP payloads are never an artifact source.
+
+```csharp
+public interface IReportingCertifiedArtifactProducer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;ReportingGovernedArtifactProduction&gt; ProduceAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:136](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L136) |  |
+
+## IReportingCertifiedLedgerPresentationSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingCertifiedLedgerPresentationSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:98](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L98).
+
+Resolves the canonical ledger report pack whose accounting presentation was certified for an exact reporting checkpoint. Returning null means that no authoritative presentation is available and callers that require it must fail closed.
+
+```csharp
+public interface IReportingCertifiedLedgerPresentationSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;ReportingCertifiedLedgerPresentationInput?&gt; ResolveExactAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L100) |  |
+
 ## IReportingDeliveryGrantCredentialDeriver
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingDeliveryGrantCredentialDeriver</code>. Kind: `interface`.
@@ -1032,25 +1068,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;MarginControlCenterDto&gt; GetAsync(Func&lt;MarginEvidenceOwner, bool&gt;? isAccountVisible = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs:31](../../../../src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs#L31) |  |
 | <code>public async Task&lt;MarginCertificationResultDto&gt; CertifyAsync(MarginCertificationRequestDto request, string actor, Func&lt;MarginEvidenceOwner, bool&gt;? isAccountVisible = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs:87](../../../../src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs#L87) |  |
-
-## MarginEvidenceOwner
-
-Qualified name: <code>Meridian.Ui.Shared.Services.MarginEvidenceOwner</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs:11](../../../../src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs#L11).
-
-Who a retained margin snapshot belongs to: the fund account its statement was imported for (null when the evidence predates that record) and the snapshot&#x27;s provider and external account.
-
-```csharp
-public sealed record MarginEvidenceOwner(string? FundAccountId, string ProviderId, string AccountId);
-```
-
-## MarginRequirement
-
-Qualified name: <code>Meridian.Ui.Shared.Services.MarginRequirement</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:27](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L27).
-
-```csharp
-public sealed record MarginRequirement(string Counterparty, decimal RequiredCollateral, decimal InitialMargin, decimal VariationMargin);
-```

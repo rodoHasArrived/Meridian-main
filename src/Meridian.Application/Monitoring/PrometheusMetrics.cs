@@ -6,6 +6,8 @@ using Meridian.DataIntegration.Monitoring;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Prometheus;
 using Meridian.Core.Monitoring;
+using Meridian.Contracts.Pipeline;
+using Meridian.Platform.Diagnostics;
 
 namespace Meridian.Application.Monitoring;
 
@@ -447,6 +449,120 @@ public static class PrometheusMetrics
         "Total run continuity failures where canonical run identity disagrees across shared surfaces",
         new CounterConfiguration { LabelNames = new[] { "surface", "failure_kind" } });
 
+    // Pipeline backlog and consumer health (refreshed on the scrape from EventPipeline.GetStatistics,
+    // so nothing is added to the publish or consume hot path). The {pipeline} label separates the
+    // live collector pipeline from any other pipeline instance a host exports.
+    private static readonly string[] PipelineLabel = ["pipeline"];
+
+    private static readonly Gauge PipelineQueueDepth = Prometheus.Metrics.CreateGauge(
+        "mdc_pipeline_queue_depth", "Events currently queued in the pipeline channel",
+        new GaugeConfiguration { LabelNames = PipelineLabel });
+
+    private static readonly Gauge PipelineQueueCapacity = Prometheus.Metrics.CreateGauge(
+        "mdc_pipeline_queue_capacity", "Configured capacity of the pipeline channel",
+        new GaugeConfiguration { LabelNames = PipelineLabel });
+
+    private static readonly Gauge PipelineQueueUtilizationRatio = Prometheus.Metrics.CreateGauge(
+        "mdc_pipeline_queue_utilization_ratio", "Pipeline channel fill level (0-1)",
+        new GaugeConfiguration { LabelNames = PipelineLabel });
+
+    private static readonly Gauge PipelinePeakQueueDepth = Prometheus.Metrics.CreateGauge(
+        "mdc_pipeline_peak_queue_depth", "Highest sampled pipeline channel depth since the pipeline started",
+        new GaugeConfiguration { LabelNames = PipelineLabel });
+
+    private static readonly Gauge PipelineSecondsSinceLastFlush = Prometheus.Metrics.CreateGauge(
+        "mdc_pipeline_seconds_since_last_flush", "Seconds since the pipeline last flushed its storage sink",
+        new GaugeConfiguration { LabelNames = PipelineLabel });
+
+    private static readonly Gauge PipelineConsumersActive = Prometheus.Metrics.CreateGauge(
+        "mdc_pipeline_consumers_active", "Pipeline consumer tasks currently running",
+        new GaugeConfiguration { LabelNames = PipelineLabel });
+
+    private static readonly Gauge PipelineConsumersFaulted = Prometheus.Metrics.CreateGauge(
+        "mdc_pipeline_consumers_faulted", "Pipeline consumer tasks that have terminated with a fault",
+        new GaugeConfiguration { LabelNames = PipelineLabel });
+
+    private static readonly Counter PipelineConsumerFailures = Prometheus.Metrics.CreateCounter(
+        "mdc_pipeline_consumer_failures_total", "Pipeline consumer loop iterations that failed and were retried",
+        new CounterConfiguration { LabelNames = PipelineLabel });
+
+    /// <summary>The <c>pipeline</c> label value for the host's live market-data pipeline.</summary>
+    public const string LivePipelineLabel = "live";
+
+    // Free space on the volumes holding monitored storage paths (the data root, which also holds
+    // the WAL). Read from SystemHealthChecker's cached snapshot on the scrape, so no disk probe
+    // runs on the request path.
+    private static readonly Gauge DiskFreeBytes = Prometheus.Metrics.CreateGauge(
+        "mdc_disk_free_bytes", "Free bytes available to Meridian on the volume holding a monitored storage path",
+        new GaugeConfiguration { LabelNames = ["path"] });
+
+    private static readonly Gauge DiskTotalBytes = Prometheus.Metrics.CreateGauge(
+        "mdc_disk_total_bytes", "Total size in bytes of the volume holding a monitored storage path",
+        new GaugeConfiguration { LabelNames = ["path"] });
+
+    private const double BytesPerGb = 1024d * 1024d * 1024d;
+
+    /// <summary>
+    /// Updates the disk-space series from a <see cref="SystemHealthChecker"/> snapshot.
+    /// </summary>
+    public static void UpdateDiskMetrics(IReadOnlyList<DiskSpaceInfo> disks)
+    {
+        ArgumentNullException.ThrowIfNull(disks);
+        foreach (var disk in disks)
+        {
+            DiskFreeBytes.WithLabels(disk.Path).Set(Math.Max(0d, disk.FreeSpaceGb * BytesPerGb));
+            DiskTotalBytes.WithLabels(disk.Path).Set(Math.Max(0d, disk.TotalSpaceGb * BytesPerGb));
+        }
+    }
+
+    // Backfill runs. A backfill runs its own pipeline with run-scoped counters, so these are the
+    // only process-wide record of whether backfills succeed and how long they take.
+    private static readonly Counter BackfillRunsTotal = Prometheus.Metrics.CreateCounter(
+        "mdc_backfill_runs_total", "Backfill runs by outcome (succeeded, failed, error, cancelled, rejected)",
+        new CounterConfiguration { LabelNames = ["outcome"] });
+
+    private static readonly Histogram BackfillDurationSeconds = Prometheus.Metrics.CreateHistogram(
+        "mdc_backfill_duration_seconds", "Wall-clock duration of backfill runs",
+        new HistogramConfiguration
+        {
+            LabelNames = ["outcome"],
+            Buckets = [1, 5, 15, 60, 300, 900, 1800, 3600, 7200, 14400]
+        });
+
+    /// <summary>
+    /// Records one backfill run's outcome and duration.
+    /// </summary>
+    /// <param name="outcome">One of the <see cref="BackfillOutcome"/> values.</param>
+    /// <param name="duration">Time from admission to completion.</param>
+    public static void RecordBackfillRun(string outcome, TimeSpan duration)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(outcome);
+        BackfillRunsTotal.WithLabels(outcome).Inc();
+        BackfillDurationSeconds.WithLabels(outcome).Observe(Math.Max(0d, duration.TotalSeconds));
+    }
+
+    /// <summary>Current value of <c>mdc_backfill_runs_total</c> for <paramref name="outcome"/>.</summary>
+    public static double BackfillRunsValue(string outcome) => BackfillRunsTotal.WithLabels(outcome).Value;
+
+    /// <summary>The <c>outcome</c> label values of <c>mdc_backfill_runs_total</c>.</summary>
+    public static class BackfillOutcome
+    {
+        /// <summary>The run completed and reported success.</summary>
+        public const string Succeeded = "succeeded";
+
+        /// <summary>The run completed but reported failure (for example every provider failed).</summary>
+        public const string Failed = "failed";
+
+        /// <summary>The run threw an unexpected exception.</summary>
+        public const string Error = "error";
+
+        /// <summary>The run was cancelled.</summary>
+        public const string Cancelled = "cancelled";
+
+        /// <summary>The request was refused before fetching (for example a clone conflict).</summary>
+        public const string Rejected = "rejected";
+    }
+
     /// <summary>
     /// Updates all Prometheus metrics from the current Metrics snapshot.
     /// Should be called periodically (e.g., every 1-5 seconds) to keep metrics current.
@@ -500,14 +616,13 @@ public static class PrometheusMetrics
         var snapshot = combined.Core;
         var resubSnapshot = combined.Resubscription;
 
-        // Mirror the resettable source totals into monotonic counters. BackfillCoordinator.RunAsync
-        // calls Reset() on this same static snapshot, which zeroes every total; IncTo cannot
-        // decrease a counter, so the exported series froze at its pre-reset value until the fresh
-        // total climbed back past it. rate() and increase() read zero across that whole stretch,
-        // which is exactly what MeridianNoEventsPublished treats as a stalled feed — it would have
-        // paged during a healthy pipeline every time an operator started a backfill.
-        // MirrorResettableTotal carries the pre-reset total forward instead, so the counter keeps
-        // increasing across a reset and its rate stays true.
+        // Mirror the resettable source totals into monotonic counters. Metrics.Reset() zeroes every
+        // total (BackfillCoordinator.RunAsync used to call it on every run; backfills now count into
+        // run-scoped metrics, but Reset() remains public). IncTo cannot decrease a counter, so after
+        // a reset the exported series would freeze at its pre-reset value until the fresh total
+        // climbed back past it, and rate() would read zero across that stretch, which is what
+        // MeridianNoEventsPublished treats as a stalled feed. MirrorResettableTotal carries the
+        // pre-reset total forward instead, so the counter keeps increasing across a reset.
         lock (ResettableTotalLock)
         {
             PublishedEvents.IncTo(MirrorResettableTotal(PublishedKey, snapshot.Published));
@@ -570,6 +685,38 @@ public static class PrometheusMetrics
 
         // Update validation pipeline metrics
         UpdateValidationMetrics(ValidationMetrics.GetSnapshot());
+    }
+
+    /// <summary>
+    /// Updates the pipeline backlog and consumer-health series from a pipeline statistics snapshot.
+    /// </summary>
+    /// <remarks>
+    /// Called on the <c>/metrics</c> scrape with <c>EventPipeline.GetStatistics()</c>, so the values
+    /// are read when Prometheus asks rather than maintained on the hot path. The consumer-failure
+    /// total is mirrored through the same reset-tolerant path as the event totals, so a pipeline
+    /// that is rebuilt (and starts its own count at zero) never makes the exported counter go
+    /// backwards.
+    /// </remarks>
+    public static void UpdatePipelineMetrics(in PipelineStatistics statistics, string pipeline = LivePipelineLabel)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(pipeline);
+
+        PipelineQueueDepth.WithLabels(pipeline).Set(statistics.CurrentQueueSize);
+        PipelineQueueCapacity.WithLabels(pipeline).Set(statistics.QueueCapacity);
+        // PipelineStatistics.QueueUtilization is a percentage (0-100); the ratio form is the
+        // Prometheus convention and keeps alert thresholds unit-free.
+        PipelineQueueUtilizationRatio.WithLabels(pipeline).Set(
+            statistics.QueueCapacity > 0 ? statistics.QueueUtilization / 100d : 0d);
+        PipelinePeakQueueDepth.WithLabels(pipeline).Set(statistics.PeakQueueSize);
+        PipelineSecondsSinceLastFlush.WithLabels(pipeline).Set(Math.Max(0d, statistics.TimeSinceLastFlush.TotalSeconds));
+        PipelineConsumersActive.WithLabels(pipeline).Set(statistics.ActiveConsumers);
+        PipelineConsumersFaulted.WithLabels(pipeline).Set(statistics.FaultedConsumers);
+
+        lock (ResettableTotalLock)
+        {
+            PipelineConsumerFailures.WithLabels(pipeline).IncTo(
+                MirrorResettableTotal("consumer_failures:" + pipeline, statistics.ConsumerIterationFailures));
+        }
     }
 
     /// <summary>

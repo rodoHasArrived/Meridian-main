@@ -443,3 +443,162 @@ tests:
       - eval_time: 30m
         alertname: MeridianLowDataQuality
         exp_alerts: []
+
+  # --- MeridianPipelineBacklogHigh --------------------------------------------
+  # Fires on the backlog that precedes drops; both drop alerts only fire once
+  # events are already lost.
+  - interval: 1m
+    name: MeridianPipelineBacklogHigh fires on a channel held above 70% for two minutes
+    input_series:
+      - series: 'mdc_pipeline_queue_utilization_ratio{pipeline="live"}'
+        values: "0.2 0.2 0.85+0x10"
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: MeridianPipelineBacklogHigh
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: MeridianPipelineBacklogHigh
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P2
+              pipeline: live
+            exp_annotations:
+              summary: "Pipeline live channel 85% full"
+              description: "The live pipeline channel has been more than 70% full for 2 minutes; drops follow if it reaches capacity."
+              runbook_url: "docs/operators/operator-runbook.md#pipeline-backlog"
+              probable_causes: "Storage sink slow or failing, consumer faulted, burst of market data events, channel capacity too small for the inbound rate"
+              immediate_mitigation: "1. Check mdc_sink_write_failures_total and disk latency on the data root. 2. Check mdc_pipeline_consumers_faulted. 3. Read /api/backpressure. 4. Shed non-critical subscriptions if the sink is healthy but outpaced."
+
+  - interval: 1m
+    name: MeridianPipelineBacklogHigh stays silent on a short burst and a healthy channel
+    input_series:
+      # One sample over the threshold is a burst the consumer absorbed, not a backlog.
+      - series: 'mdc_pipeline_queue_utilization_ratio{pipeline="live"}'
+        values: "0.1 0.9 0.3+0x10"
+    alert_rule_test:
+      - eval_time: 8m
+        alertname: MeridianPipelineBacklogHigh
+        exp_alerts: []
+
+  # --- MeridianPipelineConsumerFaulted ----------------------------------------
+  - interval: 1m
+    name: MeridianPipelineConsumerFaulted fires once a consumer task has faulted
+    input_series:
+      - series: 'mdc_pipeline_consumers_faulted{pipeline="live"}'
+        values: "0 0 1+0x10"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: MeridianPipelineConsumerFaulted
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              incident_priority: P1
+              pipeline: live
+            exp_annotations:
+              summary: "Pipeline live has 1 faulted consumer(s)"
+              description: "A consumer task of the live pipeline has terminated with a fault and is no longer draining the channel."
+              runbook_url: "docs/operators/operator-runbook.md#pipeline-consumer-faulted"
+              probable_causes: "Unhandled exception in the consume loop, storage sink throwing on every write, validator or dedup ledger failure"
+              immediate_mitigation: "1. Read the 'Pipeline consumer iteration failed' lines in <data-root>/_logs (EventPipeline category). 2. Check mdc_sink_write_failures_total and disk health. 3. Restart the host once the cause is addressed; WAL recovery replays uncommitted events."
+              rollback_criteria: "After restart mdc_pipeline_consumers_faulted is 0 and mdc_pipeline_queue_depth drains"
+
+  - interval: 1m
+    name: MeridianPipelineConsumerFaulted stays silent while every consumer runs
+    input_series:
+      - series: 'mdc_pipeline_consumers_faulted{pipeline="live"}'
+        values: "0+0x10"
+    alert_rule_test:
+      - eval_time: 8m
+        alertname: MeridianPipelineConsumerFaulted
+        exp_alerts: []
+
+  # --- MeridianSinkWriteFailing -----------------------------------------------
+  # Failed batches are restored and retried, so one failure that the next flush
+  # clears must not page; a sink failing on every flush must.
+  - interval: 1m
+    name: MeridianSinkWriteFailing fires when every flush keeps failing
+    input_series:
+      - series: 'mdc_sink_write_failures_total{sink="jsonl"}'
+        values: "0+1x30"
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: MeridianSinkWriteFailing
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: MeridianSinkWriteFailing
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              incident_priority: P1
+              sink: jsonl
+            exp_annotations:
+              summary: "Storage sink jsonl writes failing"
+              description: "The jsonl sink has failed 5 write attempts in the last 5 minutes; affected batches are buffered for retry but not yet on disk."
+              runbook_url: "docs/operators/operator-runbook.md#sink-write-failures"
+              probable_causes: "Disk full, filesystem permissions, I/O errors, storage path unmounted or misconfigured"
+              immediate_mitigation: "1. Check free space on the data root. 2. Read the 'Failed to flush' lines in <data-root>/_logs for the path and exception. 3. Verify path ownership and mount state. 4. Prefer fixing the cause before restarting; failed batches stay buffered and are retried in place."
+              rollback_criteria: "mdc_sink_write_failures_total stops increasing and mdc_pipeline_seconds_since_last_flush returns to the flush interval"
+
+  - interval: 1m
+    name: MeridianSinkWriteFailing stays silent on a single transient failure
+    input_series:
+      - series: 'mdc_sink_write_failures_total{sink="jsonl"}'
+        values: "0 0 1+0x30"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: MeridianSinkWriteFailing
+        exp_alerts: []
+
+  # --- MeridianDiskSpaceLow / MeridianDiskSpaceCritical ------------------------
+  - interval: 1m
+    name: Disk alerts fire on sustained low and critical free space
+    input_series:
+      # 1.5 GiB free: below both thresholds.
+      - series: 'mdc_disk_free_bytes{path="/data"}'
+        values: "1610612736+0x30"
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: MeridianDiskSpaceCritical
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: MeridianDiskSpaceCritical
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              incident_priority: P1
+              path: /data
+            exp_annotations:
+              summary: "Disk nearly full for /data (1.5GiB free)"
+              description: "The volume holding /data has had less than 2 GiB free for 5 minutes; WAL and sink writes will start failing."
+              runbook_url: "docs/operators/operator-runbook.md#disk-space-low"
+              probable_causes: "Data growth without retention, large backfill, log or archive accumulation, another process filling the volume"
+              immediate_mitigation: "1. Free space immediately (move cold data or archives off the volume). 2. Pause backfills. 3. Watch mdc_sink_write_failures_total. 4. Tighten retention once stable."
+              rollback_criteria: "mdc_disk_free_bytes is above 10 GiB and mdc_sink_write_failures_total is not increasing"
+      - eval_time: 20m
+        alertname: MeridianDiskSpaceLow
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P3
+              path: /data
+            exp_annotations:
+              summary: "Low disk space for /data (1.5GiB free)"
+              description: "The volume holding /data has had less than 10 GiB free for 15 minutes."
+              runbook_url: "docs/operators/operator-runbook.md#disk-space-low"
+              probable_causes: "Data growth without retention, large backfill, log or archive accumulation, another process filling the volume"
+              immediate_mitigation: "1. Check retention settings (Storage RetentionDays / MaxTotalBytes). 2. Archive or move cold data. 3. Check _logs and archive sizes under the data root."
+
+  - interval: 1m
+    name: Disk alerts stay silent with ample free space
+    input_series:
+      # 50 GiB free.
+      - series: 'mdc_disk_free_bytes{path="/data"}'
+        values: "53687091200+0x30"
+    alert_rule_test:
+      - eval_time: 25m
+        alertname: MeridianDiskSpaceLow
+        exp_alerts: []
+      - eval_time: 25m
+        alertname: MeridianDiskSpaceCritical
+        exp_alerts: []

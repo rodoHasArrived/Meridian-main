@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderRuntimeCredentialApplicationTracker
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialApplicationTracker</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:39](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L39).
+
+In-process record of which host bindings changed after this host started and which have since been applied. A provider with no entry was bound before start (or never), so its binding is in effect.
+
+```csharp
+public sealed class ProviderRuntimeCredentialApplicationTracker(TimeProvider? timeProvider = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public void MarkBound(string providerId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:44](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L44) |  |
+| <code>public void MarkApplied(string providerId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:50](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L50) |  |
+| <code>public (DateTimeOffset? BoundAt, DateTimeOffset? AppliedAt, bool PendingRestart) Get(string providerId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:56](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L56) |  |
+
+## ProviderRuntimeCredentialApplyOutcome
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialApplyOutcome</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:7](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L7).
+
+```csharp
+public enum ProviderRuntimeCredentialApplyOutcome
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Applied</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:10](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L10) | Running instances now resolve credentials under the bound scope. |
+| <code>PendingRestart</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:12](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L12) | No in-process recycle exists; the host must be restarted deliberately. |
+
 ## ProviderRuntimeCredentialMutationGuard
 
 Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialMutationGuard</code>. Kind: `class`.
@@ -1094,34 +1131,3 @@ Declared public members:
 | <code>public void Record(CorporateActionIngestResult result);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:67](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L67) |  |
 | <code>public bool TryTakeStaged(Guid securityId, string actionType, DateOnly exDate, out CorporateActionProposal proposal);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:81](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L81) | Removes and returns the staged proposal matching (security, action type, ex-date) so an operator apply consumes it exactly once. Auto-applied proposals are not takeable. |
 | <code>public CorporateActionInboxDto GetInbox();</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:106](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L106) |  |
-
-## CorporateActionIngestOrchestrator
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestOrchestrator</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:95](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L95).
-
-Fans out to every registered ICorporateActionProvider for mastered symbols, normalizes announcements, computes cross-provider consensus over full economic value keys, and records every distinct observation in the durable proposal inbox. Provider agreement is retained as evidence and never appends or approves accounting by itself. The legacy append path remains only for hosts/tests that have not registered durable operations.
-
-```csharp
-public sealed class CorporateActionIngestOrchestrator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionIngestOrchestrator(IEnumerable&lt;ICorporateActionProvider&gt; providers, ISecurityMasterStore store, ISecurityMasterEventStore eventStore, ISecurityMasterCorporateActionCommandService commandService, ILogger&lt;CorporateActionIngestOrchestrator&gt; logger, ICorporateActionOperationsService? operationsService = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:104](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L104) |  |
-| <code>public async Task&lt;CorporateActionIngestResult&gt; IngestAsync(CorporateActionIngestRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:120](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L120) |  |
-
-## CorporateActionIngestRequest
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:17](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L17).
-
-Request for a corporate-action ingest sweep. When Symbols is null or empty the sweep covers every active security with a ticker identifier. Announcements whose distinct agreeing sources reach MinimumSourcesToApply are confidence-scored, but production ingest still records a durable proposal for explicit operator acceptance.
-
-```csharp
-public sealed record CorporateActionIngestRequest(IReadOnlyList<string>? Symbols = null, bool DryRun = false, int MinimumSourcesToApply = 2, string? Actor = null, string? CorrelationId = null);
-```

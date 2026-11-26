@@ -1932,9 +1932,9 @@ Source: [src/Meridian/UiServer.cs](../../src/Meridian/UiServer.cs)
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/api/system/lifecycle` | GET | `(HttpContext context) => …` | `Results.Ok` | — | [L690](../../src/Meridian/UiServer.cs#L690) |
-| `/api/system/shutdown` | POST | `async (HttpContext context) => …`<br>Body reads: `DeserializeAsync` | `Results.Json` | — | [L724](../../src/Meridian/UiServer.cs#L724) |
-| `/api/system/shutdown/{operationId}` | GET | `(string operationId, HttpContext context) => …` | `Results.Ok` | — | [L778](../../src/Meridian/UiServer.cs#L778) |
-| `/api/system/shutdown/receipts/latest` | GET | `async (HttpContext context) => …` | `Results.Ok` | — | [L799](../../src/Meridian/UiServer.cs#L799) |
+| `/api/system/lifecycle` | GET | `(HttpContext context) => …` | `Results.Ok` | — | [L738](../../src/Meridian/UiServer.cs#L738) |
+| `/api/system/shutdown` | POST | `async (HttpContext context) => …`<br>Body reads: `DeserializeAsync` | `Results.Json` | — | [L772](../../src/Meridian/UiServer.cs#L772) |
+| `/api/system/shutdown/{operationId}` | GET | `(string operationId, HttpContext context) => …` | `Results.Ok` | — | [L826](../../src/Meridian/UiServer.cs#L826) |
+| `/api/system/shutdown/receipts/latest` | GET | `async (HttpContext context) => …` | `Results.Ok` | — | [L847](../../src/Meridian/UiServer.cs#L847) |
 
 <!-- END GENERATED HTTP DECLARATION REFERENCE -->

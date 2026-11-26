@@ -6,6 +6,39 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityMasterRateRepairDraftWriter
+
+Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterRateRepairDraftWriter</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.RateRepair.cs:5](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.RateRepair.cs#L5).
+
+```csharp
+public interface ISecurityMasterRateRepairDraftWriter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityMasterEditResultDto&gt; StageRateRepairAsync(UpdateSecurityFieldRequest request, SecurityMasterRevisionDraftContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.RateRepair.cs:7](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.RateRepair.cs#L7) |  |
+
+## ISecurityMasterReleasedReportImpactQuery
+
+Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterReleasedReportImpactQuery</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:10](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L10).
+
+```csharp
+public interface ISecurityMasterReleasedReportImpactQuery
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityReleasedReportImpact&gt; EvaluateAsync(Guid securityId, string? fundProfileId, DateTimeOffset effectiveFrom, SecurityMasterImpactScope scope, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:12](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L12) |  |
+| <code>Task&lt;bool&gt; CanReadRetainedRunIdsAsync(IReadOnlyList&lt;string&gt; runIds, SecurityMasterImpactScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:14](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L14) |  |
+
 ## ISecurityMasterRevisionPublishedHandler
 
 Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler</code>. Kind: `interface`.
@@ -990,89 +1023,3 @@ Declared public members:
 | <code>public SecurityMasterCanonicalSymbolSeedService(SecurityMasterProjectionCache cache, ICanonicalSymbolRegistry registry, ILogger&lt;SecurityMasterCanonicalSymbolSeedService&gt; logger, ISecurityMasterStore? store = null, SecurityMasterOptions? options = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCanonicalSymbolSeedService.cs:56](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCanonicalSymbolSeedService.cs#L56) |  |
 | <code>public Guid? TryGetSecurityId(string canonicalTicker);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCanonicalSymbolSeedService.cs:76](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCanonicalSymbolSeedService.cs#L76) | Resolves a canonical ticker to its Security Master ID. Returns null when the ticker is unknown or the seed has not yet run. |
 | <code>public async Task SeedAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCanonicalSymbolSeedService.cs:89](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCanonicalSymbolSeedService.cs#L89) | Reads all active securities from the projection cache, registers provider-aware symbol definitions into the canonical registry, and atomically replaces the ticker→SecurityId reverse-lookup map. |
-
-## SecurityMasterCashFlowService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterCashFlowService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:8](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L8).
-
-```csharp
-public sealed partial class SecurityMasterCashFlowService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ContextCalculationVersion = &quot;bond-cash-flow-context-v5&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L10) |  |
-| <code>public const string ReviewedAccrualContextCalculationVersion = SecurityRecurringAccrualPolicies.FixedBulletReceiptModelVersion;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:11](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L11) |  |
-| <code>public const string PreviousContextCalculationVersion = &quot;bond-cash-flow-context-v4&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L12) |  |
-| <code>public const string NegativeInterestContextCalculationVersion = &quot;bond-cash-flow-context-v3&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L13) |  |
-| <code>public const string UnifiedEconomicsContextCalculationVersion = &quot;bond-cash-flow-context-v2&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:14](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L14) |  |
-| <code>public const string LegacyContextCalculationVersion = &quot;bond-cash-flow-context-v1&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L15) |  |
-| <code>public async Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:17](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L17) |  |
-| <code>public async Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsync(SecurityDetailDto security, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:27](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L27) |  |
-| <code>public async Task&lt;SecurityCashFlowBlockerDto?&gt; GetProjectionBlockerAsync(SecurityDetailDto security, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L38) |  |
-| <code>public Task&lt;SecurityCashFlowCalculationReceipt&gt; EvaluateProjectionAsync(SecurityDetailDto security, SecurityCashFlowSourceDto source, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:60](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L60) |  |
-| <code>public async Task&lt;SecurityCashFlowCalculationReceipt?&gt; CaptureProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:65](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L65) |  |
-| <code>public async Task&lt;StructuredCashFlowProjectionDto?&gt; ReplayProjectionAsync(string contentSha256, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:153](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L153) |  |
-| <code>public async Task&lt;StructuredCashFlowProjectionDto&gt; ReplayProjectionAsync(SecurityCashFlowCalculationReceipt receipt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:161](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L161) |  |
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:27](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L27).
-
-Manages structured cash flow source assignments and delegates projections to IStructuredCashFlowProvider implementations. Client-provided sources take precedence and remain until explicitly changed, consistent with the cash flow source governance model.
-
-```csharp
-public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashFlowService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterCashFlowService(ISecurityMasterCashFlowStore store, IEnumerable&lt;IStructuredCashFlowProvider&gt; providers, ISecurityMasterQueryService queryService, ILogger&lt;SecurityMasterCashFlowService&gt; logger, ISecurityForwardCurveProvider? forwardCurves = null, IBondCalculationPolicy? bondPolicy = null, ISecurityCashFlowReceiptStore? receiptStore = null) : this(null, store, providers, queryService, logger, forwardCurves, bondPolicy, receiptStore);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:41](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L41) |  |
-| <code>public SecurityMasterCashFlowService(IBusinessDayCalendarSource? calendars, ISecurityMasterCashFlowStore store, IEnumerable&lt;IStructuredCashFlowProvider&gt; providers, ISecurityMasterQueryService queryService, ILogger&lt;SecurityMasterCashFlowService&gt; logger, ISecurityForwardCurveProvider? forwardCurves = null, IBondCalculationPolicy? bondPolicy = null, ISecurityCashFlowReceiptStore? receiptStore = null, TimeProvider? clock = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:54](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L54) | Composes declared schedules with the host&#x27;s explicit calendar source. |
-| <code>public Task&lt;SecurityCashFlowSourceDto?&gt; GetCashFlowSourceAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:83](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L83) |  |
-| <code>public async Task UpsertCashFlowSourceAsync(UpsertCashFlowSourceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:86](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L86) |  |
-| <code>public Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:112](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L112) |  |
-| <code>public async Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsOfAsync(Guid securityId, StructuredCashFlowScenario scenario, DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:116](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L116) |  |
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.DeclaredBondLeg.cs:8](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.DeclaredBondLeg.cs#L8).
-
-```csharp
-public sealed partial class SecurityMasterCashFlowService
-```
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.DeclaredConventions.cs:22](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.DeclaredConventions.cs#L22).
-
-The declared mode of the calculated projection (ADR-025): a record whose declared schedule conventions ScheduleSpecFactory maps to a ScheduleSpec projects the periods ScheduleGenerator generates, accrues each through ScheduleDayCount with its period context, and carries StructuredCashFlowScheduleEvidence. Coupon, face, factor and day count still come from StructuredCashFlowTermsResolver. Explicit principal rows retain their cash dates; otherwise principal follows the bullet, sinker and asserted-bullet rules of the legacy walk.
-
-```csharp
-public sealed partial class SecurityMasterCashFlowService
-```
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.FactorAccrual.cs:5](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.FactorAccrual.cs#L5).
-
-```csharp
-public sealed partial class SecurityMasterCashFlowService
-```
-
-## SecurityMasterClassificationDriftReportService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterClassificationDriftReportService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterClassificationDriftReportService.cs:20](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterClassificationDriftReportService.cs#L20).
-
-Builds the classification drift report: every active security whose latest retained event recorded an asset class or family that the current taxonomy now derives differently. This is the governed record of a taxonomy revision. Classification is derived on read from the F# AssetClassRegistry, so current projections already carry the new labels and no stored row needs rewriting; retained events are append-only and keep the labels they were written with. The report lists which securities those are, so an operator can evidence the change. Nothing is written.
-
-```csharp
-public sealed class SecurityMasterClassificationDriftReportService : ISecurityMasterClassificationDriftReportService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterClassificationDriftReportService(ISecurityMasterStore securityStore, ISecurityMasterEventStore eventStore, ILogger&lt;SecurityMasterClassificationDriftReportService&gt; logger, TimeProvider? timeProvider = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterClassificationDriftReportService.cs:27](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterClassificationDriftReportService.cs#L27) |  |
-| <code>public async Task&lt;SecurityClassificationDriftReportDto&gt; BuildReportAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterClassificationDriftReportService.cs:39](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterClassificationDriftReportService.cs#L39) |  |

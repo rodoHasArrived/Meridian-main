@@ -32,6 +32,13 @@ public sealed class QualityMonitoringPublisher : IMarketEventPublisher, IAsyncDi
     private readonly IMarketEventPublisher _inner;
     private readonly DataQualityMonitoringService _quality;
     private readonly DataFreshnessSlaMonitor? _freshness;
+    private readonly Meridian.DataIntegration.Monitoring.ProviderLatencyService? _latency;
+    private long _latencyCandidates;
+
+    // One in LatencySampleStride observed samples feeds provider latency. The tracker locks and
+    // keeps a rolling sample window, so recording every sample would slow the quality consumer
+    // and make it drop data-quality samples under load; a sixteenth is ample for percentiles.
+    private const long LatencySampleStride = 16;
     private readonly ILogger<QualityMonitoringPublisher> _logger;
     private readonly Channel<MarketEvent> _samples;
     private readonly Task _consumer;
@@ -47,11 +54,13 @@ public sealed class QualityMonitoringPublisher : IMarketEventPublisher, IAsyncDi
         DataQualityMonitoringService quality,
         ILogger<QualityMonitoringPublisher>? logger = null,
         int sampleCapacity = DefaultSampleCapacity,
-        DataFreshnessSlaMonitor? freshness = null)
+        DataFreshnessSlaMonitor? freshness = null,
+        Meridian.DataIntegration.Monitoring.ProviderLatencyService? latency = null)
     {
         _inner = inner ?? throw new ArgumentNullException(nameof(inner));
         _quality = quality ?? throw new ArgumentNullException(nameof(quality));
         _freshness = freshness;
+        _latency = latency;
         _logger = logger ?? NullLogger<QualityMonitoringPublisher>.Instance;
 
         if (sampleCapacity < 1)
@@ -165,6 +174,17 @@ public sealed class QualityMonitoringPublisher : IMarketEventPublisher, IAsyncDi
                     evt.EstimatedLatencyMs);
                 Interlocked.Increment(ref _quotesObserved);
                 break;
+
+            default:
+                return;
+        }
+
+        // Runs on the single sample consumer, never on the publish path.
+        if (_latency is not null
+            && evt.EstimatedLatencyMs is { } latencyMs
+            && ++_latencyCandidates % LatencySampleStride == 0)
+        {
+            _latency.RecordLatency(evt.Source, latencyMs, evt.EffectiveSymbol);
         }
     }
 

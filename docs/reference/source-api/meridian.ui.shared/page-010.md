@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CapitalCallNoticeRecipientBinding
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallNoticeRecipientBinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:15](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L15).
+
+Deployment-owned investor-to-recipient mapping; investor IDs are never assumed to be user IDs.
+
+```csharp
+public sealed record CapitalCallNoticeRecipientBinding(string TenantId, string CompanyId, string FundProfileId, string InvestorId, string RecipientPrincipalId, string? ReviewGroupPrincipalId = null);
+```
+
+## CapitalCallNoticeReportingService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallNoticeReportingService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:136](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L136).
+
+Creates a governed Draft notice; approval, release, grants, and delivery use existing Reporting controls.
+
+```csharp
+public sealed class CapitalCallNoticeReportingService(CapitalCallNoticeSourceValidator source, ILedgerJournalStore journals, ReportingRunCommandService reporting, IReportingRunStore? runStore = null, IReportingGovernanceRepository? governance = null, IReportingDeliveryStore? deliveries = null, IReportingAuthoritativeSource? authoritativeSource = null, IReportingReconciliationEvidenceRetentionStore? reconciliationRetention = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string TemplateId = &quot;capital-call-notice&quot;;</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:146](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L146) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;PrivateCapitalNoticeSummaryDto&gt;&gt; ReadNoticeSummariesAsync(PrivateCapitalScopeDto scope, ReportAccessQueryContext access, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:150](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L150) | Projects retained notice associations; callers cannot attach an arbitrary reporting run to a call. |
+| <code>public async Task&lt;ReportingRunResultDto&gt; GenerateAsync(PrivateCapitalScopeDto scope, string callId, string investorId, Guid operationId, string actor, ReportAccessQueryContext access, ReportingGovernanceCallerContext caller, string? commitmentId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:206](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L206) |  |
+
 ## CapitalCallNoticeSourceValidator
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallNoticeSourceValidator</code>. Kind: `class`.
@@ -901,27 +933,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;DemoTenantProvisioningReport&gt; ProvisionAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs:38](../../../../src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs#L38) |  |
-
-## DemoTenantProvisioningReport
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantProvisioningReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs:463](../../../../src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs#L463).
-
-Summary of what the demo-tenant provisioning step wrote. The Loaded flags report whether each surface is present in its desk store after provisioning (freshly seeded or already there), which is what onboarding advertises — distinct from ReconciliationBreaksSeeded, which counts only the breaks created on this run.
-
-```csharp
-public sealed record DemoTenantProvisioningReport(int ReconciliationBreaksSeeded, bool ReconciliationLoaded, bool StrategyRunLoaded, IReadOnlyList<string> Warnings, bool FundAccountLoaded = false, bool PortfolioPositionsLoaded = false, int JournalDraftsSeeded = 0, bool ReportPackLoaded = false);
-```
-
-## DemoWorkspaceResetReport
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DemoWorkspaceResetReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:425](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L425).
-
-Outcome of tearing down the demo workspace.
-
-```csharp
-public sealed record DemoWorkspaceResetReport(string DemoRoot, bool Deleted);
-```

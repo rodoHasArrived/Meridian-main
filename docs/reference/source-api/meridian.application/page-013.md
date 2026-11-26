@@ -6,6 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AuthoritativeScopeFanOutService
+
+Qualified name: <code>Meridian.Application.Tenancy.AuthoritativeScopeFanOutService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs:20](../../../../src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs#L20).
+
+Composes the registered IScopeAssignmentProvider authorities into one fan-out answer. The composition rule is unanimity, not union: the result is authoritative only when every registered provider reported that it saw the whole of its own slice. A union over &quot;whichever authorities happened to answer&quot; is precisely the failure this service exists to prevent — it yields a confident-looking affected set that silently omits the scopes the unavailable authority owned, and a caller acting on it would apply a decision to some affected tenants and not others. Composing zero providers is likewise not an empty affected set. It is an unanswerable question, and is reported as such.
+
+```csharp
+public sealed class AuthoritativeScopeFanOutService : IAuthoritativeScopeFanOutService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AuthoritativeScopeFanOutService(IEnumerable&lt;IScopeAssignmentProvider&gt; providers, ILogger&lt;AuthoritativeScopeFanOutService&gt; logger);</code> | [src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs:31](../../../../src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs#L31) |  |
+| <code>public async Task&lt;ScopeFanOutResult&gt; ResolveAffectedScopesAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs:41](../../../../src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs#L41) |  |
+| <code>public async Task&lt;ScopeFanOutResult&gt; ResolveOwnedScopesAsync(string tenantId, string companyId, ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs:105](../../../../src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs#L105) |  |
+
+## FundAccountHoldingScopeAssignmentProvider
+
+Qualified name: <code>Meridian.Application.Tenancy.FundAccountHoldingScopeAssignmentProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:25](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L25).
+
+Resolves affected accounting scopes from custodied holdings: an account that held the security on the effective date is a scope the fact reaches. Custodian position lines are the authoritative holdings record here because they are externally sourced and account-keyed — they say who actually held the security, rather than who was configured to. The account row supplies the narrow scope (fund, portfolio, custody sub-account, ledger reference, functional currency), and IFundProfileTenancyRegistry supplies the owning tenant/company. Attribution is all-or-nothing. A holding this provider can see but cannot key to an owning tenant — an account with no fund, or a fund the registry has never bound — makes the whole slice non-authoritative. Dropping such a holding would under-report the affected set, and guessing an owner for it is exactly the defaulting that fail-closed tenancy forbids.
+
+```csharp
+public sealed class FundAccountHoldingScopeAssignmentProvider : IScopeAssignmentProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Authority = &quot;fund-account-custodied-holdings&quot;;</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:28](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L28) | Stable authority id stamped onto every assignment this provider asserts. |
+| <code>public FundAccountHoldingScopeAssignmentProvider(IFundAccountStore? accounts, IFundProfileTenancyRegistry? tenancy, ILogger&lt;FundAccountHoldingScopeAssignmentProvider&gt; logger);</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:34](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L34) |  |
+| <code>public string AuthorityId =&gt; …;</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:45](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L45) |  |
+| <code>public async Task&lt;ScopeAssignmentProviderResult&gt; ResolveAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:48](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L48) |  |
+
 ## LocalTenantMigrationGate
 
 Qualified name: <code>Meridian.Application.Tenancy.LocalTenantMigrationGate</code>. Kind: `class`.
@@ -253,24 +294,24 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const double HighDropRateThreshold = 5.0;</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:39](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L39) |  |
-| <code>public const double CriticalDropRateThreshold = 20.0;</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:40](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L40) |  |
-| <code>public const int StaleDataThresholdSeconds = 60;</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:41](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L41) |  |
-| <code>public StatusEndpointHandlers(Func&lt;MetricsSnapshot&gt; metricsProvider, Func&lt;PipelineStatistics&gt; pipelineProvider, Func&lt;IReadOnlyList&lt;DepthIntegrityEvent&gt;&gt; integrityProvider, Func&lt;ErrorRingBuffer?&gt;? errorBufferProvider = null, DateTimeOffset? startTime = null, Func&lt;DegradedModeStatus?&gt;? degradedModeProvider = null);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:43](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L43) |  |
-| <code>public void RegisterExtendedProviders(Func&lt;Task&lt;DetailedHealthReport&gt;&gt;? detailedHealth = null, Func&lt;BackpressureStatus&gt;? backpressure = null, Func&lt;ProviderLatencySummary&gt;? providerLatency = null, Func&lt;ConnectionHealthSnapshot&gt;? connectionHealth = null);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:62](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L62) | Registers extended providers for detailed health, backpressure, and provider latency endpoints. |
-| <code>public TimeSpan Uptime =&gt; …;</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:77](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L77) | Gets the current uptime. |
-| <code>public HealthCheckResponse GetHealthCheck();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:82](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L82) | Generates a comprehensive health check response. |
-| <code>public int GetHealthStatusCode(HealthCheckResponse response);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:234](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L234) | Gets the HTTP status code for a health check response. |
-| <code>public (bool IsReady, string Message) CheckReadiness();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:248](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L248) | Checks if the service is ready to receive traffic. |
-| <code>public StatusResponse GetStatus();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:258](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L258) | Gets the full status response. |
-| <code>public async Task&lt;string&gt; GetPrometheusMetricsAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:319](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L319) | Gets Prometheus metrics in text format, covering both the legacy hand-written series and the prometheus-net default registry. |
-| <code>public string GetPrometheusMetrics();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:345](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L345) | Gets the legacy hand-written Prometheus series in text format. |
-| <code>public ErrorsResponseDto GetErrors(int count = 10, string? levelFilter = null, string? symbolFilter = null);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:395](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L395) | Gets the errors response with optional filtering. |
-| <code>public BackpressureStatusDto GetBackpressure();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:457](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L457) | Gets the backpressure status. |
-| <code>public (ProviderLatencySummaryDto? Summary, string? Error) GetProviderLatency();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:501](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L501) | Gets provider latency summary. |
-| <code>public (ConnectionHealthSnapshotDto? Snapshot, string? Error) GetConnectionHealth();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:536](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L536) | Gets connection health snapshot. |
-| <code>public async Task&lt;(DetailedHealthReport? Report, string? Error)&gt; GetDetailedHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:570](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L570) | Gets detailed health report (async). |
-| <code>public static IReadOnlyList&lt;BackfillProviderInfo&gt; GetBackfillProviderInfo();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:591](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L591) | Gets the list of available backfill providers (static info). |
+| <code>public const double HighDropRateThreshold = 5.0;</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:40](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L40) |  |
+| <code>public const double CriticalDropRateThreshold = 20.0;</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:41](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L41) |  |
+| <code>public const int StaleDataThresholdSeconds = 60;</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:42](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L42) |  |
+| <code>public StatusEndpointHandlers(Func&lt;MetricsSnapshot&gt; metricsProvider, Func&lt;PipelineStatistics&gt; pipelineProvider, Func&lt;IReadOnlyList&lt;DepthIntegrityEvent&gt;&gt; integrityProvider, Func&lt;ErrorRingBuffer?&gt;? errorBufferProvider = null, DateTimeOffset? startTime = null, Func&lt;DegradedModeStatus?&gt;? degradedModeProvider = null);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:44](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L44) |  |
+| <code>public void RegisterExtendedProviders(Func&lt;Task&lt;DetailedHealthReport&gt;&gt;? detailedHealth = null, Func&lt;BackpressureStatus&gt;? backpressure = null, Func&lt;ProviderLatencySummary&gt;? providerLatency = null, Func&lt;ConnectionHealthSnapshot&gt;? connectionHealth = null, Func&lt;IReadOnlyList&lt;DiskSpaceInfo&gt;&gt;? diskSpace = null);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:63](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L63) | Registers extended providers for detailed health, backpressure, and provider latency endpoints. |
+| <code>public TimeSpan Uptime =&gt; …;</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:80](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L80) | Gets the current uptime. |
+| <code>public HealthCheckResponse GetHealthCheck();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:85](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L85) | Generates a comprehensive health check response. |
+| <code>public int GetHealthStatusCode(HealthCheckResponse response);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:237](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L237) | Gets the HTTP status code for a health check response. |
+| <code>public (bool IsReady, string Message) CheckReadiness();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:251](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L251) | Checks if the service is ready to receive traffic. |
+| <code>public StatusResponse GetStatus();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:261](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L261) | Gets the full status response. |
+| <code>public async Task&lt;string&gt; GetPrometheusMetricsAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:322](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L322) | Gets Prometheus metrics in text format, covering both the legacy hand-written series and the prometheus-net default registry. |
+| <code>public string GetPrometheusMetrics();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:351](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L351) | Gets the legacy hand-written Prometheus series in text format. |
+| <code>public ErrorsResponseDto GetErrors(int count = 10, string? levelFilter = null, string? symbolFilter = null);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:401](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L401) | Gets the errors response with optional filtering. |
+| <code>public BackpressureStatusDto GetBackpressure();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:463](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L463) | Gets the backpressure status. |
+| <code>public (ProviderLatencySummaryDto? Summary, string? Error) GetProviderLatency();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:507](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L507) | Gets provider latency summary. |
+| <code>public (ConnectionHealthSnapshotDto? Snapshot, string? Error) GetConnectionHealth();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:542](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L542) | Gets connection health snapshot. |
+| <code>public async Task&lt;(DetailedHealthReport? Report, string? Error)&gt; GetDetailedHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:576](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L576) | Gets detailed health report (async). |
+| <code>public static IReadOnlyList&lt;BackfillProviderInfo&gt; GetBackfillProviderInfo();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:597](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L597) | Gets the list of available backfill providers (static info). |
 
 ## IWizardStep
 

@@ -155,4 +155,105 @@ public sealed class PrometheusExporterTests
         exposition.Should().StartWith(legacy,
             because: "the registry is appended, so existing scrapers see unchanged leading content");
     }
+
+    [Fact]
+    public async Task GetPrometheusMetricsAsync_ExportsTheLivePipelineBacklogFromTheScrape()
+    {
+        // Queue fullness, faulted consumers and flush age used to reach only the /status JSON,
+        // so no alert could watch the backlog that precedes drops. The scrape now reads them.
+        var handlers = new StatusEndpointHandlers(
+            () => new MetricsSnapshot(),
+            () => new PipelineStatistics(
+                PublishedCount: 100, DroppedCount: 0, ConsumedCount: 20, CurrentQueueSize: 80,
+                PeakQueueSize: 90, QueueCapacity: 100, QueueUtilization: 80, AverageProcessingTimeUs: 1,
+                TimeSinceLastFlush: TimeSpan.FromSeconds(12), Timestamp: DateTimeOffset.UtcNow),
+            () => Array.Empty<DepthIntegrityEvent>());
+
+        var exposition = await handlers.GetPrometheusMetricsAsync();
+
+        foreach (var family in new[]
+                 {
+                     "mdc_pipeline_queue_depth", "mdc_pipeline_queue_capacity",
+                     "mdc_pipeline_queue_utilization_ratio", "mdc_pipeline_peak_queue_depth",
+                     "mdc_pipeline_seconds_since_last_flush", "mdc_pipeline_consumers_active",
+                     "mdc_pipeline_consumers_faulted", "mdc_pipeline_consumer_failures_total"
+                 })
+        {
+            exposition.Should().Contain($"{family}{{pipeline=\"live\"}}",
+                because: $"{family} must be served for the live pipeline on every scrape");
+        }
+    }
+
+    [Fact]
+    public async Task UpdatePipelineMetrics_ExportsBacklogAndConsumerHealthValues()
+    {
+        // A unique label keeps parallel scrapes of the shared "live" series out of this assertion.
+        var pipeline = "test-" + Guid.NewGuid().ToString("N");
+        var statistics = new PipelineStatistics(
+            PublishedCount: 1_000, DroppedCount: 0, ConsumedCount: 925, CurrentQueueSize: 75,
+            PeakQueueSize: 95, QueueCapacity: 100, QueueUtilization: 75, AverageProcessingTimeUs: 1,
+            TimeSinceLastFlush: TimeSpan.FromSeconds(42), Timestamp: DateTimeOffset.UtcNow,
+            ConsumerCount: 2, ActiveConsumers: 1, FaultedConsumers: 1, ConsumerIterationFailures: 3);
+
+        Meridian.Application.Monitoring.PrometheusMetrics.UpdatePipelineMetrics(statistics, pipeline);
+        var series = await ReadSeriesAsync(pipeline);
+
+        series["mdc_pipeline_queue_depth"].Should().Be(75);
+        series["mdc_pipeline_queue_capacity"].Should().Be(100);
+        series["mdc_pipeline_queue_utilization_ratio"].Should().Be(0.75,
+            because: "the percentage from PipelineStatistics is exported as a 0-1 ratio");
+        series["mdc_pipeline_peak_queue_depth"].Should().Be(95);
+        series["mdc_pipeline_seconds_since_last_flush"].Should().Be(42);
+        series["mdc_pipeline_consumers_active"].Should().Be(1);
+        series["mdc_pipeline_consumers_faulted"].Should().Be(1);
+        series["mdc_pipeline_consumer_failures_total"].Should().Be(3);
+    }
+
+    [Fact]
+    public async Task UpdatePipelineMetrics_KeepsConsumerFailuresMonotonicAcrossAPipelineRebuild()
+    {
+        // A rebuilt pipeline starts its own failure count at zero; the exported counter must not
+        // go backwards (rate() would read a reset as a huge negative spike or drop the sample).
+        var pipeline = "test-" + Guid.NewGuid().ToString("N");
+
+        Meridian.Application.Monitoring.PrometheusMetrics.UpdatePipelineMetrics(
+            new PipelineStatistics() with { ConsumerIterationFailures = 4, QueueCapacity = 10 }, pipeline);
+        Meridian.Application.Monitoring.PrometheusMetrics.UpdatePipelineMetrics(
+            new PipelineStatistics() with { ConsumerIterationFailures = 1, QueueCapacity = 10 }, pipeline);
+
+        (await ReadSeriesAsync(pipeline))["mdc_pipeline_consumer_failures_total"].Should().Be(5);
+    }
+
+    [Fact]
+    public async Task GetPrometheusMetricsAsync_ExportsFreeAndTotalBytesForEachMonitoredPath()
+    {
+        var path = "/test-volume-" + Guid.NewGuid().ToString("N");
+        var handlers = CreateHandlers();
+        handlers.RegisterExtendedProviders(diskSpace: () =>
+        [
+            new Meridian.Platform.Diagnostics.DiskSpaceInfo(path, "/", TotalSpaceGb: 100, FreeSpaceGb: 1.5,
+                UsedSpaceGb: 98.5, UsedPercent: 98.5, IsCritical: true, IsWarning: true)
+        ]);
+
+        var exposition = await handlers.GetPrometheusMetricsAsync();
+
+        var lines = exposition.Split('\n');
+        lines.Should().Contain($"mdc_disk_free_bytes{{path=\"{path}\"}} {1.5 * 1024 * 1024 * 1024}");
+        lines.Should().Contain($"mdc_disk_total_bytes{{path=\"{path}\"}} {100L * 1024 * 1024 * 1024}");
+    }
+
+    private static async Task<Dictionary<string, double>> ReadSeriesAsync(string pipeline)
+    {
+        using var buffer = new MemoryStream();
+        await Prometheus.Metrics.DefaultRegistry.CollectAndExportAsTextAsync(buffer);
+        var text = System.Text.Encoding.UTF8.GetString(buffer.ToArray());
+        var marker = $"{{pipeline=\"{pipeline}\"}} ";
+
+        return text.Split('\n')
+            .Where(line => line.Contains(marker, StringComparison.Ordinal))
+            .ToDictionary(
+                line => line[..line.IndexOf('{')],
+                line => double.Parse(line[(line.IndexOf(marker, StringComparison.Ordinal) + marker.Length)..],
+                    System.Globalization.CultureInfo.InvariantCulture));
+    }
 }

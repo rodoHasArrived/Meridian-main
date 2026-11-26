@@ -48,6 +48,45 @@ Request DTO for report export.
 public record ReportExportRequest(string? Date, string? Format);
 ```
 
+## RequestTimingMiddleware
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.RequestTimingMiddleware</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs#L24).
+
+Times every HTTP request into mdc_http_request_duration_seconds and logs requests that exceed a threshold, so slow workstation reports and API calls are measurable without enabling OpenTelemetry tracing.
+
+```csharp
+public sealed class RequestTimingMiddleware
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string UnmatchedRoute = &quot;unmatched&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs:27](../../../../src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs#L27) | The route label for requests that matched no endpoint. |
+| <code>public RequestTimingMiddleware(RequestDelegate next, TimeSpan slowRequestThreshold, ILogger&lt;RequestTimingMiddleware&gt;? logger = null);</code> | [src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs:46](../../../../src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs#L46) | Creates the middleware. |
+| <code>public async Task InvokeAsync(HttpContext context);</code> | [src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs:54](../../../../src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs#L54) | Times the request. |
+| <code>public const string OtherMethod = &quot;OTHER&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs:92](../../../../src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs#L92) | The method label for methods outside the standard set. |
+
+## RequestTimingMiddlewareExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.RequestTimingMiddlewareExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs:116](../../../../src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs#L116).
+
+Registration for RequestTimingMiddleware.
+
+```csharp
+public static class RequestTimingMiddlewareExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IApplicationBuilder UseRequestTiming(this IApplicationBuilder app, TimeSpan slowRequestThreshold);</code> | [src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs:122](../../../../src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs#L122) | Adds request timing. Place it early, after the exception handler, so the measured duration covers authentication, rate limiting and the endpoint itself. |
+
 ## ResilienceEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ResilienceEndpoints</code>. Kind: `class`.
@@ -1217,34 +1256,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static RouteGroupBuilder RequireWorkstationTenantScope(this RouteGroupBuilder group);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:146](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L146) |  |
 | <code>public static RouteHandlerBuilder RequireWorkstationTenantScope(this RouteHandlerBuilder builder);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:153](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L153) |  |
-
-## WorkstationTenantScopeMetadata
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationTenantScopeMetadata</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:137](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L137).
-
-Marks endpoints that require an authenticated workstation tenant scope.
-
-```csharp
-public sealed class WorkstationTenantScopeMetadata;
-```
-
-## AccountCashForecastEvidenceAdapter
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastEvidenceAdapter</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L37).
-
-Exact supported source economics and accepted review, scoped to a single account/book.
-
-```csharp
-public sealed class AccountCashForecastEvidenceAdapter(IEvidenceArtifactStore store)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task VerifyMonitoringAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:47](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L47) |  |
-| <code>public async Task VerifyAsync(AccountCashForecastRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:71](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L71) |  |
