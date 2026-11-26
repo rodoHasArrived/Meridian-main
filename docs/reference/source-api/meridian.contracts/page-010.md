@@ -6,61 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## AppendAssetAccountingLifecycleStageRequestDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:279](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L279).
-
-Evidence-only append for post-journal lifecycle stages. Posted impact cannot be supplied or changed through this command.
-
-```csharp
-public sealed record AppendAssetAccountingLifecycleStageRequestDto(Guid EventId, long EventVersion, AssetAccountingLifecycleStageDto Stage, long ExpectedSpineVersion, long ExpectedBookPositionVersion, string FundProfileId, string Actor, DateTimeOffset AttestedAtUtc, string ReferenceId, IReadOnlyList<RetainedEvidenceIdentityDto>? Evidence = null, string? Notes = null, string? TenantId = null, string? CompanyId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; Evidence { get; init; } = Evidence??[];</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:294](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L294) |  |
-
-## AssetAccountingCorrectionReferenceDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:170](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L170).
-
-Typed immutable lineage to the posted event outcome being corrected.
-
-```csharp
-public sealed record AssetAccountingCorrectionReferenceDto(Guid EventId, long EventVersion, Guid PostedJournalEntryId, Guid LedgerBookId, Guid PeriodId, AccountingBasisKindDto AccountingBasis, Guid? TaxLotMutationBatchId = null);
-```
-
-## AssetAccountingEventKindDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:14](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L14).
-
-Canonical accounting event classes owned by the Asset Accounting Event Spine. These values describe economic purpose; they are not posting statuses.
-
-```csharp
-public enum AssetAccountingEventKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Acquisition = 0</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:16](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L16) |  |
-| <code>Capitalization = 1</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:17](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L17) |  |
-| <code>Valuation = 2</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:18](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L18) |  |
-| <code>Income = 3</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:19](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L19) |  |
-| <code>CorporateAction = 4</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:20](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L20) |  |
-| <code>Impairment = 5</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:21](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L21) |  |
-| <code>DepreciationAmortization = 6</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:22](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L22) |  |
-| <code>Disposal = 7</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:23](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L23) |  |
-
 ## AssetAccountingEventScopeDto
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto</code>. Kind: `record`.
@@ -815,4 +760,36 @@ Posted journal evidence linked to a receipt allocation. Drafts are never posting
 
 ```csharp
 public sealed record BookReceiptPostingDto(string PostingId, string ReceiptId, string ObligationKey, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Amount, string Currency, string JournalEntryId, DateOnly EffectiveDate, bool IsReversed, IReadOnlyList<string> EvidenceLinks, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? JournalCashAmount = null, bool IsInferredAllocation = false);
+```
+
+## BookReceiptQueryDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptQueryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:8](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L8).
+
+```csharp
+public sealed record BookReceiptQueryDto(BookReceiptScopeDto Scope, DateOnly AsOfDate);
+```
+
+## BookReceiptQueueItemDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptQueueItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:87](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L87).
+
+```csharp
+public sealed record BookReceiptQueueItemDto(string ObligationKey, Guid PositionId, Guid SecurityId, string DisplayName, string FlowType, DateOnly DueDate, string Currency, string Status, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal ExpectedAmount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal ReceivedAmount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal PostedAmount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal RemainingAmount, int AgingDays, string? Owner, string? ExceptionId, bool EvidenceComplete, IReadOnlyList<string> EvidenceIssues, IReadOnlyList<string> EvidenceLinks, IReadOnlyList<BookReceiptExpectationVersionDto> ExpectationHistory, IReadOnlyList<BookReceiptDto> Receipts, IReadOnlyList<BookReceiptPostingDto> Postings);
+```
+
+## BookReceiptRunDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptRunDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:115](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L115).
+
+Immutable daily observation. Currency amounts never imply an FX conversion.
+
+```csharp
+public sealed record BookReceiptRunDto(string RunId, string EngineVersion, BookReceiptScopeDto Scope, DateOnly AsOfDate, string InputHash, IReadOnlyList<BookReceiptQueueItemDto> Items, IReadOnlyList<BookReceiptCoverageDto> Coverage, BookReceiptSourceSnapshotDto SourceSnapshot, long Sequence = 0);
 ```

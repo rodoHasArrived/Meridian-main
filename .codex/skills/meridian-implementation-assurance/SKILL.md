@@ -57,8 +57,7 @@ Non-trigger examples:
   and test gaps from `meridian-test-writer`.
 - Hand provider-specific contract work to `meridian-provider-builder` before final assurance when
   the provider adapter or manifest is still being built.
-- Hand documentation-only edits to `meridian-docs` and archive classification to
-  `meridian-archive-organizer` when those are the main deliverables.
+- Hand documentation-only edits to `meridian-docs` when those are the main deliverable.
 
 ## Workflow
 

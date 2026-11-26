@@ -6,7 +6,7 @@
 **Owner:** core-team
 **Reviewed:** 2026-09-27
 **Baseline:** `main` at `5980fa00`
-**Supersedes:** [2026-09-23](../../../archive/docs/plans/next-work-determination-2026-09-23.md)
+**Supersedes:** [2026-09-23](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/next-work-determination-2026-09-23.md)
 **Method:** read the roadmap registry (`docs/roadmap/data/*.yml`), the production-readiness tracker
 (`docs/product/implementation-todo-list.md`), the decision log, and live GitHub Actions and
 pull-request state; verified each named roadmap remainder against current source rather than against

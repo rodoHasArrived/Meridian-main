@@ -29,4 +29,4 @@ state. Plans are working inputs, not status sources; live roadmap status stays i
 | [Browser Workstation UX Program](browser-workstation-ux-program.md) | Delivery contract for the shared browser shell, authorized triage, browsing, investigation and source-backed charts; integrated with Design System 4.3 |
 
 When a plan is finished or superseded, move it to
-[`archive/docs/plans/`](../../../archive/docs/plans/README.md) and update the register.
+[`archive/docs/plans/`](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/README.md) and update the register.

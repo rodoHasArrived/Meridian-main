@@ -37,8 +37,7 @@
   "build": {
     "content": [
       { "files": [ "docs/**/*.md", "docs/**/toc.yml" ], "exclude": [ "docs/docfx/**", "docs/_site/**" ], "src": "." },
-      { "files": [ "docs/docfx/api/**/*.yml", "docs/docfx/api/index.md", "docs/docfx/README.md" ], "src": "." },
-      { "files": [ "archive/docs/**/*.md" ], "src": "." }
+      { "files": [ "docs/docfx/api/**/*.yml", "docs/docfx/api/index.md", "docs/docfx/README.md" ], "src": "." }
     ],
     "resource": [
       {
@@ -52,10 +51,6 @@
           "docs/source/data/*.yml"
         ],
         "exclude": [ "docs/docfx/**", "docs/_site/**" ],
-        "src": "."
-      },
-      {
-        "files": [ "archive/docs/**/*.json", "archive/docs/**/*.json.gz" ],
         "src": "."
       }
     ],

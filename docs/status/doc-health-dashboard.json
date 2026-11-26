@@ -1,13 +1,12 @@
 {
-  "total_files": 1304,
-  "orphaned_count": 394,
+  "total_files": 1288,
+  "orphaned_count": 379,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
-  "health_score": 85,
-  "signal_digest": "sha256:83b65a239f2a2e8ceea148d22a90b1063fb495bbbb3b0132c9e4d73737e1a33d",
+  "health_score": 86,
+  "signal_digest": "sha256:ac8c621f9cc5297bb585c7c90e2f0e10a89d713e3058397e40ae223446384207",
   "orphaned_files": [
-    ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
     ".agents/skills/meridian-browser-workstation/SKILL.md",
@@ -385,20 +384,6 @@
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/local-first-optimized-interrupted/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "docs/testing/reporting-followups-2026-10-28.md",
     "docs/testing/workflow-consolidation-2026-10-28.md",
-    "plugins/frontend-web-dev/agents/electron-angular-native.md",
-    "plugins/frontend-web-dev/agents/expert-react-frontend-engineer.md",
-    "plugins/frontend-web-dev/skills/playwright-explore-website/SKILL.md",
-    "plugins/frontend-web-dev/skills/playwright-generate-test/SKILL.md",
-    "plugins/security-best-practices/skills/ai-prompt-engineering-safety-review/SKILL.md",
-    "plugins/testing-automation/agents/playwright-tester.md",
-    "plugins/testing-automation/agents/tdd-green.md",
-    "plugins/testing-automation/agents/tdd-red.md",
-    "plugins/testing-automation/agents/tdd-refactor.md",
-    "plugins/testing-automation/skills/ai-prompt-engineering-safety-review/SKILL.md",
-    "plugins/testing-automation/skills/csharp-nunit/SKILL.md",
-    "plugins/testing-automation/skills/java-junit/SKILL.md",
-    "plugins/testing-automation/skills/playwright-explore-website/SKILL.md",
-    "plugins/testing-automation/skills/playwright-generate-test/SKILL.md",
     "tests/fixtures/corporate-actions/golden/KNOWN-DEFECTS.md",
     "tests/setup-script-tests.md"
   ],
@@ -641,48 +626,6 @@
       "path": ".agents/skills/_shared/project-context.md",
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": ".agents/skills/meridian-archive-organizer/fixtures/superseded-adr/docs/adr/ADR-015-platform-restructuring.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": ".agents/skills/meridian-archive-organizer/fixtures/superseded-adr/docs/adr/README.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": ".agents/skills/meridian-archive-organizer/fixtures/superseded-adr/docs/generated/repository-structure.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": ".agents/skills/meridian-archive-organizer/references/archive-placement-guide.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": ".agents/skills/meridian-archive-organizer/references/evaluation-harness.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": ".agents/skills/meridian-archive-organizer/SKILL.md",
-      "has_heading": true,
-      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -1278,6 +1221,90 @@
       "path": "docs/adr/_template.md",
       "has_heading": true,
       "todo_count": 4,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/historical/001-provider-abstraction.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/historical/002-tiered-storage-architecture.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/historical/004-async-streaming-patterns.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/historical/005-attribute-based-discovery.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/historical/006-domain-events-polymorphic-payload.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/historical/007-write-ahead-log-durability.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/historical/010-httpclient-factory.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/historical/013-bounded-channel-policy.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/historical/014-json-source-generators.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/historical/015-strategy-execution-contract.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/historical/016-platform-architecture-migration.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/historical/README.md",
+      "has_heading": true,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -2675,13 +2702,6 @@
       "stale": false
     },
     {
-      "path": "docs/engineering/plans/ui-shared-decomposition-plan.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/engineering/plans/web-ui-improvements-implementation-plan-2026-07.md",
       "has_heading": true,
       "todo_count": 0,
@@ -3487,13 +3507,6 @@
       "stale": false
     },
     {
-      "path": "docs/plans/codebase-audit-cleanup-roadmap.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/plans/paper-trading-cockpit-reliability-sprint.md",
       "has_heading": true,
       "todo_count": 0,
@@ -3907,13 +3920,6 @@
       "stale": false
     },
     {
-      "path": "docs/reference/governance-report-packs.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/reference/interactive-brokers-api-compatibility.md",
       "has_heading": true,
       "todo_count": 0,
@@ -3985,13 +3991,6 @@
     },
     {
       "path": "docs/reference/reconciliation-break-taxonomy.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/reference/research-briefing-workflow.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -9172,132 +9171,6 @@
     },
     {
       "path": "Meridian Design System/VISUAL_FOUNDATIONS.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/frontend-web-dev/agents/electron-angular-native.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/frontend-web-dev/agents/expert-react-frontend-engineer.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/frontend-web-dev/README.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/frontend-web-dev/skills/playwright-explore-website/SKILL.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/frontend-web-dev/skills/playwright-generate-test/SKILL.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/README.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/security-best-practices/README.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/security-best-practices/skills/ai-prompt-engineering-safety-review/SKILL.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/testing-automation/agents/playwright-tester.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/testing-automation/agents/tdd-green.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/testing-automation/agents/tdd-red.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/testing-automation/agents/tdd-refactor.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/testing-automation/README.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/testing-automation/skills/ai-prompt-engineering-safety-review/SKILL.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/testing-automation/skills/csharp-nunit/SKILL.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/testing-automation/skills/java-junit/SKILL.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/testing-automation/skills/playwright-explore-website/SKILL.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "plugins/testing-automation/skills/playwright-generate-test/SKILL.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
