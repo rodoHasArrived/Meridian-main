@@ -5663,7 +5663,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "8d39a0241d05b29a6f8988a8aa92014729f9bc65352f7a74ba59c284235851d0",
+  "fingerprint": "4384bc698b76f2460e750e2f546486fe58326da5f9e71ad0622f98b416c3b3d8",
   "foreign_tables": [],
   "functions": [
     {
@@ -16429,7 +16429,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "f1a6df11fa11fb92cb841abc5dbe6dbc1eb191630b11d7dcb1f0ca6c6914bb68",
+      "fingerprint": "5cfc5f675526b00a474e6836658c0a65f02111dea10daa4fe2c333a25ef9fe44",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -16509,6 +16509,23 @@
           "function_signature": "refuse_external_gl_evidence_mutation()",
           "level": "row",
           "name": "external_gl_immutable_mapping",
+          "relation": "external_gl_mapping_profiles",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER external_gl_mapping_no_truncate BEFORE TRUNCATE ON ledger.external_gl_mapping_profiles FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+          "definition_hash": "6cc3d89d62bf8bb8680c91896aa2c5746b3b93f59ee644647befd82a59c120ec",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "451f51f35ae753a30c642f845dea4de89ea9b97005dafa98f3824928deb1450c",
+          "function_schema": "ledger",
+          "function_signature": "refuse_external_gl_evidence_mutation()",
+          "level": "statement",
+          "name": "external_gl_mapping_no_truncate",
           "relation": "external_gl_mapping_profiles",
           "schema": "ledger",
           "timing": "before"
@@ -16731,7 +16748,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "b012c77c59afa722f3a5ce1e188bafc26764b8585c874af356e410141934a39b",
+      "fingerprint": "041964df0d2acfc16868e26f965b2f8fe204e8cd5e5855dd893bfdb36d06083f",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -16773,6 +16790,23 @@
       "security_labels": [],
       "sequence": null,
       "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER external_gl_decision_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_decisions FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+          "definition_hash": "27bf1bb522acd6371ea3f2df7415ee821c7a89dfa81ddd9072041bfef674a2b0",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "33d6a1d6d32408249db34dd4d4d6eac0bd3e57e7a5bda8fcd0dba4baeffb0b96",
+          "function_schema": "ledger",
+          "function_signature": "refuse_external_gl_evidence_mutation()",
+          "level": "statement",
+          "name": "external_gl_decision_no_truncate",
+          "relation": "external_gl_posting_decisions",
+          "schema": "ledger",
+          "timing": "before"
+        },
         {
           "comment": null,
           "definition": "CREATE TRIGGER external_gl_immutable_decision BEFORE DELETE OR UPDATE ON ledger.external_gl_posting_decisions FOR EACH ROW EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
@@ -17567,7 +17601,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "545da76a89a54bfc1922df6ccc915cff91db5b2da9824892dc819143afe7f04d",
+      "fingerprint": "7a0a982a51991b859687dac629de0c4321e5fbeeea3ef302ea20c3112f6ad14b",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -17646,6 +17680,23 @@
           "function_signature": "refuse_external_gl_evidence_mutation()",
           "level": "row",
           "name": "external_gl_immutable_package",
+          "relation": "external_gl_posting_packages",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER external_gl_package_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_packages FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+          "definition_hash": "e5d7b95142733e0c9c222fcaa1d19fa5aa8d14b81dbcafa5b8d8c4552bf708f0",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "4d1c47771fdd2c829ea63887b19198bac0dc40b61508d8d2aa833ea56fc0fbf8",
+          "function_schema": "ledger",
+          "function_signature": "refuse_external_gl_evidence_mutation()",
+          "level": "statement",
+          "name": "external_gl_package_no_truncate",
           "relation": "external_gl_posting_packages",
           "schema": "ledger",
           "timing": "before"
@@ -17794,7 +17845,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "9dbb50b1548416eb3a0a8fea353bf15e1e538e525bfe9cde69e2eecba99fc650",
+      "fingerprint": "9a6324937efa0ef9f794f553986d4733707a502fde927aaa75907b8497ef87d1",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -17872,6 +17923,23 @@
           "function_signature": "refuse_external_gl_evidence_mutation()",
           "level": "row",
           "name": "external_gl_immutable_receipt",
+          "relation": "external_gl_posting_receipts",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER external_gl_receipt_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_receipts FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+          "definition_hash": "4c199d7be768ce37c2ad29edfa37db6b36f8ee9d606854271adf8a165f663e00",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "081b58d15e80424c178412f227a70220f3d1b3dde01e8a571261f0891a03dfe1",
+          "function_schema": "ledger",
+          "function_signature": "refuse_external_gl_evidence_mutation()",
+          "level": "statement",
+          "name": "external_gl_receipt_no_truncate",
           "relation": "external_gl_posting_receipts",
           "schema": "ledger",
           "timing": "before"
@@ -48250,7 +48318,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "f1a6df11fa11fb92cb841abc5dbe6dbc1eb191630b11d7dcb1f0ca6c6914bb68",
+      "fingerprint": "5cfc5f675526b00a474e6836658c0a65f02111dea10daa4fe2c333a25ef9fe44",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -48330,6 +48398,23 @@
           "function_signature": "refuse_external_gl_evidence_mutation()",
           "level": "row",
           "name": "external_gl_immutable_mapping",
+          "relation": "external_gl_mapping_profiles",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER external_gl_mapping_no_truncate BEFORE TRUNCATE ON ledger.external_gl_mapping_profiles FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+          "definition_hash": "6cc3d89d62bf8bb8680c91896aa2c5746b3b93f59ee644647befd82a59c120ec",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "451f51f35ae753a30c642f845dea4de89ea9b97005dafa98f3824928deb1450c",
+          "function_schema": "ledger",
+          "function_signature": "refuse_external_gl_evidence_mutation()",
+          "level": "statement",
+          "name": "external_gl_mapping_no_truncate",
           "relation": "external_gl_mapping_profiles",
           "schema": "ledger",
           "timing": "before"
@@ -48499,7 +48584,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "b012c77c59afa722f3a5ce1e188bafc26764b8585c874af356e410141934a39b",
+      "fingerprint": "041964df0d2acfc16868e26f965b2f8fe204e8cd5e5855dd893bfdb36d06083f",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -48541,6 +48626,23 @@
       "security_labels": [],
       "sequence": null,
       "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER external_gl_decision_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_decisions FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+          "definition_hash": "27bf1bb522acd6371ea3f2df7415ee821c7a89dfa81ddd9072041bfef674a2b0",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "33d6a1d6d32408249db34dd4d4d6eac0bd3e57e7a5bda8fcd0dba4baeffb0b96",
+          "function_schema": "ledger",
+          "function_signature": "refuse_external_gl_evidence_mutation()",
+          "level": "statement",
+          "name": "external_gl_decision_no_truncate",
+          "relation": "external_gl_posting_decisions",
+          "schema": "ledger",
+          "timing": "before"
+        },
         {
           "comment": null,
           "definition": "CREATE TRIGGER external_gl_immutable_decision BEFORE DELETE OR UPDATE ON ledger.external_gl_posting_decisions FOR EACH ROW EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
@@ -49335,7 +49437,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "545da76a89a54bfc1922df6ccc915cff91db5b2da9824892dc819143afe7f04d",
+      "fingerprint": "7a0a982a51991b859687dac629de0c4321e5fbeeea3ef302ea20c3112f6ad14b",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -49414,6 +49516,23 @@
           "function_signature": "refuse_external_gl_evidence_mutation()",
           "level": "row",
           "name": "external_gl_immutable_package",
+          "relation": "external_gl_posting_packages",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER external_gl_package_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_packages FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+          "definition_hash": "e5d7b95142733e0c9c222fcaa1d19fa5aa8d14b81dbcafa5b8d8c4552bf708f0",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "4d1c47771fdd2c829ea63887b19198bac0dc40b61508d8d2aa833ea56fc0fbf8",
+          "function_schema": "ledger",
+          "function_signature": "refuse_external_gl_evidence_mutation()",
+          "level": "statement",
+          "name": "external_gl_package_no_truncate",
           "relation": "external_gl_posting_packages",
           "schema": "ledger",
           "timing": "before"
@@ -49562,7 +49681,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "9dbb50b1548416eb3a0a8fea353bf15e1e538e525bfe9cde69e2eecba99fc650",
+      "fingerprint": "9a6324937efa0ef9f794f553986d4733707a502fde927aaa75907b8497ef87d1",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -49640,6 +49759,23 @@
           "function_signature": "refuse_external_gl_evidence_mutation()",
           "level": "row",
           "name": "external_gl_immutable_receipt",
+          "relation": "external_gl_posting_receipts",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER external_gl_receipt_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_receipts FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+          "definition_hash": "4c199d7be768ce37c2ad29edfa37db6b36f8ee9d606854271adf8a165f663e00",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "081b58d15e80424c178412f227a70220f3d1b3dde01e8a571261f0891a03dfe1",
+          "function_schema": "ledger",
+          "function_signature": "refuse_external_gl_evidence_mutation()",
+          "level": "statement",
+          "name": "external_gl_receipt_no_truncate",
           "relation": "external_gl_posting_receipts",
           "schema": "ledger",
           "timing": "before"
@@ -69752,6 +69888,40 @@
     },
     {
       "comment": null,
+      "definition": "CREATE TRIGGER external_gl_mapping_no_truncate BEFORE TRUNCATE ON ledger.external_gl_mapping_profiles FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+      "definition_hash": "6cc3d89d62bf8bb8680c91896aa2c5746b3b93f59ee644647befd82a59c120ec",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "451f51f35ae753a30c642f845dea4de89ea9b97005dafa98f3824928deb1450c",
+      "function_schema": "ledger",
+      "function_signature": "refuse_external_gl_evidence_mutation()",
+      "level": "statement",
+      "name": "external_gl_mapping_no_truncate",
+      "relation": "external_gl_mapping_profiles",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER external_gl_decision_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_decisions FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+      "definition_hash": "27bf1bb522acd6371ea3f2df7415ee821c7a89dfa81ddd9072041bfef674a2b0",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "33d6a1d6d32408249db34dd4d4d6eac0bd3e57e7a5bda8fcd0dba4baeffb0b96",
+      "function_schema": "ledger",
+      "function_signature": "refuse_external_gl_evidence_mutation()",
+      "level": "statement",
+      "name": "external_gl_decision_no_truncate",
+      "relation": "external_gl_posting_decisions",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
       "definition": "CREATE TRIGGER external_gl_immutable_decision BEFORE DELETE OR UPDATE ON ledger.external_gl_posting_decisions FOR EACH ROW EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
       "definition_hash": "d679156e7bfde5e20631a1eaa18c6ca5a5c2fa4c30f0c504184a20a5c5518e41",
       "enabled": "origin",
@@ -69788,6 +69958,23 @@
     },
     {
       "comment": null,
+      "definition": "CREATE TRIGGER external_gl_package_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_packages FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+      "definition_hash": "e5d7b95142733e0c9c222fcaa1d19fa5aa8d14b81dbcafa5b8d8c4552bf708f0",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "4d1c47771fdd2c829ea63887b19198bac0dc40b61508d8d2aa833ea56fc0fbf8",
+      "function_schema": "ledger",
+      "function_signature": "refuse_external_gl_evidence_mutation()",
+      "level": "statement",
+      "name": "external_gl_package_no_truncate",
+      "relation": "external_gl_posting_packages",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
       "definition": "CREATE TRIGGER external_gl_immutable_receipt BEFORE DELETE OR UPDATE ON ledger.external_gl_posting_receipts FOR EACH ROW EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
       "definition_hash": "f54413b3d6d1a3ffbf2f2e7beb9f238b1f86631841c59d172f804587fb470ad2",
       "enabled": "origin",
@@ -69800,6 +69987,23 @@
       "function_signature": "refuse_external_gl_evidence_mutation()",
       "level": "row",
       "name": "external_gl_immutable_receipt",
+      "relation": "external_gl_posting_receipts",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER external_gl_receipt_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_receipts FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
+      "definition_hash": "4c199d7be768ce37c2ad29edfa37db6b36f8ee9d606854271adf8a165f663e00",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "081b58d15e80424c178412f227a70220f3d1b3dde01e8a571261f0891a03dfe1",
+      "function_schema": "ledger",
+      "function_signature": "refuse_external_gl_evidence_mutation()",
+      "level": "statement",
+      "name": "external_gl_receipt_no_truncate",
       "relation": "external_gl_posting_receipts",
       "schema": "ledger",
       "timing": "before"

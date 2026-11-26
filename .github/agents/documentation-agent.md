@@ -711,7 +711,7 @@ Controls the size of the in-memory buffer before flushing to disk.
 **When adding a new component:**
 
 1. Update `docs/architecture/overview.md` - Add component description
-2. Update `docs/diagrams/c4-level2-containers.dot` - Add container node
+2. Update `docs/diagrams/architecture/c4/c4-level2-containers.dot` - Add container node
 3. Regenerate diagram: `dot -Tpng c4-level2-containers.dot -o c4-level2-containers.png`
 4. Update `docs/architecture/c4-diagrams.md` - Reference new component
 5. Document in `docs/architecture/why-this-architecture.md` if significant design decision

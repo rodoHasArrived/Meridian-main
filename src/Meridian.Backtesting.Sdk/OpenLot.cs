@@ -33,6 +33,11 @@ public sealed record OpenLot(
     string? AccountId = null,
     string? Notes = null) : IUnitizedLot
 {
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? FunctionalCurrency { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SecurityId { get; init; }
+
     private SecurityLotUnitKind _unitKind;
     private decimal _multiplier;
 

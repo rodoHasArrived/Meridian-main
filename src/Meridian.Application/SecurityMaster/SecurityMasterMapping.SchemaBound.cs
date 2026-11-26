@@ -5,7 +5,7 @@ using Meridian.Contracts.SecurityMaster;
 namespace Meridian.Application.SecurityMaster;
 
 // ADR-027 stage 3 (S3-D): the schema-bound decode reader, and the ledger of the reads that stay
-// outside it. The class ledger (SchemaBoundDecodeClasses) lives beside the decode switch.
+// outside it. The class ledger (SchemaBoundDecodeClasses) follows the composed codec contributions.
 internal static partial class SecurityMasterMapping
 {
     /// <summary>

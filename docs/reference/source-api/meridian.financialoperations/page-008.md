@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReconciliationSourceAdapter
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IReconciliationSourceAdapter</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:8](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L8).
+
+Captures a reconciliation source snapshot for a supplied ingestion request.
+
+```csharp
+public interface IReconciliationSourceAdapter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ReconciliationSourceType SourceType { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:10](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L10) |  |
+| <code>Task&lt;DataSourceSnapshot&gt; CaptureSnapshotAsync(ReconciliationIngestionRequest request, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L12) |  |
+
 ## IStatementMatchItem
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementMatchItem</code>. Kind: `interface`.
@@ -860,13 +879,3 @@ Enum declarations:
 | <code>MarketValue</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:22](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L22) |  |
 | <code>Amount</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:23](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L23) |  |
 | <code>ExternalReference</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L24) |  |
-
-## StatementCaseLink
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementCaseLink</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:265](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L265).
-
-```csharp
-public sealed record StatementCaseLink(string CaseId, string RunId, string ImportId, string? BreakId, string SourceRowHash, string? EvidenceUri, DateTimeOffset LinkedAtUtc, string LinkReason);
-```

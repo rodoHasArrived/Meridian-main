@@ -36,17 +36,17 @@ public sealed partial class PostgresDirectLendingStateStore
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText = $"""
-            select reconciliation_run_id, loan_id, projection_run_id, requested_at, completed_at, status
+            select reconciliation_run_id, loan_id, projection_run_id, requested_at, completed_at, status, evidence_json::text
             from {Qualified("reconciliation_run")} where reconciliation_run_id = @run_id;
             """;
         command.Parameters.AddWithValue("run_id", runId);
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         return await reader.ReadAsync(ct).ConfigureAwait(false)
-            ? new ReconciliationRunDto(reader.GetGuid(0), reader.GetGuid(1),
+            ? LoanReconciliationEvidence.Restore(new ReconciliationRunDto(reader.GetGuid(0), reader.GetGuid(1),
                 reader.IsDBNull(2) ? null : reader.GetGuid(2),
                 new DateTimeOffset(reader.GetDateTime(3), TimeSpan.Zero),
                 reader.IsDBNull(4) ? null : new DateTimeOffset(reader.GetDateTime(4), TimeSpan.Zero),
-                reader.GetString(5))
+                reader.GetString(5)), reader.IsDBNull(6) ? null : reader.GetString(6))
             : null;
     }
 }

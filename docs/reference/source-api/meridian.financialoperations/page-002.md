@@ -745,6 +745,32 @@ Declared public members:
 | <code>public static string? VerifyPrincipal(IntercompanyAccrualEvidenceDto evidence, IReadOnlyList&lt;LedgerJournalEntryRecord&gt; principalJournals);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:258](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L258) | Null when posted principal still reads exactly as retained; otherwise why the accrual must be recomputed. A backdated repayment or correction after drafting changes the interest the window should carry. |
 | <code>public static IntercompanyAccrualProposalDto BuildDraft(IntercompanyAccrualRequestDto request, string tenantId, string? companyId, string actor, LedgerBookRecord book, LedgerAccountingPeriod period, ResolvedIntercompanyAccountingArrangementDto posting, IntercompanyAccrualPreviewDto computation, IntercompanyAccrualPrincipalEvidenceDto principal, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; bindings, IReadOnlyList&lt;ChartOfAccountsNodeDto&gt; chart, ConsolidationFxAmountDto? fx, DateTimeOffset now, int generation = 0, IntercompanyAccrualCompoundingEvidenceDto? compounding = null);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:275](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L275) | The source-side draft: the lender debits interest receivable and credits interest income; the borrower debits interest expense and credits interest payable. It is a draft for the source book&#x27;s ordinary review. Its counterpart is produced only by the existing proposal pipeline after the source posts. |
 
+## IntercompanyAgreementWorkQueueService
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyAgreementWorkQueueService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAgreementWorkQueueService.cs:17](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAgreementWorkQueueService.cs#L17).
+
+Durable operator casework over the authorized obligation monitor. Observation and disposition append operational history; they never amend agreements, approve journals, or change close gates.
+
+```csharp
+public sealed partial class IntercompanyAgreementWorkQueueService(IIntercompanyObligationMonitorService monitor, IOperationalCaseHistoryStore history, IIntercompanyAgreementService agreements, ILedgerJournalStore journals, IFundProfileTenancyRegistry ownership, IIntercompanyAgreementAccessAuthority access, TimeProvider? timeProvider = null) : IIntercompanyAgreementWorkQueueService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IntercompanyAgreementWorkQueueDto&gt; GetAsync(IntercompanyAgreementCallContext context, string? companyId, IntercompanyObligationMonitorRequestDto scope, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAgreementWorkQueueService.cs:29](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAgreementWorkQueueService.cs#L29) |  |
+| <code>public async Task&lt;IntercompanyAgreementWorkItemDto&gt; ObserveAsync(IntercompanyAgreementCallContext context, string? companyId, IntercompanyObligationMonitorRequestDto scope, IntercompanyAgreementWorkQueueObserveRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAgreementWorkQueueService.cs:49](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAgreementWorkQueueService.cs#L49) |  |
+| <code>public async Task&lt;IntercompanyAgreementWorkItemDto&gt; UpdateAsync(IntercompanyAgreementCallContext context, string? companyId, IntercompanyObligationMonitorRequestDto scope, IntercompanyAgreementWorkQueueUpdateRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAgreementWorkQueueService.cs:82](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAgreementWorkQueueService.cs#L82) |  |
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAgreementWorkQueueService.History.cs:10](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAgreementWorkQueueService.History.cs#L10).
+
+```csharp
+public sealed partial class IntercompanyAgreementWorkQueueService
+```
+
 ## IntercompanyBalanceConfirmationRules
 
 Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyBalanceConfirmationRules</code>. Kind: `class`.
@@ -909,24 +935,3 @@ Declared public members:
 | <code>public static Guid DraftId(string tenantId, IntercompanyFeeAccrualRequestDto request, int generation = 0) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs:61](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs#L61) | One window of one fee profile in one book has one live draft identity; a recomputation updates it. |
 | <code>public static bool IsProvider(IntercompanyAgreementDraftDto terms, Guid entity);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs:69](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs#L69) | True when the source entity holds the declared service-provider role of the agreement. |
 | <code>public static IntercompanyFeeAccrualProposalDto BuildDraft(IntercompanyFeeAccrualRequestDto request, string tenantId, string? companyId, string actor, LedgerBookRecord book, LedgerAccountingPeriod period, ResolvedIntercompanyAccountingArrangementDto posting, IntercompanyFeeAccrualPreviewDto computation, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; bindings, IReadOnlyList&lt;ChartOfAccountsNodeDto&gt; chart, ConsolidationFxAmountDto? fx, DateTimeOffset now, int generation = 0);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs:81](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs#L81) | The source-side draft: the provider debits its fee receivable and credits fee revenue; the recipient debits fee expense and credits its fee payable. Its counterpart arrives only through the proposal pipeline after posting. |
-
-## IntercompanyJournalFamily
-
-Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyJournalFamily</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:7](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L7).
-
-Indexes actual same-book correction lineage; shared transaction labels never merge unrelated settlements.
-
-```csharp
-public sealed class IntercompanyJournalFamily
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IntercompanyJournalFamily(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, DateOnly asOf);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:12](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L12) |  |
-| <code>public bool Contains(Guid id) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:20](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L20) |  |
-| <code>public IReadOnlyList&lt;LedgerJournalEntryRecord&gt; Resolve(Guid anchor);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:22](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L22) |  |
-| <code>public static DateOnly EffectiveDate(LedgerJournalEntryRecord record) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:50](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L50) |  |

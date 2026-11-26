@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
@@ -18,6 +19,93 @@ namespace Meridian.Tests.Execution;
 public sealed class AutomatedTradeFillAccountingServiceTests
 {
     [Fact]
+    public async Task Canonical_fill_retains_source_quality_snapshot_on_every_journal_and_recovery()
+    {
+        using var fixture = new Fixture();
+        var source = new MarketDataInputEvidence(ProviderId: "alpaca", EventReference: "trade:1",
+            ObservedAt: fixture.Time, DatasetId: "historical-feed", BackfillRevisionId: "retained-revision",
+            Repaired: true, GapFilled: true, RepairReceiptId: "retained-repair", QualityScore: .3,
+            QualityAssessedAt: fixture.Time, QualityThreshold: .9,
+            AssessmentFrom: DateOnly.FromDateTime(fixture.Time.UtcDateTime), AssessmentTo: DateOnly.FromDateTime(fixture.Time.UtcDateTime));
+        var fill = fixture.Fill() with { MarketDataEvidence = [source], Commission = 1m };
+        var first = await fixture.Service.PostAsync(fill, fixture.Context, fixture.SecurityId);
+        foreach (var entry in first)
+            MarketDataInputEvidenceTags.Read(entry.Metadata.Tags).Should().Equal(source);
+
+        var recovered = await fixture.CreateService().TryRecoverCompletedAsync(fill with
+        { MarketDataEvidence = new[] { source } }, fixture.Context);
+        recovered!.Select(entry => entry.JournalEntryId).Should().Equal(first.Select(entry => entry.JournalEntryId));
+        var changed = () => fixture.CreateService().PostAsync(fill with
+        { MarketDataEvidence = [source with { QualityScore = .99 }] }, fixture.Context, fixture.SecurityId);
+        await changed.Should().ThrowAsync<InvalidDataException>().WithMessage("*conflicts*");
+        MarketDataInputEvidenceTags.Read(first[0].Metadata.Tags)[0].QualityScore.Should().Be(.3);
+    }
+
+    [Theory]
+    [InlineData("Contracts", 1)]
+    [InlineData("Shares", 100)]
+    [InlineData(null, 1)]
+    [InlineData("Shares", null)]
+    public async Task Canonical_whitelist_refuses_conflicting_or_partial_native_unit_evidence(string? unit, int? multiplier)
+    {
+        using var fixture = new Fixture();
+        var fill = fixture.Fill() with
+        {
+            AccountingEvidenceVersion = 1,
+            AccountingEvidence = new TradeFillAccountingEvidence(Opening: new SecurityTradePosting(
+                SecurityTradePostingKind.OpenLong, 10m, 1000m))
+            {
+                QuantityUnit = unit is null ? null : Enum.Parse<SecurityLotUnitKind>(unit),
+                LotMultiplier = multiplier is { } value ? value : null
+            }
+        };
+        var attempt = () => fixture.Service.PostAsync(fill, fixture.Context, fixture.SecurityId);
+        await attempt.Should().ThrowAsync<InvalidOperationException>().WithMessage("*paired native share units*");
+        fixture.Commands.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Canonical_trade_and_cost_journals_retain_strategy_run_lineage_after_restart()
+    {
+        using var fixture = new Fixture();
+        var fill = fixture.Fill() with
+        {
+            StrategyId = "strategy-source",
+            RunId = "run-source",
+            AccountingRunId = "run-source",
+            Commission = 1m,
+            Fees = [new("source-fee", "Regulatory", 0.25m, "USD")]
+        };
+        var entries = await fixture.Service.PostAsync(fill, fixture.Context, fixture.SecurityId);
+        entries.Should().OnlyContain(entry => entry.Metadata.StrategyId == "strategy-source"
+            && entry.Metadata.Tags![LedgerQuery.StrategyRunIdTag] == "run-source"
+            && entry.Metadata.Tags![LedgerQuery.AccountingRunIdTag] == "run-source");
+
+        var recovered = await fixture.CreateService().TryRecoverCompletedAsync(fill, fixture.Context);
+        recovered.Should().NotBeNull();
+        recovered!.Select(entry => entry.JournalEntryId).Should().Equal(entries.Select(entry => entry.JournalEntryId));
+        recovered.Should().OnlyContain(entry => entry.Metadata.StrategyId == "strategy-source"
+            && entry.Metadata.Tags![LedgerQuery.StrategyRunIdTag] == "run-source"
+            && entry.Metadata.Tags![LedgerQuery.AccountingRunIdTag] == "run-source");
+        var conflictingRun = () => fixture.CreateService().PostAsync(fill with { RunId = "different-run", AccountingRunId = "different-run" },
+            fixture.Context, fixture.SecurityId);
+        await conflictingRun.Should().ThrowAsync<InvalidDataException>().WithMessage("*conflicts*");
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" claimed-run ")]
+    [InlineData("another-run")]
+    public async Task ContradictoryTrustedRunCannotMintJournalOwnership(string trustedRun)
+    {
+        using var fixture = new Fixture();
+        var fill = fixture.Fill() with { RunId = "claimed-run", AccountingRunId = trustedRun };
+        var attempt = () => fixture.Service.PostAsync(fill, fixture.Context, fixture.SecurityId);
+        await attempt.Should().ThrowAsync<InvalidDataException>().WithMessage("*run identity*");
+        fixture.Commands.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task Buy_retains_currency_lot_and_fees_and_restart_reuses_prepared_intent()
     {
         using var fixture = new Fixture();
@@ -26,6 +114,11 @@ public sealed class AutomatedTradeFillAccountingServiceTests
         first.Should().HaveCount(3);
         var trade = fixture.Commands.Single();
         trade.AcquisitionLot!.Acquisition!.FunctionalCostBasis.Should().Be(1000m);
+        SecurityTradePositionEvidence.TryRead(trade.Journal.Entry, out var positionEffect, out _).Should().BeTrue();
+        positionEffect!.LongQuantityChange.Should().Be(10m);
+        positionEffect.LongBasisChange.Should().Be(1000m);
+        positionEffect.QuantityUnit.Should().Be(SecurityLotUnitKind.Shares);
+        positionEffect.Multiplier.Should().Be(1m);
         trade.Journal.Entry.Lines.Sum(line => line.Debit).Should().Be(1000m);
         trade.Journal.PostingCommand!.ActionOrigin.Should().Be(OperationsActionOriginDto.AuthorizedSystem);
         trade.Journal.PostingCommand.Provenance.Should().Be(DataProvenance.Simulated);
@@ -40,6 +133,7 @@ public sealed class AutomatedTradeFillAccountingServiceTests
             && line.Currency.FxRateToFunctional == 1m && line.Account.FinancialAccountId == "account-1");
         trade.RetainedEvidence.Should().OnlyContain(e => RetainedEvidenceIdentityValidator.IsComplete(e));
         first.Skip(1).Should().OnlyContain(entry => !entry.Metadata.Tags!.ContainsKey("quantity"));
+        first.Skip(1).Should().OnlyContain(entry => !entry.Metadata.Tags!.ContainsKey(SecurityTradePositionEvidence.VersionTag));
 
         // A restart and policy/grant revocation cannot cause fresh selection or erase committed receipts.
         ((IAutomatedPostingGrantStore)fixture.Journals).GetAsync(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -79,6 +173,9 @@ public sealed class AutomatedTradeFillAccountingServiceTests
         var command = fixture.Commands.Last();
         var selection = command.DisposalSelections.Should().ContainSingle().Which;
         selection.ExpectedCostBasis.Should().Be(400m);
+        SecurityTradePositionEvidence.TryRead(command.Journal.Entry, out var positionEffect, out _).Should().BeTrue();
+        positionEffect!.LongQuantityChange.Should().Be(-4m);
+        positionEffect.LongBasisChange.Should().Be(-400m);
         selection.SelectionOrdinal.Should().Be(0);
         command.Journal.Entry.Lines.Single(line => line.Account.AccountType == LedgerAccountType.Revenue).Credit.Should().Be(40m);
         command.ReferenceVersions.Should().Be(new AtomicLotReferenceVersions(1, 1));
@@ -93,6 +190,24 @@ public sealed class AutomatedTradeFillAccountingServiceTests
         var sale = () => fixture.Service.PostAsync(fixture.Fill() with { Side = OrderSide.Sell, RealizedPnl = 0m }, fixture.Context, fixture.SecurityId);
         await sale.Should().ThrowAsync<InvalidOperationException>().WithMessage("*FIFO*");
         fixture.Commands.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RetainedPrePositionEvidenceIntentRecoversWithoutChangingItsJournalOrSealedPlan()
+    {
+        using var fixture = new Fixture();
+        var fill = fixture.Fill() with { RunId = "old-label-only" };
+        await fixture.Service.PostAsync(fill, fixture.Context, fixture.SecurityId);
+        var (path, originalBytes) = fixture.RetainPrePositionEvidenceIntent(fill);
+        var posted = await fixture.CreateService().PostAsync(fill, fixture.Context, fixture.SecurityId);
+        var recovered = await fixture.CreateService().TryRecoverCompletedAsync(fill, fixture.Context);
+        posted.Should().ContainSingle().Which.Metadata.Tags.Should().NotContainKey(SecurityTradePositionEvidence.VersionTag);
+        recovered.Should().ContainSingle().Which.Metadata.Tags.Should().NotContainKey(SecurityTradePositionEvidence.VersionTag);
+        posted.Single().Metadata.Tags.Should().NotContainKey(LedgerQuery.AccountingRunIdTag);
+        recovered!.Single().Metadata.Tags.Should().NotContainKey(LedgerQuery.AccountingRunIdTag);
+        LedgerRunAttribution.TryGetTrustedRunId(recovered.Single().Metadata, out _).Should().BeFalse();
+        (await File.ReadAllBytesAsync(path)).Should().Equal(originalBytes);
+        fixture.Commands.Should().ContainSingle("an existing pinned acquisition cannot be prepared or appended again");
     }
 
     [Theory]
@@ -307,6 +422,36 @@ public sealed class AutomatedTradeFillAccountingServiceTests
         }
         internal AutomatedTradeFillAccountingService CreateService() => new(_options, _root, Journals, _atomic, _target,
             _accounts, Policies, _securities, _positions);
+        internal (string Path, byte[] Bytes) RetainPrePositionEvidenceIntent(TradeExecutedEvent fill)
+        {
+            var path = Path.Combine(_root, new TradeFillPostingStoreOptions(_root, Context).ScopeStorageKey, $"{fill.FillId:N}.json");
+            var intent = JsonSerializer.Deserialize(File.ReadAllText(path), FillAccountingJsonContext.Default.PreparedFillAccountingIntent)!;
+            var entry = intent.Trade.Journal.Entry;
+            var metadata = entry.Metadata with
+            {
+                Tags = entry.Metadata.Tags!
+                .Where(static item => !item.Key.StartsWith("positionEvidence.", StringComparison.OrdinalIgnoreCase)
+                    && item.Key != LedgerQuery.AccountingRunIdTag)
+                .ToDictionary(static item => item.Key, static item => item.Value, StringComparer.OrdinalIgnoreCase)
+            };
+            var priorWrite = intent.Trade.Journal with
+            {
+                Entry = new JournalEntry(entry.JournalEntryId,
+                entry.Timestamp, entry.Description, entry.Lines, metadata)
+            };
+            var priorTrade = (intent.Trade with { Journal = priorWrite }).WithComputedFingerprint();
+            intent = intent with { Trade = priorTrade, ContentHash = "" };
+            intent = intent with
+            {
+                ContentHash = "sha256:" + Sha256Digest.ComputeUtf8(
+                JsonSerializer.Serialize(intent, FillAccountingJsonContext.Default.PreparedFillAccountingIntent))
+            };
+            _receipts[priorTrade.MutationBatchId] = _receipts[priorTrade.MutationBatchId] with
+            { CanonicalFingerprint = priorTrade.CanonicalFingerprint, Journal = Record(priorWrite) };
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(intent, FillAccountingJsonContext.Default.PreparedFillAccountingIntent);
+            File.WriteAllBytes(path, bytes);
+            return (path, bytes);
+        }
         internal TradeExecutedEvent Fill() => new(Guid.NewGuid(), "order-1", "TEST", OrderSide.Buy, 10m, 100m, 0m, 0m,
             0m, Time, Grant.FinancialAccountId)
         { SourceMode = "Synthetic", SettlementCurrency = "USD" };

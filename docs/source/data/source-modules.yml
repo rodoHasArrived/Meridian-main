@@ -66,7 +66,7 @@ modules:
     layer: Application
     status: active
     owner_lane: Runtime Host
-    purpose: Shared module-owned database startup plans, application use cases, contractual cash-flow scenario adapters and immutable replay-packet retention, Security Master implementations and compatibility adapters, orchestration services, commands, and workflow coordination that consumes Core configuration JSON options, config JSON Schema generation, FluentValidation-based config validation, config validation pipeline, credential placeholder detection, default config-path resolution, config file hot-reload watching, configuration/redaction/masking helpers, Core-owned monitoring alert/health contracts, Domain-owned event quarantine sink port, Contracts-owned pipeline statistics DTOs, monitoring webhook sink contract, backfill run-result and per-symbol completeness payloads, Contracts-owned coordination interfaces and records, Storage-owned storage-option mapping, backfill status/checkpoint persistence, and shared-storage coordination lease persistence, ProviderSdk plugin discovery helpers, Platform runtime/diagnostic/API-documentation/performance/circuit-breaker status/event-metrics/shutdown/coordination/monitoring/backpressure helpers, Platform runtime error ring-buffer, diagnostic bundle generation, and system-health diagnostics, Identity fund-account traversal helpers, Data Integration ETL job service/orchestrator, ETL normalization/export services, sample-data, historical-query, event canonicalization publisher decorator, market-data validation, schema compatibility checks, clock-skew/spread/data-loss monitors, provider telemetry, provider health/connection-status/degradation scoring, provider calibration helpers, provider integration template catalog and dry-run orchestration, Instruments option-chain helpers, Financial Operations reconciliation-engine helpers, Strategies reconciliation-governance helpers, and Reporting report-generation/NAV helpers instead of owning shared configuration JSON options, config JSON Schema generation, config validation rules, config validation pipeline stages, credential placeholder detection, default config-path resolution, config file hot-reload watching, storage option mapping, backfill result transport payloads, backfill status persistence, coordination contracts, shared-storage lease persistence, lease renewal, coordinator election, split-brain detection, scheduled-work/subscription ownership services, monitoring alert/health contracts, pipeline statistics DTOs, monitoring webhook sink contracts, pipeline backpressure alerting, alert dispatch, health aggregation, SLO/runbook registries, provider plugin discovery, configuration-template, environment-override, runtime diagnostic bundle generation, API-documentation, runtime-performance, runtime circuit-breaker status, default event metrics counters, hosted shutdown flush or shutdown sequence handling, runtime error ring-buffer, system-health snapshots, fund-account traversal, ETL job/orchestrator, ETL normalization/export services, data-fixture, historical-data, event canonicalization publisher decorator, market-data validation, schema validation services, provider data-quality monitors, provider connection-status notification, provider trust-calibration/scoring, option-chain, reconciliation-engine, strategy-governance, or reporting utilities. Shared direct-lending event journal projection supplies authoritative posting and outbox drafts through the canonical account-role registry.
+    purpose: Shared module-owned database startup plans, application use cases, contractual cash-flow scenario adapters and immutable replay-packet retention, Security Master implementations and compatibility adapters, orchestration services, commands, and workflow coordination that consumes Core configuration JSON options, config JSON Schema generation, FluentValidation-based config validation, config validation pipeline, credential placeholder detection, default config-path resolution, config file hot-reload watching, configuration/redaction/masking helpers, Core-owned monitoring alert/health contracts, Domain-owned event quarantine sink port, Contracts-owned pipeline statistics DTOs, monitoring webhook sink contract, backfill run-result and per-symbol completeness payloads, Contracts-owned coordination interfaces and records, Storage-owned storage-option mapping, backfill status/checkpoint persistence, and shared-storage coordination lease persistence, ProviderSdk plugin discovery helpers, Platform runtime/diagnostic/API-documentation/performance/circuit-breaker status/event-metrics/shutdown/coordination/monitoring/backpressure helpers, Platform runtime error ring-buffer, diagnostic bundle generation, and system-health diagnostics, Identity fund-account traversal helpers, Data Integration ETL job service/orchestrator, ETL normalization/export services, sample-data, historical-query, event canonicalization publisher decorator, market-data validation, schema compatibility checks, clock-skew/spread/data-loss monitors, provider telemetry, provider health/connection-status/degradation scoring, provider calibration helpers, provider integration template catalog and dry-run orchestration, Instruments option-chain helpers, Financial Operations reconciliation-engine helpers, Strategies reconciliation-governance helpers, and Reporting report-generation/NAV helpers instead of owning shared configuration JSON options, config JSON Schema generation, config validation rules, config validation pipeline stages, credential placeholder detection, default config-path resolution, config file hot-reload watching, storage option mapping, backfill result transport payloads, backfill status persistence, coordination contracts, shared-storage lease persistence, lease renewal, coordinator election, split-brain detection, scheduled-work/subscription ownership services, monitoring alert/health contracts, pipeline statistics DTOs, monitoring webhook sink contracts, pipeline backpressure alerting, alert dispatch, health aggregation, SLO/runbook registries, provider plugin discovery, configuration-template, environment-override, runtime diagnostic bundle generation, API-documentation, runtime-performance, runtime circuit-breaker status, default event metrics counters, hosted shutdown flush or shutdown sequence handling, runtime error ring-buffer, system-health snapshots, fund-account traversal, ETL job/orchestrator, ETL normalization/export services, data-fixture, historical-data, event canonicalization publisher decorator, market-data validation, schema validation services, provider data-quality monitors, provider connection-status notification, provider trust-calibration/scoring, option-chain, reconciliation-engine, strategy-governance, or reporting utilities. Shared direct-lending event journal projection supplies authoritative posting and outbox drafts through the canonical account-role registry. Retained loan application history reconciles held-cash settlements to single-use original funding.
     readme: src/Meridian.Application/README.md
     roadmap_items:
       - W14-ATTEST-001
@@ -87,6 +87,7 @@ modules:
       - AccountingRecords
     validation:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~AccrualLedgerServiceTests|FullyQualifiedName~DirectLendingJournalLinesTests|FullyQualifiedName~DirectLendingOutboxDispatcherTests" --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DirectLendingLifecycleReplayTests|FullyQualifiedName~DirectLendingEventRebuilderTests|FullyQualifiedName~AccountingCloseMarkPriceSourceTests|FullyQualifiedName~CrossSourceBackfillReconciliationServiceTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementServiceTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DatabaseStartupPlanTests|FullyQualifiedName~HostStartupLifecycleTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~SecurityMasterContractAdapterTests|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal"
@@ -94,7 +95,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-23
 
   - id: SRC-CONTRACTS
     path: src/Meridian.Contracts
@@ -158,7 +159,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-23
 
   - id: SRC-CORE
     path: src/Meridian.Core
@@ -251,12 +252,13 @@ modules:
       - PaperSession
       - LiveReadiness
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~AlpacaAccountingClosePriceTests|FullyQualifiedName~AlpacaHistoricalDataProviderTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~YahooFinanceProviderModuleCompositionTests|FullyQualifiedName~ProviderCatalogCompositionTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-07-02
+    last_reviewed: 2026-11-23
 
   - id: SRC-STORAGE
     path: src/Meridian.Storage
@@ -300,14 +302,14 @@ modules:
       - DIA-ASSURANCE-LOOP
       - DIA-STORAGE-TOPOLOGY
     todos: []
-    last_reviewed: 2026-11-13
+    last_reviewed: 2026-11-23
   - id: SRC-STORAGE-ACCOUNTING
     path: src/Meridian.Storage.Accounting
     name: Meridian accounting persistence adapters
     layer: Storage Adapter
     status: active
     owner_lane: Accounting and Ledger
-    purpose: Accounting export projections including period income and as-of balance sheets, portable ledger-payload validation and PostgreSQL business persistence adapters with immutable close-balance checkpoints and scoped as-of reads, composing Storage primitives with Ledger and Reporting contracts while retaining existing source namespaces, transaction authority and migration output paths through explicit linked compilation.
+    purpose: Accounting export projections including period income and as-of balance sheets, portable ledger-payload validation and PostgreSQL business persistence adapters with immutable close-balance checkpoints, scoped as-of reads and external-GL evidence truncate guards, composing Storage primitives with Ledger and Reporting contracts while retaining existing source namespaces, transaction authority and migration output paths through explicit linked compilation. Default complete-journal exports follow retained period membership; explicit effective-date windows narrow that population.
     readme: src/Meridian.Storage.Accounting/README.md
     roadmap_items:
       - W4-RECON-001
@@ -325,7 +327,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-11-13
+    last_reviewed: 2026-11-23
 
 
   - id: SRC-EXECUTION
@@ -404,7 +406,7 @@ modules:
     layer: Strategies
     status: active
     owner_lane: Strategy Analytics
-    purpose: Strategy lifecycle, run storage, promotion records, strategy read services, and reconciliation governance exception classification.
+    purpose: Strategy lifecycle, run storage, promotion records, strategy read services, and reconciliation governance exception classification. Duplicate position scopes remain explicit unavailable comparisons.
     readme: src/Meridian.Strategies/README.md
     roadmap_items:
       - W14-ATTEST-001
@@ -425,7 +427,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-23
 
   - id: SRC-BACKTESTING
     path: src/Meridian.Backtesting
@@ -433,7 +435,7 @@ modules:
     layer: Backtesting
     status: active
     owner_lane: Strategy Analytics
-    purpose: Backtesting runtime and replay support for historical strategy simulation composed through Contracts-owned Security Master ports without an Application dependency. Trade journals share the canonical opening and closing posting kernel with paper and durable execution while preserving exact lot basis.
+    purpose: Backtesting runtime and replay support for historical strategy simulation composed through Contracts-owned Security Master ports without an Application dependency. Trade journals share the canonical opening and closing posting kernel with paper and durable execution while preserving exact lot basis. Canonical dividend receipts preserve versioned native-position evidence through settlement and disposal.
     readme: src/Meridian.Backtesting/README.md
     roadmap_items:
       - W3-CONT-001
@@ -454,7 +456,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-23
 
   - id: SRC-BACKTESTING-SDK
     path: src/Meridian.Backtesting.Sdk
@@ -832,7 +834,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Accounting and Ledger
-    purpose: Physical bounded-context module project for reconciliation, portfolio-vs-ledger reconciliation engine behavior, accounting records, accounting-close projections, accounting-basis policy, ledger text-journal reporting, payment approvals, bank-transaction records, close workflows, casework, and operational-record ownership conformance.
+    purpose: Physical bounded-context module project for reconciliation, portfolio-vs-ledger reconciliation engine behavior, accounting records, concurrent legacy external-GL review state and mapping-content pinning, accounting-close projections, accounting-basis policy, ledger text-journal reporting, payment approvals, bank-transaction records, close workflows, casework, and operational-record ownership conformance.
     readme: src/Meridian.FinancialOperations/README.md
     roadmap_items:
       - W14-ATTEST-001
@@ -860,6 +862,7 @@ modules:
       - AccountingRecords
       - GovernedReportPack
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementWorkQueue" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DimensionSignatureBackwardCompatibilityTests|FullyQualifiedName~ConsolidationServiceTests" /p:EnableWindowsTargeting=true
       - dotnet build src/Meridian.FinancialOperations/Meridian.FinancialOperations.csproj /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityWorkflowServiceTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
@@ -875,7 +878,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-23
 
   - id: SRC-DESIGN-WORKFLOW
     path: src/Meridian.Workflow
@@ -1029,7 +1032,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-23
 
   - id: SRC-UI-SERVICES
     path: src/Meridian.Ui.Services
@@ -1054,13 +1057,13 @@ modules:
       - GovernedReportPack
       - AccountingRecords
     validation:
-      - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementWorkspaceTests|FullyQualifiedName~WorkstationIntercompanyAgreementApiClientTests" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementWorkspaceTests|FullyQualifiedName~IntercompanyAgreementWorkQueueWorkspaceTests|FullyQualifiedName~WorkstationIntercompanyAgreementApiClientTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints" --logger "console;verbosity=normal"
     diagrams:
       - DIA-BROWSER-WORKSTATION
       - DIA-PAPER-SESSION-REPLAY
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-23
 
   - id: SRC-UI-SHARED
     path: src/Meridian.Ui.Shared
@@ -1068,7 +1071,7 @@ modules:
     layer: UI Shared
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Shared UI read models, permissioned contractual cash-flow preview/retention APIs and endpoint adapters, including authoritative reporting capture, exact reconciliation readiness, certified artifact production/retention, governed lifecycle/restatement coordination, tenant-safe action projections, release-gated scheduling, recipient-bound secure distribution, provider receipts, and credential-free legacy reporting compatibility and adapters over Reporting-owned template governance and access policy; also owns Security Master workbench projections, ledger/accounting configuration services, private-capital drill-through, identity/auth adapters, and acceptance filters consumed by browser and desktop surfaces.
+    purpose: Shared UI read models, permissioned contractual cash-flow preview/retention APIs and endpoint adapters, including authoritative reporting capture, exact reconciliation readiness, certified artifact production/retention, governed lifecycle/restatement coordination, tenant-safe action projections, release-gated scheduling, recipient-bound secure distribution, provider receipts, and credential-free legacy reporting compatibility and adapters over Reporting-owned template governance and access policy; also owns Security Master workbench projections, ledger/accounting configuration services, private-capital drill-through, identity/auth adapters, and acceptance filters consumed by browser and desktop surfaces. Whole-journal downloads use retained period membership unless an effective-date window is supplied.
     readme: src/Meridian.Ui.Shared/README.md
     roadmap_items:
       - W14-ATTEST-001
@@ -1107,8 +1110,9 @@ modules:
       - BacktestingEvidence
     validation:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ExecutionGovernanceEndpointsTests|FullyQualifiedName~EquityOrderSessionPolicyTests" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CrossProviderToleranceEndpointTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~ExecutionWorkflowTests|FullyQualifiedName~ExecutionJournalAttemptTests" /p:EnableWindowsTargeting=true
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementEndpointTests|FullyQualifiedName~IntercompanyAgreementAuthorityTests|FullyQualifiedName~IntercompanyAgreementJournalProjectionTests|FullyQualifiedName~ManualJournalAgreementReviewTests" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementEndpointTests|FullyQualifiedName~IntercompanyAgreementWorkQueueEndpointTests|FullyQualifiedName~IntercompanyAgreementAuthorityTests|FullyQualifiedName~IntercompanyAgreementJournalProjectionTests|FullyQualifiedName~ManualJournalAgreementReviewTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingTemplateRegistryServiceTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" --logger "console;verbosity=normal"
@@ -1116,7 +1120,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-11-13
+    last_reviewed: 2026-11-23
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard
@@ -1149,6 +1153,7 @@ modules:
       - AccountingRecords
       - BacktestingEvidence
     validation:
+      - npm --prefix src/Meridian.Ui/dashboard run test -- --run src/screens/accounting-screen.intercompany-work-queue.test.tsx src/lib/api/intercompany-work-queue.api.test.ts src/screens/accounting-screen.entity-obligations.test.tsx
       - npm --prefix src/Meridian.Ui/dashboard run test -- --run src/screens/accounting-screen.intercompany-agreements.test.tsx src/components/accounting/intercompany-journal-reference.test.tsx src/components/accounting/intercompany-agreement-journals.test.tsx src/lib/api/intercompany-agreements.api.test.ts
       - npm --prefix src/Meridian.Ui/dashboard run test
       - npm --prefix src/Meridian.Ui/dashboard run build
@@ -1158,7 +1163,7 @@ modules:
       - DIA-BROWSER-WORKSTATION-ROUTES
     todos:
       - TODO-SRC-UI-DASHBOARD-001
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-23
 
   - id: SRC-WPF
     path: src/Meridian.Wpf
@@ -1193,10 +1198,10 @@ modules:
       - GovernedReportPack
       - AccountingRecords
     validation:
-      - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementWorkspaceTests|FullyQualifiedName~WorkstationIntercompanyAgreementApiClientTests" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementWorkspaceTests|FullyQualifiedName~IntercompanyAgreementWorkQueueWorkspaceTests|FullyQualifiedName~WorkstationIntercompanyAgreementApiClientTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~AppServiceRegistrationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-23

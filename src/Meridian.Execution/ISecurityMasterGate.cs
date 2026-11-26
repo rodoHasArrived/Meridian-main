@@ -5,7 +5,12 @@ namespace Meridian.Execution;
 /// <summary>
 /// Result from a Security Master gate check for an order symbol.
 /// </summary>
-public sealed record SecurityMasterGateResult(bool IsApproved, string? Reason = null);
+public sealed record SecurityMasterGateResult(bool IsApproved, string? Reason = null)
+{
+    /// <summary>The stable identity resolved by this admission check, when available.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SecurityId { get; init; }
+}
 
 /// <summary>
 /// Pre-trade governance gate: verifies that a symbol is registered and active in the

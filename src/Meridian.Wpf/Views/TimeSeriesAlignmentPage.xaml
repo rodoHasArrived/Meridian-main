@@ -71,7 +71,7 @@
                 </Grid>
             </Border>
 
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16" IsEnabled="{Binding CanEditAlignment}">
                 <StackPanel>
                     <TextBlock Text="Alignment Configuration" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
 
@@ -124,6 +124,34 @@
                             <DatePicker SelectedDate="{Binding ToDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
                     </Grid>
+
+                    <TextBlock Text="Provider IDs (comma-separated, blank to discover)" Style="{StaticResource FormLabelStyle}" />
+                    <TextBox Style="{StaticResource FormTextBoxStyle}"
+                             Text="{Binding ProviderInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             AutomationProperties.Name="Provider IDs"
+                             AutomationProperties.AutomationId="TimeSeriesAlignmentProviderIds"
+                             Margin="0,0,0,8" />
+
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,0,8,0">
+                            <TextBlock Text="Archived Data Type" Style="{StaticResource FormLabelStyle}" />
+                            <ComboBox Style="{StaticResource FormComboBoxStyle}" ItemsSource="{Binding InputKindOptions}"
+                                      DisplayMemberPath="Label" SelectedValuePath="Key" SelectedValue="{Binding SelectedInputKindKey}"
+                                      AutomationProperties.Name="Archived data type" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <TextBlock Text="Corporate-Action Basis" Style="{StaticResource FormLabelStyle}" />
+                            <ComboBox Style="{StaticResource FormComboBoxStyle}" ItemsSource="{Binding AdjustmentOptions}"
+                                      DisplayMemberPath="Label" SelectedValuePath="Key" SelectedValue="{Binding SelectedAdjustmentKey}"
+                                      AutomationProperties.Name="Corporate-action basis" />
+                        </StackPanel>
+                    </Grid>
+                    <CheckBox Content="US equity regular sessions (clear for continuous calendar)"
+                              IsChecked="{Binding MarketHoursOnly}" Margin="0,0,0,8" />
 
                     <TextBlock Text="Symbols (comma-separated)" Style="{StaticResource FormLabelStyle}" />
                     <Grid Margin="0,0,0,8">
@@ -230,6 +258,11 @@
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button Content="Preview"
+                                Command="{Binding PreviewAlignmentCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="0,0,8,0"
+                                AutomationProperties.AutomationId="TimeSeriesAlignmentPreviewButton" />
                         <Button Content="Run Alignment"
                                 Command="{Binding RunAlignmentCommand}"
                                 Style="{StaticResource PrimaryButtonStyle}"
@@ -239,13 +272,27 @@
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 Margin="8,0,0,0"
                                 AutomationProperties.AutomationId="TimeSeriesAlignmentSavePresetButton" />
-                        <TextBlock Text="{Binding StatusText}"
-                                   VerticalAlignment="Center"
-                                   Margin="16,0,0,0"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   FontSize="12"
-                                   AutomationProperties.AutomationId="TimeSeriesAlignmentStatusText" />
+                        <Button Content="Cancel"
+                                Command="{Binding CancelAlignmentCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="8,0,0,0"
+                                AutomationProperties.AutomationId="TimeSeriesAlignmentCancelButton" />
                     </StackPanel>
+                    <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               FontSize="12" AutomationProperties.LiveSetting="Polite"
+                               AutomationProperties.AutomationId="TimeSeriesAlignmentStatusText" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16"
+                    Visibility="{Binding HasPreview, Converter={StaticResource BoolToVisibilityConverter}}"
+                    AutomationProperties.AutomationId="TimeSeriesAlignmentPreviewCard">
+                <StackPanel>
+                    <TextBlock Text="Alignment Preview" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,8" />
+                    <TextBlock Text="{Binding PreviewDetail}" TextWrapping="Wrap"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               AutomationProperties.LiveSetting="Polite" />
                 </StackPanel>
             </Border>
 

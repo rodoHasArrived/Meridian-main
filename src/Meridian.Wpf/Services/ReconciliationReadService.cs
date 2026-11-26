@@ -37,8 +37,8 @@ public sealed class ReconciliationReadService
             .ToArray();
 
         var items = new List<FundReconciliationItem>();
+        var monetaryTotals = new List<ReconciliationMonetaryTotal>();
         var openBreaks = 0;
-        decimal breakAmountTotal = 0m;
         var securityCoverageIssues = 0;
         var missingRunCount = 0;
         var unavailableRunCount = 0;
@@ -63,7 +63,9 @@ public sealed class ReconciliationReadService
             var asOf = detail.Summary.PortfolioAsOf
                 ?? detail.Summary.LedgerAsOf
                 ?? detail.Summary.CreatedAt;
-            var strategyBreakAmount = detail.Breaks.Sum(result => Math.Abs(result.Variance));
+            var monetaryTotal = ReconciliationMonetaryTotal.FromBreaks(detail.Breaks);
+            monetaryTotals.Add(monetaryTotal);
+            var strategyBreakAmount = monetaryTotal.Amount ?? 0m;
             var status = MapStrategyStatus(detail.Summary);
 
             items.Add(new FundReconciliationItem(
@@ -85,12 +87,16 @@ public sealed class ReconciliationReadService
                 HasSecurityCoverageIssues: detail.Summary.HasSecurityCoverageIssues,
                 CoverageLabel: detail.Summary.HasSecurityCoverageIssues
                     ? $"{detail.Summary.SecurityIssueCount} security issue(s)"
-                    : "Security Master aligned"));
+                    : "Security Master aligned")
+            {
+                ComparableBreakAmountTotal = monetaryTotal.Amount,
+                BreakAmountCurrency = monetaryTotal.Currency,
+                BreakAmountUnavailableReason = monetaryTotal.UnavailableReason
+            });
 
             if (detail.Summary.BreakCount > 0)
             {
                 openBreaks += detail.Summary.BreakCount;
-                breakAmountTotal += strategyBreakAmount;
             }
 
             securityCoverageIssues += detail.Summary.SecurityIssueCount;
@@ -100,13 +106,21 @@ public sealed class ReconciliationReadService
             .OrderByDescending(item => item.RequestedAt)
             .ToArray();
 
+        var combined = missingRunCount > 0 || unavailableRunCount > 0
+            ? ReconciliationMonetaryTotal.Unavailable("Reconciliation coverage is incomplete; no complete monetary total can be reported.")
+            : ReconciliationMonetaryTotal.Combine(monetaryTotals);
         return new FundReconciliationReadResult(
             Summary: new ReconciliationSummary(
                 RunCount: ordered.Length,
                 OpenBreakCount: openBreaks,
-                BreakAmountTotal: breakAmountTotal,
+                BreakAmountTotal: combined.Amount ?? 0m,
                 RecentRuns: ordered,
-                SecurityCoverageIssueCount: securityCoverageIssues),
+                SecurityCoverageIssueCount: securityCoverageIssues)
+            {
+                ComparableBreakAmountTotal = combined.Amount,
+                BreakAmountCurrency = combined.Currency,
+                BreakAmountUnavailableReason = combined.UnavailableReason
+            },
             KnownRunCount: relevantRuns.Length,
             MissingRunCount: missingRunCount,
             UnavailableRunCount: unavailableRunCount);
