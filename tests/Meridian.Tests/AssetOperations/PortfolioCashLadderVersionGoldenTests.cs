@@ -110,6 +110,7 @@ public sealed class PortfolioCashLadderVersionGoldenTests
     {
         var payload = new Dictionary<string, object?>
         {
+            [SecurityTermsEnvelope.FormatKey] = "flat",
             ["assetClassTermsVersion"] = 3,
             ["issueDate"] = "2026-01-01",
             ["maturity"] = "2027-01-01",

@@ -102,7 +102,14 @@ public sealed record SecurityClassCodecBinding(
     IReadOnlyList<SecurityTermBinding> Members,
     bool VersionedSchedules = false,
     SecurityCodecInputs Inputs = SecurityCodecInputs.None,
-    bool WritesConventionsFlag = false);
+    bool WritesConventionsFlag = false)
+{
+    /// <summary>
+    /// Optional additions whose read activation and absent written shape are version-gated.
+    /// Existing scalar codecs retain their historical behavior unless their module opts in.
+    /// </summary>
+    public IReadOnlyList<string> VersionedOptionalScalarKeys { get; init; } = [];
+}
 
 /// <summary>
 /// The single statement of which flat key carries which member of a per-class record, for the

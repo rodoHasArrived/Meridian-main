@@ -501,8 +501,11 @@ public sealed class QuotedPriceValuationModelTests
         store.GetSourceAsync(bond.SecurityId, Arg.Any<CancellationToken>()).Returns(
             new SecurityCashFlowSourceDto(bond.SecurityId, StructuredCashFlowSourceKind.CalculatedBullet, KnownAt, false, null, null));
         var query = Substitute.For<SecurityMasterQueryContract>();
-        query.GetByIdAsync(bond.SecurityId, Arg.Any<CancellationToken>()).Returns(bond);
-        query.GetRecordedByIdAsOfAsync(bond.SecurityId, KnownAt, Arg.Any<CancellationToken>()).Returns(bond);
+        // Current query results declare their family; historical model packets elsewhere in
+        // this suite keep the original untagged bond terms and their retained fingerprints.
+        var current = bond with { AssetSpecificTerms = SecurityTermsEnvelope.StampDeclaredFormat(bond.AssetSpecificTerms) };
+        query.GetByIdAsync(bond.SecurityId, Arg.Any<CancellationToken>()).Returns(current);
+        query.GetRecordedByIdAsOfAsync(bond.SecurityId, KnownAt, Arg.Any<CancellationToken>()).Returns(current);
         return new(store, [], query, NullLogger<SecurityMasterCashFlowService>.Instance, receiptStore: receipts);
     }
 

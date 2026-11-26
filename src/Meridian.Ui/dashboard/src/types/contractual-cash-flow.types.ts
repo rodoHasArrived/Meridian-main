@@ -47,6 +47,7 @@ export interface ContractualCashFlowRequest {
   prepayments?: CashFlowPrepaymentAssumption[] | null;
   curvePins?: CashFlowCurvePin[] | null;
   engineVersion?: string;
+  calculationProfile?: "vanilla-irs-v1" | null;
 }
 
 export interface CashFlowCalculationBlocker {

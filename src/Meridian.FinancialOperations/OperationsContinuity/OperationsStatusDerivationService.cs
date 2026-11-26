@@ -20,6 +20,13 @@ public sealed class OperationsStatusDerivationService : IOperationsStatusDerivat
     {
         ArgumentNullException.ThrowIfNull(workflow);
 
+        // The existing overall status vocabulary describes close progress. A subject approval
+        // has no close in progress; its separate review state comes from retained approvals.
+        if (workflow.Purpose == OperationsWorkflowPurposeDto.SecurityMasterRevision)
+            return OperationsWorkflowStatusDto.NotStarted;
+        if (workflow.Purpose != OperationsWorkflowPurposeDto.Close)
+            return OperationsWorkflowStatusDto.Blocked;
+
         return OperationsContinuityInterop.DeriveStatus(
             workflow.IsClosed,
             workflow.BrokerIntakeState,
