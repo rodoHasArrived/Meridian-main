@@ -6,154 +6,13 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## PrivateCapitalRecordServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalRecordServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs:9](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs#L9).
-
-```csharp
-public static class PrivateCapitalRecordServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddPrivateCapitalRecords(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs:12](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs#L12) | Uses the existing account database or durable, partitioned local record authority. |
-
-## ProductExposure
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProductExposure</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:25](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L25).
-
-```csharp
-public sealed record ProductExposure(string ProductType, decimal NetExposure, decimal GrossExposure);
-```
-
-## PromotionTrustEvidenceServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PromotionTrustEvidenceServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs:10](../../../../src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs#L10).
-
-Registers promotion trust evidence services in the dependency injection container.
-
-```csharp
-public static class PromotionTrustEvidenceServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddPromotionTrustEvidenceServices(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs:13](../../../../src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs#L13) | Registers the same source-backed promotion trust provider for browser and desktop hosts. |
-
-## ProviderCalendarReadModel
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderCalendarReadModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:25](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L25).
-
-```csharp
-public sealed record ProviderCalendarReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderCalendarEvent Item);
-```
-
-## ProviderConnectionLifecycleService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderConnectionLifecycleService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.AlpacaFeed.cs:8](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.AlpacaFeed.cs#L8).
-
-```csharp
-public sealed partial class ProviderConnectionLifecycleService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;ConfigurationChangeStatus&gt; SetAlpacaFeedAsync(AlpacaFeedUpdateDto update, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.AlpacaFeed.cs:11](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.AlpacaFeed.cs#L11) | Updates host-wide Alpaca market data settings with verified account access for SIP. |
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:18](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L18).
-
-Manages tenant-visible provider connections, credential mutations, and live verification requests.
-
-```csharp
-public sealed partial class ProviderConnectionLifecycleService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderConnectionLifecycleService(IProviderCredentialStore credentialStore, ConfigStore configStore, ILogger&lt;ProviderConnectionLifecycleService&gt; logger, IHttpClientFactory? httpClientFactory = null, IEnumerable&lt;IAccountingSystemProvider&gt;? accountingSystemProviders = null, IProviderSetupRegistry? setupRegistry = null, ProviderCredentialScope? ownershipScope = null, Meridian.Application.ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null, Meridian.Application.ProviderRouting.ProviderRuntimeCredentialMutationGuard? mutationGuard = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:37](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L37) |  |
-| <code>public ProviderConnectionLifecycleService ForConnection(string connectionId, string tenantId, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L76) | Binds the lifecycle to retained connection ownership after the HTTP boundary resolves its tenant. |
-| <code>public async Task&lt;ProviderConnectionRowDto&gt; GetConnectionStatusForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:93](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L93) | Reads one authorized connection without borrowing provider-wide health or credentials. |
-| <code>public IReadOnlyList&lt;OwnedProviderConnection&gt; GetOwnedConnectionsForTenant(string tenantId, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:112](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L112) | Lists the retained connections of one provider family that tenantId owns completely (unique id, external account and environment). Other tenants&#x27; connections, unassigned connections and ambiguous duplicate ids are never returned. |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionRowDto&gt;&gt; GetConnectionsForTenantAsync(string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:144](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L144) | Provider-level readiness for one tenant. Each provider starts from its provider-wide row; when that row is not ready, the best credential state among the tenant&#x27;s own retained connections for the same provider replaces it. Other tenants&#x27; connections and unassigned connections never contribute. |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionRowDto&gt;&gt; GetConnectionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:198](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L198) |  |
-| <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; SaveCredentialsAsync(string providerId, ProviderCredentialUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:214](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L214) |  |
-| <code>public async Task&lt;ProviderCredentialVerificationResultDto&gt; VerifyAsync(string providerId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:235](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L235) |  |
-| <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; DeleteCredentialsAsync(string providerId, string? actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:343](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L343) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.DraftVerification.cs:6](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.DraftVerification.cs#L6).
-
-```csharp
-public sealed partial class ProviderConnectionLifecycleService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;ProviderCredentialDraftVerificationResultDto&gt; VerifyDraftAsync(string providerId, ProviderCredentialDraftRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.DraftVerification.cs:9](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.DraftVerification.cs#L9) | Checks draft credentials without saving them or recording a saved verification. |
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.ExternalGl.cs:6](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.ExternalGl.cs#L6).
-
-```csharp
-public sealed partial class ProviderConnectionLifecycleService : IQuickBooksPostingConnectionResolver
-```
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:8](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L8).
-
-```csharp
-public sealed partial class ProviderConnectionLifecycleService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderConnectionLifecycleService ForTemplateSetup(Guid setupId, string tenantId, string actor, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:10](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L10) |  |
-| <code>public async Task&lt;ProviderTemplateSetupTestResult&gt; TestTemplateSetupAsync(string providerId, string actor, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:17](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L17) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.TemplateProbes.cs:8](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.TemplateProbes.cs#L8).
-
-```csharp
-public sealed partial class ProviderConnectionLifecycleService
-```
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.VerificationHistory.cs:6](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.VerificationHistory.cs#L6).
-
-```csharp
-public sealed partial class ProviderConnectionLifecycleService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;ProviderVerificationHistoryDto&gt; GetVerificationHistoryForTenantAsync(string connectionId, string tenantId, int limit = 100, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.VerificationHistory.cs:8](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.VerificationHistory.cs#L8) |  |
-
 ## ProviderCredentialStore
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ProviderCredentialStore</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:11](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L11).
+Source: [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:10](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L10).
 
-Compatibility adapter from provider-module setup to the Data Integration-owned encrypted vault. On first access it migrates the historical plaintext sidecar atomically into the vault and then removes the plaintext source. Unknown provider ids fail on writes and never create a sidecar.
+Compatibility adapter from provider-module setup to the Data Integration-owned encrypted vault. A plaintext sidecar retained from earlier releases is never read or imported; it is only kept owner-only. Unknown provider ids fail on writes and never create a sidecar.
 
 ```csharp
 public sealed class ProviderCredentialStore : Meridian.Core.Contracts.IProviderCredentialStore
@@ -163,13 +22,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderCredentialStore(string dataRoot) : this(new FileProviderCredentialStore(dataRoot), dataRoot);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:19](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L19) |  |
-| <code>public ProviderCredentialStore(IProviderCredentialStore vault, string dataRoot);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:24](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L24) |  |
-| <code>public async Task SaveCredentialsAsync(string moduleId, IReadOnlyDictionary&lt;string, string&gt; values, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:31](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L31) |  |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; GetCredentialsAsync(string moduleId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:53](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L53) |  |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, string&gt;?&gt; ReadCredentialRecordAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:59](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L59) |  |
-| <code>public async Task&lt;IReadOnlySet&lt;string&gt;&gt; GetStoredKeyNamesAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:74](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L74) |  |
-| <code>public async Task DeleteCredentialsAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:85](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L85) |  |
+| <code>public ProviderCredentialStore(string dataRoot) : this(new FileProviderCredentialStore(dataRoot), dataRoot);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:16](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L16) |  |
+| <code>public ProviderCredentialStore(IProviderCredentialStore vault, string dataRoot);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:21](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L21) |  |
+| <code>public async Task SaveCredentialsAsync(string moduleId, IReadOnlyDictionary&lt;string, string&gt; values, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:28](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L28) |  |
+| <code>public async Task&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; GetCredentialsAsync(string moduleId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:50](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L50) |  |
+| <code>public async Task&lt;IReadOnlyDictionary&lt;string, string&gt;?&gt; ReadCredentialRecordAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:56](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L56) |  |
+| <code>public async Task&lt;IReadOnlySet&lt;string&gt;&gt; GetStoredKeyNamesAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:71](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L71) |  |
+| <code>public async Task DeleteCredentialsAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:82](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L82) |  |
 
 ## ProviderDataProjectionSnapshot
 
@@ -889,3 +748,102 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;ReportingDeliveryJobRecord&gt;&gt; DispatchDueAsync(string leaseOwner, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:129](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L129) |  |
 | <code>public async Task&lt;ReportingDeliveryJobRecord&gt; AppendReceiptAsync(string jobId, string tenantId, ReportingDeliveryReceipt receipt, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:156](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L156) |  |
 | <code>public static string BuildIdempotencyKey(string tenantId, string packageId, string distributionId, string transportId, string releaseVersion, string artifactManifestHash, ReportingDeliveryPayload? payload = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:288](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L288) |  |
+
+## ReportingDeliveryReadModelSecurity
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeliveryReadModelSecurity</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L16).
+
+Fail-closed projection policy for legacy report-pack delivery records. Delivery attempts do not carry an independent tenant/access authority, so they are visible only through an exact, immutable workflow or governed-run binding. Credential-bearing links are never returned by a workstation read model.
+
+```csharp
+public static class ReportingDeliveryReadModelSecurity
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string RetiredAccessSummary = &quot;Legacy delivery access is retired; issue an opaque access grant through canonical secure distribution.&quot;;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L18) |  |
+| <code>public static IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; FilterVisibleAttempts(IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; attempts, ReportAccessQueryContext? accessContext, IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt;? workflowRecords = null, IReadOnlyList&lt;ReportingRunSnapshot&gt;? reportingRuns = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L50) |  |
+| <code>public static (IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; Attempts, bool SourceAvailable) ListVisibleAttempts(IServiceProvider services, int limit);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:83](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L83) |  |
+| <code>public static ReportAccessQueryContext? ResolveCurrentAccessContext(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:109](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L109) |  |
+| <code>public static ReportPackDeliveryAttemptDto SanitizeAttempt(ReportPackDeliveryAttemptDto attempt);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:136](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L136) |  |
+| <code>public static ReportPackDeliveryPackageDto SanitizePackage(ReportPackDeliveryPackageDto package);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:150](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L150) |  |
+| <code>public static IReadOnlyList&lt;ReportPackEvidenceLinkDto&gt;? SanitizeEvidenceLinks(IReadOnlyList&lt;ReportPackEvidenceLinkDto&gt;? links) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:236](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L236) |  |
+| <code>public static string SanitizeHref(string href);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:247](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L247) |  |
+| <code>public static string? SanitizeOptionalHref(string? href) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:274](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L274) |  |
+| <code>public static bool IsSafeRetainedEvidenceHref(string? href) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:277](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L277) |  |
+| <code>public static bool IsUnsafeHref(string? href) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:280](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L280) |  |
+| <code>public static bool ContainsCredentialMaterial(string? value);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:286](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L286) |  |
+
+## ReportingDeliveryReleaseAuthorizationFactory
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeliveryReleaseAuthorizationFactory</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L15).
+
+Creates the delivery authorization envelope from the immutable governed run. The proof is a stable content digest, not a caller credential: authorization still requires a fresh comparison with the authoritative governance repository through GovernanceReportingReleaseAuthorizationVerifier.
+
+```csharp
+public static class ReportingDeliveryReleaseAuthorizationFactory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ReportingDeliveryReleaseAuthorization Create(GovernedReportingRun run);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:17](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L17) |  |
+| <code>public static bool HasValidSelfProof(ReportingDeliveryReleaseAuthorization authorization);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:68](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L68) |  |
+| <code>public static bool Matches(ReportingDeliveryReleaseAuthorization supplied, ReportingDeliveryReleaseAuthorization authoritative);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:74](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L74) |  |
+
+## ReportingDeliveryWorkerReadinessState
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeliveryWorkerReadinessState</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs#L7).
+
+Process-local liveness receipt for the server-owned secure reporting distribution worker. A snapshot observes its heartbeat, failure count, and initial-start window together.
+
+```csharp
+public sealed class ReportingDeliveryWorkerReadinessState
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs:19](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs#L19) |  |
+| <code>public int ConsecutiveFailures =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs:21](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs#L21) |  |
+| <code>public DateTimeOffset? LastSuccessfulCycleUtc =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs:25](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs#L25) |  |
+| <code>public bool IsHealthy(DateTimeOffset nowUtc, TimeSpan maximumHeartbeatAge) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs:27](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs#L27) |  |
+
+## ReportingDeploymentReadinessService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeploymentReadinessService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:145](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L145).
+
+Read-only deployment gate shared by the reporting capability endpoint and runtime readiness. The gate deliberately inspects the resolved persistence graph rather than treating a connection string alone as proof that governance, artifacts, schedules, and delivery are durable.
+
+```csharp
+public sealed class ReportingDeploymentReadinessService(IServiceProvider services) : IReportingDeploymentReadinessService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingDeploymentCapabilityDto Evaluate() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:353](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L353) |  |
+| <code>public IReadOnlyList&lt;string&gt; GetScheduleWorkerCycleBlockingReasons();</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:648](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L648) |  |
+
+## ReportingDerivedAccessGrantCredential
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDerivedAccessGrantCredential</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L9).
+
+```csharp
+public sealed record ReportingDerivedAccessGrantCredential(string GrantId, string Token);
+```

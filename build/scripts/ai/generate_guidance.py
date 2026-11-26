@@ -6,8 +6,6 @@
 * ``.agents/skills`` is a byte-for-byte mirror of the portable ``.claude/skills`` packages, except
   for the shared context (synchronized by section) and Claude-only code listed in
   ``SKILL_MIRROR_EXCLUDES``. ``.codex/skills`` is intentionally host-specific and not mirrored.
-* Plugins vendored for more than one host (``PLUGIN_MIRRORS``) are byte-for-byte copies of the
-  vendored snapshot under ``plugins/``.
 """
 
 from __future__ import annotations
@@ -31,10 +29,6 @@ SKILL_SOURCE = ".claude/skills"
 SKILL_MIRROR = ".agents/skills"
 # Relative to the skills root. The shared context has its own section-level synchronization.
 SKILL_MIRROR_EXCLUDES = frozenset({"_shared/project-context.md", "skills_provider.py"})
-# (canonical vendored snapshot, host copy) pairs that must stay byte-for-byte identical.
-PLUGIN_MIRRORS = (
-    ("plugins/frontend-web-dev", ".claude/plugins/frontend-web-dev"),
-)
 BEGIN = b"<!-- shared-context:begin"
 END = b"<!-- shared-context:end -->"
 
@@ -127,14 +121,6 @@ def skill_mirror_drift(root: Path, *, write: bool = False) -> list[str]:
     return _directory_mirror_drift(root, SKILL_SOURCE, SKILL_MIRROR, SKILL_MIRROR_EXCLUDES, write=write)
 
 
-def plugin_mirror_drift(root: Path, *, write: bool = False) -> list[str]:
-    """Return host plugin copies that differ from their vendored snapshot; optionally repair them."""
-    drift: list[str] = []
-    for source_rel, mirror_rel in PLUGIN_MIRRORS:
-        drift += _directory_mirror_drift(root, source_rel, mirror_rel, frozenset(), write=write)
-    return drift
-
-
 def _directory_mirror_drift(
     root: Path, source_rel: str, mirror_rel: str, excludes: frozenset[str], *, write: bool
 ) -> list[str]:
@@ -172,7 +158,6 @@ def main(argv: list[str] | None = None) -> int:
     try:
         drift = generate(args.root, write=args.write)
         drift += skill_mirror_drift(args.root, write=args.write)
-        drift += plugin_mirror_drift(args.root, write=args.write)
     except (OSError, ValueError) as exc:
         print(f"Guidance generation failed: {exc}", file=sys.stderr)
         return 2
@@ -182,10 +167,7 @@ def main(argv: list[str] | None = None) -> int:
         if not args.write:
             print("Repair: python build/scripts/ai/generate-guidance.py --write")
     elif args.summary:
-        print(
-            f"Shared guidance is current (2 context mirrors, 1 skill mirror, "
-            f"{len(PLUGIN_MIRRORS)} plugin mirror(s))."
-        )
+        print("Shared guidance is current (2 context mirrors, 1 skill mirror).")
     return 0 if args.write or not drift else 1
 
 

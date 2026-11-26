@@ -768,22 +768,6 @@ public sealed partial class ReportingRunCertificationServiceTests
     }
 
     [Fact]
-    public void Certify_CallerSuppliedRowsCompatibilityPathFailsClosed()
-    {
-#pragma warning disable CS0618
-        var act = () => new ReportingRunCertificationService().Certify(
-            Template(),
-            Readiness("evaluation-one", CapturedAt),
-            Rows(),
-            "custom-request-dataset",
-            Access());
-#pragma warning restore CS0618
-
-        act.Should().Throw<ReportingAuthoritativeSourceUnavailableException>()
-            .WithMessage("*durable authoritative source*");
-    }
-
-    [Fact]
     public async Task EvaluateManifest_CrossTenantAdministratorIsDeniedBeforeOverride()
     {
         var certified = await new ReportingRunCertificationService(
