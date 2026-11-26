@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityMasterSourceAdmissionPolicy
+
+Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterSourceAdmissionPolicy</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L15).
+
+Review P2 / A2: golden-record write admission. Decides whether an incoming source may overwrite a field whose incumbent value another source supplied. Ranking is per source (owner decision 2026-11-25), taken from SecurityMasterWorkbenchOptions.SourcePrecedence and SecurityMasterWorkbenchOptions.GoldenCopySource.
+
+```csharp
+public interface ISecurityMasterSourceAdmissionPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>bool IncumbentOutranks(string? incumbentSource, string? challengerSource);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:22](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L22) | True when incumbentSource outranks challengerSource, so the challenger&#x27;s value must be held for review instead of applied. Unranked sources are never held and never hold others (owner decision: unranked sources keep applying as before). |
+
 ## ISecurityMasterTermsCapabilityVerifier
 
 Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterTermsCapabilityVerifier</code>. Kind: `interface`.
@@ -969,25 +987,3 @@ Active Security Master ingest progress.
 ```csharp
 public sealed record SecurityMasterActiveImportStatus(string FileExtension, int Total, int Processed, int Imported, int Skipped, int Failed, DateTimeOffset StartedAtUtc, DateTimeOffset UpdatedAtUtc);
 ```
-
-## SecurityMasterAmendmentHeldException
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterAmendmentHeldException</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:172](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L172).
-
-Raised when an ingest amendment is held rather than applied (review A2). Nothing from the amendment was persisted; a conflict is open for each dominated field and the request is retained as HeldAmendmentId for governed replay. Derives from InvalidOperationException so existing ingest failure classification still treats it as a refused write.
-
-```csharp
-public sealed class SecurityMasterAmendmentHeldException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterAmendmentHeldException(Guid securityId, Guid heldAmendmentId, string sourceSystem, IReadOnlyList&lt;string&gt; dominatedFieldPaths) : base($&quot;Amendment of security &#x27;{securityId:D}&#x27; from &#x27;{sourceSystem}&#x27; was held for review: a higher-ranked source supplied &quot; + $&quot;{string.Join(&quot;, &quot;, dominatedFieldPaths)}. Nothing was applied; resolve the open conflicts or replay held amendment &#x27;{heldAmendmentId:D}&#x27; through a governed draft.&quot;);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:174](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L174) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:184](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L184) |  |
-| <code>public Guid HeldAmendmentId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:186](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L186) |  |
-| <code>public string SourceSystem { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:188](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L188) |  |
-| <code>public IReadOnlyList&lt;string&gt; DominatedFieldPaths { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:190](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L190) |  |

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderStatus
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.ProviderStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:613](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L613).
+
+Provider availability status.
+
+```csharp
+public sealed record ProviderStatus(string Name, string DisplayName, int Priority, bool Available);
+```
+
 ## SchedulingService
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.SchedulingService</code>. Kind: `class`.

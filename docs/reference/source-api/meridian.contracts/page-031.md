@@ -474,6 +474,26 @@ Enum declarations:
 | <code>StreamingTemplate = 7</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:16](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L16) |  |
 | <code>CertifiedTradingAdapter = 8</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:17](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L17) |  |
 
+## IProviderIntegrationActorFlagStore
+
+Qualified name: <code>Meridian.Contracts.Integrations.IProviderIntegrationActorFlagStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:64](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L64).
+
+Append-only actor flags. Implementations never change or remove a flag, and never touch the flagged record itself.
+
+```csharp
+public interface IProviderIntegrationActorFlagStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;ProviderIntegrationStoredActorValue&gt;&gt; ScanStoredActorValuesAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:67](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L67) | Every actor field persisted in this store, read without modifying anything. |
+| <code>Task&lt;bool&gt; TryAppendActorFlagAsync(ProviderIntegrationActorFlagDto flag, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:70](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L70) | Appends flag; false when a flag with the same id already exists. |
+| <code>Task&lt;IReadOnlyList&lt;ProviderIntegrationActorFlagDto&gt;&gt; ListActorFlagsAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs:72](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationActorFlags.cs#L72) |  |
+
 ## IProviderIntegrationIdentityDecisionStore
 
 Qualified name: <code>Meridian.Contracts.Integrations.IProviderIntegrationIdentityDecisionStore</code>. Kind: `interface`.
@@ -670,26 +690,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public ProviderIntegrationManifestReferenceDto? ManifestReference { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:815](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L815) |  |
-
-## ProviderIntegrationActivationStateDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationActivationStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:43](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L43).
-
-```csharp
-public enum ProviderIntegrationActivationStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Draft = 0</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:45](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L45) |  |
-| <code>Tested = 1</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:46](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L46) |  |
-| <code>DryRunPassed = 2</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:47](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L47) |  |
-| <code>PendingApproval = 3</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:48](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L48) |  |
-| <code>Active = 4</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:49](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L49) |  |
-| <code>Paused = 5</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:50](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L50) |  |
-| <code>Failed = 6</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:51](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L51) |  |
-| <code>Retired = 7</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:52](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L52) |  |

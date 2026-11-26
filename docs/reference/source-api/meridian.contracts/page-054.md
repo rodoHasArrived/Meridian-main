@@ -6,6 +6,114 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityAssetTermUiHint
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermUiHint</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L123).
+
+Presentation hints for one asset-specific term, derived from its declared field so both workstations build edit and create forms from the term schema instead of free-text paths.
+
+```csharp
+public sealed record SecurityAssetTermUiHint(string Key, string FieldPath, string Label, SecurityAssetTermEditorKind Editor, string Group, int Order, bool Required, IReadOnlyList<string> Choices, bool ScalarEditable);
+```
+
+## SecurityAssetTermVocabularyEscape
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermVocabularyEscape</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L48).
+
+The designated vocabulary member that absorbs a value outside the declared vocabulary: classification = &quot;Other&quot; pairs with a LabelKey (otherClassification) carrying the raw label verbatim, so an unrecognized value survives the codec loop under a canonical discriminant instead of vanishing. The escape is lossless only while the record carries none of the DependentKeys. Those are payload the IN-vocabulary cases own — an equity&#x27;s preferredTerms hangs off classification = &quot;Preferred&quot; — and the escape decode has nowhere to reattach them, so it would silently delete them.
+
+```csharp
+public sealed record SecurityAssetTermVocabularyEscape(string Value, string LabelKey, IReadOnlyList<string> DependentKeys);
+```
+
+## SecurityCanonicalAssetHomes
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs#L4).
+
+Legacy labels whose economics have a first-class canonical asset home.
+
+```csharp
+public static class SecurityCanonicalAssetHomes
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;string&gt; SecuritizedLabels { get; } = Array.AsReadOnly&lt;string&gt;([&quot;StructuredCredit&quot;, &quot;AssetBacked&quot;, &quot;AssetBackedSecurity&quot;, &quot;ABS&quot;, &quot;MortgageBacked&quot;, &quot;MortgageBackedSecurity&quot;, &quot;MBS&quot;, &quot;AgencyMbs&quot;, &quot;NonAgencyMbs&quot;, &quot;CommercialMbs&quot;, &quot;CMBS&quot;, &quot;Cmo&quot;, &quot;Clo&quot;, &quot;Cdo&quot;, &quot;PrincipalOnly&quot;, &quot;InterestOnly&quot;, &quot;InverseInterestOnly&quot;, &quot;CollateralizedLoanObligation&quot;, &quot;CommercialMortgageBacked&quot;, &quot;CommercialMortgageBackedSecurity&quot;]);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs#L8) |  |
+| <code>public static string NormalizeLabel(string? label) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs#L20) | Uses the same separator-insensitive spelling as catalog label resolution. |
+| <code>public static bool IsSecuritizedLabel(string? label) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs#L23) |  |
+| <code>public static bool IsBankLoanLabel(string? label) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs#L26) |  |
+
+## SecurityCanonicalResolution
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCanonicalResolution</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L53).
+
+The typed outcome of a canonical identifier lookup. SecurityId is set only when Status is SecurityResolutionStatus.Resolved, or when a single inactive security is the only claimant. CandidateSecurityIds lists every claimant considered.
+
+```csharp
+public sealed record SecurityCanonicalResolution(SecurityResolutionStatus Status, Guid? SecurityId, IReadOnlyList<Guid> CandidateSecurityIds)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SecurityCanonicalResolution NotFound { get; } = new (SecurityResolutionStatus.NotFound, null, []);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L58) |  |
+| <code>public static SecurityCanonicalResolution Resolve(Guid securityId) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L60) |  |
+| <code>public static SecurityCanonicalResolution FromClaims(IReadOnlyList&lt;SecurityIdentityClaim&gt; claims, bool activeOnly);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L66) | Classifies claimants. With activeOnly, a single active claimant resolves even when inactive claimants also exist (a recycled ticker whose former holder is retired). |
+
+## SecurityCashFlowBehavior
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowBehavior</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L35).
+
+How an asset class produces cash flows.
+
+```csharp
+public enum SecurityCashFlowBehavior
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L38) | The class produces no scheduled cash flows. |
+| <code>ContractualSchedule</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L41) | Coupon, interest and principal flows calculated from contractual terms. |
+| <code>FactorAmortizing</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L44) | Contractual flows whose principal amortizes by a dated pool factor. |
+| <code>SwapLegs</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L47) | Exchanges calculated per swap leg. |
+| <code>FinancingInterest</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L50) | Financing interest calculated from rate and term (repo). |
+| <code>Dividends</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L53) | Declared dividends, recorded as corporate actions rather than calculated. |
+| <code>FundDistributions</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L56) | Fund distributions, recorded from the administrator rather than calculated. |
+| <code>ProviderSupplied</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L59) | Flows supplied by a provider or administrator (capital calls, rents, draws). |
+
+## SecurityCashFlowBehaviorExtensions
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowBehaviorExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L77).
+
+Behaviour derived from SecurityCashFlowBehavior.
+
+```csharp
+public static class SecurityCashFlowBehaviorExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsCalculatedFromTerms(this SecurityCashFlowBehavior behavior) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:80](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L80) | Whether flows of this kind are calculated from the security&#x27;s terms. |
+
 ## SecurityCashFlowBlockerDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto</code>. Kind: `record`.
@@ -746,104 +854,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public decimal? FactorAsOf(DateOnly asOf) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L50) | The factor in effect on asOf: the latest point dated on or before it. |
-
-## SecurityFactorHistoryPoint
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFactorHistoryPoint</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L26).
-
-One dated factor observation.
-
-```csharp
-public sealed record SecurityFactorHistoryPoint(DateOnly AsOfDate, decimal Factor, SecurityFactorSource Source, Guid? CorpActId = null);
-```
-
-## SecurityFactorHistoryProjector
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFactorHistoryProjector</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L55).
-
-Builds SecurityFactorHistoryDto from resolved terms and corporate actions.
-
-```csharp
-public static class SecurityFactorHistoryProjector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecurityFactorHistoryDto Build(Guid securityId, StructuredCashFlowTerms terms, DateOnly? currentFactorDate, IReadOnlyList&lt;CorporateActionDto&gt; actions, DateTimeOffset asOf, IReadOnlyList&lt;(DateOnly EffectiveDate, decimal Factor)&gt;? observations = null);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L57) |  |
-
-## SecurityFactorSource
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFactorSource</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L7).
-
-Where a dated factor point comes from.
-
-```csharp
-public enum SecurityFactorSource
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>TermsSchedule</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L10) | A point of the declared factor schedule in the security&#x27;s terms. |
-| <code>PrincipalPaydown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L13) | The post-paydown factor recorded on an effective principal-paydown corporate action. |
-| <code>CurrentFactor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L16) | The scalar current factor in the terms, dated by its retained factor date. |
-| <code>Observation</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L22) | A recorded factor observation (review C3): the latest recorded observation for its effective date, so a restatement replaces the earlier value without a terms revision. |
-
-## SecurityFieldProvenance
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenance</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L38).
-
-Field-level provenance: which source system asserted the value at FieldPath, as of when, and with what confidence (null when the source carries no confidence score — never fabricated).
-
-```csharp
-public sealed record SecurityFieldProvenance(string FieldPath, string SourceSystem, DateTimeOffset? AsOf, string? UpdatedBy, decimal? Confidence);
-```
-
-## SecurityFieldProvenanceOrigins
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L50).
-
-Canonical origins for persisted field-level provenance rows. The origin distinguishes canonical golden-record attribution from overlay annotations, so an operator edit can never masquerade as (or clobber) a conflict-resolution winner.
-
-```csharp
-public static class SecurityFieldProvenanceOrigins
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ConflictResolution = &quot;ConflictResolution&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L53) | The attribution written when a golden-record conflict resolves to a winning source. |
-| <code>public const string OperatorFieldEdit = &quot;OperatorFieldEdit&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L56) | The attribution written when an operator stages an overlay field edit. |
-| <code>public const string CanonicalWrite = &quot;CanonicalWrite&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L64) | The attribution written when an ordinary canonical create/amend changes a governed field — the per-field record of WHICH source supplied the current value, kept so conflict detection can name the true incumbent even when the field was never conflicted (record-level provenance flips on every amendment and cannot answer that question). |
-
-## SecurityFieldProvenanceRecord
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L73).
-
-A persisted field-level provenance row: the durable form of SecurityFieldProvenance, keyed by (security, field path, origin). OriginReference points back at the artifact that asserted the attribution — the conflict id for conflict resolutions, the revision id for operator field edits — so lineage is traceable to its governing record.
-
-```csharp
-public sealed record SecurityFieldProvenanceRecord(Guid SecurityId, string FieldPath, string SourceSystem, DateTimeOffset? AsOf, string? UpdatedBy, decimal? Confidence, string Origin, string? OriginReference, DateTimeOffset RecordedAt, long? SourceVersion = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityFieldProvenance ToFieldProvenance() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:91](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L91) | Projects the durable row onto the display-level field-provenance shape. |

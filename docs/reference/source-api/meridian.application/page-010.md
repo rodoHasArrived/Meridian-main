@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterAmendmentHeldException
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterAmendmentHeldException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:172](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L172).
+
+Raised when an ingest amendment is held rather than applied (review A2). Nothing from the amendment was persisted; a conflict is open for each dominated field and the request is retained as HeldAmendmentId for governed replay. Derives from InvalidOperationException so existing ingest failure classification still treats it as a refused write.
+
+```csharp
+public sealed class SecurityMasterAmendmentHeldException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterAmendmentHeldException(Guid securityId, Guid heldAmendmentId, string sourceSystem, IReadOnlyList&lt;string&gt; dominatedFieldPaths) : base($&quot;Amendment of security &#x27;{securityId:D}&#x27; from &#x27;{sourceSystem}&#x27; was held for review: a higher-ranked source supplied &quot; + $&quot;{string.Join(&quot;, &quot;, dominatedFieldPaths)}. Nothing was applied; resolve the open conflicts or replay held amendment &#x27;{heldAmendmentId:D}&#x27; through a governed draft.&quot;);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:174](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L174) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:184](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L184) |  |
+| <code>public Guid HeldAmendmentId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:186](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L186) |  |
+| <code>public string SourceSystem { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:188](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L188) |  |
+| <code>public IReadOnlyList&lt;string&gt; DominatedFieldPaths { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:190](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L190) |  |
+
 ## SecurityMasterAmortizationLedgerBridge
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterAmortizationLedgerBridge</code>. Kind: `class`.
@@ -949,16 +971,4 @@ The canonical state a field-edit proposal was drafted against: the security vers
 
 ```csharp
 public sealed record SecurityMasterRevisionFieldBase(long BaseVersion, string FieldSnapshot);
-```
-
-## SecurityMasterRevisionFieldValue
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionFieldValue</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:93](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L93).
-
-The exact overlay VALUE a field-edit revision governs — null models a staged CLEAR. Wrapping the nullable value distinguishes &quot;the edit recorded a clear&quot; from &quot;no value was recorded at all&quot; (legacy revisions predating value persistence), which discard-time restoration must tell apart: a recorded clear restores by removing the key, while an unrecorded value is unrecoverable and falls back to the fail-closed sibling handling.
-
-```csharp
-public sealed record SecurityMasterRevisionFieldValue(string? Value);
 ```

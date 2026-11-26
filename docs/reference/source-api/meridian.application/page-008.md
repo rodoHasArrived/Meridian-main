@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionIngestRequest
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:17](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L17).
+
+Request for a corporate-action ingest sweep. When Symbols is null or empty the sweep covers every active security with a ticker identifier. Announcements whose distinct agreeing sources reach MinimumSourcesToApply are confidence-scored, but production ingest still records a durable proposal for explicit operator acceptance.
+
+```csharp
+public sealed record CorporateActionIngestRequest(IReadOnlyList<string>? Symbols = null, bool DryRun = false, int MinimumSourcesToApply = 2, string? Actor = null, string? CorrelationId = null);
+```
+
 ## CorporateActionIngestResult
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestResult</code>. Kind: `record`.
@@ -420,7 +432,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.FieldAlreadyStagedException</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1922](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1922).
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1942](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1942).
 
 A field edit was refused because another open revision already stages the same field (review P5/D1). Mapped to HTTP 409 with the first stager&#x27;s identity.
 
@@ -432,12 +444,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FieldAlreadyStagedException(Guid securityId, string fieldPath, Guid revisionId, string stagedBy, SecurityMasterRevisionStateDto state) : base($&quot;Field &#x27;{fieldPath}&#x27; of security &#x27;{securityId:D}&#x27; is already staged by {stagedBy} in revision &#x27;{revisionId:D}&#x27; ({state}). &quot; + &quot;Publish or discard that revision before staging the field again.&quot;);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1924](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1924) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1935](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1935) |  |
-| <code>public string FieldPath { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1937](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1937) |  |
-| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1939](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1939) |  |
-| <code>public string StagedBy { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1941](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1941) |  |
-| <code>public SecurityMasterRevisionStateDto State { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1943](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1943) |  |
+| <code>public FieldAlreadyStagedException(Guid securityId, string fieldPath, Guid revisionId, string stagedBy, SecurityMasterRevisionStateDto state) : base($&quot;Field &#x27;{fieldPath}&#x27; of security &#x27;{securityId:D}&#x27; is already staged by {stagedBy} in revision &#x27;{revisionId:D}&#x27; ({state}). &quot; + &quot;Publish or discard that revision before staging the field again.&quot;);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1944](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1944) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1955](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1955) |  |
+| <code>public string FieldPath { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1957](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1957) |  |
+| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1959](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1959) |  |
+| <code>public string StagedBy { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1961](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1961) |  |
+| <code>public SecurityMasterRevisionStateDto State { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1963](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1963) |  |
 
 ## FileSecurityCashFlowReceiptStore
 
@@ -961,21 +973,3 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;SecurityMasterRevisionRecord&gt;&gt; ListBySecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:58](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L58) | All revisions recorded for one security, in no guaranteed order. Used by the approval seam to decide whether a security-level override decision would co-approve values staged by OTHER, not-yet-approved revisions. |
 | <code>Task&lt;IReadOnlyList&lt;SecurityMasterRevisionRecord&gt;&gt; ListByStatesAsync(IReadOnlyCollection&lt;SecurityMasterRevisionStateDto&gt; states, int limit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:65](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L65) | Revisions in any of states across ALL securities, oldest first, at most limit. Feeds the review inbox (review P5/D1): a reviewer other than the drafter must be able to find a colleague&#x27;s submitted draft. |
 | <code>Task&lt;SecurityMasterRevisionRecord&gt; TransitionAsync(Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next, string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:77](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L77) | Atomically transitions a revision from expected to next. Throws SecurityMasterRevisionStateException when the revision is missing or its current state is not expected (a concurrent or out-of-order transition). When workflowIdForSubmit is supplied on a Draft→Submitted transition, it is durably bound to the revision so approval can be restricted to that same workflow lane. |
-
-## ISecurityMasterSourceAdmissionPolicy
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterSourceAdmissionPolicy</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L15).
-
-Review P2 / A2: golden-record write admission. Decides whether an incoming source may overwrite a field whose incumbent value another source supplied. Ranking is per source (owner decision 2026-11-25), taken from SecurityMasterWorkbenchOptions.SourcePrecedence and SecurityMasterWorkbenchOptions.GoldenCopySource.
-
-```csharp
-public interface ISecurityMasterSourceAdmissionPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>bool IncumbentOutranks(string? incumbentSource, string? challengerSource);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs:22](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterSourceAdmission.cs#L22) | True when incumbentSource outranks challengerSource, so the challenger&#x27;s value must be held for review instead of applied. Unranked sources are never held and never hold others (owner decision: unranked sources keep applying as before). |

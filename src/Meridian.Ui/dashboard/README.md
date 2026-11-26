@@ -3964,6 +3964,10 @@ The passport editor (`security-passport-editor.tsx`, mounted through
 Override are disabled, and **Continue draft** makes that draft the working revision.
 `classifyConflictResolution` adopts a `pendingRevisionId` returned by a resolution in the same way.
 
+The workbench and review-queue route helpers live in
+`src/lib/workstation-endpoints.security-master-review.ts` and are re-exported from
+`workstation-endpoints.ts`, which keeps that file under the 2,000-line ratchet.
+
 ## Operator identity
 
 The workstation session's `displayName` is a desk label ("Meridian Operator", "<strategy> Desk"), not

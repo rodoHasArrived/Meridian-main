@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterRevisionFieldValue
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionFieldValue</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:93](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L93).
+
+The exact overlay VALUE a field-edit revision governs — null models a staged CLEAR. Wrapping the nullable value distinguishes &quot;the edit recorded a clear&quot; from &quot;no value was recorded at all&quot; (legacy revisions predating value persistence), which discard-time restoration must tell apart: a recorded clear restores by removing the key, while an unrecorded value is unrecoverable and falls back to the fail-closed sibling handling.
+
+```csharp
+public sealed record SecurityMasterRevisionFieldValue(string? Value);
+```
+
 ## SecurityMasterRevisionRecord
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionRecord</code>. Kind: `record`.
@@ -215,9 +227,10 @@ Declared public members:
 | <code>public async Task&lt;SecurityMasterEditResultDto&gt; UpdateSecurityFieldAsync(UpdateSecurityFieldRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:111](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L111) |  |
 | <code>public async Task&lt;SecurityMasterConflictResolutionDto&gt; ResolveSourceConflictAtCurrentVersionAsync(ResolveSourceConflictRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:414](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L414) |  |
 | <code>public async Task&lt;SecurityMasterConflictResolutionDto&gt; ResolveSourceConflictAsync(ResolveSourceConflictRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:422](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L422) |  |
-| <code>public async Task&lt;SecurityMasterEditResultDto&gt; SubmitForApprovalAsync(SubmitSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:638](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L638) |  |
-| <code>public async Task&lt;SecurityMasterEditResultDto&gt; ApproveRevisionAsync(ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:781](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L781) |  |
-| <code>public async Task&lt;SecurityMasterPublishResultDto&gt; PublishRevisionAsync(PublishSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:894](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L894) |  |
+| <code>public static bool TryReadConflictCandidate(string? justification, out Guid conflictId, out string source);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:604](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L604) | Reads the &quot;Use B&quot; marker from a draft&#x27;s justification: the conflict the draft adopts a candidate for, and that candidate&#x27;s source. False for every other revision. Lets read surfaces link a pending draft to its conflict without each client parsing the justification text. |
+| <code>public async Task&lt;SecurityMasterEditResultDto&gt; SubmitForApprovalAsync(SubmitSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:658](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L658) |  |
+| <code>public async Task&lt;SecurityMasterEditResultDto&gt; ApproveRevisionAsync(ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:801](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L801) |  |
+| <code>public async Task&lt;SecurityMasterPublishResultDto&gt; PublishRevisionAsync(PublishSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:914](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L914) |  |
 
 Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Discard.cs:14](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Discard.cs#L14).
 
@@ -1097,16 +1110,4 @@ Result of credential validation.
 
 ```csharp
 public sealed record ValidationResult(string Provider, bool IsValid, string? Message, string? AccountInfo, TimeSpan ResponseTime);
-```
-
-## ValidationSummary
-
-Qualified name: <code>Meridian.Application.Services.CredentialValidationService.ValidationSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/CredentialValidationService.cs:40](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L40).
-
-Summary of all validation results.
-
-```csharp
-public sealed record ValidationSummary(IReadOnlyList<ValidationResult> Results, bool AllValid, IReadOnlyList<string> Warnings);
 ```

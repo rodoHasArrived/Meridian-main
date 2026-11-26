@@ -6,6 +6,123 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StructuredCashFlowSourceKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowSourceKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L10).
+
+Identifies the originating source of structured cash flow projections.
+
+```csharp
+public enum StructuredCashFlowSourceKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>MIAC</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L12) |  |
+| <code>MoodysAnalytics</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L13) |  |
+| <code>ClientProvided</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L14) |  |
+| <code>CalculatedBullet</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L15) |  |
+| <code>CalculatedSinker</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L16) |  |
+| <code>Unknown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L21) | Read-tolerance member: a source kind written by a newer node. Matches no provider and no calculated path, so projections resolve to null (no data) instead of the row failing to read. |
+
+## StructuredCashFlowStaleness
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowStaleness</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L46).
+
+Freshness classification for the cash flow source backing a projection. Consumers that post to the ledger MUST treat every state other than Fresh as a hard gate rather than an advisory log line.
+
+```csharp
+public enum StructuredCashFlowStaleness
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L52) | The source has no last-updated timestamp, so freshness cannot be evaluated and must not drive ledger postings. |
+| <code>Fresh</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L55) | The source was refreshed within the staleness threshold. |
+| <code>Stale</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L58) | The source is older than the staleness threshold and must not drive ledger postings. |
+
+## StructuredCashFlowTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L17).
+
+Strongly typed economic terms resolved once from a security&#x27;s raw term JSON, replacing the scattered fuzzy key-probing that previously lived inline in the projection math. All alias resolution and JSON traversal is centralized in StructuredCashFlowTermsResolver; downstream projection and ledger code consumes this typed shape only.
+
+```csharp
+public sealed record StructuredCashFlowTerms(DateOnly? MaturityDate, DateOnly? IssueDate, decimal? PrincipalFace, decimal? CurrentFactor, decimal? CouponRate, string? PaymentFrequency, string? DayCountConvention, IReadOnlyList<StructuredFactorScheduleEntry> FactorSchedule, IReadOnlyList<StructuredCashFlowLeg>? Legs = null, IReadOnlyList<StructuredPrincipalScheduleEntry>? PrincipalSchedule = null, IReadOnlyList<StructuredStepCouponEntry>? StepCouponSchedule = null, string? InflationIndex = null, decimal? InflationBaseIndexValue = null, decimal? InflationIndexRatio = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore] public SecurityCouponKind CouponKind { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L35) |  |
+| <code>[JsonIgnore] public SecurityCouponRateUnit CouponRateUnit { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L38) |  |
+| <code>[JsonIgnore] public RateUnit? RecordRateUnit { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L42) | Explicit scalar rate-unit declaration, independent of schedule conventions. |
+| <code>[JsonIgnore] public decimal? CapRate { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L45) |  |
+| <code>[JsonIgnore] public decimal? FloorRate { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L48) |  |
+| <code>public static StructuredCashFlowTerms Empty { get; } = new (MaturityDate : null, IssueDate : null, PrincipalFace : null, CurrentFactor : null, CouponRate : null, PaymentFrequency : null, DayCountConvention : null, FactorSchedule : Array.Empty&lt;StructuredFactorScheduleEntry&gt;());</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L51) | An empty term set used when a security carries no readable structured terms. |
+| <code>public bool HasFactorSchedule =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L62) | True when a typed, multi-point factor schedule was resolved from the terms. |
+| <code>public bool HasLegs =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:65](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L65) | True when typed cash-flow legs were resolved (multi-leg or floating-rate structure). |
+| <code>public bool HasPrincipalSchedule =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L68) | True when contractual principal payment dates and amounts were resolved. |
+| <code>public decimal? FactorAsOf(DateOnly asOf);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L76) | Returns the pool factor in effect on asOf — the latest scheduled factor dated on or before that day — falling back to the scalar CurrentFactor when no schedule point applies. This is how the typed factor schedule seeds amortization instead of a single free-text scalar. |
+| <code>public bool HasStepCouponSchedule =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:91](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L91) | True when a dated step-coupon schedule was resolved from the terms. |
+| <code>public decimal? CouponRateAsOf(DateOnly asOf);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:99](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L99) | Returns the coupon rate payable on asOf — for step coupons the latest scheduled step effective on or before that day, otherwise the scalar CouponRate. This is what makes a step-rate bond computable instead of a classified-but-inert label: accrual and projection math can ask for the rate per period. |
+
+## StructuredCashFlowTermsResolver
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowTermsResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L12).
+
+Resolves a security&#x27;s raw term JSON into StructuredCashFlowTerms. This is the single place that knows the vendor key aliases for each economic term and how to walk the three term blobs (asset-specific terms, their nested profileFields, then common terms). Value coercion is delegated to SecurityTermReader so the cash-flow and obligation projections share one probing implementation instead of re-deriving fuzzy key lookups at each call site.
+
+```csharp
+public static class StructuredCashFlowTermsResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyCollection&lt;string&gt; LegSpellingPaths =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L67) | The swap-leg schema paths the resolver reads, under Swap. |
+| <code>public static IReadOnlyList&lt;string&gt; LegSpellings(string path) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L70) | The spellings read for the swap-leg field at path, in priority order. |
+| <code>public static StructuredCashFlowTerms Resolve(SecurityDetailDto security);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L73) | Resolves the typed cash flow terms for security. |
+| <code>public static IEnumerable&lt;JsonElement&gt; EnumerateTermSources(SecurityDetailDto security);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:342](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L342) | Enumerates governed profile fields, outer asset terms, and common terms in authority order. The asset terms are read at the class&#x27;s current terms version (SecurityAssetClassTermsUpgrader, ADR-024). |
+
+## StructuredCreditReclassificationBlockerDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationBlockerDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs#L19).
+
+One reason a reclassification proposal needs operator input before it can be applied.
+
+```csharp
+public sealed record StructuredCreditReclassificationBlockerDto(string Code, string Message);
+```
+
+## StructuredCreditReclassificationCandidateDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationCandidateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs#L30).
+
+One legacy securitised row the report proposes to re-model as StructuredCredit. DerivedAssetSpecificTerms holds the complete stamped terms document when the disposition is StructuredCreditReclassificationDisposition.Ready, and only the terms carried over from the source record when it is StructuredCreditReclassificationDisposition.Blocked.
+
+```csharp
+public sealed record StructuredCreditReclassificationCandidateDto(Guid SecurityId, string DisplayName, string PrimaryIdentifierKind, string PrimaryIdentifierValue, string SourceAssetClass, string SourceLabel, StructuredCreditReclassificationDisposition Disposition, string? ProposedKind, JsonElement DerivedAssetSpecificTerms, IReadOnlyList<StructuredCreditReclassificationBlockerDto> Blockers);
+```
+
 ## StructuredCreditReclassificationDisposition
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationDisposition</code>. Kind: `enum`.
@@ -784,107 +901,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;sequenceErrors&quot;)] public int SequenceErrors { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:207](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L207) | Gets or sets the number of sequence errors detected. |
 | <code>[JsonPropertyName(&quot;eventsPerSecond&quot;)] public float EventsPerSecond { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:213](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L213) | Gets or sets the average events processed per second. |
 | <code>[JsonPropertyName(&quot;compressionRatio&quot;)] public float CompressionRatio { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:219](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L219) | Gets or sets the compression ratio achieved. |
-
-## SessionStatus
-
-Qualified name: <code>Meridian.Contracts.Session.SessionStatus</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Session/CollectionSession.cs:110](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L110).
-
-Session status constants.
-
-```csharp
-public static class SessionStatus
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Pending = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:115](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L115) | Session is waiting to start. |
-| <code>public const string Active = &quot;Active&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:120](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L120) | Session is actively collecting data. |
-| <code>public const string Paused = &quot;Paused&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:125](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L125) | Session is temporarily paused. |
-| <code>public const string Completed = &quot;Completed&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:130](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L130) | Session has completed successfully. |
-| <code>public const string Failed = &quot;Failed&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:135](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L135) | Session has failed due to an error. |
-
-## MarketDataQuery
-
-Qualified name: <code>Meridian.Contracts.Store.MarketDataQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Store/MarketDataQuery.cs:23](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L23).
-
-Immutable query specification for IMarketDataStore. All parameters are optional — an empty query returns all stored events up to Limit.
-
-```csharp
-public sealed record MarketDataQuery(SymbolId? Symbol = null, DateTimeOffset? From = null, DateTimeOffset? To = null, MarketEventType? EventType = null, string? Source = null, int? Limit = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public MarketDataQuery WithSymbol(SymbolId symbol) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:32](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L32) | Returns a new query that adds a symbol filter. |
-| <code>public MarketDataQuery WithTimeRange(DateTimeOffset from, DateTimeOffset to) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:35](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L35) | Returns a new query restricted to a time window. |
-| <code>public MarketDataQuery WithEventType(MarketEventType type) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:39](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L39) | Returns a new query restricted to a specific event type. |
-| <code>public MarketDataQuery WithSource(string source) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:42](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L42) | Returns a new query restricted to a specific data source. |
-| <code>public MarketDataQuery WithLimit(int limit) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:45](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L45) | Returns a new query with a maximum result count. |
-
-## StrategyEngineDataAvailability
-
-Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDataAvailability</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:171](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L171).
-
-```csharp
-public sealed record StrategyEngineDataAvailability(string DependencyId, bool IsAvailable, DateTimeOffset? AvailableFrom = null, DateTimeOffset? AvailableTo = null, DateTimeOffset? LastUpdatedAt = null, string? SourceReference = null, IReadOnlyList<string>? MissingFields = null, string? DegradationReason = null);
-```
-
-## StrategyEngineDataDependency
-
-Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDataDependency</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:129](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L129).
-
-```csharp
-public sealed record StrategyEngineDataDependency(string DependencyId, StrategyEngineDataDependencyKind Kind, string Description, string? AssetClass = null, string? Granularity = null, DateTimeOffset? RequiredFrom = null, DateTimeOffset? RequiredTo = null, TimeSpan? FreshnessWindow = null, StrategyEngineMissingDataPolicy MissingDataPolicy = StrategyEngineMissingDataPolicy.Block, IReadOnlyList<string>? RequiredFields = null);
-```
-
-## StrategyEngineDataDependencyKind
-
-Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDataDependencyKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:60](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L60).
-
-Declared data input class for a strategy.
-
-```csharp
-public enum StrategyEngineDataDependencyKind : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>PriceBars</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:62](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L62) |  |
-| <code>LiveQuotes</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:63](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L63) |  |
-| <code>Fundamentals</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:64](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L64) |  |
-| <code>ReferenceData</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:65](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L65) |  |
-| <code>SecurityMaster</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:66](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L66) |  |
-| <code>OptionsChain</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:67](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L67) |  |
-| <code>Positions</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:68](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L68) |  |
-| <code>OpenLots</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:69](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L69) |  |
-| <code>Portfolio</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:70](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L70) |  |
-| <code>Ledger</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:71](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L71) |  |
-| <code>CorporateActions</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:72](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L72) |  |
-| <code>ProviderBackfill</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:73](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L73) |  |
-| <code>Custom</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:74](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L74) |  |
-
-## StrategyEngineDefinition
-
-Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDefinition</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:141](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L141).
-
-```csharp
-public sealed record StrategyEngineDefinition(string StrategyId, string Version, string Name, StrategyEngineStrategyType Type, string Description, IReadOnlyList<string> AssetUniverse, IReadOnlyList<StrategyEngineDataDependency> RequiredDataInputs, IReadOnlyList<StrategyEngineParameterDefinition> ParameterSchema, IReadOnlyList<StrategyEngineRunMode> SupportedModes, string Owner, string Source, IReadOnlyDictionary<string, string>? UiMetadata = null, IReadOnlyDictionary<string, string>? Extensions = null);
-```

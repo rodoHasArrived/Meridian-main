@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ValidationSummary
+
+Qualified name: <code>Meridian.Application.Services.CredentialValidationService.ValidationSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/CredentialValidationService.cs:40](../../../../src/Meridian.Application/Services/CredentialValidationService.cs#L40).
+
+Summary of all validation results.
+
+```csharp
+public sealed record ValidationSummary(IReadOnlyList<ValidationResult> Results, bool AllValid, IReadOnlyList<string> Warnings);
+```
+
 ## DailySummary
 
 Qualified name: <code>Meridian.Application.Services.DailySummary</code>. Kind: `class`.
@@ -950,15 +962,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static AutomatedJournalDraft Build(PortfolioImportRun run);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs:10](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs#L10) |  |
-
-## ProviderStatus
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.ProviderStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:613](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L613).
-
-Provider availability status.
-
-```csharp
-public sealed record ProviderStatus(string Name, string DisplayName, int Priority, bool Available);
-```
