@@ -1347,6 +1347,7 @@ Meridian-main
 │   │   ├── 030-intercompany-interest-compounding.md
 │   │   ├── 031-intercompany-accrual-schedules.md
 │   │   ├── 032-intercompany-confirmation-close-policy.md
+│   │   ├── 033-intercompany-confirmation-cross-company-and-adjustments.md
 │   │   ├── _template.md
 │   │   └── README.md
 │   ├── ai
@@ -8341,7 +8342,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_079__chart_codes_and_journal_memos.sql
 │   │   │   │   ├── V_ledger_080__fiscal_year_close_receipts.sql
 │   │   │   │   ├── V_ledger_081__book_fx_settlement_receipts.sql
-│   │   │   │   └── V_ledger_082__external_gl_posting.sql
+│   │   │   │   ├── V_ledger_082__external_gl_posting.sql
+│   │   │   │   └── V_ledger_083__intercompany_confirmation_party_companies.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -10912,6 +10914,7 @@ Meridian-main
 │   │   │   │   ├── IntercompanyAgreementWorkspace.cs
 │   │   │   │   ├── IntercompanyAgreementWorkspace.LegacyCoverage.cs
 │   │   │   │   ├── IntercompanyAgreementWorkspace.StructuredTerms.cs
+│   │   │   │   ├── IntercompanyBalanceConfirmationWorkspace.Adjustments.cs
 │   │   │   │   ├── IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs
 │   │   │   │   ├── IntercompanyBalanceConfirmationWorkspace.cs
 │   │   │   │   ├── IntercompanyCounterpartQueueWorkspace.cs
@@ -10928,6 +10931,7 @@ Meridian-main
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Choices.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.ClosePolicies.cs
+│   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.ConfirmationAdjustments.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Confirmations.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Fees.cs
@@ -11553,6 +11557,7 @@ Meridian-main
 │   │   │   ├── IntercompanyAccrualScheduleService.cs
 │   │   │   ├── IntercompanyAgreementAuthorities.cs
 │   │   │   ├── IntercompanyAgreementJournalProjection.cs
+│   │   │   ├── IntercompanyConfirmationAdjustmentDraftService.cs
 │   │   │   ├── IntercompanyFeeAccrualDraftService.cs
 │   │   │   ├── IntercompanyP1P2ServiceRegistration.cs
 │   │   │   ├── IntercompanyProposalDeliveryService.cs
@@ -13808,6 +13813,7 @@ Meridian-main
 │   │   │   │   └── LegacyIntercompanyAttributionTests.cs
 │   │   │   ├── Intercompany
 │   │   │   │   ├── IntercompanyAccrualSourceBuilderTests.cs
+│   │   │   │   ├── IntercompanyBalanceConfirmationCrossCompanyTests.cs
 │   │   │   │   ├── IntercompanyBalanceConfirmationRulesTests.cs
 │   │   │   │   ├── IntercompanyBalanceConfirmationServiceTests.cs
 │   │   │   │   ├── IntercompanyBalanceScheduleTests.cs
@@ -15343,6 +15349,7 @@ Meridian-main
 │   │   │   ├── IntercompanyBalanceConfirmationEndpointTests.cs
 │   │   │   ├── IntercompanyCloseAdvisoryAuthorizationTests.cs
 │   │   │   ├── IntercompanyCloseAdvisoryMembershipTests.cs
+│   │   │   ├── IntercompanyConfirmationAdjustmentDraftServiceTests.cs
 │   │   │   ├── IntercompanyConfirmationClosePolicyEndpointTests.cs
 │   │   │   ├── IntercompanyFeeAccrualDraftServiceTests.cs
 │   │   │   ├── IntercompanyObligationEndpointTests.cs

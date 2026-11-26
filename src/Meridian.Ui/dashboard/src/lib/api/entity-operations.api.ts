@@ -28,6 +28,7 @@ export const entityOperationEndpoints = {
   confirmations: "/api/ledger/intercompany/confirmations",
   confirmationSummary: (bookId: string, asOf: string) => `/api/ledger/intercompany/confirmations?${new URLSearchParams({ ledgerBookId: bookId, asOf })}`,
   confirmationActions: (confirmationId: string) => `/api/ledger/intercompany/confirmations/${encodeURIComponent(confirmationId)}/actions`,
+  confirmationAdjustmentDrafts: (confirmationId: string) => `/api/ledger/intercompany/confirmations/${encodeURIComponent(confirmationId)}/adjustment-drafts`,
   confirmationClosePolicies: "/api/ledger/intercompany/confirmation-close-policies",
   confirmationClosePolicyList: (bookId: string) => `/api/ledger/intercompany/confirmation-close-policies?${new URLSearchParams({ ledgerBookId: bookId })}`,
   confirmationClosePolicyDecisions: (policyId: string, bookId: string) =>

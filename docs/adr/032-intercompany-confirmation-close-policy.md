@@ -1,10 +1,10 @@
 # ADR-032: Opt-in, Policy-Governed Close Blocking from Intercompany Balance Confirmation
 
-**Status:** Proposed; first increment implemented
+**Status:** Accepted 2026-11-25; first increment implemented
 **Date:** 2026-11-18
 **Owner:** Accounting and Ledger
 **Reviewed:** 2026-11-18
-**Deciders:** Repository owner (pending acceptance of `DEC-IC-CONFIRM-002`)
+**Deciders:** Repository owner (`DEC-IC-CONFIRM-002` accepted 2026-11-25)
 **Supersedes:** None. It extends `DEC-IC-CONFIRM-001`, which kept confirmation advisory.
 **Superseded by:** None
 
@@ -46,8 +46,9 @@ A ledger book may adopt **one reviewed confirmation close policy**. Without one,
 | Desktop | `src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs`, `src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml` | Policy section on the Balance confirmation tab |
 | Tests | `tests/Meridian.Tests/Storage/IntercompanyConfirmationClosePolicyTests.cs`, `tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.ConfirmationClosePolicyTests.cs`, `tests/Meridian.Tests/Ui/IntercompanyConfirmationClosePolicyEndpointTests.cs` | Rules, gate, stores (file and PostgreSQL), contributor and routes |
 
-Implemented on 2026-11-18 with synthetic fixtures. Acceptance of `DEC-IC-CONFIRM-002` by the repository owner is
-pending; until then the capability exists but no book is expected to adopt a policy in production.
+Implemented on 2026-11-18 with synthetic fixtures. The repository owner accepted `DEC-IC-CONFIRM-002` on
+2026-11-25. Acceptance adopts the decision; it is not production certification, and evidence remains synthetic.
+Books still keep advisory-only confirmation until someone proposes and a different reviewer approves a policy.
 
 ## Rationale
 

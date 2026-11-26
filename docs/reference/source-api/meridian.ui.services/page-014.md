@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QualityArchiveStore
+
+Qualified name: <code>Meridian.Ui.Services.Services.QualityArchiveStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:40](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L40).
+
+JSON file-backed archive store using %LOCALAPPDATA%\Meridian\quality-archive.json. Stores data as Dictionary&lt;symbol -&gt; Dictionary&lt;date string -&gt; score&gt;&gt;. Thread-safe using concurrent dictionary wrapper.
+
+```csharp
+public sealed class QualityArchiveStore : IQualityArchiveStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public QualityArchiveStore(ILogger&lt;QualityArchiveStore&gt; logger);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:54](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L54) |  |
+| <code>public Task RecordAsync(string symbol, DateOnly date, double completenessScore, CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:80](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L80) | Records a daily quality score, updating in-memory cache and persisting to disk. |
+| <code>public Task&lt;IReadOnlyList&lt;DailyQualityRecord&gt;&gt; GetHistoryAsync(string symbol, DateOnly from, DateOnly to, CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:103](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L103) | Retrieves historical records for a symbol within a date range. |
+| <code>public Task&lt;IReadOnlyList&lt;string&gt;&gt; GetSymbolsAsync(CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:129](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L129) | Gets all tracked symbols. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:204](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L204) |  |
+
 ## QualityCheckResult
 
 Qualified name: <code>Meridian.Ui.Services.Services.QualityCheckResult</code>. Kind: `class`.
@@ -1139,28 +1161,3 @@ Declared public members:
 | <code>public async Task&lt;ArchiveStats?&gt; GetArchiveStatsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:101](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L101) | Gets archive statistics. |
 | <code>public static string FormatBytes(long bytes) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:109](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L109) | Formats a byte count into a human-readable string (e.g., &quot;1.5 GB&quot;). |
 | <code>public static string GetFileIcon(string dataType);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:114](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L114) | Gets the icon glyph for a data type. |
-
-## StorageStatsSummary
-
-Qualified name: <code>Meridian.Ui.Services.StorageStatsSummary</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:12](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L12).
-
-Summarizes storage capacity, utilization, files, symbols, and retained date coverage.
-
-```csharp
-public sealed class StorageStatsSummary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public long TotalSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:14](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L14) |  |
-| <code>public long UsedSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:15](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L15) |  |
-| <code>public long FreeSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:16](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L16) |  |
-| <code>public double UsedPercentage { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:17](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L17) |  |
-| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:18](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L18) |  |
-| <code>public int TotalSymbols { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:19](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L19) |  |
-| <code>public DateTime OldestData { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:20](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L20) |  |
-| <code>public DateTime NewestData { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:21](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L21) |  |

@@ -8,7 +8,8 @@ namespace Meridian.Storage.Ledger;
 
 /// <summary>
 /// Durable single-process local counterpart of the append-only PostgreSQL store: every version is retained, one
-/// confirmation exists per tenant, company, profile and date, and a stale expected version is refused.
+/// confirmation exists per tenant, company, profile and date (per tenant, profile and date when it spans two
+/// companies), and a stale expected version is refused.
 /// </summary>
 public sealed class FileIntercompanyBalanceConfirmationStore(string path, IFundScopeTenantAccessor tenants) : IIntercompanyBalanceConfirmationStore
 {
@@ -48,6 +49,9 @@ public sealed class FileIntercompanyBalanceConfirmationStore(string path, IFundS
                     return retained;
                 throw new InvalidOperationException("The confirmation changed since it was read. Reload it and act on the current version.");
             }
+            if (next.Version == 1 && all.Any(item => item.TenantId == next.TenantId && item.AccountingArrangementId == next.AccountingArrangementId
+                && item.AsOf == next.AsOf && item.ConfirmationId != next.ConfirmationId && Overlaps(item, next)))
+                throw new InvalidOperationException("The confirmation changed since it was read. Reload it and act on the current version.");
             var current = scope.MaxBy(item => item.Version);
             if ((current?.Version ?? 0) != expectedVersion || (current is not null && current.ConfirmationId != next.ConfirmationId))
                 throw new InvalidOperationException("The confirmation changed since it was read. Reload it and act on the current version.");
@@ -58,7 +62,12 @@ public sealed class FileIntercompanyBalanceConfirmationStore(string path, IFundS
     }
 
     private static IntercompanyBalanceConfirmationDto? Latest(IEnumerable<IntercompanyBalanceConfirmationDto> items, string tenant, string? company)
-        => items.Where(item => item.TenantId == tenant && item.CompanyId == company).MaxBy(item => item.Version);
+        => items.Where(item => item.TenantId == tenant).GroupBy(item => item.ConfirmationId)
+            .Select(group => group.MaxBy(item => item.Version)!).Where(item => item.IsVisibleTo(company)).MaxBy(item => item.Version);
+
+    // Two confirmations of one profile and date compete when any company could see both.
+    private static bool Overlaps(IntercompanyBalanceConfirmationDto left, IntercompanyBalanceConfirmationDto right)
+        => new[] { right.CompanyId, right.PartyOneCompanyId, right.PartyTwoCompanyId }.Any(left.IsVisibleTo);
 
     private string RequireTenant()
     {

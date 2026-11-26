@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WindowBounds
+
+Qualified name: <code>Meridian.Ui.Services.WindowBounds</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:92](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L92).
+
+Window bounds for multi-monitor support.
+
+```csharp
+public sealed class WindowBounds
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public double X { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:94](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L94) |  |
+| <code>public double Y { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:95](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L95) |  |
+| <code>public double Width { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:96](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L96) |  |
+| <code>public double Height { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:97](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L97) |  |
+| <code>public string? MonitorId { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:98](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L98) |  |
+| <code>public bool IsMaximized { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:99](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L99) |  |
+
 ## WorkspaceCategory
 
 Qualified name: <code>Meridian.Ui.Services.WorkspaceCategory</code>. Kind: `enum`.

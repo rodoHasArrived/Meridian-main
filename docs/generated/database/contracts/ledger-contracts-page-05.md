@@ -2,11 +2,18 @@
 
 # `ledger-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 542. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 543. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_IntercompanyAccrualRequestDto["IntercompanyAccrualRequestDto"] {
+        +DateOnly AccrualFrom
+        +DateOnly AccrualTo
+        +Guid InterestArrangementId
+        +Guid PrincipalArrangementId
+        +Guid SourceBookId
+    }
     class Meridian_Contracts_Ledger_IntercompanyAccrualScheduleActionDto["IntercompanyAccrualScheduleActionDto"] {
     }
     class Meridian_Contracts_Ledger_IntercompanyAccrualScheduleDto["IntercompanyAccrualScheduleDto"] {
@@ -72,9 +79,9 @@ classDiagram
         +Guid IntercompanyAgreementId
         +decimal NetTransactionBalance
         +IntercompanyBalanceConfirmationSideDto PartyOne
+        +string? PartyOneCompanyId
         +IntercompanyBalanceConfirmationSideDto PartyTwo
-        +IntercompanyBalanceConfirmationStatusDto Status
-        +string TenantId
+        +string? PartyTwoCompanyId
     }
     class Meridian_Contracts_Ledger_IntercompanyBalanceConfirmationEventDto["IntercompanyBalanceConfirmationEventDto"] {
         +IntercompanyBalanceConfirmationActionDto Action
@@ -602,8 +609,6 @@ classDiagram
         +DateOnly? StartDate
         +decimal TotalCredits
         +decimal TotalDebits
-    }
-    class Meridian_Contracts_Ledger_LedgerCurrencyRounding["LedgerCurrencyRounding"] {
     }
     Meridian_Contracts_Ledger_IntercompanyAccrualScheduleDto --> Meridian_Contracts_Ledger_IntercompanyAccrualScheduleEventDto
     Meridian_Contracts_Ledger_IntercompanyAccrualScheduleDto --> Meridian_Contracts_Ledger_IntercompanyAccrualScheduleKindDto

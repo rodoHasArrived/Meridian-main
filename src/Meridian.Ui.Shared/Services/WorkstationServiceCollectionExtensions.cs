@@ -1350,6 +1350,16 @@ public static class WorkstationServiceCollectionExtensions
                     sp.GetRequiredService<IManualJournalEntryDraftStore>(), workbench, calculator,
                     sp.GetService<IConsolidationFxAuthority>(), sp.GetRequiredService<TimeProvider>(),
                     sp.GetService<Meridian.Application.FundStructure.IntercompanyRateFixingService>()) : null!);
+        // Adjustments from a resolved confirmation dispute are ordinary workbench drafts; without the confirmation service,
+        // binding store or workbench they are unavailable rather than prepared without the posting identities.
+        services.TryAddSingleton<IntercompanyConfirmationAdjustmentDraftService>(sp =>
+            sp.GetService<Meridian.FinancialOperations.Intercompany.IntercompanyBalanceConfirmationService>() is { } adjustmentConfirmations &&
+            sp.GetService<ILedgerJournalStore>() is { } adjustmentJournals &&
+            sp.GetService<IIntercompanyAccountBindingStore>() is { } adjustmentBindings &&
+            sp.GetService<ManualJournalEntryWorkbenchService>() is { } adjustmentWorkbench
+                ? new IntercompanyConfirmationAdjustmentDraftService(adjustmentConfirmations, adjustmentJournals, adjustmentBindings,
+                    sp.GetRequiredService<IAccountingConfigurationService>(), sp.GetRequiredService<IManualJournalEntryDraftStore>(),
+                    adjustmentWorkbench, sp.GetRequiredService<TimeProvider>()) : null!);
         // Opt-in accrual schedules draft through the same interest drafting service, so they exist only beside it.
         services.TryAddSingleton<IntercompanyAccrualScheduleService>(sp =>
             sp.GetService<IIntercompanyAccrualScheduleStore>() is { } schedules &&

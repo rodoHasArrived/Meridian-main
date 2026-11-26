@@ -30,7 +30,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="16">
             <TextBlock Text="Reciprocal balance confirmation" FontSize="20" FontWeight="SemiBold" />
-            <TextBlock Text="Each side confirms the due-to/due-from balance the other side holds, from posted journals only. No amount is entered here. Confirmation status is advisory: it appears in close readiness and never blocks close or posting. Records and permissions are shared with the browser workstation."
+            <TextBlock Text="Each side confirms the due-to/due-from balance the other side holds, from posted journals only. The other side may belong to another company of this tenant; each company acts only on its own side. Confirmation status appears in close readiness; it never blocks posting, and blocks close only for findings named by the book's approved close policy. Records and permissions are shared with the browser workstation."
                        Margin="0,5,0,12" TextWrapping="Wrap" />
             <WrapPanel>
                 <StackPanel><TextBlock Text="Ledger book ID" /><TextBox Text="{Binding LedgerBook, UpdateSourceTrigger=PropertyChanged}" Width="300" AutomationProperties.Name="Confirmation ledger book" /></StackPanel>
@@ -62,7 +62,19 @@
                 <StackPanel><TextBlock Text="Dispute or resolution reason" /><TextBox Text="{Binding Reason, UpdateSourceTrigger=PropertyChanged}" Width="420" AutomationProperties.Name="Balance confirmation reason" /></StackPanel>
                 <Button Content="Confirm this book's balance" Command="{Binding ConfirmCommand}" VerticalAlignment="Center" />
                 <Button Content="Dispute" Command="{Binding DisputeCommand}" VerticalAlignment="Center" />
-                <Button Content="Resolve dispute" Command="{Binding ResolveCommand}" VerticalAlignment="Center" />
+                <Button Content="Resolve dispute (this book's resolution across companies)" Command="{Binding ResolveCommand}" VerticalAlignment="Center" />
+            </WrapPanel>
+            <TextBlock Text="Correction after a resolved dispute" FontWeight="SemiBold" Margin="0,10,0,0" />
+            <TextBlock Text="Pre-fills a balanced draft on this book's mapped intercompany account. A reviewer approves and posts it in the journal workbench; nothing is posted here."
+                       TextWrapping="Wrap" />
+            <WrapPanel>
+                <StackPanel><TextBlock Text="Intercompany account to correct" />
+                    <ComboBox ItemsSource="{Binding AdjustmentRoles}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding AdjustmentRole}"
+                              Style="{StaticResource FormComboBoxStyle}" Width="220" Margin="0,3,12,10" AutomationProperties.Name="Adjustment intercompany account" /></StackPanel>
+                <StackPanel><TextBlock Text="Adjustment amount (positive debits, negative credits)" /><TextBox Text="{Binding AdjustmentAmount, UpdateSourceTrigger=PropertyChanged}" Width="200" AutomationProperties.Name="Adjustment amount" /></StackPanel>
+                <StackPanel><TextBlock Text="Offset account node" /><TextBox Text="{Binding AdjustmentOffsetAccount, UpdateSourceTrigger=PropertyChanged}" Width="220" AutomationProperties.Name="Adjustment offset account" /></StackPanel>
+                <StackPanel><TextBlock Text="Accounting date (yyyy-MM-dd, blank = as of)" /><TextBox Text="{Binding AdjustmentDate, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Adjustment accounting date" /></StackPanel>
+                <Button Content="Draft adjustment" Command="{Binding DraftAdjustmentCommand}" VerticalAlignment="Center" />
             </WrapPanel>
             <TextBlock Text="Pin current balances for confirmation" FontWeight="SemiBold" Margin="0,10,0,0" />
             <WrapPanel>

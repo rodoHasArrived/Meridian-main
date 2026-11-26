@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageStatsSummary
+
+Qualified name: <code>Meridian.Ui.Services.StorageStatsSummary</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:12](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L12).
+
+Summarizes storage capacity, utilization, files, symbols, and retained date coverage.
+
+```csharp
+public sealed class StorageStatsSummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public long TotalSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:14](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L14) |  |
+| <code>public long UsedSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:15](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L15) |  |
+| <code>public long FreeSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:16](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L16) |  |
+| <code>public double UsedPercentage { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:17](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L17) |  |
+| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:18](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L18) |  |
+| <code>public int TotalSymbols { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:19](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L19) |  |
+| <code>public DateTime OldestData { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:20](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L20) |  |
+| <code>public DateTime NewestData { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:21](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L21) |  |
+
 ## StorageStatusResponse
 
 Qualified name: <code>Meridian.Ui.Services.StorageStatusResponse</code>. Kind: `class`.
@@ -1196,25 +1221,3 @@ Declared public members:
 | <code>public int ActiveConnections { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:287](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L287) |  |
 | <code>public int PendingOperations { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:288](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L288) |  |
 | <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:289](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L289) |  |
-
-## TechnicalIndicatorInfo
-
-Qualified name: <code>Meridian.Ui.Services.TechnicalIndicatorInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ChartingService.cs:631](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L631).
-
-Technical indicator info.
-
-```csharp
-public sealed class TechnicalIndicatorInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:633](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L633) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:634](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L634) |  |
-| <code>public string ShortName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:635](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L635) |  |
-| <code>public string Category { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:636](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L636) |  |
-| <code>public string DefaultParams { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:637](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L637) |  |

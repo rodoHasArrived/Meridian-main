@@ -121,7 +121,16 @@ posted journals only. Load the book's confirmations for the period end, then:
 2. Confirm or dispute this book's side. The same person cannot confirm both sides, and an
    unbalanced pair cannot be confirmed.
 3. A dispute needs a reason and is resolved, with a reason, by someone other than the disputer.
-   Pin the corrected balances again afterwards.
+4. After a resolution, **Draft adjustment** pre-fills a balanced journal draft in this book: enter
+   the signed amount for this book's intercompany receivable or payable and a non-intercompany
+   offset account. It lands in the journal entry review queue linked to the dispute; nothing is
+   submitted or posted. Review and post it there, then pin the corrected balances again.
+
+The other book may belong to another company of your tenant, when the approved accounting profile
+maps it. Both companies see the confirmation, and each acts only on its own side. A dispute between
+two companies is resolved only when each side has recorded its own resolution ("Record this book's
+resolution"). `DEC-IC-CONFIRM-003` (ADR-033) records this decision, accepted by the repository
+owner on 2026-11-25.
 
 Open findings appear in the close advisory as `intercompany.confirmation.not-proposed`,
 `awaiting-confirmation`, `disputed`, `balances-changed`, `resolved-awaiting-proposal` or
@@ -132,8 +141,8 @@ the findings above (except `unavailable`) block close and give a reason; a diffe
 approves it, and it can be rejected or disabled with a reason. While it is active, a listed finding
 at the close period end adds an `intercompany-confirmation` close-readiness blocker, and
 confirmation status that cannot be read stops close until it can. Disabling the policy makes
-confirmation advisory again. `DEC-IC-CONFIRM-002` records this as a proposed decision awaiting the
-repository owner's acceptance.
+confirmation advisory again. `DEC-IC-CONFIRM-002` records this decision, accepted by the
+repository owner on 2026-11-25.
 
 Ordinary legal approval retains the independent-reviewer rule. To attest an external legal review,
 select the exact submitted hash and accepted retained review document, identify the distinct

@@ -655,6 +655,27 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static IntercompanyAgreementJournalLinesDto Project(IntercompanyAgreementDetailDto agreement, LedgerBookRecord book, IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, DateOnly asOf, string? cursor = null, int pageSize = 100);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs:13](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs#L13) |  |
 
+## IntercompanyConfirmationAdjustmentDraftService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyConfirmationAdjustmentDraftService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/IntercompanyConfirmationAdjustmentDraftService.cs:17](../../../../src/Meridian.Ui.Shared/Services/IntercompanyConfirmationAdjustmentDraftService.cs#L17).
+
+Pre-fills an ordinary journal-workbench draft that corrects one side of a reciprocal balance after its dispute was resolved (DEC-IC-CONFIRM-003). The intercompany leg carries the approved profile&#x27;s exact agreement, mapping and transaction identities so the posting authority accepts it and the balance schedule attributes it to the pair; the offset is an operator-chosen non-intercompany account. Nothing is submitted, approved or posted here: the draft enters the side&#x27;s ordinary maker-checker review, and once it posts the balances are proposed again.
+
+```csharp
+public sealed class IntercompanyConfirmationAdjustmentDraftService(IntercompanyBalanceConfirmationService confirmations, ILedgerJournalStore journals, IIntercompanyAccountBindingStore bindings, IAccountingConfigurationService configuration, IManualJournalEntryDraftStore drafts, ManualJournalEntryWorkbenchService workbench, TimeProvider? time = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SourcePrefix = &quot;intercompany-confirmation-adjustment:&quot;;</code> | [src/Meridian.Ui.Shared/Services/IntercompanyConfirmationAdjustmentDraftService.cs:22](../../../../src/Meridian.Ui.Shared/Services/IntercompanyConfirmationAdjustmentDraftService.cs#L22) | The retry-stable idempotency prefix that marks a draft as prepared from a resolved confirmation dispute. |
+| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; CreateDraftAsync(string tenantId, string? companyId, string actor, Guid confirmationId, CreateIntercompanyConfirmationAdjustmentDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyConfirmationAdjustmentDraftService.cs:26](../../../../src/Meridian.Ui.Shared/Services/IntercompanyConfirmationAdjustmentDraftService.cs#L26) |  |
+| <code>public static Guid DraftId(string tenantId, Guid confirmationId, IntercompanyBalanceConfirmationPartyDto party, Guid resolutionEventId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/IntercompanyConfirmationAdjustmentDraftService.cs:133](../../../../src/Meridian.Ui.Shared/Services/IntercompanyConfirmationAdjustmentDraftService.cs#L133) | One adjustment identity per confirmation, side and resolution. |
+| <code>public static string TransactionId(Guid confirmationId, IntercompanyBalanceConfirmationPartyDto party, Guid resolutionEventId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/IntercompanyConfirmationAdjustmentDraftService.cs:138](../../../../src/Meridian.Ui.Shared/Services/IntercompanyConfirmationAdjustmentDraftService.cs#L138) | The intercompany transaction identity the adjustment&#x27;s intercompany leg carries. |
+
 ## IntercompanyFeeAccrualDraftService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyFeeAccrualDraftService</code>. Kind: `class`.
@@ -953,21 +974,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>ValueTask&lt;ReportingCertifiedLedgerPresentationInput?&gt; ResolveExactAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L100) |  |
-
-## IReportingDeliveryGrantCredentialDeriver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IReportingDeliveryGrantCredentialDeriver</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:26](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L26).
-
-Derives a stable, opaque delivery credential without persisting its plaintext bearer. The binding key must be the durable delivery idempotency identity plus its committed attempt.
-
-```csharp
-public interface IReportingDeliveryGrantCredentialDeriver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ReportingDerivedAccessGrantCredential Derive(string bindingKey);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L28) |  |

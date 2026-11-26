@@ -386,6 +386,18 @@ The digest proves the operator is drafting exactly the computation they previewe
 public sealed record CreateIntercompanyAccrualDraftRequest(IntercompanyAccrualRequestDto Accrual, string ExpectedEvidenceDigest);
 ```
 
+## CreateIntercompanyConfirmationAdjustmentDraftRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.CreateIntercompanyConfirmationAdjustmentDraftRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:106](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L106).
+
+Pre-fills an ordinary journal-workbench draft that corrects one side after a dispute was resolved. The draft is never submitted, approved or posted automatically. AdjustmentAmount is in the agreement currency: a positive amount debits the side&#x27;s intercompany account named by Role, a negative amount credits it, and OffsetAccountNodeId takes the opposite side. After the correction posts, propose again.
+
+```csharp
+public sealed record CreateIntercompanyConfirmationAdjustmentDraftRequest(Guid RequestId, IntercompanyBalanceConfirmationPartyDto Party, long ExpectedVersion, string ExpectedBalanceDigest, IntercompanyAccountRoleDto Role, decimal AdjustmentAmount, string OffsetAccountNodeId, DateOnly AccountingDate, string? Memo = null);
+```
+
 ## CreateIntercompanyFeeAccrualDraftRequest
 
 Qualified name: <code>Meridian.Contracts.Ledger.CreateIntercompanyFeeAccrualDraftRequest</code>. Kind: `record`.
@@ -719,15 +731,3 @@ Declared public members:
 | <code>public const string LaterYearJournal = &quot;later-year-journal&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:106](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L106) |  |
 | <code>public const string Unbalanced = &quot;unbalanced&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:107](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L107) |  |
 | <code>public const string IncomeNotPreserved = &quot;income-not-preserved&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:108](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L108) |  |
-
-## FiscalYearCloseBlockerDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.FiscalYearCloseBlockerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:69](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L69).
-
-One named reason the fiscal year cannot be closed yet.
-
-```csharp
-public sealed record FiscalYearCloseBlockerDto(string Code, string Message, Guid? PeriodId = null);
-```

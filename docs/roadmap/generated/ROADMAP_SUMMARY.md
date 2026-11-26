@@ -85,7 +85,7 @@ Snapshot date: 2026-11-25
 | W12-ICACCRUAL-001 | Governed intercompany loan-interest accrual from structured terms | ready_for_acceptance | green | high | Accounting and Ledger |
 | W12-ICAGREE-001 | Intercompany accounting profiles and legacy attribution | accepted | green | high | Accounting and Ledger |
 | W12-ICCOMPOUND-001 | Periodic compounding of governed intercompany interest on posted accruals | ready_for_acceptance | green | medium | Accounting and Ledger |
-| W12-ICCONFIRM-001 | Reciprocal intercompany balance confirmation, advisory | ready_for_acceptance | green | high | Accounting and Ledger |
+| W12-ICCONFIRM-001 | Reciprocal intercompany balance confirmation, advisory | accepted | green | high | Accounting and Ledger |
 | W12-ICFEE-001 | Governed fixed intercompany management fees from declared terms | ready_for_acceptance | green | high | Accounting and Ledger |
 | W12-ICFLOAT-001 | Floating-rate intercompany loan interest from reviewed fixings | ready_for_acceptance | green | high | Accounting and Ledger |
 | W12-ICINCOME-001 | Policy-governed intercompany revenue and expense elimination | accepted | green | medium | Accounting and Ledger |

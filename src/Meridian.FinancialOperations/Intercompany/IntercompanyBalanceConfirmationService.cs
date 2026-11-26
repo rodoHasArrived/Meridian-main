@@ -9,8 +9,11 @@ namespace Meridian.FinancialOperations.Intercompany;
 /// <summary>
 /// Reciprocal intercompany balance confirmation. Each side's balance is summed from its own book's posted balance
 /// schedule for the approved accounting profile; nothing is entered by an operator. Each side is confirmed or
-/// disputed only by a caller whose scope holds that side's book. Advisory unless the book adopts a reviewed
-/// confirmation close policy (ADR-032), which <see cref="IntercompanyConfirmationCloseGate"/> evaluates.
+/// disputed only by a caller whose scope holds that side's book. The two books may belong to different companies of
+/// the tenant: the approved, tenant-scoped accounting profile that maps both books is the authority linking them, the
+/// confirmation is visible to both companies, and each company acts only on its own side (DEC-IC-CONFIRM-003).
+/// Advisory unless the book adopts a reviewed confirmation close policy (ADR-032), which
+/// <see cref="IntercompanyConfirmationCloseGate"/> evaluates.
 /// </summary>
 public sealed class IntercompanyBalanceConfirmationService(IIntercompanyBalanceConfirmationStore store,
     IIntercompanyBalanceScheduleSource schedules, IntercompanyAccountingArrangementService profiles,
@@ -35,7 +38,8 @@ public sealed class IntercompanyBalanceConfirmationService(IIntercompanyBalanceC
                 : throw new InvalidOperationException("This request identity already recorded a different confirmation step.");
         var pair = await ResolvePairAsync(tenant, company, request.AccountingArrangementId, request.AsOf, ct).ConfigureAwait(false);
         var next = IntercompanyBalanceConfirmationRules.Propose(current, Guid.NewGuid(), request.RequestId, tenant, company,
-            request.AccountingArrangementId, pair.AgreementId, request.AsOf, pair.One, pair.Two, actor, _clock.GetUtcNow());
+            request.AccountingArrangementId, pair.AgreementId, request.AsOf, pair.One, pair.Two, actor, _clock.GetUtcNow(),
+            pair.CrossCompany ? pair.OneCompany : null, pair.CrossCompany ? pair.TwoCompany : null);
         return await store.AppendAsync(next, current?.Version ?? 0, ct).ConfigureAwait(false);
     }
 
@@ -49,10 +53,13 @@ public sealed class IntercompanyBalanceConfirmationService(IIntercompanyBalanceC
         var current = await GetScopedAsync(tenant, company, confirmationId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException("The balance confirmation is unavailable in this scope.");
         if (current.Events.FirstOrDefault(item => item.RequestId == request.RequestId) is { } replay)
-            return replay.Action == request.Action && replay.Party == (request.Action == IntercompanyBalanceConfirmationActionDto.Resolve ? null : request.Party)
+            return replay.Action == request.Action && replay.Party == IntercompanyBalanceConfirmationRules.RecordedParty(current, request)
                 ? current : throw new InvalidOperationException("This request identity already recorded a different confirmation step.");
-        // A side acts only through its own book; a resolution needs authority over both.
-        var books = request.Action == IntercompanyBalanceConfirmationActionDto.Resolve || request.Party is null
+        // A side acts only through its own book. A same-company resolution needs authority over both books; across
+        // companies each side records its own resolution through its own book.
+        var bothBooks = request.Party is null
+            || (request.Action == IntercompanyBalanceConfirmationActionDto.Resolve && !current.IsCrossCompany);
+        var books = bothBooks
             ? new[] { current.PartyOne.LedgerBookId, current.PartyTwo.LedgerBookId }
             : [request.Party == IntercompanyBalanceConfirmationPartyDto.PartyOne ? current.PartyOne.LedgerBookId : current.PartyTwo.LedgerBookId];
         foreach (var book in books)
@@ -99,7 +106,7 @@ public sealed class IntercompanyBalanceConfirmationService(IIntercompanyBalanceC
     private async Task<IntercompanyBalanceConfirmationDto?> GetScopedAsync(string tenant, string? company, Guid confirmationId, CancellationToken ct)
     {
         var current = await store.GetAsync(confirmationId, company, ct).ConfigureAwait(false);
-        return current is null || current.TenantId != tenant || current.CompanyId != company ? null : current;
+        return current is null || current.TenantId != tenant || !current.IsVisibleTo(company) ? null : current;
     }
 
     private async Task<Pair> ResolvePairAsync(string tenant, string? company, Guid arrangementId, DateOnly asOf, CancellationToken ct)
@@ -111,19 +118,23 @@ public sealed class IntercompanyBalanceConfirmationService(IIntercompanyBalanceC
 
     private async Task<Pair> PairAsync(string tenant, string? company, ResolvedIntercompanyAccountingArrangementDto profile, DateOnly asOf, CancellationToken ct)
     {
-        var one = await SideAsync(tenant, company, profile, profile.PartyOneEntityId, profile.PartyTwoEntityId, asOf, ct).ConfigureAwait(false);
-        var two = await SideAsync(tenant, company, profile, profile.PartyTwoEntityId, profile.PartyOneEntityId, asOf, ct).ConfigureAwait(false);
-        return new(profile.CanonicalAgreementId, one, two);
+        var (one, oneCompany) = await SideAsync(tenant, company, profile, profile.PartyOneEntityId, profile.PartyTwoEntityId, asOf, ct).ConfigureAwait(false);
+        var (two, twoCompany) = await SideAsync(tenant, company, profile, profile.PartyTwoEntityId, profile.PartyOneEntityId, asOf, ct).ConfigureAwait(false);
+        // The caller must hold at least one side; the approved profile is what authorizes reading the other.
+        if (!SameCompany(oneCompany, company) && !SameCompany(twoCompany, company))
+            throw new UnauthorizedAccessException("Neither ledger book of this agreement is in the current company.");
+        return new(profile.CanonicalAgreementId, one, two, oneCompany, twoCompany);
     }
 
-    // One side's posted due-to/due-from for this profile and counterparty, summed from its own book's schedule.
-    private async Task<IntercompanyBalanceConfirmationSideDto> SideAsync(string tenant, string? company,
+    // One side's posted due-to/due-from for this profile and counterparty, summed from its own book's schedule, read in
+    // the scope of the company that owns that book. Only the totals, journal identities and schedule hash are retained.
+    private async Task<(IntercompanyBalanceConfirmationSideDto Side, string? Company)> SideAsync(string tenant, string? company,
         ResolvedIntercompanyAccountingArrangementDto profile, Guid entity, Guid counterparty, DateOnly asOf, CancellationToken ct)
     {
         var book = profile.PartyMappings.SingleOrDefault(map => map.EntityId == entity)?.LedgerBookId
             ?? throw new InvalidOperationException("The approved profile does not map a ledger book for each party.");
-        var record = await RequireBookAsync(tenant, company, book, ct).ConfigureAwait(false);
-        var schedule = await schedules.GetAsync(tenant, company, null, book, asOf, ct).ConfigureAwait(false);
+        var (record, owningCompany) = await TenantBookAsync(tenant, company, book, ct).ConfigureAwait(false);
+        var schedule = await schedules.GetAsync(tenant, owningCompany, null, book, asOf, ct).ConfigureAwait(false);
         if (!schedule.Available)
             throw new InvalidOperationException($"The balance schedule for book {book:D} is unavailable.");
         var rows = schedule.Rows.Where(row => row.LedgerBookId == book && row.AccountingArrangementId == profile.ArrangementId
@@ -132,13 +143,16 @@ public sealed class IntercompanyBalanceConfirmationService(IIntercompanyBalanceC
         if (currencies.Length > 1 || (currencies.Length == 1 && currencies[0] != profile.Currency))
             throw new InvalidOperationException($"Book {book:D} holds this agreement's balance in a currency other than {profile.Currency}.");
         var functional = rows.Select(row => row.FunctionalCurrency).Distinct(StringComparer.Ordinal).SingleOrDefault() ?? record.BaseCurrency;
-        return new(entity, book, profile.Currency, rows.Sum(row => row.TransactionSignedBalance), functional,
+        return (new(entity, book, profile.Currency, rows.Sum(row => row.TransactionSignedBalance), functional,
             rows.Sum(row => row.FunctionalSignedBalance), schedule.ContentHash,
-            rows.SelectMany(row => row.JournalEntryIds).Distinct().Order().ToArray());
+            rows.SelectMany(row => row.JournalEntryIds).Distinct().Order().ToArray()), owningCompany);
     }
 
-    // The approved revision in effect at the end of the as-of date, if any; superseded or inactive revisions are skipped.
-    private async Task<ResolvedIntercompanyAccountingArrangementDto?> EffectiveProfileAsync(string tenant, Guid arrangementId, DateOnly asOf, CancellationToken ct)
+    /// <summary>
+    /// The approved profile revision in effect at the end of <paramref name="asOf"/>, if any; superseded or inactive
+    /// revisions are skipped.
+    /// </summary>
+    public async Task<ResolvedIntercompanyAccountingArrangementDto?> EffectiveProfileAsync(string tenant, Guid arrangementId, DateOnly asOf, CancellationToken ct)
     {
         var history = await profiles.GetHistoryAsync(tenant, arrangementId, ct).ConfigureAwait(false);
         if (history is null)
@@ -157,7 +171,8 @@ public sealed class IntercompanyBalanceConfirmationService(IIntercompanyBalanceC
         return effective;
     }
 
-    private async Task<LedgerBookRecord> RequireBookAsync(string tenant, string? company, Guid bookId, CancellationToken ct)
+    /// <summary>The book, when the caller's tenant and company hold it; otherwise refused.</summary>
+    public async Task<LedgerBookRecord> RequireBookAsync(string tenant, string? company, Guid bookId, CancellationToken ct = default)
     {
         var book = await journals.GetLedgerBookAsync(bookId, ct).ConfigureAwait(false);
         var owner = book is null ? null : await owners.ResolveAsync(book.FundProfileId, ct).ConfigureAwait(false);
@@ -167,5 +182,21 @@ public sealed class IntercompanyBalanceConfirmationService(IIntercompanyBalanceC
         return book;
     }
 
-    private sealed record Pair(Guid AgreementId, IntercompanyBalanceConfirmationSideDto One, IntercompanyBalanceConfirmationSideDto Two);
+    // A book of the caller's tenant and the company that owns it. A book with no owning company is read in the caller's.
+    private async Task<(LedgerBookRecord Book, string? Company)> TenantBookAsync(string tenant, string? company, Guid bookId, CancellationToken ct)
+    {
+        var book = await journals.GetLedgerBookAsync(bookId, ct).ConfigureAwait(false);
+        var owner = book is null ? null : await owners.ResolveAsync(book.FundProfileId, ct).ConfigureAwait(false);
+        if (book is null || owner is null || !owner.IsHeldBy(tenant))
+            throw new UnauthorizedAccessException("A ledger book of this agreement is outside the current tenant or company.");
+        return (book, owner.CompanyId ?? company);
+    }
+
+    private static bool SameCompany(string? left, string? right) => string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
+
+    private sealed record Pair(Guid AgreementId, IntercompanyBalanceConfirmationSideDto One, IntercompanyBalanceConfirmationSideDto Two,
+        string? OneCompany, string? TwoCompany)
+    {
+        public bool CrossCompany => !SameCompany(OneCompany, TwoCompany);
+    }
 }

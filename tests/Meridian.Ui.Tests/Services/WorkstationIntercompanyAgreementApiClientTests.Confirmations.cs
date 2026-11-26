@@ -30,6 +30,31 @@ public sealed partial class WorkstationIntercompanyAgreementApiClientTests
     }
 
     [Fact]
+    public async Task AdjustmentDraftPostsToTheConfirmation_AndReadsOnlyTheDraftIdentityAndStatus()
+    {
+        var confirmation = Guid.Parse("d1111111-1111-1111-1111-111111111111");
+        var draft = Guid.Parse("e1111111-1111-1111-1111-111111111111");
+        var body = "{}";
+        using var api = new ApiClientService(new Factory((message, _) =>
+        {
+            Assert.Equal(HttpMethod.Post, message.Method);
+            Assert.Equal($"/api/ledger/intercompany/confirmations/{confirmation:D}/adjustment-drafts", message.RequestUri!.AbsolutePath);
+            return ConfirmationResponse(body);
+        }));
+        var client = new WorkstationIntercompanyAgreementApiClient(api);
+        var request = new CreateIntercompanyConfirmationAdjustmentDraftRequest(Guid.NewGuid(), IntercompanyBalanceConfirmationPartyDto.PartyOne, 4,
+            "digest-1", IntercompanyAccountRoleDto.Receivable, -250.10m, "a-suspense", new(2026, 6, 30));
+
+        body = $$"""{"journalEntryId":"{{draft:D}}","status":"Draft","ledgerBookId":"{{ConfirmationBook:D}}","accountingDate":"2026-06-30","lines":[{"amount":"250.10"}]}""";
+        var response = await client.CreateConfirmationAdjustmentDraftAsync(confirmation, request);
+        Assert.True(response.Success, response.ErrorMessage);
+        Assert.Equal((draft, "Draft", (Guid?)ConfirmationBook), (response.Data!.JournalEntryId, response.Data.Status, response.Data.LedgerBookId));
+
+        body = """{"status":"Draft"}""";
+        Assert.Contains("invalid draft", (await client.CreateConfirmationAdjustmentDraftAsync(confirmation, request)).ErrorMessage);
+    }
+
+    [Fact]
     public async Task ConfirmationSummaryForAnotherBookIsRefused()
     {
         using var api = new ApiClientService(new Factory((_, _) => ConfirmationResponse(SummaryJson(Guid.NewGuid()))));

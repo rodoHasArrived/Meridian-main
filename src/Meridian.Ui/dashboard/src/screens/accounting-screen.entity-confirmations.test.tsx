@@ -107,6 +107,40 @@ describe("Reciprocal balance confirmation", () => {
       { requestId: expect.any(String), accountingArrangementId: "loan-profile", asOf: "2026-06-30" }, expect.any(Object)));
   });
 
+  it("drafts a correction after a resolved dispute, sending the exact amount as a decimal string", async () => {
+    const resolved = { ...proposed, version: 4, status: "Resolved" as const, balanceDigest: "digest-1" };
+    vi.mocked(getEntityOperation).mockImplementation(async (path) => path.includes("/confirmations?") ? { ...summary, confirmations: [resolved] }
+      : path.includes("intercompany-accounting-arrangements") ? profiles : []);
+    vi.mocked(postEntityOperation).mockResolvedValue({ journalEntryId: "draft-1", status: "Draft", ledgerBookId: "lender-book", accountingDate: "2026-06-30" });
+    await load();
+    const draft = screen.getByRole("button", { name: "Draft adjustment" });
+    expect(draft).toBeDisabled();
+    fireEvent.change(screen.getByLabelText("Adjustment amount"), { target: { value: "-250.10" } });
+    fireEvent.change(screen.getByLabelText("Offset account node"), { target: { value: "a-suspense" } });
+    expect(draft).toBeEnabled();
+    fireEvent.click(draft);
+    await waitFor(() => expect(postEntityOperation).toHaveBeenCalledWith("/api/ledger/intercompany/confirmations/confirmation-1/adjustment-drafts",
+      expect.objectContaining({ party: "PartyOne", expectedVersion: 4, expectedBalanceDigest: "digest-1", role: "Receivable",
+        adjustmentAmount: "-250.10", offsetAccountNodeId: "a-suspense", accountingDate: "2026-06-30", requestId: expect.any(String) }), expect.any(Object)));
+    expect(await screen.findByText(/Nothing was submitted or posted/)).toBeVisible();
+  });
+
+  it("labels each company of a cross-company pair and records only this book's resolution", async () => {
+    const disputed = { ...proposed, version: 2, status: "Disputed" as const, partyOneCompanyId: "company-a", partyTwoCompanyId: "company-b",
+      events: [...proposed.events, { eventId: "event-2", requestId: "request-2", action: "Dispute" as const, party: "PartyTwo" as const,
+        actor: "borrower-controller", recordedAt: "2026-07-02T10:00:00Z", balanceDigest: "digest-1", reason: "June interest missing." }] };
+    vi.mocked(getEntityOperation).mockImplementation(async (path) => path.includes("/confirmations?") ? { ...summary, confirmations: [disputed] }
+      : path.includes("intercompany-accounting-arrangements") ? profiles : []);
+    vi.mocked(postEntityOperation).mockResolvedValue({ ...disputed, version: 3 });
+    await load();
+    expect(screen.getByText("12345678901234567.89 USD (this book) · company-a")).toBeVisible();
+    expect(screen.getByText("-12345678901234567.89 USD · company-b")).toBeVisible();
+    fireEvent.change(screen.getByLabelText("Dispute or resolution reason"), { target: { value: "Lender will book the accrual." } });
+    fireEvent.click(screen.getByRole("button", { name: "Record this book's resolution" }));
+    await waitFor(() => expect(postEntityOperation).toHaveBeenCalledWith("/api/ledger/intercompany/confirmations/confirmation-1/actions",
+      expect.objectContaining({ action: "Resolve", party: "PartyOne", expectedVersion: 2 }), expect.any(Object)));
+  });
+
   it("offers no action to a read-only operator", async () => {
     await load({ ...scope, capabilities: { ...scope.capabilities, canManageLedger: false } });
     const table = screen.getByRole("region", { name: "Reciprocal balance confirmations" });

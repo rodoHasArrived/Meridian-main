@@ -388,9 +388,9 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Ledger.FileIntercompanyBalanceConfirmationStore</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:13](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L13).
+Source: [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:14](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L14).
 
-Durable single-process local counterpart of the append-only PostgreSQL store: every version is retained, one confirmation exists per tenant, company, profile and date, and a stale expected version is refused.
+Durable single-process local counterpart of the append-only PostgreSQL store: every version is retained, one confirmation exists per tenant, company, profile and date (per tenant, profile and date when it spans two companies), and a stale expected version is refused.
 
 ```csharp
 public sealed class FileIntercompanyBalanceConfirmationStore(string path, IFundScopeTenantAccessor tenants) : IIntercompanyBalanceConfirmationStore
@@ -400,9 +400,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;IntercompanyBalanceConfirmationDto?&gt; GetAsync(Guid confirmationId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:19](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L19) |  |
-| <code>public async Task&lt;IntercompanyBalanceConfirmationDto?&gt; FindAsync(Guid accountingArrangementId, DateOnly asOf, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:25](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L25) |  |
-| <code>public async Task&lt;IntercompanyBalanceConfirmationDto&gt; AppendAsync(IntercompanyBalanceConfirmationDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:32](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L32) |  |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationDto?&gt; GetAsync(Guid confirmationId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:20](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L20) |  |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationDto?&gt; FindAsync(Guid accountingArrangementId, DateOnly asOf, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:26](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L26) |  |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationDto&gt; AppendAsync(IntercompanyBalanceConfirmationDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:33](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L33) |  |
 
 ## FileIntercompanyConfirmationClosePolicyStore
 

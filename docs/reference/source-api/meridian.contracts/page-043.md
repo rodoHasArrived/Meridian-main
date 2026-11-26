@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataProvenanceExtensions
+
+Qualified name: <code>Meridian.Contracts.Operations.DataProvenanceExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Operations/DataProvenance.cs:38](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L38).
+
+Shared helpers for reasoning about and rendering a DataProvenance signal. Kept in the contracts layer so both clients, the API endpoints, and the DI policy render one label.
+
+```csharp
+public static class DataProvenanceExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsNonReal(this DataProvenance provenance) =&gt; …;</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:41](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L41) | True for anything other than real operational data. |
+| <code>public static bool RequiresBadge(this DataProvenance provenance) =&gt; …;</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:46](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L46) | True when the provenance must be surfaced as a persistent, non-dismissable operator badge. |
+| <code>public static string? Label(this DataProvenance provenance) =&gt; …;</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:52](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L52) | Short, uppercase operator-facing label (e.g. SIMULATED). Returns null for real data so callers can treat &quot;no label&quot; and &quot;real&quot; identically. |
+| <code>public static string Token(this DataProvenance provenance) =&gt; …;</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:61](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L61) | Lower-case token used on the wire and by clients (e.g. simulated). |
+| <code>public static DataProvenance ParseTokenOrSimulated(string? token) =&gt; …;</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:74](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L74) | Parses a loose provenance token (case-insensitive). Unknown tokens fall back to DataProvenance.Simulated — never DataProvenance.Real — so an unrecognized value can never be silently upgraded into &quot;real&quot;. |
+| <code>public static DataProvenance Strongest(IEnumerable&lt;DataProvenance&gt; provenances);</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:94](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L94) | Folds many origins into the one a derived figure must carry: the strongest non-real provenance among the inputs, or DataProvenance.Real only when every input is real. A derived figure — a valuation draft, a NAV, a report pack — is never more real than its least-real input, so this is the single rule every derivation uses. |
+| <code>public static bool IsSimulatedOriginToken(string? value);</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:136](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L136) | True when a source-system or source-type value is, exactly, one of the structured simulated-origin tokens. |
+| <code>public static bool CarriesSimulatedOriginToken(string? value);</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:163](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L163) | True when the value is, exactly, a simulated-origin token — or when any colon-delimited segment of a structured reference is one, so an evidence string like daily-close:AAPL:2026-08-18:synthetic declares its fabricated origin even though the whole string is not a bare token. Splitting only on : keeps free-text values like &quot;Sample Custodian&quot; and hyphenated names like &quot;fixture-bank&quot; from matching: those are whole values, not structured segments, and remain the exact-equality rule&#x27;s concern. |
+
 ## HumanOperatorRequiredException
 
 Qualified name: <code>Meridian.Contracts.Operations.HumanOperatorRequiredException</code>. Kind: `class`.
@@ -847,27 +872,3 @@ Declared public members:
 | <code>[JsonIgnore] public bool IsResumable =&gt; …;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:124](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L124) | Gets whether the job can be resumed. |
 | <code>public bool TryTransition(IngestionJobState newState);</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:132](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L132) | Attempts to transition the job to a new state. Returns false if the transition is invalid. |
 | <code>public static bool IsValidTransition(IngestionJobState from, IngestionJobState to);</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:158](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L158) | Validates whether a state transition is allowed. |
-
-## IngestionJobState
-
-Qualified name: <code>Meridian.Contracts.Pipeline.IngestionJobState</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Pipeline/IngestionJob.cs:181](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L181).
-
-States for the unified ingestion job state machine.
-
-```csharp
-public enum IngestionJobState : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Draft</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:184](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L184) | Job is being configured but not yet submitted. |
-| <code>Queued</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:187](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L187) | Job is submitted and waiting to run. |
-| <code>Running</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:190](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L190) | Job is actively processing data. |
-| <code>Paused</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:193](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L193) | Job has been temporarily paused by user or system. |
-| <code>Completed</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:196](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L196) | Job has successfully completed all work. |
-| <code>Failed</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:199](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L199) | Job encountered a fatal error and stopped. |
-| <code>Cancelled</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:202](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L202) | Job was cancelled by user request. |

@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TechnicalIndicatorInfo
+
+Qualified name: <code>Meridian.Ui.Services.TechnicalIndicatorInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/ChartingService.cs:631](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L631).
+
+Technical indicator info.
+
+```csharp
+public sealed class TechnicalIndicatorInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:633](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L633) |  |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:634](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L634) |  |
+| <code>public string ShortName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:635](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L635) |  |
+| <code>public string Category { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:636](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L636) |  |
+| <code>public string DefaultParams { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:637](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L637) |  |
+
 ## ThroughputAnalysisOptions
 
 Qualified name: <code>Meridian.Ui.Services.ThroughputAnalysisOptions</code>. Kind: `class`.
@@ -1065,26 +1087,3 @@ Declared public members:
 | <code>public int ColumnSpan { get; set; } = 1;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:84](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L84) |  |
 | <code>public bool IsVisible { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:85](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L85) |  |
 | <code>public bool IsExpanded { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:86](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L86) |  |
-
-## WindowBounds
-
-Qualified name: <code>Meridian.Ui.Services.WindowBounds</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:92](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L92).
-
-Window bounds for multi-monitor support.
-
-```csharp
-public sealed class WindowBounds
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public double X { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:94](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L94) |  |
-| <code>public double Y { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:95](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L95) |  |
-| <code>public double Width { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:96](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L96) |  |
-| <code>public double Height { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:97](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L97) |  |
-| <code>public string? MonitorId { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:98](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L98) |  |
-| <code>public bool IsMaximized { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:99](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L99) |  |

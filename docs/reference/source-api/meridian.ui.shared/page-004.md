@@ -800,9 +800,9 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.IntercompanyBalanceConfirmationEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs#L16).
+Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs#L17).
 
-Reciprocal intercompany balance confirmation. Balances come from posted journals only; each side acts through its own book, which the service checks against the caller&#x27;s tenant and company. Advisory: nothing here gates close.
+Reciprocal intercompany balance confirmation. Balances come from posted journals only; each side acts through its own book, which the service checks against the caller&#x27;s tenant and company; the two books may belong to different companies of the tenant. Close blocking is opt-in through a reviewed confirmation close policy (ADR-032).
 
 ```csharp
 public static class IntercompanyBalanceConfirmationEndpoints
@@ -812,7 +812,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapIntercompanyBalanceConfirmationEndpoints(this WebApplication app, JsonSerializerOptions endpointOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs#L20) |  |
+| <code>public static void MapIntercompanyBalanceConfirmationEndpoints(this WebApplication app, JsonSerializerOptions endpointOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs#L21) |  |
 
 ## IntercompanyConfirmationClosePolicyEndpoints
 

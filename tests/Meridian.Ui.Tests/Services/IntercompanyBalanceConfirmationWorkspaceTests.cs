@@ -157,6 +157,50 @@ public sealed class IntercompanyBalanceConfirmationWorkspaceTests
         Assert.False(view.CanManageLedger);
     }
 
+    [Fact]
+    public async Task AResolvedDisputeDraftsAnAdjustmentForThisBooksSide_NothingPosted()
+    {
+        var client = new Client { Status = IntercompanyBalanceConfirmationStatusDto.Resolved };
+        using var view = await LoadAsync(client);
+        view.SelectedConfirmation = Assert.Single(view.Confirmations);
+        Assert.False(view.DraftAdjustmentCommand.CanExecute(null));
+
+        view.AdjustmentAmount = "-250.10";
+        view.AdjustmentOffsetAccount = "a-suspense";
+        Assert.True(view.DraftAdjustmentCommand.CanExecute(null));
+        await view.DraftAdjustmentCommand.ExecuteAsync(null);
+
+        var (id, request) = Assert.Single(client.Adjustments);
+        Assert.Equal((ConfirmationId, IntercompanyBalanceConfirmationPartyDto.PartyOne, 1L, "digest-1"), (id, request.Party, request.ExpectedVersion, request.ExpectedBalanceDigest));
+        Assert.Equal((IntercompanyAccountRoleDto.Receivable, -250.10m, "a-suspense", MonthEnd), (request.Role, request.AdjustmentAmount, request.OffsetAccountNodeId, request.AccountingDate));
+        Assert.Contains("Nothing was submitted or posted", view.StatusText);
+        Assert.Equal("", view.AdjustmentAmount);
+    }
+
+    [Fact]
+    public async Task ACrossCompanyPairShowsEachCompany_AndRecordsOnlyThisBooksResolution()
+    {
+        var client = new Client
+        {
+            Status = IntercompanyBalanceConfirmationStatusDto.Disputed,
+            CrossCompany = true,
+            ActionResult = _ => ApiResponse<IntercompanyBalanceConfirmationDto>.Ok(Confirmation(IntercompanyBalanceConfirmationStatusDto.Disputed, crossCompany: true))
+        };
+        using var view = await LoadAsync(client);
+        var row = Assert.Single(view.Confirmations);
+        Assert.EndsWith("(this book) · company-a", row.PartyOne);
+        Assert.EndsWith(" · company-b", row.PartyTwo);
+        view.SelectedConfirmation = row;
+        view.Reason = "Lender will book the accrual.";
+
+        await view.ResolveCommand.ExecuteAsync(null);
+
+        var request = Assert.Single(client.Actions).Request;
+        Assert.Equal((IntercompanyBalanceConfirmationActionDto.Resolve, (IntercompanyBalanceConfirmationPartyDto?)IntercompanyBalanceConfirmationPartyDto.PartyOne),
+            (request.Action, request.Party));
+        Assert.Contains("once the other company records its own", view.StatusText);
+    }
+
     private static async Task<IntercompanyBalanceConfirmationWorkspace> LoadAsync(Client client)
     {
         var view = new IntercompanyBalanceConfirmationWorkspace(client) { LedgerBook = LenderBook.ToString("D"), AsOf = "2026-06-30" };
@@ -164,12 +208,17 @@ public sealed class IntercompanyBalanceConfirmationWorkspaceTests
         return view;
     }
 
-    internal static IntercompanyBalanceConfirmationDto Confirmation(IntercompanyBalanceConfirmationStatusDto status = IntercompanyBalanceConfirmationStatusDto.Proposed)
+    internal static IntercompanyBalanceConfirmationDto Confirmation(IntercompanyBalanceConfirmationStatusDto status = IntercompanyBalanceConfirmationStatusDto.Proposed,
+        bool crossCompany = false)
     {
         static IntercompanyBalanceConfirmationSideDto Side(Guid book, decimal amount) => new(Guid.NewGuid(), book, "USD", amount, "USD", amount, "hash", []);
         return new(ConfirmationId, "tenant-a", "company-a", Profile, Guid.NewGuid(), MonthEnd, 1, status,
             Side(LenderBook, 12_345_678_901_234_567.89m), Side(BorrowerBook, -12_345_678_901_234_567.89m), 0m, "digest-1",
-            [new(Guid.NewGuid(), Guid.NewGuid(), IntercompanyBalanceConfirmationActionDto.Propose, null, "accounting-operations", DateTimeOffset.UnixEpoch, "digest-1", null)]);
+            [new(Guid.NewGuid(), Guid.NewGuid(), IntercompanyBalanceConfirmationActionDto.Propose, null, "accounting-operations", DateTimeOffset.UnixEpoch, "digest-1", null)])
+        {
+            PartyOneCompanyId = crossCompany ? "company-a" : null,
+            PartyTwoCompanyId = crossCompany ? "company-b" : null
+        };
     }
 
     private sealed class Client : IWorkstationIntercompanyAgreementApiClient
@@ -178,6 +227,14 @@ public sealed class IntercompanyBalanceConfirmationWorkspaceTests
         public IntercompanyBalanceConfirmationStatusDto Status { get; init; } = IntercompanyBalanceConfirmationStatusDto.Proposed;
         public Func<IntercompanyBalanceConfirmationActionRequest, ApiResponse<IntercompanyBalanceConfirmationDto>>? ActionResult { get; init; }
         public List<(Guid Book, DateOnly AsOf)> SummaryReads { get; } = [];
+        public bool CrossCompany { get; init; }
+        public List<(Guid Id, CreateIntercompanyConfirmationAdjustmentDraftRequest Request)> Adjustments { get; } = [];
+        public Task<ApiResponse<IntercompanyConfirmationAdjustmentDraftResult>> CreateConfirmationAdjustmentDraftAsync(Guid confirmationId,
+            CreateIntercompanyConfirmationAdjustmentDraftRequest request, CancellationToken ct = default)
+        {
+            Adjustments.Add((confirmationId, request));
+            return Task.FromResult(ApiResponse<IntercompanyConfirmationAdjustmentDraftResult>.Ok(new(Guid.NewGuid(), "Draft", LenderBook, request.AccountingDate)));
+        }
         public List<(Guid Id, IntercompanyBalanceConfirmationActionRequest Request)> Actions { get; } = [];
         public List<ProposeIntercompanyBalanceConfirmationRequest> Proposals { get; } = [];
         public int ProfileReads { get; private set; }
@@ -220,7 +277,7 @@ public sealed class IntercompanyBalanceConfirmationWorkspaceTests
         public Task<ApiResponse<IntercompanyBalanceConfirmationSummaryDto>> GetBalanceConfirmationsAsync(Guid ledgerBookId, DateOnly asOf, CancellationToken ct = default)
         {
             SummaryReads.Add((ledgerBookId, asOf));
-            return Task.FromResult(ApiResponse<IntercompanyBalanceConfirmationSummaryDto>.Ok(new(ledgerBookId, asOf, [Confirmation(Status)],
+            return Task.FromResult(ApiResponse<IntercompanyBalanceConfirmationSummaryDto>.Ok(new(ledgerBookId, asOf, [Confirmation(Status, CrossCompany)],
                 [new("AwaitingConfirmation", "Neither side has confirmed the pinned balances.", Profile, ConfirmationId)])));
         }
         public Task<ApiResponse<IntercompanyBalanceConfirmationDto>> ProposeBalanceConfirmationAsync(ProposeIntercompanyBalanceConfirmationRequest request, CancellationToken ct = default)
