@@ -349,7 +349,7 @@ export function isReportWriterIdentifierPart(value: string | undefined): boolean
 }
 
 export function isReportWriterFormulaFunction(identifier: string): boolean {
-  return ["abs", "min", "max", "safedivide", "percent", "basispoints", "round", "if"].includes(identifier.toLowerCase());
+  return ["abs", "min", "max", "median", "stdev", "safedivide", "percent", "basispoints", "round", "if"].includes(identifier.toLowerCase());
 }
 
 export function isPnlLikeField(field: string | null | undefined): boolean {

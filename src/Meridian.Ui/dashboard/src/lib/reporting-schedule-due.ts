@@ -1,12 +1,27 @@
 import { UTC_TIME_ZONE, zonedWallTimeToUtc } from "@/lib/time-zone";
+import type { ReportingSchedulePeriodFrequency } from "@/types";
 
 // Client-side preview of a reporting schedule's first due instant. The server validates the
 // schedule and owns every later advance; this only keeps the draft form coherent.
 
+/**
+ * Largest due-day gap the server accepts for a period frequency. Mirrors
+ * ReportingSchedulePeriodPlanner.MaximumDueDaysFor: weekly and daily gaps stay inside one period.
+ */
+export function maxDueDaysFor(frequency: ReportingSchedulePeriodFrequency | "" | null | undefined): number {
+  if (frequency === "Weekly") {
+    return 6;
+  }
+  if (frequency === "Daily") {
+    return 1;
+  }
+  return 366;
+}
+
 /** Whole days between period end and due date, clamped to the range the server accepts. */
-export function parseDueDays(value: string): number {
+export function parseDueDays(value: string, frequency?: ReportingSchedulePeriodFrequency | ""): number {
   const parsed = Number.parseInt(value, 10);
-  return Number.isFinite(parsed) ? Math.min(366, Math.max(0, parsed)) : 0;
+  return Number.isFinite(parsed) ? Math.min(maxDueDaysFor(frequency), Math.max(0, parsed)) : 0;
 }
 
 export function resolveReportingScheduleDueAtUtc(
@@ -66,7 +81,8 @@ export function resolveReportingSchedulePeriodDueAtUtc(
   cronExpression: string,
   dueDaysAfterPeriodEnd: string,
   currentDueAtUtc: string,
-  timeZoneId: string = UTC_TIME_ZONE
+  timeZoneId: string = UTC_TIME_ZONE,
+  frequency?: ReportingSchedulePeriodFrequency | ""
 ): string {
   const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(nextAsOfDate.trim());
   const cronFields = cronExpression.trim().split(/\s+/);
@@ -79,7 +95,7 @@ export function resolveReportingSchedulePeriodDueAtUtc(
   const dueDay = new Date(Date.UTC(
     Number.parseInt(dateMatch[1], 10),
     Number.parseInt(dateMatch[2], 10) - 1,
-    Number.parseInt(dateMatch[3], 10) + parseDueDays(dueDaysAfterPeriodEnd)
+    Number.parseInt(dateMatch[3], 10) + parseDueDays(dueDaysAfterPeriodEnd, frequency)
   ));
   return zonedWallTimeToUtc(
     dueDay.getUTCFullYear(),
