@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundStructureTenantBackfillRow
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:6](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L6).
+
+Maintenance-only snapshot; this is not an operator-session read API.
+
+```csharp
+public sealed record FundStructureTenantBackfillRow(string Table, Guid Id, string Kind, bool IsNode, string? TenantId, IReadOnlyList<Guid> Parents, IReadOnlyList<Guid> Children, JsonElement RetainedRow, bool IsInferred = false);
+```
+
+## FundStructureTenantBackfillSnapshot
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:14](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L14).
+
+```csharp
+public sealed record FundStructureTenantBackfillSnapshot(string SourceIdentity, string SchemaIdentity, IReadOnlyList<FundStructureTenantBackfillRow> Rows, IReadOnlyList<FundStructureTenantBackfillEvidence> Evidence, IReadOnlyList<JsonElement> RetainedQuarantine, bool SupportsAtomicApply = true);
+```
+
 ## FundStructureTenantBackfillStamp
 
 Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillStamp</code>. Kind: `record`.
@@ -1100,36 +1122,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static string Compute(AtomicTaxLotJournalCommand command);</code> | [src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs:20](../../../../src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs#L20) |  |
-
-## AtomicTaxLotJournalResult
-
-Qualified name: <code>Meridian.Storage.Ledger.AtomicTaxLotJournalResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:646](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L646).
-
-```csharp
-public sealed record AtomicTaxLotJournalResult(Guid MutationBatchId, AtomicTaxLotMutationKind MutationKind, string CanonicalFingerprint, bool IsExactReplay, LedgerJournalEntryRecord Journal, IReadOnlyList<LedgerTaxLotRecord> MutatedLots, IReadOnlyList<LedgerTaxLotMutationRecord> Mutations, IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence, Guid? CorrectsMutationBatchId = null, string? ReliefMethod = null, string? PolicyRevision = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] LedgerAccountRekeyInstruction? AccountRekey = null);
-```
-
-## AtomicTaxLotMutationKind
-
-Qualified name: <code>Meridian.Storage.Ledger.AtomicTaxLotMutationKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:478](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L478).
-
-```csharp
-public enum AtomicTaxLotMutationKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Acquisition = 0</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:480](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L480) |  |
-| <code>Disposal = 1</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:481](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L481) |  |
-| <code>BasisRedistribution = 2</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:483](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L483) |  |
-| <code>Amortization = 3</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:484](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L484) |  |
-| <code>CorporateAction = 4</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:485](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L485) |  |
-| <code>CapitalReturn = 5</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:486](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L486) |  |
-| <code>FactorPaydown = 6</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:489](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L489) |  |
-| <code>AccountRekey = 7</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:492](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L492) |  |

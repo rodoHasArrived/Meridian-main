@@ -106,4 +106,28 @@ public sealed class FixedAssetDepreciationDraftBuilderTests
         first!.Event.IdempotencyKey.Should().Be(second!.Event.IdempotencyKey);
         first.Event.IdempotencyKey.Should().Be("depreciation|fund-1|2026-01-31");
     }
+
+    [Fact]
+    public void BuildDraft_EvidenceSatisfiesRecurringProvenanceRules()
+    {
+        // Recurring depreciation freezes these references into its provenance; every source needs
+        // a content hash or source version, or the occurrence is blocked after its draft is saved.
+        var draft = FixedAssetDepreciationDraftBuilder.BuildDraft(
+            PeriodEnd, AsOf, [Input(AssetA, 100m), Input(AssetB, 200m)], bookLabel: "fund-1")!;
+
+        RecurringJournalEvidenceGuard.ValidateSources(draft.Metadata.EvidenceReferences).Should().BeNull();
+        draft.Metadata.EvidenceReferences.Select(reference => reference.ContentHash).Should().OnlyHaveUniqueItems();
+    }
+
+    [Fact]
+    public void BuildDraft_EvidenceHashIsDeterministicAndTracksTheCharge()
+    {
+        string Hash(decimal amount, string book = "fund-1")
+            => FixedAssetDepreciationDraftBuilder.BuildDraft(PeriodEnd, AsOf, [Input(AssetA, amount)], bookLabel: book)!
+                .Metadata.EvidenceReferences.Single().ContentHash!;
+
+        Hash(100m).Should().Be(Hash(100m));
+        Hash(100m).Should().NotBe(Hash(101m));
+        Hash(100m).Should().NotBe(Hash(100m, "fund-2"));
+    }
 }

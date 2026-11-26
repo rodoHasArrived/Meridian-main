@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { fitValueTicks, formatTimeTickLabel, selectTimeTickIndices, timeLabelSpanDays } from "./axis-ticks";
 import { normalizeChartSize } from "./use-chart-size";

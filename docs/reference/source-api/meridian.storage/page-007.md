@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerPeriodCloseSnapshot
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodCloseSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:15](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L15).
+
+Immutable journal population retained in the same transaction as a hard close. The payload includes opening history, closing journals, source lineage, currency and dimensions, so the closed trial balance can be rebuilt without consulting a subsequently restated journal.
+
+```csharp
+public sealed record LedgerPeriodCloseSnapshot(Guid? LedgerBookId, Guid PeriodId, long PeriodVersion, Guid CloseEventId, DateTimeOffset ClosedAt, string PayloadJson, string ContentHashSha256)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LedgerPeriodCloseSnapshot Capture(LedgerAccountingPeriod period, PeriodCloseEventRecord closeEvent, IReadOnlyList&lt;LedgerJournalEntryRecord&gt; entries);</code> | [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:24](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L24) |  |
+| <code>public LedgerPeriodCloseSnapshotPayload VerifyIntegrity();</code> | [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:63](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L63) | Checks retained bytes and the scope bound into them before serving a snapshot. |
+
+## LedgerPeriodCloseSnapshotJsonContext
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodCloseSnapshotJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:123](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L123).
+
+```csharp
+public sealed partial class LedgerPeriodCloseSnapshotJsonContext : JsonSerializerContext;
+```
+
 ## LedgerPeriodCloseSnapshotPayload
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodCloseSnapshotPayload</code>. Kind: `record`.
@@ -1538,37 +1567,3 @@ Enum declarations:
 | <code>Failed</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:441](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L441) | Execution failed. |
 | <code>Cancelled</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:444](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L444) | Execution was cancelled. |
 | <code>TimedOut</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:447](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L447) | Execution timed out. |
-
-## MaintenanceIssue
-
-Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceIssue</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:472](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L472).
-
-An issue found during maintenance.
-
-```csharp
-public sealed record MaintenanceIssue(string Path, string IssueType, string Description, string Severity, bool WasResolved, string? ResolutionAction = null);
-```
-
-## MaintenancePriority
-
-Qualified name: <code>Meridian.Storage.Maintenance.MaintenancePriority</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:265](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L265).
-
-Priority level for maintenance tasks.
-
-```csharp
-public enum MaintenancePriority : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Critical = 0</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:268](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L268) | Critical - execute immediately, skip queue. |
-| <code>High = 10</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:271](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L271) | High - process before normal tasks. |
-| <code>Normal = 50</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:274](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L274) | Normal - default priority. |
-| <code>Low = 100</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:277](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L277) | Low - process when system is less busy. |
-| <code>Background = 200</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:280](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L280) | Background - only run when completely idle. |

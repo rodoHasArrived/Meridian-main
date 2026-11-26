@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it, vi } from "vitest";
 import { apiGetJson, apiPostJson } from "@/lib/api";
 import { privateCapitalApi } from "./private-capital-records.api";

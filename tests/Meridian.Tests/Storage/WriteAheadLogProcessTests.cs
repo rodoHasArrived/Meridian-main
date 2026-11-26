@@ -57,6 +57,15 @@ public sealed class WriteAheadLogProcessTests
                     await Task.Delay(20, flushDeadline.Token);
             }
 
+            // The live writer owns the directory, so a second process must not open it: it would
+            // treat the writer's live segment as closed and archive it away.
+            await using (var intruder = new WriteAheadLog(root))
+            {
+                var intrusion = await Record.ExceptionAsync(() => intruder.InitializeAsync(timeout.Token));
+                Assert.IsType<WalDirectoryInUseException>(intrusion);
+            }
+
+            // Killing the owner releases the lock with its handles; recovery can then proceed.
             writer.Kill(entireProcessTree: true);
             await writer.WaitForExitAsync(timeout.Token);
 

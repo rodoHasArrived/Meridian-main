@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataQueryResult
+
+Qualified name: <code>Meridian.Storage.Query.DataQueryResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Query/DuckDbQueryService.cs:334](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L334).
+
+Bounded, string-projected query result.
+
+```csharp
+public sealed record DataQueryResult(bool Success, string? Error, IReadOnlyList<string> Columns, IReadOnlyList<string> ColumnTypes, IReadOnlyList<string?[]> Rows, int RowCount, bool Truncated, long ElapsedMs)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? ExecutionId { get; init; }</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:344](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L344) |  |
+| <code>public long? RetainedRowCount { get; init; }</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:345](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L345) |  |
+| <code>public DateTimeOffset? ExecutionExpiresAt { get; init; }</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:346](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L346) |  |
+| <code>public static DataQueryResult Failed(string error) =&gt; …;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:347](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L347) |  |
+
+## DataQueryRetentionReceipt
+
+Qualified name: <code>Meridian.Storage.Query.DataQueryRetentionReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:12](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L12).
+
+```csharp
+public sealed record DataQueryRetentionReceipt(string ExecutionId, long RowCount, DateTimeOffset ExpiresAt);
+```
+
 ## DuckDbQueryService
 
 Qualified name: <code>Meridian.Storage.Query.DuckDbQueryService</code>. Kind: `class`.
@@ -909,31 +940,3 @@ One repeatable-read export cut: global actionable observations plus exact scoped
 ```csharp
 public sealed record CorporateActionInboxExportSource(IReadOnlyList<CorporateActionSourceProposalDto> Proposals, IReadOnlyList<CorporateActionProcessingCaseDto> Cases);
 ```
-
-## CryptoProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CryptoProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ICryptoReferenceProjectionStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/ICryptoReferenceProjectionStore.cs#L15).
-
-```csharp
-public sealed record CryptoProjectionRow(Guid SecurityId, string DisplayName, string BaseCurrency, string QuoteCurrency, string? Network, string PrimaryIdentifierValue, long Version);
-```
-
-## CurveDefinedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CurveDefinedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:94](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L94).
-
-Curves / CurveDefined.
-
-```csharp
-public sealed record CurveDefinedPayload(Guid CurveId, string CurveKey, string Kind, string Currency, string? IndexName, string? Tenor, string DayCount, string Interpolation, string Source, string? Description) : ISecurityGovernancePayload
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] public Meridian.Contracts.SecurityMaster.SecurityCurveRatePolicy RatePolicy { get; init; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:107](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L107) |  |

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import {
   PROVIDER_MODULE_PRIORITY_RULE,

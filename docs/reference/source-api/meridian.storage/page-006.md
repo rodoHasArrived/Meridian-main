@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ILedgerBookControlStore
+
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerBookControlStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:43](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L43).
+
+```csharp
+public interface ILedgerBookControlStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;LedgerBookControlProfileDto?&gt; GetBookControlsAsync(Guid bookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:45](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L45) |  |
+| <code>Task&lt;LedgerBookControlPreflightDto&gt; PrepareBookControlsAsync(Guid bookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:46](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L46) |  |
+| <code>Task&lt;LedgerBookControlProfileDto&gt; ActivateBookControlsAsync(Guid bookId, long expectedVersion, string preflightDigest, string actor, string reason, string evidenceReference, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:47](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L47) |  |
+
+## ILedgerBookFxSettlementStore
+
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerBookFxSettlementStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs:6](../../../../src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs#L6).
+
+Retains a reviewed FX sale set and captures approved journal consequences without appending journals.
+
+```csharp
+public interface ILedgerBookFxSettlementStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BookFxSettlementSetDto?&gt; GetBookFxSettlementSetAsync(Guid setId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs:8](../../../../src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs#L8) |  |
+| <code>Task&lt;BookFxSettlementSetDto&gt; RetainBookFxSettlementSetAsync(RetainBookFxSettlementSetRequestDto request, string actor, string controllerRole, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs:11](../../../../src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs#L11) |  |
+| <code>Task&lt;BookFxSettlementLegReceiptDto&gt; CaptureBookFxSettlementLegAsync(Guid setId, CaptureBookFxSettlementLegRequestDto request, string actor, string controllerRole, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs:14](../../../../src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs#L14) |  |
+
 ## ILedgerEntityControlJournalValidation
 
 Qualified name: <code>Meridian.Storage.Ledger.ILedgerEntityControlJournalValidation</code>. Kind: `interface`.
@@ -866,32 +904,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static OpenLotDto ToOpenLot(this LedgerTaxLotRecord record);</code> | [src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs:9](../../../../src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs#L9) |  |
-
-## LedgerPeriodCloseSnapshot
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodCloseSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:15](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L15).
-
-Immutable journal population retained in the same transaction as a hard close. The payload includes opening history, closing journals, source lineage, currency and dimensions, so the closed trial balance can be rebuilt without consulting a subsequently restated journal.
-
-```csharp
-public sealed record LedgerPeriodCloseSnapshot(Guid? LedgerBookId, Guid PeriodId, long PeriodVersion, Guid CloseEventId, DateTimeOffset ClosedAt, string PayloadJson, string ContentHashSha256)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static LedgerPeriodCloseSnapshot Capture(LedgerAccountingPeriod period, PeriodCloseEventRecord closeEvent, IReadOnlyList&lt;LedgerJournalEntryRecord&gt; entries);</code> | [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:24](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L24) |  |
-| <code>public LedgerPeriodCloseSnapshotPayload VerifyIntegrity();</code> | [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:63](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L63) | Checks retained bytes and the scope bound into them before serving a snapshot. |
-
-## LedgerPeriodCloseSnapshotJsonContext
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodCloseSnapshotJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:123](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L123).
-
-```csharp
-public sealed partial class LedgerPeriodCloseSnapshotJsonContext : JsonSerializerContext;
-```

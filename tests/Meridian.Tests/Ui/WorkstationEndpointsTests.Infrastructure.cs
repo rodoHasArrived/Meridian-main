@@ -32,6 +32,7 @@ using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
+using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -57,7 +58,7 @@ public sealed partial class WorkstationEndpointsTests
         Converters = { new JsonStringEnumConverter() }
     };
 
-    private static async Task<WebApplication> CreateAppAsync(
+    private static Task<SharedEndpointGraph.EndpointTestApp> CreateAppAsync(
         Action<IServiceCollection>? configureServices = null,
         bool mapExecutionApi = false,
         bool mapPromotionApi = false,
@@ -71,35 +72,42 @@ public sealed partial class WorkstationEndpointsTests
         bool useApiExceptionHandler = false,
         [System.Runtime.CompilerServices.CallerFilePath] string callerFilePath = "")
     {
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-        {
-            EnvironmentName = Environments.Development
-        });
-        builder.WebHost.UseTestServer();
-        configureServices?.Invoke(builder.Services);
-        if (useApiExceptionHandler)
-        {
-            // The deployed host's Problem Details writer and shared exception handler.
-            builder.Services.AddMeridianApiProblemDetails();
-        }
-        builder.Services.TryAddSingleton<IFundProfileTenancyRegistry>(
-            new TestCurrentScopeFundProfileTenancyRegistry(
-                currentUserTenantId ?? currentUserCompanyId,
-                currentUserCompanyId));
-        builder.Services.TryAddSingleton<IReportingDeploymentReadinessService>(
-            new FixedReportingDeploymentReadinessService(
-                ReadyReportingDeploymentCapability()));
-        builder.Services.TryAddSingleton<IReconciliationBreakQueueRepository>(_ =>
-            new FileReconciliationBreakQueueRepository(
-                Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
-                NullLogger<FileReconciliationBreakQueueRepository>.Instance));
+        var mapLedger = mapLedgerApi ?? IsLedgerEndpointTestFile(callerFilePath);
 
-        var app = builder.Build();
-        if (useApiExceptionHandler)
+        // Tests registering the same service types share one compiled route graph; each still
+        // gets its own services and caller identity. See SharedEndpointGraph for when it declines.
+        return SharedEndpointGraph.CreateAsync(
+            graphVariant: $"workstation:execution={mapExecutionApi}:promotion={mapPromotionApi}:ledger={mapLedger}:problemDetails={useApiExceptionHandler}",
+            createBuilder: static () => WebApplication.CreateBuilder(new WebApplicationOptions
+            {
+                EnvironmentName = Environments.Development
+            }),
+            configureServices: ConfigureServices,
+            configureRequest: ConfigureRequest,
+            configureGraph: ConfigureGraph);
+
+        void ConfigureServices(IServiceCollection services)
         {
-            app.UseExceptionHandler();
+            configureServices?.Invoke(services);
+            if (useApiExceptionHandler)
+            {
+                // The deployed host's Problem Details writer and shared exception handler.
+                services.AddMeridianApiProblemDetails();
+            }
+            services.TryAddSingleton<IFundProfileTenancyRegistry>(
+                new TestCurrentScopeFundProfileTenancyRegistry(
+                    currentUserTenantId ?? currentUserCompanyId,
+                    currentUserCompanyId));
+            services.TryAddSingleton<IReportingDeploymentReadinessService>(
+                new FixedReportingDeploymentReadinessService(
+                    ReadyReportingDeploymentCapability()));
+            services.TryAddSingleton<IReconciliationBreakQueueRepository>(_ =>
+                new FileReconciliationBreakQueueRepository(
+                    Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
+                    NullLogger<FileReconciliationBreakQueueRepository>.Instance));
         }
-        app.Use(async (context, next) =>
+
+        void ConfigureRequest(HttpContext context)
         {
             var actor = context.Request.Headers.TryGetValue("X-Meridian-Test-User", out var testActor) &&
                 !string.IsNullOrWhiteSpace(testActor.ToString())
@@ -128,34 +136,38 @@ public sealed partial class WorkstationEndpointsTests
             {
                 context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = currentUserTenantId.Trim();
             }
-
-            await next();
-        });
-
-        var jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            Converters = { new JsonStringEnumConverter() }
-        };
-
-        if (mapExecutionApi)
-        {
-            app.MapExecutionEndpoints(jsonOptions);
         }
 
-        if (mapPromotionApi)
+        // Runs once per shared graph, so it may read only the flags that are part of graphVariant.
+        void ConfigureGraph(WebApplication app)
         {
-            app.MapPromotionEndpoints(jsonOptions);
-        }
+            if (useApiExceptionHandler)
+            {
+                app.UseExceptionHandler();
+            }
 
-        app.MapWorkstationEndpoints(jsonOptions);
-        if (mapLedgerApi ?? IsLedgerEndpointTestFile(callerFilePath))
-        {
-            app.MapLedgerEndpoints(jsonOptions);
-        }
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                Converters = { new JsonStringEnumConverter() }
+            };
 
-        await app.StartAsync();
-        return app;
+            if (mapExecutionApi)
+            {
+                app.MapExecutionEndpoints(jsonOptions);
+            }
+
+            if (mapPromotionApi)
+            {
+                app.MapPromotionEndpoints(jsonOptions);
+            }
+
+            app.MapWorkstationEndpoints(jsonOptions);
+            if (mapLedger)
+            {
+                app.MapLedgerEndpoints(jsonOptions);
+            }
+        }
     }
 
     private static bool IsLedgerEndpointTestFile(string callerFilePath)

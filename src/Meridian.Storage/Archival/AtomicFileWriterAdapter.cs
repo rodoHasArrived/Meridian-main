@@ -19,4 +19,7 @@ public sealed class AtomicFileWriterAdapter : IAtomicFileWriter
 
     public Task SyncDirectoryAsync(string directory, CancellationToken ct = default) =>
         AtomicFileWriter.SyncDirectoryAsync(directory, ct);
+
+    public Task SyncDirectoryOrThrowAsync(string directory, CancellationToken ct = default) =>
+        AtomicFileWriter.SyncDirectoryOrThrowAsync(directory, ct);
 }

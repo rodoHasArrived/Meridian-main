@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RepairStrategy
+
+Qualified name: <code>Meridian.Storage.Services.RepairStrategy</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:919](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L919).
+
+```csharp
+public enum RepairStrategy : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>RestoreFromBackup</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:921](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L921) |  |
+| <code>BackfillFromSource</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:922](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L922) |  |
+| <code>TruncateCorrupted</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:923](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L923) |  |
+| <code>RebuildIndex</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:924](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L924) |  |
+| <code>MergeFragments</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:925](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L925) |  |
+| <code>RecompressOptimal</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:926](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L926) |  |
+
+## ResourceLimits
+
+Qualified name: <code>Meridian.Storage.Services.ResourceLimits</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1583](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1583).
+
+```csharp
+public sealed record ResourceLimits(int MaxCpuPct = 80, int MaxMemoryPct = 70, int MaxDiskIoMbps = 500);
+```
+
 ## ResourceRequirements
 
 Qualified name: <code>Meridian.Storage.Services.ResourceRequirements</code>. Kind: `record`.
@@ -437,7 +468,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.TierInfo</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:645](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L645).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:646](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L646).
 
 ```csharp
 public sealed record TierInfo(int FileCount, long TotalBytes, DateTime? OldestFile, DateTime? NewestFile);
@@ -469,7 +500,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.TierStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:640](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L640).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:641](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L641).
 
 ```csharp
 public sealed record TierStatistics(DateTimeOffset GeneratedAt, Dictionary<StorageTier, TierInfo> TierInfo);
@@ -622,7 +653,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Sinks.JsonlStorageSinkStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1219](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1219).
+Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1221](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1221).
 
 ```csharp
 public sealed record JsonlStorageSinkStatistics(bool IsBatchingEnabled, int BatchSize, TimeSpan FlushInterval, long EventsBuffered, long EventsWritten, long BatchesWritten, int WriterCount, int BufferCount, DateTimeOffset Timestamp, long FsyncCount = 0, int OpenWriterHandles = 0);
@@ -894,41 +925,3 @@ Declared public members:
 | <code>public string? Description { get; set; }</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:52](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L52) | Optional description of the sink and its use case. |
 | <code>public bool EnabledByDefault { get; set; } = false;</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:58](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L58) | Whether this sink is included in the default composition when no explicit Sinks list is provided. Default is false. |
 | <code>public StorageSinkAttribute(string id, string displayName);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:65](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L65) | Creates a new StorageSinkAttribute. |
-
-## StorageSinkAttributeExtensions
-
-Qualified name: <code>Meridian.Storage.StorageSinkAttributeExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/StorageSinkAttribute.cs:102](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L102).
-
-Extension methods for StorageSinkAttribute discovery on Type.
-
-```csharp
-public static class StorageSinkAttributeExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static StorageSinkAttribute? GetStorageSinkAttribute(this Type type);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:107](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L107) | Gets the StorageSinkAttribute from a type, if present. |
-| <code>public static StorageSinkMetadata? GetStorageSinkMetadata(this Type type);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:116](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L116) | Gets the StorageSinkMetadata from a type decorated with StorageSinkAttribute, or null if not decorated. |
-| <code>public static bool IsStorageSinkPlugin(this Type type);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:126](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L126) | Returns true when the type is a concrete class that implements IStorageSink and is decorated with StorageSinkAttribute. |
-
-## StorageSinkMetadata
-
-Qualified name: <code>Meridian.Storage.StorageSinkMetadata</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/StorageSinkAttribute.cs:76](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L76).
-
-Metadata extracted from a StorageSinkAttribute for use by the StorageSinkRegistry and composition root.
-
-```csharp
-public sealed record StorageSinkMetadata(string Id, string DisplayName, string? Description, bool EnabledByDefault, Type ImplementationType)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static StorageSinkMetadata FromAttribute(StorageSinkAttribute attr, Type implementationType);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:87](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L87) | Creates metadata from a StorageSinkAttribute and its implementation type. |

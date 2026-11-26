@@ -285,6 +285,12 @@ loss.
   deserialized follow `WalOptions.CorruptionMode` (`Halt` blocks startup for operator review).
 - Producer acceptance (`TryPublish`/`PublishAsync`) is admission into the in-memory queue only —
   never treat it as a durable acknowledgement when reasoning about loss windows.
+- Each workload owns its own WAL and dedup ledger (`_wal/collector`, `_wal/backfill`, and the
+  same under `_dedup`), so a collector and a backfill can share a data root. A second process of
+  the same workload fails at startup with `WalDirectoryInUseException`, and `--wal-repair`
+  refuses a directory a running process owns; stop that process first rather than deleting the
+  `.owner.lock` file. On upgrade, the collector adopts segments and the ledger left in the old
+  shared `_wal/` and `_dedup/` locations; stop older-version processes before upgrading.
 
 ## Executed Fill Delivery Semantics
 

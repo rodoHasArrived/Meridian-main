@@ -374,6 +374,44 @@ public class PortableDataPackagerTests : TempDirectoryTestBase
     }
 
     [Fact]
+    public async Task ImportPackageAsync_DestinationDirectorySyncFails_ReportsFailureAndRetryReSyncs()
+    {
+        await CreateTestJsonlFileAsync("AAPL/Trade/2026-01-04.jsonl", new[]
+        {
+            new { Timestamp = "2026-01-04T10:00:00Z", Symbol = "AAPL", Price = 186.25m, Size = 50 }
+        });
+        var createResult = await _packager.CreatePackageAsync(new PackageOptions
+        {
+            Name = "dirsync-test",
+            OutputDirectory = TestOutputDir,
+            VerifyChecksums = true
+        });
+        createResult.Success.Should().BeTrue();
+        var extractDir = Path.Combine(TestOutputDir, "dirsync-live");
+
+        ImportResult failed;
+        using (DirectorySyncFaults.FailWhen(dir => dir.StartsWith(extractDir, StringComparison.Ordinal)))
+            failed = await _packager.ImportPackageAsync(createResult.PackagePath!, extractDir);
+
+        failed.Success.Should().BeFalse("an import must not report success for moves that are not durable");
+
+        // The retry finds the identical files already in place; it must still sync their directory.
+        var synced = new List<string>();
+        ImportResult retried;
+        using (DirectorySyncFaults.FailWhen(dir =>
+               {
+                   synced.Add(dir);
+                   return false;
+               }))
+            retried = await _packager.ImportPackageAsync(createResult.PackagePath!, extractDir);
+
+        retried.Success.Should().BeTrue();
+        retried.FilesExtracted.Should().Be(0);
+        var imported = Directory.GetFiles(extractDir, "2026-01-04.jsonl", SearchOption.AllDirectories).Single();
+        synced.Should().Contain(dir => DirectorySyncFaults.SameDirectory(dir, Path.GetDirectoryName(imported)!));
+    }
+
+    [Fact]
     public async Task ImportPackageAsync_WithPathTraversalEntry_ShouldRejectPackage()
     {
         var packagePath = Path.Combine(TestOutputDir, "path-traversal.zip");

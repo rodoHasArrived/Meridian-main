@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { getJson } from "@/lib/api";
 import { getPostedPeriodComparison, type PostedPeriodComparison } from "./posted-period-comparison-api";
 

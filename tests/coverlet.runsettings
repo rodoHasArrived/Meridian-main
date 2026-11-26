@@ -6,8 +6,11 @@
         <Configuration>
           <Format>cobertura</Format>
           <ExcludeByFile>**/Migrations/**/*.cs,**/*.Designer.cs</ExcludeByFile>
-          <Include>[Meridian]*,[Meridian.FSharp]*,[Meridian.Contracts]*</Include>
-          <Exclude>[*Tests]*,[*Benchmarks]*</Exclude>
+          <!-- Coverlet matches the bracketed part against the whole assembly name, so the
+               wildcard is what admits Meridian.Application, Meridian.Storage and the rest.
+               Without it only the three assemblies named exactly were measured. -->
+          <Include>[Meridian*]*</Include>
+          <Exclude>[*Tests]*,[*Benchmarks]*,[Meridian.TestSupport]*,[Meridian.ProcessTestHelper]*</Exclude>
           <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
           <SingleHit>false</SingleHit>
           <UseSourceLink>true</UseSourceLink>

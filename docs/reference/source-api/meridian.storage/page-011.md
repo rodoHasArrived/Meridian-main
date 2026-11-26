@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorOverrideReviewRules
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideReviewRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:53](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L53).
+
+The independent-review rule for operator-override decisions.
+
+```csharp
+public static class OperatorOverrideReviewRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsSelfApproval(string? stagedBy, string? reviewer) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:59](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L59) | Whether reviewer is the actor who staged the overlay&#x27;s current values. Actor identities compare case-insensitively after trimming. |
+| <code>public static void EnsureIndependentReview(Guid securityId, OperatorOverridesDto overlay, OperatorOverrideDecision decision);</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:69](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L69) | Fails when decision approves values the reviewer staged themselves. A rejection (withdrawing one&#x27;s own staged values) and a restoration of a prior independent decision are allowed. |
+
+## OperatorOverridesDecisionPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverridesDecisionPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:61](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L61).
+
+OperatorOverrides / Approved or Rejected: a recorded review decision.
+
+```csharp
+public sealed record OperatorOverridesDecisionPayload(string Decision, string Reviewer, string StagedBy, string? Comment, string? ReasonCode, bool RestoresPriorDecision, IReadOnlyDictionary<string, string> Values) : ISecurityGovernancePayload;
+```
+
 ## OperatorOverrideSelfApprovalException
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideSelfApprovalException</code>. Kind: `class`.
@@ -1166,34 +1197,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public RegistryProjectionReadService(SecurityMasterOptions options, ISecurityMasterStore store) : this(options, store, rows : null);</code> | [src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs:78](../../../../src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs#L78) |  |
 | <code>public async Task&lt;SecurityTermsProjectionReadDto?&gt; GetAsync(string assetClass, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs:109](../../../../src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs#L109) |  |
-
-## SecurityGovernanceEvent
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernanceEvent</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:30](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L30).
-
-One recorded governance event. Payload is the stored JSON as written; ReadPayload{TPayload} reads it through the declared contract for Stream/EventType, dispatching on PayloadVersion.
-
-```csharp
-public sealed record SecurityGovernanceEvent(long GlobalSequence, Guid? SecurityId, string Stream, string EventType, string Actor, DateTimeOffset OccurredAt, JsonElement Payload, int PayloadVersion)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TPayload ReadPayload&lt;TPayload&gt;() where TPayload : class, ISecurityGovernancePayload =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:46](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L46) | The payload as its declared type. Throws SecurityGovernancePayloadContractException when the event type has no contract on this node, SecurityGovernancePayloadVersionException when PayloadVersion has no reader, and InvalidOperationException when TPayload is not the declared type. |
-| <code>public bool TryReadPayload&lt;TPayload&gt;([NotNullWhen(true)] out TPayload? payload) where TPayload : class, ISecurityGovernancePayload;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:55](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L55) | Reads the payload when this node declares a contract and a reader for its version and TPayload is the declared type; otherwise returns false and leaves the raw Payload as the only reading. Malformed JSON for a declared version still throws. |
-
-## SecurityGovernanceJsonContext
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernanceJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:235](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L235).
-
-Source-generated metadata for every governance payload version. The camelCase policy and the default encoder and null handling reproduce the reflective JsonSerializer.Serialize(object) output the version-1 writers produced; dictionary keys are written as stored.
-
-```csharp
-public sealed partial class SecurityGovernanceJsonContext : JsonSerializerContext;
-```

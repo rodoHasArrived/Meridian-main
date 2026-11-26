@@ -175,7 +175,13 @@ public sealed partial class PortableDataPackager
                     if (File.Exists(destinationPath))
                     {
                         if (await FilesHaveSameContentAsync(stagedPath, destinationPath, ct))
+                        {
+                            // A retried import finds its earlier moves here; sync them again so
+                            // its success still confirms they are durable.
+                            if (Path.GetDirectoryName(destinationPath) is { Length: > 0 } existingDir)
+                                movedDestinationDirs.Add(existingDir);
                             continue;
+                        }
 
                         conflicts.Add(entry.FullName);
                         validationErrors.Add(new ValidationError
@@ -220,9 +226,11 @@ public sealed partial class PortableDataPackager
 
                 // Persist the rename metadata like every other durability path does: without a
                 // directory fsync a crash can lose the moves even though the writes completed.
+                // Strict: the import reports success next. A retry is idempotent: identical files
+                // are skipped and their directories synced again.
                 foreach (var dir in movedDestinationDirs)
                 {
-                    await AtomicFileWriter.SyncDirectoryAsync(dir, ct);
+                    await AtomicFileWriter.SyncDirectoryOrThrowAsync(dir, ct);
                 }
             }
             finally

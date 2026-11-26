@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { deleteProviderCredentials, getProviderConnections, putProviderCredentials, verifyProviderConnection } from "./api";
 import { credentialOwnershipKey, ownedCredentialConnections, providerConnectionScopeEndpoint } from "./provider-credential-scope";

@@ -1773,6 +1773,7 @@ Meridian-main
 │   │   │   ├── intercompany-entity-controls.md
 │   │   │   ├── README.md
 │   │   │   ├── review-remediation-2026-11-12.md
+│   │   │   ├── security-master-class-plumbing-codegen.md
 │   │   │   ├── security-master-integrity-implementation-plan.md
 │   │   │   ├── security-master-review-remediation-plan.md
 │   │   │   ├── ui-shared-decomposition-inventory.md
@@ -5206,6 +5207,7 @@ Meridian-main
 │   │   │   ├── MeridianDeploymentPosture.cs
 │   │   │   ├── MoneyMarketStartup.cs
 │   │   │   ├── PersistenceConfigurationStatus.cs
+│   │   │   ├── PipelineWorkload.cs
 │   │   │   ├── PortfolioRecordsServiceRegistration.cs
 │   │   │   ├── ProductionRegistrationGuardService.cs
 │   │   │   ├── ProductionServiceRegistrationPolicy.cs
@@ -6274,6 +6276,7 @@ Meridian-main
 │   │   │   ├── ScheduleTermsWriteRules.Legs.cs
 │   │   │   ├── ScheduleTermsWriteRules.Scalars.cs
 │   │   │   ├── SecurityAssetClassCatalog.cs
+│   │   │   ├── SecurityAssetClassDeclarations.cs
 │   │   │   ├── SecurityAssetClassModules.cs
 │   │   │   ├── SecurityAssetClassRegistry.cs
 │   │   │   ├── SecurityAssetClassTermsUpgrade.cs
@@ -13372,7 +13375,8 @@ Meridian-main
 │   │   │   │   ├── SimulationCommandsTests.cs
 │   │   │   │   ├── StatementImportCommandsTests.cs
 │   │   │   │   ├── SymbolCommandsTests.cs
-│   │   │   │   └── ValidateConfigCommandTests.cs
+│   │   │   │   ├── ValidateConfigCommandTests.cs
+│   │   │   │   └── WalRepairCommandTests.cs
 │   │   │   ├── Composition
 │   │   │   │   ├── Startup
 │   │   │   │   │   ├── ModeRunners
@@ -13761,6 +13765,7 @@ Meridian-main
 │   │   │   │   ├── QuickBooks
 │   │   │   │   │   ├── QuickBooksCredentialLifecycleTests.cs
 │   │   │   │   │   └── QuickBooksOnlineProviderCredentialConnectionStoreTests.cs
+│   │   │   │   ├── CredentialDirectorySyncTests.cs
 │   │   │   │   ├── ExternalGlConnectionLifecycleTests.cs
 │   │   │   │   ├── ExternalGlCredentialConcurrencyTests.cs
 │   │   │   │   ├── ExternalGlCredentialRecoveryTests.cs
@@ -14369,6 +14374,7 @@ Meridian-main
 │   │   │   │   ├── WebSocketResiliencePolicyTests.cs
 │   │   │   │   └── WebSocketSendSessionTests.cs
 │   │   │   └── Shared
+│   │   │       ├── DirectorySyncFaults.cs
 │   │   │       ├── SymbolNormalizationTests.cs
 │   │   │       └── TempDirectoryFixture.cs
 │   │   ├── Instruments
@@ -14870,6 +14876,8 @@ Meridian-main
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.ReadableTwins.cs
 │   │   │   ├── SecurityAssetTermsSchemaTests.cs
 │   │   │   ├── SecurityAssetValidationModuleTests.cs
+│   │   │   ├── SecurityClassPlumbingGenerationTests.cs
+│   │   │   ├── SecurityClassPlumbingGenerator.cs
 │   │   │   ├── SecurityCodecRecordContractionTests.cs
 │   │   │   ├── SecurityCurveRulesTests.cs
 │   │   │   ├── SecurityCurvesMigrationTests.cs
@@ -15077,6 +15085,7 @@ Meridian-main
 │   │   │   ├── ArchiveCompressionCrashTests.cs
 │   │   │   ├── ArchiveMaintenanceScheduleManagerDurabilityTests.cs
 │   │   │   ├── AssetAccountingPostingEvidenceValidatorTests.cs
+│   │   │   ├── AtomicFileWriterDirectorySyncTests.cs
 │   │   │   ├── AtomicFileWriterLogPrivacyTests.cs
 │   │   │   ├── AtomicFileWriterTests.cs
 │   │   │   ├── AtomicSnapshotTestWriter.cs
@@ -15300,8 +15309,10 @@ Meridian-main
 │   │   │   ├── WriteAheadLogChecksumTests.cs
 │   │   │   ├── WriteAheadLogChecksumVersionTests.cs
 │   │   │   ├── WriteAheadLogCorruptionModeTests.cs
+│   │   │   ├── WriteAheadLogDirectorySyncTests.cs
 │   │   │   ├── WriteAheadLogFlushFaultTests.cs
 │   │   │   ├── WriteAheadLogFuzzTests.cs
+│   │   │   ├── WriteAheadLogOwnershipTests.cs
 │   │   │   ├── WriteAheadLogProcessTests.cs
 │   │   │   ├── WriteAheadLogTests.cs
 │   │   │   └── XlsxWorkbookWriterTests.cs
@@ -15419,6 +15430,8 @@ Meridian-main
 │   │   │   ├── RecordingLogger.cs
 │   │   │   ├── RepositoryFileWalker.cs
 │   │   │   ├── SecurityMasterTestCapabilityFloor.cs
+│   │   │   ├── SharedEndpointGraph.cs
+│   │   │   ├── SharedEndpointGraphTests.cs
 │   │   │   ├── SignalingMarketEventPublisher.cs
 │   │   │   ├── StubHttpMessageHandler.cs
 │   │   │   ├── TestMarketEventPublisher.cs
@@ -16478,6 +16491,7 @@ Meridian-main
 │   │   ├── test_generated_repair.py
 │   │   ├── test_generated_repair_outcomes.py
 │   │   ├── test_generated_repair_sandbox.py
+│   │   ├── test_generated_repair_triggers.py
 │   │   ├── test_git_hooks.py
 │   │   ├── test_golden_path_validation_workflow.py
 │   │   ├── test_ibapi_smoke_workflow.py
@@ -16556,6 +16570,7 @@ Meridian-main
 │   │   ├── test_task_context.py
 │   │   ├── test_temporary_directory_cleanup_tolerance.py
 │   │   ├── test_throughput_metrics.py
+│   │   ├── test_update_coverage_report.py
 │   │   ├── test_validate_agent_definitions.py
 │   │   ├── test_validate_design_document_adaptation.py
 │   │   ├── test_validate_doc_hashes.py

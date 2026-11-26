@@ -481,6 +481,11 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
         if (File.Exists(blobPath))
         {
             EnsureExistingBlobMatches(blobPath, content.LongLength, checksum);
+            // An earlier attempt may have stopped after its rename but before its strict sync.
+            AtomicFileWriter
+                .SyncDirectoryOrThrowAsync(Path.GetDirectoryName(blobPath)!, CancellationToken.None)
+                .GetAwaiter()
+                .GetResult();
         }
         else
         {
@@ -527,8 +532,10 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
                 // The caller verifies its exact length and SHA-256 before publishing metadata.
             }
 
+            // Strict: delivery metadata referencing this blob is published only after this. The
+            // blob is content-addressed, so a retry reuses it and syncs again.
             AtomicFileWriter
-                .SyncDirectoryAsync(directory, CancellationToken.None)
+                .SyncDirectoryOrThrowAsync(directory, CancellationToken.None)
                 .GetAwaiter()
                 .GetResult();
         }

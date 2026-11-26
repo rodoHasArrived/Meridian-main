@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Text;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ledger;
 
@@ -64,6 +66,9 @@ public static class FixedAssetDepreciationDraftBuilder
                     RetainedAtUtc: asOf,
                     RetainedBy: scope,
                     SubjectId: assetId,
+                    // Recurring provenance requires a content hash or source version on every source.
+                    // The charge has no retained file, so the hash fingerprints exactly what it records.
+                    ContentHash: Sha256Digest.ComputeUtf8(CanonicalEvidence(scope, periodEndText, projection)),
                     Description: projection.Description).Normalize();
             })
             .ToArray();
@@ -94,5 +99,29 @@ public static class FixedAssetDepreciationDraftBuilder
             EvidenceReferences: evidence);
 
         return new AutomatedJournalDraft(journalEvent, resolvedDescription, lines, metadata);
+    }
+
+    /// <summary>
+    /// Versioned, length-prefixed canonical form of one asset's depreciation charge: the book scope,
+    /// asset, period end and every posted line. Length prefixes keep field values from colliding.
+    /// </summary>
+    private static string CanonicalEvidence(string scope, string periodEnd, DepreciationProjection projection)
+    {
+        var builder = new StringBuilder("fixed-asset-depreciation/v1");
+        void Field(string? value) => builder.Append('\n').Append((value ?? string.Empty).Length.ToString(CultureInfo.InvariantCulture))
+            .Append(':').Append(value ?? string.Empty);
+        Field(scope);
+        Field(projection.AssetId.ToString("D"));
+        Field(periodEnd);
+        foreach (var (account, debit, credit) in projection.Lines)
+        {
+            Field(account.Name);
+            Field(account.AccountType.ToString());
+            Field(account.Symbol);
+            Field(account.FinancialAccountId);
+            Field(debit.ToString(CultureInfo.InvariantCulture));
+            Field(credit.ToString(CultureInfo.InvariantCulture));
+        }
+        return builder.ToString();
     }
 }

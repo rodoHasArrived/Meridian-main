@@ -204,7 +204,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ledger.FixedAssetDepreciationDraftBuilder</code>. Kind: `class`.
 
-Source: [src/Meridian.Ledger/FixedAssetDepreciationDraftBuilder.cs:11](../../../../src/Meridian.Ledger/FixedAssetDepreciationDraftBuilder.cs#L11).
+Source: [src/Meridian.Ledger/FixedAssetDepreciationDraftBuilder.cs:13](../../../../src/Meridian.Ledger/FixedAssetDepreciationDraftBuilder.cs#L13).
 
 Batches per-asset depreciation projections for a period into a single governed AutomatedJournalDraft (kind AutomatedJournalEventKind.DepreciationPosted) so an accountant approves the whole period&#x27;s depreciation run in one action — mirroring how DailyPortfolioPricingDraftBuilder batches daily fair-value marks.
 
@@ -216,7 +216,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static AutomatedJournalDraft? BuildDraft(DateOnly periodEnd, DateTimeOffset asOf, IReadOnlyList&lt;DepreciationInput&gt; assets, string? bookLabel = null, string? description = null);</code> | [src/Meridian.Ledger/FixedAssetDepreciationDraftBuilder.cs:23](../../../../src/Meridian.Ledger/FixedAssetDepreciationDraftBuilder.cs#L23) | Builds one balanced depreciation draft covering every asset in assets whose charge is positive. Zero charges are skipped; negative charges are rejected. Returns null when no asset has a charge to post. |
+| <code>public static AutomatedJournalDraft? BuildDraft(DateOnly periodEnd, DateTimeOffset asOf, IReadOnlyList&lt;DepreciationInput&gt; assets, string? bookLabel = null, string? description = null);</code> | [src/Meridian.Ledger/FixedAssetDepreciationDraftBuilder.cs:25](../../../../src/Meridian.Ledger/FixedAssetDepreciationDraftBuilder.cs#L25) | Builds one balanced depreciation draft covering every asset in assets whose charge is positive. Zero charges are skipped; negative charges are rejected. Returns null when no asset has a charge to post. |
 
 ## FixedAssetDepreciationProjector
 
