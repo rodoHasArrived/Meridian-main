@@ -55,7 +55,8 @@ jobs:
 
     steps:
       # Each lane classifies the change itself so none queues behind a separate job.
-      # integration-gate fails if this decision and the integration lane's ever differ.
+      # integration-gate runs these two steps verbatim; a contract test keeps them identical,
+      # so both reach the same decision for the same pull request.
       - name: Check out PR history for change detection
         if: github.event_name == 'pull_request'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -237,10 +238,17 @@ jobs:
           compression-level: 1
           retention-days: 14
 
-  verify-docs:
-    name: verify-docs
+  # The docs and workflow lanes share one job: both are short and Python-only, and every job
+  # is a separate wait for a hosted runner. The lanes still run as their own scripts/ci.sh
+  # invocations, keep their own evidence artifacts, and report separately in quality-gate.
+  # The workflow lane runs even when the docs lane fails.
+  verify-docs-workflows:
+    name: verify-docs-workflows
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
+    outputs:
+      docs-result: ${{ steps.docs.outcome }}
+      workflows-result: ${{ steps.workflows.outcome }}
 
     steps:
       - name: Check out repository
@@ -255,12 +263,14 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: build/scripts/docs/requirements.txt
+          cache-dependency-path: |
+            build/scripts/docs/requirements.txt
+            build/scripts/ci/requirements.txt
 
       # validate-agent-definitions.py parses agent frontmatter with PyYAML rather than a
-      # hand-rolled subset parser, so this lane needs the dependency installed.
+      # hand-rolled subset parser. The CI requirements include the docs requirements.
       - name: Install docs script dependencies
-        run: python -m pip install --requirement build/scripts/docs/requirements.txt
+        run: python -m pip install --requirement build/scripts/ci/requirements.txt
 
       - name: Set up maintained diagram toolchain
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -286,52 +296,6 @@ jobs:
           sudo install -m 0755 /tmp/promtool /usr/local/bin/promtool
           promtool --version
 
-      - name: Run docs/source/AI lane
-        run: bash scripts/ci.sh --lane verify-docs
-
-      - name: Upload docs lane artifacts
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: meridian-ci-docs-${{ github.run_number }}-${{ github.run_attempt }}
-          path: |
-            docs/status/docs-automation-summary.md
-            docs/status/docs-automation-summary.json
-            docs/status/todo-scan-results.json
-            artifacts/ci-summary/
-            artifacts/docs/
-            artifacts/maintained-generation/
-          if-no-files-found: ignore
-          compression-level: 1
-          retention-days: 14
-
-  verify-workflows:
-    name: verify-workflows
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          ref: ${{ github.sha }}
-          fetch-depth: 1
-
-      - name: Set up Python
-        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with:
-          python-version: "3.12"
-          cache: pip
-          cache-dependency-path: |
-            build/scripts/docs/requirements.txt
-            build/scripts/ci/requirements.txt
-
-      # validate-agent-definitions.py parses agent frontmatter with PyYAML rather than a
-      # hand-rolled subset parser, so this lane needs the dependency installed.
-      - name: Install docs script dependencies
-        run: python -m pip install --requirement build/scripts/ci/requirements.txt
-
       - name: Install verified actionlint
         run: |
           set -euo pipefail
@@ -341,7 +305,31 @@ jobs:
           tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP/actionlint" actionlint
           echo "$RUNNER_TEMP/actionlint" >> "$GITHUB_PATH"
 
+      - name: Run docs/source/AI lane
+        id: docs
+        run: bash scripts/ci.sh --lane verify-docs
+
+      # Upload before the workflow lane: scripts/ci.sh clears artifacts/build-logs/*.log at the
+      # start of each lane, and this artifact keeps only the docs lane's summary.
+      - name: Upload docs lane artifacts
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: meridian-ci-docs-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            docs/status/docs-automation-summary.md
+            docs/status/docs-automation-summary.json
+            docs/status/todo-scan-results.json
+            artifacts/ci-summary/verify-docs/
+            artifacts/docs/
+            artifacts/maintained-generation/
+          if-no-files-found: ignore
+          compression-level: 1
+          retention-days: 14
+
       - name: Run workflow hygiene lane
+        id: workflows
+        if: ${{ !cancelled() }}
         run: bash scripts/ci.sh --lane verify-workflows
 
       - name: Upload workflow lane artifacts
@@ -351,7 +339,7 @@ jobs:
           name: meridian-ci-workflows-${{ github.run_number }}-${{ github.run_attempt }}
           path: |
             artifacts/build-logs/
-            artifacts/ci-summary/
+            artifacts/ci-summary/verify-workflows/
           if-no-files-found: ignore
           compression-level: 1
           retention-days: 14
@@ -362,8 +350,7 @@ jobs:
     needs:
       - verify-dotnet
       - verify-browser
-      - verify-docs
-      - verify-workflows
+      - verify-docs-workflows
     if: always()
     timeout-minutes: 5
 
@@ -373,21 +360,29 @@ jobs:
           DOTNET_LANE_DECISION: ${{ needs.verify-dotnet.outputs.dotnet-required }}
           DOTNET_RESULT: ${{ needs.verify-dotnet.result }}
           BROWSER_RESULT: ${{ needs.verify-browser.result }}
-          DOCS_RESULT: ${{ needs.verify-docs.result }}
-          WORKFLOWS_RESULT: ${{ needs.verify-workflows.result }}
+          DOCS_WORKFLOWS_JOB_RESULT: ${{ needs.verify-docs-workflows.result }}
+          DOCS_RESULT: ${{ needs.verify-docs-workflows.outputs.docs-result }}
+          WORKFLOWS_RESULT: ${{ needs.verify-docs-workflows.outputs.workflows-result }}
         shell: bash
         run: |
           set -euo pipefail
           declare -A results=(
             ["verify-dotnet"]="$DOTNET_RESULT"
             ["verify-browser"]="$BROWSER_RESULT"
-            ["verify-docs"]="$DOCS_RESULT"
-            ["verify-workflows"]="$WORKFLOWS_RESULT"
+            ["verify-docs"]="${DOCS_RESULT:-$DOCS_WORKFLOWS_JOB_RESULT}"
+            ["verify-workflows"]="${WORKFLOWS_RESULT:-$DOCS_WORKFLOWS_JOB_RESULT}"
           )
 
           failed=0
           if [[ "$DOTNET_LANE_DECISION" != "true" && "$DOTNET_LANE_DECISION" != "false" ]]; then
             echo "verify-dotnet did not produce a valid .NET decision." >&2
+            failed=1
+          fi
+          # The two lanes share a job. Its own result must also be success: a failed setup or
+          # artifact upload fails the gate as it did when each lane was its own job, and a
+          # cancelled or timed-out job leaves no step outcome to report.
+          if [[ "$DOCS_WORKFLOWS_JOB_RESULT" != "success" ]]; then
+            echo "verify-docs-workflows finished with ${DOCS_WORKFLOWS_JOB_RESULT:-<none>}." >&2
             failed=1
           fi
           {
@@ -414,53 +409,130 @@ jobs:
 
           echo "All required Meridian CI lanes passed."
 
-  # Classifies the change in its own job, like verify-dotnet, so it starts without waiting
-  # for another job. A pull request that changes only recognized documentation skips the
-  # suite's steps; main, merge queues, manual runs and release callers always run them.
-  service-backed-integrations:
-    name: service-backed-integrations
-    uses: ./.github/workflows/service-backed-integrations.yml
-    with:
-      artifact-name: meridian-ci-integrations
-      skip-when-docs-only: true
-
+  # Runs the service-backed integration suites itself, through the composite action that
+  # Production Certification also uses, so its result needs no further job and no runner wait.
+  # It classifies the change with verify-dotnet's exact steps: a pull request that changes only
+  # recognized documentation skips the suites; main, merge queues, manual runs and release
+  # callers always run them.
   integration-gate:
     name: integration-gate
     runs-on: ubuntu-latest
-    needs: [verify-dotnet, service-backed-integrations]
-    if: always()
-    timeout-minutes: 5
+    timeout-minutes: 90
     outputs:
-      artifact-id: ${{ needs.service-backed-integrations.outputs.artifact-id }}
-      artifact-name: ${{ needs.service-backed-integrations.outputs.artifact-name }}
-      receipt-sha256: ${{ needs.service-backed-integrations.outputs.receipt-sha256 }}
-    steps:
-      - name: Evaluate service-backed integration evidence
+      dotnet-required: ${{ steps.changes.outputs.dotnet }}
+      artifact-id: ${{ steps.evidence.outputs.artifact-id }}
+      artifact-name: ${{ steps.evidence.outputs.artifact-name }}
+      receipt-sha256: ${{ steps.evidence.outputs.receipt-sha256 }}
+    services:
+      postgres:
+        image: postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
         env:
-          DOTNET_LANE_DECISION: ${{ needs.verify-dotnet.outputs.dotnet-required }}
-          INTEGRATION_DECISION: ${{ needs.service-backed-integrations.outputs.dotnet-required }}
-          INTEGRATION_RESULT: ${{ needs.service-backed-integrations.result }}
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: meridian-certification
+          POSTGRES_DB: meridian
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d meridian"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 50
+    env:
+      MERIDIAN_DISABLE_DOCKER_TESTS: "false"
+      MERIDIAN_LEDGER_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
+      MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
+      MERIDIAN_DIRECT_LENDING_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
+      MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
+      MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
+      MERIDIAN_REPORTING_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
+      MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
+      MERIDIAN_SECURITY_MASTER_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
+
+    steps:
+      - name: Check out PR history for change detection
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          filter: blob:none
+          path: .ci-change-detection
+
+      - name: Detect .NET changes
+        id: changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
         run: |
           set -euo pipefail
-          {
-            echo "### Meridian CI integration gate"
-            echo ""
-            echo "Service-backed integrations: ${INTEGRATION_RESULT}"
-          } >> "$GITHUB_STEP_SUMMARY"
-          if [[ "$INTEGRATION_RESULT" != "success" ]]; then
-            echo "Service-backed integrations did not pass. Inspect the integration job and evidence."
-            exit 1
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            (cd .ci-change-detection &&
+              python3 build/scripts/ci/detect-dotnet-changes.py \
+                --base "$BASE_SHA" --head "$HEAD_SHA" --github-output "$GITHUB_OUTPUT")
+            rm -rf .ci-change-detection
+          else
+            # Main, merge queues, manual and reusable release gates always run .NET.
+            echo "dotnet=true" >> "$GITHUB_OUTPUT"
           fi
-          # Both lanes classify the change independently. They must agree, or a docs-only
-          # skip in one lane could hide a .NET change from the other.
-          if [[ "$INTEGRATION_DECISION" != "true" && "$INTEGRATION_DECISION" != "false" ]]; then
-            echo "The integration lane did not produce a valid .NET decision." >&2
-            exit 1
-          fi
-          if [[ "$INTEGRATION_DECISION" != "$DOTNET_LANE_DECISION" ]]; then
-            echo "verify-dotnet decided dotnet=${DOTNET_LANE_DECISION:-<none>} but the integration lane decided dotnet=${INTEGRATION_DECISION}." >&2
-            exit 1
-          fi
-          if [[ "$INTEGRATION_DECISION" == "false" ]]; then
-            echo "Docs-only PR: service-backed integrations intentionally skipped." | tee -a "$GITHUB_STEP_SUMMARY"
-          fi
+
+      - name: Report docs-only skip
+        if: steps.changes.outputs.dotnet != 'true'
+        run: |
+          echo "Docs-only PR: service-backed integrations intentionally skipped." | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Check out repository
+        if: steps.changes.outputs.dotnet == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Run service-backed integration tests and bind their evidence
+        id: integrations
+        if: steps.changes.outputs.dotnet == 'true'
+        uses: ./.github/actions/service-backed-integrations
+        with:
+          artifact-name: meridian-ci-integrations
+          retention-days: "14"
+          postgres-container-id: ${{ job.services.postgres.id }}
+
+      # The same rules as service-backed-integrations.yml's evidence-gate: a docs-only pull
+      # request needs no evidence; otherwise the suites must have passed and produced a complete,
+      # well-formed artifact identity for release callers to reuse.
+      - name: Require verified integration evidence
+        id: evidence
+        if: always()
+        env:
+          DOTNET_REQUIRED: ${{ steps.changes.outputs.dotnet }}
+          INTEGRATION_OUTCOME: ${{ steps.integrations.outcome }}
+          INTEGRATION_OUTPUTS: ${{ toJSON(steps.integrations.outputs) }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          required = os.environ.get("DOTNET_REQUIRED", "")
+          if required not in ("true", "false"):
+              raise SystemExit("Change detection did not produce a valid .NET decision.")
+          summary = Path(os.environ["GITHUB_STEP_SUMMARY"])
+          if required == "false":
+              with summary.open("a") as stream:
+                  stream.write("### Meridian CI integration gate\n\nDocs-only PR: no integration evidence is required.\n")
+              raise SystemExit(0)
+          outcome = os.environ.get("INTEGRATION_OUTCOME", "")
+          with summary.open("a") as stream:
+              stream.write(f"### Meridian CI integration gate\n\nService-backed integrations: {outcome or 'not run'}\n")
+          if outcome != "success":
+              raise SystemExit("Service-backed integrations did not pass. Inspect this job's steps and evidence.")
+          outputs = json.loads(os.environ.get("INTEGRATION_OUTPUTS") or "{}")
+          patterns = {"artifact-id": r"[1-9][0-9]*", "artifact-name": r"[A-Za-z0-9][A-Za-z0-9_.-]{0,199}", "receipt-sha256": r"[0-9a-f]{64}"}
+          if any(not re.fullmatch(pattern, outputs.get(key) or "") for key, pattern in patterns.items()):
+              raise SystemExit("Successful integration run did not produce complete evidence outputs")
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a") as stream:
+              for key in patterns:
+                  stream.write(f"{key}={outputs[key]}\n")
+          PY

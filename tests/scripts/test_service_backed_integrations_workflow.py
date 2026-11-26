@@ -13,6 +13,8 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOWS = ROOT / ".github/workflows"
+ACTION = ROOT / ".github/actions/service-backed-integrations/action.yml"
+ACTION_USES = "./.github/actions/service-backed-integrations"
 
 
 def load_script(name):
@@ -34,7 +36,16 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         cls.ci = load_workflow("meridian-ci.yml")
         cls.production = load_workflow("production-certification.yml")
         cls.job = cls.shared["jobs"]["deterministic-integrations"]
-        cls.steps = cls.job["steps"]
+        cls.gate = cls.ci["jobs"]["integration-gate"]
+        # The suite commands live in one composite action that both callers run.
+        cls.action = yaml.load(ACTION.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+        cls.steps = cls.action["runs"]["steps"]
+        cls.callers = {"service-backed-integrations.yml": cls.job, "meridian-ci.yml": cls.gate}
+
+    def action_step(self, job):
+        steps = [step for step in job["steps"] if step.get("uses") == ACTION_USES]
+        self.assertEqual(len(steps), 1)
+        return steps[0]
 
     def test_same_implementation_runs_for_pr_merge_group_and_certification(self):
         self.assertIn("pull_request", self.ci["on"])
@@ -44,41 +55,61 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
             config = self.ci["on"][event] or {}
             self.assertNotIn("paths", config)
             self.assertNotIn("paths-ignore", config)
-        for caller in (self.ci["jobs"]["service-backed-integrations"],
-                       self.production["jobs"]["deterministic-integrations"]):
-            self.assertEqual(caller["uses"], "./.github/workflows/service-backed-integrations.yml")
+        # Certification calls the reusable workflow; Meridian CI's integration-gate runs the same
+        # composite action directly, so the check that reports the suites is the job that runs them.
+        production = self.production["jobs"]["deterministic-integrations"]
+        self.assertEqual(production["uses"], "./.github/workflows/service-backed-integrations.yml")
+        self.assertNotIn("service-backed-integrations", self.ci["jobs"])
+        for caller in (production, self.gate):
             self.assertNotIn("secrets", caller)
             self.assertNotIn("continue-on-error", caller)
-        # Certification always runs its integrations. Meridian CI opts into in-job
-        # classification, which only a docs-only pull request can make false.
-        self.assertNotIn("if", self.production["jobs"]["deterministic-integrations"])
-        self.assertNotIn("skip-when-docs-only", self.production["jobs"]["deterministic-integrations"].get("with", {}))
-        caller = self.ci["jobs"]["service-backed-integrations"]
-        self.assertNotIn("needs", caller, "The integration lane must not queue behind another job.")
-        self.assertNotIn("if", caller)
-        self.assertEqual(caller["with"]["skip-when-docs-only"], "true")
+        self.assertEqual(self.action["runs"]["using"], "composite")
+        for name, job in self.callers.items():
+            with self.subTest(caller=name):
+                step = self.action_step(job)
+                self.assertEqual(step["id"], "integrations")
+                self.assertEqual(step["if"], "steps.changes.outputs.dotnet == 'true'")
+                self.assertEqual(step["with"]["postgres-container-id"], "${{ job.services.postgres.id }}")
+                self.assertEqual(job["timeout-minutes"], "90")
+        self.assertEqual(self.action_step(self.gate)["with"]["artifact-name"], "meridian-ci-integrations")
+        # Certification always runs its integrations; only Meridian CI classifies docs-only PRs.
+        self.assertNotIn("if", production)
+        self.assertNotIn("skip-when-docs-only", production.get("with", {}))
+        self.assertNotIn("needs", self.gate, "The integration gate must not queue behind another job.")
+        self.assertNotIn("if", self.gate)
         option = self.shared["on"]["workflow_call"]["inputs"]["skip-when-docs-only"]
         self.assertEqual((option["type"], option["default"]), ("boolean", "false"))
-        detect = next(step for step in self.steps if step.get("id") == "changes")
+        detect = next(step for step in self.job["steps"] if step.get("id") == "changes")
         self.assertEqual(detect["env"]["CLASSIFY"],
                          "${{ inputs.skip-when-docs-only && github.event_name == 'pull_request' }}")
         self.assertIn('if [[ "$CLASSIFY" == "true" ]]', detect["run"])
         self.assertIn("build/scripts/ci/detect-dotnet-changes.py", detect["run"])
         self.assertIn('echo "dotnet=true"', detect["run"])
-        self.assertEqual(self.job["outputs"]["dotnet-required"], "${{ steps.changes.outputs.dotnet }}")
+        for job in self.callers.values():
+            self.assertEqual(job["outputs"]["dotnet-required"], "${{ steps.changes.outputs.dotnet }}")
+        for key in ("artifact-id", "artifact-name", "receipt-sha256"):
+            self.assertEqual(self.job["outputs"][key], "${{ steps.integrations.outputs." + key + " }}")
+            self.assertEqual(self.gate["outputs"][key], "${{ steps.evidence.outputs." + key + " }}")
+            self.assertEqual(self.ci["on"]["workflow_call"]["outputs"][f"integration-{key}"]["value"],
+                             "${{ jobs.integration-gate.outputs." + key + " }}")
 
     def test_forks_use_event_commit_read_only_token_and_no_production_secrets(self):
         for workflow in (self.shared, self.ci):
             self.assertEqual(workflow["permissions"], {"contents": "read"})
             self.assertNotIn("pull_request_target", workflow["on"])
         self.assertNotIn("secrets", self.shared["on"]["workflow_call"])
-        checkout = next(step for step in self.steps if step.get("uses", "").startswith("actions/checkout@"))
-        self.assertEqual(checkout["with"]["ref"], "${{ github.sha }}")
-        self.assertEqual(checkout["with"]["persist-credentials"], "false")
-        self.assertNotRegex((WORKFLOWS / "service-backed-integrations.yml").read_text(encoding="utf-8"),
-                            r"\$\{\{[^}]*\bsecrets\.")
+        for name, job in self.callers.items():
+            with self.subTest(caller=name):
+                checkout = next(step for step in job["steps"] if step.get("uses", "").startswith("actions/checkout@"))
+                self.assertEqual(checkout["with"]["ref"], "${{ github.sha }}")
+                self.assertEqual(checkout["with"]["persist-credentials"], "false")
+        for path in (WORKFLOWS / "service-backed-integrations.yml", ACTION):
+            self.assertNotRegex(path.read_text(encoding="utf-8"), r"\$\{\{[^}]*\bsecrets\.")
 
     def test_disposable_postgres_configuration_matches_certification(self):
+        # Both callers declare the same service and environment the action relies on.
+        self.assertEqual(self.gate["services"], self.job["services"])
+        self.assertEqual(self.gate["env"], self.job["env"])
         service = self.job["services"]["postgres"]
         self.assertRegex(service["image"], r"^postgres:17@sha256:[0-9a-f]{64}$")
         self.assertEqual(service["image"], self.production["jobs"]["recovery-drill"]["services"]["postgres"]["image"])
@@ -125,7 +156,7 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         self.assertEqual(by_id["build-meridian"]["run"],
                          "dotnet build tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore")
         self.assertIn("createdb --username postgres meridian_tax_lot", by_id["database-meridian"]["run"])
-        self.assertEqual(by_id["database-meridian"]["env"]["POSTGRES_CONTAINER_ID"], "${{ job.services.postgres.id }}")
+        self.assertEqual(by_id["database-meridian"]["env"]["POSTGRES_CONTAINER_ID"], "${{ inputs.postgres-container-id }}")
         run = by_id["test-meridian"]["run"]
         self.assertIn("python build/scripts/ci/run-meridian-integrations.py", run)
         self.assertIn("--results-dir artifacts/test-results/production-certification/meridian-integrations", run)
@@ -211,7 +242,12 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         self.assertIn("--no-restore", demo["run"])
 
     def test_validation_and_evidence_run_even_after_test_failure(self):
-        guard = "always() && steps.changes.outputs.dotnet == 'true'"
+        # The docs-only guard sits on each caller's action step; inside the action these steps
+        # run whatever happened to the suites.
+        guard = "always()"
+        for step in self.steps:
+            if step.get("run"):
+                self.assertEqual(step["shell"], "bash", step["name"])
         validate = next(step for step in self.steps if "validate-test-results.py" in step.get("run", ""))
         self.assertEqual(validate["if"], guard)
         for prefix in ("meridian-integrations", "meridian-integrations-tax-lot-journal",
@@ -223,43 +259,51 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         self.assertEqual(upload["if"], guard)
         self.assertEqual(upload["with"]["if-no-files-found"], "error")
 
-    def test_companion_gate_always_reports_and_requires_success(self):
-        gate = self.ci["jobs"]["integration-gate"]
-        self.assertEqual(gate["name"], "integration-gate")
-        self.assertEqual(gate["if"], "always()")
-        self.assertEqual(gate["needs"], ["verify-dotnet", "service-backed-integrations"])
-        step = gate["steps"][0]
+    def test_companion_gate_runs_the_suites_and_requires_complete_evidence(self):
+        self.assertEqual(self.gate["name"], "integration-gate")
+        self.assertNotIn("continue-on-error", self.gate)
+        # It overrides Meridian CI's workflow-wide Docker opt-out for the service-backed suites.
+        self.assertEqual(self.ci["env"]["MERIDIAN_DISABLE_DOCKER_TESTS"], "true")
+        self.assertEqual(self.gate["env"]["MERIDIAN_DISABLE_DOCKER_TESTS"], "false")
+        step = next(step for step in self.gate["steps"] if step.get("id") == "evidence")
+        self.assertEqual(step["if"], "always()")
         self.assertEqual(step["env"], {
-            "DOTNET_LANE_DECISION": "${{ needs.verify-dotnet.outputs.dotnet-required }}",
-            "INTEGRATION_DECISION": "${{ needs.service-backed-integrations.outputs.dotnet-required }}",
-            "INTEGRATION_RESULT": "${{ needs.service-backed-integrations.result }}",
+            "DOTNET_REQUIRED": "${{ steps.changes.outputs.dotnet }}",
+            "INTEGRATION_OUTCOME": "${{ steps.integrations.outcome }}",
+            "INTEGRATION_OUTPUTS": "${{ toJSON(steps.integrations.outputs) }}",
         })
-        self.assertIn('if [[ "$INTEGRATION_RESULT" != "success" ]]; then', step["run"])
-        self.assertIn("exit 1", step["run"])
-        self.assertNotIn("continue-on-error", gate)
+        self.assertIs(self.gate["steps"][-1], step)
+        script = step["run"].split("<<'PY'\n", 1)[1].rsplit("PY", 1)[0]
 
-        def run_gate(integration, lane="true", decided="true"):
+        def run_gate(required="true", outcome="success", outputs=None):
             with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
-                environment = dict(os.environ, DOTNET_LANE_DECISION=lane, INTEGRATION_DECISION=decided,
-                                   INTEGRATION_RESULT=integration,
-                                   GITHUB_STEP_SUMMARY=str(Path(temporary) / "summary.md"))
-                return subprocess.run(["bash", "-c", step["run"]], env=environment,
-                                      capture_output=True, text=True, check=False).returncode
+                output = Path(temporary) / "output"
+                environment = dict(os.environ, DOTNET_REQUIRED=required, INTEGRATION_OUTCOME=outcome,
+                                   INTEGRATION_OUTPUTS=json.dumps(outputs if outputs is not None else complete),
+                                   GITHUB_OUTPUT=str(output), GITHUB_STEP_SUMMARY=str(Path(temporary) / "summary.md"))
+                result = subprocess.run([sys.executable, "-c", script], env=environment,
+                                        capture_output=True, text=True, check=False)
+                return result.returncode, output.read_text() if output.exists() else ""
 
-        self.assertEqual(run_gate("success"), 0)
-        # The only accepted docs-only result: the integration lane succeeded, classified the
-        # change as docs-only, and verify-dotnet independently reached the same decision.
-        self.assertEqual(run_gate("success", lane="false", decided="false"), 0)
-        for integration, lane, decided in (
-                ("failure", "true", "true"), ("cancelled", "true", "true"),
-                ("skipped", "true", "true"), ("skipped", "false", "false"),
-                ("success", "false", "true"), ("success", "true", "false"),
-                ("success", "", "false"), ("success", "false", ""),
-                ("failure", "false", "false"), ("cancelled", "false", "false")):
-            with self.subTest(integration=integration, lane=lane, decided=decided):
-                self.assertNotEqual(run_gate(integration, lane, decided), 0)
+        complete = {"artifact-id": "7", "artifact-name": "meridian-ci-integrations-1-1", "receipt-sha256": "a" * 64}
+        code, written = run_gate()
+        self.assertEqual(code, 0)
+        self.assertEqual(written.splitlines(), [f"{key}={value}" for key, value in complete.items()])
+        # The only accepted result without evidence: the job's own classification found a
+        # docs-only pull request, so the suites never ran.
+        self.assertEqual(run_gate(required="false", outcome="skipped", outputs={})[0], 0)
+        for required in ("", "maybe"):
+            with self.subTest(required=required):
+                self.assertNotEqual(run_gate(required=required)[0], 0)
+        for outcome in ("failure", "cancelled", "skipped", ""):
+            with self.subTest(outcome=outcome):
+                self.assertNotEqual(run_gate(outcome=outcome)[0], 0)
+        for key, bad in (("artifact-id", "0"), ("artifact-name", "-bad"), ("receipt-sha256", "A" * 64)):
+            with self.subTest(output=key):
+                self.assertNotEqual(run_gate(outputs=dict(complete, **{key: bad}))[0], 0)
+                self.assertNotEqual(run_gate(outputs={k: v for k, v in complete.items() if k != key})[0], 0)
         self.assertEqual(self.ci["jobs"]["quality-gate"]["needs"],
-                         ["verify-dotnet", "verify-browser", "verify-docs", "verify-workflows"])
+                         ["verify-dotnet", "verify-browser", "verify-docs-workflows"])
 
     def test_evidence_gate_accepts_docs_only_only_when_the_caller_opted_in(self):
         step = self.shared["jobs"]["evidence-gate"]["steps"][0]
@@ -306,8 +350,11 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         self.assertEqual(upload["with"]["retention-days"], "${{ inputs.retention-days }}")
         receipt = next(step for step in self.steps if step.get("id") == "receipt")
         # No status function means GitHub's implicit success(): receipts follow passing steps only.
-        self.assertEqual(receipt["if"], "steps.changes.outputs.dotnet == 'true'",
-                         "Only create passing receipts after all test/schema steps succeed.")
+        self.assertNotIn("if", receipt, "Only create passing receipts after all test/schema steps succeed.")
+        outputs = self.action["outputs"]
+        self.assertEqual(outputs["artifact-id"]["value"], "${{ steps.upload.outputs.artifact-id }}")
+        self.assertEqual(outputs["artifact-name"]["value"], "${{ steps.receipt.outputs.artifact-name }}")
+        self.assertEqual(outputs["receipt-sha256"]["value"], "${{ steps.receipt.outputs.receipt-sha256 }}")
 
     def test_standalone_certification_remains_fresh_and_release_passes_receipt(self):
         inputs = self.production["on"]["workflow_call"]["inputs"]

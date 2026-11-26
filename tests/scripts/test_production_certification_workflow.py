@@ -13,6 +13,8 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "production-certification.yml"
 INTEGRATIONS_PATH = REPO_ROOT / ".github" / "workflows" / "service-backed-integrations.yml"
+# The suite commands live in this composite action; the workflow keeps the service and env.
+INTEGRATION_ACTION_PATH = REPO_ROOT / ".github" / "actions" / "service-backed-integrations" / "action.yml"
 COVERLET_SETTINGS_PATH = REPO_ROOT / "tests" / "coverlet.runsettings"
 LIVE_PROVIDER_TESTS = (
     REPO_ROOT / "tests" / "Meridian.Tests" / "Integration" / "YahooFinancePcgPreferredIntegrationTests.cs",
@@ -24,7 +26,8 @@ class ProductionCertificationWorkflowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
-        cls.integrations = INTEGRATIONS_PATH.read_text(encoding="utf-8")
+        cls.integrations = (INTEGRATIONS_PATH.read_text(encoding="utf-8") + "\n"
+                            + INTEGRATION_ACTION_PATH.read_text(encoding="utf-8"))
         cls.coverlet_settings = COVERLET_SETTINGS_PATH.read_text(encoding="utf-8")
 
     def test_documentation_evidence_uses_the_merge_gate_generation_and_drift_policy(self) -> None:

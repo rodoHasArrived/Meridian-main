@@ -8,6 +8,13 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "meridian-ci.yml"
 LANES = ("verify-dotnet", "verify-browser", "verify-docs", "verify-workflows")
+# The docs and workflow lanes share one job; each lane is still its own scripts/ci.sh run.
+LANE_JOBS = {
+    "verify-dotnet": "verify-dotnet",
+    "verify-browser": "verify-browser",
+    "verify-docs": "verify-docs-workflows",
+    "verify-workflows": "verify-docs-workflows",
+}
 
 
 class MeridianCiCacheContractTests(unittest.TestCase):
@@ -65,13 +72,18 @@ class MeridianCiCacheContractTests(unittest.TestCase):
             ("verify-workflows", "Run workflow hygiene lane"),
         ):
             with self.subTest(lane=lane):
-                job = self._job_block(lane)
+                job = self._job_block(LANE_JOBS[lane])
                 step = self._step_block(job, step_name)
                 self.assertNotRegex(job, r"(?m)^    (?:if|needs):")
                 self.assertNotRegex(job, r"(?m)^\s+if:.*cache")
                 if lane == "verify-dotnet":
                     # Only the docs-only change decision may skip the .NET lane.
                     self.assertIn("        if: steps.changes.outputs.dotnet == 'true'\n", step)
+                elif lane == "verify-workflows":
+                    # It shares a job with the docs lane and must still run when that lane fails;
+                    # only cancellation may skip it.
+                    self.assertIn("        if: ${{ !cancelled() }}\n", step)
+                    self.assertEqual(len(re.findall(r"(?m)^        if:", step)), 1)
                 else:
                     self.assertNotRegex(step, r"(?m)^        if:")
                 self.assertRegex(
@@ -80,20 +92,23 @@ class MeridianCiCacheContractTests(unittest.TestCase):
                 )
 
     def test_pip_cache_restores_downloads_and_still_installs_dependencies(self) -> None:
+        job = self._job_block("verify-docs-workflows")
+        setup = self._step_block(job, "Set up Python")
+        install = self._step_block(job, "Install docs script dependencies")
+        self.assertIn("cache: pip", setup)
+        self.assertIn("build/scripts/docs/requirements.txt", setup)
+        self.assertIn("build/scripts/ci/requirements.txt", setup)
+        self.assertNotRegex(install, r"(?m)^        if:")
+        self.assertRegex(
+            install,
+            r"(?m)^        run: python -m pip install --requirement build/scripts/ci/requirements\.txt\s*$",
+        )
+        # One install serves both lanes, so the CI requirements must keep the docs ones.
+        ci_requirements = (REPO_ROOT / "build/scripts/ci/requirements.txt").read_text(encoding="utf-8")
+        self.assertRegex(ci_requirements, r"(?m)^-r \.\./docs/requirements\.txt\s*$")
+        self.assertLess(job.index(setup), job.index(install))
         for lane in ("verify-docs", "verify-workflows"):
             with self.subTest(lane=lane):
-                job = self._job_block(lane)
-                setup = self._step_block(job, "Set up Python")
-                install = self._step_block(job, "Install docs script dependencies")
-                self.assertIn("cache: pip", setup)
-                self.assertIn("build/scripts/docs/requirements.txt", setup)
-                self.assertNotRegex(install, r"(?m)^        if:")
-                self.assertRegex(
-                    install,
-                    r"(?m)^        run: python -m pip install --requirement "
-                    rf"build/scripts/{'ci' if lane == 'verify-workflows' else 'docs'}/requirements\.txt\s*$",
-                )
-                self.assertLess(job.index(setup), job.index(install))
                 self.assertLess(job.index(install), job.index(f"bash scripts/ci.sh --lane {lane}"))
 
     def test_browser_upload_contains_actual_vite_output_and_failure_logs(self) -> None:
@@ -116,12 +131,18 @@ class MeridianCiCacheContractTests(unittest.TestCase):
         gate = self._job_block("quality-gate")
         dependencies = re.search(r"(?m)^    needs:\n((?:      - [\w-]+\n)+)", gate)
         self.assertIsNotNone(dependencies)
-        self.assertEqual(set(re.findall(r"- ([\w-]+)", dependencies.group(1))), set(LANES))
+        self.assertEqual(set(re.findall(r"- ([\w-]+)", dependencies.group(1))), set(LANE_JOBS.values()))
         self.assertRegex(gate, r"(?m)^    name: quality-gate$")
         self.assertRegex(gate, r"(?m)^    if: always\(\)$")
-        for lane in LANES:
-            with self.subTest(lane=lane):
-                self.assertIn("${{ needs." + lane + ".result }}", gate)
+        for job in set(LANE_JOBS.values()):
+            with self.subTest(job=job):
+                self.assertIn("${{ needs." + job + ".result }}", gate)
+        # The shared job reports each lane's own step outcome.
+        self.assertIn("${{ needs.verify-docs-workflows.outputs.docs-result }}", gate)
+        self.assertIn("${{ needs.verify-docs-workflows.outputs.workflows-result }}", gate)
+        shared = self._job_block("verify-docs-workflows")
+        self.assertIn("docs-result: ${{ steps.docs.outcome }}", shared)
+        self.assertIn("workflows-result: ${{ steps.workflows.outcome }}", shared)
         self.assertIn(f"for lane in {' '.join(LANES)}; do", gate)
         self.assertIn('"$result" == "success" && "$DOTNET_LANE_DECISION" == "false"', gate)
         self.assertIn('if [[ "$result" != "success" ]]; then\n                failed=1', gate)

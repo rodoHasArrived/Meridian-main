@@ -33,8 +33,9 @@ with the repository README, the README wins.
 ## Architecture in brief
 
 - **Meridian CI** (`meridian-ci.yml`) is the merge gate. It runs four lanes in parallel
-  (`verify-dotnet`, `verify-browser`, `verify-docs`, `verify-workflows`) and reports one stable
-  `quality-gate` check, plus an `integration-gate` companion for PostgreSQL-backed tests.
+  (`verify-dotnet`, `verify-browser`, `verify-docs`, `verify-workflows`; docs and workflows share
+  one job) and reports one stable `quality-gate` check, plus an `integration-gate` job that runs
+  the PostgreSQL-backed suites itself through `.github/actions/service-backed-integrations`.
 - Every lane is `bash scripts/ci.sh --lane <name>`, so hosted and local runs execute the same
   script.
 - **CI** (`ci.yml`) owns Secret Scan and nightly/manual coverage. **CodeQL** (`codeql.yml`)

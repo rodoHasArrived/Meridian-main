@@ -275,7 +275,10 @@ class IntegrationEvidenceTests(unittest.TestCase):
 
 class IntegrationEvidenceGateTests(unittest.TestCase):
     def test_job_gate_requires_exactly_one_successful_complete_evidence_path(self):
-        workflow = yaml.load((ROOT / MODULE.WORKFLOW).read_text(), Loader=yaml.BaseLoader)
+        # The evidence gate belongs to the reusable workflow; MODULE.WORKFLOW names the
+        # composite action that holds the suite commands.
+        workflow = yaml.load((ROOT / ".github/workflows/service-backed-integrations.yml").read_text(),
+                             Loader=yaml.BaseLoader)
         gate = workflow["jobs"]["evidence-gate"]
         self.assertEqual(gate["if"], "always()")
         self.assertEqual(gate["needs"], ["deterministic-integrations", "reuse-integrations"])

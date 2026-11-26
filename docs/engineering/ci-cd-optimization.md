@@ -53,13 +53,13 @@ capacity or alter release serialization. Meridian CI additionally never cancels 
 push run (see the November 25 runner-saturation entry below).
 
 Meridian CI retains exactly its four canonical `scripts/ci.sh` lanes and the existing
-`quality-gate` aggregation. Its additional `service-backed-integrations` job calls the same
-`service-backed-integrations.yml` implementation used by Production Certification. The
-always-reported `integration-gate` companion requires success and fails for failed, cancelled
-or skipped integration execution, with one exception: a pull request that the integration job
-itself classifies as documentation-only skips the suite's steps, as `verify-dotnet` skips its
-.NET steps, and the gate accepts exactly that result when both lanes' decisions agree. It uses no path filters; main pushes,
-merge groups and manual/reusable calls always classify as requiring the tests.
+`quality-gate` aggregation; the docs and workflow lanes run in one shared job. Its always-reported
+`integration-gate` job runs the `.github/actions/service-backed-integrations` composite action,
+the same implementation Production Certification runs through `service-backed-integrations.yml`,
+and fails for failed, cancelled or skipped integration execution or incomplete evidence, with one
+exception: a pull request that the job classifies as documentation-only, with the same steps as
+`verify-dotnet`, skips the suites, and the gate accepts exactly that result. It uses no path
+filters; main pushes, merge groups and manual/reusable calls always classify as requiring the tests.
 
 The shared implementation uses the certification `postgres:17` service, health checks and
 eight domain connection strings. The database and credentials are disposable within each
@@ -443,9 +443,11 @@ Hosted jobs waited 60–76 minutes for a runner while 23 open PRs created about 
 runs in 85 minutes, and the median wall-clock of a successful run grew from 29–43 to 160
 minutes. Three changes reduce demand without changing any check identity:
 
-- *Main is always verified.* Meridian CI no longer cancels in-progress `push` runs. Each merge's
-  run completes; GitHub still replaces an older *pending* run in the group with the newest, so a
-  burst of merges cannot queue without bound. PR and merge-group runs still cancel superseded work.
+- *Main is always verified.* Meridian CI no longer cancels in-progress `push` runs. GitHub still
+  replaces an older *pending* run in the group with the newest, so a burst of merges cannot queue
+  without bound. PR and merge-group runs still cancel superseded work. *Correction (November 26):*
+  this does not give every merge its own run; a merge that lands while a run is in progress is
+  covered only by the next run (see below).
 - *One fewer runner wait per run.* The `changes` job is gone. The reusable integration job
   classifies the change in-job when Meridian CI passes `skip-when-docs-only: true`, using the same
   detector as `verify-dotnet`; `integration-gate` requires the two decisions to agree, and
@@ -460,7 +462,39 @@ minutes. Three changes reduce demand without changing any check identity:
   and Generated Repair continue to run on drafts.
 
 Confirm with: a completed `quality-gate` for every merge to `main`, runner waits under five
-minutes, and successful-run wall-clock back in the 30–40 minute range.
+minutes, and successful-run wall-clock back in the 30–40 minute range. (Superseded by the
+November 26 target below.)
+
+### Fewer jobs per run, newest-only main verification — November 26, 2026 (ci-health-013)
+
+The first nightly after the November 25 change showed `main` completing runs again, but not
+every merge: runs for be2baba0, cb8be679, d91b5506 and ffff0037 were replaced while pending.
+Run 45742891814 at 983a2058 waited 56 minutes for the previous run in its group, its jobs waited
+23–49 minutes for runners, and `quality-gate` waited 30 minutes; execution itself took about
+23 minutes, so the 2 h 35 min wall-clock was almost all queueing. Two decisions follow:
+
+- *Newest-only verification of `main` is accepted.* The newest commit on `main` gets a completed
+  `quality-gate`; a merge that lands while a run is in progress is covered by the next run.
+- *Fewer jobs per run.* Meridian CI drops from eight jobs (plus a skipped reuse job) to five:
+  - `verify-docs` and `verify-workflows` run as one job, `verify-docs-workflows`. Both lanes are
+    short and Python-only. Each lane is still its own `scripts/ci.sh` run with its own artifact,
+    which release promotion requires; the workflow lane runs even when the docs lane fails; and
+    `quality-gate` reports both lanes and the shared job's result.
+  - `integration-gate` runs the service-backed suites itself, through the new
+    `.github/actions/service-backed-integrations` composite action, and validates its own evidence.
+    The integration path drops from three serial runner waits to one. Production Certification
+    runs the same action through `service-backed-integrations.yml`; its jobs, reuse and
+    `evidence-gate` are unchanged. The integration receipt's producer fingerprint now covers the
+    action, which holds the suite commands.
+  - `integration-gate` no longer waits for `verify-dotnet` to compare change decisions. It runs
+    `verify-dotnet`'s classification steps verbatim, and a contract test keeps them identical.
+
+The checks `verify-docs`, `verify-workflows` and the two `service-backed-integrations / …` checks
+no longer appear on Meridian CI runs. None is a documented required check; `quality-gate` and
+`integration-gate` keep their names.
+
+Confirm with: the newest commit on `main` gets a completed `quality-gate`, and Meridian CI jobs
+start within five minutes of being created.
 
 ### Critical-path restructuring — November 25, 2026
 

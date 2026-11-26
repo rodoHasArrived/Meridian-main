@@ -43,7 +43,7 @@ class PythonPackageCondaDependencyTests(unittest.TestCase):
             (ROOT / ".github/workflows/meridian-ci.yml").read_text(encoding="utf-8"),
             Loader=yaml.BaseLoader,
         )
-        steps = workflow["jobs"]["verify-workflows"]["steps"]
+        steps = workflow["jobs"]["verify-docs-workflows"]["steps"]
         dependency_command = "python -m pip install --requirement build/scripts/ci/requirements.txt"
         validation_command = "bash scripts/ci.sh --lane verify-workflows"
         dependency_steps = [step for step in steps if step.get("run", "").strip() == dependency_command]
@@ -52,8 +52,11 @@ class PythonPackageCondaDependencyTests(unittest.TestCase):
         self.assertEqual(len(dependency_steps), 1)
         self.assertEqual(len(validation_steps), 1)
         self.assertLess(steps.index(dependency_steps[0]), steps.index(validation_steps[0]))
+        self.assertNotIn("if", dependency_steps[0])
+        # The workflow lane shares a job with the docs lane and still runs when that lane
+        # fails; only cancellation may skip it.
+        self.assertEqual(validation_steps[0].get("if"), "${{ !cancelled() }}")
         for step in (*dependency_steps, *validation_steps):
-            self.assertNotIn("if", step)
             self.assertNotIn("continue-on-error", step)
 
         requirements = (ROOT / "build/scripts/ci/requirements.txt").read_text(encoding="utf-8")
