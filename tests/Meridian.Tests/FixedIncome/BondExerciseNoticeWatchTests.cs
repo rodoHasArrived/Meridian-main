@@ -447,6 +447,7 @@ public sealed class BondExerciseNoticeWatchTests
     {
         var payload = new Dictionary<string, object?>
         {
+            ["termsFormat"] = "flat",
             ["assetClassTermsVersion"] = stamp,
             ["issueDate"] = "2026-01-15",
             ["maturity"] = "2031-01-15",

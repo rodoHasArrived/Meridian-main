@@ -349,9 +349,12 @@ public sealed class DeclaredRateUnitParityTests
         });
 
     private static SecurityDetailDto Security(string assetClass, JsonObject terms)
-        => new(Guid.NewGuid(), assetClass, SecurityStatusDto.Active, "Rate parity " + assetClass, "USD",
+    {
+        terms[SecurityTermsEnvelope.FormatKey] = "flat";
+        return new(Guid.NewGuid(), assetClass, SecurityStatusDto.Active, "Rate parity " + assetClass, "USD",
             JsonSerializer.SerializeToElement(new { displayName = "Rate parity", currency = "USD" }),
             JsonSerializer.SerializeToElement(terms), [], [], 1, Cutoff.AddYears(-1), null);
+    }
 
     private static async Task<StructuredCashFlowProjectionDto> ProjectAsync(SecurityDetailDto security)
     {

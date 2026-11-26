@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 7 of 8
 
-Objects 481-560 of 610. References crossing pages remain available in the dependency manifest.
+Objects 481-560 of 614. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -257,6 +257,17 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityRecordRateUnit["SecurityRecordRateUnit"] {
     }
+    class Meridian_Contracts_SecurityMaster_SecurityRecurringAccrualPolicies["SecurityRecurringAccrualPolicies"] {
+        +IReadOnlyList~SecurityRecurringAccrualPolicy~ All
+        +SecurityRecurringAccrualPolicy ExistingFixedIncome
+        +SecurityRecurringAccrualPolicy FixedBulletActual365
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityRecurringAccrualPolicy["SecurityRecurringAccrualPolicy"] {
+        +string Id
+        +SecurityRecurringAccrualProfile Profile
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityRecurringAccrualProfile["SecurityRecurringAccrualProfile"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityScheduleDecimal["SecurityScheduleDecimal"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic["SecurityScheduleDiagnostic"] {
@@ -388,33 +399,6 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityUnderlyingRole["SecurityUnderlyingRole"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto["SecurityValidationGateResultDto"] {
-        +bool IsBlocked
-        +bool IsResolved
-        +SecurityValidationReportDto Report
-        +Guid? SecurityId
-        +SecurityValidationSnapshotDto? Snapshot
-        +string? Symbol
-        +SecurityValidationWorkflowDto Workflow
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityValidationIssueDto["SecurityValidationIssueDto"] {
-        +IReadOnlyList~string~ AffectedFields
-        +string Code
-        +IReadOnlyList~SecurityEvidenceLinkDto~ EvidenceLinks
-        +string Message
-        +SecurityValidationSeverityDto Severity
-        +string SuggestedAction
-        +string Title
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityValidationReportDto["SecurityValidationReportDto"] {
-        +int CriticalIssueCount
-        +int ErrorIssueCount
-        +DateTimeOffset EvaluatedAtUtc
-        +bool HasBlockingIssues
-        +IReadOnlyList~SecurityValidationIssueDto~ Issues
-        +string Scope
-        +Guid? SecurityId
-    }
     Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionBlockerDto
     Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionDisposition
     Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionReportDto --> Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionCandidateDto
@@ -436,6 +420,8 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityRatePointEvidenceDto --> Meridian_Contracts_SecurityMaster_SecurityRateObservationDto
     Meridian_Contracts_SecurityMaster_SecurityRawPriceDto --> Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence
     Meridian_Contracts_SecurityMaster_SecurityRawPriceDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
+    Meridian_Contracts_SecurityMaster_SecurityRecurringAccrualPolicies --> Meridian_Contracts_SecurityMaster_SecurityRecurringAccrualPolicy
+    Meridian_Contracts_SecurityMaster_SecurityRecurringAccrualPolicy --> Meridian_Contracts_SecurityMaster_SecurityRecurringAccrualProfile
     Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult --> Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic
     Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult --> Meridian_Contracts_SecurityMaster_SecuritySchedulePresence
     Meridian_Contracts_SecurityMaster_SecurityScheduleValidationException --> Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic
@@ -446,6 +432,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityUnderlyingGraphDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto
     Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkSource
     Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingRole
-    Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationReportDto
-    Meridian_Contracts_SecurityMaster_SecurityValidationReportDto --> Meridian_Contracts_SecurityMaster_SecurityValidationIssueDto
 ```

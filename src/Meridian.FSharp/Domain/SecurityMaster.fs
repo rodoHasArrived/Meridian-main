@@ -215,6 +215,8 @@ type MoneyMarketFundTerms = {
 type CertificateOfDepositTerms = {
     Dates: MaturityTerms
     IssuerTerms: IssuerRef
+    /// Actual contractual principal, absent on retained pre-v6 certificates.
+    Notional: NotionalTerms
     CouponTerms: CouponTerms
     Callability: EconomicCallTerms
     /// Declared schedule conventions (asset-class terms version 2); empty until declared.
@@ -231,6 +233,9 @@ type CertificateOfDepositTerms = {
     member this.Maturity = (this.Dates.MaturityDate |> Option.defaultValue DateOnly.MinValue)
     member this.CouponRate = this.CouponTerms.CouponRate
     member this.DayCount = this.CouponTerms.DayCount
+    member this.IssueDate = this.Dates.IssueDate
+    member this.Principal = this.Notional.Notional
+    member this.PaymentFrequency = this.CouponTerms.PaymentFrequency
 
 type CommercialPaperTerms = {
     Dates: MaturityTerms

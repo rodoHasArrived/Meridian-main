@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Ledger;
 
@@ -11,7 +12,12 @@ public sealed record RecurringJournalEvidence(
     string TemplateId, int TemplateVersion, string ScheduleDefinitionJson, string TemplateDefinitionJson,
     string FundProfileId, Guid LedgerBookId, string EntityId, string TenantId, string CompanyId,
     string Currency, DateOnly EffectiveDate, string PeriodId, long PeriodVersion,
-    IReadOnlyList<JournalEvidenceReference> SourceEvidence);
+    IReadOnlyList<JournalEvidenceReference> SourceEvidence)
+{
+    /// <summary>Exact daily-lot obligation set independently retained on the recurring claim.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? EconomicObligationDigest { get; init; }
+}
 
 /// <summary>Source provenance is immutable across edits, human approval and posting.</summary>
 public static class RecurringJournalEvidenceGuard
@@ -65,6 +71,11 @@ public static class RecurringJournalEvidenceGuard
         var reason = ValidateSources(evidence.SourceEvidence);
         if (reason is not null)
             return reason;
+        if (evidence.EconomicObligationDigest is not null && !Sha256Digest.IsCanonical(evidence.EconomicObligationDigest)
+            || evidence.EconomicObligationDigest is null && evidence.SourceEvidence.Any(source =>
+                source.Kind == "cash-flow-calculation-receipt"
+                && source.SourceReference == SecurityRecurringAccrualPolicies.FixedBulletReceiptModelVersion))
+            return "Reviewed fixed-bullet accrual requires an exact independently retained economic obligation digest.";
         if (evidence.SourceEvidence.Any(source => !draft.EvidenceLinks.Contains(source.Uri, StringComparer.Ordinal)))
             return "Recurring source evidence cannot be removed from the approval draft.";
         return null;

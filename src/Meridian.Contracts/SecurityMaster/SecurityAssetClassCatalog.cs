@@ -665,7 +665,14 @@ public sealed record SecurityAssetClassDescriptor(
     /// Admission is explicit and independent of coupon structure, valuation treatment, or lot unit;
     /// source freshness, supported accrual intervals and held-lot evidence must still pass their gates.
     /// </summary>
-    public bool SupportsRecurringFixedIncomeAccrual { get; init; }
+    public bool SupportsRecurringFixedIncomeAccrual
+    {
+        get => RecurringAccrualPolicy is not null;
+        init => RecurringAccrualPolicy = value ? SecurityRecurringAccrualPolicies.ExistingFixedIncome : null;
+    }
+
+    /// <summary>The registered, tested calculation profile admitted by this class's module.</summary>
+    public SecurityRecurringAccrualPolicy? RecurringAccrualPolicy { get; init; }
 
     /// <summary>
     /// Whether the class admits holder-side private-capital commitment records and reported

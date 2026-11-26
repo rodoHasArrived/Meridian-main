@@ -222,7 +222,7 @@ internal static partial class SecurityMasterMapping
         => SecurityKind.NewCertificateOfDeposit(new CertificateOfDepositTerms(
             new MaturityTerms(
                 null,
-                null,
+                SecurityVersionedScalarTerms.CanDecode(assetClass, json, "issueDate", mode == SecurityKindMappingMode.Write) ? ToOption(bound.OptionalStrictDateOnly("issueDate")) : null,
                 ToOption(bound.RequiredDateOnly("maturity"))),
             new IssuerRef(
                 FSharpOption<string>.Some(bound.RequiredString("issuerName")),
@@ -232,10 +232,16 @@ internal static partial class SecurityMasterMapping
                 null,
                 null,
                 null),
+            new NotionalTerms(
+                SecurityVersionedScalarTerms.CanDecode(assetClass, json, "principal", mode == SecurityKindMappingMode.Write) ? ToOption(bound.OptionalStrictDecimal("principal")) : null,
+                null,
+                null,
+                null,
+                null),
             new CouponTerms(
                 FSharpOption<CouponKind>.Some(CouponKind.Fixed),
                 ToOption(bound.OptionalDecimal("couponRate")),
-                null,
+                SecurityVersionedScalarTerms.CanDecode(assetClass, json, "paymentFrequency", mode == SecurityKindMappingMode.Write) ? ToPaymentFrequencyOption(bound.OptionalConventionString("paymentFrequency")) : null,
                 ToDayCountOption(bound.OptionalConventionString("dayCount"), mode)),
             EconomicCallTermsModule.Scalar(bound.OptionalDateOnly("callableDate").HasValue, ToOption(bound.OptionalDateOnly("callableDate"))),
             new DeclaredScheduleTerms(ReadScheduleConventions(json, assetClass, versionedTerms),

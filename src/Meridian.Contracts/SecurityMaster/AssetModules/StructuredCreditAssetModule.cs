@@ -65,7 +65,7 @@ internal static class StructuredCreditAssetModule
                     new(SecurityCashFlowTermRole.CouponRate, "couponOrIndex", ReadAfterSharedSpellings: true)
                 ],
                 StampFloor = 2,
-                SupportsRecurringFixedIncomeAccrual = true,
+                RecurringAccrualPolicy = SecurityRecurringAccrualPolicies.ExistingFixedIncome,
                 ReclassifyingProfileIds = ["structured-credit-io-po"]
             },
             Fields: [
