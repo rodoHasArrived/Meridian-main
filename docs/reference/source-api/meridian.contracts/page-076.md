@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterOperatingModelDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOperatingModelDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:519](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L519).
+
+```csharp
+public sealed record SecurityMasterOperatingModelDto(Guid SecurityId, string? ClientId, string? AccountId, string? FundProfileId, string Status, string Summary, IReadOnlyList<SecurityMasterOperatingModelStageDto> Stages, IReadOnlyList<SecurityMasterEntitlementApplicabilityDto> EntitlementApplicability, IReadOnlyList<SecurityMasterOperatorMetadataDto> OperatorMetadata, SecurityMasterManualChangeApprovalPostureDto ManualChangeApproval, IReadOnlyList<InstrumentPassportReferenceDataWorkbenchSectionDto> Controls, DateTimeOffset RetrievedAtUtc);
+```
+
 ## SecurityMasterOperatingModelStageDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOperatingModelStageDto</code>. Kind: `record`.
@@ -40,7 +50,7 @@ public sealed record SecurityMasterProviderSymbolMappingDto(string MappingSource
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterPublishResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:145](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L145).
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:167](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L167).
 
 Result of publishing a revision. When the edit affects a hard-closed period with report-pack exposure, RestatementRequired is set and RestatementCandidates carries the report packs an operator may restate via the governed report-pack lifecycle.
 
@@ -87,7 +97,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterRevisionPublishedEvent</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:205](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L205).
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:227](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L227).
 
 Domain event raised after a revision is durably published. Carries the affected ledger books so period-aware propagation can resolve each book&#x27;s lock status from the authoritative ledger period.
 
@@ -656,14 +666,4 @@ Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:105](../..
 
 ```csharp
 public sealed record StatementImportRowOutcomeDto(string RowId, int NormalizedIndex, string Disposition, string? Reason, string Status, string? RunId, IReadOnlyList<string> CaseIds);
-```
-
-## StatementImportRowOutcomesPageDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementImportRowOutcomesPageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:112](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L112).
-
-```csharp
-public sealed record StatementImportRowOutcomesPageDto(IReadOnlyList<StatementImportRowOutcomeDto> RowOutcomes, int TotalRows, int Offset, int Limit);
 ```

@@ -39,6 +39,14 @@ public interface IWorkstationSecurityMasterApiClient : ICashDividendAttestationA
     Task<ApiResponse<SecurityMasterEditResultDto>> UpdateFieldAsync(
         Guid securityId, UpdateSecurityFieldRequest request, CancellationToken ct = default);
 
+    /// <summary>
+    /// Stages a governed historical identifier window as a Draft revision. The proposer is
+    /// server-derived from the session, recorded on the window, and excluded from reviewing or
+    /// approving it; the existing submit/approve/publish calls then govern the draft.
+    /// </summary>
+    Task<ApiResponse<SecurityMasterEditResultDto>> ProposeHistoricalIdentifierWindowAsync(
+        Guid securityId, ProposeHistoricalIdentifierWindowRequest request, CancellationToken ct = default);
+
     Task<ApiResponse<SecurityMasterConflictResolutionDto>> ResolveConflictAsync(
         Guid securityId, ResolveSourceConflictRequest request, CancellationToken ct = default);
 
@@ -142,6 +150,11 @@ public sealed partial class WorkstationSecurityMasterApiClient : IWorkstationSec
         Guid securityId, UpdateSecurityFieldRequest request, CancellationToken ct = default)
         => _apiClient.PostWithResponseAsync<SecurityMasterEditResultDto>(
             SecurityIdRoute(UiApiRoutes.SecurityMasterWorkbenchField, securityId), request, ct);
+
+    public Task<ApiResponse<SecurityMasterEditResultDto>> ProposeHistoricalIdentifierWindowAsync(
+        Guid securityId, ProposeHistoricalIdentifierWindowRequest request, CancellationToken ct = default)
+        => _apiClient.PostWithResponseAsync<SecurityMasterEditResultDto>(
+            SecurityIdRoute(UiApiRoutes.SecurityMasterWorkbenchHistoricalIdentifierWindow, securityId), request, ct);
 
     public Task<ApiResponse<SecurityMasterConflictResolutionDto>> ResolveConflictAsync(
         Guid securityId, ResolveSourceConflictRequest request, CancellationToken ct = default)

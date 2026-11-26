@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementImportRowOutcomesPageDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementImportRowOutcomesPageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:112](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L112).
+
+```csharp
+public sealed record StatementImportRowOutcomesPageDto(IReadOnlyList<StatementImportRowOutcomeDto> RowOutcomes, int TotalRows, int Offset, int Limit);
+```
+
 ## StatementKindSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementKindSummaryDto</code>. Kind: `record`.
@@ -629,13 +639,3 @@ Enum declarations:
 | <code>QueuedForSettlement = 3</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
 | <code>Settled = 4</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
 | <code>Exception = 5</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-
-## StpStateTransition
-
-Qualified name: <code>Meridian.Contracts.Workstation.StpStateTransition</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:38](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L38).
-
-```csharp
-public sealed record StpStateTransition(Guid InstructionId, StpProcessingState State, DateTimeOffset AtUtc, string Detail, string? BreakQueueReason = null);
-```

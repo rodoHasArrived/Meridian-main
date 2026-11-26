@@ -456,7 +456,7 @@ public sealed record ApproveSecurityMasterOverrides(Guid WorkflowId, FundWorkflo
 
 Qualified name: <code>Meridian.Contracts.Workstation.ApproveSecurityMasterRevisionRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:98](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L98).
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:120](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L120).
 
 Approves a submitted revision through the operations-continuity approval gate.
 

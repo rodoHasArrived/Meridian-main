@@ -3,8 +3,9 @@ using Meridian.Contracts.SecurityMaster;
 namespace Meridian.Application.SecurityMaster;
 
 /// <summary>
-/// The publication write path of the governed workbench lifecycle. Only the published-revision merge
-/// (<see cref="ApprovedFieldEditCanonicalMergeHandler"/>) uses it.
+/// The publication write path of the governed workbench lifecycle. Only the published-revision
+/// handlers use it: the field-edit merge (<see cref="ApprovedFieldEditCanonicalMergeHandler"/>) and
+/// the historical identifier window (<see cref="ApprovedHistoricalIdentifierWindowHandler"/>).
 /// </summary>
 /// <remarks>
 /// <para>Security Master term amendments have three typed write paths, so a caller cannot opt out of

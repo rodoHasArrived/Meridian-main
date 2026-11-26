@@ -822,6 +822,11 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Scoped<
             Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
             Meridian.Application.SecurityMaster.ApprovedFieldEditCanonicalMergeHandler>());
+        // Order=6: applies an approved historical identifier window proposal through the same
+        // governed publication amender, keeping the proposed ValidFrom.
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<
+            Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
+            Meridian.Application.SecurityMaster.ApprovedHistoricalIdentifierWindowHandler>());
         services.TryAddEnumerable(ServiceDescriptor.Scoped<
             Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
             Meridian.Application.SecurityMaster.Rebuild.SecurityProjectionRebuildHandler>());
