@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it, vi } from "vitest";
 import type { ScopeStructureOptions } from "@/lib/operating-scope/structure-options";
 import {

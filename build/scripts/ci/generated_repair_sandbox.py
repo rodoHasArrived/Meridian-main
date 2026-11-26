@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 from pathlib import Path
 import re
@@ -80,6 +81,59 @@ def collect_exports(source: Path, destination: Path) -> None:
             shutil.copyfileobj(reader, writer)
 
 
+# repair-generated.py exits 1 for every unsuccessful-but-orderly status. review_required is
+# not a failure of this job: the merge needs a person, and failing re-queues work for nothing.
+REVIEW_REQUIRED_EXIT = 1
+MAX_SUMMARY_ITEMS = 50
+
+
+def summary_text(value: object) -> str:
+    """Render one untrusted report value as inert single-line Markdown code."""
+    text = " ".join(str(value).split())[:300].replace("`", "'")
+    return f"`{text}`"
+
+
+def review_required_summary(report: dict) -> str:
+    lines = ["### Generated repair needs review", "",
+             "The isolated merge finished but automation cannot complete it, so no repair "
+             "candidate was produced. This is a neutral outcome, not a job failure.", ""]
+    conflicts = report.get("conflicts") if isinstance(report.get("conflicts"), list) else []
+    reviewed = report.get("reviewed_hashes") if isinstance(report.get("reviewed_hashes"), dict) else {}
+    modules = reviewed.get("review_required") if isinstance(reviewed.get("review_required"), dict) else {}
+    if conflicts:
+        lines += ["Conflicted paths:", ""] + [f"- {summary_text(path)}" for path in conflicts[:MAX_SUMMARY_ITEMS]] + [""]
+    if modules:
+        lines += ["Reviewed-hash modules that need a fresh review:", ""]
+        lines += [f"- {summary_text(name)}: {summary_text(reason)}"
+                  for name, reason in list(modules.items())[:MAX_SUMMARY_ITEMS]] + [""]
+    lines += ["Resolve these locally with `docs/engineering/generated-merge-recovery.md`, "
+              "then push; the next run regenerates from the reviewed merge.", ""]
+    return "\n".join(lines)
+
+
+def neutral_review_outcome(returncode: int, output: Path) -> bool:
+    """True when the container stopped at review_required; writes the step summary.
+
+    report.json is produced inside the sandbox and is therefore untrusted. It can only turn
+    this job green, never produce a candidate: the publisher reads the same report and
+    treats review_required as a manual outcome with nothing to publish.
+    """
+    if returncode != REVIEW_REQUIRED_EXIT:
+        return False
+    try:
+        report = json.loads((output / "report.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    if not isinstance(report, dict) or report.get("status") != "review_required" or report.get("successful") is not False:
+        return False
+    summary = review_required_summary(report)
+    print("Repair: review_required (neutral). See the job summary for the paths and modules to review.")
+    if path := os.environ.get("GITHUB_STEP_SUMMARY"):
+        with open(path, "a", encoding="utf-8") as stream:
+            stream.write(summary)
+    return True
+
+
 def run(repo: Path, output: Path, image: str, head: str, base: str) -> int:
     if not all(re.fullmatch(r"[a-f0-9]{40}", sha) for sha in (head, base)):
         raise ValueError("Sandbox inputs must be pinned SHA-1 commit IDs")
@@ -103,6 +157,8 @@ def run(repo: Path, output: Path, image: str, head: str, base: str) -> int:
         with (raw / "container.log").open("wb") as log:
             result = subprocess.run(command, stdout=log, stderr=subprocess.STDOUT)
         collect_exports(raw, output)
+        if neutral_review_outcome(result.returncode, output):
+            return 0
         return result.returncode
 
 

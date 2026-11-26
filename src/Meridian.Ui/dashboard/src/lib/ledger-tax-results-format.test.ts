@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { formatTaxAmount, formatTaxDecimal, isTaxDecimalText } from "@/lib/ledger-tax-results-format";
 
 it("preserves large cents and every retained fractional digit when formatting amounts", () => {

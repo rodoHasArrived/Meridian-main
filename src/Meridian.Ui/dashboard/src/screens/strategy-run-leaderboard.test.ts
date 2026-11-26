@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildRunLeaderboard } from "./strategy-run-leaderboard";
 import type { StrategyRunRecord } from "@/types";

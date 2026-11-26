@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { parsePositiveDecimal } from "@/lib/positive-decimal";
 

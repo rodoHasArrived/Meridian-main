@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { routeForOperatorWorkItem } from "@/app-shell.workflow-routing";
 import { appendOperatingScopeToRoute, buildOperatingScopeFromSearch, carryOperatingScopeIntoSearch } from "@/app-shell.operating-scope";
