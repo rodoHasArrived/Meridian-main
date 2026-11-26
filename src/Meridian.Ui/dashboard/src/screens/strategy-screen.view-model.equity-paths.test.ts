@@ -171,10 +171,10 @@ describe("equity-path compare builders", () => {
     expect(buildStrategyEquityPathView({ status: "loading" }).series.status).toBe("loading");
     expect(buildStrategyEquityPathView({ status: "unavailable", reason: "No curve." })).toEqual({
       series: { status: "unavailable", reason: "No curve." },
-      curveDatesText: "—",
-      curvePointsText: "—",
-      initialEquityText: "—",
-      finalEquityText: "—"
+      curveDatesText: "Not available",
+      curvePointsText: "Not available",
+      initialEquityText: "Not available",
+      finalEquityText: "Not available"
     });
   });
 
@@ -314,7 +314,7 @@ describe("useStrategyEquityPathCompare", () => {
       await first.promise;
     });
 
-    expect(result.current.viewFor("a").finalEquityText).toBe("—");
+    expect(result.current.viewFor("a").finalEquityText).toBe("Not available");
     expect(result.current.seriesFor(item("a")).status).toBe("loading");
 
     // Opening again starts from fresh curves.
@@ -371,7 +371,7 @@ describe("useStrategyEquityPathCompare", () => {
 
     act(() => result.current.onCompareSetChange([item("a"), item("c")]));
     expect(getRunEquityCurve).toHaveBeenCalledTimes(3);
-    expect(result.current.viewFor("b").curvePointsText).toBe("—");
+    expect(result.current.viewFor("b").curvePointsText).toBe("Not available");
   });
 
   it("forgets the curves when the set falls below two and reads them again when it recovers", async () => {

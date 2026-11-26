@@ -2,7 +2,8 @@ import type { AccountingWorkspaceResponse } from "../types";
 import { RECONCILIATION_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "../lib/workstation-endpoints";
 import { accountingPayload, type AccountingScenarioPayload } from "./accounting-payload";
 import { createAccountingSupportRoutes } from "./accounting-support";
-import type { ApiScenario, ScenarioResponse, ScenarioProblem } from "./types";
+import { eurManualJournalWorkbench } from "./accounting-journal-workbench";
+import type { ApiScenario, ScenarioResponse, ScenarioProblem, ScenarioRoute } from "./types";
 
 export { accountingPayload } from "./accounting-payload";
 
@@ -24,10 +25,28 @@ const emptyAccountingPayload: AccountingScenarioPayload = {
   }
 };
 
+/**
+ * The populated accounting payload rebooked in EUR, so screenshots and scenario tests show a
+ * non-USD book. Any screen that still assumes "$" shows up here as a visible defect.
+ */
+function rebookPayload<T>(value: T, currency: string): T {
+  if (Array.isArray(value)) return value.map((item) => rebookPayload(item, currency)) as T;
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [
+      key,
+      (/currency$/i.test(key) || key === "unit") && item === "USD" ? currency : rebookPayload(item, currency)
+    ])) as T;
+  }
+  return value;
+}
+
+export const eurAccountingPayload: AccountingScenarioPayload = rebookPayload(accountingPayload, "EUR");
+
 function accountingScenario(
   state: string,
   response: ScenarioResponse<AccountingWorkspaceResponse | ScenarioProblem>,
-  waitForTexts: string[]
+  waitForTexts: string[],
+  extraRoutes: ScenarioRoute[] = []
 ): ApiScenario {
   return {
     id: `accounting.${state}`,
@@ -40,7 +59,8 @@ function accountingScenario(
         ...response,
         body: "breakQueue" in response.body ? response.body.breakQueue : response.body
       } },
-      ...createAccountingSupportRoutes(response, { empty: state === "empty" })
+      ...createAccountingSupportRoutes(response, { empty: state === "empty" }),
+      ...extraRoutes
     ],
     waitForTexts
   };
@@ -55,6 +75,10 @@ export const accountingScenarios = {
   "accounting.normal": accountingScenario("normal", { status: 200, body: accountingPayload }, populatedTexts),
   "accounting.empty": accountingScenario("empty", { status: 200, body: emptyAccountingPayload }, [
     "No reconciliation breaks in the current queue."
+  ]),
+  "accounting.non-usd": accountingScenario("non-usd", { status: 200, body: eurAccountingPayload }, populatedTexts, [
+    // A EUR manual journal draft and book, so Journal Entries renders a non-USD book too.
+    { method: "GET", path: WORKSTATION_API_ENDPOINTS.manualJournalEntryWorkbench, response: { status: 200, body: eurManualJournalWorkbench } }
   ]),
   "accounting.delayed": accountingScenario("delayed", { status: 200, body: accountingPayload, delayMs: 1500 }, populatedTexts),
   "accounting.forbidden": accountingScenario("forbidden", {

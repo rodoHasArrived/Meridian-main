@@ -7,6 +7,7 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { useRequestLifecycle } from "@/hooks/use-request-lifecycle";
 import { symbolMappingApi, type SymbolMapping, type SymbolMappingRollout } from "@/lib/api/symbol-mapping.api";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 const emptyMapping: SymbolMapping = { canonicalSymbol: "", ibSymbol: null, alpacaSymbol: null, polygonSymbol: null, yahooSymbol: null, name: null, figi: null };
 const providerFields = [["ibSymbol", "IB"], ["alpacaSymbol", "Alpaca"], ["polygonSymbol", "Polygon"], ["yahooSymbol", "Yahoo"]] as const;
 
@@ -107,7 +108,7 @@ export function SymbolMappingEditor({ api = symbolMappingApi, onChanged }: { api
         </Select>
       </label>
       {selected ? <>
-        <p className="text-sm">Active: <strong>{selected.activeMode ?? "Unavailable"}</strong> · Saved: <strong>{selected.savedMode}</strong>{selected.pendingRestart ? " · Pending host restart" : ""}</p>
+        <p className="text-sm">Active: <strong>{selected.activeMode ?? VALUE_STATE_LABELS.unavailable}</strong> · Saved: <strong>{selected.savedMode}</strong>{selected.pendingRestart ? " · Pending host restart" : ""}</p>
         <p className="text-sm text-muted-foreground">Compare records disagreements while returning legacy output. Restart the host after saving a mode, then refresh to verify the active mode.</p>
         <div className="text-sm"><h4 className="font-semibold">Retained {provider} comparison mismatches</h4>
           {selected.recentMismatches.length ? <ul className="mt-2 grid gap-2">{selected.recentMismatches.map(row => <li key={`${row.observedAt}:${row.input}:${row.fromProvider}`} className="rounded-md border p-2"><span className="font-mono">{row.input}: {row.legacyResult ?? "∅"} → {row.canonicalResult ?? "∅"}</span><div className="text-muted-foreground">{row.fromProvider} → {row.toProvider} · {row.observedAt}</div></li>)}</ul> : <p>No mismatch retained for this provider. Absence of mismatches does not prove provider coverage.</p>}

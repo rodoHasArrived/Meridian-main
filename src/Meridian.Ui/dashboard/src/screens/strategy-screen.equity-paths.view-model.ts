@@ -3,7 +3,7 @@ import * as workstationApi from "@/lib/api";
 import { describeApiError, isApiError } from "@/lib/api-errors";
 import { rebaseToFirst, sampleEvenly } from "@/components/charts/compare-series";
 import type { CompareItem, CompareSeriesState } from "@/components/charts/SelectionCompare";
-import { formatCount as formatCountValue, formatMoney, formatNumber, formatRatioAsPercent } from "@/lib/format";
+import { formatCount as formatCountValue, formatMoney, formatNumber, formatRatioAsPercent, VALUE_STATE_LABELS } from "@/lib/format";
 import { formatText, STRATEGY_MONEY, STRATEGY_SIGNED_RETURN } from "@/screens/strategy-screen.formatters";
 import type { StrategyRunLibraryServices } from "@/screens/strategy-screen.view-model";
 import type { EquityCurveSummary, StrategyRunRecord } from "@/types";
@@ -60,7 +60,7 @@ export interface StrategyEquityPathView {
   finalEquityText: string;
 }
 
-const EQUITY_PATH_NO_DETAIL = "—";
+const EQUITY_PATH_NO_DETAIL = VALUE_STATE_LABELS.unavailable;
 
 /** The compare-set entry for one run. Runs that share a strategy name are told apart by run id. */
 export function buildStrategyEquityPathCompareItem(run: StrategyRunRecord, runs: readonly StrategyRunRecord[]): CompareItem {

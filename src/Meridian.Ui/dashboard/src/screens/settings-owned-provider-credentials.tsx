@@ -179,6 +179,7 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
     } catch (error) {
       if (current(token)) {
         if (action === "draft") {
+          // placeholder-vocabulary-ignore: "Unavailable" is the server verification status enum.
           setEditor(previous => ({ ...previous, busy: null, draftStatus: "Unavailable", message: "Verification unavailable. The host could not confirm the draft test." }));
         } else {
           setFailed(true);

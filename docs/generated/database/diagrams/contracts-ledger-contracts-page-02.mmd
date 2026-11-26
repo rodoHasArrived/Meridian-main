@@ -318,15 +318,15 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_AccountingReportPackageRequestDto["AccountingReportPackageRequestDto"] {
         +string Actor
-        +decimal BeginningCapital
+        +decimal? BeginningCapital
         +string? CapitalAccountId
         +Guid? CloseWorkflowId
         +string? CompanyId
-        +decimal Contributions
+        +decimal? Contributions
         +string? CorrelationId
-        +string Currency
+        +string? Currency
         +LedgerDimensionSetDto? Dimensions
-        +decimal Distributions
+        +decimal? Distributions
         +IReadOnlyList~string~ EvidenceLinks
         +string FundProfileId
     }

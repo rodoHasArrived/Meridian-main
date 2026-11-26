@@ -28,7 +28,7 @@ describe("provider accounting view model", () => {
   it("does not infer a daily quota or reset policy when the runtime did not supply one", () => {
     const rates = buildProviderRateLimitsFixture();
     const legacy = buildProviderAccountingPanelState(buildProviderAccountingCatalogFixture(), rates, now);
-    expect(legacy.rateLimits[0].dailyUsage).toBe("Unavailable");
+    expect(legacy.rateLimits[0].dailyUsage).toBe("Not available");
     rates.providers[0] = { ...rates.providers[0], dailyUnitsUsed: 1, dailyMaximum: 25 };
     const unknownReset = buildProviderAccountingPanelState(buildProviderAccountingCatalogFixture(), rates, now);
     expect(unknownReset.rateLimits[0].dailyUsage).toContain("reset policy unavailable");

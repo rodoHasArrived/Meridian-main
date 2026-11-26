@@ -14,7 +14,7 @@ import {
   multiAssetStatusLabel,
   multiAssetStatusTone
 } from "./portfolio-screen.multi-asset-coverage";
-import { formatCount, formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
+import { formatCount, formatCurrencyAmount, sharedCurrency, VALUE_STATE_LABELS, isUnavailableLabel } from "@/lib/format";
 import { buildHoldingsModel, holdingRowFigures, holdingsTotalLine, type HoldingFigure, type HoldingsTotalLine } from "@/lib/holdings-model";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
@@ -805,13 +805,13 @@ export function buildPortfolioScreenViewModel({
     { ...resolveKpi("portfolio.cash", { portfolio }), id: "portfolio-cash" },
     { ...positionCountKpi, id: "portfolio-open-positions" }
   ];
-  const cashVarianceLabel = cashFlow !== null ? formatPrefixedCurrency(cashFlow.netVariance, { maximumFractionDigits: 0 }) : null;
+  const cashVarianceLabel = cashFlow !== null ? formatCurrencyAmount(cashFlow.netVariance, null, { context: "summary" }) : null;
 
   return {
     metricsFromTrading: false,
     metricCards: portfolio?.metrics ?? trading?.metrics ?? [],
     multiAssetCoveragePanel: buildMultiAssetCoveragePanel(multiAssetCoverage),
-    positionSourceLabel: portfolio ? "Portfolio workspace" : "Unavailable",
+    positionSourceLabel: portfolio ? "Portfolio workspace" : VALUE_STATE_LABELS.unavailable,
     fallbackStats,
     headerChips: buildPortfolioHeaderChips({
       positionCountValue: positionCountKpi.value,
@@ -885,7 +885,7 @@ export function buildPortfolioScreenViewModel({
       ? "No holdings yet. Import a statement or holdings file, or connect a provider, and they appear here."
       : "Portfolio workspace data unavailable.",
     // Only offered where there is a true next step: a loaded workspace with nothing in it yet, or a
-    // paper session waiting on a fill. "Unavailable" is a failure to load, not an empty desk, so it
+    // paper session waiting on a fill. VALUE_STATE_LABELS.unavailable is a failure to load, not an empty desk, so it
     // gets no button -- routing an operator elsewhere would just hide the problem.
     positionEmptyAction: portfolio
       ? { label: "Import a statement", route: WORKSTATION_ROUTE_CATALOG.accountingStatementImport }
@@ -930,7 +930,7 @@ export function buildPortfolioFallbackMetrics({
     {
       id: "portfolio-total-exposure",
       label: "Total exposure",
-      value: hasPositions ? formatPrefixedCurrency(totalExposure, { maximumFractionDigits: 0 }) : "—",
+      value: hasPositions ? formatCurrencyAmount(totalExposure, null, { context: "summary" }) : VALUE_STATE_LABELS.unavailable,
       delta: hasPositions ? "From open positions" : "No holdings",
       tone: "default"
     },
@@ -938,15 +938,15 @@ export function buildPortfolioFallbackMetrics({
       id: "portfolio-unrealized-pnl",
       label: "Unrealized P&L",
       value: hasPositions
-        ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatPrefixedCurrency(totalUnrealizedPnl, { maximumFractionDigits: 0 })
-        : "—",
+        ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatCurrencyAmount(totalUnrealizedPnl, null, { context: "summary" })
+        : VALUE_STATE_LABELS.unavailable,
       delta: hasPositions ? "Open position mark" : "No holdings",
       tone: hasPositions ? numericPnlTone(totalUnrealizedPnl) : "default"
     },
     {
       id: "portfolio-cash",
       label: "Cash",
-      value: "—",
+      value: VALUE_STATE_LABELS.unavailable,
       delta: "Awaiting portfolio cash feed",
       tone: "warning"
     },
@@ -1006,12 +1006,12 @@ function buildBrokerageTrustSnapshot({
       statusTone: connectionState === "NotConfigured" ? "warning" : "default",
       summary: `No ${providerLabel} household snapshot has loaded yet. Connect the provider or run brokerage sync before accepting live portfolio state.`,
       chips: [
-        { label: "Snapshot", value: "Unavailable" },
+        { label: "Snapshot", value: VALUE_STATE_LABELS.unavailable },
         { label: "Connection", value: brokerageConnectionLabel(connectionState) },
         { label: "Issues", value: formatCountLabel(warningCount, "issue") }
       ],
       fields: [
-        { label: "As of", value: "Unavailable", tone: "warning" },
+        { label: "As of", value: VALUE_STATE_LABELS.unavailable, tone: "warning" },
         { label: "Accounts", value: "0", tone: "muted" },
         { label: "Positions", value: "0", tone: "muted" },
         { label: "Warnings", value: formatCountLabel(warningCount, "warning"), tone: warningCount > 0 ? "warning" : "muted" }
@@ -1043,7 +1043,7 @@ function buildBrokerageTrustSnapshot({
     title: `${providerLabel} household snapshot`,
     statusLabel,
     statusTone,
-    summary: `${providerLabel} snapshot was generated at ${formatDateTime(portfolio.asOf)} with ${formatPrefixedCurrency(portfolio.totalEquity, { maximumFractionDigits: 0 })} equity, ${formatPrefixedCurrency(portfolio.totalCash, { maximumFractionDigits: 0 })} cash, and ${formatPrefixedCurrency(portfolio.totalBuyingPower, { maximumFractionDigits: 0 })} buying power.`,
+    summary: `${providerLabel} snapshot was generated at ${formatDateTime(portfolio.asOf)} with ${formatCurrencyAmount(portfolio.totalEquity, portfolio.currency, { context: "summary" })} equity, ${formatCurrencyAmount(portfolio.totalCash, portfolio.currency, { context: "summary" })} cash, and ${formatCurrencyAmount(portfolio.totalBuyingPower, portfolio.currency, { context: "summary" })} buying power.`,
     chips: [
       { label: "Accounts", value: formatCountLabel(portfolio.accounts.length, "account") },
       { label: "Positions", value: formatCountLabel(portfolio.positions.length, "position") },
@@ -1052,9 +1052,9 @@ function buildBrokerageTrustSnapshot({
     ],
     fields: [
       { label: "As of", value: formatDateTime(portfolio.asOf), tone: "muted" },
-      { label: "Total equity", value: formatPrefixedCurrency(portfolio.totalEquity, { maximumFractionDigits: 0 }), tone: "default" },
-      { label: "Cash", value: formatPrefixedCurrency(portfolio.totalCash, { maximumFractionDigits: 0 }), tone: "default" },
-      { label: "Buying power", value: formatPrefixedCurrency(portfolio.totalBuyingPower, { maximumFractionDigits: 0 }), tone: "default" },
+      { label: "Total equity", value: formatCurrencyAmount(portfolio.totalEquity, portfolio.currency, { context: "summary" }), tone: "default" },
+      { label: "Cash", value: formatCurrencyAmount(portfolio.totalCash, portfolio.currency, { context: "summary" }), tone: "default" },
+      { label: "Buying power", value: formatCurrencyAmount(portfolio.totalBuyingPower, portfolio.currency, { context: "summary" }), tone: "default" },
       { label: "Account health", value: accountHealthLabel, tone: unhealthyCount > 0 ? "warning" : "success" },
       { label: "Warnings", value: formatCountLabel(warningCount, "warning"), tone: warningCount > 0 ? "warning" : "success" }
     ]
@@ -1108,7 +1108,7 @@ export function buildPortfolioRunComparisonSummary(
       {
         id: "selected-rank",
         label: "Selected rank",
-        value: selectedRun && selectedRank > 0 ? `#${selectedRank}` : "—",
+        value: selectedRun && selectedRank > 0 ? `#${selectedRank}` : VALUE_STATE_LABELS.unavailable,
         detail: selectedRun
           ? `${selectedRun.strategyName} vs ${formatCountLabel(runs.length, "linked run")} by P&L.`
           : "Select a run to compare it against the portfolio run set.",
@@ -1117,21 +1117,21 @@ export function buildPortfolioRunComparisonSummary(
       {
         id: "best-pnl",
         label: "Best P&L",
-        value: bestPnl ? bestPnl.run.pnl : "—",
+        value: bestPnl ? bestPnl.run.pnl : VALUE_STATE_LABELS.unavailable,
         detail: bestPnl ? `${bestPnl.run.strategyName} (${bestPnl.run.mode}, ${bestPnl.run.engine})` : "No comparable P&L values.",
         tone: bestPnl ? comparisonToneForPnl(bestPnl.run.pnl) : "warning"
       },
       {
         id: "weakest-pnl",
         label: "Weakest P&L",
-        value: weakestPnl ? weakestPnl.run.pnl : "—",
+        value: weakestPnl ? weakestPnl.run.pnl : VALUE_STATE_LABELS.unavailable,
         detail: weakestPnl ? `${weakestPnl.run.strategyName} (${weakestPnl.run.mode}, ${weakestPnl.run.engine})` : "No comparable P&L values.",
         tone: weakestPnl ? comparisonToneForPnl(weakestPnl.run.pnl) : "warning"
       },
       {
         id: "best-sharpe",
         label: "Best Sharpe",
-        value: bestSharpe ? bestSharpe.run.sharpe : "—",
+        value: bestSharpe ? bestSharpe.run.sharpe : VALUE_STATE_LABELS.unavailable,
         detail: bestSharpe ? `${bestSharpe.run.strategyName} risk-adjusted lead.` : "No comparable Sharpe values.",
         tone: bestSharpe ? "success" : "warning"
       },
@@ -1193,36 +1193,36 @@ export function buildPortfolioRunDrillInSummary(
       {
         id: "attribution",
         label: "Attribution",
-        value: attribution ? formatSignedCurrency(attribution.totalRealizedPnl + attribution.totalUnrealizedPnl, { maximumFractionDigits: 0 }) : "—",
+        value: attribution ? formatCurrencyAmount(attribution.totalRealizedPnl + attribution.totalUnrealizedPnl, null, { signed: true, context: "summary" }) : VALUE_STATE_LABELS.unavailable,
         detail: attribution
-          ? `Realized ${formatSignedCurrency(attribution.totalRealizedPnl, { maximumFractionDigits: 0 })}; unrealized ${formatSignedCurrency(attribution.totalUnrealizedPnl, { maximumFractionDigits: 0 })}; ${formatCountLabel(attribution.bySymbol.length, "symbol")}.`
+          ? `Realized ${formatCurrencyAmount(attribution.totalRealizedPnl, null, { signed: true, context: "summary" })}; unrealized ${formatCurrencyAmount(attribution.totalUnrealizedPnl, null, { signed: true, context: "summary" })}; ${formatCountLabel(attribution.bySymbol.length, "symbol")}.`
           : "Run attribution has not been loaded.",
         tone: attribution ? numericPnlTone(attribution.totalRealizedPnl + attribution.totalUnrealizedPnl) : "warning"
       },
       {
         id: "drawdown",
         label: "Drawdown",
-        value: drawdown ? formatRatioAsPercent(drawdown.maxDrawdownPercent) : "—",
+        value: drawdown ? formatRatioAsPercent(drawdown.maxDrawdownPercent) : VALUE_STATE_LABELS.unavailable,
         detail: drawdown
-          ? `${formatCountLabel(drawdown.points.length, "equity point")}; recovery ${drawdown.maxDrawdownRecoveryDays} days; final equity ${formatPrefixedCurrency(drawdown.finalEquity, { maximumFractionDigits: 0 })}.`
+          ? `${formatCountLabel(drawdown.points.length, "equity point")}; recovery ${drawdown.maxDrawdownRecoveryDays} days; final equity ${formatCurrencyAmount(drawdown.finalEquity, null, { context: "summary" })}.`
           : "Equity curve and drawdown profile have not been loaded.",
         tone: drawdown ? drawdown.maxDrawdownPercent > 0.1 ? "danger" : drawdown.maxDrawdownPercent > 0.03 ? "warning" : "success" : "warning"
       },
       {
         id: "cash-flow",
         label: "Cash-flow",
-        value: cashFlow ? formatSignedCurrency(cashFlow.netCashFlow, { maximumFractionDigits: 0 }) : "—",
+        value: cashFlow ? formatCurrencyAmount(cashFlow.netCashFlow, null, { signed: true, context: "summary" }) : VALUE_STATE_LABELS.unavailable,
         detail: cashFlow
-          ? `${cashFlow.totalEntries} cash-flow ${cashFlow.totalEntries === 1 ? "entry" : "entries"}; inflows ${formatPrefixedCurrency(cashFlow.totalInflows, { maximumFractionDigits: 0 })}; outflows ${formatPrefixedCurrency(cashFlow.totalOutflows, { maximumFractionDigits: 0 })}.`
+          ? `${cashFlow.totalEntries} cash-flow ${cashFlow.totalEntries === 1 ? "entry" : "entries"}; inflows ${formatCurrencyAmount(cashFlow.totalInflows, null, { context: "summary" })}; outflows ${formatCurrencyAmount(cashFlow.totalOutflows, null, { context: "summary" })}.`
           : "Cash-flow projection has not been loaded.",
         tone: cashFlow ? numericPnlTone(cashFlow.netCashFlow) : "warning"
       },
       {
         id: "trades",
         label: "Trades",
-        value: trades ? formatCount(trades.totalFills) : "—",
+        value: trades ? formatCount(trades.totalFills) : VALUE_STATE_LABELS.unavailable,
         detail: trades
-          ? `${formatCountLabel(trades.fills.length, "fill")} with ${formatPrefixedCurrency(trades.totalCommissions, { maximumFractionDigits: 0 })} commissions.`
+          ? `${formatCountLabel(trades.fills.length, "fill")} with ${formatCurrencyAmount(trades.totalCommissions, null, { context: "summary" })} commissions.`
           : "Trade-level fill evidence has not been loaded.",
         tone: trades ? trades.totalFills > 0 ? "success" : "warning" : "warning"
       }
@@ -1249,25 +1249,25 @@ function buildPortfolioRunBridgeRows(
     rows.push({
       id: "realized-pnl",
       label: "Realized bridge",
-      value: formatSignedCurrency(attribution.totalRealizedPnl, { maximumFractionDigits: 0 }),
+      value: formatCurrencyAmount(attribution.totalRealizedPnl, null, { signed: true, context: "summary" }),
       detail: topSymbol
-        ? `${topSymbol.symbol} contributes ${formatSignedCurrency(topSymbol.realizedPnl, { maximumFractionDigits: 0 })} realized P&L across ${formatCountLabel(topSymbol.tradeCount, "trade")}.`
+        ? `${topSymbol.symbol} contributes ${formatCurrencyAmount(topSymbol.realizedPnl, null, { signed: true, context: "summary" })} realized P&L across ${formatCountLabel(topSymbol.tradeCount, "trade")}.`
         : "No per-symbol realized attribution rows were returned.",
       tone: numericPnlTone(attribution.totalRealizedPnl)
     });
     rows.push({
       id: "unrealized-pnl",
       label: "Unrealized bridge",
-      value: formatSignedCurrency(attribution.totalUnrealizedPnl, { maximumFractionDigits: 0 }),
+      value: formatCurrencyAmount(attribution.totalUnrealizedPnl, null, { signed: true, context: "summary" }),
       detail: topSymbol
-        ? `${topSymbol.symbol} carries ${formatSignedCurrency(topSymbol.unrealizedPnl, { maximumFractionDigits: 0 })} unrealized P&L into the selected portfolio view.`
+        ? `${topSymbol.symbol} carries ${formatCurrencyAmount(topSymbol.unrealizedPnl, null, { signed: true, context: "summary" })} unrealized P&L into the selected portfolio view.`
         : "No per-symbol unrealized attribution rows were returned.",
       tone: numericPnlTone(attribution.totalUnrealizedPnl)
     });
     rows.push({
       id: "commission-drag",
       label: "Commission drag",
-      value: formatPrefixedCurrency(attribution.totalCommissions, { maximumFractionDigits: 0 }),
+      value: formatCurrencyAmount(attribution.totalCommissions, null, { context: "summary" }),
       detail: `${formatCountLabel(attribution.bySymbol.length, "symbol")} contributes to attribution after commissions and margin-interest allocation.`,
       tone: attribution.totalCommissions > 0 ? "warning" : "success"
     });
@@ -1277,8 +1277,8 @@ function buildPortfolioRunBridgeRows(
     rows.push({
       id: "cash-flow-bridge",
       label: "Cash-flow bridge",
-      value: formatSignedCurrency(cashFlow.netCashFlow, { maximumFractionDigits: 0 }),
-      detail: `${formatCountLabel(cashFlow.totalEntries, "cash-flow entry")} tie inflows ${formatPrefixedCurrency(cashFlow.totalInflows, { maximumFractionDigits: 0 })} to outflows ${formatPrefixedCurrency(cashFlow.totalOutflows, { maximumFractionDigits: 0 })}.`,
+      value: formatCurrencyAmount(cashFlow.netCashFlow, null, { signed: true, context: "summary" }),
+      detail: `${formatCountLabel(cashFlow.totalEntries, "cash-flow entry")} tie inflows ${formatCurrencyAmount(cashFlow.totalInflows, null, { context: "summary" })} to outflows ${formatCurrencyAmount(cashFlow.totalOutflows, null, { context: "summary" })}.`,
       tone: numericPnlTone(cashFlow.netCashFlow)
     });
   }
@@ -1309,11 +1309,11 @@ function buildPortfolioRunTradeEvidenceRows(trades: RunFillSummary | null): Port
       id: fill.fillId,
       symbol: fill.symbol,
       quantity: formatCount(fill.filledQuantity),
-      price: formatPrefixedCurrency(fill.fillPrice, { minimumFractionDigits: 2 }),
-      commission: formatPrefixedCurrency(fill.commission, { minimumFractionDigits: 2 }),
+      price: formatCurrencyAmount(fill.fillPrice, null),
+      commission: formatCurrencyAmount(fill.commission, null),
       filledAt: formatDateTime(fill.filledAt),
       accountId: fill.accountId ?? "No account",
-      ariaLabel: `${fill.symbol} fill ${fill.fillId}: ${formatCount(fill.filledQuantity)} at ${formatPrefixedCurrency(fill.fillPrice, { minimumFractionDigits: 2 })} on ${formatDateTime(fill.filledAt)}`
+      ariaLabel: `${fill.symbol} fill ${fill.fillId}: ${formatCount(fill.filledQuantity)} at ${formatCurrencyAmount(fill.fillPrice, null)} on ${formatDateTime(fill.filledAt)}`
     }));
 }
 
@@ -1333,8 +1333,8 @@ function buildPortfolioHeaderChips({
   providerLabel: string;
 }): PortfolioHeaderChip[] {
   const chips: PortfolioHeaderChip[] = [
-    { label: `${providerLabel} equity`, value: brokeragePortfolio ? formatPrefixedCurrency(brokeragePortfolio.totalEquity, { maximumFractionDigits: 0 }) : "—" },
-    { label: `${providerLabel} cash`, value: brokeragePortfolio ? formatPrefixedCurrency(brokeragePortfolio.totalCash, { maximumFractionDigits: 0 }) : "—" },
+    { label: `${providerLabel} equity`, value: brokeragePortfolio ? formatCurrencyAmount(brokeragePortfolio.totalEquity, brokeragePortfolio.currency, { context: "summary" }) : VALUE_STATE_LABELS.unavailable },
+    { label: `${providerLabel} cash`, value: brokeragePortfolio ? formatCurrencyAmount(brokeragePortfolio.totalCash, brokeragePortfolio.currency, { context: "summary" }) : VALUE_STATE_LABELS.unavailable },
     { label: "Open positions", value: positionCountValue },
     { label: "Exposure", value: totalExposure },
     {
@@ -1566,9 +1566,9 @@ function toBrokerageAccountRow(
     kind,
     health: account.health,
     healthBadgeVariant: brokerageAccountHealthBadgeVariant(account.health),
-    equity: formatPrefixedCurrency(account.equity, { maximumFractionDigits: 0 }),
-    cash: formatPrefixedCurrency(account.cash, { maximumFractionDigits: 0 }),
-    buyingPower: formatPrefixedCurrency(account.buyingPower, { maximumFractionDigits: 0 }),
+    equity: formatCurrencyAmount(account.equity, account.currency, { context: "summary" }),
+    cash: formatCurrencyAmount(account.cash, account.currency, { context: "summary" }),
+    buyingPower: formatCurrencyAmount(account.buyingPower, account.currency, { context: "summary" }),
     syncedAt: formatDateTime(account.syncedAt),
     positionCount: formatCountLabel(account.positionCount, "position"),
     warningCount: formatCountLabel(warningCount, "warning"),
@@ -1579,7 +1579,7 @@ function toBrokerageAccountRow(
     expanded: isSelected,
     detailPanelId: "portfolio-brokerage-account-detail",
     selectAriaLabel: `Filter brokerage positions to ${kind} account`,
-    ariaLabel: `${kind} brokerage account ${account.displayName}: ${account.health}, equity ${formatPrefixedCurrency(account.equity, { maximumFractionDigits: 0 })}, cash ${formatPrefixedCurrency(account.cash, { maximumFractionDigits: 0 })}, ${formatCountLabel(warningCount, "warning")}`
+    ariaLabel: `${kind} brokerage account ${account.displayName}: ${account.health}, equity ${formatCurrencyAmount(account.equity, account.currency, { context: "summary" })}, cash ${formatCurrencyAmount(account.cash, account.currency, { context: "summary" })}, ${formatCountLabel(warningCount, "warning")}`
   };
 }
 
@@ -1639,9 +1639,9 @@ function buildSelectedBrokerageAccountDetail(
     fields: [
       { label: "Fund account", value: account.fundAccountId, tone: "muted" },
       { label: "External account", value: account.externalAccountId, tone: "muted" },
-      { label: "Equity", value: formatPrefixedCurrency(account.equity, { maximumFractionDigits: 0 }), tone: "default" },
-      { label: "Cash", value: formatPrefixedCurrency(account.cash, { maximumFractionDigits: 0 }), tone: "default" },
-      { label: "Buying power", value: formatPrefixedCurrency(account.buyingPower, { maximumFractionDigits: 0 }), tone: "default" },
+      { label: "Equity", value: formatCurrencyAmount(account.equity, account.currency, { context: "summary" }), tone: "default" },
+      { label: "Cash", value: formatCurrencyAmount(account.cash, account.currency, { context: "summary" }), tone: "default" },
+      { label: "Buying power", value: formatCurrencyAmount(account.buyingPower, account.currency, { context: "summary" }), tone: "default" },
       { label: "Positions", value: formatCountLabel(account.positionCount, "position"), tone: "muted" },
       { label: "Cash activity", value: formatCountLabel(account.cashTransactionCount, "cash transaction"), tone: "muted" },
       { label: "Synced", value: formatDateTime(account.syncedAt), tone: "muted" }
@@ -1678,11 +1678,11 @@ function buildAllBrokerageAccountsDetail(
     statusBadgeVariant: brokerageAccountStatusBadgeVariant(statusTone),
     fields: [
       { label: "Accounts", value: formatCountLabel(accounts.length, "account"), tone: hasAccounts ? "default" : "warning" },
-      { label: "Equity", value: formatPrefixedCurrency(portfolio?.totalEquity ?? sumAccountValue(accounts, "equity"), { maximumFractionDigits: 0 }), tone: "default" },
-      { label: "Cash", value: formatPrefixedCurrency(portfolio?.totalCash ?? sumAccountValue(accounts, "cash"), { maximumFractionDigits: 0 }), tone: "default" },
-      { label: "Buying power", value: formatPrefixedCurrency(portfolio?.totalBuyingPower ?? sumAccountValue(accounts, "buyingPower"), { maximumFractionDigits: 0 }), tone: "default" },
+      { label: "Equity", value: formatCurrencyAmount(portfolio?.totalEquity ?? sumAccountValue(accounts, "equity"), portfolio?.currency ?? sharedCurrency(accounts.map((item) => item.currency)), { context: "summary" }), tone: "default" },
+      { label: "Cash", value: formatCurrencyAmount(portfolio?.totalCash ?? sumAccountValue(accounts, "cash"), portfolio?.currency ?? sharedCurrency(accounts.map((item) => item.currency)), { context: "summary" }), tone: "default" },
+      { label: "Buying power", value: formatCurrencyAmount(portfolio?.totalBuyingPower ?? sumAccountValue(accounts, "buyingPower"), portfolio?.currency ?? sharedCurrency(accounts.map((item) => item.currency)), { context: "summary" }), tone: "default" },
       { label: "Warnings", value: formatCountLabel(warningCount, "warning"), tone: warningCount > 0 ? "warning" : "success" },
-      { label: "Latest sync", value: latestSync, tone: latestSync === "—" ? "warning" : "muted" }
+      { label: "Latest sync", value: latestSync, tone: isUnavailableLabel(latestSync) ? "warning" : "muted" }
     ]
   };
 }
@@ -1706,7 +1706,7 @@ function latestAccountSync(accounts: BrokerageHouseholdAccount[]): string {
     .filter((date) => !Number.isNaN(date.getTime()))
     .sort((a, b) => b.getTime() - a.getTime())[0];
 
-  return latest ? formatDateTime(latest.toISOString()) : "—";
+  return latest ? formatDateTime(latest.toISOString()) : VALUE_STATE_LABELS.unavailable;
 }
 
 function toBrokeragePositionRow(
@@ -1779,12 +1779,12 @@ function buildSelectedBrokeragePositionDetail(
       markPriceField(amounts.markPrice, mark),
       ...markFreshnessFields(mark),
       { label: "Market value", value: amounts.marketValue, tone: "default" },
-      { label: "Unrealized P&L", value: amounts.unrealizedPnl, tone: amounts.unrealizedPnl === "—" ? "muted" : pnlStatusTone },
+      { label: "Unrealized P&L", value: amounts.unrealizedPnl, tone: isUnavailableLabel(amounts.unrealizedPnl) ? "muted" : pnlStatusTone },
       { label: "Security coverage", value: coverageLabel, tone: coverageTone },
-      { label: "Currency", value: position.currency ?? "Unavailable", tone: "muted" }
+      { label: "Currency", value: position.currency ?? VALUE_STATE_LABELS.unavailable, tone: "muted" }
     ],
     technicalFields: [
-      { label: "Position ID", value: position.positionId ?? "Unavailable", tone: position.positionId ? "muted" : "warning" }
+      { label: "Position ID", value: position.positionId ?? VALUE_STATE_LABELS.unavailable, tone: position.positionId ? "muted" : "warning" }
     ]
   };
 }
@@ -1875,7 +1875,7 @@ function brokerageConnectionDetail(
   providerLabel: string
 ): string {
   if (connection?.isConnected && portfolio) {
-    return `${portfolio.accounts.length} ${providerLabel} account${portfolio.accounts.length === 1 ? "" : "s"} synced with ${formatPrefixedCurrency(portfolio.totalEquity, { maximumFractionDigits: 0 })} total equity.`;
+    return `${portfolio.accounts.length} ${providerLabel} account${portfolio.accounts.length === 1 ? "" : "s"} synced with ${formatCurrencyAmount(portfolio.totalEquity, portfolio.currency, { context: "summary" })} total equity.`;
   }
 
   if (connection?.authorizationUrl) {
@@ -2010,13 +2010,13 @@ function buildWorkflowTaskPanel({
       }
     ],
     statusRows: [
-      { label: "Connection", value: brokerage?.connection ?? "Unavailable", tone: connected ? "success" : "warning" },
-      { label: "Order ingress", value: brokerage?.orderIngress ?? "Unavailable", tone: brokerage?.orderIngress === "healthy" ? "success" : "warning" },
-      { label: "Fill feed", value: brokerage?.fillFeed ?? "Unavailable", tone: brokerage?.fillFeed === "healthy" ? "success" : "warning" },
-      { label: "Last heartbeat", value: brokerage?.lastHeartbeat ?? "—", tone: "muted" },
-      { label: "Risk state", value: risk?.state ?? "Unavailable", tone: riskFieldTone(risk?.state) },
-      { label: "Buying power", value: risk?.buyingPowerUsed ?? "—", tone: "muted" },
-      { label: "Cash variance", value: cashVarianceLabel ?? "—", tone: cashVarianceLabel ? "warning" : "muted" },
+      { label: "Connection", value: brokerage?.connection ?? VALUE_STATE_LABELS.unavailable, tone: connected ? "success" : "warning" },
+      { label: "Order ingress", value: brokerage?.orderIngress ?? VALUE_STATE_LABELS.unavailable, tone: brokerage?.orderIngress === "healthy" ? "success" : "warning" },
+      { label: "Fill feed", value: brokerage?.fillFeed ?? VALUE_STATE_LABELS.unavailable, tone: brokerage?.fillFeed === "healthy" ? "success" : "warning" },
+      { label: "Last heartbeat", value: brokerage?.lastHeartbeat ?? VALUE_STATE_LABELS.unavailable, tone: "muted" },
+      { label: "Risk state", value: risk?.state ?? VALUE_STATE_LABELS.unavailable, tone: riskFieldTone(risk?.state) },
+      { label: "Buying power", value: risk?.buyingPowerUsed ?? VALUE_STATE_LABELS.unavailable, tone: "muted" },
+      { label: "Cash variance", value: cashVarianceLabel ?? VALUE_STATE_LABELS.unavailable, tone: cashVarianceLabel ? "warning" : "muted" },
       {
         label: "Guardrails",
         value: risk?.activeGuardrails.length ? risk.activeGuardrails.map((guardrail) => humanizeIdentifiersInText(guardrail)).join(" · ") : "No active guardrails",
@@ -2114,13 +2114,13 @@ function buildPortfolioReadinessTaskPanel({
       }
     ],
     statusRows: [
-      { label: "Connection", value: brokerage?.connection ?? "Unavailable", tone: connected ? "success" : "warning" },
-      { label: "Order ingress", value: brokerage?.orderIngress ?? "Unavailable", tone: brokerage?.orderIngress === "healthy" ? "success" : "warning" },
-      { label: "Fill feed", value: brokerage?.fillFeed ?? "Unavailable", tone: brokerage?.fillFeed === "healthy" ? "success" : "warning" },
-      { label: "Risk state", value: risk?.state ?? "Unavailable", tone: riskFieldTone(risk?.state) },
-      { label: "Buying power", value: risk?.buyingPowerUsed ?? "—", tone: "muted" },
+      { label: "Connection", value: brokerage?.connection ?? VALUE_STATE_LABELS.unavailable, tone: connected ? "success" : "warning" },
+      { label: "Order ingress", value: brokerage?.orderIngress ?? VALUE_STATE_LABELS.unavailable, tone: brokerage?.orderIngress === "healthy" ? "success" : "warning" },
+      { label: "Fill feed", value: brokerage?.fillFeed ?? VALUE_STATE_LABELS.unavailable, tone: brokerage?.fillFeed === "healthy" ? "success" : "warning" },
+      { label: "Risk state", value: risk?.state ?? VALUE_STATE_LABELS.unavailable, tone: riskFieldTone(risk?.state) },
+      { label: "Buying power", value: risk?.buyingPowerUsed ?? VALUE_STATE_LABELS.unavailable, tone: "muted" },
       buildRunContinuityStatusRow(selectedRunId, selectedRunContinuity, continuityBlockers),
-      { label: "Cash variance", value: cashVarianceLabel ?? "—", tone: hasCashVariance ? "warning" : "success" },
+      { label: "Cash variance", value: cashVarianceLabel ?? VALUE_STATE_LABELS.unavailable, tone: hasCashVariance ? "warning" : "success" },
       {
         label: "Guardrails",
         value: risk?.activeGuardrails.length ? risk.activeGuardrails.map((guardrail) => humanizeIdentifiersInText(guardrail)).join(" · ") : "No active guardrails",
@@ -2286,7 +2286,7 @@ function positionId(symbol: string, side: string, index: number): string {
 function parseNumericValue(value: string): number | null {
   const normalizedPercent = value.trim().endsWith("%");
   const cleaned = value.replace(/[$+,%]/g, "").trim();
-  if (!cleaned || cleaned === "—") {
+  if (isUnavailableLabel(cleaned)) {
     return null;
   }
 
@@ -2348,11 +2348,11 @@ function buildSelectedPositionDetail(
       { label: "Exposure", value: position.exposure, tone: "default" },
       { label: "Day P&L", value: position.dayPnl, tone: pnlFieldTone(position.dayPnl) },
       { label: "Unrealized P&L", value: position.unrealizedPnl, tone: pnlFieldTone(position.unrealizedPnl) },
-      { label: "Risk state", value: risk?.state ?? "Unavailable", tone: riskFieldTone(risk?.state) },
-      { label: "Buying power", value: risk?.buyingPowerUsed ?? "—", tone: "muted" },
+      { label: "Risk state", value: risk?.state ?? VALUE_STATE_LABELS.unavailable, tone: riskFieldTone(risk?.state) },
+      { label: "Buying power", value: risk?.buyingPowerUsed ?? VALUE_STATE_LABELS.unavailable, tone: "muted" },
       { label: "Guardrails", value: guardrailSummary, tone: risk?.activeGuardrails.length ? "warning" : "success" },
-      { label: "Brokerage", value: brokerage ? `${brokerage.provider} · ${brokerage.environment}` : "—", tone: "muted" },
-      { label: "Last heartbeat", value: brokerage?.lastHeartbeat ?? "—", tone: "muted" }
+      { label: "Brokerage", value: brokerage ? `${brokerage.provider} · ${brokerage.environment}` : VALUE_STATE_LABELS.unavailable, tone: "muted" },
+      { label: "Last heartbeat", value: brokerage?.lastHeartbeat ?? VALUE_STATE_LABELS.unavailable, tone: "muted" }
     ]
   };
 }

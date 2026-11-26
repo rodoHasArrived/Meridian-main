@@ -20,6 +20,7 @@ import type { AmountPassportReference } from "@/types/amount-passport";
 import { instrumentCases, instrumentPositions, isLedgerInstrumentId, readInstrumentDossierTab, sameInstrument, type InstrumentPositionRow } from "./instrument-dossier.view-model";
 import type { AccountingWorkspaceResponse, BrokerageHouseholdPortfolio, LedgerBook, LedgerPeriod, LedgerPostedJournalEntry, LedgerPostedJournalEntryLine, PortfolioWorkspaceResponse, SecurityMasterEntry, TradingWorkspaceResponse } from "@/types";
 
+import { isUnavailableLabel, VALUE_STATE_LABELS } from "@/lib/format";
 interface InstrumentDossierScreenProps {
   portfolio?: PortfolioWorkspaceResponse | null;
   trading?: TradingWorkspaceResponse | null;
@@ -103,7 +104,7 @@ export function InstrumentDossierScreen({ portfolio, trading, accounting, broker
 }
 
 function DossierValue({ value, currency, unit, amountPassport, conditionContextId }: { value: string | number | null; currency?: string; unit?: string; amountPassport?: AmountPassportReference; conditionContextId?: string }) {
-  if (typeof value === "string" && (value.trim() === "—" || value.trim() === "")) value = null;
+  if (typeof value === "string" && isUnavailableLabel(value)) value = null;
   // Legacy display strings such as "$1,000" have already been formatted upstream.
   if (typeof value === "string" && !/^[+-]?\d+(?:\.\d+)?(?:e[+-]?\d+)?$/i.test(value.trim())) return <span className="font-mono" aria-describedby={conditionContextId}>{value}<span className="block text-xs text-muted-foreground">Source-formatted value</span></span>;
   const condition = dossierValueCondition(amountPassport);
@@ -197,7 +198,7 @@ function InstrumentPositionsTable({ rows, sourceKey, source, observedAt }: { row
     { id: "quantity", label: "Quantity", numeric: true, render: row => <DossierValue value={row.quantity} unit="units" amountPassport={row.quantityPassport} conditionContextId={sharedCondition} />, exportValue: row => row.quantity },
     { id: "mark", label: "Mark", numeric: true, render: row => <DossierValue value={row.price} currency={row.currency} amountPassport={row.pricePassport} conditionContextId={sharedCondition} />, exportValue: row => row.price },
     { id: "value", label: "Market value / exposure", numeric: true, render: row => <DossierValue value={row.value} currency={row.currency} amountPassport={row.valuePassport} conditionContextId={sharedCondition} />, exportValue: row => row.value },
-    { id: "condition", label: "Mark condition", wrap: true, render: row => <><span>{row.markStatus}</span><details className="mt-1 text-xs text-muted-foreground"><summary className="cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">Mark evidence</summary><p className="mt-1">{row.markReason}</p><p className="mt-1 break-all font-mono">Policy version: {row.markPolicyVersion || "Not recorded"}</p></details></>, exportValue: row => `${row.markStatus}: ${row.markReason}; policy ${row.markPolicyVersion || "not recorded"}` }
+    { id: "condition", label: "Mark condition", wrap: true, render: row => <><span>{row.markStatus}</span><details className="mt-1 text-xs text-muted-foreground"><summary className="cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">Mark evidence</summary><p className="mt-1">{row.markReason}</p><p className="mt-1 break-all font-mono">Policy version: {row.markPolicyVersion || VALUE_STATE_LABELS.unavailable}</p></details></>, exportValue: row => `${row.markStatus}: ${row.markReason}; policy ${row.markPolicyVersion || "not recorded"}` }
   ];
   return <div {...positionSourceAttributes(source)} className="space-y-3">
     <p className="text-sm text-muted-foreground">Source: {source.label}{observedAt ? <> · Snapshot observed <time dateTime={observedAt}>{observedAt}</time></> : " · Snapshot observation time not supplied"}</p>

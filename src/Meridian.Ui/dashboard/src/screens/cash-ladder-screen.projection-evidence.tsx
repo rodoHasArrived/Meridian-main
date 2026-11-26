@@ -6,7 +6,7 @@ import { LocalDateText } from "@/components/ui/local-date-text";
 import { getAssetOperations } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { workstationRouteWithQuery } from "@/lib/workspace";
-import { formatTimestamp } from "@/lib/format";
+import { formatTimestamp, VALUE_STATE_LABELS, isUnavailableLabel } from "@/lib/format";
 import type { CashLadderDrillRow } from "@/screens/cash-ladder-screen.view-model";
 import type { AssetCashFlowProjectionRun, AssetTermsVersion } from "@/types";
 
@@ -28,7 +28,7 @@ export function CashLadderProjectionEvidence({ row, onClose }: { row: CashLadder
         const run = detail.cashFlowProjectionRuns.find((candidate) =>
           candidate.projectionRunId === row.projectionRunIdentity && candidate.securityId === row.securityId);
         if (detail.subject.securityId !== row.securityId || !run ||
-          (row.projectionEngineVersion !== "—" && run.engineVersion !== row.projectionEngineVersion)) {
+          (!isUnavailableLabel(row.projectionEngineVersion) && run.engineVersion !== row.projectionEngineVersion)) {
           setResult({ row, error: "The source no longer exposes this exact projection run. Refresh the ladder or inspect the instrument; a newer run cannot substitute for this contribution's evidence." });
           return;
         }
@@ -57,8 +57,8 @@ export function CashLadderProjectionEvidence({ row, onClose }: { row: CashLadder
       <dl className="grid gap-2 break-all text-xs sm:grid-cols-2">
         <div><dt className="font-semibold">Projection run</dt><dd className="font-mono">{row.projectionRunIdentity}</dd></div>
         <div><dt className="font-semibold">Ladder contribution</dt><dd>{row.flowType} · {row.dueDate} · {row.amountLabel} {row.currency}</dd></div>
-        <div><dt className="font-semibold">Terms version</dt><dd className="font-mono">{row.termsVersionId ?? "Not supplied"}</dd></div>
-        <div><dt className="font-semibold">Terms hash</dt><dd className="font-mono">{row.termsHash ?? "Not supplied"}</dd></div>
+        <div><dt className="font-semibold">Terms version</dt><dd className="font-mono">{row.termsVersionId ?? VALUE_STATE_LABELS.unavailable}</dd></div>
+        <div><dt className="font-semibold">Terms hash</dt><dd className="font-mono">{row.termsHash ?? VALUE_STATE_LABELS.unavailable}</dd></div>
         <div><dt className="font-semibold">Flow source</dt><dd>{row.sourceDomain} · {row.sourceEntityId ?? "Identity unavailable"}</dd></div>
       </dl>
       {state?.error ? <StatusBanner tone="warning" role="alert" title="Exact projection evidence unavailable" detail={state.error} /> : null}

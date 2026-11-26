@@ -1508,9 +1508,9 @@ describe("PortfolioScreen", () => {
 
     const drillIn = await screen.findByLabelText("Selected run portfolio drill-in evidence");
     expect(drillIn).toHaveTextContent("4/4 drill-in evidence slices loaded for Mean Reversion.");
-    expect(drillIn).toHaveTextContent("Realized +$120; unrealized +$80");
+    expect(drillIn).toHaveTextContent("Realized +120; unrealized +80");
     expect(drillIn).toHaveTextContent("1.25%");
-    expect(drillIn).toHaveTextContent("+$1,200");
+    expect(drillIn).toHaveTextContent("+1,200");
     expect(api.getRunAttribution).toHaveBeenCalledWith("run-1");
     expect(api.getRunEquityCurve).toHaveBeenCalledWith("run-1");
     expect(api.getRunCashFlows).toHaveBeenCalledWith("run-1");

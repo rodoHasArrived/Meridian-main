@@ -100,7 +100,7 @@ import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, MetricFreshness, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
 import { applyCrossScreenCounts, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
-import { pluralizeCount } from "@/lib/format";
+import { pluralizeCount, VALUE_STATE_LABELS } from "@/lib/format";
 import { useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { withTradingHeadlineEvidence } from "@/screens/trading-screen.headline-evidence";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
@@ -651,12 +651,12 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
           tone: fundAccountId || data.brokerage.account ? "ready" : "unknown"
         }}
         freshness={{
-          value: hasRecoveryProjection ? recoveryPortfolio?.observedAt ?? "Unavailable" : data.brokerage.lastHeartbeat || "Unavailable",
+          value: hasRecoveryProjection ? recoveryPortfolio?.observedAt ?? VALUE_STATE_LABELS.unavailable : data.brokerage.lastHeartbeat || VALUE_STATE_LABELS.unavailable,
           detail: hasRecoveryProjection ? "Latest broker portfolio observation" : "Latest brokerage heartbeat",
           tone: hasRecoveryProjection ? recoveryPortfolio?.isFresh === false ? "blocked" : recoveryUnavailable ? "unknown" : recoveryPortfolio?.isFresh ? "ready" : "blocked" : sourceTone
         }}
         completeness={{
-          value: hasRecoveryProjection ? recoveryPortfolio ? `${pluralizeCount(recoveryPortfolio.positionCount, "position")} · ${typeof reconciliation?.matchedOpenOrderCount === "number" ? pluralizeCount(reconciliation.matchedOpenOrderCount, "matched open order") : "Unknown matched open orders"}` : "Unavailable" : `${pluralizeCount(data.positions.length, "position")} · ${pluralizeCount(crossCounts.openOrders ?? 0, "open order")} · ${pluralizeCount(data.fills.length, "fill")}`,
+          value: hasRecoveryProjection ? recoveryPortfolio ? `${pluralizeCount(recoveryPortfolio.positionCount, "position")} · ${typeof reconciliation?.matchedOpenOrderCount === "number" ? pluralizeCount(reconciliation.matchedOpenOrderCount, "matched open order") : "Unknown matched open orders"}` : VALUE_STATE_LABELS.unavailable : `${pluralizeCount(data.positions.length, "position")} · ${pluralizeCount(crossCounts.openOrders ?? 0, "open order")} · ${pluralizeCount(data.fills.length, "fill")}`,
           detail: hasRecoveryProjection ? recoveryUnavailable ? "Current account evidence unverified" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "Complete and consistent broker evidence" : "Incomplete or inconsistent broker evidence" : `${pluralizeCount(completenessCount, "execution record")} loaded`,
           tone: hasRecoveryProjection ? recoveryUnavailable ? "unknown" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "ready" : "blocked" : completenessCount > 0 ? "ready" : "review"
         }}
@@ -2095,7 +2095,7 @@ function DataRow({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="data-grid-surface px-3 py-2">
       <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</div>
-      <div className="mt-1 font-mono text-sm text-foreground">{value ?? "Unavailable"}</div>
+      <div className="mt-1 font-mono text-sm text-foreground">{value ?? VALUE_STATE_LABELS.unavailable}</div>
     </div>
   );
 }

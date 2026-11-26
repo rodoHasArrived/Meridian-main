@@ -8,6 +8,7 @@ import type { AccountingArrangementPartyMapping, ConsolidationFxConfiguration, I
 import { entityOperationEndpoints as endpoints } from "@/lib/api/entity-operations.api";
 import { OperationError, OperationField, useEntityData } from "./accounting-screen.entity-operations.shared";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 export function ManualJournalIntercompanyDimensions({ view, line }: { view: ManualJournalEntryWorkbenchViewModel; line: ManualJournalEntryLine }) {
   const [opened, setOpened] = useState(false);
   const bookId = view.draft.ledgerBookId;
@@ -69,7 +70,7 @@ export function ManualJournalIntercompanyDimensions({ view, line }: { view: Manu
       <div className="flex flex-wrap gap-2"><Button type="button" size="sm" variant="outline" disabled={!arrangement || !party || !binding || !transactionReference.trim()} disabledReason={!arrangement ? "Select an approved accounting arrangement." : !party ? "The arrangement must include this journal book." : !binding ? "Select an eligible retained account binding." : "Enter the shared intercompany transaction reference."} onClick={applyArrangement}>Apply accounting arrangement</Button>
         <Button type="button" size="sm" variant="outline" disabled={!dimensions.accountingArrangementId && !dimensions.accountingArrangementRevisionId} disabledReason="This line has no retained accounting arrangement to clear." onClick={() => view.updateLine(line.lineId, { dimensions: { ...dimensions, accountingArrangementId: null, accountingArrangementRevisionId: null } })}>Clear accounting arrangement</Button></div>
       <TechnicalDetails label="Retained intercompany dimension identities"><dl className="space-y-2 break-all text-xs">
-        {([ ["intercompanyAgreementId", "Legal agreement ID"], ["intercompanyAgreementVersion", "Approved legal agreement version"], ["accountingArrangementId", "Accounting arrangement ID"], ["accountingArrangementRevisionId", "Accounting arrangement revision ID"], ["chartAccountNodeId", "Stable chart account node"], ["accountBindingRevisionId", "Account binding revision ID"], ["intercompanyTransactionId", "Shared transaction reference"] ] as const).map(([field, label]) => <div key={field}><dt className="font-medium">{label}</dt><dd>{String(dimensions[field] ?? "Not retained")}</dd></div>)}
+        {([ ["intercompanyAgreementId", "Legal agreement ID"], ["intercompanyAgreementVersion", "Approved legal agreement version"], ["accountingArrangementId", "Accounting arrangement ID"], ["accountingArrangementRevisionId", "Accounting arrangement revision ID"], ["chartAccountNodeId", "Stable chart account node"], ["accountBindingRevisionId", "Account binding revision ID"], ["intercompanyTransactionId", "Shared transaction reference"] ] as const).map(([field, label]) => <div key={field}><dt className="font-medium">{label}</dt><dd>{String(dimensions[field] ?? VALUE_STATE_LABELS.unavailable)}</dd></div>)}
       </dl></TechnicalDetails>
       <div className="space-y-3 rounded border border-border p-3"><h5 className="text-sm font-semibold">Original transaction currency evidence</h5>
         <p className="text-xs text-muted-foreground">Functional line amounts remain as entered in the journal. The server validates original amounts against the rate and approved book policy; the browser does not calculate conversion.</p>

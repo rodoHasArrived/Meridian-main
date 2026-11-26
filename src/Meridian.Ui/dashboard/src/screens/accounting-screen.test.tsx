@@ -2624,7 +2624,7 @@ describe("AccountingScreen", () => {
 
     const preview = await screen.findByRole("region", { name: "Accounting rule dry-run preview" });
     expect(within(preview).getByText("TradeExecuted dry run")).toBeInTheDocument();
-    expect(within(preview).getByText("Balanced $250,000 USD")).toBeInTheDocument();
+    expect(within(preview).getByText("Balanced 250,000.00 USD")).toBeInTheDocument();
     expect(within(preview).getByText(/Trade buy posting matched at priority 10/)).toBeInTheDocument();
     expect(within(preview).getAllByText(/Credit 1000\.Cash/).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Apply event predicate" })).toBeInTheDocument();
@@ -2642,7 +2642,7 @@ describe("AccountingScreen", () => {
     const candidate = await screen.findByRole("region", { name: "Accounting rule journal draft candidate" });
     expect(within(candidate).getByText("Journal draft candidate")).toBeInTheDocument();
     expect(within(candidate).getByText("Selected rule rule-trade-buy version v3")).toBeInTheDocument();
-    expect(within(candidate).getByText("Balanced $250,000 / $250,000")).toBeInTheDocument();
+    expect(within(candidate).getByText("Balanced 250,000.00 USD / 250,000.00 USD")).toBeInTheDocument();
     expect(within(candidate).getByText(/Draft command 00000000-0000-4000-8000-000000000101 is pending and remains lifecycle-gated/)).toBeInTheDocument();
     expect(within(candidate).getByText(/Approval Pending; post-without-approval blocked/)).toBeInTheDocument();
     expect(within(candidate).getByText(/ApprovalRequired: Posting command remains pending until journal lifecycle approval/)).toBeInTheDocument();
@@ -3760,8 +3760,8 @@ describe("AccountingScreen", () => {
     expect(screen.getByLabelText("Strategy")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Manual journal entry - balanced double-entry" })).toHaveTextContent("Totals");
     expect(screen.getByRole("heading", { name: "Balance impact preview" })).toBeInTheDocument();
-    expect(screen.getByText("This draft increases the debit-normal account balance by $100.")).toBeInTheDocument();
-    expect(screen.getByText("This draft increases the credit-normal account balance by $100.")).toBeInTheDocument();
+    expect(screen.getByText("This draft increases the debit-normal account balance by $100.00.")).toBeInTheDocument();
+    expect(screen.getByText("This draft increases the credit-normal account balance by $100.00.")).toBeInTheDocument();
     expect(screen.getByDisplayValue("2026-06-30")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Manual close adjustment")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Microsoft Corp./ })).toBeInTheDocument();

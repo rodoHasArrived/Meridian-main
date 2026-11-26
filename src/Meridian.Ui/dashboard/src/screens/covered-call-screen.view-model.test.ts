@@ -538,14 +538,14 @@ describe("buildCoveredCallTradeTimelinePanel", () => {
       entryDateLabel: "2024-02-01",
       exitDateLabel: "2024-02-12",
       strikeLabel: "510.00",
-      pnlLabel: "-$140",
+      pnlLabel: "-140.00",
       pnlClassName: "text-danger",
       statusLabel: "Assigned",
       exitReasonLabel: "Assigned",
       statusBadgeVariant: "warning",
       detailPanelId: "covered-call-trade-detail",
       ariaExpanded: true,
-      rowSelectAriaLabel: "Inspect SPY trade 2, entry 2024-02-01, exit 2024-02-12, strike 510.00, P&L -$140, status Assigned."
+      rowSelectAriaLabel: "Inspect SPY trade 2, entry 2024-02-01, exit 2024-02-12, strike 510.00, P&L -140.00, status Assigned."
     });
     expect(panel.selectedDetail).toMatchObject({
       title: "SPY 510.00 call",
@@ -553,7 +553,7 @@ describe("buildCoveredCallTradeTimelinePanel", () => {
       ariaLabel: "Selected covered-call trade 2: SPY 510.00 call"
     });
     expect(panel.rows[0].exitReasonLabel).toBe("Take profit");
-    expect(panel.selectedDetail?.description).toBe("Assigned; exit reason Assigned; -$140 total net P&L.");
+    expect(panel.selectedDetail?.description).toBe("Assigned; exit reason Assigned; -140.00 total net P&L.");
     expect(panel.selectedDetail?.fields).toContainEqual({ label: "Exit reason", value: "Assigned" });
     expect(panel.selectedDetail?.fields).toContainEqual({ label: "Assignment", value: "Assigned" });
   });
@@ -731,7 +731,7 @@ describe("buildChainPreviewPanelViewModel", () => {
       statusLabel: "Open interest below minimum",
       ariaLabel: "Selected covered-call candidate: SPY 510.00 call expiring 2024-02-16"
     });
-    expect(panel.selectedDetail?.fields).toContainEqual({ label: "Implied volatility", value: "—" });
+    expect(panel.selectedDetail?.fields).toContainEqual({ label: "Implied volatility", value: "Not available" });
   });
 
   it("keeps loading, empty, and error copy in the view model", () => {

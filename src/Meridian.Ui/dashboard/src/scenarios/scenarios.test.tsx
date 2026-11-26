@@ -1,6 +1,6 @@
 import { screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getAccountingWorkspace, getReconciliationBreakQueue } from "@/lib/api";
+import { getAccountingWorkspace, getManualJournalEntryWorkbench, getReconciliationBreakDetail, getReconciliationBreakQueue } from "@/lib/api";
 import { RECONCILIATION_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import { getScenario, resolveScenarioResponse, scenarioPreviewUrl } from "@/scenarios";
 import { accountingPayload } from "@/scenarios/accounting-payload";
@@ -21,6 +21,7 @@ describe("shared accounting scenarios", () => {
   it.each([
     ["accounting.normal", 200],
     ["accounting.empty", 200],
+    ["accounting.non-usd", 200],
     ["accounting.delayed", 200],
     ["accounting.forbidden", 403],
     ["accounting.failed", 500]
@@ -31,6 +32,38 @@ describe("shared accounting scenarios", () => {
     const preview = new URL(scenarioPreviewUrl(scenario), "http://localhost");
     expect(preview.pathname).toBe("/workstation/accounting/reconciliation");
     expect(preview.searchParams.get("scenario")).toBe(id);
+  });
+
+  it("seeds a non-USD book with every USD currency rebooked to EUR", async () => {
+    installScenario("accounting.non-usd");
+    const workspace = await getAccountingWorkspace();
+    const serialized = JSON.stringify(workspace);
+    expect(serialized).toContain("\"EUR\"");
+    expect(serialized).not.toContain("\"USD\"");
+  });
+
+  it("serves a balanced EUR manual journal draft and EUR book only in the non-USD scenario", async () => {
+    installScenario("accounting.non-usd");
+    const workbench = await getManualJournalEntryWorkbench({ fundProfileId: "default-fund" });
+    const draft = requireFirst(workbench.drafts, "non-USD journal drafts");
+    expect(draft.currency).toBe("EUR");
+    expect(draft.lines.every((line) => line.currency === "EUR")).toBe(true);
+    expect(draft.totalDebits).toBe(draft.totalCredits);
+    expect(workbench.ledgerBooks.map((book) => book.baseCurrency)).toEqual(["EUR"]);
+    expect(JSON.stringify(workbench)).not.toContain("\"USD\"");
+
+    installScenario("accounting.normal");
+    const normal = await getManualJournalEntryWorkbench({ fundProfileId: "default-fund" });
+    expect(normal.drafts.some((item) => item.currency === "EUR")).toBe(false);
+  });
+
+  it("serves each rebooked break to the case inspector's per-break read", async () => {
+    installScenario("accounting.non-usd");
+    const workspace = await getAccountingWorkspace();
+    const queued = requireFirst(workspace.breakQueue, "non-USD break queue");
+    const detail = await getReconciliationBreakDetail(queued.breakId);
+    expect(detail).toEqual(queued);
+    expect(JSON.stringify(detail)).not.toContain("\"USD\"");
   });
 
   it("passes the one accounting payload through the real API client and production queue card", async () => {

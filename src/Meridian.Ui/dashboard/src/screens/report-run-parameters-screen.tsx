@@ -50,6 +50,7 @@ import type {
 } from "@/types";
 import { TextArea } from "@/components/ui/text-area";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 interface ReportRunParametersScreenProps {
   data: ReportingWorkspacePayload | null;
   accounting: AccountingWorkspaceResponse | null;
@@ -807,7 +808,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
                 : readinessPreflight.phase === "complete"
                   ? authoritativeReadinessGate?.statusLabel
                   : readinessPreflight.phase === "error"
-                    ? "Unavailable"
+                    ? VALUE_STATE_LABELS.unavailable
                     : "Parameters required"}
             </Badge>
           </CardHeader>

@@ -352,7 +352,7 @@ describe("strategy designer view-model", () => {
     const participation = buildParticipationViewModel([], 100);
     const metrics = buildDesignerSummaryMetrics(payoff, participation);
     expect(metrics.every((metric) => metric.tone === "default")).toBe(true);
-    expect(metrics[0].value).toBe("—");
+    expect(metrics[0].value).toBe("Not available");
   });
 
   it("reorders legs by removing source and inserting at target position", () => {

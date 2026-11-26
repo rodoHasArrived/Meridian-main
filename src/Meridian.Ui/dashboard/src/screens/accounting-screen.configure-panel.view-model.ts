@@ -3,6 +3,7 @@ import type {
   AccountingProductionGapViewModel
 } from "@/screens/accounting-screen.view-model";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 /**
  * Presentation-only helpers for the Accounting Configuration panel usability layer:
  * section navigation, jump-to-setting search, activation checklist, typed key/value
@@ -205,7 +206,7 @@ export interface ConfigureReadinessReviewItem {
 }
 
 export interface ConfigureOperationalReadinessSummary {
-  statusLabel: "Assessing" | "Unavailable" | "Review required" | "Ready";
+  statusLabel: "Assessing" | typeof VALUE_STATE_LABELS.unavailable | "Review required" | "Ready";
   tone: ConfigureTone;
   gateLabel: string;
   issueSummaryLabel: string;
@@ -377,7 +378,7 @@ export function buildConfigureOperationalReadinessSummary(
   const statusLabel: ConfigureOperationalReadinessSummary["statusLabel"] = readiness.loading
     ? "Assessing"
     : readiness.errorText
-      ? "Unavailable"
+      ? VALUE_STATE_LABELS.unavailable
       : reviewItems.length > 0
         ? "Review required"
         : "Ready";

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { Sparkline } from "@/components/charts/Sparkline";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, VALUE_STATE_LABELS } from "@/lib/format";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { buildRunLeaderboard } from "@/screens/strategy-run-leaderboard";
 import { PLOT_TOOL_NOT_CONNECTED_LABEL, type StrategyRunLibraryState } from "@/screens/strategy-screen.view-model";
@@ -65,10 +65,10 @@ export function RunLeaderboard({ runs }: { runs: StrategyRunLibraryState["runs"]
     { id: "run", label: "Run", rowHeader: true, render: (row) => (
       <span><Link to={row.href} className="font-medium text-primary underline-offset-2 hover:underline">{row.strategyName}</Link>
         <span className="block font-mono text-xs text-muted-foreground">{row.id}</span></span>) },
-    { id: "sharpe", label: "Sharpe", numeric: true, render: (row) => row.sharpe === null ? "—" : row.sharpeText },
+    { id: "sharpe", label: "Sharpe", numeric: true, render: (row) => row.sharpe === null ? VALUE_STATE_LABELS.unavailable : row.sharpeText },
     { id: "pnl", label: "P&L", numeric: true, render: (row) => row.pnlText },
-    ...(showDrawdown ? [{ id: "drawdown", label: "Max drawdown", numeric: true, render: (row: Row) => row.maxDrawdown === null ? "—" : formatNumber(row.maxDrawdown) }] : []),
-    ...(showTrend ? [{ id: "trend", label: "Equity trend", render: (row: Row) => row.trendValues ? <Sparkline points={row.trendValues} width={96} height={24} /> : "—" }] : [])
+    ...(showDrawdown ? [{ id: "drawdown", label: "Max drawdown", numeric: true, render: (row: Row) => row.maxDrawdown === null ? VALUE_STATE_LABELS.unavailable : formatNumber(row.maxDrawdown) }] : []),
+    ...(showTrend ? [{ id: "trend", label: "Equity trend", render: (row: Row) => row.trendValues ? <Sparkline points={row.trendValues} width={96} height={24} /> : VALUE_STATE_LABELS.unavailable }] : [])
   ];
   return (
     <section aria-labelledby="strategy-run-leaderboard-title" className="rounded-lg border border-border/70 bg-card px-4 py-3" data-chart-table="run-leaderboard">

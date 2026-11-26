@@ -42,7 +42,7 @@ describe("statement run validation view model", () => {
     const view = buildStatementRunValidationViewModel(null);
 
     expect(view.loaded).toBe(false);
-    expect(view.countLabel).toBe("—");
+    expect(view.countLabel).toBe("Not available");
     expect(view.blocked).toBe(false);
     expect(view.emptyState).toContain("has not loaded");
   });
@@ -92,7 +92,7 @@ describe("statement run validation view model", () => {
 describe("statement run breaks view model", () => {
   it("distinguishes not-loaded from a run with no breaks", () => {
     expect(buildStatementRunBreaksViewModel(null).loaded).toBe(false);
-    expect(buildStatementRunBreaksViewModel(null).countLabel).toBe("—");
+    expect(buildStatementRunBreaksViewModel(null).countLabel).toBe("Not available");
 
     const empty = buildStatementRunBreaksViewModel([]);
     expect(empty.loaded).toBe(true);

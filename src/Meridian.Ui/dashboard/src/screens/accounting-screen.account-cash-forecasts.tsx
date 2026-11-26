@@ -18,13 +18,14 @@ import type {
   AccountSettledCashObservation, OversightContext, OversightScope
 } from "@/types/account-oversight";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 interface AccountCashForecastsPanelProps {
   scope: OversightScope;
   context: OversightContext;
   onDirtyChange?: (dirty: boolean) => void;
 }
 
-const money = (amount: string | null | undefined, currency: string) => amount == null ? "Unavailable" : `${amount} ${currency}`;
+const money = (amount: string | null | undefined, currency: string) => amount == null ? VALUE_STATE_LABELS.unavailable : `${amount} ${currency}`;
 const date = (value: string | null | undefined) => value || "Missing";
 const flowStatus = (flow: AccountCashFlow) => flow.status === 1 ? "Actual receipt" : "Expected";
 
@@ -317,7 +318,7 @@ const flowColumns: DenseDataTableColumn<AccountCashFlow>[] = [
   { id: "receipt", label: "Cash receipt date", render: row => date(row.cashReceiptDate) },
   { id: "version", label: "Version and evidence", render: row => <TechnicalDetails label={`Version ${row.versionId}`}>
     <p className="mb-2 break-all text-xs">{row.supersedesVersionId ? `Supersedes ${row.supersedesVersionId}` : "Original source revision"}</p>
-    <dl className="mb-2 space-y-1 break-all text-xs"><div><dt>Security</dt><dd>{row.securityId || "Not supplied"}</dd></div><div><dt>Projection run / engine</dt><dd>{row.projectionRunId || "Not supplied"} · {row.projectionEngineVersion || "Not supplied"}</dd></div><div><dt>Terms version / hash</dt><dd>{row.termsVersionId || "Not supplied"} · {row.termsHash || "Not supplied"}</dd></div></dl>
+    <dl className="mb-2 space-y-1 break-all text-xs"><div><dt>Security</dt><dd>{row.securityId || VALUE_STATE_LABELS.unavailable}</dd></div><div><dt>Projection run / engine</dt><dd>{row.projectionRunId || VALUE_STATE_LABELS.unavailable} · {row.projectionEngineVersion || VALUE_STATE_LABELS.unavailable}</dd></div><div><dt>Terms version / hash</dt><dd>{row.termsVersionId || VALUE_STATE_LABELS.unavailable} · {row.termsHash || VALUE_STATE_LABELS.unavailable}</dd></div></dl>
     <Provenance provenance={row.provenance} />
   </TechnicalDetails> }
 ];
@@ -342,5 +343,5 @@ const contributionColumns: DenseDataTableColumn<AccountCashForecastSnapshot["for
   { id: "date", label: "Cash receipt date", render: row => row.dueDate },
   { id: "native", label: "Native amount", align: "right", render: row => <span className="font-mono tabular-nums">{money(row.amount, row.currency)}</span> },
   { id: "base", label: "Converted base amount", align: "right", render: row => <span className="font-mono tabular-nums">{row.baseAmount}</span> },
-  { id: "terms", label: "Projection and factor terms", render: row => <span className="break-all text-xs">Run {row.projectionRunId || "Unavailable"}<br />Engine {row.projectionEngineVersion || "Unavailable"}<br />Terms {row.termsVersionId || "Unavailable"}<br />{row.termsHash || "Hash unavailable"}</span> }
+  { id: "terms", label: "Projection and factor terms", render: row => <span className="break-all text-xs">Run {row.projectionRunId || VALUE_STATE_LABELS.unavailable}<br />Engine {row.projectionEngineVersion || VALUE_STATE_LABELS.unavailable}<br />Terms {row.termsVersionId || VALUE_STATE_LABELS.unavailable}<br />{row.termsHash || "Hash unavailable"}</span> }
 ];

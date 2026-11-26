@@ -392,7 +392,7 @@ describe("buildSettingsScreenViewModel", () => {
       { label: "Environment", value: "PAPER" },
       { label: "Workspace", value: "settings" },
       { label: "Diagnostics", value: "6 unavailable" },
-      { label: "Heartbeat", value: "—" }
+      { label: "Heartbeat", value: "Not available" }
     ]);
   });
 
@@ -1520,7 +1520,7 @@ describe("buildSettingsScreenViewModel", () => {
     });
 
     expect(vm.backendCapabilityGroups.find((group) => group.id === "portfolio")).toMatchObject({
-      statusLabel: "Unavailable",
+      statusLabel: "Not available",
       statusVariant: "danger",
       statusDetail: "Portfolio workspace data has not loaded."
     });

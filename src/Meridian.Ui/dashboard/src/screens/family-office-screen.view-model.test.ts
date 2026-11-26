@@ -29,7 +29,7 @@ describe("buildFamilyOfficeScreenViewModel", () => {
     });
     expect(vm.route.emptyState).toContain("Set up family entities");
     expect(vm.statusChips).toContainEqual({ label: "Source", value: "Not connected" });
-    expect(vm.statusChips).toContainEqual({ label: "As of", value: "Unavailable" });
+    expect(vm.statusChips).toContainEqual({ label: "As of", value: "Not available" });
     expect(vm.notConnected).toBe(true);
     expect(vm.emptyActionHref).toBe("/accounting/entity-setup");
     expect(vm.panels).toEqual([]);

@@ -20,7 +20,7 @@ import {
 } from "@/screens/statement-fetch-panel.view-model";
 import { StatementImportPreviewDetails } from "@/screens/statement-import-preview";
 import type { StatementConnectorDescriptor, StatementMappingProfile } from "@/types";
-import { formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
+import { formatTimestamp as formatDisplayTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 import { narrowRowsWithFundScopeContext, useFundScopeNarrowingContext } from "@/lib/operating-scope/fund-scope-context";
 
 export interface StatementFetchPanelProps {
@@ -442,7 +442,7 @@ function FetchError({ error, title }: { error: ApiErrorDisplay; title: string })
 
 function formatTimestamp(value: string | null): string {
   if (!value) {
-    return "—";
+    return VALUE_STATE_LABELS.unavailable;
   }
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? value : formatDisplayTimestamp(date);

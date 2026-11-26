@@ -21,6 +21,7 @@ import {
 import type { ReportWriterDatasetSource } from "@/types";
 import { eyebrowClassName } from "@/design-system/label-case";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 export type ExportsReportRunDraftField =
   | "templateRowId"
   | "asOfDate"
@@ -296,14 +297,14 @@ export function ExportsReportRunner({
                       <Badge variant={selectedTemplate.accessGovernance.postureVariant}>{selectedTemplate.accessGovernance.postureLabel}</Badge>
                       <Badge variant="outline">{presentReportingIdentifier(selectedTemplate.family, "Report")}</Badge>
                     </>
-                  ) : <DesignSystemStatus status="unavailable">Unavailable</DesignSystemStatus>}
+                  ) : <DesignSystemStatus status="unavailable">{VALUE_STATE_LABELS.unavailable}</DesignSystemStatus>}
                 </span>
               </div>
               <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2" aria-label={`${contextLabel} request summary`}>
                 <ReportingScheduleField label="Template" value={selectedTemplate?.name ?? "No template"} />
-                <ReportingScheduleField label="Version" value={selectedTemplate?.version ?? "Unavailable"} />
-                <ReportingScheduleField label="Sections" value={selectedTemplate?.sectionSummary ?? "Unavailable"} />
-                <ReportingScheduleField label="Access" value={selectedTemplate?.accessSummary ?? "Unavailable"} />
+                <ReportingScheduleField label="Version" value={selectedTemplate?.version ?? VALUE_STATE_LABELS.unavailable} />
+                <ReportingScheduleField label="Sections" value={selectedTemplate?.sectionSummary ?? VALUE_STATE_LABELS.unavailable} />
+                <ReportingScheduleField label="Access" value={selectedTemplate?.accessSummary ?? VALUE_STATE_LABELS.unavailable} />
                 <ReportingScheduleField label="Dataset" value={selectedDataset ? `${selectedDataset.label} (${selectedDataset.rowCount})` : "Default retained dataset"} />
                 <ReportingScheduleField label="Requester" value={draft.requestedBy.trim() || defaultRequester} />
               </dl>

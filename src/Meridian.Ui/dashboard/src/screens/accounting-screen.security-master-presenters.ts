@@ -12,7 +12,7 @@ import type {
   SecuritySchedulePostingStatus,
 } from "./accounting-screen.view-model";
 import type { SecurityAliasEntry, SecurityIdentifierEntry, SecurityMasterConflict } from "@/types";
-import { formatUtcDate } from "@/lib/format";
+import { formatUtcDate, VALUE_STATE_LABELS } from "@/lib/format";
 
 interface ReferenceDataRoutePostureCounts {
   totalCount: number;
@@ -135,7 +135,7 @@ export function formatSecurityReferenceValue(value: string): string {
 
 export function formatSecurityDate(value: string | null | undefined): string {
   if (!value) {
-    return "—";
+    return VALUE_STATE_LABELS.unavailable;
   }
 
   const date = new Date(value);
@@ -151,7 +151,7 @@ export function formatSecurityDateRange(from: string | null | undefined, to: str
 function presentSecurityProvider(value: string | null | undefined): string {
   const provider = value?.trim();
   if (!provider) {
-    return "—";
+    return VALUE_STATE_LABELS.unavailable;
   }
 
   return /fixture|screenshot/i.test(provider) ? "Meridian demo data" : provider;

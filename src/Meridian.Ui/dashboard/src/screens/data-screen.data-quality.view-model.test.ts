@@ -116,7 +116,7 @@ describe("buildDataQualityPanelModel", () => {
     });
 
     expect(model.overallStatus).toBe("Unavailable");
-    expect(model.overallLabel).toBe("Unavailable");
+    expect(model.overallLabel).toBe("Not available");
     expect(model.symbols).toEqual([]);
     expect(model.scoreCards).toEqual([]);
   });
@@ -129,8 +129,8 @@ describe("buildDataQualityPanelModel", () => {
     }));
 
     expect(model.overallStatus).toBe("Unavailable");
-    expect(model.overallLabel).toBe("Unavailable");
-    expect(model.scoreCards[0]?.value).toBe("Unavailable");
+    expect(model.overallLabel).toBe("Not available");
+    expect(model.scoreCards[0]?.value).toBe("Not available");
   });
 
   it("projects every collected symbol worst-first with source evidence and exact gaps", () => {

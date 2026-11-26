@@ -104,7 +104,7 @@ describe("quality headline", () => {
     expect(view.loaded).toBe(false);
     expect(view.statusLabel).toBe("Not loaded");
     expect(view.statusTone).toBe("default");
-    expect(view.scoreLabel).toBe("—");
+    expect(view.scoreLabel).toBe("Not available");
   });
 
   it("restates the server's status rather than deriving one from the score", () => {

@@ -141,7 +141,7 @@ export async function runIntercompanyWorkQueueSmoke({ page, baseUrl, apiResolver
   const guarantees = panel.getByRole("table", { name: "Approved guarantee disclosures" });
   check("Guarantee cap remains distinct from unavailable exposure",
     await guarantees.getByRole("cell", { name: "2500000.00 USD", exact: true }).isVisible()
-    && await guarantees.getByRole("cell", { name: /^Unavailable/ }).isVisible());
+    && await guarantees.getByRole("cell", { name: /^Not available/ }).isVisible());
   for (const viewport of [{ width: 1440, height: 900 }, { width: 1366, height: 768 }]) {
     await page.setViewportSize(viewport);
     await panel.scrollIntoViewIfNeeded();

@@ -88,9 +88,22 @@ export function AmountPassportProvider({ children, enabled, scopeKey, session }:
   </PassportContext.Provider>;
 }
 
-const shortOrigin = {
-  sourced: "Src", calculated: "Calc", overridden: "Ovr", estimated: "Est", unavailable: "?"
+/**
+ * Visible origin tags. Each is a word, never an abbreviation or a "?": a bare "?" beside an amount
+ * read as "uncertain quantity". An unknown origin shows no tag here; the passport itself says
+ * "Origin unknown".
+ */
+export const amountOriginTags = {
+  sourced: "Source", calculated: "Calculated", overridden: "Override", estimated: "Estimate", unavailable: null
 } as const;
+
+const originTagExplanations: Record<keyof typeof amountOriginTags, string> = {
+  sourced: "Source: taken as supplied by the system of record",
+  calculated: "Calculated: derived by Meridian from other amounts",
+  overridden: "Override: replaced by an approved manual override",
+  estimated: "Estimate: a provisional figure pending the source value",
+  unavailable: "Origin unknown"
+};
 
 export function AmountPassportTrigger({ selection, children, ariaLabel, ariaDescribedBy, className, compact }: {
   selection: AmountPassportSelection; children?: ReactNode; ariaLabel?: string; ariaDescribedBy?: string; className?: string; compact?: boolean
@@ -102,19 +115,21 @@ export function AmountPassportTrigger({ selection, children, ariaLabel, ariaDesc
   const origin = reference?.origin ?? selection.origin ?? "unavailable";
   const freshness = reference?.freshness ?? selection.freshness;
   const zero = reference?.isZero ?? selection.zero;
-  const marker = [
-    [shortOrigin[origin], amountPassportStatusLabels[origin]],
-    ...(zero ? [["0", "Zero"]] : []),
-    ...(freshness === "stale" ? [["Stale", "Stale"]] : []),
-    ...(freshness === "blocked" ? [["!", "Blocked"]] : []),
-    ...(selection.restricted ? [["×", "Permission denied"]] : [])
+  const originTag = amountOriginTags[origin];
+  const marker: Array<[string | null, string]> = [
+    [originTag, origin === "unavailable" ? "Origin unknown" : amountPassportStatusLabels[origin]],
+    ...(zero ? [["Zero", "Confirmed zero"]] as Array<[string, string]> : []),
+    ...(freshness === "stale" ? [["Stale", "Stale"]] as Array<[string, string]> : []),
+    ...(freshness === "blocked" ? [["Blocked", "Blocked"]] as Array<[string, string]> : []),
+    ...(selection.restricted ? [["No access", "No access"]] as Array<[string, string]> : [])
   ];
+  const explanation = [originTagExplanations[origin], ...marker.slice(1).map(([, label]) => label)].join(" · ");
   return <>
     <button type="button" aria-haspopup="dialog" className={cn(
       "inline-flex max-w-full items-center gap-1 rounded-sm text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 hover:underline",
       className
     )} aria-label={ariaLabel ?? `Inspect ${selection.label}${selection.displayValue ? ` ${selection.displayValue}` : ""} · ${marker.map(([, label]) => label).join(", ")}`} aria-describedby={ariaDescribedBy}
-      title={`Amount passport · ${marker.map(([, label]) => label).join(", ")}`}
+      title={`Amount passport · ${explanation}`}
       onKeyDown={event => { if (event.key === "Enter" || event.key === " ") event.stopPropagation(); }}
       onClick={event => {
         event.stopPropagation();
@@ -124,7 +139,9 @@ export function AmountPassportTrigger({ selection, children, ariaLabel, ariaDesc
       }}>
       <span aria-hidden="true" className="inline-flex items-center gap-1 whitespace-nowrap font-sans text-xs text-muted-foreground">
         <FileSearch className="size-3.5 shrink-0" />
-        {compact ? null : marker.map(([text, label]) => <span key={label}>{text}</span>)}
+        {compact ? null : marker.filter(([text]) => text !== null).map(([text, label]) => (
+          <span key={label} className="rounded-sm border border-border px-1 leading-4">{text}</span>
+        ))}
       </span>
       {children}
     </button>

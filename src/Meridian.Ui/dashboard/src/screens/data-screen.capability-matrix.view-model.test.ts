@@ -65,7 +65,7 @@ describe("buildCapabilityMatrixModel", () => {
     expect(row.providerId).toBe("alpaca");
     expect(row.cells[0].marks).toBe("S·B·Q·C");
     expect(row.cells[0].supported).toBe(true);
-    expect(row.cells[1].marks).toBe("—");
+    expect(row.cells[1].marks).toBe("Not available");
     expect(row.cells[1].supported).toBe(false);
     expect(row.cells[1].description).toContain("does not declare Bond");
   });

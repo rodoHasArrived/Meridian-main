@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/dialog";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, VALUE_STATE_LABELS } from "@/lib/format";
 import { exportTableQuery } from "@/lib/table-workbench";
 import { cn } from "@/lib/utils";
 import { StrategyRunEquityPathCompare } from "@/screens/strategy-screen.equity-paths";
@@ -358,7 +358,7 @@ function StrategyScreenContent({ data, fundAccountId }: StrategyScreenProps) {
     {
       id: "drawdown", label: "Drawdown amount", align: "right",
       exportValue: run => run.raw.maxDrawdown,
-      render: run => run.raw.maxDrawdown == null ? "Unavailable" : <span title="Retained maximum drawdown amount in the run's denomination; denomination is not supplied by this source.">{formatNumber(run.raw.maxDrawdown)}</span>
+      render: run => run.raw.maxDrawdown == null ? VALUE_STATE_LABELS.unavailable : <span title="Retained maximum drawdown amount in the run's denomination; denomination is not supplied by this source.">{formatNumber(run.raw.maxDrawdown)}</span>
     },
     {
       id: "trend", label: "Run equity trend",

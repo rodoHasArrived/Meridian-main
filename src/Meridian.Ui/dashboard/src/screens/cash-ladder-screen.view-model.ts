@@ -1,4 +1,4 @@
-import { formatCurrency, formatFixed, formatUtcDate } from "@/lib/format";
+import { formatCurrency, formatFixed, formatUtcDate, VALUE_STATE_LABELS } from "@/lib/format";
 import type {
   PortfolioCashLadder,
   PortfolioCashLadderBucket,
@@ -33,7 +33,7 @@ export function formatCashLadderDate(value: string): string {
 
 function formatLadderSigned(value: number, currency: string): string {
   if (!Number.isFinite(value)) {
-    return "—";
+    return VALUE_STATE_LABELS.unavailable;
   }
   const prefix = value > 0 ? "+" : "";
   return `${prefix}${formatCurrency(value, { currency, minimumFractionDigits: 0 })}`;
@@ -307,9 +307,9 @@ function toDrillRow(row: PortfolioCashLadderContribution): CashLadderDrillRow {
     amountLabel: formatLadderSigned(row.amount, row.currency),
     amountTone: row.amount >= 0 ? "success" : "danger",
     currency: row.currency,
-    projectionRunId: row.projectionRunId ? row.projectionRunId.slice(0, 8) : "—",
-    projectionEngineVersion: row.projectionEngineVersion ?? "—",
-    termsVersion: row.termsHash ?? (row.termsVersionId ? row.termsVersionId.slice(0, 8) : "—"),
+    projectionRunId: row.projectionRunId ? row.projectionRunId.slice(0, 8) : VALUE_STATE_LABELS.unavailable,
+    projectionEngineVersion: row.projectionEngineVersion ?? VALUE_STATE_LABELS.unavailable,
+    termsVersion: row.termsHash ?? (row.termsVersionId ? row.termsVersionId.slice(0, 8) : VALUE_STATE_LABELS.unavailable),
     sourceDomain: row.sourceDomain,
     scenarioAdjustment: row.scenarioAdjustment ?? null
   };

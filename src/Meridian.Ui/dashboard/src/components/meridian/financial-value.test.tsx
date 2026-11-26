@@ -116,11 +116,41 @@ describe("FinancialValue", () => {
     expect(screen.getByText("Amount passport unavailable")).toBeInTheDocument();
   });
   it("shows missing and zero distinctly and never infers confirmation", () => {
-    render(<><FinancialValue value={null} reason="No retained source row" /><FinancialValue value="0" currency="USD" /></>);
-    expect(screen.getByText("Not recorded")).toBeInTheDocument();
+    const { container } = render(<><FinancialValue value={null} reason="No retained source row" /><FinancialValue value="0" currency="USD" /></>);
+    expect(screen.getByText("Not available")).toBeInTheDocument();
+    expect(container.querySelector('[data-value-state="unavailable"]')).not.toBeNull();
+    expect(container.querySelector('[data-value-state="zero"]')).not.toBeNull();
     expect(screen.getByText("No retained source row")).toBeInTheDocument();
     expect(screen.getByText("0.00 USD")).toBeInTheDocument();
     expect(screen.getByText("Data condition unavailable")).toBeInTheDocument();
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("renders an unparseable value as Not available, never as 0", () => {
+    const { container } = render(<FinancialValue value="n/a-from-source" currency="EUR" condition="confirmed" />);
+    expect(screen.getByText("Not available")).toBeInTheDocument();
+    expect(container).not.toHaveTextContent("0.00");
+    expect(container.querySelector('[data-value-state="unavailable"]')).not.toBeNull();
+  });
+
+  it("shows n/a for a not-applicable figure with a spelled-out accessible name", () => {
+    const { container } = render(<FinancialValue value={null} currency="EUR" condition="not-applicable" />);
+    expect(container.querySelector('[data-value-state="not-applicable"]')).not.toBeNull();
+    expect(screen.getByText("n/a")).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByText("Not applicable")).toHaveClass("sr-only");
+    expect(container).not.toHaveTextContent("Not available");
+  });
+
+  it("shows a lock and No access for a restricted figure and never leaks the value or a passport", () => {
+    const reference = createAmountPassport(undefined, "Cash", "25").reference;
+    const { container } = render(<FinancialValue value="1250.00" currency="EUR" condition="confirmed" amountPassport={reference}
+      restricted restrictedReason="Fund Beta is outside your scope" />);
+    const restricted = container.querySelector('[data-value-state="restricted"]');
+    expect(restricted).not.toBeNull();
+    expect(restricted).toHaveTextContent("No access");
+    expect(restricted?.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    expect(restricted).toHaveAccessibleDescription("Fund Beta is outside your scope");
+    expect(container).not.toHaveTextContent("1,250");
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 

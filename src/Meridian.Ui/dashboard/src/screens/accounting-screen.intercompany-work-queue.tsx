@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { FormGrid } from "@/components/ui/form";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
-import { formatTimestamp } from "@/lib/format";
+import { formatTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 import type { EntityOperationScope } from "@/types/entity-operations";
 import type { AgreementWorkItem, AgreementWorkItemAction, AgreementWorkQueue, AgreementWorkQueueScope, ObserveAgreementWorkItem, UpdateAgreementWorkItem } from "@/types/intercompany-work-queue";
 import * as api from "@/lib/api/intercompany-work-queue.api";
@@ -170,7 +170,7 @@ function ScopedWorkQueue({ scope, asOf, expiryHorizonDays, services }: {
           { id: "agreement", label: "Agreement", rowHeader: true, render: item => <Link className="underline underline-offset-4" to={agreementLink(item.agreementId)}>{item.code} · {item.name}</Link> },
           { id: "parties", label: "Legal parties", render: item => <>{item.partyOneRole}: {entityName(item.partyOneId)}<br />{item.partyTwoRole}: {entityName(item.partyTwoId)}</> },
           { id: "cap", label: "Declared cap", render: item => item.limitAmount == null ? "Not declared" : `${item.limitAmount} ${item.currency}` },
-          { id: "exposure", label: "Measured exposure", render: item => <>{item.currentExposure == null ? "Unavailable" : `${item.currentExposure} ${item.currency}`}<p className="max-w-[24rem] text-sm text-muted-foreground">{item.exposureUnavailableReason}</p></> },
+          { id: "exposure", label: "Measured exposure", render: item => <>{item.currentExposure == null ? VALUE_STATE_LABELS.unavailable : `${item.currentExposure} ${item.currency}`}<p className="max-w-[24rem] text-sm text-muted-foreground">{item.exposureUnavailableReason}</p></> },
           { id: "dates", label: "Legal coverage", render: item => <>{item.effectiveFrom} – {item.effectiveTo ?? "open ended"}<br />{item.effectiveStatus}{item.terminationEffectiveDate ? ` · terminated ${item.terminationEffectiveDate}` : ""}</> },
           { id: "evidence", label: "Approved evidence", render: item => <TechnicalDetails label={`Version ${item.agreementVersion}`}><p className="text-sm">Beneficiary: {item.beneficiaryReference ?? "Not declared"}</p><p className="break-all text-sm">{item.payloadHash}</p><p className="text-sm">Expiry is exclusive.</p></TechnicalDetails> }
         ]} />

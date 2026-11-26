@@ -9,7 +9,7 @@ import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "
 import { TrialBalanceTable } from "@/components/accounting";
 import { LedgerAccountRunningBalancePanel } from "@/components/accounting/LedgerAccountRunningBalancePanel";
 import { cn } from "@/lib/utils";
-import { formatNumber, formatCurrency } from "@/lib/format";
+import { formatCurrency, formatUnknownCurrencyAmount } from "@/lib/format";
 import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
 import type { FinancialRecordExplorerSavedView } from "@/components/meridian/financial-record-explorer";
 import { useAccountingPostedLedgerViewModel } from "@/screens/accounting-screen.posted-ledger.view-model";
@@ -214,7 +214,7 @@ export function AccountingPostedLedgerSection({ workstream }: { workstream: Acco
                       financialAccountId={selectedTrialBalanceRow.financialAccountId}
                       dimensions={selectedTrialBalanceRow.dimensions ?? null}
                       formatAmount={(value) =>
-                        view.baseCurrency ? formatCurrency(value, { currency: view.baseCurrency, minimumFractionDigits: 0 }) : `${formatNumber(value)} (currency unavailable)`
+                        view.baseCurrency ? formatCurrency(value, { currency: view.baseCurrency, minimumFractionDigits: 0 }) : formatUnknownCurrencyAmount(value)
                       }
                     />
                   ) : null}

@@ -52,7 +52,7 @@ import type {
   SecureReportingDistributionCapabilityCatalog,
   SecureReportingIssuedAccessGrant
 } from "@/types/reporting-governance";
-import { formatDecimal, formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
+import { formatDecimal, formatTimestamp as formatDisplayTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 
 type ResourcePhase = "loading" | "ready" | "unavailable";
 
@@ -1352,7 +1352,7 @@ function DistributionPanel({
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="font-semibold text-foreground">{transport.displayName}</span>
                     <Badge variant={transport.isReady ? "success" : "warning"}>
-                      {transport.isReady ? "Ready" : "Unavailable"}
+                      {transport.isReady ? "Ready" : VALUE_STATE_LABELS.unavailable}
                     </Badge>
                   </div>
                   <div className="mt-1 font-mono text-xs text-muted-foreground">
@@ -1808,7 +1808,7 @@ function formatTimestamp(value: string): string {
 }
 
 function formatBytes(value: number): string {
-  if (!Number.isFinite(value) || value < 0) return "Unavailable";
+  if (!Number.isFinite(value) || value < 0) return VALUE_STATE_LABELS.unavailable;
   if (value < 1024) return `${value} B`;
   if (value < 1024 * 1024) return `${formatDecimal(value / 1024, 1)} KB`;
   return `${formatDecimal(value / (1024 * 1024), 1)} MB`;

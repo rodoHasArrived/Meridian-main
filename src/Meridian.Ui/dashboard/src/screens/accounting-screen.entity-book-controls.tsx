@@ -8,6 +8,7 @@ import { entityOperationEndpoints as endpoints } from "@/lib/api/entity-operatio
 import type { BookControlPreflight, BookControlProfile, EntityOperationScope } from "@/types/entity-operations";
 import { EntityOperationTable, MutationFeedback, OperationError, OperationField, useEntityData, useEntityMutation } from "./accounting-screen.entity-operations.shared";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 export function EntityBookControls({ scope }: { scope: EntityOperationScope }) {
   const path = endpoints.controls(scope.book.ledgerBookId);
   const profile = useEntityData<BookControlProfile>(scope.capabilities.canManageLedger ? path : null);
@@ -85,6 +86,6 @@ function ControlledCloseAuthorization({ scope }: { scope: EntityOperationScope }
       <OperationField label="Controlled-close reason" value={reason} onChange={setReason} required />
     </FormGrid><Button type="submit" variant="outline">Retain controlled-close authorization</Button></fieldset></form>
     <MutationFeedback state={mutation} />
-    {receipt ? <div className="space-y-2 break-all text-xs"><p>Authorization {receipt.authorizationId} · {receipt.authorizedBy}</p><p>Draft fingerprint {receipt.postingFingerprint}</p><p>Authorized journal {receipt.journalEntryId || "Unavailable"} · version {receipt.draftVersion ?? "Unavailable"}</p>{receiptJournalPath ? <Button asChild variant="ghost" size="sm" className="underline underline-offset-4"><Link to={receiptJournalPath}>Review authorized journal</Link></Button> : <p role="alert">Authorized journal identity is unavailable. Inspect the retained authorization before continuing.</p>}</div> : null}
+    {receipt ? <div className="space-y-2 break-all text-xs"><p>Authorization {receipt.authorizationId} · {receipt.authorizedBy}</p><p>Draft fingerprint {receipt.postingFingerprint}</p><p>Authorized journal {receipt.journalEntryId || VALUE_STATE_LABELS.unavailable} · version {receipt.draftVersion ?? VALUE_STATE_LABELS.unavailable}</p>{receiptJournalPath ? <Button asChild variant="ghost" size="sm" className="underline underline-offset-4"><Link to={receiptJournalPath}>Review authorized journal</Link></Button> : <p role="alert">Authorized journal identity is unavailable. Inspect the retained authorization before continuing.</p>}</div> : null}
   </TechnicalDetails>;
 }

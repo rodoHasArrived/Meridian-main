@@ -12,7 +12,7 @@ import type {
   ExecutionBlotterSnapshot,
   ExecutionGatewayHealth
 } from "@/types/execution-blotter.types";
-import { formatMoney, formatPnl, formatQuantity } from "@/lib/format";
+import { formatMoney, formatPnl, formatQuantity, VALUE_STATE_LABELS } from "@/lib/format";
 
 export type ExecutionBlotterTone = "default" | "success" | "warning" | "danger";
 
@@ -91,7 +91,7 @@ export function buildExecutionBlotterMetrics(
     {
       id: "gateway",
       label: "Execution gateway",
-      value: health === null ? "—" : health.brokerName,
+      value: health === null ? VALUE_STATE_LABELS.unavailable : health.brokerName,
       detail: health === null
         ? "Gateway health has not loaded."
         : `${health.mode}${health.selectedGatewayId ? ` · ${health.selectedGatewayId}` : ""} · ${health.isAvailable ? "available" : "unavailable"}`,
@@ -100,21 +100,21 @@ export function buildExecutionBlotterMetrics(
     {
       id: "cash",
       label: "Cash",
-      value: account === null ? "—" : formatMoney(account.cash, { context: "trading", decimals: 2 }),
+      value: account === null ? VALUE_STATE_LABELS.unavailable : formatMoney(account.cash, { context: "trading", decimals: 2 }),
       detail: account === null ? "Account snapshot has not loaded." : `Portfolio value ${formatMoney(account.portfolioValue, { context: "trading", decimals: 2 })}`,
       tone: "default"
     },
     {
       id: "unrealised",
       label: "Unrealised P&L",
-      value: account === null ? "—" : formatPnl(account.unrealisedPnl),
+      value: account === null ? VALUE_STATE_LABELS.unavailable : formatPnl(account.unrealisedPnl),
       detail: account === null ? "Account snapshot has not loaded." : `Realised ${formatPnl(account.realisedPnl)}`,
       tone: account === null ? "default" : pnlTone(account.unrealisedPnl)
     },
     {
       id: "positions",
       label: "Open positions",
-      value: account === null ? "—" : String(account.positionCount),
+      value: account === null ? VALUE_STATE_LABELS.unavailable : String(account.positionCount),
       detail: account === null ? "Account snapshot has not loaded." : `As of ${account.asOf}`,
       tone: "default"
     }

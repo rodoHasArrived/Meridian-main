@@ -19,7 +19,8 @@ import { cn } from "@/lib/utils";
 import { workstationRunLedgerExportEndpoint } from "@/lib/workstation-endpoints";
 import {
   buildAccountingLedgerJournalEvidenceViewState,
-  buildAccountingTrialBalanceViewState
+  buildAccountingTrialBalanceViewState,
+  type AccountingBasisBridgeViewState
 } from "@/screens/accounting-screen.view-model";
 import {
   DEFAULT_ACCOUNTING_BASIS,
@@ -432,31 +433,7 @@ export function StrategyRunLedgerScreen() {
             <CardDescription>{trialBalanceView.basisBridge.description}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div role="region" aria-label={trialBalanceView.basisBridge.tableLabel}>
-              {trialBalanceView.basisBridge.hasRows ? (
-                <div className="space-y-2">
-                  {trialBalanceView.basisBridge.rows.map((row) => (
-                    <div key={row.rowId} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2" aria-label={row.ariaLabel}>
-                      <div className="flex items-start justify-between gap-3">
-                        <span className="min-w-0">
-                          <span className="block truncate text-sm font-semibold text-foreground">{row.accountLabel}</span>
-                          <span className="mt-1 block text-xs text-muted-foreground">{row.sourceLabel}</span>
-                        </span>
-                        <Badge variant={row.varianceTone}>{row.varianceLabel}</Badge>
-                      </div>
-                      <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                        <span className="font-mono tabular-nums">Primary {row.primaryBalanceLabel}</span>
-                        <span className="font-mono tabular-nums">{row.comparisonBalanceLabel}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm leading-6 text-muted-foreground">
-                  {trialBalanceView.basisBridge.emptyText}
-                </p>
-              )}
-            </div>
+            <BasisBridgeRows bridge={trialBalanceView.basisBridge} />
           </CardContent>
         </Card>
         <Card className="panel-surface">
@@ -501,5 +478,63 @@ export function StrategyRunLedgerScreen() {
         </Card>
       </div>
     </FinancialRecordExplorerShell>
+  );
+}
+
+/**
+ * Bridge rows plus a totals footer. One-sided accounts (posted on one basis only) are shown as
+ * "not compared" rather than as a variance, are left out of the variance total, and are counted
+ * in the footer; selecting the count filters the list to them.
+ */
+function BasisBridgeRows({ bridge }: { bridge: AccountingBasisBridgeViewState }) {
+  const [oneSidedOnly, setOneSidedOnly] = useState(false);
+  const summary = bridge.summary;
+  const filtering = oneSidedOnly && (summary?.oneSidedCount ?? 0) > 0;
+  const rows = filtering ? bridge.rows.filter((row) => row.comparison !== "compared") : bridge.rows;
+  return (
+    <div role="region" aria-label={bridge.tableLabel}>
+      {bridge.hasRows ? (
+        <div className="space-y-2">
+          {rows.map((row) => (
+            <div key={row.rowId} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2" aria-label={row.ariaLabel}>
+              <div className="flex items-start justify-between gap-3">
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold text-foreground">{row.accountLabel}</span>
+                  <span className="mt-1 block text-xs text-muted-foreground">{row.sourceLabel}</span>
+                </span>
+                {row.comparison === "compared"
+                  ? <Badge variant={row.varianceTone}>{row.varianceLabel}</Badge>
+                  : <span className="rounded-sm border border-dashed border-border px-1.5 py-0.5 text-xs text-muted-foreground">{row.varianceLabel}</span>}
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                <span className="font-mono tabular-nums">Primary {row.primaryBalanceLabel}</span>
+                <span className="font-mono tabular-nums">{row.comparisonBalanceLabel}</span>
+              </div>
+            </div>
+          ))}
+          {summary ? (
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/70 pt-2 text-xs text-muted-foreground">
+              <span>
+                {summary.countsLabel}
+                {summary.oneSidedCount > 0 ? (
+                  <>
+                    {" "}
+                    <button type="button" className="underline decoration-dotted underline-offset-4" aria-pressed={filtering}
+                      onClick={() => setOneSidedOnly((value) => !value)}>
+                      {filtering ? "Show all accounts" : `Show ${summary.oneSidedLabel}`}
+                    </button>
+                  </>
+                ) : null}
+              </span>
+              <span className="font-mono tabular-nums">Variance (compared accounts) {summary.varianceTotalLabel}</span>
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm leading-6 text-muted-foreground">
+          {bridge.emptyText}
+        </p>
+      )}
+    </div>
   );
 }

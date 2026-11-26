@@ -11,6 +11,7 @@ import { ApiError, describeApiError } from "@/lib/api-errors";
 import { createCanonicalAmortizationDraft, prepareCanonicalAmortization, type CanonicalAmortizationDraft, type CanonicalAmortizationPreview, type CanonicalAmortizationRequest } from "@/lib/api/canonical-amortization.api";
 import type { AccountingBasisKind } from "@/types";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 interface Props { bookId: string; periodId: string | null; periodVersion: number | null; fundProfileId: string; accountingBasis?: AccountingBasisKind; active?: boolean }
 interface Form { taxLotRecordId: string; asOfDate: string; assetAccountPath: string; incomeAccountPath: string; securityEvidence: RetainedEvidenceFieldsValue; eventEvidence: RetainedEvidenceFieldsValue; scheduleEndDate: string; scheduleFrequency: "Monthly" | "Quarterly" | "Annual"; remaining: boolean; worst: boolean }
 const fields = [["taxLotRecordId", "Canonical tax lot ID"], ["asOfDate", "Amortization occurrence date", "date"], ["assetAccountPath", "Amortization asset account path"], ["incomeAccountPath", "Amortization income account path"]] as const;
@@ -110,7 +111,7 @@ function ScopedAmortizationPanel({ bookId, periodId, periodVersion, fundProfileI
         {preview ? <section aria-label="Amortization occurrence review" className="space-y-3">
           <h3 className="text-sm font-semibold">Review calculated occurrence</h3>
           <p className="text-sm">Lot {preview.result.instruction.expectedLot.lotId} · version {preview.result.instruction.expectedLot.version} · {preview.result.instruction.calculationVersion}</p>
-          <p className="text-sm">Method: {preview.result.instruction.expectedLot.acquisition.faceValueTerms?.amortizationMethod ?? "Unavailable"} · Annual yield: {preview.result.instruction.expectedLot.acquisition.faceValueTerms?.effectiveYield ?? "Not required by retained method"}</p>
+          <p className="text-sm">Method: {preview.result.instruction.expectedLot.acquisition.faceValueTerms?.amortizationMethod ?? VALUE_STATE_LABELS.unavailable} · Annual yield: {preview.result.instruction.expectedLot.acquisition.faceValueTerms?.effectiveYield ?? "Not required by retained method"}</p>
           <dl className="grid grid-cols-2 gap-2 text-sm">{Object.entries(preview.result.projection).map(([key, amount]) => <div key={key}><dt>{({ transactionCostBasis: "Transaction basis after", functionalCostBasis: "Functional basis after", transactionMovement: "Transaction movement", functionalMovement: "Functional movement" } as Record<string, string>)[key]}</dt><dd className="font-mono">{amount}</dd></div>)}</dl>
           <DenseDataTable
             ariaLabel="Proposed amortization journal"

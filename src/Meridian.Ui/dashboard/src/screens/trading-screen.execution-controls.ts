@@ -1,5 +1,5 @@
 import { formatEnumLabel } from "@/lib/display-labels";
-import { formatTimestamp } from "@/lib/format";
+import { formatTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 import type {
   ExecutionCircuitBreakerActivationResponse,
   ExecutionControlSnapshot,
@@ -45,7 +45,7 @@ export function buildExecutionControlsPanel(snapshot: ExecutionControlSnapshot):
       {
         id: "as-of",
         label: "As of",
-        value: Number.isFinite(Date.parse(snapshot.asOf)) ? formatTimestamp(snapshot.asOf, { precision: "second" }) : "Unavailable"
+        value: Number.isFinite(Date.parse(snapshot.asOf)) ? formatTimestamp(snapshot.asOf, { precision: "second" }) : VALUE_STATE_LABELS.unavailable
       }
     ]
   };

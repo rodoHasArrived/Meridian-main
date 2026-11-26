@@ -583,6 +583,11 @@ policy. `ClosePeriodPlanConfigurationDto.Preparation` preserves server-owned tem
 authoritative period bounds; public configuration JSON cannot supply that lineage. Explicit empty
 task dependencies remain empty through `CloseTaskConfigurationDto.HasExplicitDependencies`.
 
+`AccountingReportPackageRequestDto` carries the package's financial inputs (`BeginningCapital`,
+`Contributions`, `Distributions`, `RealizedGainLoss`, `Nav`) as nullable decimals and `Currency` as a
+nullable code, with no defaults. An omitted or null input means "not supplied", never 0 or USD; an
+explicit 0 is a supplied value. The builder rejects a request that leaves any of them out.
+
 `TradingBrokerageRecoveryDtos` extends shared Trading readiness with nullable broker balances,
 currency, observation/attempt/success timestamps, completeness and blocking reasons, plus affected
 account-scoped strategy runs. Existing execution-reconciliation DTOs remain the discrepancy source.

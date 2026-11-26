@@ -89,5 +89,8 @@
     "src/screens/statement-import-preview.tsx": 3,
     "src/screens/strategy-screen.tsx": 1
   },
-  "rawSelects": {}
+  "rawSelects": {},
+  "prefixedCurrency": {},
+  "assumedMoneyDefaults": {},
+  "placeholderVocabulary": {}
 }

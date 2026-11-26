@@ -7,6 +7,7 @@ import { formatTaxAmount, formatTaxDecimal } from "@/lib/ledger-tax-results-form
 import { UI_API_ROUTES } from "@/lib/ui-api-routes.generated";
 import { routeWithParam } from "@/lib/workstation-endpoints";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 interface PaperCutoffEvidence {
   sessionId: string;
   accountId: string;
@@ -68,7 +69,7 @@ export function PaperReconciliationPanel({ sessionId }: { sessionId: string }) {
       <dl className="grid gap-2 text-sm sm:grid-cols-2">
         {([["Journal cash", evidence.journalCash], ["Portfolio cash", evidence.portfolioCash]] as const).map(([label, amount]) =>
           <div key={label}><dt className="text-muted-foreground">{label}</dt>
-            <dd className="font-mono">{!evidence.currency ? "Unavailable" : formatTaxAmount(amount, evidence.currency)}</dd>
+            <dd className="font-mono">{!evidence.currency ? VALUE_STATE_LABELS.unavailable : formatTaxAmount(amount, evidence.currency)}</dd>
           </div>)}
       </dl>
       {evidence.breaks.length ? <ul className="space-y-1 text-sm">{evidence.breaks.map((item, index) =>

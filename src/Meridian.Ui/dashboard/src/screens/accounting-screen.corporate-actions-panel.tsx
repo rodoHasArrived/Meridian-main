@@ -8,6 +8,7 @@ import type {
   CorporateActionsViewState,
 } from "@/screens/accounting-screen.view-model";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 const corporateActionColumns: DenseDataTableColumn<CorporateActionRowViewModel>[] = [
   {
     id: "eventType",
@@ -21,7 +22,7 @@ const corporateActionColumns: DenseDataTableColumn<CorporateActionRowViewModel>[
   },
   { id: "exDate", label: "Ex-date", render: (row) => <span className="font-mono text-muted-foreground">{row.exDateLabel}</span> },
   { id: "payDate", label: "Pay date", render: (row) => <span className="font-mono text-muted-foreground">{row.payDateLabel}</span> },
-  { id: "lifecycle", label: "Lifecycle", render: (row) => <Badge variant={row.lifecycleState ? "outline" : "warning"}>{row.lifecycleState ?? "Not supplied"}</Badge> },
+  { id: "lifecycle", label: "Lifecycle", render: (row) => <Badge variant={row.lifecycleState ? "outline" : "warning"}>{row.lifecycleState ?? VALUE_STATE_LABELS.unavailable}</Badge> },
   { id: "amount", label: "Amount", align: "right", render: (row) => <span className="font-mono tabular-nums text-foreground">{row.amountLabel}</span> }
 ];
 

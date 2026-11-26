@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { formatAmountWithCode, formatCurrency as formatCurrencyAmount, formatNumber, pluralizeCount } from "@/lib/format";
+import { formatAmountWithCode, formatCurrency as formatCurrencyAmount, formatNumber, pluralizeCount, VALUE_STATE_LABELS } from "@/lib/format";
 import { formatDate, formatDateOnly } from "@/screens/operations-continuity-screen.date-format";
 import { operationsCaseVarianceLabel } from "./reconciliation-case-values";
 import {
@@ -1603,7 +1603,7 @@ function buildNextActionStatus(
   action: OperationsNextAction | null
 ): { label: string; tone: OperationsContinuityTone } {
   if (!action) {
-    return { label: "Unavailable", tone: "neutral" };
+    return { label: VALUE_STATE_LABELS.unavailable, tone: "neutral" };
   }
 
   switch (gateStatus) {
@@ -1726,7 +1726,7 @@ function buildReconciliationLaneRows(lanes: OperationsReconciliationLaneSummary[
         statusTone: lane.isReady ? "ready" : evidenceStatusTone(lane.status),
         breakCountLabel: lane.breakCount === 0 ? "No open breaks" : `${lane.breakCount} open break${lane.breakCount === 1 ? "" : "s"}`,
         summary: workstreamCopy(lane.summary?.trim() || "No reconciliation workstream summary returned."),
-        technicalDetails: [{ label: "Source summary", value: lane.summary || "Not recorded" }],
+        technicalDetails: [{ label: "Source summary", value: lane.summary || VALUE_STATE_LABELS.unavailable }],
         evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
         evidenceHref,
         evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local supporting record link",
@@ -1784,7 +1784,7 @@ function buildOperationsDashboardViewModel(
     statusTone: dashboard.isReady ? "ready" : evidenceStatusTone(dashboard.status),
     stageLabel: `Core flow: ${dashboard.stage || "Stage pending"}`,
     summaryLabel: workstreamCopy(dashboard.summary?.trim() || "No operational dashboard summary returned."),
-    technicalDetails: [{ label: "Source summary", value: dashboard.summary || "Not recorded" }, { label: "Source required actions", value: requiredActions.join("; ") }].filter((field) => workstreamCopy(field.value) !== field.value),
+    technicalDetails: [{ label: "Source summary", value: dashboard.summary || VALUE_STATE_LABELS.unavailable }, { label: "Source required actions", value: requiredActions.join("; ") }].filter((field) => workstreamCopy(field.value) !== field.value),
     metricCountLabel: `${dashboard.readyMetricCount}/${dashboard.totalMetricCount} metrics ready`,
     evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} retained evidence link${evidenceCount === 1 ? "" : "s"}`,
     requiredActionsLabel: requiredActions.length === 0 ? "No required actions" : workstreamCopy(requiredActions.join("; ")),
@@ -1804,7 +1804,7 @@ function mapDashboardMetricRow(metric: OperationsDashboardSummary["metrics"][num
     id: metric.metricId,
     label: metric.label || splitEnumLabel(metric.metricId),
     valueLabel: workstreamCopy(metric.value?.trim() || "Value pending"),
-    technicalDetails: [{ label: "Source value", value: metric.value || "Not recorded" }, { label: "Source detail", value: metric.detail || "Not recorded" }, { label: "Source required actions", value: actions.join("; ") || "None returned" }].filter((field) => workstreamCopy(field.value) !== field.value),
+    technicalDetails: [{ label: "Source value", value: metric.value || VALUE_STATE_LABELS.unavailable }, { label: "Source detail", value: metric.detail || VALUE_STATE_LABELS.unavailable }, { label: "Source required actions", value: actions.join("; ") || "None returned" }].filter((field) => workstreamCopy(field.value) !== field.value),
     statusLabel: evidenceStatusLabel(metric.status),
     statusTone: evidenceStatusTone(metric.status),
     detail: workstreamCopy(metric.detail?.trim() || "No metric detail returned."),
@@ -2408,7 +2408,7 @@ function mapCloseCalendarErrorQueueRow(
     kindLabel: "Close calendar",
     title: `${scopeLabel}: Close calendar unavailable`,
     detail: "Close-calendar view could not be loaded from the shared operations API.",
-    statusLabel: "Unavailable",
+    statusLabel: VALUE_STATE_LABELS.unavailable,
     statusTone: "blocked",
     ownerLabel: "Operations control",
     dueLabel: "Next due task unavailable",
@@ -2526,7 +2526,7 @@ function mapCloseCockpitErrorQueueRow(
     kindLabel: "Private-capital close cockpit",
     title: `${scopeLabel}: Private-capital close cockpit unavailable`,
     detail: "Private-capital control-workstream and NAV-support view could not be loaded from the shared operations API.",
-    statusLabel: "Unavailable",
+    statusLabel: VALUE_STATE_LABELS.unavailable,
     statusTone: "blocked",
     ownerLabel: "Operations control",
     dueLabel: "Close cockpit unavailable",
@@ -2756,7 +2756,7 @@ function buildBreakCaseRows(
         id: breakCase.breakId,
         caseLabel,
         categoryLabel: breakCase.symbol?.trim() || "Reconciliation check",
-        technicalDetails: [{ label: "Break ID", value: breakCase.breakId }, { label: "Check ID", value: breakCase.checkId || "Not recorded" }, { label: "Security ID", value: breakCase.securityId || "Not recorded" }],
+        technicalDetails: [{ label: "Break ID", value: breakCase.breakId }, { label: "Check ID", value: breakCase.checkId || VALUE_STATE_LABELS.unavailable }, { label: "Security ID", value: breakCase.securityId || VALUE_STATE_LABELS.unavailable }],
         statusLabel,
         statusTone: breakStatusTone(breakCase.status),
         severityLabel: breakCase.severity?.trim() || "Review",
@@ -3233,7 +3233,7 @@ function buildCloseCalendarViewModel(
   if (!calendar) {
     return {
       title: "Close calendar",
-      statusLabel: loading ? "Loading" : error ? "Unavailable" : "No calendar",
+      statusLabel: loading ? "Loading" : error ? VALUE_STATE_LABELS.unavailable : "No calendar",
       statusTone: error ? "blocked" : "neutral",
       summaryLabel: loading
         ? "Loading close calendar tasks from the shared operations API."
@@ -3354,7 +3354,7 @@ function buildCloseCockpitViewModel(
   if (!cockpit) {
     return {
       title: "Private-capital close cockpit",
-      statusLabel: loading ? "Loading" : error ? "Unavailable" : "No cockpit",
+      statusLabel: loading ? "Loading" : error ? VALUE_STATE_LABELS.unavailable : "No cockpit",
       statusTone: error ? "blocked" : "neutral",
       summaryLabel: loading
         ? "Loading private-capital close evidence from the shared operations API."
@@ -3441,10 +3441,10 @@ function buildCloseCockpitViewModel(
     summaryLabel: `${cockpit.readyLaneCount}/${cockpit.lanes.length} workstreams ready across ${cockpit.workflowCount} close workflow${cockpit.workflowCount === 1 ? "" : "s"}.`,
     scopeLabel: buildCloseCockpitScopeLabel(cockpit),
     technicalDetails: [
-      { label: "Fund profile ID", value: cockpit.fundProfileId ?? "Not recorded" },
-      { label: "Ledger book ID", value: cockpit.ledgerBookId ?? "Not recorded" },
-      { label: "Fund account ID", value: cockpit.fundAccountId ?? "Not recorded" },
-      { label: "Entity ID", value: cockpit.entityId ?? "Not recorded" }
+      { label: "Fund profile ID", value: cockpit.fundProfileId ?? VALUE_STATE_LABELS.unavailable },
+      { label: "Ledger book ID", value: cockpit.ledgerBookId ?? VALUE_STATE_LABELS.unavailable },
+      { label: "Fund account ID", value: cockpit.fundAccountId ?? VALUE_STATE_LABELS.unavailable },
+      { label: "Entity ID", value: cockpit.entityId ?? VALUE_STATE_LABELS.unavailable }
     ],
     freshnessLabel: `Projected ${formatDate(cockpit.projectedAtUtc)}`,
     readinessLabel: `${formatPercent(cockpit.readinessScore)} readiness`,
@@ -3509,7 +3509,7 @@ function mapCloseCockpitLaneRow(lane: PrivateCapitalCloseCockpitLane): Operation
     statusLabel: evidenceStatusLabel(lane.status),
     statusTone: lane.isReady ? "ready" : evidenceStatusTone(lane.status),
     summary: workstreamCopy(lane.summary?.trim() || "No workstream summary returned."),
-    technicalDetails: [{ label: "Source summary", value: lane.summary || "Not recorded" }],
+    technicalDetails: [{ label: "Source summary", value: lane.summary || VALUE_STATE_LABELS.unavailable }],
     evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
     routeHref: href,
     routeLabel: href ? "Open workstream" : "No local route",
@@ -3589,11 +3589,12 @@ function mapNavSupportPackageRow(packageDto: PrivateCapitalNavSupportPackage): O
   const actions = (packageDto.requiredActions ?? [])
     .map((action) => action.trim())
     .filter(Boolean);
-  // ISO codes render symbol-style ("$1,250,000.00"); any other code keeps the amount with the code as a suffix.
-  const shadowNavCurrency = packageDto.currency ?? "USD";
-  const shadowNavAmount = /^[A-Z]{3}$/.test(shadowNavCurrency)
-    ? formatCurrencyAmount(packageDto.shadowNav, { currency: shadowNavCurrency, fallback: "Not recorded" })
-    : formatAmountWithCode(packageDto.shadowNav, shadowNavCurrency, { minimumFractionDigits: 0, maximumFractionDigits: 4, fallback: "Not recorded" });
+  // ISO codes render symbol-style ("$1,250,000.00"); any other code keeps the amount with the code as
+  // a suffix, and a package with no currency renders the bare amount rather than assuming USD.
+  const shadowNavCurrency = packageDto.currency?.trim() || null;
+  const shadowNavAmount = shadowNavCurrency && /^[A-Z]{3}$/.test(shadowNavCurrency)
+    ? formatCurrencyAmount(packageDto.shadowNav, { currency: shadowNavCurrency, fallback: VALUE_STATE_LABELS.unavailable })
+    : formatAmountWithCode(packageDto.shadowNav, shadowNavCurrency, { minimumFractionDigits: 0, maximumFractionDigits: 4, fallback: VALUE_STATE_LABELS.unavailable });
 
   return {
     id: packageDto.packageId,
@@ -3792,7 +3793,7 @@ function buildAccountingRecordSummaryViewModel(
   return {
     title: "Accounting record",
     summaryLabel: `${summary.completeCategoryCount}/${summary.requiredCategoryCount} evidence categories complete.`,
-    technicalDetails: [{ label: "Accounting record ID", value: summary.recordId || "Not recorded" }, { label: "Source summary", value: summary.summary?.trim() || "Not recorded" }],
+    technicalDetails: [{ label: "Accounting record ID", value: summary.recordId || VALUE_STATE_LABELS.unavailable }, { label: "Source summary", value: summary.summary?.trim() || VALUE_STATE_LABELS.unavailable }],
     statusLabel: summary.isAuditReady ? "Audit ready" : "Review required",
     statusTone: summary.isAuditReady ? "ready" : "review",
     recordIdLabel: summary.recordId || "Record id pending",
@@ -4056,7 +4057,7 @@ function formatOperatorDisplayName(value: string | null): string {
 }
 
 function formatDecimal(value: number | null | undefined): string {
-  return formatNumber(value, { maximumFractionDigits: 4, fallback: "Not recorded" });
+  return formatNumber(value, { maximumFractionDigits: 4, fallback: VALUE_STATE_LABELS.unavailable });
 }
 
 /** Input is already in percent units (readiness scores are 0-100). For fractions use `formatRatioAsPercent`. */

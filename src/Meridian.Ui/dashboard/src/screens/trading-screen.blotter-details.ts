@@ -11,6 +11,7 @@ import type {
 } from "@/screens/trading-screen.view-model";
 import type { TradingRiskState } from "@/types";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 export function buildPositionDetail(
   row: TradingPositionRow,
   risk: TradingRiskState | null
@@ -36,7 +37,7 @@ export function buildPositionDetail(
       { label: "Day P&L", value: row.dayPnl, tone: row.dayPnlTone },
       { label: "Unrealized P&L", value: row.unrealizedPnl, tone: row.unrealizedPnlTone },
       { label: "Exposure", value: row.exposure, tone: "default" },
-      { label: "Risk", value: risk?.state ?? "Unavailable", tone: riskFieldTone(risk?.state) },
+      { label: "Risk", value: risk?.state ?? VALUE_STATE_LABELS.unavailable, tone: riskFieldTone(risk?.state) },
       { label: "Guardrails", value: guardrailCount > 0 ? `${guardrailCount} active` : "None active", tone: guardrailCount > 0 ? "warning" : "success" }
     ],
     // The positions table always shows these; its other columns can be hidden.
@@ -62,7 +63,7 @@ export function buildOrderDetail(row: TradingOrderRow, provider: string | null):
       { label: "Limit", value: row.limitPrice || "Market", tone: "muted" },
       { label: "Status", value: row.status, tone: row.statusTone },
       { label: "Submitted", value: row.submittedAt, tone: "muted" },
-      { label: "Provider", value: provider ?? "Unavailable", tone: "muted" }
+      { label: "Provider", value: provider ?? VALUE_STATE_LABELS.unavailable, tone: "muted" }
     ],
     // Quantity and limit columns can be hidden, so the pane keeps them.
     shownInRow: ["Symbol", "Side", "Type", "Status", "Submitted"]
@@ -87,7 +88,7 @@ export function buildFillDetail(row: TradingFillRow, provider: string | null): T
       { label: "Price", value: row.price, tone: "default" },
       { label: "Venue", value: row.venue, tone: "muted" },
       { label: "Timestamp", value: row.timestamp, tone: "muted" },
-      { label: "Provider", value: provider ?? "Unavailable", tone: "muted" }
+      { label: "Provider", value: provider ?? VALUE_STATE_LABELS.unavailable, tone: "muted" }
     ],
     shownInRow: ["Order", "Symbol", "Side", "Quantity", "Price", "Venue", "Timestamp"]
   };

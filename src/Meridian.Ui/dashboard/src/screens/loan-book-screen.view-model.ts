@@ -16,7 +16,7 @@
  *    maturity or accrual date is a wrong fact rather than a cosmetic one.
  */
 
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { formatCurrency, formatNumber, VALUE_STATE_LABELS } from "@/lib/format";
 import type { LoanCurrency, LoanStatusName, LoanPortfolioSummary, LoanSummary } from "@/types/direct-lending.types";
 
 export type LoanBookTone = "default" | "success" | "warning" | "danger";
@@ -64,7 +64,7 @@ export interface LoanBookViewModel {
   statusAnnouncement: string;
 }
 
-const NOT_REPORTED = "—";
+const NOT_REPORTED = VALUE_STATE_LABELS.unavailable;
 
 /**
  * Statuses that mean the facility needs attention. Normalize numeric host enums and

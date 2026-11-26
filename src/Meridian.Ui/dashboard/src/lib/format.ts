@@ -22,7 +22,8 @@ import { formatExactMagnitude, parseExactDecimal, type MoneyValue } from "@/lib/
 export type { MoneyValue } from "@/lib/exact-decimal";
 
 const FORMAT_LOCALE = "en-US";
-const DEFAULT_FALLBACK = "—";
+/** Rendered for a missing value: the same "Not available" as `VALUE_STATE_LABELS.unavailable`, never "—". */
+const DEFAULT_FALLBACK = "Not available";
 
 export type NullableNumber = number | null | undefined;
 
@@ -158,7 +159,13 @@ export function formatCurrency(value: NullableNumber, options: CurrencyFormatOpt
   }
 }
 
-/** Dollar amount with a hand-built prefix, e.g. "$1,234.56" / "-$1,234.56". */
+/**
+ * Dollar amount with a hand-built prefix, e.g. "$1,234.56" / "-$1,234.56".
+ *
+ * @deprecated It always prints "$", whatever currency the figure is in. Use
+ * `formatCurrencyAmount(value, currency)`, which takes the currency as a required argument and
+ * never assumes USD. The `prefixedCurrency` design-system ratchet counts the remaining callers.
+ */
 export function formatPrefixedCurrency(value: NullableNumber, options: NumberFormatOptions = {}): string {
   const { fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
@@ -169,7 +176,12 @@ export function formatPrefixedCurrency(value: NullableNumber, options: NumberFor
   return `${prefix}${formatNumber(Math.abs(value), { ...options, signed: false })}`;
 }
 
-/** Explicitly signed dollar amount, e.g. "+$1,234" / "-$1,234". */
+/**
+ * Explicitly signed dollar amount, e.g. "+$1,234" / "-$1,234".
+ *
+ * @deprecated It always prints "$". Use `formatCurrencyAmount(value, currency, { signed: true })`.
+ * Counted by the `prefixedCurrency` design-system ratchet.
+ */
 export function formatSignedCurrency(value: NullableNumber, options: SignedCurrencyFormatOptions = {}): string {
   const { zeroLabel, fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
@@ -184,7 +196,12 @@ export function formatSignedCurrency(value: NullableNumber, options: SignedCurre
   return `${prefix}${formatNumber(Math.abs(value), { ...options, signed: false })}`;
 }
 
-/** Compact dollar amount, e.g. "$1.2M", "$3.4K", "-$512". */
+/**
+ * Compact dollar amount, e.g. "$1.2M", "$3.4K", "-$512".
+ *
+ * @deprecated It always prints "$". Use `formatCurrencyAmount(value, currency, { compact: true })`.
+ * Counted by the `prefixedCurrency` design-system ratchet.
+ */
 export function formatCompactCurrency(value: NullableNumber, options: Pick<NumberFormatOptions, "fallback"> = {}): string {
   const { fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
@@ -278,13 +295,49 @@ export interface CurrencyWithCodeFormatOptions {
  * Unsigned amounts drop trailing zero cents ("€100 EUR"); `signed` pins two decimals on non-zero
  * amounts ("+€100.00 EUR") and leaves zero, including -0, unsigned ("€0 EUR"). A blank code means USD.
  */
-export function formatCurrencyWithCode(value: number, currency: string, options: CurrencyWithCodeFormatOptions = {}): string {
+export function formatCurrencyWithCode(value: number, currency: string | null | undefined, options: CurrencyWithCodeFormatOptions = {}): string {
   const { signed = false } = options;
-  const code = currency.trim().toUpperCase();
+  if (!Number.isFinite(value)) {
+    // A missing amount reads "Not available", not "Not available EUR".
+    return DEFAULT_FALLBACK;
+  }
+  const code = currency?.trim().toUpperCase() ?? "";
   const normalizedValue = value === 0 ? 0 : value;
-  const amount = formatCurrency(normalizedValue, { currency: code || "USD", minimumFractionDigits: signed && normalizedValue !== 0 ? 2 : 0 });
   const prefix = signed && value > 0 && Number.isFinite(value) ? "+" : "";
-  return code && !amount.includes(code) ? `${prefix}${amount} ${code}` : `${prefix}${amount}`;
+  const minimumFractionDigits = signed && normalizedValue !== 0 ? 2 : 0;
+  if (!code) {
+    // No currency is known, so none is assumed: the amount renders bare rather than as USD.
+    return `${prefix}${formatNumber(normalizedValue, { minimumFractionDigits, maximumFractionDigits: 2 })}`;
+  }
+  const amount = formatCurrency(normalizedValue, { currency: code, minimumFractionDigits });
+  return !amount.includes(code) ? `${prefix}${amount} ${code}` : `${prefix}${amount}`;
+}
+
+/**
+ * The one currency a set of amounts shares, for labelling their total: the code when every
+ * supplied code is the same, otherwise null (none supplied, or mixed). A null result renders the
+ * total as a bare amount instead of borrowing one line's currency or assuming USD.
+ */
+export function sharedCurrency(codes: Iterable<string | null | undefined>): string | null {
+  let shared: string | null = null;
+  for (const code of codes) {
+    const normalized = code?.trim().toUpperCase();
+    if (!normalized) return null;
+    if (shared !== null && shared !== normalized) return null;
+    shared = normalized;
+  }
+  return shared;
+}
+
+/**
+ * An amount whose currency the source has not supplied: the bare number plus an explicit
+ * "(currency unavailable)", e.g. "1,250 (currency unavailable)". It is never printed as dollars.
+ */
+export function formatUnknownCurrencyAmount(value: NullableNumber): string {
+  if (!isRenderable(value)) {
+    return VALUE_STATE_LABELS.unavailable;
+  }
+  return `${formatNumber(value)} (currency unavailable)`;
 }
 
 /** Grouped count, e.g. 1234 -> "1,234"; the same output as `value.toLocaleString("en-US")`. `signed` gives "+1,234". */
@@ -432,6 +485,84 @@ export function formatMoney(value: MoneyValue, options: MoneyFormatOptions = {})
     return parens ? `(${amount})` : `${convention === "statement" ? "−" : "-"}${amount}`;
   }
   return signed ? `+${amount}` : amount;
+}
+
+/**
+ * The one placeholder vocabulary for a financial value that is not a number. Every amount on a
+ * screen is in exactly one state: a value, a confirmed zero ("0.00"), or one of these. None of
+ * them is ever rendered as 0, and none is "—", "Unavailable", "Not supplied" or "Not recorded".
+ */
+export const VALUE_STATE_LABELS = {
+  /** Not loaded, not supplied, or not retained by the source. */
+  unavailable: DEFAULT_FALLBACK,
+  /** The figure has no meaning for this row (e.g. a basis the account is not on). */
+  notApplicable: "n/a",
+  /** The viewer is not permitted to read the figure. */
+  restricted: "No access"
+} as const;
+
+/** Every spelling a missing value has had: the current "Not available" and the legacy "—" / "Unavailable". */
+const UNAVAILABLE_LABEL_SPELLINGS = new Set<string>([DEFAULT_FALLBACK, "—", "Unavailable"]);
+
+/**
+ * True when a display label says the value is missing (or the label is empty). Compare rendered labels
+ * with this rather than with a literal, so a check keeps working whichever spelling a producer uses.
+ */
+export function isUnavailableLabel(label: string | null | undefined): boolean {
+  const text = label?.trim();
+  return !text || UNAVAILABLE_LABEL_SPELLINGS.has(text);
+}
+
+export type FinancialValueState = "value" | "zero" | "unavailable" | "not-applicable" | "restricted";
+
+/** The state of an amount: present, an exact zero, or missing. Missing is never zero. */
+export function financialValueState(value: MoneyValue): FinancialValueState {
+  const parsed = parseExactDecimal(value);
+  if (!parsed) return "unavailable";
+  return parsed.units === 0n ? "zero" : "value";
+}
+
+export interface CurrencyAmountFormatOptions extends Omit<MoneyFormatOptions, "currency" | "fallback"> {
+  /**
+   * Append the ISO code after the amount ("1,250.00 USD") instead of a symbol. Set it whenever
+   * more than one currency is in scope on the screen, so "$" can never be read as the wrong dollar.
+   */
+  showCode?: boolean;
+  /** @default VALUE_STATE_LABELS.unavailable */
+  fallback?: string;
+  /**
+   * Abbreviate with one decimal for headline tiles, e.g. "€1.2M", "$3.4K", "512"; the currency's
+   * own symbol is used, and an unknown currency renders the bare abbreviation ("1.2M").
+   */
+  compact?: boolean;
+}
+
+/**
+ * Money with a required currency. A missing currency never becomes "$": the amount renders bare
+ * ("1,250.00"), so an unknown-currency figure cannot be read as dollars. A missing amount renders
+ * "Not available", never 0. Prefer this over `formatPrefixedCurrency`, which always prints "$".
+ */
+export function formatCurrencyAmount(value: MoneyValue, currency: string | null | undefined, options: CurrencyAmountFormatOptions = {}): string {
+  const { showCode = false, fallback = VALUE_STATE_LABELS.unavailable, compact = false, ...moneyOptions } = options;
+  const code = currency?.trim().toUpperCase() || null;
+  if (compact) {
+    const numeric = typeof value === "number" ? value : parseExactDecimal(value) ? Number(value) : null;
+    if (!isRenderable(numeric)) return fallback;
+    const prefix = moneyOptions.signed && numeric > 0 ? "+" : "";
+    // Pin the minimum explicitly: Intl's default for compact currency differs between runtimes
+    // (Node 22 prints "$10.0M", Node 24 "$10M"). One decimal for K/M/B, none below a thousand.
+    const minimumFractionDigits = Math.abs(numeric) >= 1_000 ? 1 : 0;
+    const amount = code && !showCode
+      ? formatCurrency(numeric, { currency: code, notation: "compact", minimumFractionDigits, maximumFractionDigits: 1 })
+      : formatNumber(numeric, { notation: "compact", minimumFractionDigits, maximumFractionDigits: 1 });
+    return `${prefix}${amount}${code && showCode ? ` ${code}` : ""}`;
+  }
+  if (code && showCode) {
+    const decimals = moneyOptions.decimals ?? (moneyOptions.context === "summary" ? 0 : screenCurrencyLayout(code).minorUnits);
+    const amount = formatMoney(value, { ...moneyOptions, decimals, currency: null, fallback: "" });
+    return amount ? `${amount} ${code}` : fallback;
+  }
+  return formatMoney(value, { ...moneyOptions, currency: code, fallback });
 }
 
 /** Tone of a signed P&L figure: gain, loss, or flat/unknown. */

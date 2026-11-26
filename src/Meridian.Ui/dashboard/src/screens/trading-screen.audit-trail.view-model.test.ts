@@ -108,7 +108,7 @@ describe("buildAuditTrailPanelViewModel", () => {
 
   it("distinguishes an unloaded panel from an empty result set", () => {
     expect(buildAuditTrailPanelViewModel(null, 50)).toMatchObject({
-      countLabel: "—",
+      countLabel: "Not available",
       asOfLabel: "Not loaded",
       emptyState: "Audit trail has not loaded."
     });

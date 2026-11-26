@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   Trash2
 } from "lucide-react";
-import { formatCount, formatTimestamp } from "@/lib/format";
+import { formatCount, formatTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1664,7 +1664,7 @@ export function providerRuntimePanelTone(state: ProviderRuntimeEvidenceState): k
 export function providerRuntimeStatusLabel(state: ProviderRuntimeEvidenceState): string {
   if (state.phase === "idle") return "Not loaded";
   if (state.phase === "loading") return "Loading";
-  if (state.phase === "error") return "Unavailable";
+  if (state.phase === "error") return VALUE_STATE_LABELS.unavailable;
   if (providerRuntimeCriticalIssueCount(state) > 0) return "Critical";
   if (providerRuntimeQuarantinedCount(state, providerRuntimeRuns(state)) > 0 || providerRuntimeWarningIssueCount(state) > 0) return "Review";
   return "Synced";

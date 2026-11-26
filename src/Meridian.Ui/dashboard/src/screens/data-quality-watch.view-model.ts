@@ -24,7 +24,7 @@ import {
   type QualitySymbolHealth,
   type QualityTopErrorSymbol
 } from "@/types/data-quality-watch.types";
-import { formatCount, formatDecimal, formatPercent as formatPercentValue, formatRatioAsPercent } from "@/lib/format";
+import { formatCount, formatDecimal, formatPercent as formatPercentValue, formatRatioAsPercent, VALUE_STATE_LABELS } from "@/lib/format";
 
 export type QualityTone = "default" | "success" | "warning" | "danger";
 
@@ -109,10 +109,10 @@ export function buildQualityHeadline(snapshot: QualityHealthSnapshot | null): Qu
       loaded: false,
       statusLabel: "Not loaded",
       statusTone: "default",
-      scoreLabel: "—",
-      activeSymbolsLabel: "—",
-      symbolsWithIssuesLabel: "—",
-      recentActivityLabel: "—",
+      scoreLabel: VALUE_STATE_LABELS.unavailable,
+      activeSymbolsLabel: VALUE_STATE_LABELS.unavailable,
+      symbolsWithIssuesLabel: VALUE_STATE_LABELS.unavailable,
+      recentActivityLabel: VALUE_STATE_LABELS.unavailable,
       asOfLabel: "Not loaded"
     };
   }
@@ -152,10 +152,10 @@ export function buildLatencyOverview(statistics: QualityLatencyStatistics | null
   if (!statistics) {
     return {
       loaded: false,
-      headlineLabel: "—",
-      spreadLabel: "—",
+      headlineLabel: VALUE_STATE_LABELS.unavailable,
+      spreadLabel: VALUE_STATE_LABELS.unavailable,
       extremesLabel: "Not loaded",
-      sampleLabel: "—"
+      sampleLabel: VALUE_STATE_LABELS.unavailable
     };
   }
 
@@ -199,11 +199,11 @@ export function buildCompletenessOverview(
   if (!summary) {
     return {
       loaded: false,
-      coverageLabel: "—",
-      averageScoreLabel: "—",
-      spreadLabel: "—",
+      coverageLabel: VALUE_STATE_LABELS.unavailable,
+      averageScoreLabel: VALUE_STATE_LABELS.unavailable,
+      spreadLabel: VALUE_STATE_LABELS.unavailable,
       gradeLabel: "Not loaded",
-      trackedLabel: "—"
+      trackedLabel: VALUE_STATE_LABELS.unavailable
     };
   }
 

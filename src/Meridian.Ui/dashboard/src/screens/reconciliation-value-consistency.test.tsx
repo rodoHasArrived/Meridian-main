@@ -49,22 +49,22 @@ describe("reconciliation values across work surfaces", () => {
     // Exercise an unavailable wire value even though the current queue DTO emits non-null text.
     const absent = { ...item, measures: undefined, variance: 0, varianceExact: null } as unknown as ReconciliationBreakQueueItem;
     expect(caseResidual(absent)).toBeNull();
-    expect(caseVarianceLabel(absent)).toBe("Not recorded");
+    expect(caseVarianceLabel(absent)).toBe("Not available");
     expect(buildReconciliationBreakRows([absent], null)[0].varianceTone).toBe("default");
     render(<MemoryRouter><CaseVariance item={absent} /></MemoryRouter>);
-    expect(screen.getByText("Not recorded")).toBeInTheDocument();
+    expect(screen.getByText("Not available")).toBeInTheDocument();
   });
 
   it("keeps unavailable evidence distinct from zero and does not infer a currency", () => {
     const unavailable = { ...item, measures: [{ ...item.measures![0], actualExact: null,
       unavailableReason: "Custodian amount unavailable" }] };
-    expect(caseVarianceLabel(unavailable)).toBe("Unavailable");
+    expect(caseVarianceLabel(unavailable)).toBe("Not available");
     expect(caseResidual(unavailable)).toBeNull();
     const legacy = { ...item, measures: undefined, varianceExact: "500.00" };
     expect(caseVarianceLabel(legacy)).toBe("+500.00 Unit unavailable");
     expect(operationsCaseVarianceLabel({ expectedAmount: null, actualAmount: null, variance: null })).toBe("Amounts not recorded");
     render(<MemoryRouter><CaseVariance item={unavailable} /></MemoryRouter>);
-    expect(screen.getByText("Unavailable")).toBeInTheDocument();
+    expect(screen.getByText("Not available")).toBeInTheDocument();
   });
 
   it("does not collapse multiple measures into one amount", () => {
@@ -78,17 +78,17 @@ describe("reconciliation values across work surfaces", () => {
 
   it("withholds legacy amounts that exceed the response's numeric precision", () => {
     const unsafe = { ...item, variance: 9007199254740992, measures: undefined };
-    expect(caseVarianceLabel(unsafe)).toBe("Unavailable");
+    expect(caseVarianceLabel(unsafe)).toBe("Not available");
     expect(caseResidual(unsafe)).toBeNull();
-    expect(buildReconciliationBreakRows([unsafe], null)[0]).toMatchObject({ varianceLabel: "Unavailable", varianceTone: "default" });
+    expect(buildReconciliationBreakRows([unsafe], null)[0]).toMatchObject({ varianceLabel: "Not available", varianceTone: "default" });
     expect(operationsCaseVarianceLabel({ expectedAmount: 9007199254740992, actualAmount: 9007199254740992, variance: 9007199254740992 }))
-      .toBe("Expected Unavailable / Actual Unavailable / Variance Unavailable · Unit unavailable");
+      .toBe("Expected Not available / Actual Not available / Variance Not available · Unit unavailable");
     const unsafeMeasure = { ...item, measures: [{ kind: "Value" as const, unit: "EUR", expected: 9007199254740992,
       actual: 9007199254740992, variance: 9007199254740992, tolerance: 0 }] };
-    expect(caseVarianceLabel(unsafeMeasure)).toBe("Unavailable");
+    expect(caseVarianceLabel(unsafeMeasure)).toBe("Not available");
     expect(caseResidual(unsafeMeasure)).toBeNull();
     render(<MemoryRouter><CaseVariance item={unsafeMeasure} /></MemoryRouter>);
-    expect(screen.getByText("Unavailable")).toBeInTheDocument();
+    expect(screen.getByText("Not available")).toBeInTheDocument();
     expect(screen.queryByText(/9,007,199,254,740,992/)).not.toBeInTheDocument();
   });
 });

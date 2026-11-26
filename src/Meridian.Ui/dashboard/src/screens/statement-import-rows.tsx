@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import type { StatementImportCommitResult, StatementImportOutcomePage, StatementImportPreview, StatementImportRowDisposition, StatementImportRowOutcome, StatementImportRowPage, StatementImportReviewRow } from "@/types";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 const PAGE_SIZE = 100;
 function pagePath(route: string, offset: number) {
   // Retained row links must stay on the authenticated statement-review API.
@@ -55,7 +56,7 @@ export function StatementImportRows({ preview, decisions, onChange, disabled }: 
         } },
         { id: "reason", label: "Reason", className: "min-w-44", render: (row) => {
           const decision = decisions[row.rowId];
-          return decision ? <textarea aria-label={`Reason for record ${row.normalizedIndex + 1}`} required disabled={disabled || busy} className="w-full rounded border border-border bg-background p-1" value={decision.reason} onChange={(event) => onChange({ ...decision, reason: event.target.value }, row.rowId)} /> : "—";
+          return decision ? <textarea aria-label={`Reason for record ${row.normalizedIndex + 1}`} required disabled={disabled || busy} className="w-full rounded border border-border bg-background p-1" value={decision.reason} onChange={(event) => onChange({ ...decision, reason: event.target.value }, row.rowId)} /> : VALUE_STATE_LABELS.unavailable;
         } }
       ]} />
     </div>

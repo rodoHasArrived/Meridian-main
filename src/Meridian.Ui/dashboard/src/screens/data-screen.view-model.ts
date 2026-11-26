@@ -102,7 +102,7 @@ import type {
   ProviderSetupResult
 } from "@/types";
 
-import { formatCount, formatDecimal, formatTimestamp } from "@/lib/format";
+import { formatCount, formatDecimal, formatTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 export {
   DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
   buildDataLoadingState,
@@ -2968,8 +2968,8 @@ function buildProviderSummaryCards(
   if (!detail) {
     return [
       { id: "health", label: "Connection Health", value: "No provider", detail: "Add or select a provider.", tone: "warning" },
-      { id: "credentials", label: "Credential State", value: "Unavailable", detail: "No credential record loaded.", tone: "warning" },
-      { id: "verification", label: "Verification State", value: "Unavailable", detail: "Verification needs a provider row.", tone: "warning" },
+      { id: "credentials", label: "Credential State", value: VALUE_STATE_LABELS.unavailable, detail: "No credential record loaded.", tone: "warning" },
+      { id: "verification", label: "Verification State", value: VALUE_STATE_LABELS.unavailable, detail: "Verification needs a provider row.", tone: "warning" },
       { id: "latency", label: "Latency / Last Response", value: "Not reported", detail: "No response evidence loaded.", tone: "default" },
       { id: "workflows", label: "Affected Workflows", value: "None", detail: "No downstream workflow impact loaded.", tone: "default" },
       { id: "action", label: "Recommended Action", value: "Add provider", detail: "Configure a provider before routing workflows.", tone: "warning" }

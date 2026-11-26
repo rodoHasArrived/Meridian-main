@@ -12,10 +12,11 @@ import {
   type CapabilityMatrixViewModel
 } from "./data-screen.capability-matrix.view-model";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 const FRESHNESS_SEVERITY: Record<CapabilityFreshnessModel["state"], string> = { current: "ready", stale: "stale", "no-evidence": "unknown" };
 
 function declaredSupport(value?: boolean) {
-  return value === undefined ? "Unavailable" : value ? "Yes" : "No";
+  return value === undefined ? VALUE_STATE_LABELS.unavailable : value ? "Yes" : "No";
 }
 
 function declaredDepth(row: CapabilityMatrixRowModel) {
@@ -73,8 +74,8 @@ export function CapabilityMatrixRegion({ panel, freshness }: { panel: Capability
                       </span>); },
                       exportValue: (row: CapabilityMatrixRowModel) => { const fresh = freshness(row.providerId); return fresh.ageText ? `${fresh.label} (${fresh.ageText})` : fresh.label; } },
                     ...panel.model.columns.map((column) => ({ id: column, label: column,
-                      render: (row: CapabilityMatrixRowModel) => { const cell = row.cells.find((item) => item.instrumentType === column); return cell ? <span aria-label={cell.description} title={cell.description}>{cell.marks}</span> : "Unavailable"; },
-                      exportValue: (row: CapabilityMatrixRowModel) => row.cells.find((cell) => cell.instrumentType === column)?.description ?? "Unavailable" })),
+                      render: (row: CapabilityMatrixRowModel) => { const cell = row.cells.find((item) => item.instrumentType === column); return cell ? <span aria-label={cell.description} title={cell.description}>{cell.marks}</span> : VALUE_STATE_LABELS.unavailable; },
+                      exportValue: (row: CapabilityMatrixRowModel) => row.cells.find((cell) => cell.instrumentType === column)?.description ?? VALUE_STATE_LABELS.unavailable })),
                     ...declaredCapabilityColumns]}
                   ariaLabel="Provider capability by instrument type" emptyText="No declared capabilities." maxVisibleRows={null} />
               </div>

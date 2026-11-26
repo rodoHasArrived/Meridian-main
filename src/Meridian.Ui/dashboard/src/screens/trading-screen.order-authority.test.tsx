@@ -27,7 +27,7 @@ describe("order authority presentation", () => {
     expect(orderOriginLabel("EscalationRelease")).toBe("Release");
     expect(orderOriginLabel("StrategyRun")).toBe("Strategy");
     expect(orderOriginLabel("Unattributed")).toBe("Untyped");
-    expect(orderOriginLabel(null)).toBe("—");
+    expect(orderOriginLabel(null)).toBe("Not available");
   });
 
   it("names the checkpoint, code and reason of an authority refusal", () => {
@@ -93,6 +93,6 @@ describe("order blotter origin", () => {
       }
     });
 
-    expect(vm.orderRows.map((row) => row.origin)).toEqual(["Strategy", "—"]);
+    expect(vm.orderRows.map((row) => row.origin)).toEqual(["Strategy", "Not available"]);
   });
 });

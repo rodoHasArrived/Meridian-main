@@ -5,6 +5,7 @@ import type {
 } from "./accounting-screen.view-model";
 import type { AccountingMigrationRunArtifact, AccountingProductionReadiness, PostingRule, RuleDryRunResult } from "@/types";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 export function resolveAccountingProductionReadinessActivationDisabledReason(
   readiness: AccountingProductionReadiness | null,
   loading: boolean,
@@ -70,7 +71,7 @@ export function formatProductionReadinessStatus(status: AccountingProductionRead
     case "Blocked":
       return "Blocked";
     case "Unavailable":
-      return "Unavailable";
+      return VALUE_STATE_LABELS.unavailable;
     default:
       return String(status);
   }

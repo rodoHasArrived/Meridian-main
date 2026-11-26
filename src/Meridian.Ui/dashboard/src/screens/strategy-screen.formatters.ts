@@ -1,17 +1,17 @@
-import { formatCount as formatCountValue, formatDecimal, type MoneyFormatOptions, type SignableNumberFormatOptions } from "@/lib/format";
+import { formatCount as formatCountValue, formatDecimal, type MoneyFormatOptions, type SignableNumberFormatOptions, VALUE_STATE_LABELS, isUnavailableLabel } from "@/lib/format";
 
-/** Strategy-run money for `formatMoney` from `@/lib/format`: whole dollars, "Unavailable" when missing, e.g. "-$1,235". */
-export const STRATEGY_MONEY: MoneyFormatOptions = { context: "summary", fallback: "Unavailable" };
+/** Strategy-run money for `formatMoney` from `@/lib/format`: whole dollars, VALUE_STATE_LABELS.unavailable when missing, e.g. "-$1,235". */
+export const STRATEGY_MONEY: MoneyFormatOptions = { context: "summary", fallback: VALUE_STATE_LABELS.unavailable };
 
 /** `STRATEGY_MONEY` with an explicit sign on gains, e.g. "+$1,235" / "-$1,235" / "$0". */
 export const STRATEGY_SIGNED_MONEY: MoneyFormatOptions = { ...STRATEGY_MONEY, signed: true };
 
 /** Signed two-decimal percent for `formatRatioAsPercent` (fraction units), e.g. 0.425 -> "+42.50%". */
-export const STRATEGY_SIGNED_RETURN: SignableNumberFormatOptions = { signed: true, minimumFractionDigits: 2, maximumFractionDigits: 2, fallback: "Unavailable" };
+export const STRATEGY_SIGNED_RETURN: SignableNumberFormatOptions = { signed: true, minimumFractionDigits: 2, maximumFractionDigits: 2, fallback: VALUE_STATE_LABELS.unavailable };
 
 export function formatText(value: string | null | undefined): string {
   const trimmed = value?.trim();
-  return trimmed ? trimmed : "Unavailable";
+  return trimmed ? trimmed : VALUE_STATE_LABELS.unavailable;
 }
 
 export function formatOptionalNotes(value: string | null | undefined): string {
@@ -20,7 +20,7 @@ export function formatOptionalNotes(value: string | null | undefined): string {
 }
 
 export function formatNullableNumber(value: number | null | undefined, digits: number): string {
-  return formatDecimal(value, digits, { fallback: "Unavailable" });
+  return formatDecimal(value, digits, { fallback: VALUE_STATE_LABELS.unavailable });
 }
 
 export function countBy<T>(items: T[], selector: (item: T) => string): Map<string, number> {
@@ -34,7 +34,7 @@ export function countBy<T>(items: T[], selector: (item: T) => string): Map<strin
 }
 
 export function distinctFormattedValues(values: Array<string | null | undefined>): string[] {
-  return [...new Set(values.map((value) => formatText(value)).filter((value) => value !== "Unavailable"))].sort();
+  return [...new Set(values.map((value) => formatText(value)).filter((value) => !isUnavailableLabel(value)))].sort();
 }
 
 export function isLiveAdjacentMode(mode: string | null | undefined): boolean {
@@ -43,7 +43,7 @@ export function isLiveAdjacentMode(mode: string | null | undefined): boolean {
 
 export function formatCount(value: number | null | undefined): string {
   if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "Unavailable";
+    return VALUE_STATE_LABELS.unavailable;
   }
 
   return formatCountValue(value);
@@ -51,7 +51,7 @@ export function formatCount(value: number | null | undefined): string {
 
 export function formatPromotionState(value: string | null | undefined): string {
   const text = formatText(value);
-  if (text === "Unavailable") {
+  if (isUnavailableLabel(text)) {
     return text;
   }
 
@@ -63,7 +63,7 @@ export function formatPromotionState(value: string | null | undefined): string {
 
   return normalized
     ? `${normalized.charAt(0).toUpperCase()}${normalized.slice(1).toLowerCase()}`
-    : "Unavailable";
+    : VALUE_STATE_LABELS.unavailable;
 }
 
 export function parseDecimalToken(value: string | null | undefined): number | null {

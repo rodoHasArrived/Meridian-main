@@ -1,5 +1,6 @@
 import type { ReconciliationBreakQueueItem, ReconciliationCaseLifecycleState } from "@/types";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 /**
  * Lifecycle decisions the inspector offers for one break.
  *
@@ -47,7 +48,7 @@ const LIFECYCLE_LABELS: Record<ReconciliationCaseLifecycleState, string> = {
 };
 
 export function lifecycleStateLabel(state: ReconciliationCaseLifecycleState | null | undefined): string {
-  return state ? LIFECYCLE_LABELS[state] ?? state : "Not recorded";
+  return state ? LIFECYCLE_LABELS[state] ?? state : VALUE_STATE_LABELS.unavailable;
 }
 
 /** Returns null when the payload carries no lifecycle state; the inspector then offers no lifecycle decisions. */

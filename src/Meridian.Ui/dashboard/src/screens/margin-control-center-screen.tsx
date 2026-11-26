@@ -1,5 +1,5 @@
 import { TableWorkbench } from "@/components/meridian/table-workbench";
-import { formatNumber, formatCurrency } from "@/lib/format";
+import { formatNumber, formatCurrency, VALUE_STATE_LABELS } from "@/lib/format";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { ShieldAlert } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -102,7 +102,7 @@ function SummaryCards({ data, loading }: { data: MarginControlCenter | null; loa
         <Card key={label}>
           <CardContent className="p-4">
             <p className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</p>
-            <p className="mt-2 font-mono text-xl font-semibold tabular-nums">{loading ? "—" : value ?? 0}</p>
+            <p className="mt-2 font-mono text-xl font-semibold tabular-nums">{loading ? VALUE_STATE_LABELS.unavailable : value ?? 0}</p>
           </CardContent>
         </Card>
       ))}
@@ -224,8 +224,8 @@ function AccountMarginCard({ account, onCertified }: { account: MarginControlAcc
 {id:"field-3",label:"Market value",exportValue:position=>position.marketValue,render:position=><>{money(position.marketValue, account.currency)}</>},
 {id:"field-4",label:"Shadow initial",exportValue:position=>position.shadowInitialMargin,render:position=><>{money(position.shadowInitialMargin, account.currency)}</>},
 {id:"field-5",label:"Shadow maintenance",exportValue:position=>position.shadowMaintenanceMargin,render:position=><>{money(position.shadowMaintenanceMargin, account.currency)}</>},
-{id:"field-6",label:"Borrow",exportValue:position=>position.borrowStatus,render:position=><>{position.borrowStatus ?? "—"}</>},
-{id:"field-7",label:"Rate",exportValue:position=>position.borrowRate,render:position=><>{position.borrowRate == null ? "—" : `${number(position.borrowRate)}%`}</>},
+{id:"field-6",label:"Borrow",exportValue:position=>position.borrowStatus,render:position=><>{position.borrowStatus ?? VALUE_STATE_LABELS.unavailable}</>},
+{id:"field-7",label:"Rate",exportValue:position=>position.borrowRate,render:position=><>{position.borrowRate == null ? VALUE_STATE_LABELS.unavailable : `${number(position.borrowRate)}%`}</>},
 {id:"field-8",label:"Lots / options",exportValue:position=>`${position.taxLotCount}/${position.optionLifecycleEventCount}`,render:position=><>{position.taxLotCount} / {position.optionLifecycleEventCount}</>}]} getRowId={position=>position.symbol} getSearchText={position=>`${position.symbol} ${position.securityId ?? ""}`} completePopulation sourceDescription="Retained position contributions in the selected account currency." exportContext={{currency:account.currency,asOf:account.asOf,account:account.accountId}} ariaLabel="Retained account margin position contributions" emptyText="No canonical position rows were retained for this account." />
         </div>
       </CardContent>
@@ -239,7 +239,7 @@ function Comparison({ label, initial, maintenance, excess, currency }: { label: 
 
 function Metric({ label, value }: { label: string; value: string }) { return <div><p className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</p><p className="mt-1 font-mono text-sm font-semibold tabular-nums">{value}</p></div>; }
 function number(value: number) { return formatNumber(value, { maximumFractionDigits: 4 }); }
-function money(value: number | null | undefined, currency?: string) { return value == null ? "—" : currency ? formatCurrency(value, { currency, maximumFractionDigits: 2 }) : "Currency unavailable"; }
+function money(value: number | null | undefined, currency?: string) { return value == null ? VALUE_STATE_LABELS.unavailable : currency ? formatCurrency(value, { currency, maximumFractionDigits: 2 }) : "Currency unavailable"; }
 function dateTime(value: string) { return formatDateTimeLabel(value); }
 
 function primeCurrency(providerId: string, expectedCount: number, data: MarginControlCenter): string | undefined {

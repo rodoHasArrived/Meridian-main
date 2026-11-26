@@ -546,7 +546,7 @@ describe("useReportingScreenViewModel", () => {
 
     expect(result.current.accessAudit).toMatchObject({
       isAvailable: false,
-      evaluationScope: "Unavailable",
+      evaluationScope: "Not available",
       hiddenTotalLabel: "Counts unavailable",
       countRows: [],
       postureLabel: "Unknown"

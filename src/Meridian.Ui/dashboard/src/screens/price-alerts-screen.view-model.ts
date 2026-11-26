@@ -5,7 +5,7 @@ import { describeCondition } from "@/lib/price-alerts/evaluator";
 import type { PriceAlert, PriceAlertCondition, PriceAlertDraft, PriceAlertField, PriceAlertTrigger } from "@/lib/price-alerts";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type { MetricSnapshot } from "@/types";
-import { formatNumber, formatTimestamp } from "@/lib/format";
+import { formatNumber, formatTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 
 export interface PriceAlertFormState {
   symbol: string;
@@ -670,18 +670,18 @@ export function buildPriceAlertFieldHelpText(field: PriceAlertField): string {
 
 export function formatPriceAlertPrice(value: number | null | undefined): string {
   if (value === null || value === undefined || !Number.isFinite(value)) {
-    return "—";
+    return VALUE_STATE_LABELS.unavailable;
   }
   return formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
 }
 
 export function formatPriceAlertTimestamp(value: string | null | undefined): string {
   if (!value) {
-    return "—";
+    return VALUE_STATE_LABELS.unavailable;
   }
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return "—";
+    return VALUE_STATE_LABELS.unavailable;
   }
   return formatTimestamp(date, { precision: "second" });
 }
@@ -1033,7 +1033,7 @@ function buildAlertDetail(alert: PriceAlert): PriceAlertRowDetailViewModel {
       { id: "last-observed-price", label: "Last observed", value: formatPriceAlertPrice(alert.lastObservedPrice), tone: alert.lastObservedPrice === null ? "muted" : "default" },
       { id: "last-observed-at", label: "Observed at", value: formatPriceAlertTimestamp(alert.lastObservedAt), tone: "muted" },
       { id: "created-at", label: "Created", value: formatPriceAlertTimestamp(alert.createdAt), tone: "muted" },
-      { id: "snoozed-until", label: "Snoozed until", value: isSnoozed ? formatPriceAlertTimestamp(alert.snoozedUntil) : "—", tone: isSnoozed ? "warning" : "muted" },
+      { id: "snoozed-until", label: "Snoozed until", value: isSnoozed ? formatPriceAlertTimestamp(alert.snoozedUntil) : VALUE_STATE_LABELS.unavailable, tone: isSnoozed ? "warning" : "muted" },
       { id: "note", label: "Operator note", value: alert.note ?? "No operator note", tone: alert.note ? "default" : "muted" }
     ],
     quoteHref: workstationRouteWithQuery("dataQuotes", { symbol: alert.symbol }),

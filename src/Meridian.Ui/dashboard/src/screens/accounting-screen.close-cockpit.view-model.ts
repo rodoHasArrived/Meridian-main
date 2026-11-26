@@ -82,7 +82,6 @@ import type {
 } from "./accounting-screen.view-model";
 import type {
   AccountingReportPackageBundle,
-  AccountingReportPackageRequest,
   AccountingWorkspaceResponse,
   CertifyAccountingReportPackageRequest,
   CloseCalendarMilestone,
@@ -98,7 +97,9 @@ import type {
   UpsertClosePeriodPlanConfigurationRequest,
   AccountingCertificationState,
 } from "@/types";
-import { formatCount as formatCountValue, formatCountOfTotal, formatCurrencyWithCode } from "@/lib/format";
+import { formatCount as formatCountValue, formatCountOfTotal, formatCurrencyWithCode, VALUE_STATE_LABELS } from "@/lib/format";
+import { buildAccountingReportPackageRequest, collectAccountingCloseEvidenceLinks } from "./accounting-screen.close-cockpit.report-package-request";
+export { buildAccountingReportPackageRequest, type AccountingReportPackageRequestResult } from "./accounting-screen.close-cockpit.report-package-request";
 
 const defaultAccountingCloseReportPackageServices: AccountingCloseReportPackageServices = {
   getClosePlan: (workflowId) => getLedgerCloseManagementPeriodPlan(workflowId),
@@ -240,8 +241,13 @@ export function useAccountingCloseReportPackageViewModel(
     setBuildStatusText(null);
     setBuildStatusTone("neutral");
     try {
-      const request = buildAccountingReportPackageRequest(workflow, closePlan, packages[0] ?? null);
-      const bundle = await services.buildPackage(request);
+      const built = buildAccountingReportPackageRequest(workflow, closePlan, packages[0] ?? null);
+      if (built.ok === false) {
+        setBuildStatusText(built.message);
+        setBuildStatusTone("danger");
+        return;
+      }
+      const bundle = await services.buildPackage(built.request);
       setPackages((current) => [
         bundle,
         ...current.filter((item) => item.financialStatements.packageId !== bundle.financialStatements.packageId)
@@ -357,7 +363,7 @@ export function useAccountingCloseReportPackageViewModel(
     if (closePlan.closingEntriesGate?.state !== "Required") {
       const stateLabel = closePlan.closingEntriesGate
         ? formatClosePostingGateState(closePlan.closingEntriesGate.state).label
-        : "Not supplied";
+        : VALUE_STATE_LABELS.unavailable;
       setQueueClosingEntriesStatusText(`Closing entries can only be queued from Required state; current state is ${stateLabel}.`);
       setQueueClosingEntriesStatusTone("danger");
       return;
@@ -418,7 +424,7 @@ export function useAccountingCloseReportPackageViewModel(
     if (!isClosePostingGateReadyForHardLock(closePlan.closingEntriesGate ?? null)) {
       const stateLabel = closePlan.closingEntriesGate
         ? formatClosePostingGateState(closePlan.closingEntriesGate.state).label
-        : "Not supplied";
+        : VALUE_STATE_LABELS.unavailable;
       setLockClosePeriodStatusText(`Closing entries are not ready for period lock; current state is ${stateLabel}.`);
       setLockClosePeriodStatusTone("danger");
       return;
@@ -625,8 +631,9 @@ export function useAccountingCloseReportPackageViewModel(
     const journalEntryId = lateAdjustmentDraft.journalEntryId.trim();
     const reason = lateAdjustmentDraft.reason.trim();
     const amount = Number(lateAdjustmentDraft.amount);
-    const currency = (lateAdjustmentDraft.currency.trim() || closePlan.materialityPolicy.currency || "USD").toUpperCase();
-    if (!journalEntryId || !reason || !Number.isFinite(amount) || amount === 0) {
+    // The draft or the plan's materiality policy names the currency; neither present is refused below.
+    const currency = (lateAdjustmentDraft.currency.trim() || closePlan.materialityPolicy.currency || "").toUpperCase();
+    if (!journalEntryId || !reason || !Number.isFinite(amount) || amount === 0 || !currency) {
       setCreateLateAdjustmentStatusText("Journal entry, non-zero amount, currency, and reason are required before requesting a late adjustment.");
       setCreateLateAdjustmentStatusTone("danger");
       return;
@@ -2147,6 +2154,7 @@ function formatClosePostingGateState(state: ClosePostingGateState): { label: str
       return { label: "Blocked", tone: "danger" };
     case "Unavailable":
     default:
+      // placeholder-vocabulary-ignore: the display name of the server gate state "Unavailable".
       return { label: "Unavailable", tone: "danger" };
   }
 }
@@ -2355,32 +2363,6 @@ function buildAccountingReportPackageRow(
   };
 }
 
-function buildAccountingReportPackageRequest(
-  workflow: OperationsContinuityWorkflow,
-  closePlan: ClosePeriodPlan | null,
-  seedPackage: AccountingReportPackageBundle | null
-): AccountingReportPackageRequest {
-  const investorStatement = seedPackage?.investorCapitalStatements[0] ?? null;
-
-  return {
-    fundProfileId: closePlan?.fundProfileId ?? workflow.fundAccountId,
-    ledgerBookId: closePlan?.ledgerBookId ?? seedPackage?.financialStatements.ledgerBookId ?? null,
-    periodId: closePlan?.periodId ?? workflow.periodId,
-    actor: "browser-accounting-operator",
-    closeWorkflowId: workflow.workflowId,
-    capitalAccountId: investorStatement?.capitalAccountId ?? null,
-    investorId: investorStatement?.investorId ?? null,
-    beginningCapital: investorStatement?.beginningCapital ?? 0,
-    contributions: investorStatement?.contributions ?? 0,
-    distributions: investorStatement?.distributions ?? 0,
-    realizedGainLoss: seedPackage?.realizedGainLoss.realizedGainLoss ?? investorStatement?.realizedGainLoss ?? 0,
-    nav: seedPackage?.navPackage.nav ?? investorStatement?.endingCapital ?? 0,
-    currency: seedPackage?.navPackage.currency ?? investorStatement?.currency ?? "USD",
-    evidenceLinks: collectAccountingCloseEvidenceLinks(workflow, closePlan),
-    correlationId: `browser-close-report-${workflow.workflowId}`
-  };
-}
-
 function buildClosePlanConfigurationRequest(
   workflow: OperationsContinuityWorkflow,
   closePlan: ClosePeriodPlan,
@@ -2489,7 +2471,7 @@ function buildClosePlanConfigurationRequest(
       percentThreshold: Number.isFinite(percentThreshold) && percentThreshold >= 0
         ? percentThreshold
         : closePlan.materialityPolicy.percentThreshold,
-      currency: (setupDraft.currency.trim() || closePlan.materialityPolicy.currency || "USD").toUpperCase(),
+      currency: (setupDraft.currency.trim() || closePlan.materialityPolicy.currency || "").toUpperCase(),
       reviewRole: setupDraft.reviewRole.trim() || closePlan.materialityPolicy.reviewRole,
       requiresLateAdjustmentApproval: setupDraft.requiresLateAdjustmentApproval
     },
@@ -2567,37 +2549,6 @@ function buildCertifyAccountingReportPackageRequest(
     evidenceLinks: collectAccountingReportPackageEvidenceLinks(bundle),
     correlationId: `browser-certify-report-${bundle.financialStatements.packageId}`
   };
-}
-
-function collectAccountingCloseEvidenceLinks(
-  workflow: OperationsContinuityWorkflow,
-  closePlan: ClosePeriodPlan | null
-): string[] {
-  const links = new Set<string>();
-  const add = (value: string | null | undefined) => {
-    const normalized = value?.trim();
-    if (normalized) {
-      links.add(normalized);
-    }
-  };
-  const addOperationsEvidence = (evidence: Array<{ evidenceId: string; route: string | null }> | null | undefined) => {
-    evidence?.forEach((item) => {
-      add(item.route);
-      add(item.evidenceId);
-    });
-  };
-
-  addOperationsEvidence(workflow.evidenceLinks);
-  addOperationsEvidence(workflow.reportPackReadiness.evidenceLinks);
-  addOperationsEvidence(workflow.accountingRecordSummary?.evidenceLinks);
-  workflow.accountingRecordSummary?.evidenceCategories.forEach((category) => addOperationsEvidence(category.evidenceLinks));
-  addOperationsEvidence(workflow.closePackage?.evidenceLinks);
-  add(workflow.closePackage?.retainedManifestRoute);
-  add(workflow.closePackage?.evidenceHash);
-  closePlan?.tasks.forEach((task) => task.evidenceLinks.forEach(add));
-  closePlan?.lateAdjustments.forEach((adjustment) => adjustment.evidenceLinks.forEach(add));
-
-  return [...links];
 }
 
 function collectAccountingReportPackageEvidenceLinks(bundle: AccountingReportPackageBundle): string[] {

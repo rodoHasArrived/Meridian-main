@@ -19,7 +19,7 @@ describe("buildRunLeaderboard", () => {
     const model = buildRunLeaderboard([run("a", "1.0"), run("b", ""), run("c", "n/a")]);
     expect(model.ranked.map((row) => row.id)).toEqual(["a"]);
     expect(model.unranked.map((row) => row.id)).toEqual(["b", "c"]);
-    expect(model.unranked[0]!.sharpeText).toBe("Unavailable");
+    expect(model.unranked[0]!.sharpeText).toBe("Not available");
   });
 
   it("carries drawdown and a trend only when it has two finite points", () => {

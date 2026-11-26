@@ -5,6 +5,7 @@ import { Select } from "@/components/ui/select";
 import type { CorporateAction } from "@/types";
 import type { AssetResource } from "./asset-detail-resource";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 export function corporateActionDateGroup(
   action: CorporateAction,
   today: string
@@ -88,15 +89,15 @@ export function AssetDetailEvents({
               <dl className="mt-2 grid grid-cols-3 gap-3 text-xs">
                 <div>
                   <dt className="text-muted-foreground">Ex date</dt>
-                  <dd className="mt-1 font-mono">{action.exDate || "Not supplied"}</dd>
+                  <dd className="mt-1 font-mono">{action.exDate || VALUE_STATE_LABELS.unavailable}</dd>
                 </div>
                 <div>
                   <dt className="text-muted-foreground">Record date</dt>
-                  <dd className="mt-1 font-mono">{action.recordDate ?? "Not supplied"}</dd>
+                  <dd className="mt-1 font-mono">{action.recordDate ?? VALUE_STATE_LABELS.unavailable}</dd>
                 </div>
                 <div>
                   <dt className="text-muted-foreground">Pay date</dt>
-                  <dd className="mt-1 font-mono">{action.payDate ?? "Not supplied"}</dd>
+                  <dd className="mt-1 font-mono">{action.payDate ?? VALUE_STATE_LABELS.unavailable}</dd>
                 </div>
               </dl>
               {action.dividendPerShare != null ? (
@@ -119,7 +120,7 @@ export function AssetDetailEvents({
                     </div>
                     <div>
                       <dt className="text-muted-foreground">Recorded lifecycle state</dt>
-                      <dd>{action.lifecycleState ?? "Not supplied"}</dd>
+                      <dd>{action.lifecycleState ?? VALUE_STATE_LABELS.unavailable}</dd>
                     </div>
                     <div>
                       <dt className="text-muted-foreground">Supersedes event</dt>

@@ -30,6 +30,7 @@ import type { ReconciliationTaxonomySnapshot } from "@/types/reconciliation-read
 import type { ReconciliationBreakMeasure, ReconciliationBreakQueueItem, ReconciliationCaseworkAction, ReconciliationCaseworkCommand, ReconciliationCaseworkOperationResult } from "@/types";
 import "@/styles/case-inspector.css";
 
+import { isUnavailableLabel, VALUE_STATE_LABELS } from "@/lib/format";
 type CaseDecision = ReconciliationCaseworkAction | "Dismiss";
 const decisionLabels: Partial<Record<CaseDecision, string>> = {
   Resolve: "Resolve", Dismiss: "Dismiss", TransitionStatus: "Start review", Waive: "Waive", Assign: "Assign", SignOff: "Sign off", Reopen: "Reopen", Supersede: "Supersede",
@@ -75,8 +76,8 @@ export function caseChanges(before: ReconciliationBreakQueueItem, after: Reconci
   const showComponents = oldComponents.length !== 1 || newComponents.length !== 1
     || oldComponents[0].measure !== newComponents[0].measure || oldComponents[0].unit !== newComponents[0].unit;
   const describeComponents = (values: ReturnType<typeof components>) => values.length
-    ? values.map((component) => `${component.measure}: ${component.value ?? "Unavailable"} ${component.unit}`).join("; ")
-    : "Unavailable";
+    ? values.map((component) => `${component.measure}: ${component.value ?? VALUE_STATE_LABELS.unavailable} ${component.unit}`).join("; ")
+    : VALUE_STATE_LABELS.unavailable;
   const fields = [
     ["Status", before.status, after.status],
     ["Owner", before.assigneeDisplayName ?? before.assignedTo, after.assigneeDisplayName ?? after.assignedTo],
@@ -88,7 +89,7 @@ export function caseChanges(before: ReconciliationBreakQueueItem, after: Reconci
     ["Resolution", before.resolutionCode, after.resolutionCode]
   ];
   return fields.filter(([, oldValue, newValue]) => oldValue !== newValue).map(([label, oldValue, newValue]) => ({
-    label: String(label), before: String(oldValue ?? "Not recorded"), after: String(newValue ?? "Not recorded")
+    label: String(label), before: String(oldValue ?? VALUE_STATE_LABELS.unavailable), after: String(newValue ?? VALUE_STATE_LABELS.unavailable)
   }));
 }
 
@@ -324,10 +325,10 @@ export function CaseInspector({ caseId, initialCase, onChanged, services = defau
       <header><div className="flex flex-wrap items-start justify-between gap-2"><h3 className="text-base font-semibold">{item.reason || item.strategyName}</h3><Badge>{item.status}</Badge></div>
         {item.recommendedAction ? <p className="mt-2 text-sm">{item.recommendedAction}</p> : null}
         <dl className="mt-3 grid gap-2 sm:grid-cols-2"><Fact label="Owner" value={item.assigneeDisplayName ?? item.assignedTo ?? "Unassigned"} />
-          <Fact label="Due" value={item.slaDueAt ?? "Not recorded"} /><Fact label="Version" value={String(item.version ?? "Not recorded")} /></dl></header>
+          <Fact label="Due" value={item.slaDueAt ?? VALUE_STATE_LABELS.unavailable} /><Fact label="Version" value={String(item.version ?? VALUE_STATE_LABELS.unavailable)} /></dl></header>
       <TechnicalDetails label="Case identifiers">
         <dl className="grid gap-2 sm:grid-cols-2"><Fact label="Case ID" value={item.breakId} /><Fact label="Run" value={item.runId} />
-          <Fact label="Fund account" value={item.fundAccountId ?? "Not recorded"} /><Fact label="Accounting period" value={item.accountingPeriodId ?? "Not recorded"} /></dl>
+          <Fact label="Fund account" value={item.fundAccountId ?? VALUE_STATE_LABELS.unavailable} /><Fact label="Accounting period" value={item.accountingPeriodId ?? VALUE_STATE_LABELS.unavailable} /></dl>
       </TechnicalDetails>
       <section aria-label="Comparison" className="rounded border border-border p-3">
         {item.statementEvidence || (item.measures?.length ?? 0) > 1 ? <ReconciliationCaseEvidence item={item} relatedRows={relatedCases} onOpenCase={onOpenCase}
@@ -394,10 +395,10 @@ export function CaseInspector({ caseId, initialCase, onChanged, services = defau
         {routingHref ? <Button asChild size="sm" variant="outline"><Link to={routingHref} aria-label={`Open routing target for reconciliation break ${item.breakId}`}>Open routing target</Link></Button> : null}</div>
       <TechnicalDetails label="Timeline and discussion">
         <dl className="my-3 grid gap-2 sm:grid-cols-2"><Fact label="Source observation" value={`${sourceObservationLabel(item.lineage)} · ${sourceObservationAge(item.lineage)}`} />
-          <Fact label="Updated" value={item.lastUpdatedAt} /><Fact label="Source system" value={item.sourceSystem ?? "Not recorded"} /><Fact label="Source reference" value={item.sourceReference ?? "Not recorded"} />
-          <Fact label="Required sign-off" value={item.requiredSignoffRole ?? "Not recorded"} /><Fact label="Sign-off status" value={item.signoffStatus ?? "Not recorded"} />
-          <Fact label="Root cause code" value={item.rootCauseCode ?? "Not recorded"} /><Fact label="Resolution code" value={item.resolutionCode ?? "Not recorded"} />
-          <Fact label="Decision note" value={item.resolutionNote ?? "Not recorded"} /><Fact label="Ledger impact" value={item.breakExplanation?.ledgerImpact ?? "Not recorded"} /></dl>
+          <Fact label="Updated" value={item.lastUpdatedAt} /><Fact label="Source system" value={item.sourceSystem ?? VALUE_STATE_LABELS.unavailable} /><Fact label="Source reference" value={item.sourceReference ?? VALUE_STATE_LABELS.unavailable} />
+          <Fact label="Required sign-off" value={item.requiredSignoffRole ?? VALUE_STATE_LABELS.unavailable} /><Fact label="Sign-off status" value={item.signoffStatus ?? VALUE_STATE_LABELS.unavailable} />
+          <Fact label="Root cause code" value={item.rootCauseCode ?? VALUE_STATE_LABELS.unavailable} /><Fact label="Resolution code" value={item.resolutionCode ?? VALUE_STATE_LABELS.unavailable} />
+          <Fact label="Decision note" value={item.resolutionNote ?? VALUE_STATE_LABELS.unavailable} /><Fact label="Ledger impact" value={item.breakExplanation?.ledgerImpact ?? VALUE_STATE_LABELS.unavailable} /></dl>
         <ReconciliationCaseDiscussion key={item.breakId} breakId={item.breakId} onUpdated={acceptExternalUpdate} />
         <BreakAuditTimeline key={`audit:${item.breakId}`} breakId={item.breakId} refreshKey={item.version} load={services.audit as BreakAuditLoader} />
       </TechnicalDetails>
@@ -410,14 +411,14 @@ function ValueFact({ label, value, unit, kind, reason, signed, conditionContextI
   const declared = unit?.trim();
   const unavailableReason = reconciliationValueUnavailableReason(value);
   return <div><dt className="text-xs text-muted-foreground">{label}</dt><dd>{unavailableReason
-    ? <span className="inline-flex flex-col" aria-describedby={conditionContextId}>Unavailable<span className="text-xs text-muted-foreground">{unavailableReason}</span></span>
+    ? <span className="inline-flex flex-col" aria-describedby={conditionContextId}>{VALUE_STATE_LABELS.unavailable}<span className="text-xs text-muted-foreground">{unavailableReason}</span></span>
     : <FinancialValue value={value} currency={declared && /^[A-Z]{3}$/.test(declared) ? declared : undefined} unit={reconciliationUnitLabel(declared, kind)} decimals={reconciliationValueDecimals(value, declared)} reason={reason} signed={signed} conditionContextId={conditionContextId} />}</dd></div>;
 }
 
 export function CaseVariance({ item, conditionContextId }: { item: ReconciliationBreakQueueItem; conditionContextId?: string }) {
   const residual = caseQueueResidual(item);
   const unit = caseResidualUnit(item);
-  if (["Multiple", "Unavailable", "Not recorded"].includes(residual.amount)) return <span>{residual.amount}</span>;
+  if (residual.amount === "Multiple" || residual.amount === "Not recorded" || isUnavailableLabel(residual.amount)) return <span>{residual.amount}</span>;
   return <FinancialValue value={caseResidual(item)} signed
     currency={unit && /^[A-Z]{3}$/.test(unit) ? unit : undefined} unit={residual.unit ?? "Unit unavailable"}
     decimals={reconciliationValueDecimals(caseResidual(item), unit)}

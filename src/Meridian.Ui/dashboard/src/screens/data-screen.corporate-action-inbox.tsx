@@ -28,6 +28,7 @@ import type {
   CorporateActionReconciliationPreview
 } from "@/types";
 
+import { VALUE_STATE_LABELS, isUnavailableLabel } from "@/lib/format";
 export const CORPORATE_ACTION_CASE_WORKSPACE_ID = "corporate-action-case-workspace";
 const EMPTY_CORPORATE_ACTION_ROWS: CorporateActionInboxRowModel[] = [];
 
@@ -108,7 +109,7 @@ const queueColumns: TableWorkbenchColumn<CorporateActionInboxRowModel>[] = [
 
 /**
  * An ex-date, record date or payable date label from the inbox model. A real calendar date becomes
- * a `<time>`; a label the server did not supply as one ("Not supplied") is printed as it was.
+ * a `<time>`; a label the server did not supply as one (VALUE_STATE_LABELS.unavailable) is printed as it was.
  */
 function CalendarDateLabel({ label, className }: { label: string; className?: string }) {
   return <LocalDateText className={className} value={label} fallback={label} />;
@@ -214,7 +215,7 @@ function SourceFacts({ row }: { row: CorporateActionInboxRowModel }) {
         columns={[{ id: "field", label: "Field", render: (fact) => fact.field, exportValue: (fact) => fact.field },
           { id: "value", label: "Winning value", render: (fact) => derivedFromInboxRow && INBOX_ROW_DATE_FACT_FIELDS.has(fact.field) ? <CalendarDateLabel label={fact.value} /> : fact.value, exportValue: (fact) => fact.value },
           { id: "source", label: "Source", render: (fact) => fact.source, exportValue: (fact) => fact.source },
-          { id: "evidence", label: "Evidence", render: (fact) => fact.evidenceId ?? "Not supplied", exportValue: (fact) => fact.evidenceId }]} />
+          { id: "evidence", label: "Evidence", render: (fact) => fact.evidenceId ?? VALUE_STATE_LABELS.unavailable, exportValue: (fact) => fact.evidenceId }]} />
       <p className="mt-2 text-xs text-muted-foreground">
         Agreeing sources: {row.agreeingSources.join(", ") || "none"} · Dissenting sources: {row.dissentingSources.join(", ") || "none"}
       </p>
@@ -336,11 +337,11 @@ function CaseWorkspace({ row, panel }: { row: CorporateActionInboxRowModel; pane
           ["Assignment", row.assignmentLabel],
           ["Conflict", row.conflictLabel],
           ["Permission", row.permissionLabel],
-          ["Tenant / company", row.acceptanceScope ? `${row.acceptanceScope.tenantId} / ${row.acceptanceScope.companyId}` : "Not supplied"],
-          ["Book / basis", row.acceptanceScope ? `${row.acceptanceScope.ledgerBookId ?? "Not supplied"} / ${row.acceptanceScope.accountingBasis ?? "Not supplied"}` : "Not supplied"],
+          ["Tenant / company", row.acceptanceScope ? `${row.acceptanceScope.tenantId} / ${row.acceptanceScope.companyId}` : VALUE_STATE_LABELS.unavailable],
+          ["Book / basis", row.acceptanceScope ? `${row.acceptanceScope.ledgerBookId ?? VALUE_STATE_LABELS.unavailable} / ${row.acceptanceScope.accountingBasis ?? VALUE_STATE_LABELS.unavailable}` : VALUE_STATE_LABELS.unavailable],
           ["Source event", row.sourceEventLabel],
           ["Source observed", row.sourceObservedAtLabel],
-          ["Source evidence", row.sourceEvidenceReference ?? "Not supplied"],
+          ["Source evidence", row.sourceEvidenceReference ?? VALUE_STATE_LABELS.unavailable],
           ["Ex-date", <><CalendarDateLabel label={row.exDateLabel} /> ({row.countdownLabel})</>],
           ["Record date", <CalendarDateLabel label={row.recordDateLabel} />],
           ["Payable date", <CalendarDateLabel label={row.payableDateLabel} />]
@@ -413,7 +414,7 @@ function CaseWorkspace({ row, panel }: { row: CorporateActionInboxRowModel; pane
                 </li>
               ))}
             </ol>
-            <p className="font-mono text-muted-foreground">Proof: {durableCase.proofReferences.join(", ") || "Not supplied"}</p>
+            <p className="font-mono text-muted-foreground">Proof: {durableCase.proofReferences.join(", ") || VALUE_STATE_LABELS.unavailable}</p>
           </div>
         ) : (
           <UnavailableState title="Case history and proof not supplied" reason="The current inbox contract supplies provider staging facts only. Durable transitions, evidence IDs, and proof hashes remain unavailable." />
@@ -497,8 +498,8 @@ function AcceptCanonicalFactDialog({ panel }: { panel: CorporateActionInboxViewM
             <div><dt className="text-muted-foreground">Terms</dt><dd className="font-mono">{row.valueLabel}</dd></div>
             <div><dt className="text-muted-foreground">Ex-date</dt><dd className="font-mono"><CalendarDateLabel label={row.exDateLabel} /></dd></div>
             <div><dt className="text-muted-foreground">Version</dt><dd className="font-mono">{row.versionLabel}</dd></div>
-            <div><dt className="text-muted-foreground">Scope</dt><dd className="font-mono">{row.acceptanceScope ? `${row.acceptanceScope.tenantId} / ${row.acceptanceScope.companyId}` : "Not supplied"}</dd></div>
-            <div><dt className="text-muted-foreground">Idempotency key</dt><dd className="break-all font-mono">{panel.pendingAcceptanceRequest?.idempotencyKey ?? "Not supplied"}</dd></div>
+            <div><dt className="text-muted-foreground">Scope</dt><dd className="font-mono">{row.acceptanceScope ? `${row.acceptanceScope.tenantId} / ${row.acceptanceScope.companyId}` : VALUE_STATE_LABELS.unavailable}</dd></div>
+            <div><dt className="text-muted-foreground">Idempotency key</dt><dd className="break-all font-mono">{panel.pendingAcceptanceRequest?.idempotencyKey ?? VALUE_STATE_LABELS.unavailable}</dd></div>
           </dl>
           {panel.acceptErrors[row.rowId] ? <StatusBanner role="alert" tone="danger" title="Canonical fact not accepted" detail={panel.acceptErrors[row.rowId]} /> : null}
           <div className="flex flex-wrap justify-end gap-2">
@@ -521,7 +522,7 @@ function AcceptCanonicalFactDialog({ panel }: { panel: CorporateActionInboxViewM
 
 export function CorporateActionInboxRegion({ panel }: { panel: CorporateActionInboxViewModel }) {
   const allRows = panel.model?.rows ?? EMPTY_CORPORATE_ACTION_ROWS;
-  const conflictCount = allRows.filter((row) => row.conflictLabel !== "None" && row.conflictLabel !== "Not supplied").length;
+  const conflictCount = allRows.filter((row) => row.conflictLabel !== "None" && !isUnavailableLabel(row.conflictLabel)).length;
   const unassignedCount = allRows.filter((row) => row.assignmentLabel === "Unassigned").length;
   const durableCaseCount = allRows.filter((row) => row.durableCase !== null || row.compactCase !== null).length;
   const calendarScope = [...new Set(allRows.map((row) => `${row.acceptanceScope?.tenantId ?? "unknown"}:${row.acceptanceScope?.companyId ?? "unknown"}`))].sort().join("|");

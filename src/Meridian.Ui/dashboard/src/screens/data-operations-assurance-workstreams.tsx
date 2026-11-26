@@ -1,5 +1,5 @@
 import { TableWorkbench } from "@/components/meridian/table-workbench";
-import { formatNumber, formatPercent, formatRatioAsPercent } from "@/lib/format";
+import { formatNumber, formatPercent, formatRatioAsPercent, VALUE_STATE_LABELS } from "@/lib/format";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { DatabaseZap, HardDrive, ShieldCheck } from "lucide-react";
@@ -112,7 +112,7 @@ export function IngestionOperationsWorkstream() {
               { id: "progress", label: "Progress", render: (job) => formatPercent(job.progressPercent, { minimumFractionDigits: 1, maximumFractionDigits: 1 }), exportValue: (job) => job.progressPercent },
               { id: "checkpoint", label: "Checkpoint", render: (job) => job.isResumable ? "Durable" : "None", exportValue: (job) => job.isResumable },
               { id: "retry", label: "Retry", render: (job) => `${job.attemptCount}/${job.maxRetries}`, exportValue: (job) => job.attemptCount },
-              { id: "evidence", label: "Evidence", render: (job) => job.evidenceRoute ? <Link to={job.evidenceRoute}>Open</Link> : "—", exportValue: (job) => job.evidenceRoute },
+              { id: "evidence", label: "Evidence", render: (job) => job.evidenceRoute ? <Link to={job.evidenceRoute}>Open</Link> : VALUE_STATE_LABELS.unavailable, exportValue: (job) => job.evidenceRoute },
               { id: "actions", label: "Actions", render: (job) => <div className="flex flex-wrap gap-1">{job.actions.map((action) => <Button key={action.action} size="sm" variant="outline" disabled={!action.enabled || busy !== null || !rationale.trim()} title={action.disabledReason ?? undefined} onClick={() => void apply(job, action.action)}>{busy === `${job.jobId}:${action.action}` ? "Applying…" : action.label}</Button>)}</div> }
             ]} />
         </div>
@@ -164,13 +164,13 @@ export function StorageAssuranceWorkstream() {
         {result ? <StatusBanner tone={result.status === "Completed" ? "success" : "warning"} title={`${result.action} ${result.status}`} detail={`${formatBytes(result.affectedBytes)} affected · evidence ${result.evidenceVaultId ?? "not retained"}`} /> : null}
         <div className="grid gap-2 md:grid-cols-4">
           <Metric label="Storage" value={snapshot?.health.status ?? "Loading"} icon={HardDrive} />
-          <Metric label="Quality" value={snapshot ? formatRatioAsPercent(snapshot.quality.averageScore, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : "—"} icon={ShieldCheck} />
-          <Metric label="Canonical match" value={snapshot ? formatPercent(snapshot.canonicalization.matchRatePercent, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : "—"} icon={DatabaseZap} />
-          <Metric label="Capacity used" value={snapshot ? formatPercent(snapshot.capacity.usedPercent, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : "—"} />
+          <Metric label="Quality" value={snapshot ? formatRatioAsPercent(snapshot.quality.averageScore, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : VALUE_STATE_LABELS.unavailable} icon={ShieldCheck} />
+          <Metric label="Canonical match" value={snapshot ? formatPercent(snapshot.canonicalization.matchRatePercent, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : VALUE_STATE_LABELS.unavailable} icon={DatabaseZap} />
+          <Metric label="Capacity used" value={snapshot ? formatPercent(snapshot.capacity.usedPercent, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : VALUE_STATE_LABELS.unavailable} />
         </div>
         <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_22rem]">
           <div className="space-y-3">
-            <Card><CardHeader><CardTitle className="text-base">Assurance signals</CardTitle></CardHeader><CardContent className="grid gap-3 md:grid-cols-2"><Signal label="Root" value={snapshot?.health.rootLabel ?? "—"} detail={`${snapshot?.health.fileCount ?? 0} files · ${formatBytes(snapshot?.health.totalBytes ?? 0)}`} /><Signal label="Temporary candidates" value={String(snapshot?.health.temporaryFileCount ?? 0)} detail="Only temporary and partial files are cleanup eligible." /><Signal label="Low-quality files" value={String(snapshot?.quality.lowQualityFileCount ?? 0)} detail={`${snapshot?.quality.filesAnalyzed ?? 0} files analyzed`} /><Signal label="Canonical hard fails" value={String(snapshot?.canonicalization.hardFailTotal ?? 0)} detail={`Version ${snapshot?.canonicalization.version ?? 0}`} /></CardContent></Card>
+            <Card><CardHeader><CardTitle className="text-base">Assurance signals</CardTitle></CardHeader><CardContent className="grid gap-3 md:grid-cols-2"><Signal label="Root" value={snapshot?.health.rootLabel ?? VALUE_STATE_LABELS.unavailable} detail={`${snapshot?.health.fileCount ?? 0} files · ${formatBytes(snapshot?.health.totalBytes ?? 0)}`} /><Signal label="Temporary candidates" value={String(snapshot?.health.temporaryFileCount ?? 0)} detail="Only temporary and partial files are cleanup eligible." /><Signal label="Low-quality files" value={String(snapshot?.quality.lowQualityFileCount ?? 0)} detail={`${snapshot?.quality.filesAnalyzed ?? 0} files analyzed`} /><Signal label="Canonical hard fails" value={String(snapshot?.canonicalization.hardFailTotal ?? 0)} detail={`Version ${snapshot?.canonicalization.version ?? 0}`} /></CardContent></Card>
             {snapshot?.alerts.length ? <Card><CardHeader><CardTitle className="text-base">Quality alerts</CardTitle></CardHeader><CardContent className="space-y-2">{snapshot.alerts.map((alert) => <StatusBanner key={alert.alertId} tone={alert.severity === "Critical" ? "danger" : "warning"} title={alert.subject} detail={alert.message} />)}</CardContent></Card> : null}
           </div>
           <Card><CardHeader><CardTitle className="text-base">Guarded maintenance</CardTitle><CardDescription>Preview first; execute only against the unchanged, unexpired candidate set.</CardDescription></CardHeader><CardContent className="space-y-3">

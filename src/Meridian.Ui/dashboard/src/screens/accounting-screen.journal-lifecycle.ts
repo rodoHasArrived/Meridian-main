@@ -8,7 +8,7 @@ import type {
   ManualJournalLifecycleTransitionViewModel,
 } from "./accounting-screen.view-model";
 import type { JournalEntryLifecycleAction, JournalEntryLifecycleTransition, ManualJournalEntryDraft } from "@/types";
-import { formatCount as formatCountValue, formatCurrencyWithCode } from "@/lib/format";
+import { formatCount as formatCountValue, formatCurrencyWithCode, VALUE_STATE_LABELS } from "@/lib/format";
 
 export const ASSET_REVIEW_ONLY_REASON = "Asset accounting drafts require retained approval evidence through the asset workflow; generic approval, posting and corrections are unavailable.";
 
@@ -93,7 +93,7 @@ export function buildManualJournalLifecycleChecklist(
   const commandReadiness = (action: JournalEntryLifecycleAction): { value: string; detail: string; tone: AccountingToolingTone } => {
     const command = commandByAction.get(action);
     if (!command) {
-      return { value: "Unavailable", detail: "Lifecycle command is not surfaced for this journal entry.", tone: "default" };
+      return { value: VALUE_STATE_LABELS.unavailable, detail: "Lifecycle command is not surfaced for this journal entry.", tone: "default" };
     }
 
     if (command.disabledReason) {

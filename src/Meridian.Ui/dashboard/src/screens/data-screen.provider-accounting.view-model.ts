@@ -9,7 +9,7 @@ import type {
   ProviderRateLimitsResponse,
   ProviderRegistrationFailure
 } from "@/types";
-import { formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
+import { formatTimestamp as formatDisplayTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 
 export interface ProviderAccountingServices {
   getCatalog: (signal?: AbortSignal) => Promise<ProviderCatalogResponse>;
@@ -199,14 +199,14 @@ function buildRateLimitRow(
       ? `Unavailable / ${provider.maxRequestsPerWindow} ${unit}`
       : `${provider.requestsInWindow} / ${provider.maxRequestsPerWindow} ${unit}`,
     backfillAttempts: provider.backfillAttemptsInWindow == null
-      ? "Unavailable"
+      ? VALUE_STATE_LABELS.unavailable
       : `${provider.backfillAttemptsInWindow} per ${provider.backfillAttemptWindowSeconds}s`,
-    remaining: provider.remainingRequests === null ? "Unavailable" : `${provider.remainingRequests} ${unit}`,
+    remaining: provider.remainingRequests === null ? VALUE_STATE_LABELS.unavailable : `${provider.remainingRequests} ${unit}`,
     dailyUsage: !provider.stateAvailable || provider.dailyMaximum === undefined
-      ? "Unavailable"
+      ? VALUE_STATE_LABELS.unavailable
       : provider.dailyMaximum === null
         ? "No daily cap modeled"
-        : `${provider.dailyUnitsUsed ?? "Unavailable"} / ${provider.dailyMaximum} ${unit} · ${provider.dailyResetPolicy === "utc-midnight" ? "midnight UTC" : provider.dailyResetPolicy === "rolling-24-hours" ? "rolling 24 hours" : "reset policy unavailable"}`,
+        : `${provider.dailyUnitsUsed ?? VALUE_STATE_LABELS.unavailable} / ${provider.dailyMaximum} ${unit} · ${provider.dailyResetPolicy === "utc-midnight" ? "midnight UTC" : provider.dailyResetPolicy === "rolling-24-hours" ? "rolling 24 hours" : "reset policy unavailable"}`,
     resetCountdown,
     failureReason: limited
       ? `Current rate-limit reason: ${reason ?? "reason unavailable"}.`
@@ -282,7 +282,7 @@ function normalizeReason(reason: string | null): string | null {
 
 function formatToken(value: string): string {
   const normalized = value.trim().replaceAll("-", " ");
-  return normalized.length === 0 ? "Unavailable" : normalized[0].toUpperCase() + normalized.slice(1);
+  return normalized.length === 0 ? VALUE_STATE_LABELS.unavailable : normalized[0].toUpperCase() + normalized.slice(1);
 }
 
 function formatTimestamp(value: string): string {

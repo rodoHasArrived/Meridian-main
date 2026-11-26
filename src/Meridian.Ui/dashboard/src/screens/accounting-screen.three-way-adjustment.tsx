@@ -6,6 +6,7 @@ import { prepareThreeWayAdjustment } from "@/lib/api/accounting-integration.api"
 import type { AccountingIntegrationScope, PreparedThreeWayAdjustmentDraft, ThreeWayAdjustmentProposal, ThreeWayReconciliation } from "@/types/accounting-integration";
 import { integrationError, isGuid } from "./accounting-integration.scope";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 /** A server-supported fee explanation may create a draft; this surface has no approval or posting command. */
 export function ThreeWayAdjustmentProposalPanel({ scope, comparison, proposal, disabled, onBusyChange }: {
   scope: AccountingIntegrationScope; comparison: ThreeWayReconciliation; proposal: ThreeWayAdjustmentProposal;
@@ -39,7 +40,7 @@ export function ThreeWayAdjustmentProposalPanel({ scope, comparison, proposal, d
   return <div className="space-y-2 rounded border border-border p-3 text-xs" aria-label={`Fee adjustment proposal ${proposal.checkId}`}>
     <div className="flex flex-wrap items-center gap-2"><span className="font-semibold">{proposal.description}</span>
       <Badge variant="outline">{proposal.status === "Ready" ? "Draft preparation available" : "Insufficient evidence"}</Badge></div>
-    <p>Proposed fee: <span className="font-mono">{proposal.amount ?? "Unavailable"} {proposal.currency}</span></p>
+    <p>Proposed fee: <span className="font-mono">{proposal.amount ?? VALUE_STATE_LABELS.unavailable} {proposal.currency}</span></p>
     <p className="text-muted-foreground">Draft only. Validation, review and posting remain in the existing journal workflow.</p>
     <details><summary className="cursor-pointer">Retained fee evidence</summary>
       {proposal.evidenceIds.length ? <ul className="mt-2 list-disc space-y-1 pl-4">{proposal.evidenceIds.map(id => <li key={id} className="break-all font-mono">{id}</li>)}</ul> : <p className="mt-2">No sufficient independent fee evidence is retained.</p>}

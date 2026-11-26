@@ -24,12 +24,13 @@ function TextField({ label, hint, ...props }: InputHTMLAttributes<HTMLInputEleme
   return <FormRow label={label} labelFor={id} hint={hint}><Input id={id} {...props} /></FormRow>;
 }
 
+// Tolerances start blank: a zero tolerance is a policy choice the operator enters, not a default.
 function CriteriaFields({ criteria }: { criteria?: OnboardingCriteria }) {
   return <FormGrid columns={3}>
     <TextField name="requiredDates" label="Required dates" required defaultValue={criteria?.requiredDates.join(", ")} hint="Comma-separated YYYY-MM-DD dates inside the scope." />
-    <TextField name="balanceTolerance" label="Balance tolerance" type="number" min="0" step="any" required defaultValue={criteria?.balanceTolerance ?? 0} />
-    <TextField name="positionTolerance" label="Position tolerance" type="number" min="0" step="any" required defaultValue={criteria?.positionTolerance ?? 0} />
-    <TextField name="navTolerance" label="NAV tolerance" type="number" min="0" step="any" required defaultValue={criteria?.navTolerance ?? 0} />
+    <TextField name="balanceTolerance" label="Balance tolerance" type="number" min="0" step="any" required defaultValue={criteria?.balanceTolerance ?? ""} />
+    <TextField name="positionTolerance" label="Position tolerance" type="number" min="0" step="any" required defaultValue={criteria?.positionTolerance ?? ""} />
+    <TextField name="navTolerance" label="NAV tolerance" type="number" min="0" step="any" required defaultValue={criteria?.navTolerance ?? ""} />
     <TextField name="minimumCoveragePercent" label="Minimum coverage (%)" type="number" min="0" max="100" step="any" required defaultValue={criteria?.minimumCoveragePercent ?? 100} />
     <TextField name="minimumReviewers" label="Minimum independent reviewers" type="number" min="1" step="1" required defaultValue={criteria?.minimumReviewers ?? 1} />
     <TextField name="requiredReviewerIds" label="Designated reviewer identities" defaultValue={criteria?.requiredReviewerIds.join(", ")} hint="Comma-separated reviewer roster. The minimum reviewer count must approve; decisions use the signed-in reviewer." />

@@ -22,6 +22,7 @@ import { SettingsChip, capabilityTone, settingsBannerTone } from "@/screens/sett
 import { createAssetProfileDraftState, type AssetProfileDraftState } from "@/screens/settings-screen.section-state";
 import { toSeverity } from "@/design-system/status-styles";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 function AssetProfileFieldInput({
   field,
   value,
@@ -159,7 +160,7 @@ export function useSettingsAssetProfileSectionState({ approvedAssetProfiles, ass
       ...createProfileBackedSecurityState(selected ?? null),
       displayName: current.displayName,
       internalCode: current.internalCode,
-      currency: current.currency || "USD"
+      currency: current.currency
     }));
   };
   const updateProfileBackedSecurityField = (fieldKey: string, value: string) => {
@@ -390,14 +391,17 @@ export function useSettingsAssetProfileSectionState({ approvedAssetProfiles, ass
     // Includes the ProviderSymbol provider namespace: the write-side command validation rejects
     // that kind with a blank provider, so the form must catch it up front.
     const missingIdentifiers = missingRequiredIdentifierDetails(requiredIdentifierPreferences, profileBackedSecurity);
+    // A security is created in the currency the operator entered; none is assumed.
+    const missingCurrency = !profileBackedSecurity.currency.trim();
     if (!profileBackedSecurity.displayName.trim()
       || !profileBackedSecurity.internalCode.trim()
+      || missingCurrency
       || missingFields.length > 0
       || missingIdentifiers.length > 0) {
       setProfileBackedSecurity((current) => ({
         ...current,
-        message: "Display name, internal code, required identifiers, and required profile fields are required.",
-        details: [...missingIdentifiers, ...missingFields],
+        message: "Display name, internal code, currency, required identifiers, and required profile fields are required.",
+        details: [...(missingCurrency ? ["Currency"] : []), ...missingIdentifiers, ...missingFields],
         tone: "warning"
       }));
       return;
@@ -423,7 +427,7 @@ export function useSettingsAssetProfileSectionState({ approvedAssetProfiles, ass
         assetClass: "CustomAsset",
         commonTerms: {
           displayName: profileBackedSecurity.displayName.trim(),
-          currency: profileBackedSecurity.currency.trim().toUpperCase() || "USD"
+          currency: profileBackedSecurity.currency.trim().toUpperCase()
         },
         assetSpecificTerms: {
           schemaVersion: 3,
@@ -577,7 +581,7 @@ export function SettingsAssetProfileSection({ vm, submitAssetProfileDraft, selec
               </p>
             </div>
             <Badge variant={selectedDraftStarterProfile ? "warning" : "outline"}>
-              {assetProfileDraft.busyAction ? "Working" : selectedDraftStarterProfile ? "Draft ready" : "Unavailable"}
+              {assetProfileDraft.busyAction ? "Working" : selectedDraftStarterProfile ? "Draft ready" : VALUE_STATE_LABELS.unavailable}
             </Badge>
           </div>
           <div className="grid gap-3 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,1fr)_minmax(0,0.8fr)]">

@@ -83,7 +83,8 @@ export function buildDefaultReportRunParameterDraft({
     ledgerBookId: retained?.ledgerBook.ledgerBookId ?? "",
     ledgerBookCode: retained?.ledgerBook.ledgerBookCode ?? "Primary GL",
     accountingBasis: retained?.accountingBasis ?? "Gaap",
-    presentationCurrency: retained?.presentationCurrency ?? "USD",
+    // No retained run means no chosen presentation currency; the draft validation requires one.
+    presentationCurrency: retained?.presentationCurrency ?? "",
     consolidationLevel: retained?.consolidationLevel ?? "Fund",
     outputFormat: retained?.outputFormat ?? "Pdf",
     finality: retained?.finality ?? "Draft",

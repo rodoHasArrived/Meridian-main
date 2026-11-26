@@ -35,6 +35,7 @@ public sealed partial class WorkstationEndpointsTests
     {
         var package = await services.GetRequiredService<IAccountingReportPackageService>().BuildPackageAsync(
             new AccountingReportPackageRequestDto("test-fund-profile", "2026-05", "report-preparer",
+                BeginningCapital: 0m, Contributions: 0m, Distributions: 0m, RealizedGainLoss: 0m, Nav: 0m, Currency: "USD",
                 LedgerBookId: bookId, TenantId: "tenant-test", CompanyId: "tenant-test", EvidenceLinks:
                 [
                     $"evidence:ledger:trial-balance:2026-05:book:{bookId:D}",

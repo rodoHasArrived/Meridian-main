@@ -41,7 +41,7 @@ describe("Agreement lifecycle queue", () => {
     expect(api.getAgreementWorkQueue).not.toHaveBeenCalled();
     await loadAndSelect();
     expect(screen.getByText("12345678901234567890.12345678 USD")).toBeVisible();
-    expect(screen.getByText("Unavailable")).toBeVisible();
+    expect(screen.getByText("Not available")).toBeVisible();
     expect(screen.getByRole("button", { name: "Track this finding" })).toBeDisabled();
     expect(api.observeAgreementWorkItem).not.toHaveBeenCalled();
     expect(api.updateAgreementWorkItem).not.toHaveBeenCalled();

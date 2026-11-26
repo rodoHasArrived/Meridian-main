@@ -1893,7 +1893,7 @@ describe("buildOrderPreview", () => {
 
     expect(preview.available).toBe(false);
     expect(preview.notional).toBeNull();
-    expect(preview.notionalLabel).toBe("—");
+    expect(preview.notionalLabel).toBe("Not available");
     expect(preview.priceSource).toBe("none");
     expect(preview.warnings).toEqual([]);
     expect(preview.summaryLine).toMatch(/Order preview will appear/);
@@ -1956,7 +1956,7 @@ describe("buildOrderPreview", () => {
     });
 
     expect(preview.priceSource).toBe("none");
-    expect(preview.notionalLabel).toBe("—");
+    expect(preview.notionalLabel).toBe("Not available");
     expect(preview.warnings.find((w) => w.id === "no-reference-price")).toBeDefined();
   });
 

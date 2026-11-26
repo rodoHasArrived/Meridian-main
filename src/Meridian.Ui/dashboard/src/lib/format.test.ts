@@ -42,8 +42,8 @@ describe("formatNumber", () => {
   });
 
   it("renders the fallback for null, undefined, and non-finite values", () => {
-    expect(formatNumber(null)).toBe("—");
-    expect(formatNumber(undefined)).toBe("—");
+    expect(formatNumber(null)).toBe("Not available");
+    expect(formatNumber(undefined)).toBe("Not available");
     expect(formatNumber(Number.NaN, { fallback: "0" })).toBe("0");
   });
 
@@ -70,7 +70,7 @@ describe("formatDecimal", () => {
   it("signs explicitly when asked and renders the fallback for missing values", () => {
     expect(formatDecimal(1.234, 2, { signed: true })).toBe("+1.23");
     expect(formatDecimal(-1.234, 2, { signed: true })).toBe("-1.23");
-    expect(formatDecimal(null, 2)).toBe("—");
+    expect(formatDecimal(null, 2)).toBe("Not available");
     expect(formatDecimal(Number.NaN, 2, { fallback: "Unavailable" })).toBe("Unavailable");
   });
 });
@@ -154,7 +154,7 @@ describe("formatCurrency", () => {
   });
 
   it("renders the fallback for non-finite values", () => {
-    expect(formatCurrency(null)).toBe("—");
+    expect(formatCurrency(null)).toBe("Not available");
     expect(formatCurrency(Number.NaN, { fallback: "$0.00" })).toBe("$0.00");
   });
 });
@@ -171,7 +171,7 @@ describe("formatPrefixedCurrency", () => {
   });
 
   it("renders the fallback for non-finite values", () => {
-    expect(formatPrefixedCurrency(Number.POSITIVE_INFINITY)).toBe("—");
+    expect(formatPrefixedCurrency(Number.POSITIVE_INFINITY)).toBe("Not available");
   });
 });
 
@@ -187,7 +187,7 @@ describe("formatSignedCurrency", () => {
   });
 
   it("renders the fallback for non-finite values", () => {
-    expect(formatSignedCurrency(null)).toBe("—");
+    expect(formatSignedCurrency(null)).toBe("Not available");
   });
 });
 
@@ -200,7 +200,7 @@ describe("formatCompactCurrency", () => {
   });
 
   it("renders the fallback for non-finite values", () => {
-    expect(formatCompactCurrency(undefined)).toBe("—");
+    expect(formatCompactCurrency(undefined)).toBe("Not available");
   });
 });
 
@@ -235,8 +235,9 @@ describe("formatCurrencyWithCode", () => {
     [100, "??", false, "?? 100"],
     [-0, "USD", true, "$0 USD"],
     [-0, "EUR", false, "€0 EUR"],
-    [100, "", false, "$100"],
-    [Number.NaN, "EUR", true, "— EUR"]
+    // No currency is known, so none is assumed: a bare amount, never "$".
+    [100, "", false, "100"],
+    [Number.NaN, "EUR", true, "Not available"]
   ])("formats %s in %s (signed: %s)", (value, currency, signed, expected) => {
     expect(formatCurrencyWithCode(value, currency, { signed })).toBe(expected);
   });
@@ -276,7 +277,7 @@ describe("formatCount", () => {
   it("groups with the en-US locale whatever the host locale, and falls back for non-finite input", () => {
     expect(formatCount(1234567)).toBe("1,234,567");
     expect(formatCount(0)).toBe("0");
-    expect(formatCount(Number.NaN)).toBe("—");
+    expect(formatCount(Number.NaN)).toBe("Not available");
     expect(formatCount(null, { fallback: "Unavailable" })).toBe("Unavailable");
   });
 
@@ -300,7 +301,7 @@ describe("formatMoney", () => {
     expect(formatMoney(-0.0125, { context: "trading", decimals: 4 })).toBe("-$0.0125");
     expect(formatMoney(3100, { context: "trading", signed: true })).toBe("+$3,100.00");
     expect(formatMoney(3100.4, { context: "summary", signed: true })).toBe("+$3,100");
-    expect(formatMoney(undefined)).toBe("—");
+    expect(formatMoney(undefined)).toBe("Not available");
   });
 
   it("formats decimal strings exactly from their digits, never through a float", () => {
@@ -317,9 +318,9 @@ describe("formatMoney", () => {
   it("reads money-ish strings and falls back for text that is not a number", () => {
     expect(formatMoney("(1,234.00)")).toBe("-$1,234.00");
     expect(formatMoney("1,234.00-", { context: "accounting", currency: "EUR" })).toBe("(€1,234.00)");
-    expect(formatMoney("not a number")).toBe("—");
+    expect(formatMoney("not a number")).toBe("Not available");
     expect(formatMoney("", { fallback: "Not recorded" })).toBe("Not recorded");
-    expect(formatMoney(Number.NaN)).toBe("—");
+    expect(formatMoney(Number.NaN)).toBe("Not available");
   });
 
   it("matches Intl for numbers, including ties and currencies Intl spells with a code", () => {
@@ -375,7 +376,7 @@ describe("formatPnl", () => {
   });
 
   it("renders the fallback for a missing value", () => {
-    expect(formatPnl(null)).toBe("—");
+    expect(formatPnl(null)).toBe("Not available");
     expect(formatPnl(Number.NaN, { fallback: "Not recorded" })).toBe("Not recorded");
   });
 });

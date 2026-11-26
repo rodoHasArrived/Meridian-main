@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { TimeText } from "@/components/ui/time-text";
-import { formatCount, formatNumber, pluralizeCount } from "@/lib/format";
+import { formatCount, formatNumber, pluralizeCount, VALUE_STATE_LABELS } from "@/lib/format";
 import type { ReactNode, RefObject } from "react";
 import { Input } from "@/components/ui/input";
 import type { useDataViewModel } from "./data-screen.view-model";
@@ -45,10 +45,10 @@ export function BackfillQuotaPanel({ preview, submissionEstimate, busy, selectAl
   const fields: [string, string][] = [];
   if (available) {
     fields.push(
-      ["Expected requests", formatCount(quota.expectedRequests, { fallback: "Unavailable" })],
+      ["Expected requests", formatCount(quota.expectedRequests, { fallback: VALUE_STATE_LABELS.unavailable })],
       ["Known historical limit", `${quotaUnits(quota.requestsPerWindow!, quota.quotaUnit)} / ${duration(quota.windowSeconds!)}`],
-      ["Observed remaining", quota.observedRemainingRequests == null ? "Unavailable" : quotaUnits(quota.observedRemainingRequests, quota.quotaUnit)],
-      ["Estimated duration", quota.estimatedDurationSeconds == null ? "Unavailable" : duration(quota.estimatedDurationSeconds)]
+      ["Observed remaining", quota.observedRemainingRequests == null ? VALUE_STATE_LABELS.unavailable : quotaUnits(quota.observedRemainingRequests, quota.quotaUnit)],
+      ["Estimated duration", quota.estimatedDurationSeconds == null ? VALUE_STATE_LABELS.unavailable : duration(quota.estimatedDurationSeconds)]
     );
     if (quota.reservedHeadroomPercent > 0 && quota.backfillRequestsPerWindow != null) {
       fields.push(["Backfill allowance", `${quotaUnits(quota.backfillRequestsPerWindow, quota.quotaUnit)} per window`]);
@@ -58,7 +58,7 @@ export function BackfillQuotaPanel({ preview, submissionEstimate, busy, selectAl
     }
     if (quota.dailyLimit != null) {
       fields.push(["Daily limit", `${quotaUnits(quota.dailyLimit, quota.quotaUnit)} per day`]);
-      fields.push(["Observed daily remaining", quota.observedDailyRemaining == null ? "Unavailable" : quotaUnits(quota.observedDailyRemaining, quota.quotaUnit)]);
+      fields.push(["Observed daily remaining", quota.observedDailyRemaining == null ? VALUE_STATE_LABELS.unavailable : quotaUnits(quota.observedDailyRemaining, quota.quotaUnit)]);
       if (quota.reservedHeadroomPercent > 0 && quota.dailyBackfillAllowance != null) {
         fields.push(["Daily backfill allowance", quotaUnits(quota.dailyBackfillAllowance, quota.quotaUnit)]);
       }
@@ -108,10 +108,10 @@ export function BackfillReceiptEvidence({ receipt }: { receipt: BackfillQuotaRec
       <EvidenceFields fields={[
         ["Observed providers", receipt.observedProviders.join(", ") || "None observed"],
         ...(receipt.providersThatReturnedBars == null ? [] : [["Providers that returned bars", receipt.providersThatReturnedBars.join(", ") || "None"] as const]),
-        ["Requests (at submission / actual)", `${formatCount(receipt.estimate.expectedRequests, { fallback: "Unavailable" })} / ${formatCount(receipt.actualRequests, { fallback: "Unavailable" })}`],
-        ["Request variance", formatCount(receipt.requestVariance, { signed: true, fallback: "Unavailable" })],
-        ["Duration (at submission / actual)", `${receipt.estimate.estimatedDurationSeconds == null ? "Unavailable" : duration(receipt.estimate.estimatedDurationSeconds)} / ${duration(receipt.actualDurationSeconds)}`],
-        ["Duration variance", receipt.durationVarianceSeconds == null ? "Unavailable" : signed(receipt.durationVarianceSeconds, duration)],
+        ["Requests (at submission / actual)", `${formatCount(receipt.estimate.expectedRequests, { fallback: VALUE_STATE_LABELS.unavailable })} / ${formatCount(receipt.actualRequests, { fallback: VALUE_STATE_LABELS.unavailable })}`],
+        ["Request variance", formatCount(receipt.requestVariance, { signed: true, fallback: VALUE_STATE_LABELS.unavailable })],
+        ["Duration (at submission / actual)", `${receipt.estimate.estimatedDurationSeconds == null ? VALUE_STATE_LABELS.unavailable : duration(receipt.estimate.estimatedDurationSeconds)} / ${duration(receipt.actualDurationSeconds)}`],
+        ["Duration variance", receipt.durationVarianceSeconds == null ? VALUE_STATE_LABELS.unavailable : signed(receipt.durationVarianceSeconds, duration)],
         ["Throttling events", formatCount(receipt.throttlingEventCount)]
       ]} />
       {receipt.throttlingEvents.length > 0 && (
@@ -145,7 +145,7 @@ export function WorkstationBackfillReceipts({ rows, error }: { rows: BackfillExe
             <EvidenceFields fields={[
               ["Job ID", row.executionId],
               ["Scope", `${row.fromDate} to ${row.toDate}`],
-              ["Eligible from", <TimeText value={row.scheduledAt} fallback="Unavailable" />],
+              ["Eligible from", <TimeText value={row.scheduledAt} fallback={VALUE_STATE_LABELS.unavailable} />],
               ["Bars written", formatCount(row.barsDownloaded)]
             ]} />
             {row.throttledUntil && <p className="text-xs text-muted-foreground">Waiting for budget until approximately <TimeText value={row.throttledUntil} />.</p>}

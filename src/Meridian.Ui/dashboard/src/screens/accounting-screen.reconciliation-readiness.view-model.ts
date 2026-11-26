@@ -10,7 +10,7 @@
  * recognize from memory.
  */
 
-import { formatDecimal } from "@/lib/format";
+import { formatDecimal, VALUE_STATE_LABELS } from "@/lib/format";
 import type {
   ReconciliationCaseSummary,
   ReconciliationQueueAccountStatus,
@@ -101,10 +101,10 @@ export function buildQueueReadinessSummary(
 ): QueueReadinessSummaryViewModel {
   if (!statuses) {
     return {
-      accountsLabel: "—",
-      readyLabel: "—",
-      blockedLabel: "—",
-      unresolvedLabel: "—",
+      accountsLabel: VALUE_STATE_LABELS.unavailable,
+      readyLabel: VALUE_STATE_LABELS.unavailable,
+      blockedLabel: VALUE_STATE_LABELS.unavailable,
+      unresolvedLabel: VALUE_STATE_LABELS.unavailable,
       blockedNotice: null
     };
   }

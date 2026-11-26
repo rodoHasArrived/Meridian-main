@@ -4,7 +4,7 @@ import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
-import { currencyMinorUnitPrecision } from "@/lib/format";
+import { currencyMinorUnitPrecision, VALUE_STATE_LABELS } from "@/lib/format";
 import type { ConsolidationSource, ConsolidationView } from "@/types/consolidation";
 
 const cell = "border-b border-border/60 px-3 py-2 text-left align-top";
@@ -19,7 +19,7 @@ function SourceDetails({ sources, currency, label }: { sources: ConsolidationSou
           {sources.map((source) => (
             <li key={`${source.ledgerBookId}:${source.journalEntryId}:${source.lineId}`} className="space-y-1 break-all">
               <p className="font-medium">{source.accountPath} · {source.effectiveDate}</p>
-              <p>Posting entity: {source.entityId} · Counterparty: {source.counterpartyId || "Not supplied"}</p>
+              <p>Posting entity: {source.entityId} · Counterparty: {source.counterpartyId || VALUE_STATE_LABELS.unavailable}</p>
               {source.counterpartyDisposition === "FormerPerimeterExternal" ? <p>Former perimeter · external balance, not eliminated</p> : null}
               <p className="font-mono">Debit {money(source.debit, currency)} {currency} · Credit {money(source.credit, currency)} {currency}</p>
               {source.transactionCurrency && source.transactionDebit != null && source.transactionCredit != null ? <p className="font-mono">Original transaction: debit {money(source.transactionDebit, source.transactionCurrency)} · credit {money(source.transactionCredit, source.transactionCurrency)} {source.transactionCurrency}</p> : null}
@@ -31,7 +31,7 @@ function SourceDetails({ sources, currency, label }: { sources: ConsolidationSou
                 {source.accountingArrangementId ? <div><dt className="inline font-medium">Accounting arrangement: </dt><dd className="inline font-mono">{source.accountingArrangementId}</dd></div> : null}
                 {source.accountingArrangementRevisionId ? <div><dt className="inline font-medium">Accounting mapping revision: </dt><dd className="inline font-mono">{source.accountingArrangementRevisionId}</dd></div> : null}
                 {source.intercompanyAgreementId ? <div><dt className="inline font-medium">Canonical legal agreement: </dt><dd className="inline font-mono">{source.intercompanyAgreementId}</dd></div> : null}
-                {source.intercompanyAgreementVersion != null ? <div><dt className="inline font-medium">Approved legal agreement version: </dt><dd className="inline font-mono">{source.intercompanyAgreementVersion > 0 ? source.intercompanyAgreementVersion : "Not retained"}</dd></div> : null}
+                {source.intercompanyAgreementVersion != null ? <div><dt className="inline font-medium">Approved legal agreement version: </dt><dd className="inline font-mono">{source.intercompanyAgreementVersion > 0 ? source.intercompanyAgreementVersion : VALUE_STATE_LABELS.unavailable}</dd></div> : null}
                 {source.intercompanyAgreementPayloadHash ? <div><dt className="inline font-medium">Legal agreement payload hash: </dt><dd className="inline font-mono">{source.intercompanyAgreementPayloadHash}</dd></div> : null}
                 {source.accountBindingRevisionId ? <div><dt className="inline font-medium">Account binding revision: </dt><dd className="inline font-mono">{source.accountBindingRevisionId}</dd></div> : null}
                 {source.intercompanyTransactionId ? <div><dt className="inline font-medium">Transaction reference: </dt><dd className="inline">{source.intercompanyTransactionId}</dd></div> : null}
@@ -99,7 +99,7 @@ export function ConsolidationResults({ view }: { view: ConsolidationView }) {
                 {[match.receivable, match.payable, match.matchedAmount, match.unmatchedReceivable, match.unmatchedPayable].map((value, index) => <td key={index} className={amountCell}>{money(value, view.currency)}</td>)}
                 {governedMatches ? <><td className={cell}><p>{match.treatment === "consolidation.revenue-expense" ? "Revenue / expense" : "Receivable / payable"}</p>{match.intercompanyTransactionId ? <p className="mt-1">{match.intercompanyTransactionId}</p> : null}
                   <TechnicalDetails className="mt-2" label="Accounting arrangement identity"><p className="break-all font-mono text-xs">{match.accountingArrangementId || "Legacy unassigned"}</p></TechnicalDetails></td>
-                  <td className={amountCell}>{match.matchedTransactionAmount == null ? "Not retained" : `${money(match.matchedTransactionAmount, match.matchingCurrency ?? view.currency)} ${match.matchingCurrency ?? ""}`}<p className="mt-1 whitespace-normal text-xs">Unmatched {match.unmatchedFirstTransactionAmount == null ? "—" : money(match.unmatchedFirstTransactionAmount, match.matchingCurrency ?? view.currency)} / {match.unmatchedSecondTransactionAmount == null ? "—" : money(match.unmatchedSecondTransactionAmount, match.matchingCurrency ?? view.currency)} {match.matchingCurrency}</p></td>
+                  <td className={amountCell}>{match.matchedTransactionAmount == null ? VALUE_STATE_LABELS.unavailable : `${money(match.matchedTransactionAmount, match.matchingCurrency ?? view.currency)} ${match.matchingCurrency ?? ""}`}<p className="mt-1 whitespace-normal text-xs">Unmatched {match.unmatchedFirstTransactionAmount == null ? VALUE_STATE_LABELS.unavailable : money(match.unmatchedFirstTransactionAmount, match.matchingCurrency ?? view.currency)} / {match.unmatchedSecondTransactionAmount == null ? VALUE_STATE_LABELS.unavailable : money(match.unmatchedSecondTransactionAmount, match.matchingCurrency ?? view.currency)} {match.matchingCurrency}</p></td>
                   <td className={amountCell}>{match.translationDifference == null ? "Not applicable" : `${money(match.translationDifference, view.currency)} ${view.currency}`}</td></> : null}
                 <td className={`${cell} min-w-64`}><SourceDetails sources={match.sources} currency={view.currency} label={`Sources for ${entityName(match.postingEntityId)} to ${entityName(match.counterpartyId)}`} /></td>
               </tr>
@@ -119,7 +119,7 @@ export function ConsolidationResults({ view }: { view: ConsolidationView }) {
               <div className="flex flex-wrap items-center gap-2"><span className="break-all font-mono">{draft.journalEntryId}</span><Badge variant="outline">{draft.status}</Badge>{draft.requiresRenewedReview ? <Badge variant="warning">Renewed review required</Badge> : null}</div>
               {draft.adjustsJournalEntryId ? <p className="mt-2 break-all">Adjusts journal <span className="font-mono">{draft.adjustsJournalEntryId}</span></p> : null}
               <TechnicalDetails className="mt-2" label={`Journal lines for ${draft.journalEntryId}`}>
-                <ul className="space-y-2">{draft.lines.map((line) => <li key={line.lineId} className="break-all">{line.side} {money(line.amount, line.currency)} {line.currency} · {line.accountPath} · Entity {line.entityId || "Not supplied"}</li>)}</ul>
+                <ul className="space-y-2">{draft.lines.map((line) => <li key={line.lineId} className="break-all">{line.side} {money(line.amount, line.currency)} {line.currency} · {line.accountPath} · Entity {line.entityId || VALUE_STATE_LABELS.unavailable}</li>)}</ul>
               </TechnicalDetails>
             </li>
           ))}
@@ -140,7 +140,7 @@ export function ConsolidationResults({ view }: { view: ConsolidationView }) {
 
 function TranslationDifferences({ view }: { view: ConsolidationView }) {
   const entities = [...new Set([...Object.keys(view.translationReserve ?? {}), ...Object.keys(view.translationDifferences ?? {}), ...Object.keys(view.roundingDifferences ?? {})])];
-  const amount = (values: Record<string, number> | null | undefined, entity: string) => values?.[entity] == null ? "Not retained" : `${money(values[entity], view.currency)} ${view.currency}`;
+  const amount = (values: Record<string, number> | null | undefined, entity: string) => values?.[entity] == null ? VALUE_STATE_LABELS.unavailable : `${money(values[entity], view.currency)} ${view.currency}`;
   return <section className="space-y-2" aria-labelledby="consolidation-translation-differences"><h3 className="text-sm font-semibold" id="consolidation-translation-differences">Translation reserve and separate differences</h3>
     <p className="text-xs text-muted-foreground">Server-calculated whole-trial-balance translation. Booking breaks remain in the reciprocal matching table; rounding is disclosed separately from translation.</p>
     <div role="region" aria-label="Translation and rounding differences" className="overflow-x-auto" tabIndex={0}>

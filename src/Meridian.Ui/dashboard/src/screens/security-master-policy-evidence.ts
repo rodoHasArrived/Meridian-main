@@ -1,5 +1,6 @@
 import type { SecurityMasterDeclaredExerciseOutcome, SecurityMasterGovernance, SecurityMasterScheduleBlocker } from "@/types";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 export interface SecurityMasterPolicyEvidence {
   title: string;
   summary: string;
@@ -25,7 +26,7 @@ export function declaredExerciseEvidence(outcome: SecurityMasterDeclaredExercise
       : `${outcome.windowCount} exercise ${outcome.windowCount === 1 ? "window" : "windows"} resolved. These dates grant no exercise authority.`,
     fields: [
       { label: "Evaluated as of", value: outcome.asOf },
-      { label: "Security version", value: outcome.securityVersion === null ? "Unavailable" : String(outcome.securityVersion) }
+      { label: "Security version", value: outcome.securityVersion === null ? VALUE_STATE_LABELS.unavailable : String(outcome.securityVersion) }
     ],
     messages: [...outcome.blockers.map((blocker) => `${blocker.code}: ${blocker.reason}`), ...outcome.diagnostics],
     blocked: outcome.status === "Blocked"

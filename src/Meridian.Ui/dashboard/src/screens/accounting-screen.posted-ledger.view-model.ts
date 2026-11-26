@@ -29,7 +29,7 @@ import {
   type AccountingTrialBalanceViewState
 } from "./accounting-screen.view-model";
 import type { AccountingWorkstream } from "./accounting-screen.task-mode-view-model";
-import { formatCount, formatCurrency, formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
+import { formatCount, formatCurrency, formatUnknownCurrencyAmount } from "@/lib/format";
 
 /**
  * View model for the Accounting workstream's posted-journal ledger panel.
@@ -457,9 +457,13 @@ export function buildPostedLedgerPnlViewState({
   const netIncome = hasLineDetail ? totalRevenue - totalExpenses : pnl.netIncome;
 
   const money = (value: number) =>
-    baseCurrency ? formatCurrency(value, { currency: baseCurrency, minimumFractionDigits: 0 }) : formatPrefixedCurrency(value);
+    baseCurrency ? formatCurrency(value, { currency: baseCurrency, minimumFractionDigits: 0 }) : formatUnknownCurrencyAmount(value);
+  // Without the book's base currency the amount is never shown as dollars: it reads the same
+  // "(currency unavailable)" way as the postings drill-down on this screen.
   const signedMoney = (value: number) =>
-    baseCurrency ? `${value > 0 ? "+" : ""}${formatCurrency(value, { currency: baseCurrency, minimumFractionDigits: 0 })}` : formatSignedCurrency(value, { minimumFractionDigits: 2, zeroLabel: "$0" });
+    baseCurrency
+      ? `${value > 0 ? "+" : ""}${formatCurrency(value, { currency: baseCurrency, minimumFractionDigits: 0 })}`
+      : `${value > 0 ? "+" : ""}${formatUnknownCurrencyAmount(value)}`;
 
   const items: PostedLedgerPnlItemViewModel[] = [
     { id: "revenue", label: "Total revenue", value: money(totalRevenue), tone: "default" },

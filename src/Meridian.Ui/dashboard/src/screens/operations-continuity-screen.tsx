@@ -59,6 +59,7 @@ import {
   type OperationsContinuityWorkflowRow
 } from "@/screens/operations-continuity-screen.view-model";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 const workflowColumns: DenseDataTableColumn<OperationsContinuityWorkflowRow>[] = [
   {
     id: "workflow",
@@ -2361,9 +2362,9 @@ evidence: <><section className="grid gap-4">
     </DialogHeader>
     <dl className="grid gap-2 text-sm">
       <div><dt>Workflow</dt><dd className="break-all font-mono">{confirmation?.workflowId}</dd></div>
-      <div><dt>Entity</dt><dd>{closeScope.entityId ?? "Not recorded"}</dd></div>
-      <div><dt>Book</dt><dd>{closeScope.ledgerBookId ?? "Not recorded"}</dd></div>
-      <div><dt>Period</dt><dd>{closeScope.periodId ?? "Not recorded"}</dd></div>
+      <div><dt>Entity</dt><dd>{closeScope.entityId ?? VALUE_STATE_LABELS.unavailable}</dd></div>
+      <div><dt>Book</dt><dd>{closeScope.ledgerBookId ?? VALUE_STATE_LABELS.unavailable}</dd></div>
+      <div><dt>Period</dt><dd>{closeScope.periodId ?? VALUE_STATE_LABELS.unavailable}</dd></div>
       <div><dt>Expected version</dt><dd>{confirmation?.version}</dd></div>
     </dl>
     {confirmation?.kind === "reopen" ? <p className="mt-4 text-sm">{reopenWorkflowForm.justification}</p> : null}

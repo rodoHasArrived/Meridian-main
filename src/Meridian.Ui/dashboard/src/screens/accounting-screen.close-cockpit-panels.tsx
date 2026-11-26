@@ -1,4 +1,4 @@
-import { compactTimestampLabel } from "@/lib/format";
+import { compactTimestampLabel, VALUE_STATE_LABELS } from "@/lib/format";
 import { DueChip } from "@/components/meridian/due-chip";
 import { IntercompanyCloseAdvisories } from "./accounting-screen.intercompany-close-advisories";
 import { AlertCircle, BookCheck, CheckCircle2, Landmark, LockKeyhole, Network, Paperclip, RefreshCcw, ShieldCheck, Table2, UserCheck, WalletCards, X } from "lucide-react";
@@ -667,7 +667,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant={view.closingEntriesGate ? statusBadgeVariant(view.closingEntriesGate.statusTone) : "warning"}>
-                  {view.closingEntriesGate?.statusLabel ?? "Not supplied"}
+                  {view.closingEntriesGate?.statusLabel ?? VALUE_STATE_LABELS.unavailable}
                 </Badge>
                 <Button
                   type="button"
@@ -744,7 +744,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="text-xs font-semibold uppercase text-muted-foreground">Operating coverage</div>
               <Badge variant={view.operatingCoverageRows.length > 0 ? "outline" : "warning"}>
-                {view.operatingCoverageRows.length > 0 ? `${view.operatingCoverageRows.length} controls` : "Not supplied"}
+                {view.operatingCoverageRows.length > 0 ? `${view.operatingCoverageRows.length} controls` : VALUE_STATE_LABELS.unavailable}
               </Badge>
             </div>
             {view.operatingCoverageRows.length > 0 ? (

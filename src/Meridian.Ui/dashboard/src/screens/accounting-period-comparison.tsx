@@ -11,7 +11,7 @@ import { getPostedPeriodComparison, type PostedComparisonLine, type PostedCompar
 import { varianceColumns } from "@/components/meridian/variance-columns";
 import { roundDecimal } from "@/lib/variance";
 import { defaultMaterialityPolicyForClass } from "@/lib/reporting-materiality";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrencyAmount, VALUE_STATE_LABELS } from "@/lib/format";
 
 const COMPARISON_MATERIALITY = defaultMaterialityPolicyForClass("Accounting");
 import type { ApiRequestOptions } from "@/lib/api";
@@ -105,7 +105,7 @@ export function AccountingPeriodComparison({ bookId, periodId, expectedBasis, en
           : !enabled || !bookId || !periodId ? <p role="status" className="text-sm">Choose an available posted book and period before comparing.</p>
           : current?.error ? <StatusBanner role="alert" tone="warning" title="Comparison unavailable" detail={<>{current.error} <Button variant="outline" size="sm" onClick={() => setReload((value) => value + 1)}>Retry comparison</Button></>} />
           : !result ? <p role="status" className="text-sm">Reading comparable posted journal populations…</p>
-          : expectedBasis && String(result.accountingBasis ?? "Unavailable").toLowerCase() !== expectedBasis.toLowerCase() ? <StatusBanner tone="warning" title="Comparison unavailable" detail={`The response does not match the selected ${expectedBasis} basis. No substitute figures are shown.`} />
+          : expectedBasis && String(result.accountingBasis ?? VALUE_STATE_LABELS.unavailable).toLowerCase() !== expectedBasis.toLowerCase() ? <StatusBanner tone="warning" title="Comparison unavailable" detail={`The response does not match the selected ${expectedBasis} basis. No substitute figures are shown.`} />
           : (result.measure ?? "Movements") !== measure ? <StatusBanner tone="warning" title="Comparison unavailable" detail="The response does not match the requested comparison measure. No substitute figures are shown." />
           : result.status !== "Ready" || !result.baseline ? <StatusBanner tone="warning" title="Comparison unavailable" detail={result.reason ?? "A compatible prior posted period could not be established."} />
           : <>
@@ -128,7 +128,9 @@ export function AccountingPeriodComparison({ bookId, periodId, expectedBasis, en
                   unit: result.currency, priorLabel: `Prior ${copy.column}`, policy: COMPARISON_MATERIALITY
                 })
               ]} />
-            <p className="text-xs text-muted-foreground">Variances over {formatCurrency(COMPARISON_MATERIALITY.absoluteVariance ?? 0, { maximumFractionDigits: 0 })} are marked Material (Accounting materiality policy).</p>
+            {COMPARISON_MATERIALITY.absoluteVariance != null
+              ? <p className="text-xs text-muted-foreground">Variances over {formatCurrencyAmount(COMPARISON_MATERIALITY.absoluteVariance, result.currency, { context: "summary" })} are marked Material (Accounting materiality policy).</p>
+              : null}
             <TechnicalDetails label="Comparison source cut">
               <dl className="space-y-2 text-xs">
                 <div><dt>Population fingerprint</dt><dd className="break-all font-mono">{result.populationHash}</dd></div>

@@ -127,7 +127,17 @@ async function renderScreen(initialEntry: string) {
     { initialEntries: [initialEntry] }
   );
   await waitForAsyncEffects();
+  await enterPresentationCurrency();
   return result;
+}
+
+/** New runs carry no default presentation currency; an operator enters one, as these tests do. */
+async function enterPresentationCurrency(code = "USD") {
+  const field = screen.queryByLabelText("Presentation currency");
+  if (field instanceof HTMLInputElement && !field.value) {
+    await userEvent.type(field, code);
+    await waitForAsyncEffects();
+  }
 }
 
 function LocationProbe() {
@@ -277,6 +287,7 @@ describe("ReportRunParametersScreen", () => {
       { initialEntries: ["/reporting/run?templateId=trial-balance-pack%3A1.0"] }
     );
     await waitForAsyncEffects();
+    await enterPresentationCurrency();
 
     await user.selectOptions(screen.getByLabelText("Report run template"), "holdings-pack:2.0");
     expect(screen.getByLabelText("Report run template")).toHaveValue("holdings-pack:2.0");

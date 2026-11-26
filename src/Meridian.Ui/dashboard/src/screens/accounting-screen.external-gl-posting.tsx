@@ -14,7 +14,7 @@ import {
   preparePostingPackage, savePostingPolicy, type DocumentProgress, type GlStatus, type PostingDocument,
   type PostingPackage, type PostingPackageSummary, type PostingPurpose, type PostingSetup
 } from "@/lib/api/external-gl-posting.api";
-import { formatMoney, formatTimestamp } from "@/lib/format";
+import { formatMoney, formatTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 import { getLedgerBooks, getLedgerPeriods } from "@/lib/ledger-reports-api";
 import { formatApprovalError } from "@/screens/accounting-screen.approvals";
 import type { ExternalGlMappingProfile, LedgerBook, LedgerPeriod } from "@/types";
@@ -463,8 +463,8 @@ function PostingJournal({ doc, progress, initiallyOpen }: { doc: PostingDocument
     <TechnicalDetails label={label} open={initiallyOpen}>
       <dl className="mb-3 grid gap-2 text-xs sm:grid-cols-3">
         <div><dt>Provider document</dt><dd>{latestDocumentId ?? "Awaiting receipt"}</dd></div>
-        <div><dt>Provider batch</dt><dd>{receipt?.providerBatchId ?? "—"}</dd></div>
-        <div><dt>Receipt observed</dt><dd>{latest ? stamp(latest.observedAtUtc) : "—"}</dd></div>
+        <div><dt>Provider batch</dt><dd>{receipt?.providerBatchId ?? VALUE_STATE_LABELS.unavailable}</dd></div>
+        <div><dt>Receipt observed</dt><dd>{latest ? stamp(latest.observedAtUtc) : VALUE_STATE_LABELS.unavailable}</dd></div>
       </dl>
       {receipt?.errorCode ? <StatusBanner className="mb-3" tone="warning" title={words(receipt.errorCode)}
         detail={receipt.providerErrorCode ? `Provider code ${receipt.providerErrorCode}` : undefined} /> : null}
@@ -485,7 +485,7 @@ function PostingJournal({ doc, progress, initiallyOpen }: { doc: PostingDocument
           { id: "account", label: "External account", render: line => <code>{line.externalAccountId}</code> },
           {
             id: "dimensions", label: "External dimensions",
-            render: line => Object.entries(line.externalDimensions).map(([key, value]) => `${key} ${value}`).join(", ") || "—"
+            render: line => Object.entries(line.externalDimensions).map(([key, value]) => `${key} ${value}`).join(", ") || VALUE_STATE_LABELS.unavailable
           },
           { id: "debit", label: "Debit", numeric: true, render: line => glAmount(line.debit) },
           { id: "credit", label: "Credit", numeric: true, render: line => glAmount(line.credit) },

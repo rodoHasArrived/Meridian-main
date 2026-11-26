@@ -8,7 +8,7 @@
  * the enum in this file.
  */
 
-import { formatCountOfTotal, formatDecimal, formatRatioAsPercent } from "@/lib/format";
+import { formatCountOfTotal, formatDecimal, formatRatioAsPercent, VALUE_STATE_LABELS } from "@/lib/format";
 import type {
   ArchiveMaintenanceExecution,
   MaintenanceScheduleSummary,
@@ -101,7 +101,7 @@ export function buildMaintenanceExecutionRow(
     statusLabel: maintenanceExecutionStatusLabel(execution.status),
     statusTone: maintenanceExecutionStatusTone(execution.status),
     triggerLabel: execution.manualTrigger ? "Manual" : "Scheduled",
-    scheduleLabel: execution.scheduleName ?? execution.scheduleId ?? "—",
+    scheduleLabel: execution.scheduleName ?? execution.scheduleId ?? VALUE_STATE_LABELS.unavailable,
     startedAt: execution.startedAt,
     durationLabel: formatDuration(execution.duration),
     filesProcessed: execution.filesProcessed,
@@ -126,7 +126,7 @@ export function buildMaintenanceMetrics(
     {
       id: "service",
       label: "Maintenance service",
-      value: status === null ? "—" : status.isRunning ? "Running" : "Stopped",
+      value: status === null ? VALUE_STATE_LABELS.unavailable : status.isRunning ? "Running" : "Stopped",
       detail: status === null
         ? "Service status has not loaded."
         : `${status.queuedExecutions} queued · ${status.activeSchedules} active schedules`,
@@ -135,7 +135,7 @@ export function buildMaintenanceMetrics(
     {
       id: "success-rate",
       label: "Success rate",
-      value: statistics === null ? "—" : formatSuccessRate(statistics),
+      value: statistics === null ? VALUE_STATE_LABELS.unavailable : formatSuccessRate(statistics),
       detail: statistics === null
         ? "Execution statistics have not loaded."
         : `${statistics.successfulExecutions} succeeded · ${statistics.failedExecutions} failed of ${statistics.totalExecutions}`,
@@ -148,7 +148,7 @@ export function buildMaintenanceMetrics(
     {
       id: "recent-activity",
       label: "Runs in last 24h",
-      value: statistics === null ? "—" : String(statistics.executionsLast24Hours),
+      value: statistics === null ? VALUE_STATE_LABELS.unavailable : String(statistics.executionsLast24Hours),
       detail: statistics === null
         ? "Execution statistics have not loaded."
         : `${statistics.executionsLast7Days} over 7 days · ${formatBytes(statistics.totalBytesSaved)} reclaimed`,
@@ -157,7 +157,7 @@ export function buildMaintenanceMetrics(
     {
       id: "schedules",
       label: "Schedules enabled",
-      value: scheduleSummary === null ? "—" : formatCountOfTotal(scheduleSummary.enabledSchedules, scheduleSummary.totalSchedules, "schedule"),
+      value: scheduleSummary === null ? VALUE_STATE_LABELS.unavailable : formatCountOfTotal(scheduleSummary.enabledSchedules, scheduleSummary.totalSchedules, "schedule"),
       detail: scheduleSummary === null
         ? "Schedule summary has not loaded."
         : scheduleSummary.nextDueScheduleName
@@ -184,7 +184,7 @@ function formatSuccessRate(statistics: MaintenanceStatistics): string {
 /** Renders a .NET TimeSpan (`d.hh:mm:ss.fffffff` or `hh:mm:ss.fffffff`) compactly. */
 export function formatDuration(value: string | null | undefined): string {
   if (!value) {
-    return "—";
+    return VALUE_STATE_LABELS.unavailable;
   }
 
   const match = /^(?:(\d+)\.)?(\d{2}):(\d{2}):(\d{2})/.exec(value);

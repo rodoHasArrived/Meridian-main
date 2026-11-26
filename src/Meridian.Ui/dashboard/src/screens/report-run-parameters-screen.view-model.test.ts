@@ -234,11 +234,13 @@ describe("reporting P0 parameter and readiness view models", () => {
   it("accepts a case-normalized matching book dimension and code-only server resolution", () => {
     const matching = validateAndBuildReportingRunParameters({
       ...buildDefaultReportRunParameterDraft({ fundProfileId: "fund-alpha", asOfDate: "2026-06-30" }),
+      presentationCurrency: "USD",
       ledgerBookId: "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA",
       dimensionsJson: JSON.stringify({ bookId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" })
     }, "2026-06-30");
     const codeOnly = validateAndBuildReportingRunParameters({
       ...buildDefaultReportRunParameterDraft({ fundProfileId: "fund-alpha", asOfDate: "2026-06-30" }),
+      presentationCurrency: "USD",
       ledgerBookId: "",
       ledgerBookCode: "Primary GL",
       dimensionsJson: "{}"
@@ -255,7 +257,7 @@ describe("reporting P0 parameter and readiness view models", () => {
 
   it("hydrates retained dimensions and omits an empty dimension object", () => {
     const base = validateAndBuildReportingRunParameters(
-      buildDefaultReportRunParameterDraft({ fundProfileId: "fund-alpha", asOfDate: "2026-06-30" }),
+      { ...buildDefaultReportRunParameterDraft({ fundProfileId: "fund-alpha", asOfDate: "2026-06-30" }), presentationCurrency: "USD" },
       "2026-06-30"
     ).parameters!;
     expect(base.scope.dimensions).toBeNull();

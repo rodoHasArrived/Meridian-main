@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiGetJson } from "@/lib/api";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, VALUE_STATE_LABELS } from "@/lib/format";
 
 interface ParityReport {
   runId: string; baselineRunId?: string | null; status: string; inputMode: string;
@@ -20,11 +20,11 @@ export function StrategyRunParityPanel({ accountId, runId }: { accountId?: strin
       .catch(() => { if (!controller.signal.aborted) setError("Account-bound comparison evidence is unavailable for this run."); });
     return () => controller.abort();
   }, [accountId, runId]);
-  const money = (value?: number | null) => value == null ? "Unavailable" : formatCurrency(value);
+  const money = (value?: number | null) => value == null ? VALUE_STATE_LABELS.unavailable : formatCurrency(value);
   return <section className="my-4 space-y-2 rounded border border-border p-3 text-xs" aria-label="Backtest to paper comparison">
     <h4 className="font-semibold">Backtest → paper evidence</h4>
     {!accountId ? <p>Select the run's execution account to inspect comparison evidence.</p> : error ? <p role="status">{error}</p> : report ? <>
-      <p>{report.status} · Input: {report.inputMode} · Parent: {report.baselineRunId ?? "Unavailable"}</p>
+      <p>{report.status} · Input: {report.inputMode} · Parent: {report.baselineRunId ?? VALUE_STATE_LABELS.unavailable}</p>
       <dl className="grid grid-cols-2 gap-1"><dt>Parent / observed net P&amp;L</dt><dd>{money(report.baselineNetPnl)} / {money(report.observedNetPnl)}</dd><dt>Parent / observed fills</dt><dd>{report.baselineFills ?? "Unknown"} / {report.observedFills ?? "Unknown"}</dd></dl>
       <ul>{report.checks.map((check) => <li key={check.code}><strong>{check.status}: </strong>{check.message}</li>)}</ul>
       <Link className="underline" to={report.journalRoute}>Inspect run orders, fills and alert evidence</Link>

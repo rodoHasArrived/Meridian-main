@@ -30,7 +30,7 @@ import { presentMarkFreshness } from "@/lib/mark-freshness";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { exportTableQuery } from "@/lib/table-workbench";
-import { formatNumber, formatPercent, formatRatioAsPercent, pluralizeCount } from "@/lib/format";
+import { formatNumber, formatPercent, formatRatioAsPercent, pluralizeCount, VALUE_STATE_LABELS, isUnavailableLabel } from "@/lib/format";
 import type { HoldingFigure } from "@/lib/holdings-model";
 import { EntityLink } from "@/components/meridian/entity-inspector";
 import { AccountBalanceHistoryChart } from "@/components/meridian/account-balance-history-chart";
@@ -139,7 +139,7 @@ function HoldingValue({ text, exact, row, quantity = false, price = false, markD
   if (exact == null) return <>{text}</>;
   const legacy = readLegacyFinancialText(text);
   const value = exact ?? legacy.value;
-  const hasAssessment = row.markFreshness.policyVersion !== "Unavailable";
+  const hasAssessment = !isUnavailableLabel(row.markFreshness.policyVersion);
   return <FinancialValue value={value} currency={quantity ? undefined : row.currency ?? undefined}
     unit={quantity ? undefined : row.currency ? undefined : legacy.unit}
     decimals={quantity ? Math.min(28, parseExactDecimal(value)?.scale ?? 0) : price ? Math.min(28, Math.max(2, parseExactDecimal(value)?.scale ?? 2)) : undefined}
@@ -213,13 +213,13 @@ const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
   }
 ];
 
-/** A holdings figure: the value, a "stale" marker when it is a last recorded value, or "—" with the reason as a tooltip. */
+/** A holdings figure: the value, a "stale" marker when it is a last recorded value, or VALUE_STATE_LABELS.unavailable with the reason as a tooltip. */
 function HoldingFigureCell({ figure }: { figure: HoldingFigure }) {
   return (
     <span className="inline-flex flex-col items-end" title={figure.reason ?? undefined}>
-      <span className={cn("font-mono", figure.display === "—" ? "text-muted-foreground" : "text-foreground")}>{figure.display}</span>
+      <span className={cn("font-mono", isUnavailableLabel(figure.display) ? "text-muted-foreground" : "text-foreground")}>{figure.display}</span>
       {figure.staleLabel ? <span className="text-xs font-normal text-warning">{figure.staleLabel}</span> : null}
-      {figure.reason && (figure.display === "—" || figure.stale) ? <span className="sr-only">{figure.reason}</span> : null}
+      {figure.reason && (isUnavailableLabel(figure.display) || figure.stale) ? <span className="sr-only">{figure.reason}</span> : null}
     </span>
   );
 }
@@ -958,7 +958,7 @@ function PortfolioScreenContent({
         source={{
           value: retainedSource ? retainedSourceLabel : vm.positionSourceLabel,
           detail: retainedSource ? "Retained record source used by this route" : "Holdings source used by this route",
-          tone: retainedSource ? portfolioExplorer && !portfolioExplorer.isBlocked ? "ready" : "blocked" : vm.positionSourceLabel === "Unavailable" ? "blocked" : "ready"
+          tone: retainedSource ? portfolioExplorer && !portfolioExplorer.isBlocked ? "ready" : "blocked" : isUnavailableLabel(vm.positionSourceLabel) ? "blocked" : "ready"
         }}
         scope={{
           label: retainedSource ? "Scope" : "Account",
@@ -973,12 +973,12 @@ function PortfolioScreenContent({
                 : "unknown"
         }}
         freshness={{
-          value: retainedSource ? retainedAsOf ? formatDateTime(retainedAsOf) : "Unavailable" : freshnessVm?.text ?? heartbeat ?? "Unavailable",
+          value: retainedSource ? retainedAsOf ? formatDateTime(retainedAsOf) : VALUE_STATE_LABELS.unavailable : freshnessVm?.text ?? heartbeat ?? VALUE_STATE_LABELS.unavailable,
           detail: retainedSource ? "Retained source observation" : headlineRefreshFailed ? "The latest refresh did not complete; the last loaded figures are shown." : freshnessVm?.title ?? (heartbeat ? "Latest brokerage heartbeat" : "Latest loaded portfolio evidence"),
           tone: retainedSource ? "unknown" : freshnessTone
         }}
         completeness={{
-          value: retainedSource ? portfolioExplorer ? `${portfolioExplorer.rows.length} retained rows loaded` : "Unavailable" : `${vm.positionCountLabel} · ${vm.runCountLabel}`,
+          value: retainedSource ? portfolioExplorer ? `${portfolioExplorer.rows.length} retained rows loaded` : VALUE_STATE_LABELS.unavailable : `${vm.positionCountLabel} · ${vm.runCountLabel}`,
           detail: retainedSource ? "Loaded record rows; retained totals may cover a broader population" : "Holdings and run evidence loaded",
           tone: retainedSource ? portfolioExplorer ? "ready" : "blocked" : completenessTone
         }}

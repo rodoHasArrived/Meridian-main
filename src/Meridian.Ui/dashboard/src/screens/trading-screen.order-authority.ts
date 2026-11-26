@@ -6,6 +6,7 @@
 
 import type { AuthorityDecisionSummary, OrderCommandOrigin, TradingManualOrderEntry } from "@/types";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 const originLabels: Record<OrderCommandOrigin, string> = {
   Unattributed: "Untyped",
   OperatorTicket: "Ticket",
@@ -17,7 +18,7 @@ const originLabels: Record<OrderCommandOrigin, string> = {
 
 /** Blotter label for an order's origin. Orders created outside order submission have none. */
 export function orderOriginLabel(origin: OrderCommandOrigin | null | undefined): string {
-  return origin ? originLabels[origin] ?? origin : "—";
+  return origin ? originLabels[origin] ?? origin : VALUE_STATE_LABELS.unavailable;
 }
 
 /**

@@ -6,7 +6,7 @@ import { useScreenPaletteActions } from "@/components/meridian/command-palette.a
 import { FileText, Landmark, Network, PencilLine, XCircle } from "lucide-react";
 import { NewCustomReportBar } from "@/screens/reporting-screen.new-custom-report";
 import { useLocation } from "react-router-dom";
-import { formatCount, formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount, pluralizeCount } from "@/lib/format";
+import { formatCount, formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount, pluralizeCount, VALUE_STATE_LABELS } from "@/lib/format";
 import { utcToday } from "@/lib/local-date";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1192,8 +1192,8 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                       <ReportingCutMetric label="P&L" value={formatReportingMoney(slice.totalPnl, slice.currency)} />
                       {/* With no prior published period the server sends 0 and tags the slice "no-prior";
                           a dash says there is nothing to compare with, not a prior of $0. */}
-                      <ReportingCutMetric label="Prior" value={slice.tags?.includes("no-prior") ? "—" : formatReportingMoney(slice.priorTotalPnl, slice.currency)} />
-                      <ReportingCutMetric label="Change" value={slice.tags?.includes("no-prior") ? "—" : formatReportingMoney(slice.pnlChange, slice.currency)} />
+                      <ReportingCutMetric label="Prior" value={slice.tags?.includes("no-prior") ? VALUE_STATE_LABELS.unavailable : formatReportingMoney(slice.priorTotalPnl, slice.currency)} />
+                      <ReportingCutMetric label="Change" value={slice.tags?.includes("no-prior") ? VALUE_STATE_LABELS.unavailable : formatReportingMoney(slice.pnlChange, slice.currency)} />
                       <ReportingCutMetric label="Sources" value={formatCount(slice.sourceCount)} />
                     </dl>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{slice.readinessSummary}</p>
@@ -1389,7 +1389,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                     </p>
                     <div className="mt-2 space-y-1 break-all font-mono text-xs text-muted-foreground">
                       <p>Dataset: {structuredExport.dataset}</p>
-                      <p>As of: <TimeText value={structuredExport.asOf} fallback="Unavailable" /></p>
+                      <p>As of: <TimeText value={structuredExport.asOf} fallback={VALUE_STATE_LABELS.unavailable} /></p>
                       <p>API route: {structuredExport.route}</p>
                     </div>
                     {!structuredExport.isReady && structuredExport.readinessBlockers?.length ? (

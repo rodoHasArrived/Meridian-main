@@ -31,7 +31,7 @@ import {
 } from "@/screens/accounting-screen.posted-ledger.view-model";
 import { buildTrialBalanceAccountTreeNodes, trialBalanceAccountTreeCode } from "@/screens/trial-balance-screen.view-model";
 import type { AccountingLedgerJournalEvidenceViewState } from "@/screens/accounting-screen.view-model";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, VALUE_STATE_LABELS } from "@/lib/format";
 
 type TrialBalanceViewMode = "table" | "hierarchy";
 
@@ -226,7 +226,7 @@ export function TrialBalanceScreen() {
   }
 
   const selectedBasisLabel =
-    postedLedger.view.trialBalance.basisOptions.find((option) => option.isSelected)?.label ?? "—";
+    postedLedger.view.trialBalance.basisOptions.find((option) => option.isSelected)?.label ?? VALUE_STATE_LABELS.unavailable;
   // From the whole selected basis, not the filtered rows on screen: whether the book ties is a
   // property of the book. Summing what an account search left visible reported the book out of
   // balance by the value of everything filtered out.
@@ -238,7 +238,7 @@ export function TrialBalanceScreen() {
     {
       id: "period",
       label: "Selected period",
-      value: selectedPeriodLabel ?? "—"
+      value: selectedPeriodLabel ?? VALUE_STATE_LABELS.unavailable
     },
     { id: "basis", label: "Accounting basis", value: selectedBasisLabel },
     { id: "accounts", label: "Accounts in view", value: postedLedger.view.trialBalance.filteredRowCountLabel },
@@ -352,7 +352,7 @@ export function TrialBalanceScreen() {
           </div>
           <TechnicalDetails label="System details" className="mt-3">
             <dl className="grid gap-2 text-xs sm:grid-cols-2">
-              <div><dt className="text-muted-foreground">Period ID</dt><dd className="font-mono text-foreground">{selectedPeriodId ?? "Not supplied"}</dd></div>
+              <div><dt className="text-muted-foreground">Period ID</dt><dd className="font-mono text-foreground">{selectedPeriodId ?? VALUE_STATE_LABELS.unavailable}</dd></div>
               <div><dt className="text-muted-foreground">Selected row ID</dt><dd className="font-mono text-foreground">{postedLedger.view.trialBalance.selectedRowId ?? "No row selected"}</dd></div>
             </dl>
           </TechnicalDetails>

@@ -38,7 +38,7 @@ import type {
   RunComparisonRow,
   RunDiff
 } from "@/types";
-import { formatCount as formatCountValue, formatDecimal, formatMoney, formatNumber, formatRatioAsPercent as formatRatioAsPercentValue } from "@/lib/format";
+import { formatCount as formatCountValue, formatDecimal, formatMoney, formatNumber, formatRatioAsPercent as formatRatioAsPercentValue, VALUE_STATE_LABELS, isUnavailableLabel } from "@/lib/format";
 import { defaultGetRunEquityCurve } from "@/screens/strategy-screen.equity-paths.view-model";
 import {
   buildRunComparisonOverlay, buildSelectionText, buildStrategyCommandStates, describeRunSelectionRefusal, RUN_COMPARE_MAX, toggleRunSelection,
@@ -492,6 +492,7 @@ export interface StrategyPromotionHistoryDetailState {
 }
 
 export interface StrategyPlotToolState {
+  // placeholder-vocabulary-ignore: shares the server analytics evidence status enum.
   analyticsEvidenceStatus?: "Retained" | "Illustrative" | "Unavailable" | "Unverified";
   studies: StrategyPlotStudyItem[];
   workspace: StrategyPlotWorkspaceState;
@@ -1527,9 +1528,9 @@ export function buildPromotionPanelState({
   };
 }
 
-/** Input is a fraction of 1 (0.425 -> "42.5%"), not percent units; "Unavailable" when missing. */
+/** Input is a fraction of 1 (0.425 -> "42.5%"), not percent units; VALUE_STATE_LABELS.unavailable when missing. */
 function formatRatioAsPercent(value: number | null | undefined, digits: number): string {
-  return formatRatioAsPercentValue(value, { minimumFractionDigits: digits, maximumFractionDigits: digits, fallback: "Unavailable" });
+  return formatRatioAsPercentValue(value, { minimumFractionDigits: digits, maximumFractionDigits: digits, fallback: VALUE_STATE_LABELS.unavailable });
 }
 
 export function buildPromotionEvaluationState(
@@ -1783,6 +1784,7 @@ function buildPlotToolStateFromApiOrFallback(
       const detail = "No retained statistical observations are connected. Run metadata does not establish a scatter history, distribution or regression.";
       return {
         ...empty,
+        // placeholder-vocabulary-ignore: server analytics evidence status enum.
         analyticsEvidenceStatus: status === "Unavailable" ? "Unavailable" : "Unverified",
         studies: Array.isArray(plotToolFromApi.studies) ? plotToolFromApi.studies as StrategyPlotStudyItem[] : [],
         workspace: { ...empty.workspace, title: "Statistical observations unavailable", description: detail,
@@ -1813,7 +1815,7 @@ function buildEmptyPlotToolState(): StrategyPlotToolState {
   };
 
   return {
-    analyticsEvidenceStatus: "Unavailable",
+    analyticsEvidenceStatus: "Unavailable", // placeholder-vocabulary-ignore: server analytics evidence status enum.
     studies: [],
     workspace: {
       eyebrow: "Strategy · Analytics",
@@ -1846,20 +1848,20 @@ function buildEmptyPlotToolState(): StrategyPlotToolState {
       }),
       studySummary: [
         { id: "source", label: "Source", value: "Not connected" },
-        { id: "catalog", label: "Formula catalog", value: "Unavailable" },
+        { id: "catalog", label: "Formula catalog", value: VALUE_STATE_LABELS.unavailable },
         { id: "samples", label: "Samples", value: "0" }
       ],
       legendItems: [
         { id: "history", label: "History", detail: "No observations", tone: "muted" },
         { id: "current", label: "Current", detail: "No marker", tone: "muted" },
-        { id: "trend", label: "OLS fit", detail: "Unavailable", tone: "muted" }
+        { id: "trend", label: "OLS fit", detail: VALUE_STATE_LABELS.unavailable, tone: "muted" }
       ],
       focusPoint,
       signalCards: [
         {
           id: "connection",
           label: "Connection",
-          value: "Unavailable",
+          value: VALUE_STATE_LABELS.unavailable,
           detail: "Strategy analytics have not returned any data.",
           tone: "warning"
         }
@@ -1885,7 +1887,7 @@ function buildEmptyPlotToolState(): StrategyPlotToolState {
       moments: [],
       momentsTable: buildPlotToolMomentsTable([]),
       regression: {
-        equation: "Unavailable",
+        equation: VALUE_STATE_LABELS.unavailable,
         detailItems: ["Connect strategy analytics before reviewing regression output."]
       },
       sampleRows: [],
@@ -1920,7 +1922,7 @@ export function buildPlotToolState({
   const meanX = 66.84;
   const meanY = 71.42;
   // Run-linked metrics never fall back to invented literals: a missing value
-  // renders "Unavailable" so the PlotTool never shows fabricated performance.
+  // renders VALUE_STATE_LABELS.unavailable so the PlotTool never shows fabricated performance.
   const parsedSharpe = parseDecimalToken(activeRun?.sharpe);
   const parsedReturn = activeRun?.totalReturn ?? parsePercentToken(activeRun?.pnl);
   const maxDrawdown = comparison[0]?.maxDrawdown ?? null;
@@ -2053,7 +2055,7 @@ export function buildPlotToolState({
           id: "review",
           label: "Review queue",
           value: reviewMetric,
-          detail: promotionCue === "Unavailable" ? "Promotion status pending." : promotionCue,
+          detail: isUnavailableLabel(promotionCue) ? "Promotion status pending." : promotionCue,
           tone: reviewMetric === "0" ? "success" : "warning"
         }
       ],
@@ -2282,7 +2284,7 @@ export function buildComparisonRow(
   const totalReturnText = formatRatioAsPercentValue(row.totalReturn, STRATEGY_SIGNED_RETURN);
   const maxDrawdownText = formatRatioAsPercentValue(row.maxDrawdown, STRATEGY_SIGNED_RETURN);
   const sharpeRatioText = formatNullableNumber(row.sharpeRatio, 3);
-  const fillCountText = Number.isFinite(row.fillCount) ? formatCountValue(row.fillCount) : "Unavailable";
+  const fillCountText = Number.isFinite(row.fillCount) ? formatCountValue(row.fillCount) : VALUE_STATE_LABELS.unavailable;
   const promotionStateText = formatPromotionState(row.promotionState);
   const evidenceText = buildComparisonEvidenceText(row);
   const artifactCompletenessText = formatArtifactCompleteness(row.artifactCompleteness);
@@ -2463,10 +2465,10 @@ export function buildDiffPanel(
 function buildDiffMetricRows(metrics: MetricsDiff): StrategyDiffMetricRow[] {
   const netPnlValue = formatMoney(metrics.netPnlDelta, STRATEGY_SIGNED_MONEY);
   const returnValue = formatRatioAsPercentValue(metrics.totalReturnDelta, STRATEGY_SIGNED_RETURN);
-  const fillValue = formatCountValue(metrics.fillCountDelta, { signed: true, fallback: "Unavailable" });
+  const fillValue = formatCountValue(metrics.fillCountDelta, { signed: true, fallback: VALUE_STATE_LABELS.unavailable });
   const finalEquityValue = formatMoney(metrics.finalEquityDelta ?? null, STRATEGY_SIGNED_MONEY);
   const drawdownValue = formatMoney(metrics.maxDrawdownDelta ?? null, STRATEGY_SIGNED_MONEY);
-  const sharpeValue = formatNumber(metrics.sharpeRatioDelta ?? null, { signed: true, minimumFractionDigits: 3, maximumFractionDigits: 3, fallback: "Unavailable" });
+  const sharpeValue = formatNumber(metrics.sharpeRatioDelta ?? null, { signed: true, minimumFractionDigits: 3, maximumFractionDigits: 3, fallback: VALUE_STATE_LABELS.unavailable });
 
   return [
     {
@@ -2525,7 +2527,7 @@ function buildPositionDiffRow(
   const pnlDelta = item.targetPnl - item.basePnl;
   const baseQuantityText = formatCount(item.baseQuantity);
   const targetQuantityText = formatCount(item.targetQuantity);
-  const quantityText = `Qty ${formatCountValue(quantityDelta, { signed: true, fallback: "Unavailable" })}`;
+  const quantityText = `Qty ${formatCountValue(quantityDelta, { signed: true, fallback: VALUE_STATE_LABELS.unavailable })}`;
   const basePnlText = formatMoney(item.basePnl, STRATEGY_MONEY);
   const targetPnlText = formatMoney(item.targetPnl, STRATEGY_MONEY);
   const pnlText = `P&L ${formatMoney(pnlDelta, STRATEGY_SIGNED_MONEY)}`;
@@ -2995,8 +2997,8 @@ function ensurePlotToolWorkspaceChartState(workspace: StrategyPlotWorkspaceState
   const markerPoint = findLastPlotPoint(points, (point) => point.emphasis) ?? points[points.length - 1] ?? { x: 0, y: 0, emphasis: false };
   const focusPoint = workspace.focusPoint ?? {
     label: "Current marker",
-    xValueText: "Unavailable",
-    yValueText: "Unavailable",
+    xValueText: VALUE_STATE_LABELS.unavailable,
+    yValueText: VALUE_STATE_LABELS.unavailable,
     detail: `Selected PlotTool marker at x ${markerPoint.x}, y ${markerPoint.y}.`
   };
 
@@ -3321,7 +3323,7 @@ function toneForDrawdownDelta(value: number | null | undefined): StrategyCompari
 }
 
 function titleCase(value: string): string {
-  if (value === "Unavailable") {
+  if (isUnavailableLabel(value)) {
     return value;
   }
 

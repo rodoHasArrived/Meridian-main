@@ -114,12 +114,12 @@ describe("GovernedApprovalsPanel economic details", () => {
     }));
 
     // A dollar-sized order is described by its routed dollars, never by the placeholder quantity.
-    expect(within(entry).getByText("Buy $500,000.00 notional of AAPL stoplimit @ 101.25")).toBeInTheDocument();
+    expect(within(entry).getByText("Buy 500,000.00 notional of AAPL stoplimit @ 101.25")).toBeInTheDocument();
     expect(within(entry).queryByText(/Buy 1 AAPL/)).not.toBeInTheDocument();
 
     const details = within(entry).getByLabelText("Order details for AAPL escalation");
     expect(details.tagName).toBe("DL");
-    expect(detailValue(entry, "Routed notional")).toBe("$500,000.00This order is sized in dollars, not in quantity.");
+    expect(detailValue(entry, "Routed notional")).toBe("500,000.00This order is sized in dollars, not in quantity.");
     expect(detailValue(entry, "Stop price")).toBe("99.5");
     expect(detailValue(entry, "Trail amount")).toBe("1.25");
     expect(detailValue(entry, "Trail percent")).toBe("2.5%");

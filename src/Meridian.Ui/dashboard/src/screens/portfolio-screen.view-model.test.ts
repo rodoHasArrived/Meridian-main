@@ -733,7 +733,7 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(summary.statusTone).toBe("warning");
     expect(summary.cards[0]).toMatchObject({
       id: "selected-rank",
-      value: "—",
+      value: "Not available",
       tone: "warning"
     });
   });
@@ -829,16 +829,16 @@ describe("buildPortfolioScreenViewModel", () => {
       statusTone: "success"
     });
     expect(summary.cards).toEqual([
-      expect.objectContaining({ id: "attribution", value: "+$200", detail: "Realized +$120; unrealized +$80; 1 symbol." }),
-      expect.objectContaining({ id: "drawdown", value: "1.25%", detail: "1 equity point; recovery 3 days; final equity $101,250." }),
-      expect.objectContaining({ id: "cash-flow", value: "+$1,200", detail: "2 cash-flow entries; inflows $1,500; outflows $300." }),
-      expect.objectContaining({ id: "trades", value: "2", detail: "2 fills with $5 commissions." })
+      expect.objectContaining({ id: "attribution", value: "+200", detail: "Realized +120; unrealized +80; 1 symbol." }),
+      expect.objectContaining({ id: "drawdown", value: "1.25%", detail: "1 equity point; recovery 3 days; final equity 101,250." }),
+      expect.objectContaining({ id: "cash-flow", value: "+1,200", detail: "2 cash-flow entries; inflows 1,500; outflows 300." }),
+      expect.objectContaining({ id: "trades", value: "2", detail: "2 fills with 5 commissions." })
     ]);
     expect(summary.bridgeRows).toEqual([
-      expect.objectContaining({ id: "realized-pnl", value: "+$120", detail: "AAPL contributes +$120 realized P&L across 2 trades." }),
-      expect.objectContaining({ id: "unrealized-pnl", value: "+$80", detail: "AAPL carries +$80 unrealized P&L into the selected portfolio view." }),
-      expect.objectContaining({ id: "commission-drag", value: "$5", tone: "warning" }),
-      expect.objectContaining({ id: "cash-flow-bridge", value: "+$1,200" }),
+      expect.objectContaining({ id: "realized-pnl", value: "+120", detail: "AAPL contributes +120 realized P&L across 2 trades." }),
+      expect.objectContaining({ id: "unrealized-pnl", value: "+80", detail: "AAPL carries +80 unrealized P&L into the selected portfolio view." }),
+      expect.objectContaining({ id: "commission-drag", value: "5", tone: "warning" }),
+      expect.objectContaining({ id: "cash-flow-bridge", value: "+1,200" }),
       expect.objectContaining({ id: "trade-evidence", value: "2 fills", detail: "2 retained fills available for order, account, fill-price, and commission review." })
     ]);
     expect(summary.tradeEvidenceRows).toEqual([
@@ -846,8 +846,8 @@ describe("buildPortfolioScreenViewModel", () => {
         id: "fill-latest",
         symbol: "AAPL",
         quantity: "60",
-        price: "$188.50",
-        commission: "$3.00",
+        price: "188.50",
+        commission: "3.00",
         filledAt: "May 7, 2026, 11:50 UTC",
         accountId: "paper-account"
       }),
@@ -862,7 +862,7 @@ describe("buildPortfolioScreenViewModel", () => {
     const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy), trading, strategy, accounting });
     expect(vm.cashFlowSummary).toBe("1 run needs variance review.");
     expect(vm.cashFlowTone).toBe("warning");
-    expect(vm.cashVarianceLabel).toBe("$500");
+    expect(vm.cashVarianceLabel).toBe("500");
   });
 
   it("returns empty state text when trading data is null", () => {
@@ -943,7 +943,7 @@ describe("buildPortfolioScreenViewModel", () => {
     ]);
     const detail = Object.fromEntries(vm.selectedPosition!.fields.map((field) => [field.label, field.value]));
     expect(detail).toMatchObject({ Currency: "USD", "Market value": "$7,159.20 (Stale · no price date)", Weight: "19.0%", Exposure: "$7,159" });
-    expect(vm.positionRows.flatMap((row) => [row.marketValue, row.weight])).not.toContain("Unavailable");
+    expect(vm.positionRows.flatMap((row) => [row.marketValue, row.weight])).not.toContain("Not available");
   });
 
   it.each(["/portfolio", "/portfolio/brokerage-sync"])("keeps repeated totals on %s consistent for shorts and mixed currencies", (pathname) => {
@@ -996,21 +996,21 @@ describe("buildPortfolioScreenViewModel", () => {
       {
         id: "portfolio-total-exposure",
         label: "Total exposure",
-        value: "—",
+        value: "Not available",
         delta: "No holdings",
         tone: "default"
       },
       {
         id: "portfolio-unrealized-pnl",
         label: "Unrealized P&L",
-        value: "—",
+        value: "Not available",
         delta: "No holdings",
         tone: "default"
       },
       {
         id: "portfolio-cash",
         label: "Cash",
-        value: "—",
+        value: "Not available",
         delta: "Awaiting portfolio cash feed",
         tone: "warning"
       },
@@ -1028,7 +1028,7 @@ describe("buildPortfolioScreenViewModel", () => {
       totalExposure: 1000,
       totalUnrealizedPnl: -25
     }).find((metric) => metric.id === "portfolio-unrealized-pnl")).toMatchObject({
-      value: "-$25",
+      value: "-25",
       tone: "danger"
     });
   });
@@ -1037,12 +1037,12 @@ describe("buildPortfolioScreenViewModel", () => {
     const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy), trading, strategy, accounting });
 
     expect(vm.headerChips).toEqual([
-      { label: "Alpaca paper equity", value: "—" },
-      { label: "Alpaca paper cash", value: "—" },
+      { label: "Alpaca paper equity", value: "Not available" },
+      { label: "Alpaca paper cash", value: "Not available" },
       { label: "Open positions", value: "1" },
       { label: "Exposure", value: "$18,900" },
       { label: "Unrealized P&L", value: "+$90" },
-      { label: "Cash variance", value: "$500" }
+      { label: "Cash variance", value: "500" }
     ]);
   });
 
@@ -1164,7 +1164,7 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.runRows[0].id).toBe("portfolio-run-1");
     expect(vm.selectedRun?.title).toBe("Portfolio Endpoint Run");
     expect(vm.cashFlowSummary).toBe("Portfolio endpoint cash posture.");
-    expect(vm.cashVarianceLabel).toBe("-$125");
+    expect(vm.cashVarianceLabel).toBe("-125");
     expect(vm.workflowTaskPanel?.selectedSummary).toContain("Alpaca / paper account PF-ENDPOINT");
   });
 
@@ -1194,12 +1194,12 @@ describe("buildPortfolioScreenViewModel", () => {
     const vm = buildPortfolioScreenViewModel({ trading: null, strategy, accounting });
 
     expect(vm.headerChips).toEqual([
-      { label: "Alpaca paper equity", value: "—" },
-      { label: "Alpaca paper cash", value: "—" },
+      { label: "Alpaca paper equity", value: "Not available" },
+      { label: "Alpaca paper cash", value: "Not available" },
       { label: "Open positions", value: "Unavailable" },
       { label: "Exposure", value: "Unavailable" },
       { label: "Unrealized P&L", value: "Unavailable" },
-      { label: "Cash variance", value: "$500" }
+      { label: "Cash variance", value: "500" }
     ]);
   });
 

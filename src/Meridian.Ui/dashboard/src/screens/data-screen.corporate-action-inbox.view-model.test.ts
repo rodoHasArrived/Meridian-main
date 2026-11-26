@@ -212,7 +212,7 @@ describe("buildCorporateActionInboxModel", () => {
     expect(row.countdownLabel).toBe("in 40 days");
     expect(row.consensusLabel).toBe("1/1 source agree");
     expect(row.tone).toBe("neutral");
-    expect(row.statusLabel).toBe("Not supplied");
+    expect(row.statusLabel).toBe("Not available");
     expect(row.permissionLabel).toBe("Authorization not supplied");
     expect(row.canAcceptCanonicalFact).toBe(false);
     expect(row.acceptCanonicalFactDisabledReason).toBe("Server did not supply action authorization.");
@@ -272,7 +272,7 @@ describe("buildCorporateActionInboxModel", () => {
       versionLabel: "v7",
       statusLabel: "TermsConfirmed",
       assignmentLabel: "Casey Operator",
-      conflictLabel: "Not supplied",
+      conflictLabel: "Not available",
       permissionLabel: "Allowed by server policy",
       canAcceptCanonicalFact: true
     });
@@ -388,7 +388,7 @@ describe("buildCorporateActionInboxModel", () => {
     }));
 
     expect(model.rows[0]).toMatchObject({
-      versionLabel: "Not supplied",
+      versionLabel: "Not available",
       expectedVersion: null,
       canAcceptCanonicalFact: false,
       acceptCanonicalFactDisabledReason: "Server did not supply the proposal version required for concurrency control."

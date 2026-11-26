@@ -14,8 +14,8 @@ import {
   type DenseDataTableSortState
 } from "@/components/meridian/ui-kit-primitives";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
-import { formatCurrency, formatMoney, formatUtcDate, formatUtcMonthYear } from "@/lib/format";
-import { formatNumber, pluralizeCount } from "@/lib/format";
+import { formatCurrency, formatMoney, formatUtcDate, formatUtcMonthYear, VALUE_STATE_LABELS } from "@/lib/format";
+import { formatUnknownCurrencyAmount, pluralizeCount } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -172,7 +172,7 @@ export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenP
         </Select>
       </FormRow>
       <TechnicalDetails label="Report run identifiers">
-        <dl className="grid gap-2 text-xs">{runChoices.map((choice, index) => <div key={choice.id}><dt>{choice.label}{(runLabelCounts.get(choice.label) ?? 0) > 1 ? ` · Retained run ${index + 1}` : ""}</dt><dd className="break-all font-mono">{choice.id || "Not recorded"}</dd></div>)}</dl>
+        <dl className="grid gap-2 text-xs">{runChoices.map((choice, index) => <div key={choice.id}><dt>{choice.label}{(runLabelCounts.get(choice.label) ?? 0) > 1 ? ` · Retained run ${index + 1}` : ""}</dt><dd className="break-all font-mono">{choice.id || VALUE_STATE_LABELS.unavailable}</dd></div>)}</dl>
         {requestedRunId && !run ? <p className="break-all font-mono text-xs">{requestedRunId}</p> : null}
       </TechnicalDetails>
       {requestedRunId && !run ? <StatusBanner tone="warning" title="Requested run unavailable" detail={<Link className="underline" to={workstationRouteWithQuery("reportingRunDetail", { runId: requestedRunId })}>Open the exact retained run outside the loaded register</Link>} /> : null}
@@ -398,7 +398,7 @@ function AccountDetailPanel({ accountId, requestedRunId }: { accountId: string; 
         source={{ value: requestedRunId ? "Trial balance" : "No run selected", tone: requestedRunId ? "ready" : "unknown" }}
         scope={{ value: requestedRunId ? "Selected ledger run" : "Select a run", detail: account ? account.accountName : accountId ? "Selected account reference" : "No account selected", tone: requestedRunId ? "ready" : "unknown" }}
         freshness={{
-          value: loading ? "Loading" : errorText ? "Unavailable" : requestedRunId ? "Current response" : "No response loaded",
+          value: loading ? "Loading" : errorText ? VALUE_STATE_LABELS.unavailable : requestedRunId ? "Current response" : "No response loaded",
           tone: loading ? "review" : errorText ? "blocked" : requestedRunId ? "ready" : "unknown"
         }}
         completeness={{
@@ -445,16 +445,16 @@ function AccountDetailPanel({ accountId, requestedRunId }: { accountId: string; 
                 <FinanceFact label="Ending balance" value={formatCurrency(account.balance)} mono />
                 <FinanceFact label="Journal entries" value={String(account.entryCount)} />
                 <FinanceFact label="Entity" value={account.entityScopeDisplayName ?? "All entities"} />
-                <FinanceFact label="Accounting basis" value={account.accountingBasis ?? "Not supplied"} />
+                <FinanceFact label="Accounting basis" value={account.accountingBasis ?? VALUE_STATE_LABELS.unavailable} />
               </div>
               <TechnicalDetails label="Audit details">
                 <dl className="grid gap-2 md:grid-cols-2">
                   <FinanceFact label="Run ID" value={requestedRunId} mono />
-                  <FinanceFact label="Financial account ID" value={account.financialAccountId ?? "Not supplied"} mono />
-                  <FinanceFact label="Source journal entry" value={account.sourceJournalEntryId ?? "Not supplied"} mono />
+                  <FinanceFact label="Financial account ID" value={account.financialAccountId ?? VALUE_STATE_LABELS.unavailable} mono />
+                  <FinanceFact label="Source journal entry" value={account.sourceJournalEntryId ?? VALUE_STATE_LABELS.unavailable} mono />
                   <FinanceFact label="Approval IDs" value={account.approvalIds?.join(", ") || "None supplied"} mono />
-                  <FinanceFact label="Policy" value={account.accountingPolicyId ?? "Not supplied"} mono />
-                  <FinanceFact label="Rule" value={account.ruleId ?? "Not supplied"} mono />
+                  <FinanceFact label="Policy" value={account.accountingPolicyId ?? VALUE_STATE_LABELS.unavailable} mono />
+                  <FinanceFact label="Rule" value={account.ruleId ?? VALUE_STATE_LABELS.unavailable} mono />
                 </dl>
               </TechnicalDetails>
             </>
@@ -598,7 +598,7 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
   // same governed debits and credits, so they carry it too rather than defaulting to dollars.
   const postedMoney = (value: number) => baseCurrency
     ? formatMoney(value, { context: "accounting", currency: baseCurrency })
-    : `${formatNumber(value)} (currency unavailable)`;
+    : formatUnknownCurrencyAmount(value);
 
   const filteredRows = useMemo(() => {
     const needle = searchText.trim().toLowerCase();
@@ -729,7 +729,7 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
             <TableWorkbench<(typeof ledgerRows)[number]>
               compactToolbar
               workbenchId="accounting-ledger-search" sourceKey={`${selectedBookId}:${postedLedger.selectedPeriodId ?? "unavailable"}`}
-              exportContext={{ "Ledger book": selectedBookId, "Ledger period": postedLedger.selectedPeriodId ?? "Unavailable", Basis: postedLedger.selectedBook?.accountingBasis ?? "Unavailable", Currency: baseCurrency ?? "Unavailable" }}
+              exportContext={{ "Ledger book": selectedBookId, "Ledger period": postedLedger.selectedPeriodId ?? VALUE_STATE_LABELS.unavailable, Basis: postedLedger.selectedBook?.accountingBasis ?? VALUE_STATE_LABELS.unavailable, Currency: baseCurrency ?? VALUE_STATE_LABELS.unavailable }}
               sourceDescription={`Posted journal · ${postedLedger.view.selectedBookLabel ?? "Book unavailable"} · ${postedLedger.selectedPeriodLabel ?? "Period unavailable"} · ${postedLedger.selectedBook?.accountingBasis ?? "Basis unavailable"} · ${baseCurrency ?? "Currency unavailable"}. Journal summaries and their posting lines are separate rows; do not sum both.`}
               completePopulation={postedLedger.periodsSettled && !loading && !postedLedger.journalErrorText}
               filters={<label className="flex items-center gap-2 text-xs" htmlFor="ledger-search"><span>Search</span>
@@ -1077,7 +1077,7 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
               : "All fund accounts",
           tone: "ready"
         }}
-        freshness={loading ? { value: "Loading", tone: "review" } : errorText ? { value: "Unavailable", tone: "blocked" } : calendarFreshness}
+        freshness={loading ? { value: "Loading", tone: "review" } : errorText ? { value: VALUE_STATE_LABELS.unavailable, tone: "blocked" } : calendarFreshness}
         completeness={{ value: `${items.length} workflow${items.length === 1 ? "" : "s"} retained`, tone: items.length > 0 ? "ready" : errorText ? "blocked" : "unknown" }}
         blocker={errorText ? { value: "Calendar unavailable", detail: errorText, tone: "blocked" } : undefined}
       />
@@ -1194,9 +1194,9 @@ export function ApprovalInboxScreen({ data }: FinanceStandardScreenProps) {
   const unknownStatusCount = approvalRows.filter((row) => !isAwaitingApprovalDecision(row.status)
     && row.status !== "Pending" && row.status !== "Approved" && row.status !== "Rejected").length;
   const pendingApprovalCount = hasMalformedPlanFeed
-    ? "Unavailable"
+    ? VALUE_STATE_LABELS.unavailable
     : !hasApprovalFeed
-      ? "Not supplied"
+      ? VALUE_STATE_LABELS.unavailable
       : unknownStatusCount > 0 || missingPlanFeedCount > 0
         ? `${pendingApprovalRows.length} confirmed`
         : String(pendingApprovalRows.length);

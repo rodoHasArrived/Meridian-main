@@ -6,7 +6,7 @@ import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { formatRelativeAge as formatRelative } from "@/lib/time";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type { MetricSnapshot, QuotesSnapshotItem, QuotesSnapshotResponse, SymbolRecord, SymbolStatistics } from "@/types";
-import { formatCount as formatCountValue, formatDecimal, formatNumber } from "@/lib/format";
+import { formatCount as formatCountValue, formatDecimal, formatNumber, VALUE_STATE_LABELS } from "@/lib/format";
 
 export type WatchlistBadgeVariant = "default" | "outline" | "success" | "warning" | "danger" | "paper" | "live" | "research";
 export type WatchlistListState = "loading" | "error" | "empty" | "ready";
@@ -38,7 +38,7 @@ const STATUS_RANK: Record<SymbolRecord["status"], number> = {
 const QUOTE_POLL_INTERVAL_MS = 2000;
 export const WATCHLIST_QUOTE_FRESHNESS_BUDGET_MS = 2 * QUOTE_POLL_INTERVAL_MS;
 const QUOTE_STALE_THRESHOLD_MS = 15_000;
-export const WATCHLIST_EMPTY_VALUE = "—";
+export const WATCHLIST_EMPTY_VALUE = VALUE_STATE_LABELS.unavailable;
 export const WATCHLIST_NO_QUOTE_LABEL = "No quote";
 
 export interface WatchlistApi {

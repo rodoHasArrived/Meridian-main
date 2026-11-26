@@ -9,6 +9,7 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { failoverApi, type FailoverRule, type FailoverRuleDraft, type FailoverSaveResult, type FailoverSettings } from "@/lib/failover-api";
 import { describeConfigurationApply, type ConfigurationApplyMessage } from "@/lib/configuration-apply";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 type FailoverApi = typeof failoverApi;
 const newRule = (): FailoverRuleDraft => ({ id: "", primaryProviderId: "", backupProviderIds: [], failoverThreshold: 3, recoveryThreshold: 5, dataQualityThreshold: 0, maxLatencyMs: 0 });
 
@@ -87,7 +88,7 @@ function FailoverEditor({ api }: { api: FailoverApi }) {
       </form>
       <div className="grid gap-3" aria-label="Failover rules">
         {settings.rules.length === 0 ? <p className="text-sm">No failover rules configured.</p> : settings.rules.map(existing => <article key={existing.id} className="grid gap-2 rounded border p-3" aria-label={`Failover rule ${existing.id}`}>
-          <div className="flex flex-wrap justify-between gap-2"><h4 className="font-semibold">{existing.id}</h4><span className="text-sm">Active: <strong>{existing.currentActiveProviderId ?? "Unavailable"}</strong></span></div>
+          <div className="flex flex-wrap justify-between gap-2"><h4 className="font-semibold">{existing.id}</h4><span className="text-sm">Active: <strong>{existing.currentActiveProviderId ?? VALUE_STATE_LABELS.unavailable}</strong></span></div>
           <p className="text-sm text-muted-foreground">Primary {existing.primaryProviderId} → backups {existing.backupProviderIds.join(" → ")} · failures {existing.failoverThreshold} · recovery {existing.recoveryThreshold} · quality ≥ {existing.dataQualityThreshold} · latency ≤ {existing.maxLatencyMs || "disabled"} ms</p>
           <div className="flex flex-wrap items-end gap-2">
             <label className="grid min-w-48 gap-1 text-sm">Switch target for {existing.id}<Select value={targets[existing.id] ?? ""} disabled={busy || !existing.currentActiveProviderId} onChange={event => setTargets({ ...targets, [existing.id]: event.target.value })}><option value="">Choose provider…</option>{[existing.primaryProviderId, ...existing.backupProviderIds].map(id => <option key={id} value={id} disabled={id === existing.currentActiveProviderId}>{id}</option>)}</Select></label>

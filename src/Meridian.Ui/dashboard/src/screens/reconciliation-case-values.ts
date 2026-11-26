@@ -1,6 +1,7 @@
 import type { OperationsBreakCase, ReconciliationBreakMeasure, ReconciliationBreakQueueItem } from "@/types";
 import { currencyMinorUnits, formatExactDecimal, parseExactDecimal } from "@/lib/exact-financial-value";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 /** Reconciliation shows retained precision, including a nonzero residual below a currency's minor unit. */
 export function reconciliationValueDecimals(value: string | number | null | undefined, unit?: string): number {
   const declared = unit?.trim();
@@ -9,9 +10,9 @@ export function reconciliationValueDecimals(value: string | number | null | unde
 }
 
 export function formatReconciliationValue(value: string | number | null | undefined, unit?: string, signed = false): string {
-  if (reconciliationValueUnavailableReason(value)) return "Unavailable";
+  if (reconciliationValueUnavailableReason(value)) return VALUE_STATE_LABELS.unavailable;
   return formatExactDecimal(value, { decimals: reconciliationValueDecimals(value, unit), signed })
-    ?? (value == null ? "Not recorded" : "Unavailable");
+    ?? (value == null ? VALUE_STATE_LABELS.unavailable : VALUE_STATE_LABELS.unavailable);
 }
 
 /** Legacy numeric responses cannot retain integer precision beyond this boundary. */
@@ -43,7 +44,7 @@ export function caseQueueResidual(item: ReconciliationBreakQueueItem): { amount:
   if (item.statementEvidence) {
     const { residuals } = item.statementEvidence.match;
     if (residuals.length > 1) return { amount: "Multiple", unit: null };
-    if (residuals.length === 0) return { amount: "Unavailable", unit: null };
+    if (residuals.length === 0) return { amount: VALUE_STATE_LABELS.unavailable, unit: null };
     const { residual, unit } = residuals[0];
     return { amount: formatReconciliationValue(residual, unit, true), unit: !reconciliationValueUnavailableReason(residual) && parseExactDecimal(residual) ? reconciliationUnitLabel(unit) : null };
   }
@@ -57,7 +58,7 @@ export function caseQueueResidual(item: ReconciliationBreakQueueItem): { amount:
     return { amount: formatReconciliationValue(caseMeasureAmount(measure, "variance"), unit, true),
       unit: reconciliationUnitLabel(unit, measure.kind) };
   }
-  if (measures.length > 0) return { amount: "Unavailable", unit: null };
+  if (measures.length > 0) return { amount: VALUE_STATE_LABELS.unavailable, unit: null };
   const value = item.varianceExact === undefined ? item.variance : item.varianceExact;
   return { amount: formatReconciliationValue(value, undefined, true), unit: !reconciliationValueUnavailableReason(value) && parseExactDecimal(value) ? "Unit unavailable" : null };
 }
@@ -75,7 +76,7 @@ export function operationsCaseVarianceLabel(item: Pick<OperationsBreakCase, "mea
     const expected = formatReconciliationValue(caseMeasureAmount(measure, "expected"), unit);
     const actual = formatReconciliationValue(caseMeasureAmount(measure, "actual"), unit);
     const residual = retainedMeasureResidual(measure);
-    const variance = residual === null ? "Unavailable" : formatReconciliationValue(residual, unit, true);
+    const variance = residual === null ? VALUE_STATE_LABELS.unavailable : formatReconciliationValue(residual, unit, true);
     const kind = measure.kind === "CostBasis" ? "Cost basis" : measure.kind;
     return `${item.measures!.length > 1 ? `${kind}: ` : ""}Expected ${expected} / Actual ${actual} / Variance ${variance} ${unitLabel}`;
   }).join("; ");

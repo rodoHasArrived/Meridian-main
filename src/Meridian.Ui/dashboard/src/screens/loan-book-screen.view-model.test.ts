@@ -80,8 +80,8 @@ describe("loan book view model", () => {
   it("reads absent PRD-115 balances from an older host as not reported, not as zero", () => {
     const row = buildLoanBookRow(loan());
 
-    expect(row.prepaidInterestLabel).toBe("—");
-    expect(row.unappliedCashLabel).toBe("—");
+    expect(row.prepaidInterestLabel).toBe("Not available");
+    expect(row.unappliedCashLabel).toBe("Not available");
     expect(row.missing).toHaveLength(0);
   });
 
@@ -111,8 +111,8 @@ describe("loan book view model", () => {
       })
     );
 
-    expect(row.principalOutstandingLabel).toBe("—");
-    expect(row.availableToDrawLabel).toBe("—");
+    expect(row.principalOutstandingLabel).toBe("Not available");
+    expect(row.availableToDrawLabel).toBe("Not available");
     expect(row.missing).toEqual(["Principal outstanding", "Available to draw"]);
     expect(row.ariaLabel).toContain("principal outstanding, available to draw not reported");
     // A reported figure on the same row still renders.
@@ -123,7 +123,7 @@ describe("loan book view model", () => {
     const row = buildLoanBookRow(loan({ maturityDate: "2030-02-14", lastPaymentDate: null }));
 
     expect(row.maturityLabel).toBe("2030-02-14");
-    expect(row.lastPaymentLabel).toBe("—");
+    expect(row.lastPaymentLabel).toBe("Not available");
   });
 
   it("renders each facility in its own base currency", () => {
@@ -137,7 +137,7 @@ describe("loan book view model", () => {
     (currency, label) => {
       const row = buildLoanBookRow(loan({ baseCurrency: currency }));
       expect(row.currency).toBe(label);
-      expect(row.commitmentLabel).not.toBe("—");
+      expect(row.commitmentLabel).not.toBe("Not available");
     }
   );
 
@@ -185,7 +185,7 @@ describe("loan book view model", () => {
       totalCommitment: 3_000_000, totalPrincipalOutstanding: 2_000_000,
       totalInterestAccruedUnpaid: 0, totalPenaltyAccruedUnpaid: 0,
       totalAvailableToDraw: 1_000_000, totalCollateralValue: 4_000_000 }] }));
-    expect(view.metrics.find(metric => metric.id === "principal-outstanding")?.value).toBe("—");
+    expect(view.metrics.find(metric => metric.id === "principal-outstanding")?.value).toBe("Not available");
     expect(view.currencyNotice).toContain("unspecified currencies are unavailable");
   });
 

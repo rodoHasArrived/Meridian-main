@@ -45,7 +45,7 @@ import type {
   ReconciliationBreakQueueItem,
   StatementRunSummary,
 } from "@/types";
-import { formatCount, pluralizeCount, formatPrefixedCurrency } from "@/lib/format";
+import { formatCount, pluralizeCount, formatCurrencyAmount, VALUE_STATE_LABELS } from "@/lib/format";
 import {
   TIE_OUT_EPSILON,
   roundMoney,
@@ -265,7 +265,7 @@ function systemLineCurrency(row: AccountingSystemReconciliationRow, side: "state
 }
 
 function comparisonAmountLabel(amount: ComparisonAmount, currency?: string): string {
-  return amount.value === null ? amount.unavailable ? "Unavailable" : "Not recorded"
+  return amount.value === null ? amount.unavailable ? VALUE_STATE_LABELS.unavailable : VALUE_STATE_LABELS.unavailable
     : `${formatReconciliationValue(amount.value, currency)} ${currency ?? "Currency unavailable"}`;
 }
 
@@ -604,8 +604,8 @@ export function buildReconciliationComparisonViewState({
     }
 
     if (!summaryCurrency) {
-      statementBalanceLabel = "Unavailable";
-      ledgerBalanceLabel = "Unavailable";
+      statementBalanceLabel = VALUE_STATE_LABELS.unavailable;
+      ledgerBalanceLabel = VALUE_STATE_LABELS.unavailable;
       varianceTone = "default";
       varianceLabel = "Can't assess";
       summaryUnavailableReason = !hasBothSources
@@ -661,8 +661,8 @@ export function buildReconciliationComparisonViewState({
     openCount = sourceRows.reduce((total, run) => total + run.openExceptionCount, 0);
     // The run-level cash summary has neither a declared currency nor per-run amount bindings.
     // Keep run counts as text and do not assign an aggregate cash balance to the first run.
-    statementBalanceLabel = cashEvidence ? "Unavailable" : "Not loaded";
-    ledgerBalanceLabel = cashEvidence ? "Unavailable" : "Not loaded";
+    statementBalanceLabel = cashEvidence ? VALUE_STATE_LABELS.unavailable : "Not loaded";
+    ledgerBalanceLabel = cashEvidence ? VALUE_STATE_LABELS.unavailable : "Not loaded";
     varianceTone = "default";
     varianceLabel = "Can't assess";
     if (cashEvidence) summaryUnavailableReason = "Cash totals are unavailable because the summary does not declare a currency. Run counts remain visible.";
@@ -735,7 +735,7 @@ function buildStatementRunRow(
     periodLabel,
     statusLabel: formatReconciliationState(status),
     validationIssueCountLabel: String(validationIssueCount),
-    matchCountLabel: matchDataReported ? String(matchCount) : "—",
+    matchCountLabel: matchDataReported ? String(matchCount) : VALUE_STATE_LABELS.unavailable,
     breakCountLabel: String(breakCount),
     caseCountLabel: String(caseCount),
     importedAtLabel,
@@ -754,7 +754,7 @@ function valueOrMissing(value: string | null | undefined, label: string, missing
   }
 
   missing.push(label);
-  return "—";
+  return VALUE_STATE_LABELS.unavailable;
 }
 
 function buildReconciliationRunDetailTabs(run: StatementRunSummaryWithMetadata | null): ReconciliationRunDetailTabViewModel[] {
@@ -842,7 +842,7 @@ function formatReconciliationState(value: string | null | undefined): string {
     .replace(/\s+/g, " ")
     .toLowerCase();
 
-  return normalized ? normalized.replace(/^\w/, (character) => character.toUpperCase()) : "Unavailable";
+  return normalized ? normalized.replace(/^\w/, (character) => character.toUpperCase()) : VALUE_STATE_LABELS.unavailable;
 }
 
 function reconciliationStatusTone(
@@ -1103,7 +1103,7 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Updated", value: row.lastUpdatedAtLabel },
       { label: "Exception route", value: formatReconciliationMetadata(row.exceptionRoute, "Unrouted") },
       { label: "Tolerance profile", value: formatReconciliationMetadata(row.toleranceProfileId, "Unassigned") },
-      { label: "Tolerance band", value: caseQueueTolerance(row) ?? (row.toleranceBand == null ? "Policy default" : formatPrefixedCurrency(row.toleranceBand)) },
+      { label: "Tolerance band", value: caseQueueTolerance(row) ?? (row.toleranceBand == null ? "Policy default" : formatCurrencyAmount(row.toleranceBand, null)) },
       { label: "Priority", value: formatReconciliationMetadata(row.priority, "Normal") },
       { label: "Urgency", value: buildReconciliationExceptionUrgency(row) },
       { label: "SLA tone", value: formatReconciliationMetadata(row.slaBadgeTone, "info") },

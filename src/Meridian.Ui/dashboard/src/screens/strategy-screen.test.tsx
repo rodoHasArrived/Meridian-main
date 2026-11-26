@@ -631,7 +631,7 @@ describe("StrategyScreen", () => {
     await user.click(screen.getByRole("button", { name: /compare 2 runs/i }));
 
     await waitFor(() => {
-      expect(screen.getAllByText("Unavailable").length).toBeGreaterThanOrEqual(2);
+      expect(screen.getAllByText("Not available").length).toBeGreaterThanOrEqual(2);
     });
   });
 
@@ -791,7 +791,7 @@ describe("StrategyScreen", () => {
       expect(screen.getAllByText("No position changes returned for this diff.").length).toBeGreaterThan(0);
     });
     expect(screen.getByRole("row", { name: "Inspect lookback parameter diff" }))
-      .toHaveTextContent(/lookback\s*Unavailable\s*Unavailable/);
+      .toHaveTextContent(/lookback\s*Not available\s*Not available/);
   });
 
   it("loads and displays promotion history when history button is clicked", async () => {

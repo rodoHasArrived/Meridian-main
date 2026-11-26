@@ -1494,6 +1494,35 @@ not been recorded.
     `formatMoney`), and an SVG coordinate or CSS length uses the ungrouped `formatFixed`.
     `localMoneyFormatters` counts money and P&L formatters defined in a screen instead of
     imported from `@/lib/format`.
+  - *One meaning per value*: an amount is a value, a confirmed zero (`0.00`), or one of the
+    `VALUE_STATE_LABELS` states: "Not available" (not loaded or not supplied), "n/a" (not
+    applicable) or "No access" (restricted). Missing is never rendered or sent as `0`, and an
+    unknown currency is never `$` or `USD`. `formatCurrencyAmount(value, currency)` takes the
+    currency as a required argument (`null` renders a bare amount; `showCode` gives
+    `1,250.00 EUR`); `formatUnknownCurrencyAmount` gives `1,250 (currency unavailable)`.
+    `formatPrefixedCurrency`, `formatSignedCurrency` and `formatCompactCurrency`, which always print
+    `$`, are deprecated and have no screen callers; use `formatCurrencyAmount` with `signed` or
+    `compact`. The `prefixedCurrency` ratchet counts all three and its baseline is empty, so a new
+    caller fails the ratchet test.
+    `sharedCurrency(codes)` labels a total only when every line agrees on one currency. The
+    `assumedMoneyDefaults` ratchet (`balance ?? 0`, `?? "USD"`) also has an empty baseline: a
+    missing currency is required from the operator or refused, never defaulted. The
+    `placeholderVocabulary` ratchet's baseline is also empty: screens render a missing value as
+    `VALUE_STATE_LABELS.unavailable` ("Not available"), and the shared formatters' default fallback
+    is the same text. Ad hoc `"—"`, `"Unavailable"`, `"Not supplied"`, `"Not recorded"` and
+    `"Not retained"` literals and JSX text fail the ratchet. Compare a rendered label with
+    `isUnavailableLabel(label)`, never a literal. Comparisons and `case` labels are not counted
+    (they match server statuses), and a server status value assigned in a screen carries a
+    `placeholder-vocabulary-ignore` comment. The accounting `zeroDash` option still prints `—` for
+    an exact zero; that is a confirmed zero, not a missing value. The
+    `accounting.non-usd` scenario rebooks the accounting payload in EUR for screenshots.
+    `FinancialValue` renders each state with its own look and accessible text and exposes it as
+    `data-value-state`: a value, a confirmed zero, a dashed "Not available" chip (missing or
+    unparseable), "n/a" (`condition="not-applicable"`, read as "Not applicable"), or a lock with
+    "No access" (`restricted`, which never displays the supplied value or offers its passport).
+  - *Value origin*: Amount passport triggers show worded tags (Source, Calculated, Override,
+    Estimate, Zero, Stale, Blocked, No access), never `?` or abbreviations; an unknown origin
+    shows no tag and reads "Origin unknown" inside the passport.
 - **Headline figures.** `StatStrip` and `MetricCard` apply the rules in `@/lib/metric-trust`
   to every `MetricSnapshot`, so a screen cannot opt out by accident:
   - *Source*: a figure states where it comes from. `provenance` carries source, as-of time

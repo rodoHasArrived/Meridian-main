@@ -10,16 +10,16 @@ import { InlineFundAccountPicker } from "@/components/meridian/inline-fund-accou
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
-import { formatCurrency, formatTimestamp } from "@/lib/format";
+import { formatCurrency, formatTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 import type { TradingBrokerageRecoveryRun, TradingExecutionReconciliationBreak, TradingOperatorReadiness } from "@/types";
 
 type RecoveryBreak = TradingExecutionReconciliationBreak & { rowId: string };
 
 const discrepancyColumns: DenseDataTableColumn<RecoveryBreak>[] = [
   { id: "symbol", label: "Symbol / discrepancy", render: (row) => <><span className="font-mono font-semibold">{row.symbol ?? "Account"}</span><p className="mt-1 text-xs text-muted-foreground whitespace-normal">{row.description}</p></> },
-  { id: "order", label: "Order identity", render: (row) => <dl className="font-mono text-xs"><dt className="text-muted-foreground">Local</dt><dd>{row.localOrderId ?? "Unavailable"}</dd><dt className="mt-1 text-muted-foreground">Broker</dt><dd>{row.brokerOrderId ?? "Unavailable"}</dd><dt className="mt-1 text-muted-foreground">Client</dt><dd>{row.clientOrderId ?? "Unavailable"}</dd></dl> },
-  { id: "local", label: "Retained local state", render: (row) => <span className="font-mono whitespace-normal">{row.localValue ?? "Unavailable"}</span> },
-  { id: "broker", label: "Broker state", render: (row) => <span className="font-mono whitespace-normal">{row.brokerValue ?? "Unavailable"}</span> }
+  { id: "order", label: "Order identity", render: (row) => <dl className="font-mono text-xs"><dt className="text-muted-foreground">Local</dt><dd>{row.localOrderId ?? VALUE_STATE_LABELS.unavailable}</dd><dt className="mt-1 text-muted-foreground">Broker</dt><dd>{row.brokerOrderId ?? VALUE_STATE_LABELS.unavailable}</dd><dt className="mt-1 text-muted-foreground">Client</dt><dd>{row.clientOrderId ?? VALUE_STATE_LABELS.unavailable}</dd></dl> },
+  { id: "local", label: "Retained local state", render: (row) => <span className="font-mono whitespace-normal">{row.localValue ?? VALUE_STATE_LABELS.unavailable}</span> },
+  { id: "broker", label: "Broker state", render: (row) => <span className="font-mono whitespace-normal">{row.brokerValue ?? VALUE_STATE_LABELS.unavailable}</span> }
 ];
 
 const runColumns: DenseDataTableColumn<TradingBrokerageRecoveryRun>[] = [
@@ -36,7 +36,7 @@ const ACCOUNT_SETUP_ROW_DETAIL = "brokerage recovery is checked per account; liv
 const FUND_ACCOUNT_GUID_MESSAGE = "Not a fund account id. Trading accepts a fund account GUID, for example 11111111-2222-3333-4444-555555555555.";
 
 function timestamp(value: string | null | undefined) {
-  if (!value || !Number.isFinite(Date.parse(value))) return "Unavailable";
+  if (!value || !Number.isFinite(Date.parse(value))) return VALUE_STATE_LABELS.unavailable;
   return formatTimestamp(value, { precision: "second" });
 }
 
@@ -88,7 +88,7 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, brokerageEnvi
   const discrepancies = (reconciliation?.breaks ?? []).map((item, index) => ({ ...item, rowId: `${item.kind}:${index}` }));
   const reasons = [...new Set([...(recovery?.blockingReasons ?? []), ...(portfolio?.warnings ?? [])])];
   const money = (value: number | null | undefined) => portfolio?.currency
-    ? `${formatCurrency(value, { currency: portfolio.currency, fallback: "Unavailable" })} (${portfolio.currency})`
+    ? `${formatCurrency(value, { currency: portfolio.currency, fallback: VALUE_STATE_LABELS.unavailable })} (${portfolio.currency})`
     : "Unavailable — currency unverified";
 
   const blockedDetail = error ? `Synchronization unavailable: ${error}` : busy
@@ -209,9 +209,9 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, brokerageEnvi
         <TechnicalDetails label="Brokerage recovery evidence">
         <dl className="grid gap-x-5 gap-y-3 text-xs sm:grid-cols-2 xl:grid-cols-4">
           <RecoveryFact label="Fund account" value={fundAccountId ?? "Not selected"} />
-          <RecoveryFact label="Broker account" value={recovery ? `${recovery.providerId ?? "Unknown provider"} · ${recovery.externalAccountId ?? "Unlinked"}` : "Unavailable"} />
+          <RecoveryFact label="Broker account" value={recovery ? `${recovery.providerId ?? "Unknown provider"} · ${recovery.externalAccountId ?? "Unlinked"}` : VALUE_STATE_LABELS.unavailable} />
           <RecoveryFact label="Connection health" value={!reconciliation ? "Unknown" : !reconciliation.brokerConnected ? "Disconnected" : !portfolio?.isFresh || busy || error ? "Unverified · last observed connected" : reconciliation.brokerHealthy ? "Connected · healthy" : "Connected · degraded"} />
-          <RecoveryFact label="Portfolio evidence" value={!portfolio ? "Unavailable" : `${portfolio.isComplete ? "Complete" : "Incomplete"} · ${portfolio.isFresh ? "Fresh" : "Stale"} · ${portfolio.isConsistent ? "Consistent" : "Inconsistent"}`} />
+          <RecoveryFact label="Portfolio evidence" value={!portfolio ? VALUE_STATE_LABELS.unavailable : `${portfolio.isComplete ? "Complete" : "Incomplete"} · ${portfolio.isFresh ? "Fresh" : "Stale"} · ${portfolio.isConsistent ? "Consistent" : "Inconsistent"}`} />
           <RecoveryFact label="Latest sync attempt" value={timestamp(portfolio?.lastAttemptedAt)} />
           <RecoveryFact label="Last successful sync" value={timestamp(portfolio?.lastSuccessfulAt)} />
           <RecoveryFact label="Portfolio observed" value={timestamp(portfolio?.observedAt)} />

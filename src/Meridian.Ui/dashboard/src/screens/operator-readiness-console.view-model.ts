@@ -2,7 +2,7 @@ import { isOpenBreakStatus } from "@/lib/cross-screen-counts";
 import { caseVarianceLabel } from "./reconciliation-case-values";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getOperatorInbox, getTradingReadiness, type ApiRequestOptions } from "@/lib/api";
-import { formatCurrency, pluralizeCount } from "@/lib/format";
+import { formatCurrency, pluralizeCount, VALUE_STATE_LABELS } from "@/lib/format";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { countPendingReportPackDistributions, getReportPackDistributions } from "@/lib/reporting-distributions";
 import {
@@ -472,7 +472,7 @@ export function buildOperatorReadinessConsoleState({
         ? "Readiness unavailable"
         : "No readiness data";
   const overallLabel = formatEffectiveOverallLabel(readinessStatusLabel, overallLevel);
-  const asOf = formatReadinessMinute(operatorInbox?.asOf ?? readiness?.asOf ?? null, "Unavailable");
+  const asOf = formatReadinessMinute(operatorInbox?.asOf ?? readiness?.asOf ?? null, VALUE_STATE_LABELS.unavailable);
 
   return {
     title: "Operator Readiness Console",
@@ -752,7 +752,7 @@ function buildActiveSessionFacts(readiness: TradingOperatorReadiness | null): Re
     {
       id: "paper-equity",
       label: "Paper portfolio value",
-      value: session.portfolioValue === null || session.portfolioValue === undefined ? "Unavailable" : formatCurrency(session.portfolioValue),
+      value: session.portfolioValue === null || session.portfolioValue === undefined ? VALUE_STATE_LABELS.unavailable : formatCurrency(session.portfolioValue),
       detail: `Initial cash ${formatCurrency(session.initialCash)}`,
       meta: `Created ${formatReadinessMinute(session.createdAt, "timestamp unavailable")}`,
       level: session.portfolioValue === null || session.portfolioValue === undefined ? "review" : "ready"
@@ -916,7 +916,7 @@ function buildReportPackFacts(reportingPayload: AccountingReportingSummary | nul
     return [{
       id: "report-pack",
       label: "Report-pack readiness",
-      value: "Unavailable",
+      value: VALUE_STATE_LABELS.unavailable,
       detail: "Reporting data has not loaded.",
       meta: "Wait for the Reporting capability and durability checks to recover.",
       level: "review"
@@ -1069,7 +1069,7 @@ function buildCockpitGateRows({
     buildCheckpointGateRow({
       id: "brokerage-sync",
       label: "Brokerage sync healthy",
-      fallbackValue: brokerage?.health ?? "Unavailable",
+      fallbackValue: brokerage?.health ?? VALUE_STATE_LABELS.unavailable,
       fallbackDetail: brokerageRow?.detail ?? "No account-scoped brokerage sync status is attached to readiness.",
       fallbackMeta: brokerage
         ? [brokerage.fundAccountId, brokerage.providerId, brokerage.externalAccountId].filter(Boolean).join(" - ") || "No provider linked"
@@ -1746,42 +1746,42 @@ function buildApiSources({
       id: "trading-readiness",
       label: "Trading readiness",
       endpoint: WORKSTATION_API_ENDPOINTS.tradingReadiness,
-      status: readiness ? formatReadinessStatusValue(readiness.overallStatus) : "Unavailable",
+      status: readiness ? formatReadinessStatusValue(readiness.overallStatus) : VALUE_STATE_LABELS.unavailable,
       level: readiness ? levelFromReadiness(readiness.overallStatus) : "review"
     },
     {
       id: "operator-inbox",
       label: "Operator inbox",
       endpoint: WORKSTATION_API_ENDPOINTS.operatorInbox,
-      status: inboxLoading ? "Loading" : operatorInbox ? `${operatorInbox.reviewCount} review items` : inboxError ?? "Unavailable",
+      status: inboxLoading ? "Loading" : operatorInbox ? `${operatorInbox.reviewCount} review items` : inboxError ?? VALUE_STATE_LABELS.unavailable,
       level: inboxLoading ? "neutral" : operatorInbox ? (operatorInbox.criticalCount > 0 ? "blocked" : operatorInbox.warningCount > 0 ? "review" : "ready") : "review"
     },
     {
       id: "strategy-runs",
       label: "Strategy runs",
       endpoint: WORKSTATION_API_ENDPOINTS.strategy,
-      status: strategy ? `${strategy.runs.length} runs` : "Unavailable",
+      status: strategy ? `${strategy.runs.length} runs` : VALUE_STATE_LABELS.unavailable,
       level: strategy ? "ready" : "review"
     },
     {
       id: "data-confidence",
       label: "Provider health",
       endpoint: WORKSTATION_API_ENDPOINTS.data,
-      status: data ? `${data.providers.length} providers` : "Unavailable",
+      status: data ? `${data.providers.length} providers` : VALUE_STATE_LABELS.unavailable,
       level: data ? "ready" : "review"
     },
     {
       id: "accounting",
       label: "Accounting",
       endpoint: WORKSTATION_API_ENDPOINTS.accounting,
-      status: accounting ? `${accounting.breakQueue.length} breaks` : "Unavailable",
+      status: accounting ? `${accounting.breakQueue.length} breaks` : VALUE_STATE_LABELS.unavailable,
       level: accounting ? "ready" : "review"
     },
     {
       id: "reporting",
       label: "Reporting",
       endpoint: WORKSTATION_API_ENDPOINTS.reporting,
-      status: reporting ? `${reporting.profileCount} report profiles` : "Unavailable",
+      status: reporting ? `${reporting.profileCount} report profiles` : VALUE_STATE_LABELS.unavailable,
       level: reporting?.deploymentCapability?.isReady === true ? "ready" : "review"
     }
   ];

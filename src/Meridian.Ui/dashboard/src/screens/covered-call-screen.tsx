@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { OptionScreeningMap } from "@/components/meridian/option-screening-map";
-import { formatDecimal, formatPrefixedCurrency, formatRatioAsPercent } from "@/lib/format";
+import { formatCurrencyAmount, formatDecimal, formatRatioAsPercent } from "@/lib/format";
 import { toSeverity } from "@/design-system/status-styles";
 import { coveredCallRunResultEndpoint } from "@/lib/workstation-endpoints";
 
@@ -640,8 +640,8 @@ function MetricsTable({ result }: { result: NonNullable<CoveredCallScreenViewMod
     ["Win rate", fmtPct(result.metrics.winRate)],
     ["Assignment rate", fmtPct(result.metrics.assignmentRate)],
     ["Total trades", String(result.metrics.totalOptionTrades)],
-    ["Total premium", formatPrefixedCurrency(result.metrics.totalPremiumCollected)],
-    ["Option P&L", formatPrefixedCurrency(result.metrics.totalOptionPnl)],
+    ["Total premium", formatCurrencyAmount(result.metrics.totalPremiumCollected, null)],
+    ["Option P&L", formatCurrencyAmount(result.metrics.totalOptionPnl, null)],
     ["Up capture", fmtPct(result.metrics.upCapture)],
     ["Down capture", fmtPct(result.metrics.downCapture)]
   ];
@@ -696,26 +696,24 @@ function EquityCurve({ result }: { result: NonNullable<CoveredCallScreenViewMode
           title="Equity curve"
           subtitle="Strategy vs underlying-only buy-and-hold."
           readout={[
-            { label: "Strategy", value: formatPrefixedCurrency(finalStrategy), color: "var(--chart-equity, #2E7655)" },
-            { label: "Underlying", value: formatPrefixedCurrency(finalUnderlying), color: "var(--chart-axis, #606870)" }
+            { label: "Strategy", value: formatCurrencyAmount(finalStrategy, null), color: "var(--chart-equity, #2E7655)" },
+            { label: "Underlying", value: formatCurrencyAmount(finalUnderlying, null), color: "var(--chart-axis, #606870)" }
           ]}
           height={220}
           style={{ flexShrink: 0 }}
         >
           <EquityCurveChart
             ariaLabel="Covered-call strategy versus underlying equity curve"
-            ariaDescription={`${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final strategy equity ${formatPrefixedCurrency(
-              finalStrategy
-            )}, underlying buy-and-hold ${formatPrefixedCurrency(finalUnderlying)}.`}
+            ariaDescription={`${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final strategy equity ${formatCurrencyAmount(finalStrategy, null)}, underlying buy-and-hold ${formatCurrencyAmount(finalUnderlying, null)}.`}
             accessibleData={{
               columns: ["Date", "Strategy", "Underlying"],
-              rows: points.map((p) => [p.date, formatPrefixedCurrency(p.strategyEquity), formatPrefixedCurrency(p.underlyingEquity)])
+              rows: points.map((p) => [p.date, formatCurrencyAmount(p.strategyEquity, null), formatCurrencyAmount(p.underlyingEquity, null)])
             }}
             series={[
               { label: "Strategy", color: "var(--chart-equity, #2E7655)", points: strategy },
               { label: "Underlying", color: "var(--chart-axis, #606870)", points: underlying, dashed: true, area: false }
             ]}
-            valueFmt={(value) => formatPrefixedCurrency(value)}
+            valueFmt={(value) => formatCurrencyAmount(value, null)}
             inspection={inspection}
             crosshairIndex={inspection.activeIndex}
           />

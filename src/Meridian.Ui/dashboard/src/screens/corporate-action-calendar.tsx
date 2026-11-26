@@ -10,6 +10,7 @@ import type { CorporateActionCalendarEvent, CorporateActionCalendarPage } from "
 import type { CorporateActionInboxRowModel } from "@/screens/data-screen.corporate-action-inbox.view-model";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 interface CalendarProps { scopeKey: string; selectedCaseId?: string | null; onCaseSelected: (caseId: string, proposalId: string) => void; onChanged: () => void }
 function localDate() { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`; }
 
@@ -177,7 +178,7 @@ export function CorporateActionCalendar({ rows, selectedRowId, onSelect, stale =
         return cell.length ? <div className="flex flex-wrap justify-end gap-1">{cell.map((event) => <button type="button" key={event.id}
           className="min-h-8 min-w-8 rounded-sm border border-border px-2 font-mono font-semibold hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           aria-label={`${event.kind} for ${row.ticker}, ${day}, ${row.statusLabel}, case ${row.caseIdLabel}`} aria-controls={caseWorkspaceId} aria-pressed={selected?.id === event.id}
-          onClick={() => { setSelectedId(event.id); onSelect(row.rowId); }}>{event.symbol}</button>)}</div> : <span aria-label="No supplied event">—</span>;
+          onClick={() => { setSelectedId(event.id); onSelect(row.rowId); }}>{event.symbol}</button>)}</div> : <span aria-label="No supplied event">{VALUE_STATE_LABELS.unavailable}</span>;
       }
     }))
   ];

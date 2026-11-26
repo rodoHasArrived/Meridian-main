@@ -13,12 +13,13 @@ import { OptionAssessmentPanel } from "@/screens/options-screen.assessments";
 import { candidateLeg, comparableBasket, DEFAULT_OPTION_CRITERIA, EMPTY_OPTION_BASKET, newEquityLeg, optionCoincidentGroups } from "@/screens/options-screen.view-model";
 import type { OptionAssessmentBasket, OptionBasketLeg, OptionScreenCandidate, OptionScreenCriteria, OptionScreenResult } from "@/types/option-visualization.types";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 const columns: DenseDataTableColumn<OptionScreenCandidate>[] = [
   { id: "contract", label: "Contract", render: row => row.symbol },
   { id: "right", label: "Right", render: row => row.right },
   { id: "expiry", label: "Expiry / DTE", render: row => `${row.expiration} / ${row.daysToExpiration}` },
   { id: "strike", label: "Strike", render: row => row.strike, align: "right" },
-  { id: "delta", label: "Delta", render: row => row.delta ?? "Unavailable", align: "right" },
+  { id: "delta", label: "Delta", render: row => row.delta ?? VALUE_STATE_LABELS.unavailable, align: "right" },
   { id: "quote", label: "Bid / Ask", render: row => `${row.bid} / ${row.ask}`, align: "right" },
   { id: "result", label: "Screen", render: row => row.passesScreen ? "Pass" : "Rejected" }
 ];
@@ -130,7 +131,7 @@ export function OptionsScreen() {
       {selected ? <section aria-label="Selected option contract" className="grid gap-3 border border-border p-3">
         <h3 className="text-sm font-semibold">{selected.symbol} · {selected.right} · {selected.expiration}</h3>
         {coincident && coincident.length > 1 ? <label className="grid gap-1 text-xs">Contracts at this point<Select aria-label="Contracts at this point" value={selected.id} onChange={event => setSelectedId(event.target.value)}>{coincident.map(row => <option key={row.id} value={row.id}>{row.symbol} · strike {row.strike}</option>)}</Select></label> : null}
-        <dl className="grid gap-2 text-xs md:grid-cols-3">{Object.entries({ "Bid / ask per share": `${selected.bid} / ${selected.ask} ${selected.currency}`, "Spread / mid fraction": selected.spreadFraction ?? "Unavailable", "Open interest / volume": `${selected.openInterest ?? "Unavailable"} / ${selected.volume ?? "Unavailable"}`, "Contract multiplier": selected.multiplier, "Style / exchange": `${selected.style} / ${selected.exchange}`, "Quote source / observed": `${selected.source} / ${selected.observedAt}` }).map(([label, value]) => <div key={label}><dt className="text-muted-foreground">{label}</dt><dd className="break-words font-mono">{value}</dd></div>)}</dl>
+        <dl className="grid gap-2 text-xs md:grid-cols-3">{Object.entries({ "Bid / ask per share": `${selected.bid} / ${selected.ask} ${selected.currency}`, "Spread / mid fraction": selected.spreadFraction ?? VALUE_STATE_LABELS.unavailable, "Open interest / volume": `${selected.openInterest ?? VALUE_STATE_LABELS.unavailable} / ${selected.volume ?? VALUE_STATE_LABELS.unavailable}`, "Contract multiplier": selected.multiplier, "Style / exchange": `${selected.style} / ${selected.exchange}`, "Quote source / observed": `${selected.source} / ${selected.observedAt}` }).map(([label, value]) => <div key={label}><dt className="text-muted-foreground">{label}</dt><dd className="break-words font-mono">{value}</dd></div>)}</dl>
         <p className="text-xs">{selected.passesScreen ? "Passes selected screen criteria." : `Rejection reasons: ${selected.rejectionReasons.join("; ")}`}</p>
         <div className="flex flex-wrap gap-2"><label className="grid gap-1 text-xs">Basket destination<Select aria-label="Basket destination" value={activeLeg} onChange={event => setActiveLeg(event.target.value)}><option value="new">New leg</option>{basket.legs.filter(leg => leg.instrumentType === "Option").map(leg => <option key={leg.legId} value={leg.legId}>Replace {leg.legId}: {leg.symbol}</option>)}</Select></label><Button variant="outline" onClick={addSelected} disabled={activeLeg === "new" && basket.legs.length >= 50}>Use selected contract</Button></div>
       </section> : null}

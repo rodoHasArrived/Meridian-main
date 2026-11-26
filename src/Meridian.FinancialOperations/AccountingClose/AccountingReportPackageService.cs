@@ -88,7 +88,8 @@ public sealed partial class AccountingReportPackageService : IAccountingReportPa
         var periodId = RequireText(request.PeriodId, "PeriodId");
         var tenantId = NormalizeOptional(request.TenantId);
         var companyId = NormalizeOptional(request.CompanyId);
-        var currency = string.IsNullOrWhiteSpace(request.Currency) ? "USD" : request.Currency.Trim().ToUpperInvariant();
+        var inputs = RequireFinancialInputs(request);
+        var currency = inputs.Currency;
         var evidenceLinks = NormalizeEvidenceLinks(request.EvidenceLinks);
         var validationIssues = new List<AccountingConfigurationValidationIssueDto>();
         var closePlan = request.CloseWorkflowId.HasValue && _closeManagementService is not null
@@ -177,9 +178,10 @@ public sealed partial class AccountingReportPackageService : IAccountingReportPa
                 : "Accounting report package is assembled and ready for human certification review.",
             evidenceLinks);
         var restatement = BuildRestatement(request, actor, evidenceLinks);
-        var endingCapital = request.BeginningCapital + request.Contributions - request.Distributions + request.RealizedGainLoss;
+        var endingCapital = inputs.BeginningCapital + inputs.Contributions - inputs.Distributions + inputs.RealizedGainLoss;
         var lineProvenance = BuildReportLineProvenance(
             request,
+            inputs,
             periodId,
             currency,
             endingCapital,
@@ -207,10 +209,10 @@ public sealed partial class AccountingReportPackageService : IAccountingReportPa
             string.IsNullOrWhiteSpace(request.InvestorId) ? null : request.InvestorId.Trim(),
             periodId,
             packageDimensions,
-            request.BeginningCapital,
-            request.Contributions,
-            request.Distributions,
-            request.RealizedGainLoss,
+            inputs.BeginningCapital,
+            inputs.Contributions,
+            inputs.Distributions,
+            inputs.RealizedGainLoss,
             endingCapital,
             currency,
             state,
@@ -221,7 +223,7 @@ public sealed partial class AccountingReportPackageService : IAccountingReportPa
             ledgerBookId,
             periodId,
             packageDimensions,
-            request.RealizedGainLoss,
+            inputs.RealizedGainLoss,
             currency,
             state,
             evidenceLinks);
@@ -231,7 +233,7 @@ public sealed partial class AccountingReportPackageService : IAccountingReportPa
             ledgerBookId,
             periodId,
             packageDimensions,
-            request.Nav,
+            inputs.Nav,
             currency,
             state,
             evidenceLinks,
@@ -1894,6 +1896,7 @@ public sealed partial class AccountingReportPackageService : IAccountingReportPa
 
     private static IReadOnlyList<ReportLineProvenanceDto> BuildReportLineProvenance(
         AccountingReportPackageRequestDto request,
+        ReportPackageFinancialInputs inputs,
         string periodId,
         string currency,
         decimal endingCapital,
@@ -1914,7 +1917,7 @@ public sealed partial class AccountingReportPackageService : IAccountingReportPa
                 $"balance-sheet:{Sanitize(periodId)}:net-assets",
                 "Net assets",
                 "LedgerTrialBalance",
-                request.Nav,
+                inputs.Nav,
                 currency,
                 dimensions,
                 MergeEvidenceLinks(commonFinancialStatementEvidence, navEvidence)),
@@ -1923,7 +1926,7 @@ public sealed partial class AccountingReportPackageService : IAccountingReportPa
                 $"income-statement:{Sanitize(periodId)}:realized-gain-loss",
                 "Realized gain/loss",
                 "LedgerAndReconciliation",
-                request.RealizedGainLoss,
+                inputs.RealizedGainLoss,
                 currency,
                 dimensions,
                 commonFinancialStatementEvidence),
@@ -1950,7 +1953,7 @@ public sealed partial class AccountingReportPackageService : IAccountingReportPa
                 $"nav-package:{Sanitize(periodId)}:nav",
                 "NAV",
                 "NavSupport",
-                request.Nav,
+                inputs.Nav,
                 currency,
                 dimensions,
                 MergeEvidenceLinks(navEvidence, renderedReportEvidence))
@@ -2034,6 +2037,52 @@ public sealed partial class AccountingReportPackageService : IAccountingReportPa
 
         return $"tenant-{Sanitize(normalizedTenantId ?? "default")}-company-{Sanitize(normalizedCompanyId ?? "default")}";
     }
+
+    /// <summary>
+    /// The package's financial inputs. None has a default: a package built on an invented 0 or an
+    /// assumed USD would be certified against figures nobody supplied, so a request that leaves
+    /// any of them out is rejected with every missing input named.
+    /// </summary>
+    private static ReportPackageFinancialInputs RequireFinancialInputs(AccountingReportPackageRequestDto request)
+    {
+        var missing = new List<string>();
+        void Check(bool present, string name)
+        {
+            if (!present)
+            {
+                missing.Add(name);
+            }
+        }
+
+        Check(request.BeginningCapital.HasValue, nameof(request.BeginningCapital));
+        Check(request.Contributions.HasValue, nameof(request.Contributions));
+        Check(request.Distributions.HasValue, nameof(request.Distributions));
+        Check(request.RealizedGainLoss.HasValue, nameof(request.RealizedGainLoss));
+        Check(request.Nav.HasValue, nameof(request.Nav));
+        Check(!string.IsNullOrWhiteSpace(request.Currency), nameof(request.Currency));
+        if (missing.Count > 0)
+        {
+            throw new ArgumentException(
+                $"Accounting report package inputs are missing: {string.Join(", ", missing)}. " +
+                "Supply every amount and the currency explicitly; missing values are not treated as 0 or USD.");
+        }
+
+        return new ReportPackageFinancialInputs(
+            request.BeginningCapital!.Value,
+            request.Contributions!.Value,
+            request.Distributions!.Value,
+            request.RealizedGainLoss!.Value,
+            request.Nav!.Value,
+            request.Currency!.Trim().ToUpperInvariant());
+    }
+
+    private sealed record ReportPackageFinancialInputs(
+        decimal BeginningCapital,
+        decimal Contributions,
+        decimal Distributions,
+        decimal RealizedGainLoss,
+        decimal Nav,
+        string Currency);
 
     private static string RequireText(string? value, string label)
         => string.IsNullOrWhiteSpace(value)
