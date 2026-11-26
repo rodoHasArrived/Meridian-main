@@ -3374,6 +3374,10 @@ rather than accepting delivery-time restyling. Published report-pack delivery XL
 the delivery metadata sheet and add a dedicated `Branding` worksheet with the approved firm identity,
 palette, logo URI, footer, disclaimer, and built-in/custom flag so recipients can inspect the
 styling metadata in the delivered workbook itself.
+`FileReportPackDeliveryRecordStore` writes the delivery snapshot only after each content-addressed
+artifact blob's directory sync succeeds, including when it reuses an existing blob. Evidence export
+syncs the package and manifest strictly before moving the index, the publication boundary; on
+failure no index exists and recovery removes the attempt.
 `ReportPackRunReadService` derives `scheduleDeliveryPlans` from retained reporting schedules,
 distribution policies, and delivery attempts so browser and desktop clients can show retained
 target-mode intent without duplicating delivery-policy logic. The canonical release handoff maps

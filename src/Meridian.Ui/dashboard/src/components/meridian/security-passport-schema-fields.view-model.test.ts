@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import type { SecurityAssetClassDefinition, SecurityAssetTermFieldDefinition } from "@/lib/api/security-master-schema.api";
 import {

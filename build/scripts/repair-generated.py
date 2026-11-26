@@ -65,7 +65,8 @@ def prepare_merge(root: Path, head_sha: str, base_sha: str) -> dict:
     report = {"successful": False, "status": "review_required", "merge_base_sha": ancestors[0],
               "conflicts": conflicts, "reviewed_hashes": {}, "merged_tree_sha": None}
     if conflicts:
-        if all(path.startswith(resolver.REVIEWED_MANIFEST + "/") for path in conflicts):
+        if all(path.startswith(resolver.REVIEWED_MANIFEST + "/") or path == resolver.LEGACY_REVIEWED_MANIFEST
+               for path in conflicts):
             try:
                 report["reviewed_hashes"] = resolver.load_hash_merger().merge_checkout(
                     root, ancestors[0], head_sha, base_sha,

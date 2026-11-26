@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getAssetMarketValuation } from "./asset-market-valuation.api";
 import { marketValuationFixture, marketValuationQuery } from "@/test/asset-market-valuation-fixture";

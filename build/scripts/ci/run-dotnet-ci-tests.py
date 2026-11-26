@@ -32,8 +32,10 @@ from test_evidence import collect_trx
 
 CORE_TEST_PROJECT_PATH = "tests/Meridian.Tests/Meridian.Tests.csproj"
 
-# xUnit runs one class serially and WorkstationEndpointsTests starts a host per test, so the
-# class is the longest unit in the roster. Separate processes are the only way to overlap it.
+# xUnit runs one class serially, and WorkstationEndpointsTests was the longest unit in the roster
+# while every test compiled its own route graph. Separate processes were the only way to overlap
+# it. The tests now reuse compiled graphs within a process (tests/Meridian.Tests/TestHelpers/
+# SharedEndpointGraph.cs); the split stays until hosted durations show it is no longer needed.
 # Each fragment below names one extra process; the base shard keeps everything they leave.
 WORKSTATION_ENDPOINTS_CLASS = "Meridian.Tests.Ui.WorkstationEndpointsTests"
 WORKSTATION_ENDPOINTS_SPLITS = [
@@ -41,7 +43,8 @@ WORKSTATION_ENDPOINTS_SPLITS = [
     ("core-ui-workstation-endpoints-a-c", ("A", "B", "C")),
 ]
 
-# Hosted observations (seconds) are scheduling hints only. Filters and report order remain
+# Hosted observations (seconds) are scheduling hints only. The workstation-endpoints figures
+# predate shared endpoint graphs and overstate those shards until they are observed again. Filters and report order remain
 # authoritative; unknown shards retain their roster order.
 SHARD_DURATION_HINTS = {
     "core-ui-other": 346, "core-ui-workstation-endpoints-map": 345,

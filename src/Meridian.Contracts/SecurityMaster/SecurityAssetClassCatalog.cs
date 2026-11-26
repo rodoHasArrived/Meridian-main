@@ -5,11 +5,12 @@ namespace Meridian.Contracts.SecurityMaster;
 
 /// <summary>
 /// Canonical Security Master asset-class names, one constant per class, in the F#
-/// <c>AssetClassRegistry</c> declaration order. A test holds this set equal to the F# registry,
-/// so a class added to the domain without a constant here fails the build's test lane.
+/// <c>AssetClassRegistry</c> declaration order. The constants are generated from
+/// <c>SecurityAssetClassDeclarations</c>, and a test holds this set equal to the F# registry.
 /// </summary>
 public static class SecurityAssetClassNames
 {
+    // <generated:asset-class-names> Do not edit: edit SecurityAssetClassDeclarations, then regenerate with MERIDIAN_ACCEPT_GENERATED_CODEC=1 and SecurityClassPlumbingGenerationTests.
     public const string Equity = "Equity";
     public const string Option = "Option";
     public const string Future = "Future";
@@ -42,6 +43,7 @@ public static class SecurityAssetClassNames
     public const string StructuredNote = "StructuredNote";
     public const string InvestmentFund = "InvestmentFund";
     public const string CustomAsset = "CustomAsset";
+    // </generated:asset-class-names>
 }
 
 /// <summary>

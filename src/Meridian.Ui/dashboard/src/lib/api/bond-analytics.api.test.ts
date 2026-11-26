@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getBondAnalytics, getBondRetainedObservations } from "./bond-analytics.api";
 import { previewBondMigration, previewBondMigrationBatch, stageBondMigration } from "./bond-migration.api";

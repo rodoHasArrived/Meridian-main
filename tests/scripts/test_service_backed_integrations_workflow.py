@@ -229,27 +229,45 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         self.assertEqual(gate["if"], "always()")
         self.assertEqual(gate["needs"], ["verify-dotnet", "service-backed-integrations"])
         step = gate["steps"][0]
+        call = "needs.service-backed-integrations.outputs"
         self.assertEqual(step["env"], {
             "DOTNET_LANE_DECISION": "${{ needs.verify-dotnet.outputs.dotnet-required }}",
-            "INTEGRATION_DECISION": "${{ needs.service-backed-integrations.outputs.dotnet-required }}",
+            "INTEGRATION_DECISION": "${{ " + call + ".dotnet-required }}",
             "INTEGRATION_RESULT": "${{ needs.service-backed-integrations.result }}",
+            "FRESH_SUCCEEDED": "${{ " + call + ".fresh-succeeded }}",
+            "ARTIFACT_ID": "${{ " + call + ".fresh-artifact-id }}",
+            "ARTIFACT_NAME": "${{ " + call + ".fresh-artifact-name }}",
+            "RECEIPT_SHA256": "${{ " + call + ".fresh-receipt-sha256 }}",
         })
         self.assertIn('if [[ "$INTEGRATION_RESULT" != "success" ]]; then', step["run"])
         self.assertIn("exit 1", step["run"])
         self.assertNotIn("continue-on-error", gate)
+        # Release callers read the gate's validated outputs, never the raw call outputs.
+        for field in ("artifact-id", "artifact-name", "receipt-sha256"):
+            self.assertEqual(gate["outputs"][field], "${{ steps.evidence.outputs." + field + " }}")
+        self.assertEqual(step["id"], "evidence")
+        evidence = {"ARTIFACT_ID": "7", "ARTIFACT_NAME": "meridian-ci-integrations-1-1", "RECEIPT_SHA256": "a" * 64}
 
-        def run_gate(integration, lane="true", decided="true"):
+        def run_gate(integration, lane="true", decided="true", fresh="true", **overrides):
             with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
+                output = Path(temporary) / "output"
                 environment = dict(os.environ, DOTNET_LANE_DECISION=lane, INTEGRATION_DECISION=decided,
-                                   INTEGRATION_RESULT=integration,
-                                   GITHUB_STEP_SUMMARY=str(Path(temporary) / "summary.md"))
-                return subprocess.run(["bash", "-c", step["run"]], env=environment,
+                                   INTEGRATION_RESULT=integration, FRESH_SUCCEEDED=fresh,
+                                   GITHUB_STEP_SUMMARY=str(Path(temporary) / "summary.md"),
+                                   GITHUB_OUTPUT=str(output), **dict(evidence, **overrides))
+                code = subprocess.run(["bash", "-c", step["run"]], env=environment,
                                       capture_output=True, text=True, check=False).returncode
+                written = output.read_text() if output.exists() else ""
+                return code, written
 
-        self.assertEqual(run_gate("success"), 0)
+        code, written = run_gate("success")
+        self.assertEqual(code, 0)
+        self.assertEqual(written, "artifact-id=7\nartifact-name=meridian-ci-integrations-1-1\n"
+                                  f"receipt-sha256={'a' * 64}\n")
         # The only accepted docs-only result: the integration lane succeeded, classified the
         # change as docs-only, and verify-dotnet independently reached the same decision.
-        self.assertEqual(run_gate("success", lane="false", decided="false"), 0)
+        empty = {"ARTIFACT_ID": "", "ARTIFACT_NAME": "", "RECEIPT_SHA256": ""}
+        self.assertEqual(run_gate("success", lane="false", decided="false", **empty), (0, ""))
         for integration, lane, decided in (
                 ("failure", "true", "true"), ("cancelled", "true", "true"),
                 ("skipped", "true", "true"), ("skipped", "false", "false"),
@@ -257,9 +275,44 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
                 ("success", "", "false"), ("success", "false", ""),
                 ("failure", "false", "false"), ("cancelled", "false", "false")):
             with self.subTest(integration=integration, lane=lane, decided=decided):
-                self.assertNotEqual(run_gate(integration, lane, decided), 0)
+                self.assertNotEqual(run_gate(integration, lane, decided)[0], 0)
+        # evidence-gate's checks now live here: the fresh job itself must have succeeded (a
+        # reusable call whose jobs were all skipped still reports success) and a .NET run must
+        # bind complete, well-formed evidence.
+        for fresh in ("", "false", "success", "True"):
+            with self.subTest(fresh=fresh):
+                self.assertNotEqual(run_gate("success", fresh=fresh)[0], 0)
+        for field, bad in (("ARTIFACT_ID", ""), ("ARTIFACT_ID", "0"), ("ARTIFACT_ID", "7x"),
+                           ("ARTIFACT_NAME", ""), ("ARTIFACT_NAME", "-lead"), ("ARTIFACT_NAME", "a b"),
+                           ("RECEIPT_SHA256", ""), ("RECEIPT_SHA256", "A" * 64), ("RECEIPT_SHA256", "a" * 63)):
+            with self.subTest(field=field, bad=bad):
+                self.assertEqual(run_gate("success", **{field: bad}), (1, ""))
         self.assertEqual(self.ci["jobs"]["quality-gate"]["needs"],
                          ["verify-dotnet", "verify-browser", "verify-docs", "verify-workflows"])
+
+    def test_meridian_ci_verifies_evidence_in_its_gate_to_save_a_runner_hand_off(self):
+        caller = self.ci["jobs"]["service-backed-integrations"]
+        self.assertEqual(caller["with"]["caller-verifies-evidence"], "true")
+        option = self.shared["on"]["workflow_call"]["inputs"]["caller-verifies-evidence"]
+        self.assertEqual((option["type"], option["default"]), ("boolean", "false"))
+        outputs = self.shared["on"]["workflow_call"]["outputs"]
+        self.assertEqual(outputs["fresh-succeeded"]["value"], "${{ jobs.deterministic-integrations.outputs.succeeded }}")
+        job = self.shared["jobs"]["deterministic-integrations"]
+        self.assertEqual(job["outputs"]["succeeded"], "${{ steps.completed.outputs.succeeded }}")
+        completed = job["steps"][-1]
+        self.assertEqual(completed["id"], "completed")
+        self.assertNotIn("if", completed, "Implicit success(): set only when every earlier step succeeded.")
+        self.assertEqual(completed["run"], 'echo "succeeded=true" >> "$GITHUB_OUTPUT"')
+        for field in ("artifact-id", "artifact-name", "receipt-sha256"):
+            self.assertEqual(outputs[f"fresh-{field}"]["value"],
+                             "${{ jobs.deterministic-integrations.outputs." + field + " }}")
+            # Certification and release callers keep evidence-gate's verified outputs.
+            self.assertEqual(outputs[field]["value"], "${{ jobs.evidence-gate.outputs." + field + " }}")
+        condition = self.shared["jobs"]["evidence-gate"]["if"]
+        self.assertTrue(condition.startswith("always() && (!inputs.caller-verifies-evidence"))
+        for field in ("artifact-id", "artifact-name", "receipt-sha256", "result"):
+            self.assertIn(f"inputs.reuse-{field} != ''", condition, "Reuse runs always keep evidence-gate.")
+        self.assertNotIn("caller-verifies-evidence", self.production["jobs"]["deterministic-integrations"].get("with", {}))
 
     def test_evidence_gate_accepts_docs_only_only_when_the_caller_opted_in(self):
         step = self.shared["jobs"]["evidence-gate"]["steps"][0]
