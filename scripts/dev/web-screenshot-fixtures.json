@@ -117,6 +117,9 @@
       "enabled": true,
       "provenance": "seeded"
     },
+    "/api/auth/me": {
+      "username": "synthetic.operator"
+    },
     "/api/workstation/session": {
       "displayName": "Ops Desk",
       "role": "Operator",
