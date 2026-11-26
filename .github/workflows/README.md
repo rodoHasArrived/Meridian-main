@@ -167,7 +167,12 @@ no separate `changes` job for any lane to queue behind. On a docs-only PR it run
 steps and reports success, and `quality-gate` requires its decision to be `true` or `false`. The
 reusable integration job classifies the same way when Meridian CI passes
 `skip-when-docs-only: true`, and `integration-gate` fails unless the two lanes' decisions agree.
-Production Certification never passes that input, so it always runs the suite.
+Production Certification never passes that input, so it always runs the suite. Meridian CI also
+passes `caller-verifies-evidence: true`: `integration-gate` requires the fresh integration job to
+have completed every step (its `fresh-succeeded` output) and applies `evidence-gate`'s
+evidence-identity checks itself, so the reusable
+`require verified integration evidence` job skips and the path is two runner waits, not three.
+Production Certification and evidence reuse keep `evidence-gate`.
 
 Pushes to `main` never cancel a running Meridian CI run, so every merge gets a completed
 `quality-gate`; GitHub keeps only the newest pending run per concurrency group. Pull request
@@ -176,8 +181,12 @@ and merge-group runs still cancel superseded work.
 CodeQL, legacy CI's `Secret Scan`, Windows Desktop Build and Roadmap Source Docs skip draft pull
 requests and run on `ready_for_review`. A draft cannot merge, so the required `Secret Scan` and
 `Analyze <language>` contexts are produced by the ready-for-review run; until then a draft shows
-`Secret Scan` as skipped and the CodeQL contexts as expected. Meridian CI and Generated Repair
-still run on drafts.
+`Secret Scan` as skipped and the CodeQL contexts as expected. Generated Repair also skips drafts
+(see its row below). Meridian CI still runs on drafts.
+
+The nightly `Secret Scan` uses the exact-commit scanner on `main`'s checked-out tip, so it scans
+only history reachable from `main`. The gitleaks action's schedule mode scans every fetched ref,
+which let an unmerged branch turn the nightly red.
 
 `verify-browser` sets `MERIDIAN_CI_BROWSER_SHARD=1/1`, runs install, UI contract generation,
 lint, the strict typecheck, the test files (`run-vitest-stable.mjs`), the production bundle and
@@ -210,6 +219,14 @@ tests added later). The same tests run once each; only the process they run in c
 processes the lane's test time is unchanged. The shorter longest shard is what lets a higher
 process count help, and that promotion still follows the
 [benchmark criteria](../../docs/engineering/ci-cd-optimization.md#benchmark-promotion-criteria).
+
+Those tests no longer compile the workstation routes once per test. `SharedEndpointGraph`
+(`tests/Meridian.Tests/TestHelpers/`) compiles them once per set of registered service types in a
+process, and each test keeps its own services and caller identity; a local run of the whole class
+fell from 12 m 55 s to 2 m 59 s with the same results. The three shards and their duration hints
+are unchanged until hosted runs are observed, so the hints overstate those shards for now. Set
+`MERIDIAN_ENDPOINT_GRAPH_SHARING=off` to give every test its own host again when ruling sharing
+out of a failure.
 
 `make test` and `make pre-pr` restore the solution and use the same default test-project/shard
 roster as `run-dotnet-ci-tests.py`. `test-unit` remains the focused C# iteration command.
@@ -251,8 +268,8 @@ claiming a speedup.
 | Maintenance | `maintenance.yml` | Workflow/docs/tooling changes, weekly schedule, manual | Validates tooling metadata and its distinct actionlint configuration. Canonical lanes own duplicate hygiene/AI contract/navigation checks on PR/push; weekly/manual Maintenance repeats those checks. Schedule/manual runs cannot be cancelled by ordinary pushes. | None |
 | Dependency Lock Candidates | `dependency-locks.yml` | Restore-input PRs, manual | Generates and verifies isolated Linux portable and Windows portable/x64/ARM64 NuGet lock profiles. Adoption remains explicit after native proof and review; ordinary restores retain their defaults. | Candidate lockfiles, input fingerprints, inventory and restore logs |
 | CI Operational Metrics | `ci-metrics.yml` | Daily 04:43 UTC, manual | Collects all attempts from the previous complete UTC day, reports runner/check timing and verified repair outcomes, and distinguishes missing evidence from success. Read-only; no check, protection or queue changes. | Raw API snapshot, descriptive metrics, repair causes/success cohort/backlog observations |
-| Generated Repair | `generated-repair.yml` | PR open/synchronize/reopen through read-only `pull_request_target`, default-branch dispatch | Configured same-repository requests hand off to trusted default-branch generation; target candidates remain artifact-only. Runs dependencies and generators in a restricted container with a disposable clone and output mount, excluding host runtime/cache credentials and Docker socket. Trusted host tooling exports bounded regular files only. Forks and unconfigured requests retain artifacts; unsupported changes retain review reasons. | Repair report, patches, request metadata and generation logs when produced |
-| Generated Repair Publisher | `generated-repair-publish.yml` | Completed Generated Repair workflow; PR merges into `main`, main pushes, daily 05:23 UTC, manual refresh | Validates provenance, refs, paths, generated blocks and a reproduced merge before an App writes an eligible PR branch. Per-source-run concurrency and bounded stale-ref retries preserve independent repairs. Serialized refresh scans queue every eligible stale same-repository open PR, follow API pagination and pace dispatches. Active/successful trusted requests suppress duplicates; failed/cancelled requests remain retryable. Unmerged closures are excluded. No protected-main writes. | Publisher outcome, refresh dispatch counts and workflow summary |
+| Generated Repair | `generated-repair.yml` | Read-only `pull_request_target` for ready PRs labelled `generated-repair`; completed Meridian CI PR runs whose `verify-docs` flagged stale generated files (`workflow_run`); default-branch dispatch. Drafts and unlabelled updates skip without a runner. | Configured same-repository requests hand off to trusted default-branch generation; target candidates remain artifact-only. Runs dependencies and generators in a restricted container with a disposable clone and output mount, excluding host runtime/cache credentials and Docker socket. Trusted host tooling exports bounded regular files only. Forks and unconfigured requests retain artifacts; unsupported changes retain review reasons. | Repair report, patches, request metadata and generation logs when produced |
+| Generated Repair Publisher | `generated-repair-publish.yml` | Completed Generated Repair workflow; PR merges into `main`, main pushes, daily 05:23 UTC, manual refresh | Validates provenance, refs, paths, generated blocks and a reproduced merge before an App writes an eligible PR branch. Per-source-run concurrency and bounded stale-ref retries preserve independent repairs. Serialized refresh scans queue every eligible stale same-repository open PR, follow API pagination and pace dispatches. Active/successful trusted requests suppress duplicates; failed/cancelled requests remain retryable. Unmerged closures are excluded. No protected-main writes. Skipped source runs do not wake it; it reapplies the label, draft and stale-output rules before requesting generation, and reports a neutral `review_required` run as a `review-required` outcome. Refresh skips draft PRs. | Publisher outcome, refresh dispatch counts and workflow summary |
 | AI Navigation Refresh | `ai-navigation-refresh.yml` | Weekly, manual on the default ref | Coordinates navigation/recent changes, structure/workflow overview and documentation health; retains the 14-day freshness check. A separate trusted publisher opens or updates `automation/ai-navigation-refresh` using an App token so checks run. | Maintenance patch/report and ordinary refresh PR |
 | Provider Validation | `provider-validation.yml` | Weekly or manual | Runs Wave 1 validation and prepares the DK1 review packet plus pending operator sign-off template. Final DK1 exit evidence remains fail-closed until the required owners sign and validate the template. | Provider validation review evidence |
 | Publish Smoke | `publish-smoke.yml` | Manual, reusable release gate | Runs `build/scripts/publish/publish.ps1` for a selected Windows runtime; dispatch `project=desktop` for a standalone desktop executable. The `web-workstation`/`win-x64` lane starts the exact published artifact through an isolated production-authenticated install, fetches readiness, health, the workstation shell, and a referenced asset, then generates `release-evidence.json`. | Publish output, installed-startup receipt/probes, and release evidence manifest |

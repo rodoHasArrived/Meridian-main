@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { apiGetJson } from "@/lib/api";
 import { getLedgerJournalEntryTaxResults } from "@/lib/ledger-tax-results-api";
 

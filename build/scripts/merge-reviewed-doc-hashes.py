@@ -17,6 +17,9 @@ from pathlib import Path, PurePosixPath
 
 # One reviewed fingerprint file per module plus a shared header file.
 MANIFEST = "docs/source/generated/source-hashes"
+# Before #3778 (9293ac60) the same logical manifest lived in this one file. Branches and
+# merge bases from before the split still carry it; they are read as the same evidence.
+LEGACY_MANIFEST = "docs/source/generated/source-hash-manifest.json"
 REGISTRY = "docs/source/data/source-modules.yml"
 SCHEMA = {"id": "meridian.source-doc-hashes", "version": "1.0.0"}
 GENERATOR = {"name": "build/scripts/docs/validate-doc-hashes.py", "version": "1.1.0"}
@@ -186,12 +189,38 @@ def git(root: Path, *args: str) -> bytes:
     return subprocess.check_output(["git", "--literal-pathspecs", *args], cwd=root, stderr=subprocess.PIPE)
 
 
+def legacy_manifest_at(root: Path, revision: str) -> dict | None:
+    """The pre-#3778 single-file manifest: the same logical content, one blob."""
+    listing = git(root, "ls-tree", "-z", revision, "--", LEGACY_MANIFEST)
+    if not listing:
+        return None
+    metadata = listing.split(b"\t", 1)[0].split()
+    if metadata[0] != b"100644" or metadata[1] != b"blob":
+        raise ValueError(f"Invalid {revision} legacy reviewed manifest entry")
+    try:
+        manifest = strict_json(git(root, "show", f"{revision}:{LEGACY_MANIFEST}"))
+        if not isinstance(manifest, dict) or set(manifest) != {"schema", "generator", "contract", "modules"}:
+            raise ValueError("Expected schema, generator, contract and modules only")
+        load_validator().manifest_version(manifest)
+        if not isinstance(manifest["contract"], str) or not manifest["contract"]:
+            raise ValueError("Missing hash contract")
+        module_map(manifest)
+        return manifest
+    except (ValueError, TypeError, KeyError, AttributeError, UnicodeError) as exc:
+        raise ValueError(f"Invalid {revision} legacy reviewed manifest: {exc}") from exc
+
+
+def uses_directory_layout(root: Path, revision: str) -> bool:
+    return bool(git(root, "ls-tree", "-z", revision, "--", MANIFEST))
+
+
 def manifest_at(root: Path, revision: str) -> dict | None:
     # ls-tree distinguishes a deliberately absent baseline from invalid refs or
     # inaccessible Git objects; never turn a Git failure into a deletion.
-    listing = git(root, "ls-tree", "-z", f"{revision}:{MANIFEST}") if git(root, "ls-tree", "-z", revision, "--", MANIFEST) else None
+    listing = git(root, "ls-tree", "-z", f"{revision}:{MANIFEST}") if uses_directory_layout(root, revision) else None
     if listing is None:
-        return None
+        # A revision from before the per-module split keeps its reviews in the legacy file.
+        return legacy_manifest_at(root, revision)
     files = {}
     for record in listing.split(b"\0"):
         if not record:
@@ -217,6 +246,14 @@ def merge_checkout(root: Path, ancestor: str, head: str, base: str, *, apply: bo
     actual = actual_manifest(root, next(iter(versions), "1.0.0"))
     merged, report = merge_manifests(*values, actual)
     if report["successful"] and apply:
+        if uses_directory_layout(root, base):
+            # The incoming branch has the per-module layout, so the merged result is written
+            # there and the legacy file (still modified by a pre-#3778 head) is retired. This
+            # also resolves that file's modify/delete conflict.
+            legacy = contained_path(root, LEGACY_MANIFEST)
+            git(root, "rm", "--force", "--quiet", "--ignore-unmatch", "--", LEGACY_MANIFEST)
+            if legacy.is_file():
+                legacy.unlink()
         path = contained_path(root, MANIFEST)
         if merged is None:
             if path.exists():

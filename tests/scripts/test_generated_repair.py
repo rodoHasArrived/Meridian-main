@@ -461,8 +461,9 @@ class PublishTests(unittest.TestCase):
         draft = pull(number=6, draft=True)
         self.configure_refresh([fork, deleted, default, current, conflicted, draft], current_heads={NEW})
         result = repair.refresh(self.api, "main")
-        self.assertEqual(result["dispatched"], 2)
-        self.assertEqual([call.args[2]["inputs"]["pr_number"] for call in self.api.request.call_args_list], ["5", "6"])
+        # Drafts are skipped until they are marked ready for review (ci-health-013).
+        self.assertEqual(result["dispatched"], 1)
+        self.assertEqual([call.args[2]["inputs"]["pr_number"] for call in self.api.request.call_args_list], ["5"])
         for call in self.api.request.call_args_list:
             self.assertEqual(call.args[2]["ref"], "main")
             self.assertEqual(call.args[2]["inputs"]["base_sha"], BASE)
@@ -618,6 +619,27 @@ class InspectIntegrationTests(unittest.TestCase):
                 with self.assertRaisesRegex(repair.RepairError, "report does not match"):
                     self.inspect()
                 self.report[field] = original
+
+    def test_neutral_review_required_run_is_a_manual_outcome_with_nothing_published(self):
+        # The sandbox reports review_required as a successful run that exports a report but no
+        # patch. The publisher must neither fail nor treat it as a candidate.
+        self.report = {"successful": False, "status": "review_required", "head_sha": self.head,
+                       "base_sha": self.base, "conflicts": ["docs/source/generated/source-hashes/A.json"]}
+        self.api.download.side_effect = lambda _: MetadataTests.archive(self, [
+            ("report.json", json.dumps(self.report).encode())])
+        with mock.patch.object(repair, "recreate_merge") as recreate:
+            result = self.inspect()
+        self.assertEqual((result["status"], result["outcome"]), ("manual", "review-required"))
+        recreate.assert_not_called()
+        self.api.request.assert_not_called()
+        # Bound to the pinned revisions: a report for other inputs is still rejected, and only
+        # review_required may arrive without a patch.
+        for updates in ({"head_sha": "f" * 40}, {"status": "failed"}, {"successful": True}):
+            with self.subTest(updates=updates):
+                self.report = {**self.report, "status": "review_required", "successful": False,
+                               "head_sha": self.head, **updates}
+                with self.assertRaisesRegex(repair.RepairError, "incomplete"):
+                    self.inspect()
 
     def test_validly_bound_patch_still_cannot_inject_source(self):
         bad = self.with_blob(self.candidate, "src/base.py", b"injected source\n")

@@ -34,6 +34,14 @@ POLICY = "build/scripts/maintained-generation-outputs.json"
 MAX_RETRIES = 2
 MAX_ARTIFACT = 64 * 1024 * 1024
 REPAIR_MARKER = "Meridian-Generated-Repair: true"
+# Runner demand (ci-health-013): a pull request event only relays a repair request when the
+# PR is ready for review and either carries this label or its latest Meridian CI run flagged
+# stale generated files. Both the generate job condition and the publisher apply this.
+REPAIR_LABEL = "generated-repair"
+CI_WORKFLOW = "meridian-ci.yml"
+CI_DOCS_JOB = "verify-docs"
+STALE_STEP = "Flag stale generated files for Generated Repair"
+RELAY_EVENTS = frozenset({"pull_request_target", "workflow_run"})
 DISPATCH_INPUTS = ("pr_number", "head_sha", "base_sha", "attempt", "root_sha")
 TITLE = re.compile(
     r"generated-repair-v2 pr=([1-9][0-9]*) head=([a-f0-9]{40}) base=([a-f0-9]{40}) "
@@ -229,7 +237,7 @@ def verify_run_identity(run: dict, expected_id: int, expected_attempt: int, repo
     """Validate server-owned run identity before classifying an unsupported PR."""
     if (run.get("id") != expected_id or run.get("run_attempt") != expected_attempt
             or run.get("path") != WORKFLOW or run.get("status") != "completed"
-            or run.get("event") not in {"pull_request_target", "workflow_dispatch"}
+            or run.get("event") not in RELAY_EVENTS | {"workflow_dispatch"}
             or run.get("repository", {}).get("full_name") != repository):
         raise RepairError("Source run identity/event/path/attempt is not authorized")
     return parse_request(run.get("display_title", ""))
@@ -248,6 +256,38 @@ def verify_source_run(run: dict, expected_id: int, expected_attempt: int, reposi
             or metadata["execution_ref"] != f"refs/heads/{default_branch}"):
         raise RepairError("Dispatch is not bound to its default-branch workflow execution SHA and ref")
     return request
+
+
+def ci_reports_stale(api: "GitHub", head_sha: str) -> bool:
+    """Whether the latest completed Meridian CI pull request run for this head flagged stale outputs.
+
+    The flag is a hint, never authority: it only decides whether to spend a runner on
+    trusted generation, whose candidate is independently validated before any write.
+    """
+    runs = api.get(f"/actions/workflows/{CI_WORKFLOW}/runs?event=pull_request&head_sha={head_sha}"
+                   "&status=completed&per_page=20")["workflow_runs"]
+    runs = [run for run in runs if run.get("head_sha") == head_sha and run.get("status") == "completed"]
+    if not runs:
+        return False
+    latest = max(runs, key=lambda run: (run.get("run_number", 0), run.get("run_attempt", 0)))
+    jobs = api.get(f"/actions/runs/{latest['id']}/attempts/{latest.get('run_attempt', 1)}/jobs?per_page=100")["jobs"]
+    return any(job.get("name") == CI_DOCS_JOB and any(
+        step.get("name") == STALE_STEP and step.get("conclusion") == "failure" for step in job.get("steps", []))
+        for job in jobs)
+
+
+def relay_skip_reason(api: "GitHub", event: str, pr: dict) -> str | None:
+    """Why a pull request event must not request generation, or None when it may."""
+    if pr.get("draft"):
+        return "Draft pull request: generated repair runs once it is marked ready for review"
+    labelled = REPAIR_LABEL in {label.get("name") for label in pr.get("labels", [])}
+    if event == "pull_request_target":
+        return None if labelled else f"Pull request updates request repair only with the {REPAIR_LABEL} label"
+    if labelled:
+        return f"The {REPAIR_LABEL} label already requests repair on each pull request update"
+    if not ci_reports_stale(api, pr["head"]["sha"]):
+        return "Meridian CI did not report stale generated files for the current head"
+    return None
 
 
 def eligibility(pr: dict, repository: str, default_branch: str) -> dict | None:
@@ -332,7 +372,8 @@ def read_artifact(data: bytes) -> dict[str, bytes]:
                     or stat.S_ISLNK(mode) or info.is_dir()):
                 raise RepairError("Unexpected, duplicate, unsafe, or oversized artifact member")
             files[info.filename] = archive.read(info)
-    if not {"repair.patch", "report.json"}.issubset(files):
+    # A review_required run exports its report without a patch; inspect() decides.
+    if "report.json" not in files:
         raise RepairError("Repair artifact is incomplete")
     return files
 
@@ -380,11 +421,15 @@ def inspect(root: Path, api: GitHub, run_id: int, run_attempt: int, default_bran
         return {"status": "manual", "outcome": "ineligible", "request": request,
                 "reason": "Fork PR: automatic branch writes are unavailable",
                 "next_action": "Inspect the generation report; when available, use its repair.patch with docs/engineering/generated-merge-recovery.md."}
-    if run["event"] == "pull_request_target":
+    if run["event"] in RELAY_EVENTS:
         # REST target-run head_sha identifies the PR head, not workflow code.
         # A feature-base workflow can also forge a title before retargeting.
         # Therefore a target event may only request a new trusted default-branch
         # dispatch. Its title and artifacts can never authorize a branch write.
+        # The same label/draft/stale rules as the generate job decide whether to ask.
+        skip = relay_skip_reason(api, run["event"], pr)
+        if skip:
+            return {"status": "noop", "request": request, "reason": skip}
         request = dict(request, head_sha=pr["head"]["sha"], base_sha=pr["base"]["sha"],
                        attempt=0, root_sha=pr["head"]["sha"])
         fetch_pr(root, request["pr_number"], request["head_sha"], request["base_sha"])
@@ -430,6 +475,16 @@ def inspect(root: Path, api: GitHub, run_id: int, run_attempt: int, default_bran
         raise RepairError("Artifact provenance does not match the source run")
     files = read_artifact(api.download(artifact["id"]))
     report = json.loads(files["report.json"])
+    if (report.get("status") == "review_required" and report.get("successful") is False
+            and report.get("head_sha") == request["head_sha"] and report.get("base_sha") == request["base_sha"]):
+        # The sandbox reports a merge that needs a person as a neutral, successful run.
+        # It is a reviewable outcome, not a candidate: nothing is published.
+        return {"status": "manual", "outcome": "review-required", "request": request,
+                "reason": "Generated repair needs review: the merge has conflicts or reviewed hashes that automation cannot reuse",
+                "next_action": f"Read the summary of Generated Repair run {run_id}, attempt {run_attempt}; "
+                               "resolve the listed paths/modules with docs/engineering/generated-merge-recovery.md."}
+    if "repair.patch" not in files:
+        raise RepairError("Repair artifact is incomplete")
     if (report.get("successful") is not True or report.get("head_sha") != request["head_sha"]
             or report.get("base_sha") != request["base_sha"]
             or report.get("patch_sha256") != hashlib.sha256(files["repair.patch"]).hexdigest()):
@@ -580,12 +635,21 @@ def prepare_generation(root: Path, api: GitHub, run_id: int, default_branch: str
         result = dict(unsupported, request=request)
         write_outputs(result, output)
         return result
+    if run.get("event") in RELAY_EVENTS:
+        skip = ("A newer pull request head supersedes this request" if pr["head"]["sha"] != request["head_sha"]
+                else relay_skip_reason(api, run["event"], pr))
+        if skip:
+            result = {"status": "noop", "request": request, "reason": skip}
+            write_outputs(result, output)
+            return result
+        # Main may have advanced since the CI run or event; repair against the PR's current base.
+        request = dict(request, base_sha=pr["base"]["sha"])
     if not request_current(pr, request, api.repository, default_branch):
         raise RepairError("Generation request is stale; publisher will dispatch a bounded retry")
     fetch_pr(root, request["pr_number"], request["head_sha"], request["base_sha"])
     if loop_suppressed(root, request):
         result = {"status": "noop", "reason": "Repair commit detected; CI validates it without another repair"}
-    elif (run.get("event") == "pull_request_target"
+    elif (run.get("event") in RELAY_EVENTS
           and pr["head"]["repo"]["full_name"] == api.repository
           and os.environ.get("TRUSTED_DISPATCH_CONFIGURED", "").lower() == "true"):
         result = {"status": "request", "outcome": "trusted-generation-requested", "request": request,
@@ -637,8 +701,9 @@ def refresh(api: GitHub, default_branch: str) -> dict:
     pulls = paginated(api, "/pulls?state=open&base=" + urllib.parse.quote(default_branch, safe=""))
     eligible, skipped = [], 0
     for pr in pulls:
+        # Drafts are repaired once they are marked ready for review (ci-health-013).
         if (pr["head"]["repo"] is None or pr["head"]["repo"]["full_name"] != api.repository
-                or pr["head"]["ref"] == default_branch):
+                or pr["head"]["ref"] == default_branch or pr.get("draft")):
             continue
         head, number = pr["head"]["sha"], pr["number"]
         if (number, head, base) in seen:

@@ -236,6 +236,65 @@ class ReviewedHashCheckoutTests(unittest.TestCase):
         self.assertIn("$manifest", report["review_required"])
         self.assertEqual(before, self.snapshot())
 
+    def legacy_branches(self):
+        """A pre-#3778 branch reviews module A in the single file; main splits and reviews B."""
+        legacy = self.repo / hashes.LEGACY_MANIFEST
+
+        def write_legacy():
+            legacy.parent.mkdir(parents=True, exist_ok=True)
+            legacy.write_text(json.dumps(hashes.actual_manifest(self.repo), indent=2) + "\n")
+
+        shutil.rmtree(self.repo / hashes.MANIFEST)
+        write_legacy()
+        self.commit("pre-split reviewed manifest")
+        self.base = self.git("rev-parse", "HEAD").decode().strip()
+        self.git("switch", "-c", "feature")
+        self.write("src/A/first.cs", "// feature reviewed\n")
+        write_legacy()
+        self.commit("feature reviewed in the legacy file")
+        self.head = self.git("rev-parse", "HEAD").decode().strip()
+        self.git("switch", "main")
+        legacy.unlink()
+        self.refresh()
+        self.commit("split reviewed hashes one file per module")
+        self.write("src/B/second.cs", "// incoming reviewed\n")
+        self.refresh()
+        self.commit("main reviewed")
+        self.incoming = self.git("rev-parse", "HEAD").decode().strip()
+        self.git("switch", "feature")
+        return subprocess.run(["git", "merge", "--no-commit", "--no-ff", "main"], cwd=self.repo, capture_output=True)
+
+    def test_pre_split_branch_reviews_are_read_from_the_legacy_file_and_retired(self):
+        merge = self.legacy_branches()
+        self.assertNotEqual(merge.returncode, 0)
+        self.assertIn(hashes.LEGACY_MANIFEST.encode(), self.git("ls-files", "--unmerged"))
+        report = hashes.merge_checkout(self.repo, self.base, self.head, self.incoming, apply=True)
+        self.assertTrue(report["successful"], report)
+        self.assertEqual(report["decisions"], {"A": "head_parent", "B": "base_parent"})
+        self.assertEqual(self.reviewed(), hashes.actual_manifest(self.repo))
+        self.assertFalse((self.repo / hashes.LEGACY_MANIFEST).exists())
+        self.assertFalse(self.git("ls-files", "--unmerged"))
+        self.assertFalse(self.git("ls-files", "--", hashes.LEGACY_MANIFEST))
+
+    def test_pre_split_reviews_still_require_review_when_source_matches_neither_parent(self):
+        self.legacy_branches()
+        self.write("src/A/first.cs", "// combined, never reviewed\n")
+        report = hashes.merge_checkout(self.repo, self.base, self.head, self.incoming, apply=True)
+        self.assertFalse(report["successful"])
+        self.assertIn("A", report["review_required"])
+        # Nothing is retired or rewritten when review is required.
+        self.assertIn(hashes.LEGACY_MANIFEST.encode(), self.git("ls-files", "--unmerged"))
+
+    def test_malformed_legacy_manifest_fails_closed(self):
+        self.legacy_branches()
+        self.git("merge", "--abort")
+        self.git("switch", "-c", "broken", self.head)
+        (self.repo / hashes.LEGACY_MANIFEST).write_text('{"modules": []}')
+        self.commit("broken legacy manifest")
+        broken = self.git("rev-parse", "HEAD").decode().strip()
+        with self.assertRaisesRegex(ValueError, "legacy reviewed manifest"):
+            hashes.manifest_at(self.repo, broken)
+
     def test_removed_manifest_and_empty_registry_are_not_recreated(self):
         self.git("switch", "-c", "feature")
         self.write(hashes.REGISTRY, '{"modules": []}')

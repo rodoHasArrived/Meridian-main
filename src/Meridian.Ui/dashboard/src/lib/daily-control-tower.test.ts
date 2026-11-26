@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildAppShellViewState, type AppShellWorkspacePayload } from "@/app-shell.view-model";
 import {

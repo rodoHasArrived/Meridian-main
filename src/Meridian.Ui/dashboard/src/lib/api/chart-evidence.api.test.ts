@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { apiGetJson } from "@/lib/api";
 import { getProviderVerificationHistory } from "./provider-verification-history.api";

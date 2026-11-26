@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { approvePendingPayment, getBankTransactions, getPendingPayments, rejectPendingPayment } from "./banking-payments.api";
 
