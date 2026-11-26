@@ -20,7 +20,7 @@ public sealed record ReopenWorkflow(Guid WorkflowId, string Reason, FundWorkflow
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportAccessEvaluationDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1675](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1675).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1679](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1679).
 
 ```csharp
 public sealed record ReportAccessEvaluationDto(bool IsAccessible, string Reason, IReadOnlyList<ReportAccessPrincipalDto> MatchedPrincipals);
@@ -30,7 +30,7 @@ public sealed record ReportAccessEvaluationDto(bool IsAccessible, string Reason,
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportAccessModeDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1648](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1648).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1652](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1652).
 
 ```csharp
 public enum ReportAccessModeDto
@@ -40,9 +40,9 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Private = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1650](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1650) |  |
-| <code>Restricted = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1651](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1651) |  |
-| <code>CompanyWide = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1652](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1652) |  |
+| <code>Private = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1654](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1654) |  |
+| <code>Restricted = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1655](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1655) |  |
+| <code>CompanyWide = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1656](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1656) |  |
 
 ## ReportAccessPolicyDto
 

@@ -707,7 +707,7 @@ public sealed record RejectWorkflow(Guid WorkflowId, FundWorkflowRejectionReason
 
 Qualified name: <code>Meridian.Contracts.Workstation.RenderReportTemplateRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1687](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1687).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1691](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1691).
 
 ```csharp
 public sealed record RenderReportTemplateRequestDto(VersionedReportTemplateIdDto TemplateId, IReadOnlyDictionary<string, string> Parameters, IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null, IReadOnlyList<ReportWriterGridDefinitionDto>? Grids = null);
@@ -717,7 +717,7 @@ public sealed record RenderReportTemplateRequestDto(VersionedReportTemplateIdDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.RenderReportTemplateResponseDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1692](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1692).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1696](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1696).
 
 ```csharp
 public sealed record RenderReportTemplateResponseDto(VersionedReportTemplateIdDto TemplateId, string RenderedContent, IReadOnlyList<string> MissingRequiredParameters, IReadOnlyList<ReportWriterGridRenderDto>? Grids = null, IReadOnlyList<string>? Warnings = null);
