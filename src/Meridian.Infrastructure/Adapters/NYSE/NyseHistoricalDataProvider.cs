@@ -86,7 +86,10 @@ internal sealed class NyseHistoricalDataProvider
                     AdjustedClose: bar.AdjustedClose,
                     AdjustedVolume: bar.AdjustedVolume,
                     SplitFactor: bar.SplitFactor,
-                    DividendAmount: bar.DividendAmount
+                    DividendAmount: bar.DividendAmount,
+                    // Compatibility response field names do not verify vendor price semantics.
+                    PriceBasis: HistoricalPriceBasis.Unknown,
+                    AdjustedPriceBasis: HistoricalPriceBasis.Unknown
                 ));
             }
             catch (Exception ex)

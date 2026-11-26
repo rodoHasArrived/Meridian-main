@@ -228,7 +228,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Storage.Export.LedgerJournalExporter</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Export/LedgerJournalExporter.cs:17](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L17).
+Source: [src/Meridian.Storage/Export/LedgerJournalExporter.cs:18](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L18).
 
 Exports one row per immutable journal line, retaining the full audit envelopes. Decimal amounts are invariant decimal text in both formats so Parquet readers cannot truncate monetary precision. Mapping changes only the external account column and never the source journal.
 
@@ -240,10 +240,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static byte[] ExportCsv(IReadOnlyLedger ledger, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, LedgerQuery? query = null, IReadOnlyDictionary&lt;Guid, string&gt;? postingMetadata = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:27](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L27) |  |
-| <code>public static async Task&lt;byte[]&gt; ExportParquetAsync(IReadOnlyLedger ledger, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, LedgerQuery? query = null, CancellationToken ct = default, IReadOnlyDictionary&lt;Guid, string&gt;? postingMetadata = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:41](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L41) |  |
-| <code>public static byte[] ExportCsv(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, Guid? ledgerBookId = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:69](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L69) | Preserves governed posting metadata (book, period, source event, rules and approval). |
-| <code>public static Task&lt;byte[]&gt; ExportParquetAsync(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, CancellationToken ct = default, Guid? ledgerBookId = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:75](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L75) |  |
+| <code>public static byte[] ExportCsv(IReadOnlyLedger ledger, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, LedgerQuery? query = null, IReadOnlyDictionary&lt;Guid, string&gt;? postingMetadata = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:28](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L28) |  |
+| <code>public static async Task&lt;byte[]&gt; ExportParquetAsync(IReadOnlyLedger ledger, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, LedgerQuery? query = null, CancellationToken ct = default, IReadOnlyDictionary&lt;Guid, string&gt;? postingMetadata = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:42](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L42) |  |
+| <code>public static byte[] ExportCsv(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, Guid? ledgerBookId = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:70](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L70) | Preserves governed posting metadata (book, period, source event, rules and approval). |
+| <code>public static Task&lt;byte[]&gt; ExportParquetAsync(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, CancellationToken ct = default, Guid? ledgerBookId = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:76](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L76) |  |
 
 ## NormalizationType
 
@@ -427,7 +427,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Export.TimestampFormat</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Export/ExportProfile.cs:337](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L337).
+Source: [src/Meridian.Storage/Export/ExportProfile.cs:340](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L340).
 
 Supported timestamp formats.
 
@@ -439,17 +439,17 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Iso8601</code> | [src/Meridian.Storage/Export/ExportProfile.cs:340](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L340) | ISO 8601 string format. |
-| <code>UnixSeconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:342](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L342) | Unix timestamp in seconds. |
-| <code>UnixMilliseconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:344](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L344) | Unix timestamp in milliseconds. |
-| <code>UnixNanoseconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:346](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L346) | Unix timestamp in nanoseconds (for pandas datetime64&#91;ns&#93;). |
-| <code>ExcelSerial</code> | [src/Meridian.Storage/Export/ExportProfile.cs:348](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L348) | Excel serial date format. |
+| <code>Iso8601</code> | [src/Meridian.Storage/Export/ExportProfile.cs:343](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L343) | ISO 8601 string format. |
+| <code>UnixSeconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:345](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L345) | Unix timestamp in seconds. |
+| <code>UnixMilliseconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:347](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L347) | Unix timestamp in milliseconds. |
+| <code>UnixNanoseconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:349](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L349) | Unix timestamp in nanoseconds (for pandas datetime64&#91;ns&#93;). |
+| <code>ExcelSerial</code> | [src/Meridian.Storage/Export/ExportProfile.cs:351](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L351) | Excel serial date format. |
 
 ## TimestampSettings
 
 Qualified name: <code>Meridian.Storage.Export.TimestampSettings</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Export/ExportProfile.cs:322](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L322).
+Source: [src/Meridian.Storage/Export/ExportProfile.cs:325](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L325).
 
 Timestamp handling settings.
 
@@ -461,9 +461,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;format&quot;)] public TimestampFormat Format { get; set; } = TimestampFormat.Iso8601;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:325](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L325) |  |
-| <code>[JsonPropertyName(&quot;timezone&quot;)] public string Timezone { get; set; } = &quot;UTC&quot;;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:328](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L328) |  |
-| <code>[JsonPropertyName(&quot;includeNanoseconds&quot;)] public bool IncludeNanoseconds { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:331](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L331) |  |
+| <code>[JsonPropertyName(&quot;format&quot;)] public TimestampFormat Format { get; set; } = TimestampFormat.Iso8601;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:328](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L328) |  |
+| <code>[JsonPropertyName(&quot;timezone&quot;)] public string Timezone { get; set; } = &quot;UTC&quot;;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:331](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L331) |  |
+| <code>[JsonPropertyName(&quot;includeNanoseconds&quot;)] public bool IncludeNanoseconds { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:334](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L334) |  |
 
 ## TimeStats
 

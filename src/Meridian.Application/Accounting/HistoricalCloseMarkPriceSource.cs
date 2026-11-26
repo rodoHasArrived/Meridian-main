@@ -1,4 +1,5 @@
 using System.Threading;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Core.Logging;
 using Meridian.Infrastructure.Adapters.Core;
@@ -9,7 +10,7 @@ namespace Meridian.Application.Accounting;
 
 /// <summary>
 /// Marks positions at the most recent daily close on or before the valuation date,
-/// sourced from the provider chain (typically the composite failover provider).
+/// sourced only from an explicit raw accounting-close capability, never generic research bars.
 /// Weekends and holidays fall back to the latest prior session within the lookback window.
 /// </summary>
 public sealed class HistoricalCloseMarkPriceSource : IMarkPriceSource
@@ -28,36 +29,45 @@ public sealed class HistoricalCloseMarkPriceSource : IMarkPriceSource
 
     public async Task<MarkPriceQuote?> GetMarkPriceAsync(string symbol, DateOnly asOf, CancellationToken ct = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
+        ct.ThrowIfCancellationRequested();
         try
         {
-            var bars = await _provider
-                .GetDailyBarsAsync(symbol, asOf.AddDays(-LookbackDays), asOf, ct)
+            var from = asOf.AddDays(-Math.Min(LookbackDays, asOf.DayNumber));
+            var close = await _provider
+                .GetRawAccountingCloseAsync(symbol, from, asOf, ct)
                 .ConfigureAwait(false);
-
-            var bar = bars
-                .Where(b => b.SessionDate <= asOf)
-                .OrderByDescending(b => b.SessionDate)
-                .FirstOrDefault();
-            if (bar is null)
+            ct.ThrowIfCancellationRequested();
+            if (close is null)
             {
-                _log.Warning("No daily close found for {Symbol} on or before {AsOf}", symbol, asOf);
+                _log.Warning("No raw accounting close found for {Symbol} on or before {AsOf}", symbol, asOf);
                 return null;
             }
 
-            var source = string.IsNullOrWhiteSpace(bar.Source) ? _provider.Name : bar.Source;
+            if (close.PriceBasis != AccountingClosePriceBasis.Raw || close.Close <= 0m
+                || !string.Equals(close.Symbol, symbol.Trim(), StringComparison.OrdinalIgnoreCase)
+                || close.SessionDate < from || close.SessionDate > asOf
+                || string.IsNullOrWhiteSpace(close.Provider) || string.IsNullOrWhiteSpace(close.Feed)
+                || !Sha256Digest.IsCanonical(close.SourceContentHash))
+            {
+                _log.Warning("Raw accounting close evidence is invalid for {Symbol} on or before {AsOf}", symbol, asOf);
+                return null;
+            }
+
+            var source = close.Provider;
             var provenance = ResolveProvenance(source);
             return new MarkPriceQuote(
-                bar.Close,
+                close.Close,
                 source,
-                FormattableString.Invariant($"daily-close:{symbol}:{bar.SessionDate:yyyy-MM-dd}:{source}"),
+                close.ToEvidenceReference(),
                 // A quoted exchange close for the identical instrument is an ASC 820 Level 1 input.
                 // A fabricated close is not an observation of anything, so it is classified at the
                 // unobservable tier instead of inheriting Level 1 from the shape of the request.
                 provenance.IsNonReal() ? FairValueLevel.Level3 : FairValueLevel.Level1,
-                bar.SessionDate,
+                close.SessionDate,
                 Provenance: provenance);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }
@@ -70,10 +80,10 @@ public sealed class HistoricalCloseMarkPriceSource : IMarkPriceSource
 
     /// <summary>
     /// Classifies where a close actually came from. The provider's own
-    /// <see cref="IHistoricalDataProvider.IsSimulated"/> declaration is the primary gate; the bar's
-    /// <c>Source</c> tag is the second, and is what catches an aggregator such as
+    /// <see cref="IHistoricalDataProvider.IsSimulated"/> declaration is the primary gate; the close's
+    /// actual serving provider is the second, and is what catches an aggregator such as
     /// <see cref="CompositeHistoricalDataProvider"/> — not simulated itself — serving a fabricated
-    /// bar from a constituent provider. Both use the shared structured token table, so a real
+    /// close from a constituent provider. Both use the shared structured token table, so a real
     /// vendor named "Sample Custodian" is not mistaken for a simulated origin.
     /// </summary>
     private DataProvenance ResolveProvenance(string source)

@@ -18,7 +18,7 @@ using Npgsql;
 namespace Meridian.Tests.Storage;
 
 [Trait("Category", "Integration")]
-public sealed class ExternalGlPostingPostgresTests
+public sealed partial class ExternalGlPostingPostgresTests
 {
     private const string Tenant = "tenant-gl";
     private const string Company = "company-gl";

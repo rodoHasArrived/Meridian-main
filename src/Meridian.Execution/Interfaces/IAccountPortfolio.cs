@@ -119,4 +119,18 @@ public sealed record ExecutionAccountDetailSnapshot(
     DateTimeOffset AsOf,
     MarginAccountType MarginType = MarginAccountType.Cash,
     decimal BuyingPower = 0m,
-    decimal ShortMarginCollateral = 0m);
+    decimal ShortMarginCollateral = 0m)
+{
+    /// <summary>Explicit native-book functional currency; absent on older snapshots.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? FunctionalCurrency { get; init; }
+    /// <summary>Exact native NAV including loans, collateral and unsettled variation margin.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? AccountingEquity { get; init; }
+    /// <summary>Positive position-value contributions to native NAV, rather than gross exposure.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? AccountingLongMarketValue { get; init; }
+    /// <summary>Signed negative position-value contributions to native NAV, rather than gross exposure.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? AccountingShortMarketValue { get; init; }
+}

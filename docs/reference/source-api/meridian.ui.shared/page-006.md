@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RegisterFixedAssetRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.RegisterFixedAssetRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs#L21).
+
+Registers or replaces one fixed asset on a fund book&#x27;s depreciation register.
+
+```csharp
+public sealed record RegisterFixedAssetRequest(string FundProfileId, Guid LedgerBookId, FixedAssetRecord Asset, string EvidenceUri, DateOnly? RetiredOn = null);
+```
+
 ## ReplayEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ReplayEndpoints</code>. Kind: `class`.
@@ -1238,15 +1250,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static RouteGroupBuilder RequireWorkstationTenantScope(this RouteGroupBuilder group);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:146](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L146) |  |
 | <code>public static RouteHandlerBuilder RequireWorkstationTenantScope(this RouteHandlerBuilder builder);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:153](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L153) |  |
-
-## WorkstationTenantScopeMetadata
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationTenantScopeMetadata</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:137](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L137).
-
-Marks endpoints that require an authenticated workstation tenant scope.
-
-```csharp
-public sealed class WorkstationTenantScopeMetadata;
-```

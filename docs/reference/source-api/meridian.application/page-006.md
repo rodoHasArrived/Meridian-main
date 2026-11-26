@@ -6,6 +6,72 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DeadLetterSink
+
+Qualified name: <code>Meridian.Application.Pipeline.DeadLetterSink</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Pipeline/DeadLetterSink.cs:32](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L32).
+
+Persists events that failed validation to a JSONL dead-letter file for later inspection and replay. Each line contains the original event together with the validation errors that caused rejection.
+
+```csharp
+public sealed class DeadLetterSink : IEventQuarantineSink, IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DeadLetterSink(string dataRoot, ILogger&lt;DeadLetterSink&gt;? logger = null) : this(dataRoot, logger, appendLinesAsync : null);</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:51](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L51) | Initialises a new DeadLetterSink. |
+| <code>public long TotalRejected =&gt; …;</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:81](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L81) | Gets the total number of rejected events recorded so far. |
+| <code>public long TotalPersisted =&gt; …;</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:84](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L84) | Gets the number of rejected events durably written to the dead-letter file. |
+| <code>public long PendingRetryCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:87](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L87) | Gets the number of rejected events held in memory awaiting a successful write. |
+| <code>public long TotalLost =&gt; …;</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:90](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L90) | Gets the number of rejected events that could not be written and were discarded. |
+| <code>public IReadOnlyDictionary&lt;string, long&gt; RejectedCountsBySymbol =&gt; …;</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:93](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L93) | Gets rejection counts keyed by effective symbol. |
+| <code>public async ValueTask RecordAsync(MarketEvent evt, IReadOnlyList&lt;string&gt; errors, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:102](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L102) | Records a rejected event and its validation errors to the dead-letter file. |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:171](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L171) | Writes any dead-letter records still held in memory after an earlier failed write. |
+| <code>public DeadLetterStatistics GetStatistics();</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:182](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L182) | Returns a snapshot of dead-letter statistics. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:212](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L212) |  |
+
+## DeadLetterStatistics
+
+Qualified name: <code>Meridian.Application.Pipeline.DeadLetterStatistics</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Pipeline/DeadLetterSink.cs:263](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L263).
+
+Statistics about rejected events for API exposure.
+
+```csharp
+public sealed record DeadLetterStatistics(long TotalRejected, IReadOnlyDictionary<string, long> RejectedBySymbol, string DeadLetterFilePath, DateTimeOffset Timestamp)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public long TotalPersisted { get; init; }</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:270](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L270) | Rejected events durably written to the dead-letter file. |
+| <code>public long PendingRetry { get; init; }</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:273](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L273) | Rejected events held in memory awaiting a successful write. |
+| <code>public long TotalLost { get; init; }</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:276](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L276) | Rejected events that could not be written and were discarded. |
+
+## DedupLookupScope
+
+Qualified name: <code>Meridian.Application.Pipeline.DedupLookupScope</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Pipeline/DedupReservation.cs:17](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L17).
+
+Trust scope for a dedup identity lookup.
+
+```csharp
+public enum DedupLookupScope
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>LiveIngress = 0</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:23](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L23) | Live-ingress admission. Any unexpired committed entry (version 1 or version 2) suppresses the event as a duplicate. |
+| <code>WalRecovery = 1</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:30](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L30) | WAL recovery replay. Only durability-confirmed (version 2) entries suppress the replay. Legacy version-1 entries are untrusted here: the WAL record must be replayed to the sink, after which committing the reservation upgrades the identity to version 2. |
+
 ## DedupReservation
 
 Qualified name: <code>Meridian.Application.Pipeline.DedupReservation</code>. Kind: `record struct`.
@@ -976,59 +1042,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Applied</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:10](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L10) | Running instances now resolve credentials under the bound scope. |
 | <code>PendingRestart</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:12](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L12) | No in-process recycle exists; the host must be restarted deliberately. |
-
-## ProviderRuntimeCredentialMutationGuard
-
-Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialMutationGuard</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:9](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L9).
-
-Serializes host selection/application with mutations that could invalidate a running provider&#x27;s keys.
-
-```csharp
-public sealed class ProviderRuntimeCredentialMutationGuard(ConfigStore configStore, ProviderCredentialOwnershipPolicy? ownershipPolicy = null, IProviderRuntimeCredentialApplier? applier = null, ProviderRuntimeCredentialApplicationTracker? tracker = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IDisposable&gt; AcquireOperationAsync(string providerId, CancellationToken ct);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:18](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L18) |  |
-| <code>public async Task&lt;MutationLease&gt; AcquireForConnectionAsync(string providerId, string connectionId, string tenantId, CancellationToken ct);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:28](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L28) |  |
-| <code>public async Task&lt;MutationLease&gt; AcquireForSelectionAsync(string providerId, string connectionId, string tenantId, CancellationToken ct);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:34](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L34) |  |
-| <code>public async Task&lt;MutationLease&gt; AcquireAsync(string providerId, ProviderCredentialScope? scope, CancellationToken ct);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:41](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L41) | Returns ownership and operation leases held until the vault/configuration mutation completes. |
-
-## MutationLease
-
-Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialMutationGuard.MutationLease</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:113](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L113).
-
-```csharp
-public sealed class MutationLease(IDisposable ownership, IDisposable operation) : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public void ReleaseConfigurationLease() =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:119](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L119) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:120](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L120) |  |
-
-## ProviderRuntimeCredentialQuiescenceException
-
-Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialQuiescenceException</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:135](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L135).
-
-A bound secret cannot change until its running instances are proven stopped and drained.
-
-```csharp
-public sealed class ProviderRuntimeCredentialQuiescenceException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderRuntimeCredentialQuiescenceException() : base(&quot;Running provider instances cannot be stopped and drained by this host. Stop the host and perform credential maintenance offline before restarting; the requested change was refused.&quot;);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:137](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L137) |  |

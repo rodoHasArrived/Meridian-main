@@ -28,6 +28,10 @@ describe("ReportReviewPanel", () => {
     expect(screen.getByText("Materiality not assessed")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open prior approved run" })).toHaveAttribute("href", "/reporting/runs/detail?runId=approved");
     expect(screen.getByText("Current retained version 3")).toBeVisible();
+    const identities = screen.getByText("Comparison identifiers", { exact: true }).closest("details")!;
+    expect(identities).not.toHaveAttribute("open");
+    expect(identities).toHaveTextContent(review.reviewId);
+    expect(identities).toHaveTextContent(review.snapshotHash);
     expect(screen.getByText("current", { exact: true })).not.toBeVisible();
     fireEvent.click(screen.getByText("Comparison identifiers", { exact: true }));
     expect(screen.getByText("current", { exact: true })).toBeVisible();

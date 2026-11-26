@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementReconciliationReportArtifactDownload
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportArtifactDownload</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:30](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L30).
+
+```csharp
+public sealed record StatementReconciliationReportArtifactDownload(StatementReconciliationReportArtifactDto Descriptor, byte[] Content);
+```
+
 ## StatementReconciliationReportFetchIngestionAuthority
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportFetchIngestionAuthority</code>. Kind: `class`.
@@ -522,8 +532,16 @@ Qualified name: <code>Meridian.Ui.Shared.Serialization.RunLedgerExportRequest</c
 Source: [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:15](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L15).
 
 ```csharp
-public sealed record RunLedgerExportRequest(string Format = "csv", IReadOnlyDictionary<string, string>? AccountMapping = null);
+public sealed record RunLedgerExportRequest(string Format = "csv", IReadOnlyDictionary<string, string>? AccountMapping = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateOnly? From { get; init; }</code> | [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:19](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L19) |  |
+| <code>public DateOnly? To { get; init; }</code> | [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:20](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L20) |  |
+| <code>public IReadOnlyList&lt;Guid&gt;? JournalEntryIds { get; init; }</code> | [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:21](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L21) |  |
 
 ## W4AcceptanceFilter
 
@@ -989,15 +1007,3 @@ Enum declarations:
 | <code>ExistingDraftGoverned = 4</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:77](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L77) |  |
 | <code>ExistingDraftTerminal = 5</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:78](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L78) |  |
 | <code>ExistingDraftReassessmentRequired = 6</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:79](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L79) |  |
-
-## AutomatedJournalDraftIntakeRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:35](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L35).
-
-Batch of automated economic events (dividends, interest, fees, withholding) to admit into the manual journal workbench queue for the named fund profile.
-
-```csharp
-public sealed record AutomatedJournalDraftIntakeRequest(string FundProfileId, string Currency, IReadOnlyList<AutomatedJournalEvent> Events, string Actor, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null, string? BatchCorrelationId = null);
-```

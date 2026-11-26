@@ -96,7 +96,8 @@ public sealed class CorporateActionAdjustmentPropertyTests
         for (var i = 0; i < count; i++)
         {
             bars.Add(new HistoricalBar(
-                symbol, start.AddDays(i), price, price, price, price, Volume: 1_000_000, Source: "property"));
+                symbol, start.AddDays(i), price, price, price, price, Volume: 1_000_000, Source: "property",
+                PriceBasis: HistoricalPriceBasis.Raw));
         }
 
         return bars;

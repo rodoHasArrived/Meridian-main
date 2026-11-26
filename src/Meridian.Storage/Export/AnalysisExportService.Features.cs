@@ -18,6 +18,9 @@ public sealed partial class AnalysisExportService
         if (records.Count == 0)
             return records;
 
+        if (features.IncludeReturns || features.IncludeRollingStats || features.IncludeTechnicalIndicators)
+            RequireComparableHistoricalFeaturePrices(records);
+
         // Extract price series for computations
         var prices = ExtractPriceSeries(records);
         if (prices.Length == 0)

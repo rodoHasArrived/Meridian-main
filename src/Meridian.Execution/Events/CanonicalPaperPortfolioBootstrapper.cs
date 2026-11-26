@@ -110,7 +110,10 @@ public sealed class CanonicalPaperPortfolioBootstrapper(
                 if (security is null || security.Currency != "USD" || SecurityAssetClassCatalog.ResolveLabel(security.AssetClass, out var kind) != SecurityAssetClassLabelResolution.Resolved || kind is not { SupportsEquityClassification: true })
                     throw new InvalidOperationException("Canonical paper recovery supports USD cash-equity holdings only.");
                 var trusted = new List<JournalEntry>();
-                var batchIds = group.SelectMany(lot => new[] { lot.OriginatingMutationBatchId, lot.LastMutationBatchId })
+                var trustedByBatch = new Dictionary<Guid, AtomicTaxLotJournalResult>();
+                var positionHistoryLots = group.Concat(open.ClosedLots.Where(lot => lot.Account == group.First().Account
+                    && lot.SecurityId == security.SecurityId && lot.BookPositionId == group.First().BookPositionId));
+                var batchIds = positionHistoryLots.SelectMany(lot => new[] { lot.OriginatingMutationBatchId, lot.LastMutationBatchId })
                     .Concat(snapshot.TaxLotDisposalHistory.Where(disposal =>
                         string.Equals(disposal.Account.FinancialAccountId, grant.FinancialAccountId, StringComparison.OrdinalIgnoreCase)
                         && string.Equals(disposal.Account.Symbol, group.Key, StringComparison.OrdinalIgnoreCase))
@@ -133,6 +136,7 @@ public sealed class CanonicalPaperPortfolioBootstrapper(
                             && evidence.SubjectId == entry.Metadata.FillId.Value.ToString("D") && evidence.SourceSystem == "SyntheticOMS"))
                         continue;
                     trusted.Add(entry);
+                    trustedByBatch.Add(batchId, receipt);
                 }
                 var observation = trusted.OrderByDescending(entry => entry.Timestamp).Select(ReadPrice).FirstOrDefault(value => value is not null);
                 if (observation is null)
@@ -148,13 +152,21 @@ public sealed class CanonicalPaperPortfolioBootstrapper(
                     lots.Add(new(lot.LotId, lot.OpenQuantity, lot.OpenFunctionalCostBasis / lot.OpenQuantity,
                         lot.OpenFunctionalCostBasis, new DateTimeOffset(lot.AcquiredDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero), lot.TaxLotRecordId));
                 }
-                restored.Add(new(group.Key!, lots, observation.Value.Price, observation.Value.At, "RetainedExecutionFill"));
+                var attribution = CanonicalPaperPositionAttribution.Recover(snapshot, group.First().Account,
+                    security.SecurityId, group.First().BookPositionId, group.ToArray(), trustedByBatch);
+                restored.Add(new(group.Key!, lots, observation.Value.Price, observation.Value.At, "RetainedExecutionFill")
+                {
+                    AccountingSecurityId = security.SecurityId,
+                    AccountingRunId = attribution.RunId,
+                    AccountingFillIds = attribution.FillIds
+                });
             }
             var realized = snapshot.Journals.Where(record => string.Equals(record.Entry.Metadata.FinancialAccountId, grant.FinancialAccountId, StringComparison.OrdinalIgnoreCase)
                     && record.Entry.Metadata.ActivityType == "execution.trade-fill")
                 .SelectMany(record => record.Entry.Lines).Sum(line => line.Account.AccountType == LedgerAccountType.Revenue
                     ? line.Credit - line.Debit : line.Account.AccountType == LedgerAccountType.Expense ? line.Credit - line.Debit : 0m);
             portfolio.RestoreCanonicalState(grant.FinancialAccountId, cashLines.Sum(line => line.Debit - line.Credit), realized, restored, context.PostingScope);
+            portfolio.BindPositionAccountingEvidenceScope(grant.FinancialAccountId, book.BaseCurrency, cutoff);
             portfolio.SetCanonicalAdmissionAuthority(ValidateAdmissionAsync);
             _initialized = true;
         }

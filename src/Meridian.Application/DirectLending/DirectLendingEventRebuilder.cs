@@ -10,7 +10,7 @@ namespace Meridian.Application.DirectLending;
 /// <summary>
 /// Reconstructs persisted loan state from retained direct-lending event history.
 /// </summary>
-public sealed class DirectLendingEventRebuilder
+public sealed partial class DirectLendingEventRebuilder
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private static readonly JsonSerializerOptions HashJsonOptions = new()
@@ -27,8 +27,9 @@ public sealed class DirectLendingEventRebuilder
 
         LoanContractDetailDto? contract = null;
         LoanServicingStateDto? servicing = null;
+        var lifecycleContext = new LifecycleReplayContext();
 
-        foreach (var entry in history.OrderBy(static item => item.AggregateVersion))
+        foreach (var entry in OrderForRebuild(history))
         {
             if (entry.EventSchemaVersion != 1)
             {
@@ -120,6 +121,14 @@ public sealed class DirectLendingEventRebuilder
                         {
                             Status = LoanStatus.Active
                         };
+                        break;
+                    }
+
+                case "loan.restructured":
+                case "LoanRestructured":
+                    {
+                        EnsureInitialized(contract, servicing, entry.EventType);
+                        (contract, servicing) = RebuildRestructuring(loanId, contract!, servicing!, entry, root);
                         break;
                     }
 
@@ -434,6 +443,7 @@ public sealed class DirectLendingEventRebuilder
                     }
 
                 case "loan.pik-toggled":
+                case "PikToggled":
                     {
                         EnsureInitialized(contract, servicing, entry.EventType);
                         var enablePik = root.GetProperty("enablePik").GetBoolean();
@@ -445,18 +455,9 @@ public sealed class DirectLendingEventRebuilder
                                 ? reasonText
                                 : enablePik ? "PIK enabled" : "PIK disabled";
 
-                        servicing = servicing! with
-                        {
-                            IsPikToggled = enablePik,
-                            ServicingRevision = servicing.ServicingRevision + 1,
-                            RevisionHistory = PrependRevision(
-                                servicing.RevisionHistory,
-                                servicing.ServicingRevision + 1,
-                                "PikToggle",
-                                effectiveDate,
-                                reason,
-                                entry.RecordedAt)
-                        };
+                        servicing = RestoreLifecycleRevision(
+                            servicing!, servicing! with { IsPikToggled = enablePik },
+                            ReadLifecycleFields(root), entry, "PikToggle", effectiveDate, reason);
                         break;
                     }
 
@@ -490,6 +491,24 @@ public sealed class DirectLendingEventRebuilder
                         break;
                     }
 
+                case "loan.fee-assessed":
+                case "loan.write-off-applied":
+                case "loan.servicer-position-imported":
+                case "loan.collateral-added":
+                case "CollateralAdded":
+                case "loan.collateral-removed":
+                case "CollateralRemoved":
+                case "loan.collateral-value-updated":
+                case "CollateralValueUpdated":
+                case "loan.status-transitioned":
+                case "LoanStatusTransitioned":
+                case "loan.discount-premium-amortized":
+                case "DiscountPremiumAmortized":
+                    EnsureInitialized(contract, servicing, entry.EventType);
+                    (contract, servicing) = RebuildLifecycleEvent(
+                        loanId, contract!, servicing!, entry, root, lifecycleContext);
+                    break;
+
                 default:
                     throw new InvalidOperationException($"Unsupported direct-lending event type '{entry.EventType}' during rebuild.");
             }
@@ -498,6 +517,109 @@ public sealed class DirectLendingEventRebuilder
         EnsureInitialized(contract, servicing, "rebuild");
         var latestVersion = history.Max(static item => item.AggregateVersion);
         return new PersistedDirectLendingState(loanId, latestVersion, contract!, servicing!);
+    }
+
+    private static (LoanContractDetailDto Contract, LoanServicingStateDto Servicing) RebuildRestructuring(
+        Guid loanId,
+        LoanContractDetailDto contract,
+        LoanServicingStateDto servicing,
+        LoanEventLineageDto entry,
+        JsonElement root)
+    {
+        try
+        {
+            // Reject duplicate/case-colliding fields rather than adopting JSON's last value.
+            var fields = root.EnumerateObject().ToDictionary(static item => item.Name, static item => item.Value,
+                StringComparer.OrdinalIgnoreCase);
+            if (fields.TryGetValue("loanId", out var retainedLoanId) && retainedLoanId.GetGuid() != loanId)
+                throw new InvalidDataException("Retained loan.restructured evidence belongs to another loan.");
+            var reason = fields["reason"].GetString()
+                ?? throw new InvalidDataException("Retained loan.restructured evidence is missing its reason.");
+            var effectiveDate = fields.TryGetValue("effectiveDate", out var effectiveDateValue)
+                ? effectiveDateValue.Deserialize<DateOnly>(JsonOptions)
+                : entry.EffectiveDate ?? throw new InvalidDataException("Retained loan.restructured evidence is missing its effective date.");
+            if (entry.EffectiveDate is { } retainedEffectiveDate && retainedEffectiveDate != effectiveDate)
+                throw new InvalidDataException("Retained loan.restructured effective dates conflict.");
+
+            var hasRetainedProjection = fields.ContainsKey("appliedPrincipalHaircut")
+                || fields.ContainsKey("newTermsVersion") || fields.ContainsKey("servicingRevision");
+            decimal? appliedHaircut = null;
+            foreach (var name in new[] { "appliedPrincipalHaircut", "principalHaircut", "haircutAmount" })
+            {
+                if (!fields.TryGetValue(name, out var amount))
+                    continue;
+                var value = amount.ValueKind == JsonValueKind.Null && name == "haircutAmount" && !hasRetainedProjection
+                    ? 0m : amount.GetDecimal();
+                if (appliedHaircut is { } retainedAmount && retainedAmount != value)
+                    throw new InvalidDataException("Retained loan.restructured haircut amounts conflict.");
+                appliedHaircut = value;
+            }
+            var haircut = appliedHaircut ?? 0m;
+            if (DirectLendingServiceSupport.ValidateRestructuringHaircut(haircut, servicing.Balances.PrincipalOutstanding) is { } error)
+                throw new InvalidDataException($"Invalid retained loan.restructured haircut: {error.Message}");
+
+            var newTerms = fields.TryGetValue("newTerms", out var termsValue) && termsValue.ValueKind != JsonValueKind.Null
+                ? termsValue.Deserialize<DirectLendingTermsDto>(JsonOptions)
+                : null;
+            if (newTerms is not null && DirectLendingServiceSupport.ValidateTerms(newTerms) is { } termsError)
+                throw new InvalidDataException($"Invalid retained loan.restructured terms: {termsError.Message}");
+
+            if (hasRetainedProjection && (!fields.ContainsKey("appliedPrincipalHaircut")
+                    || !fields.ContainsKey("principalHaircut") || !fields.ContainsKey("haircutAmount")
+                    || !fields.ContainsKey("newTermsVersion") || !fields.ContainsKey("servicingRevision")))
+                throw new InvalidDataException("Retained loan.restructured projection evidence is incomplete.");
+
+            var revision = hasRetainedProjection
+                ? fields["servicingRevision"].Deserialize<ServicingRevisionDto>(JsonOptions)
+                    ?? throw new InvalidDataException("Retained loan.restructured servicing revision is missing.")
+                : new ServicingRevisionDto(servicing.ServicingRevision + 1, "Restructuring", effectiveDate, entry.RecordedAt, reason);
+            if (revision.RevisionNumber != servicing.ServicingRevision + 1
+                || revision.RevisionSourceType != "Restructuring" || revision.EffectiveAsOfDate != effectiveDate
+                || revision.Notes != reason || revision.CreatedAt == default)
+                throw new InvalidDataException("Retained loan.restructured servicing revision conflicts with its event or prior state.");
+
+            var termsVersions = contract.TermsVersions.ToList();
+            var currentTermsVersion = contract.CurrentTermsVersion;
+            var retainedTermsVersion = hasRetainedProjection && fields["newTermsVersion"].ValueKind != JsonValueKind.Null
+                ? fields["newTermsVersion"].Deserialize<LoanTermsVersionDto>(JsonOptions)
+                : null;
+            if (newTerms is not null)
+            {
+                currentTermsVersion = termsVersions.Count == 0 ? 1 : termsVersions.Max(static item => item.VersionNumber) + 1;
+                var sourceAction = !hasRetainedProjection && entry.EventType == "LoanRestructured"
+                    ? "Restructuring" : "loan.restructured";
+                var expected = CreateTermsVersion(currentTermsVersion, newTerms, sourceAction, reason, revision.CreatedAt);
+                if (hasRetainedProjection && (retainedTermsVersion is null || retainedTermsVersion.Terms is null
+                        || retainedTermsVersion.VersionNumber != expected.VersionNumber
+                        || retainedTermsVersion.TermsHash != expected.TermsHash
+                        || ComputeTermsHash(retainedTermsVersion.Terms) != expected.TermsHash
+                        || retainedTermsVersion.SourceAction != expected.SourceAction
+                        || retainedTermsVersion.AmendmentReason != expected.AmendmentReason
+                        || retainedTermsVersion.RecordedAt != revision.CreatedAt))
+                    throw new InvalidDataException("Retained loan.restructured terms version conflicts with its event or prior state.");
+                termsVersions.Add(retainedTermsVersion ?? expected);
+            }
+            else if (retainedTermsVersion is not null)
+                throw new InvalidDataException("Retained loan.restructured terms version has no replacement terms.");
+
+            return (contract with
+            {
+                Status = LoanStatus.Workout,
+                CurrentTerms = newTerms ?? contract.CurrentTerms,
+                CurrentTermsVersion = currentTermsVersion,
+                TermsVersions = termsVersions.OrderBy(static item => item.VersionNumber).ToArray()
+            }, DirectLendingServiceSupport.ApplyRestructuringHaircut(servicing, haircut) with
+            {
+                Status = LoanStatus.Workout,
+                ServicingRevision = revision.RevisionNumber,
+                RevisionHistory = new[] { revision }.Concat(servicing.RevisionHistory).ToArray()
+            });
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException or FormatException
+            or OverflowException or ArgumentException or KeyNotFoundException)
+        {
+            throw new InvalidDataException($"Malformed retained loan.restructured event '{entry.EventId:D}'.", ex);
+        }
     }
 
     private static void EnsureInitialized(LoanContractDetailDto? contract, LoanServicingStateDto? servicing, string eventType)

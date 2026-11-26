@@ -39,7 +39,7 @@ Every provider build task follows this 4-step workflow:
 
 ### 1 — GATHER CONTEXT (MCP)
 - Fetch the GitHub issue or feature request describing the new provider
-- Read the relevant template file (`_Template/TemplateMarketDataClient.cs` or `TemplateHistoricalDataProvider.cs`)
+- Read the relevant template file (`docs/examples/provider-template/TemplateMarketDataClient.cs` or `TemplateHistoricalDataProvider.cs`)
 - Check `docs/ai/ai-known-errors.md` for known provider implementation mistakes
 
 ### 2 — ANALYZE & PLAN (Agents)
@@ -87,17 +87,17 @@ What does this provider supply?
 ├── Real-time streaming ticks / quotes / L2 order book
 │   └── Implement IMarketDataClient
 │       File: src/Meridian.ProviderSdk/IMarketDataClient.cs
-│       Template: src/Meridian.Infrastructure/Adapters/_Template/TemplateMarketDataClient.cs
+│       Template: docs/examples/provider-template/TemplateMarketDataClient.cs
 │
 ├── Historical OHLCV / tick data (backfill use case)
 │   └── Implement IHistoricalDataProvider
 │       File: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-│       Template: src/Meridian.Infrastructure/Adapters/_Template/TemplateHistoricalDataProvider.cs
+│       Template: docs/examples/provider-template/TemplateHistoricalDataProvider.cs
 │       Base: BaseHistoricalDataProvider (handles rate limiting + retry automatically)
 │
 └── Symbol search / lookup (resolving tickers)
     └── Implement ISymbolSearchProvider
-        Template: src/Meridian.Infrastructure/Adapters/_Template/TemplateSymbolSearchProvider.cs
+        Template: docs/examples/provider-template/TemplateSymbolSearchProvider.cs
         Base: BaseSymbolSearchProvider
 ```
 
@@ -109,9 +109,9 @@ What does this provider supply?
 
 **Always** start from the template scaffolding, not from a blank file or from copying another provider.
 
-- Streaming: `src/Meridian.Infrastructure/Adapters/_Template/TemplateMarketDataClient.cs`
-- Historical: `src/Meridian.Infrastructure/Adapters/_Template/TemplateHistoricalDataProvider.cs`
-- Symbol search: `src/Meridian.Infrastructure/Adapters/_Template/TemplateSymbolSearchProvider.cs`
+- Streaming: `docs/examples/provider-template/TemplateMarketDataClient.cs`
+- Historical: `docs/examples/provider-template/TemplateHistoricalDataProvider.cs`
+- Symbol search: `docs/examples/provider-template/TemplateSymbolSearchProvider.cs`
 
 Read the full template before writing any code. The templates contain inline comments explaining
 every required section.

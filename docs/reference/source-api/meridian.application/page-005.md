@@ -6,6 +6,53 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAgreementTimeline
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementTimeline</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs:9](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs#L9).
+
+Effective chronology takes precedence over approval order; approved history is never rewritten.
+
+```csharp
+public static class IntercompanyAgreementTimeline
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IntercompanyAgreementTimelineResult Resolve(IEnumerable&lt;IntercompanyAgreementRevisionDto&gt; revisions, DateOnly asOf, DateTimeOffset? knownAtUtc = null);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs:11](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs#L11) |  |
+| <code>public static int? SemanticBase(IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt; revisions, IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs:29](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs#L29) |  |
+
+## IntercompanyAgreementTimelineResult
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementTimelineResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs:5](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs#L5).
+
+```csharp
+public sealed record IntercompanyAgreementTimelineResult(IntercompanyAgreementRevisionDto? Revision, IntercompanyAgreementStatusDto Status, DateOnly? TerminationCutoff);
+```
+
+## IntercompanyFeeAccrualPreviewService
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyFeeAccrualPreviewService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs:20](../../../../src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs#L20).
+
+Turns a declared fixed management fee into an amount for a half-open window (rule IntercompanyFeeAccrualRules.RuleVersion). Pure: it reads no ledger and creates nothing.
+
+```csharp
+public sealed class IntercompanyFeeAccrualPreviewService(IBusinessDayCalendarSource calendars) : IIntercompanyFeeAccrualPreviewService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyFeeAccrualPreviewDto Preview(IntercompanyFeeAccrualComputationInput input);</code> | [src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs:22](../../../../src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs#L22) |  |
+
 ## IntercompanyRateFixingRules
 
 Qualified name: <code>Meridian.Application.FundStructure.IntercompanyRateFixingRules</code>. Kind: `class`.
@@ -949,69 +996,3 @@ Declared public members:
 | <code>public void Start(TimeSpan interval);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:39](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L39) |  |
 | <code>public async Task WriteOnceAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:73](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L73) |  |
 | <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:98](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L98) |  |
-
-## DeadLetterSink
-
-Qualified name: <code>Meridian.Application.Pipeline.DeadLetterSink</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Pipeline/DeadLetterSink.cs:32](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L32).
-
-Persists events that failed validation to a JSONL dead-letter file for later inspection and replay. Each line contains the original event together with the validation errors that caused rejection.
-
-```csharp
-public sealed class DeadLetterSink : IEventQuarantineSink, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DeadLetterSink(string dataRoot, ILogger&lt;DeadLetterSink&gt;? logger = null) : this(dataRoot, logger, appendLinesAsync : null);</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:51](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L51) | Initialises a new DeadLetterSink. |
-| <code>public long TotalRejected =&gt; …;</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:81](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L81) | Gets the total number of rejected events recorded so far. |
-| <code>public long TotalPersisted =&gt; …;</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:84](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L84) | Gets the number of rejected events durably written to the dead-letter file. |
-| <code>public long PendingRetryCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:87](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L87) | Gets the number of rejected events held in memory awaiting a successful write. |
-| <code>public long TotalLost =&gt; …;</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:90](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L90) | Gets the number of rejected events that could not be written and were discarded. |
-| <code>public IReadOnlyDictionary&lt;string, long&gt; RejectedCountsBySymbol =&gt; …;</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:93](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L93) | Gets rejection counts keyed by effective symbol. |
-| <code>public async ValueTask RecordAsync(MarketEvent evt, IReadOnlyList&lt;string&gt; errors, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:102](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L102) | Records a rejected event and its validation errors to the dead-letter file. |
-| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:171](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L171) | Writes any dead-letter records still held in memory after an earlier failed write. |
-| <code>public DeadLetterStatistics GetStatistics();</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:182](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L182) | Returns a snapshot of dead-letter statistics. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:212](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L212) |  |
-
-## DeadLetterStatistics
-
-Qualified name: <code>Meridian.Application.Pipeline.DeadLetterStatistics</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Pipeline/DeadLetterSink.cs:263](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L263).
-
-Statistics about rejected events for API exposure.
-
-```csharp
-public sealed record DeadLetterStatistics(long TotalRejected, IReadOnlyDictionary<string, long> RejectedBySymbol, string DeadLetterFilePath, DateTimeOffset Timestamp)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public long TotalPersisted { get; init; }</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:270](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L270) | Rejected events durably written to the dead-letter file. |
-| <code>public long PendingRetry { get; init; }</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:273](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L273) | Rejected events held in memory awaiting a successful write. |
-| <code>public long TotalLost { get; init; }</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:276](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L276) | Rejected events that could not be written and were discarded. |
-
-## DedupLookupScope
-
-Qualified name: <code>Meridian.Application.Pipeline.DedupLookupScope</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Pipeline/DedupReservation.cs:17](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L17).
-
-Trust scope for a dedup identity lookup.
-
-```csharp
-public enum DedupLookupScope
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>LiveIngress = 0</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:23](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L23) | Live-ingress admission. Any unexpired committed entry (version 1 or version 2) suppresses the event as a duplicate. |
-| <code>WalRecovery = 1</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:30](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L30) | WAL recovery replay. Only durability-confirmed (version 2) entries suppress the replay. Legacy version-1 entries are untrusted here: the WAL record must be replayed to the sink, after which committing the reservation upgrades the identity to version 2. |

@@ -488,12 +488,14 @@ internal sealed class LiveStrategyRunSession
             _strategy.OnDayEnd(date, _context);
         }
 
+        var observation = _context.CapturePortfolioObservation();
         _metrics.RecordDayEnd(
             date,
-            _context.Cash,
-            _context.PortfolioValue,
-            _context.Positions,
-            _context.Accounts);
+            observation.Cash,
+            observation.Equity,
+            observation.Positions,
+            observation.Accounts,
+            observation.AccountingEvidence);
     }
 
     private async Task RouteQueuedOrdersAsync(CancellationToken ct)
@@ -710,7 +712,7 @@ internal sealed class LiveStrategyRunSession
 
                 var signedQuantity = ConvertToBacktestFillQuantity(report);
                 var fill = new FillEvent(
-                    FillId: Guid.NewGuid(),
+                    FillId: report.AccountingFillId ?? Guid.NewGuid(),
                     OrderId: order.OrderId,
                     Symbol: report.Symbol,
                     FilledQuantity: signedQuantity,
@@ -1165,11 +1167,12 @@ internal sealed class LiveStrategyRunSession
             }
         }
 
-        if (completeRun && faulted is null)
+        BacktestResult? metrics = null;
+        if (canBuildMetrics && (completeRun || faulted is not null))
         {
             try
             {
-                await ReconcilePaperSessionAsync().ConfigureAwait(false);
+                metrics = BuildMetrics();
             }
             catch (Exception ex)
             {
@@ -1177,12 +1180,14 @@ internal sealed class LiveStrategyRunSession
             }
         }
 
-        BacktestResult? metrics = null;
-        if (canBuildMetrics && (completeRun || faulted is not null))
+        if (completeRun && faulted is null)
         {
             try
             {
-                metrics = BuildMetrics();
+                // The prepared session is still active while final metrics observe it.
+                // Closing removes read authority; verified durable replay remains required
+                // before the completed run and its captured metrics can be retained.
+                await ReconcilePaperSessionAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1247,9 +1252,9 @@ internal sealed class LiveStrategyRunSession
 
         try
         {
+            metrics = BuildMetrics();
             if (faulted is null)
                 await ReconcilePaperSessionAsync().ConfigureAwait(false);
-            metrics = BuildMetrics();
         }
         catch (Exception ex)
         {

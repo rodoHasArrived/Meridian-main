@@ -6,6 +6,92 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WatchlistItem
+
+Qualified name: <code>Meridian.Ui.Services.WatchlistItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/WatchlistService.cs:113](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L113).
+
+A single item in a watchlist.
+
+```csharp
+public sealed class WatchlistItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:115](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L115) |  |
+| <code>public string? Notes { get; set; }</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:116](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L116) |  |
+| <code>public List&lt;string&gt; Tags { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:117](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L117) |  |
+
+## WatchlistService
+
+Qualified name: <code>Meridian.Ui.Services.WatchlistService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/WatchlistService.cs:14](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L14).
+
+Default watchlist service for the shared UI services layer. Platform-specific projects (WPF) override this with their own implementations by setting the Instance property during app startup.
+
+```csharp
+public class WatchlistService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static WatchlistService Instance { get; set; }</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:20](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L20) |  |
+| <code>public virtual async Task&lt;WatchlistData&gt; LoadWatchlistAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:26](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L26) |  |
+| <code>public virtual async Task&lt;bool&gt; CreateOrUpdateWatchlistAsync(string name, IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:48](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L48) | Creates a new watchlist or updates an existing one. Platform-specific implementations should override this method. |
+
+## WidgetPosition
+
+Qualified name: <code>Meridian.Ui.Services.WidgetPosition</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:79](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L79).
+
+Widget position in a workspace layout.
+
+```csharp
+public sealed class WidgetPosition
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int Row { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:81](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L81) |  |
+| <code>public int Column { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:82](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L82) |  |
+| <code>public int RowSpan { get; set; } = 1;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:83](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L83) |  |
+| <code>public int ColumnSpan { get; set; } = 1;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:84](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L84) |  |
+| <code>public bool IsVisible { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:85](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L85) |  |
+| <code>public bool IsExpanded { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:86](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L86) |  |
+
+## WindowBounds
+
+Qualified name: <code>Meridian.Ui.Services.WindowBounds</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:92](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L92).
+
+Window bounds for multi-monitor support.
+
+```csharp
+public sealed class WindowBounds
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public double X { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:94](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L94) |  |
+| <code>public double Y { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:95](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L95) |  |
+| <code>public double Width { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:96](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L96) |  |
+| <code>public double Height { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:97](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L97) |  |
+| <code>public string? MonitorId { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:98](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L98) |  |
+| <code>public bool IsMaximized { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:99](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L99) |  |
+
 ## WorkspaceCategory
 
 Qualified name: <code>Meridian.Ui.Services.WorkspaceCategory</code>. Kind: `enum`.
