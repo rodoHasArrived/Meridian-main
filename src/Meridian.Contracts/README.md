@@ -2412,6 +2412,16 @@ stamp keep v5 analytical capture/replay; explicit v6 profile declarations must p
 contract and cannot fall back to normalized legacy economics. The policy adds no posting authority.
 See [recurring journals](../../docs/domain/recurring-journal.md#declared-certificateofdeposit-accrual-profile).
 
+## Bounded vanilla interest-rate swap profile (2026-11-25)
+
+`SecurityVanillaSwapProfile` (`vanilla-irs-v1`) adapts exactly two same-currency opposite
+fixed/floating legs to the shared contractual cash-flow engine with explicit per-leg rate units,
+conventions and dated rate authority; Swap leg `scheduleConventions` are writable only through that
+bounded validation. Optional `calculationProfile` on `ContractualCashFlowRequest` preserves old
+omitted request bytes and adds no posting authority. Cross-currency exchange, notional schedules,
+optionality and undated index rates remain refused. See
+[contractual projections](../../docs/domain/contractual-cash-flow-projection.md).
+
 ## Roadmap traceability
 
 <!-- source-roadmap-traceability:begin module=SRC-CONTRACTS -->

@@ -28,7 +28,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowNoticeWindow</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:127](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L127).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:132](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L132).
 
 ```csharp
 public sealed record CashFlowNoticeWindow(DateOnly? Earliest, DateOnly? Latest);
@@ -86,7 +86,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowAttestationContextDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:182](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L182).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:187](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L187).
 
 ```csharp
 public sealed record ContractualCashFlowAttestationContextDto(string TenantId, string CompanyId, string PreparedBy, Meridian.Contracts.Workstation.OperationsActionOriginDto Origin, int SchemaVersion = 1);
@@ -131,7 +131,8 @@ Declared public members:
 | <code>public static ContractualCashFlowResult Replay(ContractualCashFlowRun run);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:98](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L98) |  |
 | <code>public static bool Verify(ContractualCashFlowRun run);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:105](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L105) |  |
 | <code>public static void Validate(ContractualCashFlowContract contract, ContractualCashFlowRequest request);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:115](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L115) |  |
-| <code>public static void ValidateRequest(ContractualCashFlowRequest request);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:190](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L190) |  |
+| <code>public static void ValidateRequest(ContractualCashFlowRequest request);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:196](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L196) |  |
+| <code>public static void ValidateScheduleShape(ContractualCashFlowContract contract, ContractualCashFlowStream stream);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:225](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L225) | Validates the same schedule mapping used by calculations without resolving live calendars. |
 
 Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.Exercise.cs:8](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.Exercise.cs#L8).
 
@@ -161,7 +162,7 @@ public static partial class ContractualCashFlowEngine
 
 Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowEvent</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:137](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L137).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:142](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L142).
 
 ```csharp
 public sealed record ContractualCashFlowEvent(string EventId, string StreamId, string? PeriodId, DateOnly Date, DateOnly? AccrualStart, DateOnly? AccrualEnd, decimal OpeningBalance, decimal CashInterest, decimal CapitalizedInterest, decimal ScheduledPrincipal, decimal ForecastPrepayment, decimal RedeemedPrincipal, decimal RedemptionPremium, decimal PrepaymentPenalty, decimal ClosingBalance, CashFlowLegDirection Direction)
@@ -171,13 +172,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal NetCash =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:145](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L145) |  |
+| <code>public decimal NetCash =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:150](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L150) |  |
 
 ## ContractualCashFlowEvidence
 
 Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowEvidence</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:153](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L153).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:158](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L158).
 
 ```csharp
 public sealed record ContractualCashFlowEvidence(string EngineVersion, string MappingVersion, string PrepaymentVersion, string KernelVersion, string InputHash, string OutputHash, string SourceTermsHash, string SourceVersion, bool HasContractOverride, IReadOnlyList<CashFlowCalendarSnapshot> Calendars, IReadOnlyList<CashFlowCurveSnapshot> Curves, IReadOnlyList<string> Warnings);
@@ -228,14 +229,20 @@ Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:108](.
 ContractOverride is explicitly hypothetical; it never changes authoritative terms.
 
 ```csharp
-public sealed record ContractualCashFlowRequest(DateOnly ValuationDate, DateTimeOffset KnowledgeCutoff, DateOnly? Horizon = null, StructuredCashFlowScenario RateScenario = StructuredCashFlowScenario.Base, IReadOnlyList<SelectedCashFlowExercise>? Exercises = null, IReadOnlyList<CashFlowPrepaymentAssumption>? Prepayments = null, IReadOnlyList<CashFlowCurvePin>? CurvePins = null, ContractualCashFlowContract? ContractOverride = null, string EngineVersion = ContractualCashFlowVersions.Engine);
+public sealed record ContractualCashFlowRequest(DateOnly ValuationDate, DateTimeOffset KnowledgeCutoff, DateOnly? Horizon = null, StructuredCashFlowScenario RateScenario = StructuredCashFlowScenario.Base, IReadOnlyList<SelectedCashFlowExercise>? Exercises = null, IReadOnlyList<CashFlowPrepaymentAssumption>? Prepayments = null, IReadOnlyList<CashFlowCurvePin>? CurvePins = null, ContractualCashFlowContract? ContractOverride = null, string EngineVersion = ContractualCashFlowVersions.Engine)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? CalculationProfile { get; init; }</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:121](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L121) | An explicitly selected supported product profile; absent preserves generic analytical behavior. |
 
 ## ContractualCashFlowResult
 
 Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:158](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L158).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:163](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L163).
 
 ```csharp
 public sealed record ContractualCashFlowResult(IReadOnlyList<ContractualCashFlowEvent> Events, IReadOnlyList<CashFlowExerciseEligibility> ExerciseEligibility, IReadOnlyList<CashFlowExerciseCalculation> ExerciseCalculations, IReadOnlyList<CashFlowCalculationBlocker> Blockers, ContractualCashFlowEvidence Evidence)
@@ -245,15 +252,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ContractualCashFlowContract? ResolvedContract { get; init; }</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:165](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L165) |  |
-| <code>public bool IsPostable =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:166](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L166) |  |
-| <code>public bool IsCalculated =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:167](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L167) |  |
+| <code>public ContractualCashFlowContract? ResolvedContract { get; init; }</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:170](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L170) |  |
+| <code>public bool IsPostable =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:171](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L171) |  |
+| <code>public bool IsCalculated =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:172](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L172) |  |
 
 ## ContractualCashFlowRun
 
 Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowRun</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:171](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L171).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:176](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L176).
 
 Complete immutable replay packet; no live term/calendar/curve lookup is needed.
 
@@ -265,7 +272,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public ContractualCashFlowAttestationContextDto? AttestationContext { get; init; }</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:179](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L179) | Server-stamped review scope for new non-posting draft checks; old packets remain unbound. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public ContractualCashFlowAttestationContextDto? AttestationContext { get; init; }</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:184](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L184) | Server-stamped review scope for new non-posting draft checks; old packets remain unbound. |
 
 ## ContractualCashFlowRunComparer
 
@@ -337,7 +344,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowVersions</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:119](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L119).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:124](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L124).
 
 ```csharp
 public static class ContractualCashFlowVersions
@@ -347,9 +354,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string Engine = &quot;contractual-cashflow-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:121](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L121) |  |
-| <code>public const string Mapping = &quot;contractual-cashflow-mapping-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:122](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L122) |  |
-| <code>public const string Prepayment = &quot;survival-cpr-smm-psa-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:123](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L123) |  |
+| <code>public const string Engine = &quot;contractual-cashflow-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:126](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L126) |  |
+| <code>public const string Mapping = &quot;contractual-cashflow-mapping-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:127](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L127) |  |
+| <code>public const string Prepayment = &quot;survival-cpr-smm-psa-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:128](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L128) |  |
 
 ## ContractualCouponAmount
 
@@ -387,7 +394,7 @@ public sealed record ContractualMakeWholeTerms(MakeWholeFormula Formula, string 
 
 Qualified name: <code>Meridian.Contracts.CashFlows.CreateContractualCashFlowRunRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:189](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L189).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:194](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L194).
 
 ```csharp
 public sealed record CreateContractualCashFlowRunRequest(Guid RunId, ContractualCashFlowRequest Projection);
@@ -454,7 +461,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:197](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L197).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:202](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L202).
 
 ```csharp
 public interface IContractualCashFlowPreviewService
@@ -464,14 +471,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;ContractualCashFlowResult?&gt; PreviewSecurityAsync(Guid securityId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:199](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L199) |  |
-| <code>Task&lt;ContractualCashFlowResult?&gt; PreviewLoanAsync(Guid loanId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:200](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L200) |  |
+| <code>Task&lt;ContractualCashFlowResult?&gt; PreviewSecurityAsync(Guid securityId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:204](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L204) |  |
+| <code>Task&lt;ContractualCashFlowResult?&gt; PreviewLoanAsync(Guid loanId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:205](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L205) |  |
 
 ## IContractualCashFlowRunStore
 
 Qualified name: <code>Meridian.Contracts.CashFlows.IContractualCashFlowRunStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:191](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L191).
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:196](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L196).
 
 ```csharp
 public interface IContractualCashFlowRunStore
@@ -481,8 +488,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;ContractualCashFlowRun?&gt; GetAsync(string subjectKind, Guid subjectId, Guid runId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:193](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L193) |  |
-| <code>Task&lt;ContractualCashFlowRun&gt; SaveAsync(ContractualCashFlowRun run, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:194](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L194) |  |
+| <code>Task&lt;ContractualCashFlowRun?&gt; GetAsync(string subjectKind, Guid subjectId, Guid runId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:198](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L198) |  |
+| <code>Task&lt;ContractualCashFlowRun&gt; SaveAsync(ContractualCashFlowRun run, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:199](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L199) |  |
 
 ## IExerciseNoticeVerifier
 

@@ -23,14 +23,14 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
     [Theory]
     [InlineData(0)]
     [InlineData(1)]
-    public async Task StagedLegsRevisionCarryingAPopulatedLegBlock_FailsAtMergeWithTheNotYetWritableReason(int legIndex)
+    public async Task StagedLegsRevisionDeclaringOnlyOneLeg_FailsAtMergeWithTheIncompleteProfileReason(int legIndex)
     {
-        // Approved before submission refused leg blocks: the merge rebuilds the complete swap with the
-        // staged legs, and the amend seam's Write-mode mapping refuses the populated block by its path.
+        // Current authoring permits complete vanilla declarations. An old approved revision with
+        // only one declared leg must still fail the canonical profile boundary.
         SetProjection("Swap", AheadOfWriteFixtures.Parse(AheadOfWriteFixtures.SwapAtWriteVersion));
         var revisionId = await SeedApprovedFieldRevisionAsync(
             AheadOfWriteFixtures.LegsPath,
-            AheadOfWriteFixtures.SwapLegsWith(legIndex, AheadOfWriteFixtures.PopulatedLegBlock));
+            AheadOfWriteFixtures.SwapLegsWith(legIndex, """{"couponRateUnit":"Percent"}"""));
         var canonical = new CanonicalAmendHarness(_projectionStore);
 
         // Dated inside the record's open window, as the unset-block twin below is, so the populated
@@ -39,7 +39,7 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
             .Invoking(h => h.HandleAsync(Event(revisionId, AheadOfWriteFixtures.LegsPath) with { EffectiveFrom = DateTimeOffset.UtcNow }))
             .Should().ThrowAsync<InvalidOperationException>("a failed merge fails the publish fan-out");
         refused.Which.Message.Should().Be(
-            AheadOfWriteFixtures.NotYetWritableReason("Swap", $"legs[{legIndex}].scheduleConventions", sinceVersion: 2, writes: 1));
+            "Each leg requires its own declared schedule conventions and rate unit.");
 
         canonical.Appended.Should().BeEmpty("the refused amendment appends no economic event");
         canonical.Upserted.Should().BeEmpty("the refused amendment leaves the canonical projection untouched");
