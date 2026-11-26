@@ -385,6 +385,52 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static IReadOnlyList&lt;ThreeWayAdjustmentProposalDto&gt; Build(IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt; sources, IReadOnlyList&lt;ThreeWayReconciliationCheckDto&gt; checks, DateTimeOffset cutoff);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayAdjustmentProposalBuilder.cs:10](../../../../src/Meridian.Ui.Shared/Services/ThreeWayAdjustmentProposalBuilder.cs#L10) |  |
 
+## ThreeWayFillClassification
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayFillClassification</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:6](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L6).
+
+Fill-level difference types reported by the three-way comparison.
+
+```csharp
+public static class ThreeWayFillClassification
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string MissingFillInLedger = &quot;MissingFillInLedger&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:8](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L8) |  |
+| <code>public const string MissingFillAtBroker = &quot;MissingFillAtBroker&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:9](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L9) |  |
+| <code>public const string QuantityMismatch = &quot;QuantityMismatch&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:10](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L10) |  |
+| <code>public const string PriceMismatch = &quot;PriceMismatch&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:11](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L11) |  |
+| <code>public const string FeeMismatch = &quot;FeeMismatch&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:12](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L12) |  |
+| <code>public const string TimingOnly = &quot;TimingOnly&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:13](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L13) |  |
+| <code>public const string FillMatched = &quot;FillMatched&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:14](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L14) |  |
+| <code>public const string FillCoverageUnavailable = &quot;FillCoverageUnavailable&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:15](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L15) |  |
+
+## ThreeWayFillMatcher
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayFillMatcher</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:23](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L23).
+
+Pairs broker fills with posted Meridian fills and classifies each difference. Pairing never guesses across symbols or sides: an exact broker activity id wins, then the client order id, then an economic match (same symbol, side and quantity, price within tolerance, close in time).
+
+```csharp
+public static class ThreeWayFillMatcher
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string TimingStatus = &quot;Timing&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:26](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L26) | Check status for a difference explained only by when each source observed the fill. |
+| <code>public const string NotComparedStatus = &quot;NotCompared&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:32](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L32) | Check status when fill evidence is unavailable. It is recorded and counted, never read as clean, but it does not block the balance comparison that existed before fill matching. |
+| <code>public static bool IsInformational(string status) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:35](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L35) | Statuses that are recorded on the receipt but never queued as breaks. |
+| <code>public static IReadOnlyList&lt;ThreeWayReconciliationCheckDto&gt; Match(ThreeWaySourceSnapshotDto ledger, ThreeWaySourceSnapshotDto broker, decimal priceTolerance, decimal feeTolerance, TimeSpan timeWindow);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:37](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L37) |  |
+
 ## ThreeWayReconciliationComparer
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationComparer</code>. Kind: `class`.
@@ -401,7 +447,29 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlyList&lt;ThreeWayReconciliationCheckDto&gt; Compare(IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt; sources, DateTimeOffset cutoffUtc, TimeSpan maximumAge, TimeSpan maximumDrift);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationComparer.cs:8](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationComparer.cs#L8) |  |
+| <code>public static IReadOnlyList&lt;ThreeWayReconciliationCheckDto&gt; Compare(IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt; sources, DateTimeOffset cutoffUtc, TimeSpan maximumAge, TimeSpan maximumDrift, decimal fillPriceTolerance = 0.0001m, decimal fillFeeTolerance = 0.01m);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationComparer.cs:8](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationComparer.cs#L8) |  |
+
+## ThreeWayReconciliationMetrics
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationMetrics</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs:12](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs#L12).
+
+Prometheus metrics for the scheduled three-way reconciliation, served on the existing /metrics scrape endpoint. mdc_reconciliation_health is the alertable signal: 0 healthy, 1 degraded (blocked or overdue run), 2 unhealthy (unbooked broker fills open).
+
+```csharp
+public sealed class ThreeWayReconciliationMetrics(TimeProvider? timeProvider = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const double Healthy = 0, Degraded = 1, Unhealthy = 2;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs:14](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs#L14) |  |
+| <code>public static readonly TimeSpan MaximumRunAge = TimeSpan.FromHours(36);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs:17](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs#L17) | A daily run older than this degrades health; it allows one missed day plus slack. |
+| <code>public void RecordRun(ThreeWayReconciliationResultDto result);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs:44](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs#L44) | Records a completed or blocked run and sets the account&#x27;s health from its checks. |
+| <code>public void ObserveSchedule(Guid accountId);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs:64](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs#L64) | Called on each scheduler tick for an enabled schedule. A daily run that has not completed within MaximumRunAge degrades health; a fresh process gets the same grace before reporting. |
+| <code>public static double HealthValue(Guid accountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs:74](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs#L74) | The current health value for an account, for tests and diagnostics. |
 
 ## ThreeWayReconciliationOptions
 
@@ -426,7 +494,10 @@ Declared public members:
 | <code>public string CashAccountPath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:23](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L23) |  |
 | <code>public string FeeExpenseAccountPath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:24](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L24) |  |
 | <code>public TimeOnly DailyRunAfterUtc { get; set; } = new (0, 15);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:25](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L25) |  |
-| <code>public IReadOnlyList&lt;ThreeWayReconciliationSchedule&gt; Schedules { get; set; } = [];</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:26](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L26) |  |
+| <code>public TimeSpan? BrokerRefreshInterval { get; set; }</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:32](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L32) | When set, each scheduled account&#x27;s broker projection is re-synced at most this often before sources are captured, so the daily comparison reads fresh broker evidence. Null keeps the broker projection operator-refreshed only. |
+| <code>public decimal FillPriceTolerance { get; set; } = 0.0001m;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:35](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L35) | Per-share price difference tolerated between matched broker and ledger fills. |
+| <code>public decimal FillFeeTolerance { get; set; } = 0.01m;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:38](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L38) | Commission difference tolerated between matched broker and ledger fills. |
+| <code>public IReadOnlyList&lt;ThreeWayReconciliationSchedule&gt; Schedules { get; set; } = [];</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:39](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L39) |  |
 
 ## ThreeWayReconciliationSchedule
 
@@ -444,19 +515,19 @@ public sealed record ThreeWayReconciliationSchedule(string TenantId, string Comp
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationScheduleRunner</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:35](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L35).
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:40](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L40).
 
 Uses the existing shared scheduler tick; retains one operation per configured scope/day.
 
 ```csharp
-public sealed class ThreeWayReconciliationScheduleRunner(IThreeWayReconciliationSourceReader sources, ThreeWayReconciliationService reconciliation, ThreeWayReconciliationOptions options, ILogger<ThreeWayReconciliationScheduleRunner> logger)
+public sealed class ThreeWayReconciliationScheduleRunner(IThreeWayReconciliationSourceReader sources, ThreeWayReconciliationService reconciliation, ThreeWayReconciliationOptions options, ILogger<ThreeWayReconciliationScheduleRunner> logger, BrokeragePortfolioSyncService? brokerage = null, ThreeWayReconciliationMetrics? metrics = null)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;int&gt; RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:41](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L41) |  |
+| <code>public async Task&lt;int&gt; RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:51](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L51) |  |
 
 ## ThreeWayReconciliationService
 
@@ -467,15 +538,15 @@ Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:10](..
 Retains source operands and routes discrepancies into existing governed casework.
 
 ```csharp
-public sealed class ThreeWayReconciliationService(IThreeWayReconciliationSourceReader sources, FileThreeWayReconciliationEvidenceStore store, IReconciliationBreakQueueRepository queue, ThreeWayReconciliationOptions options, TimeProvider? timeProvider = null)
+public sealed class ThreeWayReconciliationService(IThreeWayReconciliationSourceReader sources, FileThreeWayReconciliationEvidenceStore store, IReconciliationBreakQueueRepository queue, ThreeWayReconciliationOptions options, TimeProvider? timeProvider = null, ThreeWayReconciliationMetrics? metrics = null)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;ThreeWayReconciliationResultDto&gt; RunAsync(Guid accountId, ReconciliationBreakQueueScope access, ThreeWayReconciliationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:19](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs#L19) |  |
-| <code>public async Task&lt;ThreeWayReconciliationResultDto?&gt; GetLatestAsync(Guid accountId, ReconciliationBreakQueueScope access, Guid bookId, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:69](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs#L69) |  |
+| <code>public async Task&lt;ThreeWayReconciliationResultDto&gt; RunAsync(Guid accountId, ReconciliationBreakQueueScope access, ThreeWayReconciliationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:20](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs#L20) |  |
+| <code>public async Task&lt;ThreeWayReconciliationResultDto?&gt; GetLatestAsync(Guid accountId, ReconciliationBreakQueueScope access, Guid bookId, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:72](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs#L72) |  |
 
 ## ThreeWayReconciliationServiceRegistration
 
@@ -511,7 +582,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;ThreeWayReconciliationScopeDto&gt; AuthorizeAsync(Guid accountId, ReconciliationBreakQueueScope accessScope, Guid ledgerBookId, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs:33](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs#L33) |  |
 | <code>public async Task CaptureAsync(ThreeWayReconciliationScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs:58](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs#L58) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt;&gt; ReadAsync(ThreeWayReconciliationScopeDto scope, DateTimeOffset cutoffUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs:116](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs#L116) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt;&gt; ReadAsync(ThreeWayReconciliationScopeDto scope, DateTimeOffset cutoffUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs:131](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs#L131) |  |
 
 ## ThreeWayRetainedSource
 

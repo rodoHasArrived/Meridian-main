@@ -571,7 +571,7 @@ public sealed record PreparerEvidenceAcknowledgmentDto(PreparerAttestationReceip
 
 Qualified name: <code>Meridian.Contracts.Workstation.PrepareThreeWayAdjustmentRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:82](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L82).
+Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:116](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L116).
 
 ```csharp
 public sealed record PrepareThreeWayAdjustmentRequestDto(Guid LedgerBookId, Guid AccountingPeriodId, string OperationId, string CheckId, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] long ExpectedPeriodVersion, string EvidenceHash);

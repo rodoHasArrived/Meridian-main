@@ -851,6 +851,12 @@ operands for an exact authorized account/book/period/cutoff. Its ledger source c
 full historical canonical lot basis in one database snapshot. The existing durable case queue and
 statement scheduler own casework and daily execution; stale or missing sources remain blockers.
 The browser reads the same protected service routes rather than supplying accounting snapshots.
+`ThreeWayFillMatcher` pairs retained broker fills with posted trade-fill journals (activity id,
+client order id, then economics) and classifies missing, quantity, price, fee and timing-only
+differences with broker activity and journal entry evidence ids. Fill checks are added only when a
+source captured fill evidence; incomplete coverage is recorded as `NotCompared`, never as clean.
+An optional `BrokerRefreshInterval` lets the schedule runner sync the broker before capture, and
+`ThreeWayReconciliationMetrics` publishes run, check and per-account health series to `/metrics`.
 
 `GET /api/ledger/books/{ledgerBookId}/periods/{periodId}/exports/general-ledger` downloads one
 `general-ledger.v1` ZIP from a consistent journal/disposal/open-lot snapshot. CSV, exact text-cell

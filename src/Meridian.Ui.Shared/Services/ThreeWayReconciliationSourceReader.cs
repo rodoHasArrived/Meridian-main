@@ -101,13 +101,28 @@ public sealed class ThreeWayReconciliationSourceReader(
                 positions.Add(new(canonicalId ?? Guid.Empty, position.Symbol, position.Quantity,
                     position.Quantity * position.AverageEntryPrice));
             }
+            // Fills come from the durable activity history (deduplicated by provider activity id),
+            // limited to the comparison period so each retained observation stays bounded.
+            var period = ledger is null ? null : await ledger.GetPeriodAsync(scope.AccountingPeriodId, ct).ConfigureAwait(false);
+            var activityFailed = provider.Status.Warnings.Any(warning =>
+                warning.StartsWith("Activity snapshot failed", StringComparison.Ordinal)
+                || warning.Contains("no activity sync adapter", StringComparison.Ordinal));
+            IReadOnlyList<ThreeWayFillDto> brokerFills = [];
+            if (period is not null)
+            {
+                var history = await brokerage.GetFillHistoryAsync(scope.FinancialAccountId, ct).ConfigureAwait(false);
+                brokerFills = ThreeWayFillSources.FromBroker(history, provider.Orders, PeriodStartUtc(period),
+                    observedAt.ToUniversalTime(), provider.RawSnapshotPath);
+            }
             await evidence.SaveSourceAsync(scope, new ThreeWaySourceSnapshotDto("broker", observedAt.ToUniversalTime(),
                 provider.RawSnapshotPath, provider.Balance.Cash, positions, options.BrokerCostBasisConvention, failures,
                     DataProvenanceExtensions.IsSimulatedOriginToken(scope.ProviderId) ? "simulated" : "real")
             {
                 CashActivities = provider.CashTransactions.Select(activity => new ThreeWayCashActivityDto(
                     activity.TransactionId, activity.TransactionType, activity.Amount, activity.Currency,
-                    activity.PostedAt.ToUniversalTime(), provider.RawSnapshotPath)).ToArray()
+                    activity.PostedAt.ToUniversalTime(), provider.RawSnapshotPath)).ToArray(),
+                Fills = brokerFills,
+                FillCoverageComplete = period is not null && failures.Count == 0 && !activityFailed
             }, ct)
                 .ConfigureAwait(false);
         }
@@ -123,7 +138,7 @@ public sealed class ThreeWayReconciliationSourceReader(
         var result = new List<ThreeWaySourceSnapshotDto>();
         try
         {
-            result.Add(await ReadLedgerAsync(scope, cutoffUtc, ct).ConfigureAwait(false));
+            result.Add(await ReadLedgerAsync(scope, cutoffUtc, PeriodStartUtc(period), ct).ConfigureAwait(false));
         }
         catch (Exception exception) when (exception is InvalidOperationException or NotSupportedException or LedgerValidationException or ArgumentException)
         {
@@ -144,8 +159,11 @@ public sealed class ThreeWayReconciliationSourceReader(
         return result;
     }
 
+    private static DateTimeOffset PeriodStartUtc(LedgerAccountingPeriod period)
+        => new(period.StartDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+
     private async Task<ThreeWaySourceSnapshotDto> ReadLedgerAsync(ThreeWayReconciliationScopeDto scope,
-        DateTimeOffset cutoff, CancellationToken ct)
+        DateTimeOffset cutoff, DateTimeOffset periodStartUtc, CancellationToken ct)
     {
         var date = DateOnly.FromDateTime(cutoff.UtcDateTime);
         var query = new LedgerJournalEntryQuery(LedgerBookId: scope.LedgerBookId, EffectiveTo: date, OccurredTo: cutoff);
@@ -217,6 +235,8 @@ public sealed class ThreeWayReconciliationSourceReader(
             group.First().Symbol, group.Sum(position => position.Quantity), group.Sum(position => position.CostBasis))).ToArray();
         var proof = string.Join("\n", identity.Select(row => $"{row.JournalEntryId:D}:{row.GlobalSequence}")) +
             JsonSerializer.Serialize(grouped, ThreeWayReconciliationJsonContext.Default.ThreeWayPositionDtoArray);
+        var ledgerFills = ThreeWayFillSources.FromLedger(journals, accountId, periodStartUtc, cutoff,
+            "urn:sha256:" + Sha256Digest.ComputeUtf8(proof));
         return new("ledger", cutoff, "urn:sha256:" + Sha256Digest.ComputeUtf8(proof),
             cashLines.Length == 0 ? null : cashLines.Sum(row => row.Line.Debit - row.Line.Credit),
             grouped, ThreeWayReconciliationOptions.SupportedBasisConvention, failures.Distinct().ToArray(),
@@ -224,6 +244,8 @@ public sealed class ThreeWayReconciliationSourceReader(
                 row.Journal.Entry.Metadata.Tags is { } tags && tags.TryGetValue("dataProvenance", out var token)
                     ? DataProvenanceExtensions.ParseTokenOrSimulated(token) : DataProvenance.Real)).Token())
         {
+            Fills = ledgerFills.Fills,
+            FillCoverageComplete = ledgerFills.Complete,
             AccountingPeriodVersion = snapshot.Period?.Version,
             PostedExternalTransactionIds = selected.Select(row => row.Journal.Entry).DistinctBy(entry => entry.JournalEntryId)
                 .Select(ExternalIdentity).Where(identity => identity is not null).Select(identity => identity!).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(),

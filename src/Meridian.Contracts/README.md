@@ -696,6 +696,11 @@ first/last observation and successful-run clearing evidence. This metadata is om
 so legacy integrity-checked snapshots keep their serialized shape. Source clearing is distinct from
 governed disposition, sign-off and close readiness.
 
+Three-way reconciliation snapshots optionally retain `Fills` (`ThreeWayFillDto`, exact-string
+decimals, with broker activity/order, client order and journal entry ids) and `FillCoverageComplete`.
+Checks optionally retain a `Classification` and `EvidenceIds`. Absent values deserialize as empty or
+null, so receipts retained before fill matching keep their meaning.
+
 Ledger commands add optional `AccountingPostingCommandDto.Actor` and
 `CreateLedgerPeriodRequest.CreatedBy`. Public command boundaries stamp authenticated identities;
 callers cannot use these fields to replace that identity. Absent values stay explicitly unattributed
