@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-11-25
+**Reviewed:** 2026-11-26
 **Audience:** contributors and agents adding a first-class Security Master kind
 
 This is the checklist for adding a first-class asset class, or for giving a governed CustomAsset
@@ -14,16 +14,42 @@ the tests that fail when one is missed. The canonical-home rules are in
 Use `CommitmentGuarantee` or `PrivateFundInterest` as the worked example: search the repository for
 the class name and compare each hit with this list.
 
+## 0. Declaration and generated plumbing
+
+Start with one row in `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassDeclarations.cs`
+(W11-PACK-002). The row gives the class name, F# asset class, family, sub-type, default issuer type
+and risk country, derivative flag, terms-type name (when it is not `<Class>Terms`) and the union-case
+documentation. Five marked regions are generated from it; do not edit the code between their
+`<generated:id>` markers by hand:
+
+| Region | File |
+| --- | --- |
+| `security-kind-cases` (the `SecurityKind` case) | `src/Meridian.FSharp/Domain/SecurityMaster.fs` |
+| `asset-class-descriptors` (the `AssetClassRegistry` classification row) | same |
+| `asset-class-keys` (the `AssetClassRegistry.keyOf` arm) | same |
+| `flat-writer-dispatch` (the flat-writer arm) | `src/Meridian.FSharp/Interop.SecurityMaster.fs` |
+| `asset-class-names` (the `SecurityAssetClassNames` constant) | `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` |
+
+After you add the row and the class module (section 2), regenerate the regions and the flat codec:
+
+```bash
+MERIDIAN_ACCEPT_GENERATED_CODEC=1 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter "FullyQualifiedName~SecurityClassPlumbingGenerationTests|FullyQualifiedName~SecurityFlatCodecGenerationTests"
+```
+
+Then rebuild and run the same filter without the variable. The
+[class-plumbing codegen plan](plans/security-master-class-plumbing-codegen.md) lists the generator,
+its checks and the semantic sites it deliberately leaves hand-written.
+
 ## 1. F# domain (`src/Meridian.FSharp/`)
 
 | File | What to add |
 | --- | --- |
-| `Domain/SecurityMaster.fs` | The `<Class>Terms` record, the `SecurityKind` case, the classification row (asset class, family, sub-type, issuer type, derivative flag) and the kind-name arm. |
+| `Domain/SecurityMaster.fs` | The `<Class>Terms` record. The `SecurityKind` case, the `AssetClassRegistry` classification row and the `keyOf` arm are generated (section 0). |
 | `Domain/SecurityClassification.fs` | The `SecuritySubType` case and its label; an `AssetFamily` only when no existing family fits (add the new case name to `ClassificationLabelReader.KnownCaseNames` too). Every class except `OtherSecurity` must declare a family; derivatives use `ListedDerivative` (exchange-traded, booked in contracts) or `OtcDerivative` (bilateral). |
 | `Domain/SecurityKindPersistence.fs` | The kind's persistence arms, including the issue-date arm. |
 | `Domain/SecurityMasterCommands.fs` | The kind's command invariants (`validateKindInvariants`), each with a stable error code. |
-| `Domain/SecurityMasterLegacyUpgrade.fs` | The kind's arm in the legacy-upgrade match, so a replayed record keeps its terms. |
-| `Interop.SecurityMaster.fs` | The C# facade arm for the kind. |
+| `Domain/SecurityMasterLegacyUpgrade.fs` | The kind's arm in the legacy-upgrade match (`termsFromKind`), so a replayed record keeps its terms. |
+| `Interop.SecurityMaster.fs` | Rate-unit arms when the class has rate terms. The flat-writer arm is generated (section 0); only a class without a codec binding, such as `CustomAsset`, keeps a hand-written writer arm. |
 | `Domain/SecurityEconomicDefinition.fs`, `Domain/SecurityTermModules.fs` | Only when the class needs a term module the existing modules do not cover. |
 
 A missing match arm is an incomplete-match warning (FS0025), not a build error, so read the F#
@@ -34,7 +60,7 @@ build warnings for each file above. Run
 
 | File | What to add |
 | --- | --- |
-| `SecurityAssetClassCatalog.cs` | A `SecurityAssetClassNames` constant for the class. The catalog composes its descriptors from the class modules; it holds no per-class table. |
+| `SecurityAssetClassDeclarations.cs` | The declaration row (section 0). It generates the `SecurityAssetClassNames` constant in `SecurityAssetClassCatalog.cs`; the catalog composes its descriptors from the class modules and holds no per-class table. |
 | `AssetModules/<Class>AssetModule.cs` | The class's `SecurityAssetClassModule`, with `AssetClass` set from the constant. `Descriptor`: asset pack ids, lot unit, cash-flow behaviour, `ProjectionKind`, preferred identifier kinds, Asset Operations capabilities, aliases, accounting class, `SupportsProfileBackedTerms`, `ClassificationLabels` and, for a promotion target, `ReclassifyingProfileIds`. |
 | `AssetModules/<Class>AssetModule.cs` (terms) | `Fields`: the class's terms. Declaration order is the required-field refusal order on read. A field added after version 1 needs `.Since(n)` and, when required, `ReadsAbsentAs(...)`. `ElementShapes`: the fields of each nested array or object term. `RateFields`: the unit, range and readers of each rate term. `CodecBinding`: the flat codec bindings for the class's members (set `ReadsResolvedTerms` when the class reads profile-resolved terms), and `EconomicFlattenings`: the key renames its economic-terms history carries. |
 | `SecurityAssetClassModules.cs` | The module's `Create()` call in `All`, in catalog order. Give the module the next free `SchemaOrder`, `CodecOrder`, `EconomicFlatteningOrder` and nested `ElementShapes` orders; these keep the existing registry enumeration order and never renumber. Composition refuses a duplicate class, order or element path at type initialization. |
@@ -90,7 +116,7 @@ When the class is where a governed profile's records should live:
 Run these after the change:
 
 ```bash
-dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true --filter "FullyQualifiedName~SecurityAssetClassOperationalWiringTests|FullyQualifiedName~SecurityAssetClassRegistryCoverageTests|FullyQualifiedName~SecurityAssetClassSurfaceParityTests|FullyQualifiedName~SecurityAssetClassCatalogTests|FullyQualifiedName~SecurityAssetClassFactParityTests|FullyQualifiedName~InstrumentTypeDescriptor|FullyQualifiedName~SecurityTermsProjectionRegistryTests|FullyQualifiedName~SecurityAssetTermsSchema|FullyQualifiedName~SecurityMasterRequiredReadOrderTests|FullyQualifiedName~SecurityAssetClassTermsHistoryTests|FullyQualifiedName~SecurityTermsWriteGoldenTests|FullyQualifiedName~SecurityAssetClassLiteralRatchetTests|FullyQualifiedName~CustomAssetPromotion"
+dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true --filter "FullyQualifiedName~SecurityClassPlumbingGenerationTests|FullyQualifiedName~SecurityFlatCodecGenerationTests|FullyQualifiedName~SecurityAssetClassOperationalWiringTests|FullyQualifiedName~SecurityAssetClassRegistryCoverageTests|FullyQualifiedName~SecurityAssetClassSurfaceParityTests|FullyQualifiedName~SecurityAssetClassCatalogTests|FullyQualifiedName~SecurityAssetClassFactParityTests|FullyQualifiedName~InstrumentTypeDescriptor|FullyQualifiedName~SecurityTermsProjectionRegistryTests|FullyQualifiedName~SecurityAssetTermsSchema|FullyQualifiedName~SecurityMasterRequiredReadOrderTests|FullyQualifiedName~SecurityAssetClassTermsHistoryTests|FullyQualifiedName~SecurityTermsWriteGoldenTests|FullyQualifiedName~SecurityAssetClassLiteralRatchetTests|FullyQualifiedName~CustomAssetPromotion"
 dotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=true
 npm --prefix src/Meridian.Ui/dashboard run test
 ```
