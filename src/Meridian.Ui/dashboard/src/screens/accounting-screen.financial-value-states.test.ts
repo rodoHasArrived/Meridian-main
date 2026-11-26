@@ -83,6 +83,15 @@ describe("currency-required money formatting", () => {
     expect(financialValueState("0.00")).toBe("zero");
     expect(financialValueState(12.5)).toBe("value");
   });
+
+  it("prints compact amounts with one decimal above a thousand on every runtime", () => {
+    // Intl's default here differs between Node 22 ("$10.0M") and Node 24 ("$10M"); the
+    // formatter pins it so CI and local runs agree.
+    expect(formatCurrencyAmount(10_000_000, "USD", { compact: true })).toBe("$10.0M");
+    expect(formatCurrencyAmount(1_250_000, "EUR", { compact: true })).toBe("€1.3M");
+    expect(formatCurrencyAmount(12_000, null, { compact: true })).toBe("12.0K");
+    expect(formatCurrencyAmount(950, "USD", { compact: true })).toBe("$950");
+  });
 });
 
 describe("close report-package request", () => {

@@ -549,9 +549,12 @@ export function formatCurrencyAmount(value: MoneyValue, currency: string | null 
     const numeric = typeof value === "number" ? value : parseExactDecimal(value) ? Number(value) : null;
     if (!isRenderable(numeric)) return fallback;
     const prefix = moneyOptions.signed && numeric > 0 ? "+" : "";
+    // Pin the minimum explicitly: Intl's default for compact currency differs between runtimes
+    // (Node 22 prints "$10.0M", Node 24 "$10M"). One decimal for K/M/B, none below a thousand.
+    const minimumFractionDigits = Math.abs(numeric) >= 1_000 ? 1 : 0;
     const amount = code && !showCode
-      ? formatCurrency(numeric, { currency: code, notation: "compact", maximumFractionDigits: 1 })
-      : formatNumber(numeric, { notation: "compact", maximumFractionDigits: 1 });
+      ? formatCurrency(numeric, { currency: code, notation: "compact", minimumFractionDigits, maximumFractionDigits: 1 })
+      : formatNumber(numeric, { notation: "compact", minimumFractionDigits, maximumFractionDigits: 1 });
     return `${prefix}${amount}${code && showCode ? ` ${code}` : ""}`;
   }
   if (code && showCode) {
