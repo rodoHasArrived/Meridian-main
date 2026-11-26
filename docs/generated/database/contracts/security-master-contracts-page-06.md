@@ -2,11 +2,19 @@
 
 # `security-master-contracts` data objects - page 6 of 8
 
-Objects 401-480 of 615. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 616. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto["SecurityCashFlowSourceDto"] {
+        +DateTimeOffset? ClientConfirmedAt
+        +string? ClientConfirmedBy
+        +bool IsClientOverride
+        +DateTimeOffset? LastUpdatedUtc
+        +Guid SecurityId
+        +StructuredCashFlowSourceKind SourceKind
+    }
     class Meridian_Contracts_SecurityMaster_SecurityCashFlowTermBinding["SecurityCashFlowTermBinding"] {
         +string Key
         +bool ReadAfterSharedSpellings
@@ -427,11 +435,6 @@ classDiagram
         +Guid SecurityId
         +string? SourceRecordId
         +string SourceSystem
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto["SecurityMasterCorporateActionAppendResultDto"] {
-        +SecurityMasterCorporateActionAuditDto Audit
-        +CorporateActionDto CorporateAction
-        +SecurityMasterCorporateActionRestatementDto? Restatement
     }
     Meridian_Contracts_SecurityMaster_SecurityCashFlowTermBinding --> Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRole
     Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRoles --> Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRole

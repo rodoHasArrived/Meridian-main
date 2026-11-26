@@ -1026,6 +1026,46 @@ public sealed class ReportingOperationalConcurrencyTests
             "a selector is never invented from the date when the ledger has no unique period");
     }
 
+    [Theory]
+    // Saturday 31 January closes into the ISO week ending Sunday 1 February, due a day later.
+    [InlineData(ReportingSchedulePeriodFrequencyDto.Weekly, 1, 2026, 2, 1, 2026, 2, 2)]
+    [InlineData(ReportingSchedulePeriodFrequencyDto.Daily, 0, 2026, 2, 1, 2026, 2, 1)]
+    public async Task Scenario_CalendarOnlyPeriodClose_AdvancesOnTheCalendarWithoutLedgerLookup(
+        ReportingSchedulePeriodFrequencyDto frequency,
+        int dueDays,
+        int asOfYear, int asOfMonth, int asOfDay,
+        int dueYear, int dueMonth, int dueDay)
+    {
+        var firstDue = new DateTimeOffset(2026, 2, 1, 8, 0, 0, TimeSpan.Zero);
+        var due = BuildSchedule("calendar-close", "operator-a") with
+        {
+            RunParameters = BuildCurrentSchedule("parameters-only").RunParameters,
+            State = ReportingScheduleStateDto.Active,
+            NextAsOfDate = new DateOnly(2026, 1, 31),
+            DueAtUtc = firstDue,
+            PeriodCadence = new ReportingSchedulePeriodCadenceDto(frequency, dueDays)
+        };
+        var nextCloseLookups = 0;
+        var resolver = new RecordingPeriodResolver(
+            _ => null,
+            (_, _) =>
+            {
+                nextCloseLookups++;
+                return null;
+            });
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer(), resolver);
+
+        var result = await service.RunDueForWorkerAsync(firstDue, CancellationToken.None);
+
+        result.Result.Runs.Should().ContainSingle();
+        nextCloseLookups.Should().Be(0, "weekly and daily closes have no ledger accounting period");
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.NextAsOfDate.Should().Be(new DateOnly(asOfYear, asOfMonth, asOfDay));
+        advanced.DueAtUtc.Should().Be(new DateTimeOffset(dueYear, dueMonth, dueDay, 8, 0, 0, TimeSpan.Zero));
+        advanced.UnresolvedPeriodCloseAfter.Should().BeNull();
+    }
+
     private static ReportingScheduleRecordDto BuildCalendarFallbackCloseSchedule(string scheduleId) =>
         // Closed 28 February; the ledger could not name the next period, so the schedule moved
         // on to the calendar month end and remembered where it was.
@@ -1181,6 +1221,14 @@ public sealed class ReportingOperationalConcurrencyTests
             new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, -1)));
         invalid.Should().Throw<ArgumentException>().WithMessage("*period cadence*");
         store.Load().Should().BeEmpty();
+
+        var weeklyTooLate = () => service.Upsert(Request(
+            new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Weekly, 7)));
+        weeklyTooLate.Should().Throw<ArgumentException>().WithMessage("*Weekly with 0 to 6*");
+        store.Load().Should().BeEmpty();
+
+        var weekly = new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Weekly, 6);
+        service.Upsert(Request(weekly)).PeriodCadence.Should().Be(weekly);
 
         var monthly = new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, 5);
         service.Upsert(Request(monthly)).PeriodCadence.Should().Be(monthly);

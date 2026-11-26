@@ -21,16 +21,16 @@ public interface IWatchlistReader
 
 /// <summary>
 /// Service for managing symbol watchlists in the WPF application.
-/// Provides local persistence and optional synchronization with the backend API.
+/// Watchlists are persisted to a local file, which is their source of truth; the host maps no
+/// watchlist route, so there is no backend copy to synchronize with.
 /// Implements the shared <see cref="IWatchlistService"/> seam so shared UI services can
 /// read this host's watchlists instead of the in-memory default.
 /// </summary>
 public sealed class WatchlistService : IWatchlistReader, IWatchlistService
 {
     private static readonly Lazy<WatchlistService> _instance =
-        new(() => new WatchlistService(WpfRemoteWorkstationClient.Instance));
+        new(() => new WatchlistService());
 
-    private readonly IRemoteWorkstationClient _remoteClient;
     private readonly string _watchlistsPath;
     private readonly object _lock = new();
     private readonly SemaphoreSlim _loadGate = new(1, 1);
@@ -43,23 +43,12 @@ public sealed class WatchlistService : IWatchlistReader, IWatchlistService
     public static WatchlistService Instance => _instance.Value;
 
     /// <summary>
-    /// Gets or sets the base URL for the API.
-    /// </summary>
-    public string BaseUrl
-    {
-        get => _remoteClient.BaseUrl;
-        set => _remoteClient.Configure(value);
-    }
-
-    /// <summary>
     /// Occurs when watchlists are updated.
     /// </summary>
     public event EventHandler<WatchlistsChangedEventArgs>? WatchlistsChanged;
 
-    internal WatchlistService(IRemoteWorkstationClient remoteClient, string? watchlistsPath = null)
+    internal WatchlistService(string? watchlistsPath = null)
     {
-        _remoteClient = remoteClient ?? throw new ArgumentNullException(nameof(remoteClient));
-
         var configDir = watchlistsPath is null
             ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Meridian")
             : Path.GetDirectoryName(watchlistsPath);
@@ -386,48 +375,6 @@ public sealed class WatchlistService : IWatchlistReader, IWatchlistService
     }
 
     /// <summary>
-    /// Syncs local watchlists with the backend API.
-    /// </summary>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>True if sync succeeded.</returns>
-    public async Task<bool> SyncWithBackendAsync(CancellationToken ct = default)
-    {
-        try
-        {
-            var remoteWatchlists = (await _remoteClient.GetWithResponseAsync<List<Watchlist>>("/api/watchlists", ct)
-                .ConfigureAwait(false)).DataOrLoggedNull("Sync watchlists from backend");
-
-            if (remoteWatchlists is null)
-            {
-                return false;
-            }
-
-            lock (_lock)
-            {
-                _watchlists = remoteWatchlists;
-            }
-
-            await SaveWatchlistsAsync(ct).ConfigureAwait(false);
-            OnWatchlistsChanged(WatchlistChangeType.Synced, null);
-            return true;
-        }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            // Sync failed - continue with local data
-            LoggingService.Instance.LogDebug(
-                "Watchlist remote sync failed; continuing with local data.",
-                ("exception", ex.GetType().Name),
-                ("message", ex.Message));
-        }
-
-        return false;
-    }
-
-    /// <summary>
     /// Reorders watchlists.
     /// </summary>
     /// <param name="watchlistIds">Ordered list of watchlist IDs.</param>
@@ -672,6 +619,5 @@ public enum WatchlistChangeType : byte
     Created,
     Updated,
     Deleted,
-    Reordered,
-    Synced
+    Reordered
 }

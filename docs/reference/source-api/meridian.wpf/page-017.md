@@ -6,6 +6,93 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradingWorkspaceShellViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.TradingWorkspaceShellViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:13](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L13).
+
+Loads trading workspace summaries for the active fund, paper and live runs, and portfolio metrics.
+
+```csharp
+public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TradingWorkspaceShellViewModel(TradingWorkspaceShellPresentationService? presentationService = null, TradingSafetyCommandService? safetyCommands = null, PaperSessionReconciliationViewModel? paperReconciliation = null) : base(ShellNavigationCatalog.GetWorkspaceShell(&quot;trading&quot;) !);</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:75](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L75) |  |
+| <code>public event EventHandler? RefreshRequested;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:87](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L87) |  |
+| <code>public bool IsLoading { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:91](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L91) |  |
+| <code>public bool HasError { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:97](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L97) |  |
+| <code>public string ErrorMessage { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:103](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L103) |  |
+| <code>public string ActiveFundText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:109](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L109) |  |
+| <code>public string ActiveFundDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:115](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L115) |  |
+| <code>public string PaperRunsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:121](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L121) |  |
+| <code>public string LiveRunsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L127) |  |
+| <code>public string TotalEquityText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L133) |  |
+| <code>public string DrawdownText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L139) |  |
+| <code>public string PositionLimitText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:145](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L145) |  |
+| <code>public string OrderRateText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:151](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L151) |  |
+| <code>public string CapitalCashText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:157](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L157) |  |
+| <code>public string CapitalGrossExposureText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:163](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L163) |  |
+| <code>public string CapitalNetExposureText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:169](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L169) |  |
+| <code>public string CapitalFinancingText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:175](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L175) |  |
+| <code>public string CapitalControlsDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:181](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L181) |  |
+| <code>public string TradingActiveRunText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:187](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L187) |  |
+| <code>public string TradingActiveRunMetaText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L193) |  |
+| <code>public string WatchlistStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:199](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L199) |  |
+| <code>public string MarketCoreText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:205](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L205) |  |
+| <code>public string RiskRailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:211](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L211) |  |
+| <code>public string DeskActionStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:217](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L217) |  |
+| <code>public string TradingStatusSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:223](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L223) |  |
+| <code>public string TradingStatusBadgeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:229](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L229) |  |
+| <code>public TradingWorkspaceStatusTone TradingStatusBadgeTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:235](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L235) |  |
+| <code>public string PromotionStatusLabelText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:241](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L241) |  |
+| <code>public string PromotionStatusDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:247](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L247) |  |
+| <code>public TradingWorkspaceStatusTone PromotionStatusTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:253](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L253) |  |
+| <code>public string AuditStatusLabelText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:259](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L259) |  |
+| <code>public string AuditStatusDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:265](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L265) |  |
+| <code>public TradingWorkspaceStatusTone AuditStatusTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:271](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L271) |  |
+| <code>public string ValidationStatusLabelText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:277](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L277) |  |
+| <code>public string ValidationStatusDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:283](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L283) |  |
+| <code>public TradingWorkspaceStatusTone ValidationStatusTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:289](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L289) |  |
+| <code>public string TradingWorkflowTargetText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:295](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L295) |  |
+| <code>public string TradingWorkflowPrimaryButtonText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:301](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L301) |  |
+| <code>public string TradingHeroFocusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:307](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L307) |  |
+| <code>public string TradingHeroSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:313](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L313) |  |
+| <code>public string TradingHeroDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:319](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L319) |  |
+| <code>public string TradingHeroBadgeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:325](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L325) |  |
+| <code>public TradingWorkspaceStatusTone TradingHeroBadgeTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:331](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L331) |  |
+| <code>public string TradingHeroHandoffTitleText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:337](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L337) |  |
+| <code>public string TradingHeroHandoffDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:343](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L343) |  |
+| <code>public string TradingHeroPrimaryActionText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:349](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L349) |  |
+| <code>public string TradingHeroSecondaryActionText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:355](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L355) |  |
+| <code>public Visibility TradingHeroSecondaryActionVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:361](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L361) |  |
+| <code>public string TradingHeroTargetText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:367](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L367) |  |
+| <code>public IReadOnlyList&lt;TradingActivePositionItem&gt; ActivePositions { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:373](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L373) |  |
+| <code>public WorkstationTableModel&lt;TradingActivePositionItem&gt; ActivePositionsTable { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:379](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L379) |  |
+| <code>public TradingActivePositionItem? SelectedActivePosition { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:385](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L385) |  |
+| <code>public Visibility NoPositionsVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:407](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L407) |  |
+| <code>public string SelectedActivePositionTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:413](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L413) |  |
+| <code>public string SelectedActivePositionDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:417](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L417) |  |
+| <code>public string SelectedActivePositionPnlText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:421](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L421) |  |
+| <code>public string SelectedActivePositionModeText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:425](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L425) |  |
+| <code>public string SelectedActivePositionEvidenceText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:429](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L429) |  |
+| <code>public string SelectedActivePositionActionDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:433](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L433) |  |
+| <code>public bool HasSelectedActivePosition =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:437](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L437) |  |
+| <code>public Visibility SelectedActivePositionVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:439](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L439) |  |
+| <code>public Visibility NoSelectedActivePositionVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:443](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L443) |  |
+| <code>public PaperSessionReconciliationViewModel? PaperReconciliation { get; }</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:451](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L451) |  |
+| <code>public async Task StartAsync();</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:453](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L453) |  |
+| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:470](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L470) |  |
+| <code>public async Task RefreshAsync();</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:486](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L486) |  |
+| <code>public void ExecuteCommandAction(string actionId) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:519](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L519) |  |
+| <code>public void ExecuteHeroPrimaryAction() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:557](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L557) |  |
+| <code>public void ExecuteHeroSecondaryAction() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:560](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L560) |  |
+| <code>public void ExecuteWorkflowNextAction() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs:563](../../../../src/Meridian.Wpf/ViewModels/TradingWorkspaceShellViewModel.cs#L563) |  |
+
 ## TrendStatistics
 
 Qualified name: <code>Meridian.Wpf.ViewModels.TrendStatistics</code>. Kind: `struct`.
@@ -615,9 +702,9 @@ public partial class AccountPortfolioPage : Page
 
 Qualified name: <code>Meridian.Wpf.Views.ActivityLogPage</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/ActivityLogPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/ActivityLogPage.xaml.cs#L16).
+Source: [src/Meridian.Wpf/Views/ActivityLogPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/ActivityLogPage.xaml.cs#L17).
 
-Activity log page — thin code-behind. All state, HTTP loading, filtering, and timer management live in ActivityLogViewModel. The only UI-level action kept here is LogList.ScrollIntoView which requires a direct reference to the list control.
+Activity log page — thin code-behind. All state and filtering live in ActivityLogViewModel, which shows the desktop&#x27;s own log entries live (the server exposes no log feed). The only UI-level action kept here is LogList.ScrollIntoView which requires a direct reference to the list control.
 
 ```csharp
 public partial class ActivityLogPage : Page
@@ -627,7 +714,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ActivityLogPage(WpfServices.StatusService statusService, WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/Views/ActivityLogPage.xaml.cs:20](../../../../src/Meridian.Wpf/Views/ActivityLogPage.xaml.cs#L20) |  |
+| <code>public ActivityLogPage(WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/Views/ActivityLogPage.xaml.cs:21](../../../../src/Meridian.Wpf/Views/ActivityLogPage.xaml.cs#L21) |  |
 
 Source: [src/Meridian.Wpf/Views/Pages.cs:108](../../../../src/Meridian.Wpf/Views/Pages.cs#L108).
 
@@ -1176,28 +1263,4 @@ Source: [src/Meridian.Wpf/Views/Pages.cs:27](../../../../src/Meridian.Wpf/Views/
 
 ```csharp
 public partial class DataQualityPage : Page
-```
-
-## DataSamplingPage
-
-Qualified name: <code>Meridian.Wpf.Views.DataSamplingPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/DataSamplingPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/DataSamplingPage.xaml.cs#L10).
-
-Hosts market-data sample configuration, generation, and recent sample review.
-
-```csharp
-public partial class DataSamplingPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DataSamplingPage();</code> | [src/Meridian.Wpf/Views/DataSamplingPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/DataSamplingPage.xaml.cs#L14) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:38](../../../../src/Meridian.Wpf/Views/Pages.cs#L38).
-
-```csharp
-public partial class DataSamplingPage : Page
 ```

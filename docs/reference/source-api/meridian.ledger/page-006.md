@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityTradePostingKind
+
+Qualified name: <code>Meridian.Ledger.SecurityTradePostingKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ledger/SecurityTradePostingKind.cs:4](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L4).
+
+The economic leg of an execution, independent of its buy/sell order side.
+
+```csharp
+public enum SecurityTradePostingKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>OpenLong</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:6](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L6) |  |
+| <code>CloseLong</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:7](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L7) |  |
+| <code>OpenShort</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:8](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L8) |  |
+| <code>CoverShort</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:9](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L9) |  |
+
 ## SecurityTradePostingProjector
 
 Qualified name: <code>Meridian.Ledger.SecurityTradePostingProjector</code>. Kind: `class`.
@@ -208,6 +229,27 @@ Declared public members:
 | --- | --- | --- |
 | <code>public const string RedemptionExceedsHoldingIssueCode = &quot;fund.share-class.redemption-exceeds-holding&quot;;</code> | [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:57](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L57) |  |
 | <code>public static ShareClassUnitRegister Project(ShareClass shareClass, IReadOnlyList&lt;UnitTransaction&gt; transactions, DateOnly asOf, decimal? classNav = null);</code> | [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:59](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L59) |  |
+
+## ShortCarryDraftBuilder
+
+Qualified name: <code>Meridian.Ledger.ShortCarryDraftBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/ShortCarryDraftBuilder.cs:15](../../../../src/Meridian.Ledger/ShortCarryDraftBuilder.cs#L15).
+
+Converts a reviewed ShortCarryInstruction into a governed AutomatedJournalDraft (kind AutomatedJournalEventKind.ShortCarryCharged), so a borrow fee or payment in lieu reaches the ledger only through workbench review, approval and posting. The lines are ShortCarryProjector.Lines against the lot&#x27;s liability carrying account; the caller proves the instruction against the authoritative open short lot first.
+
+```csharp
+public static class ShortCarryDraftBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ActivityType = &quot;short-carry&quot;;</code> | [src/Meridian.Ledger/ShortCarryDraftBuilder.cs:17](../../../../src/Meridian.Ledger/ShortCarryDraftBuilder.cs#L17) |  |
+| <code>public const string IdempotencyPrefix = &quot;short-carry&#124;&quot;;</code> | [src/Meridian.Ledger/ShortCarryDraftBuilder.cs:18](../../../../src/Meridian.Ledger/ShortCarryDraftBuilder.cs#L18) |  |
+| <code>public static AutomatedJournalDraft BuildDraft(ShortCarryInstruction instruction, LedgerAccount carryingAccount, Guid securityId, DateTimeOffset preparedAtUtc, string preparedBy);</code> | [src/Meridian.Ledger/ShortCarryDraftBuilder.cs:20](../../../../src/Meridian.Ledger/ShortCarryDraftBuilder.cs#L20) |  |
+| <code>public static string Fingerprint(ShortCarryInstruction instruction);</code> | [src/Meridian.Ledger/ShortCarryDraftBuilder.cs:82](../../../../src/Meridian.Ledger/ShortCarryDraftBuilder.cs#L82) | Digest of the retained instruction inputs, so a changed input is a different charge identity. |
 
 ## ShortCarryProjector
 

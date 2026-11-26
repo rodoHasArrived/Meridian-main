@@ -39,7 +39,7 @@ export function useSectionDescriptionsHidden(): [hidden: boolean, setHidden: (hi
   return [hidden, setHidden];
 }
 
-/** The descriptions setting for one operator key (`environment:name:role`), outside React. */
+/** The descriptions setting for one operator key (`environment:username:role`), outside React. */
 export function readSectionDescriptionsHidden(operator: string | null): boolean {
   return readHidden(operator);
 }

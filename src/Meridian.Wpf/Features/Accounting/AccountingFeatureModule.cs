@@ -217,7 +217,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetRequiredService<AutomatedJournalEvidencePolicy>(),
                 sp.GetService<IAutomatedJournalCapitalAccountReconciliationResolver>(),
                 sp.GetRequiredService<TimeProvider>(),
-                sp.GetService<IManualJournalEntryWorkbenchService>());
+                sp.GetService<IManualJournalEntryWorkbenchService>(),
+                ledgerJournalStore: journalStore);
         });
         services.TryAddSingleton<IAccountingClosePostingWorkbench>(sp =>
             new AccountingClosePostingWorkbenchBridge(

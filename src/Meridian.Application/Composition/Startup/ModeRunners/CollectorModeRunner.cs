@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Meridian.Application.Backfill;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Startup;
@@ -8,6 +9,7 @@ using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Platform.Results;
 using Meridian.Application.Services;
+using Meridian.Application.Subscriptions.Services;
 using Meridian.Application.UI;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Enums;
@@ -53,6 +55,8 @@ public sealed class CollectorModeRunner
             () => ctx.ConfigurationService.LoadAndPrepareConfig(ctx.ConfigPath));
 
         ConfigWatcher? watcher = null;
+        AutoResubscribePolicy? depthResubscribePolicy = null;
+        Action<DepthIntegrityEvent>? depthIntegrityHandler = null;
 
         await using var hostStartup = await HostStartupFactory
             .CreateAsync(ctx.Deployment, ctx.ConfigPath, ct)
@@ -207,6 +211,11 @@ public sealed class CollectorModeRunner
         }
 
         using var failoverResources = new FailoverResourceLease(failoverService, healthMonitor);
+        // Failover feeds its own monitor; publish it so the API host can serve connection health.
+        // Declared after the lease so it is withdrawn before the monitor is disposed.
+        using var failoverHealthPublication = healthMonitor is null
+            ? null
+            : ConnectionHealthRegistry.Process.Publish(healthMonitor);
         // Declared after the resource lease so it is released first: endpoints stop seeing the
         // coordinator and saves stop applying live before the coordinator is disposed.
         await using var liveRuntime = PublishLiveRuntime(hostStartup, ctx.ConfigPath, ctx.Config,
@@ -220,6 +229,10 @@ public sealed class CollectorModeRunner
         }
         using var activation = new StreamingProviderActivation(ctx.ConfigPath, providerMap, startupFailures,
             failoverClient, failoverService);
+        // Without failover nothing monitors the single connection; this lease starts a monitor fed
+        // from the client's transport diagnostics once it connects. Declared after the client so
+        // it stops (and unsubscribes) before the client is disposed.
+        using var singleProviderHealth = new SingleProviderHealthLease();
 
         // The failover wrapper is not itself a gap source; its inner clients were captured
         // above. In single-provider (or failover-fallback) mode the client is captured here.
@@ -265,6 +278,8 @@ public sealed class CollectorModeRunner
             connectTimeoutCts.CancelAfter(TimeSpan.FromSeconds(30));
             await dataClient.ConnectAsync(connectTimeoutCts.Token);
             activation.MarkConnected();
+            if (failoverClient is null)
+                singleProviderHealth.Start(dataClient, ctx.Config.DataSource.ToString(), _log);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -305,6 +320,23 @@ public sealed class CollectorModeRunner
             var runtimeCfg = SharedStartupHelpers.EnsureDefaultSymbols(ctx.Config);
             await subscriptionManager.ApplyAsync(runtimeCfg, ct);
             var symbols = runtimeCfg.Symbols ?? Array.Empty<SymbolConfig>();
+
+            // A depth integrity failure leaves the symbol's book stale until it is reset and the
+            // provider replays it. The policy re-requests depth (rate-limited and circuit-broken);
+            // the simulated feed exercises a stale book on purpose and resets it itself.
+            if (!ctx.CliArgs.SimulateFeed)
+            {
+                var resubscribePolicy = new AutoResubscribePolicy(subscriptionManager);
+                // A stale book reports every rejected update; run at most one recovery per symbol.
+                var recovering = new ConcurrentDictionary<string, byte>(StringComparer.OrdinalIgnoreCase);
+                depthResubscribePolicy = resubscribePolicy;
+                depthIntegrityHandler = evt =>
+                {
+                    if (recovering.TryAdd(evt.Symbol, 0))
+                        _ = RecoverDepthAsync(resubscribePolicy, evt, recovering, ct);
+                };
+                depthCollector.IntegrityDetected += depthIntegrityHandler;
+            }
             gapBackfillSymbols = symbols.Select(static s => s.Symbol).ToArray();
 
             if (ctx.Deployment.HotReloadEnabled)
@@ -383,6 +415,12 @@ public sealed class CollectorModeRunner
         }
         finally
         {
+            if (depthIntegrityHandler is not null)
+                depthCollector.IntegrityDetected -= depthIntegrityHandler;
+
+            if (depthResubscribePolicy is not null)
+                await depthResubscribePolicy.DisposeAsync().ConfigureAwait(false);
+
             if (gapBackfill is not null)
             {
                 foreach (var gapSource in gapSources)
@@ -419,6 +457,35 @@ public sealed class CollectorModeRunner
         }
 
         return 0;
+    }
+
+    /// <summary>
+    /// Runs depth recovery off the provider callback thread. Failures are already counted by the
+    /// policy's breakers; this only keeps an unobserved task from surfacing them.
+    /// </summary>
+    private async Task RecoverDepthAsync(
+        AutoResubscribePolicy policy,
+        DepthIntegrityEvent evt,
+        ConcurrentDictionary<string, byte> recovering,
+        CancellationToken ct)
+    {
+        try
+        {
+            await Task.Yield();
+            await policy.OnDepthIntegrityEventAsync(evt, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Shutdown.
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Depth recovery for {Symbol} failed", evt.Symbol);
+        }
+        finally
+        {
+            recovering.TryRemove(evt.Symbol, out _);
+        }
     }
 
     /// <summary>
@@ -500,6 +567,43 @@ public sealed class CollectorModeRunner
         catch (Exception ex)
         {
             _log.Warning(ex, "Streaming provider client raised an error during failed failover construction cleanup");
+        }
+    }
+
+    /// <summary>
+    /// Owns the monitor, diagnostics feed and registry publication for a collector streaming from
+    /// one provider without failover.
+    /// </summary>
+    private sealed class SingleProviderHealthLease : IDisposable
+    {
+        private ConnectionHealthMonitor? _monitor;
+        private ConnectionDiagnosticsHealthFeed? _feed;
+        private IDisposable? _publication;
+
+        public void Start(IMarketDataClient client, string providerName, ILogger log)
+        {
+            var connectionId = ProviderIdentity.NormalizeId(providerName);
+            var monitor = new ConnectionHealthMonitor();
+            var feed = ConnectionDiagnosticsHealthFeed.TryStart(client, monitor, connectionId, providerName);
+            if (feed is null)
+            {
+                monitor.Dispose();
+                log.Information(
+                    "Connection health is not tracked for {Provider}: its client does not report connection lifecycle diagnostics",
+                    providerName);
+                return;
+            }
+
+            _monitor = monitor;
+            _feed = feed;
+            _publication = ConnectionHealthRegistry.Process.Publish(monitor);
+        }
+
+        public void Dispose()
+        {
+            _publication?.Dispose();
+            _feed?.Dispose();
+            _monitor?.Dispose();
         }
     }
 

@@ -132,6 +132,52 @@ public sealed class AlertRunbookRegistry
 
         Register(new AlertRunbookEntry
         {
+            AlertName = "MeridianPipelineBacklogHigh",
+            Severity = "warning",
+            IncidentPriority = "P2",
+            Summary = "Pipeline channel filling before drops",
+            RunbookUrl = "docs/operators/operator-runbook.md#pipeline-backlog",
+            ProbableCauses = new[]
+            {
+                "Storage sink slow or failing",
+                "Consumer faulted",
+                "Burst of market data events",
+                "Channel capacity too small for the inbound rate"
+            },
+            ImmediateActions = new[]
+            {
+                "Check mdc_sink_write_failures_total and disk latency on the data root",
+                "Check mdc_pipeline_consumers_faulted",
+                "Read /api/backpressure",
+                "Shed non-critical subscriptions if the sink is healthy but outpaced"
+            }
+        });
+
+        Register(new AlertRunbookEntry
+        {
+            AlertName = "MeridianPipelineConsumerFaulted",
+            Severity = "critical",
+            IncidentPriority = "P1",
+            Summary = "Pipeline consumer task faulted",
+            RunbookUrl = "docs/operators/operator-runbook.md#pipeline-consumer-faulted",
+            SloId = "SLO-ING-002",
+            ProbableCauses = new[]
+            {
+                "Unhandled exception in the consume loop",
+                "Storage sink throwing on every write",
+                "Validator or dedup ledger failure"
+            },
+            ImmediateActions = new[]
+            {
+                "Read the 'Pipeline consumer iteration failed' lines in <data-root>/_logs",
+                "Check mdc_sink_write_failures_total and disk health",
+                "Restart the host once the cause is addressed; WAL recovery replays uncommitted events"
+            },
+            RollbackCriteria = "After restart mdc_pipeline_consumers_faulted is 0 and mdc_pipeline_queue_depth drains"
+        });
+
+        Register(new AlertRunbookEntry
+        {
             AlertName = "MeridianNoEventsPublished",
             Severity = "warning",
             IncidentPriority = "P2",
@@ -226,6 +272,102 @@ public sealed class AlertRunbookRegistry
                 "Review storage error logs for root cause"
             },
             RollbackCriteria = "The affected window is reconciled and a subsequent restart recovers with zero corrupted records"
+        });
+
+        Register(new AlertRunbookEntry
+        {
+            AlertName = "MeridianSlowRequests",
+            Severity = "warning",
+            IncidentPriority = "P3",
+            Summary = "API route p95 response time above threshold",
+            RunbookUrl = "docs/operators/operator-runbook.md#slow-requests",
+            ProbableCauses = new[]
+            {
+                "Expensive report or read-model query",
+                "Storage latency",
+                "Lock contention",
+                "Slow downstream dependency",
+                "Host CPU or memory pressure"
+            },
+            ImmediateActions = new[]
+            {
+                "Find the route's Slow request lines in <data-root>/_logs for status and trace ids",
+                "Check host CPU and memory and mdc_pipeline_queue_utilization_ratio",
+                "Check storage latency and mdc_disk_free_bytes",
+                "Correlate trace ids when tracing is enabled"
+            }
+        });
+
+        Register(new AlertRunbookEntry
+        {
+            AlertName = "MeridianDiskSpaceLow",
+            Severity = "warning",
+            IncidentPriority = "P3",
+            Summary = "Low disk space on the data-root volume",
+            RunbookUrl = "docs/operators/operator-runbook.md#disk-space-low",
+            ProbableCauses = new[]
+            {
+                "Data growth without retention",
+                "Large backfill",
+                "Log or archive accumulation",
+                "Another process filling the volume"
+            },
+            ImmediateActions = new[]
+            {
+                "Check retention settings (Storage RetentionDays / MaxTotalBytes)",
+                "Archive or move cold data",
+                "Check _logs and archive sizes under the data root"
+            }
+        });
+
+        Register(new AlertRunbookEntry
+        {
+            AlertName = "MeridianDiskSpaceCritical",
+            Severity = "critical",
+            IncidentPriority = "P1",
+            Summary = "Data-root volume nearly full",
+            RunbookUrl = "docs/operators/operator-runbook.md#disk-space-low",
+            SloId = "SLO-ST-001",
+            ProbableCauses = new[]
+            {
+                "Data growth without retention",
+                "Large backfill",
+                "Log or archive accumulation",
+                "Another process filling the volume"
+            },
+            ImmediateActions = new[]
+            {
+                "Free space immediately (move cold data or archives off the volume)",
+                "Pause backfills",
+                "Watch mdc_sink_write_failures_total",
+                "Tighten retention once stable"
+            },
+            RollbackCriteria = "mdc_disk_free_bytes is above 10 GiB and mdc_sink_write_failures_total is not increasing"
+        });
+
+        Register(new AlertRunbookEntry
+        {
+            AlertName = "MeridianSinkWriteFailing",
+            Severity = "critical",
+            IncidentPriority = "P1",
+            Summary = "Storage sink writes failing",
+            RunbookUrl = "docs/operators/operator-runbook.md#sink-write-failures",
+            SloId = "SLO-ST-001",
+            ProbableCauses = new[]
+            {
+                "Disk full",
+                "Filesystem permissions issue",
+                "I/O errors on disk",
+                "Storage path unmounted or misconfigured"
+            },
+            ImmediateActions = new[]
+            {
+                "Check free space on the data root",
+                "Read the 'Failed to flush' lines in <data-root>/_logs for the path and exception",
+                "Verify path ownership and mount state",
+                "Prefer fixing the cause before restarting; failed batches stay buffered and are retried in place"
+            },
+            RollbackCriteria = "mdc_sink_write_failures_total stops increasing and mdc_pipeline_seconds_since_last_flush returns to the flush interval"
         });
 
         Register(new AlertRunbookEntry

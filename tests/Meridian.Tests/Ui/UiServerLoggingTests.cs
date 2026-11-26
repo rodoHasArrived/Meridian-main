@@ -18,8 +18,10 @@ namespace Meridian.Tests.Ui;
 /// Pins UiServer's logging (ADR-025 rollout): every category still stops below Warning through the
 /// default providers, and the host-start inventory lines alone (the Security Master terms and
 /// contractual cash-flow capability lines and each loaded calendar's line) reach the process's Serilog logger, from Information,
-/// so a workstation-mode host writes them to its log file. Nothing else reaches that logger, even
-/// when the configuration lowers the default level. Sequential because the host test swaps the
+/// so a workstation-mode host writes them to its log file. Meridian categories also reach that logger
+/// from Warning, so a supervised host records pipeline and storage failures in its log file; framework
+/// categories and Meridian lines below Warning never reach it, even when the configuration lowers the
+/// default level. Sequential because the host test swaps the
 /// process's Serilog logger and the host environment variables.
 /// </summary>
 [Trait("Category", "Unit")]
@@ -42,7 +44,7 @@ public sealed class UiServerLoggingTests : IDisposable
     }
 
     [Fact]
-    public async Task HostStart_WritesTheCapabilityAndCalendarLinesToSerilog_AndOtherCategoriesStillStopBelowWarning()
+    public async Task HostStart_WritesTheInventoryLinesAndMeridianWarningsToSerilog_AndOtherCategoriesStillStopBelowWarning()
     {
         WriteZzTestCalendar();
         var serilog = new CollectingSink();
@@ -57,7 +59,8 @@ public sealed class UiServerLoggingTests : IDisposable
         events.Select(static e => (SourceContext(e), e.Level)).Should().Equal(
             (CalendarCategory, LogEventLevel.Information),
             (CapabilityCategory, LogEventLevel.Information),
-            (CapabilityCategory, LogEventLevel.Information));
+            (CapabilityCategory, LogEventLevel.Information),
+            ("Meridian.UiServer", LogEventLevel.Warning));
         events[0].MessageTemplate.Text.Should().StartWith("Loaded business-day calendar {CalendarId} version {CalendarVersion}");
         events[0].Properties["CalendarId"].Should().Be(new ScalarValue("ZZTEST"));
         events[1].MessageTemplate.Text.Should().StartWith("Security Master terms capability: declared mapping {DeclaredMappingVersion}");
@@ -80,7 +83,7 @@ public sealed class UiServerLoggingTests : IDisposable
     {
         // Logging__LogLevel__Default=Information (as the container deployments set it) lowers the
         // default providers' floor as before; the Serilog provider's own rules still admit only the
-        // inventory categories.
+        // inventory categories and Meridian warnings.
         WriteZzTestCalendar();
         var serilog = new CollectingSink();
         var defaults = new CapturingLoggerProvider();
@@ -92,7 +95,11 @@ public sealed class UiServerLoggingTests : IDisposable
         await StartCapabilityServiceAsync(provider);
         LogFromOtherCategories(provider.GetRequiredService<ILoggerFactory>());
 
-        serilog.Events.Select(SourceContext).Should().Equal(CalendarCategory, CapabilityCategory, CapabilityCategory);
+        serilog.Events.Select(static e => (SourceContext(e), e.Level)).Should().Equal(
+            (CalendarCategory, LogEventLevel.Information),
+            (CapabilityCategory, LogEventLevel.Information),
+            (CapabilityCategory, LogEventLevel.Information),
+            ("Meridian.UiServer", LogEventLevel.Warning));
         defaults.Entries.Select(static entry => entry.Category).Should().Contain(["Meridian.UiServer", "Microsoft.AspNetCore.Hosting.Diagnostics"]);
         defaults.Entries.Should().Contain(static entry => entry.Category == "Meridian.UiServer" && entry.Level == LogLevel.Information);
     }
@@ -129,7 +136,9 @@ public sealed class UiServerLoggingTests : IDisposable
             inventory[0].Properties["CalendarId"].Should().Be(new ScalarValue("ZZTEST"));
             inventory[1].MessageTemplate.Text.Should().StartWith("Security Master terms capability: declared mapping {DeclaredMappingVersion}");
             AssertCashFlowCapabilityLine(inventory[2]);
-            serilog.Events.Should().NotContain(static e => SourceContext(e) == ProbeCategory);
+            serilog.Events.Where(static e => SourceContext(e) == ProbeCategory)
+                .Select(static e => (e.Level, e.MessageTemplate.Text))
+                .Should().Equal((LogEventLevel.Warning, "Probe warning"));
         }
         finally
         {
@@ -143,7 +152,7 @@ public sealed class UiServerLoggingTests : IDisposable
             "Contractual cash-flow calculation capability: engine {Engine}, mapping {Mapping}, prepayment {Prepayment}; calculation-only, companion read-before-write");
         logEvent.Properties["Engine"].Should().Be(new ScalarValue("contractual-cashflow-v1"));
         logEvent.Properties["Mapping"].Should().Be(new ScalarValue("contractual-cashflow-mapping-v1"));
-        logEvent.Properties["Prepayment"].Should().Be(new ScalarValue("survival-cpr-smm-psa-v1"));
+        logEvent.Properties["Prepayment"].Should().Be(new ScalarValue("survival-cpr-smm-psa-v2"));
     }
 
     private ServiceProvider BuildHost(CollectingSink serilog, CapturingLoggerProvider defaults, IConfiguration? configuration)

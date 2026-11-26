@@ -262,7 +262,6 @@ export interface OperationsApprovalPolicyMatrixRow {
 }
 
 export interface OperationsApprovalPolicyRuleUpsertRequest extends OperationsApprovalPolicyMatrixRow {
-  requestedBy: string;
   rationale: string;
   correlationId?: string | null;
 }
@@ -322,7 +321,6 @@ export interface OperationsCloseCalendarItemUpsertRequest {
   taskId: string;
   dueDate: string;
   owner: string;
-  requestedBy: string;
   rationale: string;
   correlationId?: string | null;
 }

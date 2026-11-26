@@ -1336,7 +1336,14 @@ public sealed partial class IBBrokerageGateway :
             staleFill ? latest!.FillPriceIsCumulativeAverage : update.AveragePrice > 0) with
         {
             BrokerAccountId = string.IsNullOrWhiteSpace(update.Account)
-                ? CurrentBrokerAccount(gatewayOrderId, callbackEpoch) : update.Account.Trim()
+                ? CurrentBrokerAccount(gatewayOrderId, callbackEpoch) : update.Account.Trim(),
+            // The broker's execution id becomes the fill's canonical identity. A stale re-delivery
+            // reports the order's latest cumulative state rather than this execution, so it is not
+            // labelled with this execution's id. LastFillQuantity stays unset on purpose: it would
+            // let a restarted host adopt and book this fill for an order it no longer tracks, which
+            // is only safe for a stream deduplicated durably by broker event id, and IB executions
+            // are not.
+            ExecutionId = staleFill || string.IsNullOrWhiteSpace(update.ExecutionId) ? null : update.ExecutionId.Trim()
         };
 
         if (_openOrders.TryGetValue(gatewayOrderId, out var openOrder))

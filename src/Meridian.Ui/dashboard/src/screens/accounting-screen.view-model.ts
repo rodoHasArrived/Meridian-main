@@ -2715,7 +2715,6 @@ export function useAccountingReconciliationViewModel(
   workstream: AccountingWorkstream,
   services: AccountingReconciliationServices = defaultAccountingReconciliationServices,
   systemReconciliation: AccountingSystemReconciliationSummary | null = null,
-  operatorIdentity: string | null = null,
   selectionState?: ReconciliationSelectionState
 ) {
   const [localSelectedRunId, setLocalSelectedRunId] = useState<string | null>(null);
@@ -2971,8 +2970,8 @@ export function useAccountingReconciliationViewModel(
     try {
       const operation = await services.reviewBreak({
         breakId,
-        expectedVersion: breakQueue.find((item) => item.breakId === breakId)?.version,
-        ...(operatorIdentity ? { assignedTo: operatorIdentity, reviewedBy: operatorIdentity } : {})
+        // No assignedTo/reviewedBy: the review route takes both from the authenticated session.
+        expectedVersion: breakQueue.find((item) => item.breakId === breakId)?.version
       });
       const updated = requireSuccessfulReconciliationCasework(operation);
       // A committed result remains authoritative for this queue when the operator changes runs.
@@ -2983,7 +2982,7 @@ export function useAccountingReconciliationViewModel(
     } finally {
       if (activeScopeRef.current === requestScope && actionContextRef.current.revision === requestActionContext) setBreakAction(null);
     }
-  }, [actionContextRevision, breakQueue, canActOnCurrentQueue, operatorIdentity, scopeRevision, services]);
+  }, [actionContextRevision, breakQueue, canActOnCurrentQueue, scopeRevision, services]);
 
   const resolveBreak = useCallback(async (
     breakId: string,
@@ -3013,7 +3012,7 @@ export function useAccountingReconciliationViewModel(
       const operation = await services.resolveBreak({
         breakId,
         status,
-        ...(operatorIdentity ? { resolvedBy: operatorIdentity } : {}),
+        // No resolvedBy: the resolve route takes it from the authenticated session.
         resolutionNote: trimmedRationale,
         operatorRationale: trimmedRationale,
         expectedVersion: breakQueue.find((item) => item.breakId === breakId)?.version
@@ -3028,7 +3027,7 @@ export function useAccountingReconciliationViewModel(
     } finally {
       if (activeScopeRef.current === requestScope && actionContextRef.current.revision === requestActionContext) setBreakAction(null);
     }
-  }, [actionContextRevision, breakQueue, canActOnCurrentQueue, operatorIdentity, scopeRevision, services]);
+  }, [actionContextRevision, breakQueue, canActOnCurrentQueue, scopeRevision, services]);
 
   const applyCaseUpdate = useCallback((item: ReconciliationBreakQueueItem) => {
     if (activeScopeRef.current !== scopeRevision) return;
@@ -4313,10 +4312,12 @@ function cashFlowContextLabel(workstream: AccountingWorkstream): string {
 function buildCashFlowRow(
   id: string,
   label: string,
-  value: number,
+  value: number | null,
   tone: CashFlowEvidenceTone
 ): AccountingCashFlowRowViewModel {
-  const formattedValue = formatPrefixedCurrency(value);
+  // Null means the figure was not measured (for example financing with unavailable coverage);
+  // showing $0 would present it as a measured zero.
+  const formattedValue = value === null ? "Unavailable" : formatPrefixedCurrency(value);
   return {
     id,
     label,

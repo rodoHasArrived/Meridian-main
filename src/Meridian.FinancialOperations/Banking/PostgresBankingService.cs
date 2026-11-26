@@ -1,5 +1,6 @@
 using Meridian.Contracts.Banking;
 using Meridian.Contracts.Operations;
+using Meridian.Contracts.Workstation;
 using Meridian.Storage.Banking;
 
 namespace Meridian.FinancialOperations.Banking;
@@ -12,10 +13,14 @@ public sealed class PostgresBankingService : IBankingService
 {
     private const int MaximumRemediationReasonLength = 1_000;
     private readonly IBankingStore _store;
+    private readonly IBookOfRecordGuard? _bookOfRecord;
 
-    public PostgresBankingService(IBankingStore store)
+    /// <param name="store">Durable banking store.</param>
+    /// <param name="bookOfRecord">Shadow-mode guard consulted before approving a ledger-book-bound intent.</param>
+    public PostgresBankingService(IBankingStore store, IBookOfRecordGuard? bookOfRecord = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
+        _bookOfRecord = bookOfRecord;
     }
 
     // ── Payment initiation & approval workflow ───────────────────────────────
@@ -33,6 +38,7 @@ public sealed class PostgresBankingService : IBankingService
             throw new BankingException("Payment amount must be positive.");
 
         var currency = PaymentBankEvidenceFactory.NormalizeRequiredCurrency(request.Currency, "Payment");
+        var binding = PaymentBookOfRecordBinding.Resolve(request);
 
         var pending = new PendingPaymentDto(
             PendingPaymentId: Guid.NewGuid(),
@@ -46,7 +52,10 @@ public sealed class PostgresBankingService : IBankingService
             ReviewNotes: null,
             InitiatedAt: DateTimeOffset.UtcNow,
             ReviewedAt: null,
-            Currency: currency);
+            Currency: currency,
+            TenantId: binding.TenantId,
+            CompanyId: binding.CompanyId,
+            LedgerBookId: binding.LedgerBookId);
 
         await _store.UpsertPendingPaymentAsync(pending, ct);
         return pending;
@@ -59,6 +68,11 @@ public sealed class PostgresBankingService : IBankingService
     {
         ArgumentNullException.ThrowIfNull(request);
         EnsureHumanOrigin(request.ActionOrigin, "approve payment requests");
+
+        // The binding is immutable once retained, so the stored intent names the book to check.
+        var retained = await _store.GetPendingPaymentAsync(pendingPaymentId, ct).ConfigureAwait(false);
+        if (retained is { Status: PaymentApprovalStatus.Pending })
+            await PaymentBookOfRecordBinding.EnsureBookOfRecordAsync(_bookOfRecord, retained, ct).ConfigureAwait(false);
 
         var transitioned = await _store.TryTransitionPendingPaymentAsync(
             pendingPaymentId,

@@ -835,6 +835,11 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Scoped<
             Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
             Meridian.Application.SecurityMaster.ApprovedFieldEditCanonicalMergeHandler>());
+        // Order=6: applies an approved historical identifier window proposal through the same
+        // governed publication amender, keeping the proposed ValidFrom.
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<
+            Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
+            Meridian.Application.SecurityMaster.ApprovedHistoricalIdentifierWindowHandler>());
         services.TryAddEnumerable(ServiceDescriptor.Scoped<
             Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
             Meridian.Application.SecurityMaster.Rebuild.SecurityProjectionRebuildHandler>());
@@ -1419,7 +1424,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IManualJournalEntryWorkbenchService>(),
                 sp.GetService<IPrivateCapitalStore>(),
                 sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>(),
-                sp.GetService<Meridian.FinancialOperations.FundAdministration.IDistributionRegister>());
+                sp.GetService<Meridian.FinancialOperations.FundAdministration.IDistributionRegister>(),
+                journalStore);
         });
         // Durable ledger and reporting-evidence services are present only when persistence-backed
         // storage is configured. Resolve them optionally so lightweight hosts still compose; when

@@ -138,7 +138,11 @@ public sealed record StrategyRunExecutionSummary(
     int WinningTrades,
     int LosingTrades,
     decimal TotalCommissions,
-    decimal TotalMarginInterest,
+    /// <summary>
+    /// Margin interest charged to the run, or <see langword="null"/> when financing coverage is
+    /// unavailable (see <c>FinancingCoverageStatus</c>): a zero here would read as a measured zero.
+    /// </summary>
+    decimal? TotalMarginInterest,
     decimal TotalShortRebates,
     bool HasPortfolio,
     bool HasLedger,
@@ -575,7 +579,11 @@ public sealed record PortfolioSummary(
     decimal RealizedPnl,
     decimal UnrealizedPnl,
     decimal Commissions,
-    decimal Financing,
+    /// <summary>
+    /// Margin interest less short rebates, or <see langword="null"/> when financing coverage is
+    /// unavailable (see <see cref="FinancingCoverageStatus"/>), so no consumer reads it as a measured zero.
+    /// </summary>
+    decimal? Financing,
     IReadOnlyList<PortfolioPositionSummary> Positions,
     int SecurityResolvedCount = 0,
     int SecurityMissingCount = 0,
@@ -847,7 +855,11 @@ public sealed record RunComparisonDto(
     int LosingTrades,
     int FillCount,
     decimal TotalCommissions,
-    decimal TotalMarginInterest,
+    /// <summary>
+    /// Margin interest charged to the run, or <see langword="null"/> when financing coverage is
+    /// unavailable (see <c>FinancingCoverageStatus</c>): a zero here would read as a measured zero.
+    /// </summary>
+    decimal? TotalMarginInterest,
     decimal TotalShortRebates,
     [property: JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double? Xirr,
     EquityCurveSummary? EquityCurve,

@@ -296,9 +296,18 @@ runs in UTC. Daylight-saving changes are followed, so `0 8 * * *` stays at 08:00
 `dueAtUtc` is always retained as a UTC instant. On upsert a null `timeZoneId` keeps the retained
 zone and `"UTC"` resets it; an unknown zone is rejected with `400`.
 
-A schedule may instead carry a `periodCadence` (`Monthly`, `Quarterly`, or `Annually`, plus
-`dueDaysAfterPeriodEnd` from 0 to 366). It then runs once per accounting period instead of by
-cron. The durable ledger store is the authority for the next period:
+A schedule may instead carry a `periodCadence` (`Monthly`, `Quarterly`, `Annually`, `Weekly`, or
+`Daily`, plus `dueDaysAfterPeriodEnd`: 0 to 366 for the first three, 0 to 6 for `Weekly`, and 0 to
+1 for `Daily`). It then runs once per period instead of by cron.
+
+`Weekly` (ISO week, Monday to Sunday, period id such as `2026-W53`) and `Daily` (period id
+`yyyy-MM-dd`) are calendar periods: the ledger has no weekly or daily accounting periods, so the
+schedule never asks the ledger for its next period and never records an unresolved close. Runs
+still carry the selector of the ledger period that contains the as-of date, so a weekly report is
+a period-to-date view within that ledger period.
+
+For `Monthly`, `Quarterly`, and `Annually`, the durable ledger store is the authority for the next
+period:
 
 - A monthly close moves to the accounting period of the schedule's ledger book that starts the day
   after the current as-of date. A quarterly close moves to the quarter-end period (period number

@@ -28,7 +28,7 @@ internal static class CryptoCurrencyAssetModule
                     SecurityIdentifierKind.ProviderSymbol,
                     SecurityIdentifierKind.InternalCode
                 ])
-            { AccountingOutsideSlice = true },
+            { AccountingOutsideSlice = true, PairCurrenciesAreAssetTickers = true },
             Fields: [
                 Req("baseCurrency", SecurityAssetTermFieldType.String),
                 Req("quoteCurrency", SecurityAssetTermFieldType.String),

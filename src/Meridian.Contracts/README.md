@@ -571,7 +571,9 @@ designation, incumbent opening-balance import requests and the opening reconcili
 classified difference explanations, per-period agreement summaries, the hashed parallel-run
 certificate, the promotion decision and a hash-chained shadow audit entry. `IBookOfRecordGuard`
 answers whether a ledger book may act as the book of record; a shadow or withdrawn-trial book may
-not. New fields on `OnboardingDtos.cs` are omitted from JSON when unset so retained hashes still verify.
+not. `InitiatePaymentRequest.LedgerBookId` binds a payment intent to a book (the server-bound tenant and
+company are JSON-ignored), and `PendingPaymentDto` carries `TenantId`, `CompanyId` and `LedgerBookId` so
+approval can consult the guard. `StatementRunCreateDto.ResolvedAccountingScope` is likewise server-only. New fields on `OnboardingDtos.cs` are omitted from JSON when unset so retained hashes still verify.
 `OnboardingComparisonDto.OpeningKinds` scopes an opening import to the kinds it supplies, and the opening
 report carries per-source summaries (`OnboardingOpeningSourceSummaryDto`), each line's source, and the
 required kinds still uncovered.
@@ -704,6 +706,11 @@ Reconciliation queue items optionally retain `Lineage`: a stable source identity
 first/last observation and successful-run clearing evidence. This metadata is omitted when absent
 so legacy integrity-checked snapshots keep their serialized shape. Source clearing is distinct from
 governed disposition, sign-off and close readiness.
+
+Three-way reconciliation snapshots optionally retain `Fills` (`ThreeWayFillDto`, exact-string
+decimals, with broker activity/order, client order and journal entry ids) and `FillCoverageComplete`.
+Checks optionally retain a `Classification` and `EvidenceIds`. Absent values deserialize as empty or
+null, so receipts retained before fill matching keep their meaning.
 
 Ledger commands add optional `AccountingPostingCommandDto.Actor` and
 `CreateLedgerPeriodRequest.CreatedBy`. Public command boundaries stamp authenticated identities;
@@ -2392,6 +2399,7 @@ sign, served from `UiApiRoutes.LedgerPeriodAccountRunningBalance`
 
 - **Contract-multiplier requirement.** `InstrumentTypeDescriptorCatalog.RequiresContractMultiplier(assetClass)` is true only when a descriptor whose *primary* asset class matches declares `multiplier` among its required economic terms (listed options and futures; not swaps, warrants or FX forwards). Compatible-class lists are deliberately ignored. Clients call this instead of matching asset-class names, so they cannot diverge.
 - **Canonical-merge outcome.** `SecurityMasterPublishResultDto.CanonicalMerge` (`SecurityMasterCanonicalMergeOutcomeDto`) reports `Merged`, `AlreadyCanonical`, `OverlayOnly` or `NotApplicable`. It is null when no handler reports.
+- **Historical identifier window proposal.** `ProposeHistoricalIdentifierWindowRequest` (`Contracts/Workstation`) carries a proposed identifier window (`SecurityIdentifierKind`, value, optional provider, `ValidFrom`, optional `ValidTo`), its Evidence Vault reference and justification, the expected passport version and an optional fund profile. `Actor` is server-derived; clients send it empty. `UiApiRoutes.SecurityMasterWorkbenchHistoricalIdentifierWindow` is its workbench route.
 - **Profile drafter.** `SecurityAssetProfileDefinitionDto.DraftedBy` records who last drafted a profile version and is kept through approval, so maker-checker no longer reads the author from `ApprovedBy`. It is null on versions drafted before the field existed.
 - **System-ingest amender.** `ISecurityMasterAmender` is the system-ingest write path (provider backfill, EDGAR ingest, ticker changes). The governed-amendment setting does not block it, and its implementation refuses operator source systems.
 - **Stored classification labels.** `ClassificationLabelReader.Normalize` decodes labels retained before the F# name helpers (`Some(PreferredEquity)`, `OtherFamily "x"`, `Some(OtherSubType "x")`, `None`) at read, match and grouping seams. It removes at most one `Some(…)`, and only around a known case name (`KnownCaseNames`), a union payload or a quoted literal. A payload is returned verbatim, so `OtherSubType "Some(Nested)"` reads as `Some(Nested)`, and every current canonical label is returned unchanged. Stored events and projections are never rewritten. `IsAmbiguousFreeText` reports new free text the reader would change; the Security Master write path uses it to refuse such `OtherSecurity` subtypes and categories.
@@ -2561,10 +2569,16 @@ let the leg scheduler accrue on the scheduled notional (paying step-downs as pri
 exchanges principal) and use a recorded fixing for a period that has already reset. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
 one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. How a raw quote scales into
 money is a declared catalog fact (remediation slice 8): `SecurityAssetClassDescriptor.QuoteConvention`
-(`PercentOfPar` for face-value paper, `PerUnit` otherwise, defaulting from the lot unit so no
-price changes), read by `LotQuantity.ValueAtPrice(price, convention)` and
-`LotQuantity.QuoteConventionFor(assetClass)`; the unit-kind overload keeps the legacy rule and
-`SecurityQuoteConventionCoverageTests` pins the two routes to agree for every catalogued class. `CommitmentLot` (commitment,
+(`PercentOfPar` for face-value paper, `PerUnit` otherwise, defaulting from the lot unit), read by
+`LotQuantity.ValueAtPrice(price, convention)` and `LotQuantity.QuoteConventionFor(assetClass)`.
+Deposit and Repo declare `Balance` (decided 2026-11-25): they are valued at their outstanding
+balance, a quote does not scale the value, and accrued interest stays on the accrual path. The
+unit-kind overload keeps the legacy rule, and `SecurityQuoteConventionCoverageTests` pins the two
+routes to agree for every other catalogued class. `Iso4217Currencies` lists the ISO 4217 codes
+(plus the CNH and GBX market codes) that Security Master validation recognises. Contractual
+cash-flow prepayment survival is computed in decimal (`survival-cpr-smm-psa-v2`); runs recorded
+under `-v1` replay with the original double arithmetic, and runs with no survival-rate assumption
+keep recording v1 so their evidence hashes are unchanged. `CommitmentLot` (commitment,
 funded and unfunded amounts, recallable distributions, `Draw`) and `FundUnitLot` (units at an
 acquisition NAV) are the `Commitment` and `Units` cases the registry assigns to private fund
 interests, guarantees and funds. `SecurityIdentifierKind` adds
@@ -2763,3 +2777,10 @@ External GL posting contracts retain the exact fund, book and period, provider d
 certified mapping, source checkpoint, journal and line identities, and exact decimal amounts.
 `ExternalGlPostingPackage` combines that immutable payload with certification, approval and
 receipt observations. Amounts and journal sequence values use JSON strings for exact review.
+
+Run financing fields are nullable where the source can be unmeasured:
+`StrategyRunExecutionSummary.TotalMarginInterest`, the comparison read model's
+`TotalMarginInterest`, `PortfolioSummary.Financing`, `CashFinancingSummary.FinancingCost`,
+`FundWorkspaceSummary.FinancingCost`, and the accounting cash-flow payloads' `Financing` and
+`TotalFinancing` are `null` when financing coverage is unavailable, and a total is `null` when any
+contributing run's financing is unavailable, so no consumer reads an unmeasured value as $0.

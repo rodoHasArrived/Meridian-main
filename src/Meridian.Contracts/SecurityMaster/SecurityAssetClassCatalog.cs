@@ -688,6 +688,13 @@ public sealed record SecurityAssetClassDescriptor(
     public bool AccountingOutsideSlice { get; init; }
 
     /// <summary>
+    /// Whether the class's <c>baseCurrency</c> and <c>quoteCurrency</c> terms name traded assets
+    /// (crypto tickers such as BTC or USDT) rather than ISO 4217 currencies, so the ISO 4217 currency
+    /// check skips them. The record's own currency is still checked.
+    /// </summary>
+    public bool PairCurrenciesAreAssetTickers { get; init; }
+
+    /// <summary>
     /// Explicit valuation treatment, separate from admission to the coupon/accrual event slice.
     /// The daily valuation projector consumes this declaration when selecting a mark template.
     /// </summary>

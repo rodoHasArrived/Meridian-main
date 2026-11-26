@@ -181,6 +181,12 @@
       "review_after": "2027-04-30"
     },
     {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/070_otc_decimal_precision.sql",
+      "rule_id": "migration-alter-column-type",
+      "reason": "Proposed exception submitted for owner Security Master and schema/storage review; approval remains pending. Widens only the numeric(28,10) amount, quantity and exposure columns of otc_collateral_agreements, otc_contracts, otc_exposure_snapshots, otc_collateral_balances and otc_margin_calls to unconstrained numeric, the same change migration 058 made to the schedule projections. Every existing value is preserved and no row, column or retained document is removed; numeric(p,s) to numeric needs no table rewrite, so the append-only snapshot triggers do not fire. Apply through the transactional migration runner and advisory migration lock; failed-upgrade rollback remains transactional. Do not downgrade after higher-precision values have been accepted. Values already rounded on write are not reconstructed by this DDL.",
+      "review_after": "2027-05-31"
+    },
+    {
       "path": "src/Meridian.Storage/FundStructure/Migrations/007_entity_lifecycle.sql",
       "rule_id": "migration-truncate",
       "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new entity lifecycle revision and legacy-baseline tables. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",

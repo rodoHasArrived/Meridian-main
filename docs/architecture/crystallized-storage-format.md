@@ -478,8 +478,8 @@ var options = StorageProfilePresets.CreateFromProfile("Archival", rootPath: "dat
 // - 4-tier storage pipeline: hot → warm → cold → archive
 //   hot:     up to 7 days,   JSONL, no compression
 //   warm:    up to 30 days,  JSONL, Gzip
-//   cold:    up to 180 days, Parquet, Zstd
-//   archive: indefinite,     Parquet, Zstd
+//   cold:    up to 180 days, JSONL, Gzip
+//   archive: indefinite,     JSONL, Gzip
 // - Retention: 10 years / 2 TB hard cap
 // - Partition: Date + Source, monthly granularity
 ```
@@ -494,8 +494,12 @@ The Archival profile enables a four-tier storage pipeline managed by `TierMigrat
 |------|---------|---------------|---------------------|----------------|
 | **Hot** | Real-time access, NVMe SSD | JSONL | None | 7 days |
 | **Warm** | Daily batch access, SSD/HDD | JSONL | Gzip | 30 days |
-| **Cold** | Weekly/monthly access, HDD/NAS | Parquet | Zstd | 180 days |
-| **Archive** | Rare bulk access, object storage | Parquet | Zstd | Indefinite |
+| **Cold** | Weekly/monthly access, HDD/NAS | JSONL | Gzip | 180 days |
+| **Archive** | Rare bulk access, object storage | JSONL | Gzip | Indefinite |
+
+`TierMigrationService` converts only to JSONL and compresses only with Gzip; it rejects Parquet
+or Zstd tier targets with `NotSupportedException`, so the profile defaults stay within what
+migration implements. Parquet and Zstd for cold tiers remain a target, not a current capability.
 
 Tier migration runs on a configurable cron schedule (`TieringOptions.MigrationSchedule`). Files are migrated in parallel (`TieringOptions.ParallelMigrations`).
 

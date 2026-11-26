@@ -315,6 +315,72 @@ public sealed class SubscriptionOrchestrator
         }
     }
 
+    /// <summary>
+    /// Re-requests market depth for one symbol whose book went stale: cancels the current provider
+    /// depth request, clears the collector's book and stale flag, and subscribes again with the
+    /// symbol's last applied configuration, so the provider replays a full book from empty.
+    /// <see cref="ApplyAsync"/> cannot do this: with an unchanged configuration it keeps the
+    /// existing request and never resets the book.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> when depth was re-requested; <see langword="false"/> when this
+    /// process holds no depth request for the symbol (not configured for depth, an option, or
+    /// owned by another instance), in which case nothing is changed.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">The provider refused the new depth request.</exception>
+    public async Task<bool> ResubscribeDepthAsync(string symbol, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+            return false;
+
+        symbol = symbol.Trim();
+        await _applyGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (!_lastConfig.TryGetValue(symbol, out var sc)
+                || !sc.SubscribeDepth
+                || IsOptionSymbol(sc)
+                || !_depthSubs.TryGetValue(symbol, out var currentId))
+            {
+                return false;
+            }
+
+            if (currentId > 0)
+            {
+                try
+                { _ib.UnsubscribeMarketDepth(currentId); }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                { _log.Debug(ex, "Error cancelling stale market depth for {Symbol}", symbol); }
+            }
+
+            // Reset after the cancel so the replayed book starts from empty and the stale flag clears.
+            _depthCollector.ResetSymbolStream(symbol);
+
+            int newId;
+            try
+            {
+                newId = _ib.SubscribeMarketDepth(sc);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // Keep the symbol owned with a failed marker so the next attempt retries it.
+                _depthSubs[symbol] = -1;
+                throw new InvalidOperationException($"Market depth resubscription for '{symbol}' failed.", ex);
+            }
+
+            _depthSubs[symbol] = newId > 0 ? newId : -1;
+            if (newId <= 0)
+                throw new InvalidOperationException($"Provider returned no market depth subscription for '{symbol}'.");
+
+            _log.Information("Re-requested market depth for {Symbol} after a depth integrity failure", symbol);
+            return true;
+        }
+        finally
+        {
+            _applyGate.Release();
+        }
+    }
+
     private async Task<LeaseAcquireResult> TryAcquireOwnershipAsync(string kind, string symbol, CancellationToken ct)
     {
         if (_ownershipService is null)

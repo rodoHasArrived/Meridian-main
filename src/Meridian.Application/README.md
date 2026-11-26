@@ -440,6 +440,18 @@ schedule when effective interest is negative, after contractual caps and floors.
 an entire signed-interest schedule before any period posts. Calculation-only signed-interest
 previews keep their existing signed model; explicit v1/v2 receipt replay retains its original arithmetic.
 
+Hand-written asset-class validators (the per-class modules under `SecurityMaster/Validation/Modules/`) must agree with the declared
+sign and fraction range of each rate field in `SecurityRateFieldUnits`;
+`SecurityRateFieldUnitsValidatorParityTests` enforces this and lists the disagreements still waiting
+on an owner ruling. A negative Bond `spreadBps` therefore validates, as the unit table declares.
+DirectLoan and Swap also carry Warning-level economic consistency rules (spread without an index,
+principal and notional schedule order, swap-leg index, fixed rate, day count and payment frequency);
+they surface issues for review without blocking a write. `SM_CURRENCY_NOT_ISO4217` is a Warning
+for currency codes that are not ISO 4217 (record currency, schema-declared pair, settlement and NAV
+currencies, swap-leg currencies; crypto pair tickers are skipped). The asset-position market-value
+service blocks Balance-quoted classes (Deposit, Repo) with `BalanceValuationUnavailable` instead of
+pricing them as a percent of par.
+
 ## Configured direct-lending accounting
 
 Loan journal lines retain their transaction and functional currency through symbol and dimension
@@ -1507,7 +1519,16 @@ Core workstation host. Do not introduce a second listener or independent monitor
   Reconciliation governance exception classification now lives in
   `Meridian.Strategies.Services.GovernanceExceptionService`. Report-pack generation and NAV
   attribution live in `Meridian.Reporting` rather than Application-local services.
-- `Monitoring/` - application monitoring adapters and status server support. Shared pipeline
+- `Monitoring/` - application monitoring adapters and status server support. `PrometheusMetrics`
+  also exports, on the scrape, pipeline backlog and consumer health (`mdc_pipeline_*`), backfill
+  run outcomes (`mdc_backfill_*`; each run counts into its own `RunScopedEventMetrics`) and
+  data-root disk space (`mdc_disk_*`); `ErrorLogRecorder` feeds `/api/errors` from Error/Fatal
+  log events. `QualityMonitoringPublisher` also feeds the composition's `ProviderLatencyService`
+  from one in sixteen timed trade/quote samples, on its consumer task rather than the publish
+  path. Without streaming failover, `CollectorModeRunner` feeds a `ConnectionHealthMonitor` from
+  the client's transport diagnostics through `ConnectionDiagnosticsHealthFeed` (only for clients
+  that report a real lifecycle) and, with or without failover, publishes the monitor through
+  `ConnectionHealthRegistry`. Shared pipeline
   composition records live price/order-book ingress in `DataFreshnessSlaMonitor`, independent of
   storage acceptance and the bounded quality-sample queue. Configured enabled symbols start with
   one freshness threshold of grace; missing first events then violate the SLA. Subscription
@@ -1923,11 +1944,12 @@ direct-lending and amortization gates are ungated when no verifier is registered
   - Limit: the profile adds no recheck of records that carry no maker. Revisions submitted before the drafter check, and profile drafts without `DraftedBy`, are handled as described below.
 - **Governed term amendments.** `IGovernedTermAmendmentPolicy` (`GovernedTermAmendmentPolicy`) is the single source of the governed-amendment refusal. It refuses when `SecurityMasterWorkbench:RequireGovernedTermAmendments` is on or the Institutional profile is in force. `SecurityMasterService` enforces it itself, so every in-process caller is covered: while it refuses, `ISecurityMasterService.AmendTermsAsync` and the preferred, convertible and term-block amendments throw `GovernedTermAmendmentRequiredException`. Two other typed paths are not blocked by it:
   - `ISecurityMasterAmender` is the system-ingest path, used by Polygon trading-parameter backfill, EDGAR ingest and ticker changes. It refuses operator source systems (`SecurityMasterWriteAuthority`).
-  - `IGovernedPublicationAmender` is the publication path, used only by `ApprovedFieldEditCanonicalMergeHandler`. It requires `SourceRecordId` to name a revision the revision store holds as Approved or Published for the same security. With no revision store composed, it refuses while governance is on.
+  - `IGovernedPublicationAmender` is the publication path, used only by the published-revision handlers `ApprovedFieldEditCanonicalMergeHandler` and `ApprovedHistoricalIdentifierWindowHandler`. It requires `SourceRecordId` to name a revision the revision store holds as Approved or Published for the same security. With no revision store composed, it refuses while governance is on.
 
   The setting still defaults to off; a production composition refuses direct amendments regardless.
 - **Stale field proposals.** A staged `assetSpecificTerms.*` edit records its canonical base: the version plus a `SecurityAssetTermsFieldSnapshot` of the keys the merge overwrites (migration `060`). At publish, `ApprovedFieldEditCanonicalMergeHandler` refuses a proposal whose field changed since the draft by throwing `StaleFieldProposalException`; the revision stays Approved and must be re-staged. Changes to other fields still merge, a field already holding the value converges, and revisions without a base publish as before. The publish result's `CanonicalMerge` reports whether the golden record changed.
 - **Independent field-edit review.** With `SecurityMasterWorkbench:RequireIndependentReviewer` on, or under the Institutional profile, a governed field-edit revision cannot be submitted naming its drafter as reviewer, and cannot be approved by its submitter. The effective value is read at each call. The code default is false; the sample configuration turns it on.
+- **Governed historical identifier windows (review F1).** `SecurityMasterImportService` still restamps every imported identifier's `ValidFrom` with the ingest time, so a file cannot backdate history. `ISecurityMasterWorkbenchCommandService.ProposeHistoricalIdentifierWindowAsync` stages an identifier window (kind, value, provider, `ValidFrom`, `ValidTo`) with an Evidence Vault reference and a justification as a Draft revision on the reserved path `identifiers.historicalWindow` (`SecurityMasterHistoricalIdentifierWindow`, whose public `Validate` is the single rule set clients pre-check with). It stages no overlay value; the field-edit route refuses the reserved path, and discarding the proposal only rejects the revision. Submission and approval always require an independent reviewer for these revisions, whatever `RequireIndependentReviewer` says, and the proposer recorded in the window can neither review nor approve it. On publish, `ApprovedHistoricalIdentifierWindowHandler` (order 6) adds the identifier as non-primary through `IGovernedPublicationAmender`, keeping the proposed `ValidFrom`/`ValidTo`; the amendment itself is effective at publish time, and a retried publish finds the window already present (`AlreadyCanonical`). `HistoricalIdentifierWindowGovernanceTests` covers the path from import to as-of resolution.
 - **Independent profile approval.** `SecurityAssetProfileGovernanceService` refuses an asset-profile approval by any actor who drafted that version when `SecurityMasterWorkbench:RequireIndependentProfileApprover` is on or the Institutional profile is in force. A drafter is identified by the recorded `DraftedBy`, by the drafted audit events for that version, or, for a legacy draft without `DraftedBy`, by its recorded author. The setting defaults to off and the effective value is read at approval time.
 - **Classification labels.** `SecurityEconomicDefinitionAdapter` stores asset-class, family and sub-type labels from the F# domain's explicit name functions rather than union `ToString()`, which would emit payload syntax such as `OtherFamily "x"` or `Some(...)`. Labels retained before that change are decoded at read time by `Meridian.Contracts.SecurityMaster.ClassificationLabelReader` (preferred-equity replay guard, workbench DTO mapping, accounting sub-type and certified-report rows). Each label is decoded once, where a stored record becomes a DTO or row; downstream consumers such as the WPF display, the passport summaries and the CSV/XLSX export use that decoded value; retained events are not rewritten. Create and terms amendment refuse an `OtherSecurity` `subType`/`category` that would read back differently (`None`, `Some(Equity)`, a quoted literal or a union payload) with `SecurityMasterWriteRefusedException` (`SecurityMasterService.ClassificationText.cs`).
 - **Removed prototype.** The unused Application-side `SecurityMaster/CashFlow/ScheduleSpecFactory` prototype was deleted; production uses `Meridian.Contracts.SecurityMaster.ScheduleSpecFactory`.
@@ -1946,7 +1968,16 @@ blocking read on the thread pool. See
 
 **Pipeline.** `EventPipeline` counts events the channel evicts in DropOldest/DropNewest mode as
 dropped. `PersistentDedupLedger` offers a synchronous `Initialize` for dependency-injection
-factories, and `AutoResubscribePolicy` awaits `SubscriptionOrchestrator.ApplyAsync`.
+factories, and `AutoResubscribePolicy` awaits `SubscriptionOrchestrator.ApplyAsync` for
+configuration-driven resubscription.
+
+**Depth recovery.** The collector runner hooks `MarketDepthCollector.IntegrityDetected` into an
+`AutoResubscribePolicy` (except under `--simulate-feed`, which resets its own stale book). Depth
+events go through `SubscriptionOrchestrator.ResubscribeDepthAsync`, which cancels the symbol's depth
+request, resets its book and re-requests depth with the last applied configuration; an
+unchanged-config `ApplyAsync` would keep the stale request. The policy's per-symbol cooldown,
+minimum interval and circuit breakers bound retries, a symbol this process does not hold is skipped
+without counting as a failure, and the runner keeps at most one recovery in flight per symbol.
 
 ## Diagrams
 

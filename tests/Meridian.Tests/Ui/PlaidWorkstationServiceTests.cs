@@ -217,6 +217,19 @@ public sealed class PlaidWorkstationServiceTests
         audit.GetProperty("actor").GetString().Should().Be("plaid-http-operator");
     }
 
+    [Fact]
+    public async Task LinkTokenEndpoint_ReplacesForgedUserIdWithSessionActor()
+    {
+        var fixture = await PlaidFixture.CreateAsync();
+        await using var app = await CreateEndpointAppAsync(fixture, true);
+        // The browser used to send the workstation desk label ("Meridian Operator") as userId.
+        var request = new PlaidLinkTokenRequest(UserId: "Meridian Operator", InstitutionId: "ins_1", InstitutionName: "Test Bank");
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.PlaidLinkToken,
+            new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json"));
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        fixture.Client.LastLinkTokenRequest!.UserId.Should().Be("plaid-http-operator");
+    }
+
     [Theory]
     [InlineData("exchange")]
     [InlineData("link")]

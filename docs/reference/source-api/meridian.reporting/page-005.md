@@ -6,24 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ReportSnapshotDiffEngine
-
-Qualified name: <code>Meridian.Reporting.ReportSnapshotDiffEngine</code>. Kind: `class`.
-
-Source: [src/Meridian.Reporting/ReportSnapshotDiffEngine.cs:11](../../../../src/Meridian.Reporting/ReportSnapshotDiffEngine.cs#L11).
-
-Produces a deterministic period-over-period comparison between two rendered report-writer grids. Rows are matched by ReportWriterGridRowDto.RowKey; numeric cells carry a signed delta and direction so the UI can present &quot;prior / current / Δ&quot; columns without re-querying the source data.
-
-```csharp
-public static class ReportSnapshotDiffEngine
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ReportWriterGridDiffDto Diff(ReportWriterGridRenderDto prior, ReportWriterGridRenderDto current);</code> | [src/Meridian.Reporting/ReportSnapshotDiffEngine.cs:13](../../../../src/Meridian.Reporting/ReportSnapshotDiffEngine.cs#L13) |  |
-
 ## ReportWriterFormulaReferences
 
 Qualified name: <code>Meridian.Reporting.ReportWriterFormulaReferences</code>. Kind: `class`.

@@ -40,6 +40,15 @@ governed Passport editing, and cash-flow scenarios. The selected tab is URL-back
 tabs; switching assets resets inputs, aborts supported reads, and rejects stale responses. Search and bounded, clearable recent
 history keep the tab and route scope. Security Master links carry the exact security ID.
 
+The Passport tab's editor can also propose a governed historical identifier window
+(`security-passport-historical-window.tsx` with its pure view-model): identifier kind, value,
+provider, valid from/to, Evidence Vault reference and justification, checked against the same rules
+the server applies. Staging it sets the editor's working revision, so Submit, Approve and Publish
+carry it through the maker-checker gate; a second proposal waits until that revision is published or
+discarded. `npm run e2e:historical-window` (`scripts/e2e-historical-identifier-window.mjs`) drives
+this flow end to end in Chromium against the Vite dev server, mocking only the API edge; set
+`MERIDIAN_CHROMIUM_PATH` when the installed Chromium does not match the dashboard's Playwright.
+
 The Instrument Dossier embeds the same asset panel with path-owned instrument identity. Its
 outer tab remains in `tab`; embedded asset tabs use `assetTab` and retain book/account/date scope.
 The dossier owns instrument switching and recovery navigation. Delayed reads for an earlier
@@ -931,7 +940,7 @@ source recovery in the shared status control.
 Use `SectionDescription` only for instructional copy, with a stable `descriptionKey` and an
 accessible label. `ScreenLayout` and `WorkspaceSection` opt in using `descriptionKey`; dynamic
 financial state, warnings, source evidence, and scope must never use remembered help. The shell
-scopes browser-local reading preferences to the session environment, operator name and role.
+scopes browser-local reading preferences to the session environment, signed-in username and role.
 Descriptions show as a line of text on every visit. One operator setting, "Page descriptions"
 under Settings > Preferences (`useSectionDescriptionsHidden`), moves all of them behind an
 information icon instead; there is no per-section "Hide" link and a description no longer
@@ -2940,7 +2949,12 @@ names for `Group` principals and usernames for `User` principals (when the calle
 accounts) on first focus, while still accepting typed IDs. Source fields come from the shared report-writer field catalog when present, so the browser
 palette can include source-backed portfolio, analytics, consolidation, and generated contribution
 fields even when a saved grid has not already placed those fields. The designer also renders a live layout summary from the current draft zones so operators
-can confirm dimension, metric, formula, filter, and Top-N posture before preview or save. Operators can save the current grid layout as a
+can confirm dimension, metric, formula, filter, and Top-N posture before preview or save. Auto preview is on by default for each grid:
+after an edit the last preview stays visible but dimmed, and the grid re-renders through the same render endpoint 600 ms after the
+last change, cancelling any older in-flight render. A polite live-region badge reports the preview state; failures show a quiet
+error row with Retry (held back while the operator is typing a formula or custom dataset), and datasets over 200 rows pause auto
+preview until the operator previews manually. The per-grid "Auto preview" checkbox turns it off; the Preview button keeps the global
+status panel. Operators can save the current grid layout as a
 governed template draft through
 `/api/fund-structure/reporting/templates/drafts`, including company-wide, restricted group/company,
 or user-locked access policy metadata. Placed row, column, metric, and formula tokens can be
@@ -2958,7 +2972,7 @@ shared renderer still owns pivot, Top-N, contribution, filter, and formula outpu
 source-backed option posts the selected payload-owned rows to the render endpoint; the browser also
 renders the source-owned field catalog with role and data-type metadata before preview. Formula
 preview row generation recognizes brace references, bare identifiers, `total(...)`, and shared
-formula functions such as `abs(...)`, `min(...)`, `max(...)`, `safeDivide(...)`, `percent(...)`,
+formula functions such as `abs(...)`, `min(...)`, `max(...)`, `median(...)`, `stdev(...)`, `safeDivide(...)`, `percent(...)`,
 `basisPoints(...)`, `round(...)`, and `if(...)`, so local sample rows include the same formula source fields
 the shared renderer will evaluate. The
 certified operational data-mart option is server-projected with row-lineage keys, lineage manifest
@@ -3826,6 +3840,16 @@ its supporting facts. Existing service permission checks, operator identity, rat
 casework outcomes and financial calculations remain authoritative. Exceptions reuses the queue
 pattern without constraining its cross-run casework to one run.
 
+Operator identity in the browser is the signed-in username from `GET /api/auth/me`
+(`lib/api/auth.api.ts`, `hooks/use-signed-in-username.ts`), never the session `displayName`, which
+the host fills with a desk label shared by every operator on the desk. The username keys
+per-operator recovery state: reconciliation decision and batch recovery, retained asset-accounting
+commands, the journal workbench session identity and the keys that remount per-operator panels.
+Request bodies carry no actor; the reconciliation review/resolve, Plaid, Settings governance
+(ledger mapping, role profiles, scoped access, approval policy, close calendar, asset profiles,
+Security Master create) and provider-integration routes take it from the authenticated session.
+`settings-screen.test.tsx` fails any Settings call that puts an actor field in its request.
+
 `accounting-screen.reconciliation-workbench.tsx` owns the work surface.
 `accounting-screen.reconciliation-resolve-dialog.ts` owns rationale and confirmation state;
 existing view-model exports remain compatible. Supporting account
@@ -3989,3 +4013,6 @@ physical source line is labelled unavailable rather than inferred from normalize
 
 For the coordinated implementation and validation record, see
 [Browser workstation UX implementation](../../../docs/engineering/plans/browser-workstation-ux-roadmap-2026-11.md).
+
+Financing figures that the host reports as `null` (unmeasured run financing) render as
+"Unavailable" in the accounting cash-flow evidence rows, never as $0.

@@ -168,4 +168,140 @@ public sealed class IBMarketDataClientRuntimeReconnectTests
             restoredEvent.RemoveEventHandler(manager, restoredHandler);
         }
     }
+
+    [Fact]
+    public async Task UnsubscribeMarketDepth_StopsRoutingLateCallbacksForTheCancelledTicker()
+    {
+        var connectionClosed = typeof(EnhancedIBConnectionManager).GetMethod("connectionClosed");
+#if IBAPI_SMOKE
+        connectionClosed.Should().NotBeNull(
+            "EnableIbApiSmoke=true must exercise the IB API runtime callback surface");
+#else
+        if (connectionClosed is null)
+            return;
+#endif
+
+        var publisher = new TestMarketEventPublisher();
+        var depth = new MarketDepthCollector(publisher, requireExplicitSubscription: false);
+        var router = new IBCallbackRouter(depth, new TradeDataCollector(publisher, null), new QuoteCollector(publisher));
+        using var manager = new EnhancedIBConnectionManager(router, enableHeartbeat: false);
+        await manager.ConnectAsync();
+
+        var tickerId = manager.SubscribeMarketDepth(new Meridian.Contracts.Configuration.SymbolConfig("MSFT"));
+        manager.UnsubscribeMarketDepth(tickerId);
+        depth.ResetSymbolStream("MSFT");
+        router.UpdateMktDepth(tickerId, 0, 0, 0, 400.10, 100);
+
+        depth.GetCurrentSnapshot("MSFT").Should().BeNull("TWS can deliver callbacks after cancelMktDepth");
+    }
+
+    [Fact]
+    public async Task RuntimeConnectionLoss_ResetsDepthBooksBeforeReplay()
+    {
+        var connectionClosed = typeof(EnhancedIBConnectionManager).GetMethod("connectionClosed");
+#if IBAPI_SMOKE
+        connectionClosed.Should().NotBeNull(
+            "EnableIbApiSmoke=true must exercise the IB API runtime callback surface");
+#else
+        if (connectionClosed is null)
+            return;
+#endif
+
+        var publisher = new TestMarketEventPublisher();
+        var depth = new MarketDepthCollector(publisher, requireExplicitSubscription: false);
+        var router = new IBCallbackRouter(depth, new TradeDataCollector(publisher, null), new QuoteCollector(publisher));
+        using var manager = new EnhancedIBConnectionManager(router, enableHeartbeat: false);
+        var restored = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var restoredEvent = typeof(EnhancedIBConnectionManager).GetEvent("ConnectionRestored");
+        restoredEvent.Should().NotBeNull();
+        EventHandler restoredHandler = (_, _) => restored.TrySetResult();
+        restoredEvent!.AddEventHandler(manager, restoredHandler);
+
+        try
+        {
+            await manager.ConnectAsync();
+            var tickerId = manager.SubscribeMarketDepth(new Meridian.Contracts.Configuration.SymbolConfig("MSFT"));
+            router.UpdateMktDepth(tickerId, 0, 0, 0, 400.10, 100);
+
+            connectionClosed!.Invoke(manager, null);
+            await restored.Task.WaitAsync(TimeSpan.FromSeconds(8));
+            router.UpdateMktDepth(tickerId, 0, 0, 0, 400.10, 100); // TWS replays the book from position 0
+
+            depth.GetCurrentSnapshot("MSFT")!.Bids.Should().ContainSingle(
+                "the replayed level must replace, not duplicate, the one held before the drop");
+        }
+        finally
+        {
+            restoredEvent.RemoveEventHandler(manager, restoredHandler);
+        }
+    }
+
+    [Fact]
+    public async Task ConnectionLoss_UnregistersTickersAndClearsDepthBooks_UntilReplay()
+    {
+        var connectionClosed = typeof(EnhancedIBConnectionManager).GetMethod("connectionClosed");
+#if IBAPI_SMOKE
+        connectionClosed.Should().NotBeNull(
+            "EnableIbApiSmoke=true must exercise the IB API runtime callback surface");
+#else
+        if (connectionClosed is null)
+            return;
+#endif
+
+        var publisher = new TestMarketEventPublisher();
+        var depth = new MarketDepthCollector(publisher, requireExplicitSubscription: false);
+        var router = new IBCallbackRouter(depth, new TradeDataCollector(publisher, null), new QuoteCollector(publisher));
+        using var manager = new EnhancedIBConnectionManager(router, enableAutoReconnect: false, enableHeartbeat: false);
+        await manager.ConnectAsync();
+        var tickerId = manager.SubscribeMarketDepth(new Meridian.Contracts.Configuration.SymbolConfig("MSFT"));
+        router.UpdateMktDepth(tickerId, 0, 0, 0, 400.10, 100);
+
+        connectionClosed!.Invoke(manager, null);
+        router.UpdateMktDepth(tickerId, 0, 0, 0, 399.00, 50); // a straggler from the dead session
+
+        depth.GetCurrentSnapshot("MSFT").Should().BeNull(
+            "while the link is down the book is cleared, not left frozen, and nothing routes into it");
+    }
+
+    [Fact]
+    public async Task Reconnect_RoutesOnlyRetainedSubscriptions()
+    {
+        var connectionClosed = typeof(EnhancedIBConnectionManager).GetMethod("connectionClosed");
+#if IBAPI_SMOKE
+        connectionClosed.Should().NotBeNull(
+            "EnableIbApiSmoke=true must exercise the IB API runtime callback surface");
+#else
+        if (connectionClosed is null)
+            return;
+#endif
+
+        var publisher = new TestMarketEventPublisher();
+        var depth = new MarketDepthCollector(publisher, requireExplicitSubscription: false);
+        var router = new IBCallbackRouter(depth, new TradeDataCollector(publisher, null), new QuoteCollector(publisher));
+        using var manager = new EnhancedIBConnectionManager(router, enableHeartbeat: false);
+        var restored = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var restoredEvent = typeof(EnhancedIBConnectionManager).GetEvent("ConnectionRestored");
+        restoredEvent.Should().NotBeNull();
+        EventHandler restoredHandler = (_, _) => restored.TrySetResult();
+        restoredEvent!.AddEventHandler(manager, restoredHandler);
+
+        try
+        {
+            await manager.ConnectAsync();
+            var retained = manager.SubscribeMarketDepth(new Meridian.Contracts.Configuration.SymbolConfig("MSFT"));
+            router.RegisterDepthTicker(9_999, "STRAY"); // a registration with no retained subscription
+
+            connectionClosed!.Invoke(manager, null);
+            await restored.Task.WaitAsync(TimeSpan.FromSeconds(8));
+            router.UpdateMktDepth(retained, 0, 0, 0, 400.10, 100);
+            router.UpdateMktDepth(9_999, 0, 0, 0, 10.00, 1);
+
+            depth.GetCurrentSnapshot("MSFT").Should().NotBeNull("the retained subscription is replayed and routes again");
+            depth.GetCurrentSnapshot("STRAY").Should().BeNull("reconnect leaves only retained subscriptions routable");
+        }
+        finally
+        {
+            restoredEvent.RemoveEventHandler(manager, restoredHandler);
+        }
+    }
 }

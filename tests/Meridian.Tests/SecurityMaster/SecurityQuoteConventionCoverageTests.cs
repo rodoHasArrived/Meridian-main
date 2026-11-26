@@ -7,14 +7,25 @@ namespace Meridian.Tests.SecurityMaster;
 /// Pins the declared quote convention (remediation slice 8). Every catalogued class's declared
 /// <see cref="SecurityAssetClassDescriptor.QuoteConvention"/> must match the legacy unit-kind
 /// conversion (face-value lots quote as a percentage of par, everything else per unit), so the
-/// declared fact changes no price today; when a class deliberately declares a different
-/// convention, this pin fails and forces the class-aware callers onto
+/// declared fact changes no price; a class that deliberately declares a different convention is
+/// listed in <see cref="DeliberateDivergences"/>, which moves its class-aware callers onto
 /// <see cref="LotQuantity.ValueAtPrice(decimal, SecurityQuoteConvention)"/> as a visible decision
 /// rather than a silent repricing.
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class SecurityQuoteConventionCoverageTests
 {
+    /// <summary>
+    /// Classes whose declared convention differs from the lot-unit default, with the convention they
+    /// declare. Deposit and Repo are valued at balance (slice 8, decided 2026-11-25).
+    /// </summary>
+    private static readonly IReadOnlyDictionary<string, SecurityQuoteConvention> DeliberateDivergences =
+        new Dictionary<string, SecurityQuoteConvention>(StringComparer.Ordinal)
+        {
+            [SecurityAssetClassNames.Deposit] = SecurityQuoteConvention.Balance,
+            [SecurityAssetClassNames.Repo] = SecurityQuoteConvention.Balance
+        };
+
     public static TheoryData<string> CatalogClasses()
     {
         var data = new TheoryData<string>();
@@ -31,9 +42,11 @@ public sealed class SecurityQuoteConventionCoverageTests
     public void Declared_convention_matches_the_legacy_unit_kind_rule(string assetClass)
     {
         var definition = SecurityAssetClassRegistry.Get(assetClass);
-        var expected = definition.LotUnit == SecurityLotUnitKind.FaceValue
-            ? SecurityQuoteConvention.PercentOfPar
-            : SecurityQuoteConvention.PerUnit;
+        var expected = DeliberateDivergences.TryGetValue(assetClass, out var declared)
+            ? declared
+            : definition.LotUnit == SecurityLotUnitKind.FaceValue
+                ? SecurityQuoteConvention.PercentOfPar
+                : SecurityQuoteConvention.PerUnit;
 
         definition.Descriptor.QuoteConvention.Should().Be(
             expected,
@@ -45,6 +58,11 @@ public sealed class SecurityQuoteConventionCoverageTests
     [MemberData(nameof(CatalogClasses))]
     public void Both_pricing_routes_agree_for_every_catalog_class(string assetClass)
     {
+        if (DeliberateDivergences.ContainsKey(assetClass))
+        {
+            return;
+        }
+
         var definition = SecurityAssetClassRegistry.Get(assetClass);
         var lot = new LotQuantity(1_000m, definition.LotUnit, 1m);
         const decimal price = 99.5m;
@@ -60,6 +78,21 @@ public sealed class SecurityQuoteConventionCoverageTests
         new LotQuantity(1_000m, SecurityLotUnitKind.FaceValue, 1m).ValueAtPrice(99.5m).Should().Be(995m);
         new LotQuantity(1_000m, SecurityLotUnitKind.Shares, 1m).ValueAtPrice(99.5m).Should().Be(99_500m);
         new LotQuantity(10m, SecurityLotUnitKind.Contracts, 100m).ValueAtPrice(2.5m).Should().Be(2_500m);
+    }
+
+    [Theory]
+    [InlineData(99.5)]
+    [InlineData(100)]
+    [InlineData(1)]
+    public void Balance_values_the_outstanding_balance_whatever_the_quote(double quote)
+        => new LotQuantity(1_000_000m, SecurityLotUnitKind.FaceValue, 1m)
+            .ValueAtPrice((decimal)quote, SecurityQuoteConvention.Balance).Should().Be(1_000_000m);
+
+    [Fact]
+    public void Deposit_and_repo_declare_balance()
+    {
+        LotQuantity.QuoteConventionFor(SecurityAssetClassNames.Deposit).Should().Be(SecurityQuoteConvention.Balance);
+        LotQuantity.QuoteConventionFor(SecurityAssetClassNames.Repo).Should().Be(SecurityQuoteConvention.Balance);
     }
 
     [Fact]

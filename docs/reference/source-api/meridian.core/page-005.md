@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BatchAddRequest
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchAddRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/BatchOperations.cs:49](../../../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs#L49).
+
+Request to add multiple symbols at once.
+
+```csharp
+public sealed record BatchAddRequest(string[] Symbols, BatchAddDefaults? Defaults = null, bool SkipExisting = true);
+```
+
+## BatchCopySettingsRequest
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchCopySettingsRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/BatchOperations.cs:116](../../../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs#L116).
+
+Request to copy subscription settings from one symbol to others.
+
+```csharp
+public sealed record BatchCopySettingsRequest(string SourceSymbol, string[] TargetSymbols);
+```
+
 ## BatchDeleteRequest
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchDeleteRequest</code>. Kind: `record`.
@@ -699,28 +723,4 @@ Filter criteria for symbol metadata queries.
 
 ```csharp
 public sealed record SymbolMetadataFilter(string? Sector = null, string? Industry = null, decimal? MinMarketCap = null, decimal? MaxMarketCap = null, MarketCapCategory? MarketCapCategory = null, string? Exchange = null, string? Country = null, string? AssetType = null, string? IndexMembership = null, bool? PaysDividend = null);
-```
-
-## SymbolSearchRequest
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.SymbolSearchRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:134](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L134).
-
-Request for symbol search/autocomplete.
-
-```csharp
-public sealed record SymbolSearchRequest(string Query, int Limit = 10, string? AssetType = null, string? Exchange = null, string? Country = null, string? Provider = null, bool IncludeFigi = true);
-```
-
-## SymbolSearchResponse
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.SymbolSearchResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:160](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L160).
-
-Response from symbol search.
-
-```csharp
-public sealed record SymbolSearchResponse(IReadOnlyList<SymbolSearchResult> Results, int TotalCount, IReadOnlyList<string> Sources, long ElapsedMs, string Query);
 ```

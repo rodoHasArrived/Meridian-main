@@ -13,6 +13,7 @@ import { isApiError } from "@/lib/api-errors";
 import {
   securityMasterWorkbenchApproveEndpoint,
   securityMasterWorkbenchFieldEndpoint,
+  securityMasterWorkbenchHistoricalIdentifierWindowEndpoint,
   securityMasterWorkbenchPublishEndpoint,
   securityMasterWorkbenchResolveConflictEndpoint,
   securityMasterWorkbenchSubmitEndpoint
@@ -97,6 +98,24 @@ export interface UpdateSecurityFieldInput {
   correlationId?: string | null;
 }
 
+/**
+ * Proposes a historical identifier window: an identifier the security carried before it was ingested.
+ * Imports stamp identifier validity with the ingest time, so history before that date is staged as a
+ * governed Draft that an independent reviewer approves. `actor` is server-derived (the caller is the
+ * recorded proposer and cannot review or approve the window). Dates are ISO-8601 instants.
+ */
+export interface ProposeHistoricalIdentifierWindowInput {
+  expectedVersion: number;
+  kind: string;
+  value: string;
+  provider?: string | null;
+  validFrom: string;
+  validTo?: string | null;
+  evidenceReference: string;
+  justification: string;
+  fundProfileId?: string | null;
+}
+
 /** Operator resolution of a source conflict. A deviation from the policy winner must be acknowledged. */
 export interface ResolveSourceConflictInput {
   conflictId: string;
@@ -142,6 +161,18 @@ export function updateSecurityField(
   signal?: AbortSignal
 ): Promise<SecurityMasterEditResult> {
   return apiPostJson<SecurityMasterEditResult>(securityMasterWorkbenchFieldEndpoint(securityId), input, { signal });
+}
+
+export function proposeHistoricalIdentifierWindow(
+  securityId: string,
+  input: ProposeHistoricalIdentifierWindowInput,
+  signal?: AbortSignal
+): Promise<SecurityMasterEditResult> {
+  return apiPostJson<SecurityMasterEditResult>(
+    securityMasterWorkbenchHistoricalIdentifierWindowEndpoint(securityId),
+    input,
+    { signal }
+  );
 }
 
 export function resolveSourceConflict(

@@ -51,6 +51,28 @@ public sealed record UpdateSecurityFieldRequest(
     string? CorrelationId = null);
 
 /// <summary>
+/// Proposes a HISTORICAL identifier window — an identifier the security carried before it was
+/// ingested — as a governed Draft revision. Bulk imports stamp every identifier's <c>ValidFrom</c>
+/// with the ingest time (an untrusted file is no authority for valid time), so a window before the
+/// ingest date can only enter the golden record through this proposal: it must cite an Evidence
+/// Vault reference and a justification, an independent second operator approves it through the
+/// workbench maker-checker gate, and publish applies it as a governed amendment with the proposed
+/// <see cref="ValidFrom"/>. The proposed identifier is never primary.
+/// </summary>
+public sealed record ProposeHistoricalIdentifierWindowRequest(
+    Guid SecurityId,
+    long ExpectedVersion,
+    Meridian.Contracts.SecurityMaster.SecurityIdentifierKind Kind,
+    string Value,
+    string? Provider,
+    DateTimeOffset ValidFrom,
+    DateTimeOffset? ValidTo,
+    string EvidenceReference,
+    string Justification,
+    string Actor,
+    string? FundProfileId = null);
+
+/// <summary>
 /// Records an operator's resolution of a Security Master source conflict. When
 /// <see cref="ChosenWinnerSource"/> diverges from the policy winner, <see cref="AcknowledgePolicyDeviation"/>
 /// must be set and the deviation is retained as the audited artifact.

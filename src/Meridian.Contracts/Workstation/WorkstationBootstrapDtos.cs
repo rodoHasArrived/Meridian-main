@@ -824,7 +824,8 @@ public sealed record WorkstationAccountingRunCashFlowPayload(
     decimal CashBalance,
     decimal LedgerCashBalance,
     decimal CashVariance,
-    decimal Financing,
+    /// <summary>The run's financing, or <see langword="null"/> when its financing coverage is unavailable.</summary>
+    decimal? Financing,
     decimal RealizedPnl,
     decimal UnrealizedPnl,
     int JournalEntryCount,
@@ -835,7 +836,11 @@ public sealed record WorkstationAccountingCashFlowSummaryPayload(
     decimal TotalCash,
     decimal TotalLedgerCash,
     decimal NetVariance,
-    decimal TotalFinancing,
+    /// <summary>
+    /// Total financing across the runs, or <see langword="null"/> when any contributing run's
+    /// financing is unavailable: a partial sum would read as a complete total.
+    /// </summary>
+    decimal? TotalFinancing,
     int RunsWithCashSignals,
     int RunsWithCashVariance,
     string Tone,

@@ -1,5 +1,6 @@
 import type { AccountingWorkspaceResponse } from "../types";
 import { RECONCILIATION_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "../lib/workstation-endpoints";
+import { UI_API_ROUTES } from "../lib/ui-api-routes.generated";
 import { accountingPayload, type AccountingScenarioPayload } from "./accounting-payload";
 import { createAccountingSupportRoutes } from "./accounting-support";
 import type { ApiScenario, ScenarioResponse, ScenarioProblem } from "./types";
@@ -24,6 +25,16 @@ const emptyAccountingPayload: AccountingScenarioPayload = {
   }
 };
 
+const scenarioOperator = {
+  username: "scenario-operator",
+  role: "Admin",
+  roleProfileName: null,
+  companyId: null,
+  passwordResetRequired: false,
+  permissions: "None",
+  permissionNames: []
+};
+
 function accountingScenario(
   state: string,
   response: ScenarioResponse<AccountingWorkspaceResponse | ScenarioProblem>,
@@ -33,6 +44,9 @@ function accountingScenario(
     id: `accounting.${state}`,
     previewPath: "/accounting/reconciliation",
     responses: [
+      // The shell and Accounting read the signed-in operator for per-operator state. It is
+      // signed in for every scenario: these states describe accounting data, not authentication.
+      { method: "GET", path: UI_API_ROUTES.AuthApiMe, response: { status: 200, body: scenarioOperator } },
       { method: "GET", path: WORKSTATION_API_ENDPOINTS.accounting, response },
       // Accounting reads this queue independently. Keep the state consistent
       // when that read replaces the workspace's embedded queue.

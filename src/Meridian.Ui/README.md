@@ -306,6 +306,9 @@ Fixed-income task aliases in command search open the existing Security Master, A
 cash-ladder, account-oversight, factor-paydown and cutover routes. Reference probes wait for the
 authoritative selected instrument's currency and identifiers, including ladder selections outside
 search results. The rebuilt host-served bundle carries the same routing and selection behavior.
+The host-served bundle includes Asset detail's Passport-tab form for proposing a governed historical
+identifier window (Security Master review F1); see the dashboard README for its rules and the
+`e2e:historical-window` end-to-end check.
 The browser app shell projects the design-document primary operator workflow
 (`Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, `Report`) from dashboard view-model
 state so host-served workstation assets retain the same financial-operations flow after rebuilds.
@@ -438,3 +441,6 @@ Do not create mobile product surfaces here. Keep browser operator UI work under 
 - `docs/reference/accounting-report-packs.md`
 - `docs/operators/governed-reporting-operations.md`
 - `docs/source/generated/source-module-index.md`
+
+Financing figures that the host reports as `null` (unmeasured run financing) render as
+"Unavailable" in the accounting cash-flow evidence rows, never as $0.

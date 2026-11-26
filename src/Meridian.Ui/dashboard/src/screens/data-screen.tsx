@@ -115,6 +115,7 @@ import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 import { applyCrossScreenCounts, countProviderHealth, formatProviderHealth, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 import { statusPanelClass, statusTextClass } from "@/design-system/status-styles";
+import { useSignedInUsername } from "@/hooks/use-signed-in-username";
 
 interface DataScreenProps {
   data: DataWorkspaceResponse | null;
@@ -268,9 +269,10 @@ function DataScreenContent({
     providerRoutingRefreshing,
     providerRoutingTrustSnapshots
   ]);
-  const operatorIdentity = session?.displayName.trim() || null;
   // Provider status belongs to the header Refresh; routing evidence is re-read with it on the provider route.
-  const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence, operatorIdentity);
+  const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence);
+  // Remounts per-operator panels when the signed-in operator changes; never the desk-label displayName.
+  const operatorUsername = useSignedInUsername();
   useOnGlobalRefresh(() => { if (vm.workstream === "providers") void onProviderRoutingRefresh?.(); });
   // "Providers healthy" counts the providers in use with the status this page shows for each, so
   // the figure is a count of the health cards beneath it.
@@ -528,6 +530,7 @@ function DataScreenContent({
                   emptyState={vm.providerSection.detailEmptyState}
                   activeTab={vm.selectedProviderTab}
                   session={session}
+                  operatorUsername={operatorUsername}
                   onTabSelect={vm.selectProviderTab}
                   onVerify={vm.verifySelectedProvider}
                 />
@@ -1012,6 +1015,7 @@ function ProviderDetailPanel({
   emptyState,
   activeTab,
   session,
+  operatorUsername,
   onTabSelect,
   onVerify
 }: {
@@ -1019,6 +1023,7 @@ function ProviderDetailPanel({
   emptyState: DataOperationsEmptyState | null;
   activeTab: DataOperationsProviderDetailState["activeTab"];
   session: SessionInfo | null;
+  operatorUsername: string | null;
   onTabSelect: (tab: DataOperationsProviderDetailState["activeTab"]) => void;
   onVerify: () => void;
 }) {
@@ -1070,7 +1075,7 @@ function ProviderDetailPanel({
           <TabPanel key={tab.id}>
             {tab.id === "quality-rules" ? (
               activeTab === tab.id ? <ProviderValidationPanel
-                key={JSON.stringify([detail.qualityProfileProviderId, detail.providerId, session?.displayName, session?.role])}
+                key={JSON.stringify([detail.qualityProfileProviderId, detail.providerId, operatorUsername, session?.role])}
                 providerId={detail.qualityProfileProviderId}
                 providerName={detail.title}
               /> : null

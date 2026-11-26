@@ -11,6 +11,7 @@ import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import * as markFreshnessApi from "@/lib/api/mark-freshness.api";
 import * as recurringJournalsApi from "@/lib/api/recurring-journals.api";
 import * as accrualSchedulesApi from "@/lib/api/accrual-schedules.api";
+import * as assetAccountingWorkflowApi from "@/lib/api/asset-accounting-workflow.api";
 import { AccountingScreen } from "@/screens/accounting-screen";
 import { bondLadderRowId } from "@/components/meridian/bond-reference-ladder-panel";
 import { resetSinceLastVisitCache } from "@/lib/since-last-visit";
@@ -66,6 +67,16 @@ async function findAlertContaining(text: string): Promise<HTMLElement> {
 
   return match;
 }
+
+// The signed-in username, deliberately different from any session desk label. Null by default
+// so screens without a signed-in operator keep their existing behaviour.
+const signedInUsername = vi.hoisted(() => ({ value: null as string | null }));
+vi.mock("@/lib/api/auth.api", () => ({ getSignedInUsername: vi.fn(async () => signedInUsername.value) }));
+
+vi.mock("@/lib/api/asset-accounting-workflow.api", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/api/asset-accounting-workflow.api")>("@/lib/api/asset-accounting-workflow.api");
+  return { ...actual, getAssetAccountingDraftCapabilities: vi.fn(actual.getAssetAccountingDraftCapabilities) };
+});
 
 vi.mock("@/lib/api/reconciliation-readiness.api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api/reconciliation-readiness.api")>("@/lib/api/reconciliation-readiness.api");
@@ -3744,6 +3755,35 @@ describe("AccountingScreen", () => {
     expect((await axe(container)).violations).toEqual([]);
   });
 
+  it("keys retained asset-accounting commands to the signed-in username, not the session desk label", async () => {
+    signedInUsername.value = "a.chen";
+    try {
+      window.sessionStorage.clear();
+      const session: SessionInfo = { displayName: "Meridian Operator", role: "Fund operations", environment: "paper", activeWorkspace: "accounting", commandCount: 3 };
+      const assetDraft = { ...manualJournalDraft, validationIssues: [], assetAccountingDraft: { spine: { eventId: "asset-event" }, candidate: {} } };
+      vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({ ...manualJournalWorkbench, drafts: [assetDraft] });
+      // The server reports an unresolved post; the workflow retains it under its operator-scoped key.
+      vi.mocked(assetAccountingWorkflowApi.getAssetAccountingDraftCapabilities).mockResolvedValue({
+        protocolVersion: 1, authenticatedActor: "a.chen", journalEntryId: assetDraft.journalEntryId, fundProfileId: assetDraft.fundProfileId,
+        ledgerBookId: assetDraft.ledgerBookId!, periodId: assetDraft.periodId!, draftVersion: assetDraft.version, candidateFingerprint: "a".repeat(64),
+        canApprove: false, canPost: true, approveBlockedReason: null, postBlockedReason: null, approval: null, approvalDecision: null, hasPendingPost: true,
+        pendingPostCommand: { journalEntryId: assetDraft.journalEntryId, ledgerBookId: assetDraft.ledgerBookId, fundProfileId: assetDraft.fundProfileId,
+          version: assetDraft.version, action: "Post", actor: "a.chen", notes: "Retained post", correlationId: "11111111-1111-1111-1111-111111111111", evidenceLinks: [] },
+        postedJournal: null
+      });
+      renderWithRouter(<AccountingScreen data={data} session={session} />, { initialEntries: ["/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha"] });
+      await waitForAsyncEffects();
+      const identity = JSON.stringify(["a.chen", "Fund operations", "paper"]);
+      await waitFor(() => expect(Object.keys(window.sessionStorage)).toContain(
+        `meridian.asset-accounting.command.v1:${JSON.stringify([identity, assetDraft.fundProfileId, assetDraft.ledgerBookId, assetDraft.periodId, assetDraft.journalEntryId])}`));
+      expect(Object.keys(window.sessionStorage).join()).not.toContain("Meridian Operator");
+    } finally {
+      signedInUsername.value = null;
+      vi.mocked(assetAccountingWorkflowApi.getAssetAccountingDraftCapabilities).mockReset();
+      window.sessionStorage.clear();
+    }
+  });
+
   it("renders the manual journal entry workbench with GL and Security Master line fields", async () => {
     vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
 
@@ -5995,6 +6035,35 @@ describe("AccountingScreen", () => {
     await user.type(screen.getByRole("textbox", { name: "Assign rationale" }), "Reviewed assignment");
     await user.click(screen.getByRole("button", { name: "Confirm assign" }));
     await waitFor(() => expect(api.assignReconciliationBreak).toHaveBeenCalledWith(expect.objectContaining({ actor: "", expectedVersion: 1 })));
+  });
+
+  it("keys decision recovery to the signed-in username, not the session desk label", async () => {
+    const user = userEvent.setup();
+    signedInUsername.value = "a.chen";
+    try {
+      window.sessionStorage.clear();
+      const session: SessionInfo = { displayName: "Meridian Operator", role: "Fund operations", environment: "paper", activeWorkspace: "accounting", commandCount: 3 };
+      const scoped = data.breakQueue.map((item) => ({ ...item, tenantId: "tenant-alpha", companyId: "company-alpha" }));
+      vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(scoped);
+      // The command stays in flight so its recovery entry remains retained for inspection.
+      vi.mocked(api.assignReconciliationBreak).mockReturnValueOnce(new Promise(() => undefined));
+      renderWithRouter(<AccountingScreen data={{ ...data, breakQueue: scoped }} session={session} />, { initialEntries: ["/accounting/reconciliation"] });
+      await waitForAsyncEffects();
+      // The test viewport is the constrained layout: the case inspector opens on request.
+      await inspectReconciliationBreak(user);
+      await user.click(screen.getByText("Other decisions"));
+      await user.click(screen.getByRole("button", { name: "Assign" }));
+      await user.type(within(screen.getByRole("form", { name: "Assign case" })).getByRole("textbox", { name: "Assignee" }), "ops-user");
+      await user.type(screen.getByRole("textbox", { name: "Assign rationale" }), "Reviewed assignment");
+      await user.click(screen.getByRole("button", { name: "Confirm assign" }));
+      await waitFor(() => expect(api.assignReconciliationBreak).toHaveBeenCalled());
+      const keys = Object.keys(window.sessionStorage).filter((key) => key.startsWith("meridian:reconciliation:decision:"));
+      expect(keys).toEqual([`meridian:reconciliation:decision:${JSON.stringify(["a.chen", "tenant-alpha", "company-alpha", "run-42:cash"])}`]);
+      expect(keys.join()).not.toContain("Meridian Operator");
+    } finally {
+      signedInUsername.value = null;
+      window.sessionStorage.clear();
+    }
   });
 
   it("submits the reviewed version and rationale while the server supplies resolver identity", async () => {

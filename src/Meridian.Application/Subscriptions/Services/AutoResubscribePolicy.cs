@@ -104,11 +104,31 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
     /// <param name="config">Current symbol configuration for resubscription.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>True if resubscription was triggered, false if skipped.</returns>
-    public async Task<bool> OnIntegrityEventAsync(
+    public Task<bool> OnIntegrityEventAsync(
         string symbol,
         IntegritySeverity severity,
         AppConfig config,
         CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(config);
+        return TryResubscribeAsync(symbol, severity, async token =>
+        {
+            await _subscriptionManager.ApplyAsync(config, token).ConfigureAwait(false);
+            return true;
+        }, ct);
+    }
+
+    /// <summary>
+    /// Shared gate for every resubscription: severity threshold, global and per-symbol circuit
+    /// breakers, and per-symbol rate limiting. <paramref name="resubscribe"/> returns
+    /// <see langword="false"/> when the symbol is not this process's to resubscribe; that skip
+    /// counts as neither a success nor a failure.
+    /// </summary>
+    private async Task<bool> TryResubscribeAsync(
+        string symbol,
+        IntegritySeverity severity,
+        Func<CancellationToken, Task<bool>> resubscribe,
+        CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(symbol))
             return false;
@@ -161,8 +181,11 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
         {
             _log.Information("Triggering auto-resubscribe for {Symbol} due to integrity event", symbol);
 
-            // Force unsubscribe and resubscribe through the manager
-            await _subscriptionManager.ApplyAsync(config, ct).ConfigureAwait(false);
+            if (!await resubscribe(ct).ConfigureAwait(false))
+            {
+                _log.Debug("Auto-resubscribe not applicable for {Symbol}; this process holds no matching subscription", symbol);
+                return false;
+            }
 
             sw.Stop();
             var elapsedMs = sw.ElapsedMilliseconds;
@@ -202,27 +225,36 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
     }
 
     /// <summary>
-    /// Handles a depth integrity event.
+    /// Handles a depth integrity event by re-requesting that symbol's market depth and resetting
+    /// its book (<see cref="SubscriptionOrchestrator.ResubscribeDepthAsync"/>). Every kind the
+    /// order-book buffer marks stale is recoverable this way; an unchanged-config
+    /// <see cref="SubscriptionOrchestrator.ApplyAsync"/> would keep the stale book.
     /// </summary>
     public Task<bool> OnDepthIntegrityEventAsync(
         DepthIntegrityEvent evt,
-        AppConfig config,
         CancellationToken ct = default)
     {
-        // Map DepthIntegrityKind to a severity-like decision
+        ArgumentNullException.ThrowIfNull(evt);
+
         var shouldResubscribe = evt.Kind switch
         {
             DepthIntegrityKind.Gap => true,
             DepthIntegrityKind.OutOfOrder => true,
             DepthIntegrityKind.Stale => true,
             DepthIntegrityKind.InvalidPosition => true,
+            // An unknown operation also marks the book stale, so it needs the same recovery.
+            DepthIntegrityKind.Unknown => true,
             _ => false
         };
 
         if (!shouldResubscribe)
             return Task.FromResult(false);
 
-        return OnIntegrityEventAsync(evt.Symbol, IntegritySeverity.Error, config, ct);
+        return TryResubscribeAsync(
+            evt.Symbol,
+            IntegritySeverity.Error,
+            token => _subscriptionManager.ResubscribeDepthAsync(evt.Symbol, token),
+            ct);
     }
 
     /// <summary>

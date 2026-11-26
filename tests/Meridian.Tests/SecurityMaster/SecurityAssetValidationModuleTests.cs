@@ -93,8 +93,8 @@ public sealed class SecurityAssetValidationModuleTests
         }));
 
         issues.Select(static issue => issue.Code).Should().Equal(
+            // A negative spreadBps is legal: SecurityRateFieldUnits declares it signed.
             "SM_BOND_COUPON_RATE_INVALID",
-            "SM_BOND_FLOATING_SPREAD_INVALID",
             "SM_BOND_ISSUE_DATE_INVALID",
             "SM_BOND_CALL_DATE_INVALID",
             "SM_BOND_SECURITIZED_SUBCLASS_NONCANONICAL");

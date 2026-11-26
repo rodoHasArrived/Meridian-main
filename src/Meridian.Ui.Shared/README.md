@@ -495,6 +495,24 @@ effect. Validation compares the materialized inverse accounts, amounts, native c
 dimensions with the immutable posted predecessor, so a later chart-mapping change blocks rather
 than redirecting the reversal. Serialized draft saves cannot replace that authority or lineage.
 
+Every workbench rebook, not only prior-period and opening ones, carries the predecessor's exact inverse
+(`rebook-inverse-N`) plus the replacement (`rebook-replacement-N`), so the original is never counted
+twice; a rebook with no replacement lines nets to zero. For an ordinary rebook whose source is a retained
+workbench draft, validation raises critical `manual-je.rebook-inverse-required` when the inverse lines no
+longer reproduce the source's posting economics.
+
+`AutomatedJournalIntakeRunner` also queues two lot- and close-bound drafts. `RunShortCarryIntakeAsync`
+(`POST /api/ledger/journal-automation/short-carry-intake`) proves a borrow-fee or payment-in-lieu
+instruction against the open short lot and queues an `Expense` draft. `RunPartnershipWaterfallIntakeAsync`
+(`POST /api/ledger/journal-automation/partnership-waterfall-intake`) allocates a soft-closed period's profit
+from the named retained earnings to partners' capital, capped at its posted balance, as an adjusting draft.
+See `docs/domain/short-carry-charges.md` and `docs/domain/partnership-waterfall-allocation.md`.
+
+Direct statement-run creation resolves its fund profile, ledger book and period through
+`IStatementReconciliationIntakeAuthority` (409 on refusal) and refuses to create a run without that
+server-resolved scope. Payment initiation binds an optional `LedgerBookId` only for a book the
+authenticated tenant and company own, recording the server's tenant and company with it.
+
 Focused coverage: `PeriodAdjustmentPreparationTests`, the governed mark-to-preparation case in
 `AccountingConfigurationServiceTests.PeriodAdjustmentPreparation`, and `LedgerPeriodCloseSnapshotTests`.
 
@@ -858,6 +876,12 @@ operands for an exact authorized account/book/period/cutoff. Its ledger source c
 full historical canonical lot basis in one database snapshot. The existing durable case queue and
 statement scheduler own casework and daily execution; stale or missing sources remain blockers.
 The browser reads the same protected service routes rather than supplying accounting snapshots.
+`ThreeWayFillMatcher` pairs retained broker fills with posted trade-fill journals (activity id,
+client order id, then economics) and classifies missing, quantity, price, fee and timing-only
+differences with broker activity and journal entry evidence ids. Fill checks are added only when a
+source captured fill evidence; incomplete coverage is recorded as `NotCompared`, never as clean.
+An optional `BrokerRefreshInterval` lets the schedule runner sync the broker before capture, and
+`ThreeWayReconciliationMetrics` publishes run, check and per-account health series to `/metrics`.
 
 `GET /api/ledger/books/{ledgerBookId}/periods/{periodId}/exports/general-ledger` downloads one
 `general-ledger.v1` ZIP from a consistent journal/disposal/open-lot snapshot. CSV, exact text-cell
@@ -2292,7 +2316,11 @@ authenticated workstation tenant before reading or writing stored manifests, con
 retained run evidence. Import, dry-run, and run-due commands require provider/configuration permissions
 because they create manifests or retain raw payload, staging, quarantine, and sync-run evidence.
 The activation command persists active manifest and connection state only after Application
-readiness passes with retained approval evidence. Richer setup-editing screens still need to bind
+readiness passes with retained approval evidence. Setup save, OpenAPI import, both dry runs,
+activation, run-due sync, schema-drift check, reconciliation handoff and quarantine resolve/replay
+record the authenticated session actor as `savedBy`/connection owner, `importedBy`, `requestedBy`,
+`approvedBy`, `checkedBy` or `reviewedBy`, overwriting any body value, and return 401 when no actor
+resolves. Richer setup-editing screens still need to bind
 draft editing, endpoint tests, mapping preview, and corrective mapping/data-rule actions through the
 shared workstation API.
 `BankFeedTransportService` reuses that same import boundary for scheduled local-file and SFTP
@@ -3130,7 +3158,7 @@ fields, metric source mappings, formula dependencies, and saved filter lineage s
 previews can display the same audit trace as retained exports. Template governance validation now
 blocks report-writer formulas that reference unknown metrics/formulas, unsupported `total(...)`
 fields, or self/forward/circular formula dependencies before those templates can enter review or
-approval, while recognizing supported helpers such as `safeDivide(...)`, `percent(...)`,
+approval, while recognizing supported helpers such as `median(...)`, `stdev(...)`, `safeDivide(...)`, `percent(...)`,
 `basisPoints(...)`, `round(...)`, and `if(...)` as functions instead of missing row fields.
 Draft formula validation reads hyphenated bare references with the same
 `ReportWriterFormulaReferences` rule as the grid engine, so `pnl-fees` between two known metrics
@@ -3927,7 +3955,9 @@ endpoint/read-model adapter; do not reintroduce session, profile, role-profile, 
 persistence state here. Scoped access grant and revoke endpoints preserve explicit action-origin
 metadata and return bad-request responses for assistant or automation-origin authority changes
 before the Identity service writes a new assignment, revokes an assignment, or advances an
-assignment version.
+assignment version. Role-profile, account and scoped-access writes record the session actor; a
+permission snapshot without a resolvable actor is refused with 401 rather than recorded under the
+body's `RequestedBy`.
 
 Secure Reporting distribution is server-owned under
 `/api/fund-structure/reporting/distribution`. The capability catalog separates configured transport
@@ -4332,6 +4362,7 @@ migration or inferred deadline is introduced.
 ## Security Master governance controls (2026-11)
 
 - **Stale field proposals.** The workbench publish route answers a `StaleFieldProposalException` with 409 `stale-field-proposal`, carrying the base and current versions. A successful publish carries `canonicalMerge`, which says whether the approved edit changed the golden record.
+- **Historical identifier window route.** `POST /api/security-master/{securityId}/workbench/historical-identifier-window` (`WorkstationEndpoints.SecurityMasterWorkbench.cs`) stages a governed historical identifier window through `ISecurityMasterWorkbenchCommandService.ProposeHistoricalIdentifierWindowAsync`. It requires `ModifySecurityMaster` and the workstation tenant scope; the path security id and the session actor replace the body's values, so the recorded proposer is always the caller; and it applies the field-edit route's fund-profile guard and ownership reservation. Failures use the shared workbench mapping (422 refused, 409 stale version or lifecycle). `AddWorkstationSharedServices` registers `ApprovedHistoricalIdentifierWindowHandler` (order 6) in the published-revision fan-out.
 - **Governed term-amendment refusal.** The Security Master endpoints build their HTTP 403 problem from `GovernedTermAmendmentPolicy.RefusalTitle` and `RefusalDetail`, so the API and the WPF editor show the same guidance when governed term amendments are required. The routes read the effective requirement from `ISecurityMasterGovernanceRequirements`, so they refuse when `RequireGovernedTermAmendments` is on or the Institutional governance profile is in force (declared by `SecurityMasterWorkbench:GovernanceProfile`, or implied by a production composition). Once the profile is in force on a running host it stays in force until restart. The direct write routes also answer the service's own `GovernedTermAmendmentRequiredException` with that same 403. `AddWorkstationSharedServices` binds the `SecurityMasterWorkbench` section and calls `AddSecurityMasterGovernanceRequirements`; a host that maps these routes must register that seam.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
@@ -4487,6 +4518,10 @@ evidence prevents duplicates across retries and restart.
 Conflicting evidence under one ID or corrupted accepted records fails closed. Incomplete provider
 retrievals retain evidence without advancing the resume watermark. A caller can supply `Since` to
 rescan for arrivals earlier than the retained watermark; no API page-token durability is assumed.
+
+Fund cash-and-financing summaries and the accounting cash-flow endpoints report financing as
+`null` ("unavailable") when any contributing run's financing coverage is unavailable, instead of
+summing placeholder zeros into a total that reads as complete.
 
 ## Whole-journal downloads
 

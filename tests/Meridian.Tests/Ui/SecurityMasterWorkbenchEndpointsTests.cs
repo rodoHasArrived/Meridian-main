@@ -389,7 +389,112 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
         await service.DidNotReceive().UpdateSecurityFieldAsync(Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>());
     }
 
+    private const string WindowRoute = "workbench/historical-identifier-window";
+
+    [Fact]
+    public async Task HistoricalWindow_WithoutModifyPermission_Returns403()
+    {
+        var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
+        await using var app = await CreateAppAsync(service, UserPermission.ViewSecurityMaster);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            $"/api/security-master/{Guid.NewGuid():D}/{WindowRoute}", WindowRequest(Guid.NewGuid()), Json);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await service.DidNotReceive().ProposeHistoricalIdentifierWindowAsync(
+            Arg.Any<ProposeHistoricalIdentifierWindowRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task HistoricalWindow_WithPermission_Returns200_AndServerOverridesPathIdAndProposer()
+    {
+        var pathId = Guid.NewGuid();
+        var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
+        ProposeHistoricalIdentifierWindowRequest? captured = null;
+        service.ProposeHistoricalIdentifierWindowAsync(
+                Arg.Do<ProposeHistoricalIdentifierWindowRequest>(r => captured = r), Arg.Any<CancellationToken>())
+            .Returns(ci => EditResult(((ProposeHistoricalIdentifierWindowRequest)ci[0]).SecurityId));
+        await using var app = await CreateAppAsync(service, UserPermission.ModifySecurityMaster);
+        var client = app.GetTestClient();
+
+        // A spoofed proposer would let the real maker escape the proposer-cannot-approve rule.
+        var spoofed = WindowRequest(Guid.NewGuid()) with { Actor = "spoofed.actor" };
+        using var response = await client.PostAsJsonAsync(
+            $"/api/security-master/{pathId:D}/{WindowRoute}", spoofed, Json);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        captured.Should().NotBeNull();
+        captured!.SecurityId.Should().Be(pathId);
+        captured.Actor.Should().Be(SessionActor);
+        captured.Kind.Should().Be(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Ticker);
+        captured.ValidFrom.Should().Be(new DateTimeOffset(2012, 5, 18, 0, 0, 0, TimeSpan.Zero));
+        captured.EvidenceReference.Should().Be("evidence-vault://security-master/meta-ticker-change");
+    }
+
+    [Fact]
+    public async Task HistoricalWindow_RefusedProposal_Returns422()
+    {
+        var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
+        service.ProposeHistoricalIdentifierWindowAsync(Arg.Any<ProposeHistoricalIdentifierWindowRequest>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new ArgumentException("Historical identifier window refused: an Evidence Vault reference is required."));
+        await using var app = await CreateAppAsync(service, UserPermission.ModifySecurityMaster);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            $"/api/security-master/{Guid.NewGuid():D}/{WindowRoute}", WindowRequest(Guid.NewGuid()) with { EvidenceReference = "" }, Json);
+
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+    }
+
+    [Fact]
+    public async Task HistoricalWindow_StaleVersion_Returns409()
+    {
+        var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
+        service.ProposeHistoricalIdentifierWindowAsync(Arg.Any<ProposeHistoricalIdentifierWindowRequest>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new SecurityMasterConcurrencyException(Guid.NewGuid(), 3, 4));
+        await using var app = await CreateAppAsync(service, UserPermission.ModifySecurityMaster);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            $"/api/security-master/{Guid.NewGuid():D}/{WindowRoute}", WindowRequest(Guid.NewGuid()), Json);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task HistoricalWindow_WithForeignFundProfile_Returns403_WithoutPersisting()
+    {
+        var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
+        var guard = Substitute.For<IFundProfileTenantGuard>();
+        guard.EvaluateAsync(Arg.Any<WorkstationTenantContext>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(FundProfileTenantDecision.Deny("foreign"));
+        await using var app = await CreateAppAsync(service, UserPermission.ModifySecurityMaster, fundGuard: guard);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            $"/api/security-master/{Guid.NewGuid():D}/{WindowRoute}",
+            WindowRequest(Guid.NewGuid()) with { FundProfileId = "fund-other-company" }, Json);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await service.DidNotReceive().ProposeHistoricalIdentifierWindowAsync(
+            Arg.Any<ProposeHistoricalIdentifierWindowRequest>(), Arg.Any<CancellationToken>());
+    }
+
     // ---- helpers ------------------------------------------------------------------------------
+
+    private static ProposeHistoricalIdentifierWindowRequest WindowRequest(Guid securityId)
+        => new(
+            SecurityId: securityId,
+            ExpectedVersion: 3,
+            Kind: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Ticker,
+            Value: "FB",
+            Provider: null,
+            ValidFrom: new DateTimeOffset(2012, 5, 18, 0, 0, 0, TimeSpan.Zero),
+            ValidTo: new DateTimeOffset(2022, 6, 9, 0, 0, 0, TimeSpan.Zero),
+            EvidenceReference: "evidence-vault://security-master/meta-ticker-change",
+            Justification: "Listed as FB until the 2022 ticker change.",
+            Actor: "ops.analyst");
 
     private static UpdateSecurityFieldRequest FieldRequest(Guid securityId)
         => new(

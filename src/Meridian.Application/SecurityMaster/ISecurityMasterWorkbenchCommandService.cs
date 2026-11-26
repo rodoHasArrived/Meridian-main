@@ -20,6 +20,16 @@ public interface ISecurityMasterWorkbenchCommandService
         UpdateSecurityFieldRequest request, CancellationToken ct = default);
 
     /// <summary>
+    /// Stages a historical identifier window (kind, value, provider, ValidFrom, ValidTo) with its
+    /// Evidence Vault reference and justification as a Draft revision. It follows the same
+    /// submit → approve → publish lifecycle as a field edit, always with an independent reviewer,
+    /// and publish applies it as a governed amendment that keeps the proposed ValidFrom. Bulk
+    /// imports cannot backdate identifiers; this is the governed path for windows before ingest.
+    /// </summary>
+    Task<SecurityMasterEditResultDto> ProposeHistoricalIdentifierWindowAsync(
+        ProposeHistoricalIdentifierWindowRequest request, CancellationToken ct = default);
+
+    /// <summary>
     /// Records an operator's resolution of a source conflict. The conflict-authority policy computes
     /// the default winner; if the operator's choice diverges, the deviation must be acknowledged and
     /// is retained as the audited artifact.

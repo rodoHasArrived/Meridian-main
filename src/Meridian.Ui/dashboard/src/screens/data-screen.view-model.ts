@@ -913,8 +913,7 @@ export function useDataViewModel(
   pathname: string,
   services: BackfillTriggerServices = defaultBackfillServices,
   providerSetupLifecycle: ProviderSetupLifecycleServices = defaultProviderSetupLifecycle,
-  providerEvidence: DataOperationsProviderEvidence = {},
-  operatorIdentity: string | null = null
+  providerEvidence: DataOperationsProviderEvidence = {}
 ) {
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
   const [selectedProviderTab, setSelectedProviderTab] = useState<DataOperationsProviderTabId>("overview");
@@ -1692,7 +1691,7 @@ export function useDataViewModel(
 
     try {
       const result = await workstationApi.createPlaidLinkToken({
-        ...(operatorIdentity ? { userId: operatorIdentity } : {}),
+        // No userId: the link-token route uses the authenticated session actor.
         clientName: "Meridian",
         language: "en",
         countryCodes: ["US"],
@@ -1717,8 +1716,8 @@ export function useDataViewModel(
         publicToken: linkResult.publicToken,
         institutionId: linkResult.metadata.institution?.institution_id ?? selectedInstitution.institutionId,
         institutionName: linkResult.metadata.institution?.name ?? selectedInstitution.name,
-        accounts: buildPlaidAccountLinkRequests(linkResult.metadata),
-        ...(operatorIdentity ? { requestedBy: operatorIdentity } : {})
+        accounts: buildPlaidAccountLinkRequests(linkResult.metadata)
+        // No requestedBy: the exchange route uses the authenticated session actor.
       });
       if (plaidLinkTokenRevisionRef.current !== revision) {
         return;
@@ -1739,7 +1738,7 @@ export function useDataViewModel(
       ));
       setPlaidLinkTokenPhase("error");
     }
-  }, [operatorIdentity, plaidInstitutionResults, selectedPlaidInstitutionId]);
+  }, [plaidInstitutionResults, selectedPlaidInstitutionId]);
 
   function buildPlaidAccountLinkRequests(metadata: PlaidLinkSuccessMetadata) {
     return (metadata.accounts ?? []).map((account) => ({

@@ -6,6 +6,106 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DryRunResult
+
+Qualified name: <code>Meridian.Application.Services.DryRunResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/DryRunService.cs:537](../../../../src/Meridian.Application/Services/DryRunService.cs#L537).
+
+Result of dry-run validation.
+
+```csharp
+public sealed class DryRunResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool OverallSuccess { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:539](../../../../src/Meridian.Application/Services/DryRunService.cs#L539) |  |
+| <code>public DateTimeOffset StartTime { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:540](../../../../src/Meridian.Application/Services/DryRunService.cs#L540) |  |
+| <code>public DateTimeOffset EndTime { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:541](../../../../src/Meridian.Application/Services/DryRunService.cs#L541) |  |
+| <code>public long DurationMs { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:542](../../../../src/Meridian.Application/Services/DryRunService.cs#L542) |  |
+| <code>public DryRunOptions? Options { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:543](../../../../src/Meridian.Application/Services/DryRunService.cs#L543) |  |
+| <code>public ValidationSection? ConfigurationValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:545](../../../../src/Meridian.Application/Services/DryRunService.cs#L545) |  |
+| <code>public ValidationSection? FileSystemValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:546](../../../../src/Meridian.Application/Services/DryRunService.cs#L546) |  |
+| <code>public ValidationSection? ConnectivityValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:547](../../../../src/Meridian.Application/Services/DryRunService.cs#L547) |  |
+| <code>public ValidationSection? ProviderValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:548](../../../../src/Meridian.Application/Services/DryRunService.cs#L548) |  |
+| <code>public ValidationSection? SymbolValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:549](../../../../src/Meridian.Application/Services/DryRunService.cs#L549) |  |
+| <code>public ValidationSection? ResourceValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:550](../../../../src/Meridian.Application/Services/DryRunService.cs#L550) |  |
+| <code>public ValidationSection? CredentialAuthValidation { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:551](../../../../src/Meridian.Application/Services/DryRunService.cs#L551) |  |
+
+## DryRunService
+
+Qualified name: <code>Meridian.Application.Services.DryRunService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/DryRunService.cs:13](../../../../src/Meridian.Application/Services/DryRunService.cs#L13).
+
+Service for dry-run validation of configuration and operations. Implements QW-93: Dry Run Mode.
+
+```csharp
+public sealed class DryRunService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsDryRunMode { get; private set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:20](../../../../src/Meridian.Application/Services/DryRunService.cs#L20) | Global flag indicating if the application is in dry-run mode. |
+| <code>public static void EnableDryRunMode();</code> | [src/Meridian.Application/Services/DryRunService.cs:25](../../../../src/Meridian.Application/Services/DryRunService.cs#L25) | Enables dry-run mode globally. |
+| <code>public async Task&lt;DryRunResult&gt; ValidateAsync(AppConfig config, DryRunOptions options, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/DryRunService.cs:33](../../../../src/Meridian.Application/Services/DryRunService.cs#L33) | Performs a comprehensive dry-run validation. |
+| <code>public string GenerateReport(DryRunResult result);</code> | [src/Meridian.Application/Services/DryRunService.cs:101](../../../../src/Meridian.Application/Services/DryRunService.cs#L101) | Generates a human-readable dry-run report. |
+
+## ExecutionSimulationOrchestrator
+
+Qualified name: <code>Meridian.Application.Services.ExecutionSimulationOrchestrator</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:50](../../../../src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs#L50).
+
+Replays historical market data through execution simulation and produces fill results.
+
+```csharp
+public sealed class ExecutionSimulationOrchestrator(HistoricalDataQueryService queryService) : IExecutionSimulationOrchestrator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ExecutionSimulationResult&gt; RunAsync(ExecutionSimulationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:58](../../../../src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs#L58) |  |
+
+## ExecutionSimulationRequest
+
+Qualified name: <code>Meridian.Application.Services.ExecutionSimulationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:7](../../../../src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs#L7).
+
+```csharp
+public sealed record ExecutionSimulationRequest(IReadOnlyList<string> Symbols, DateOnly? FromDate, DateOnly? ToDate, TimeOnly? WindowStart, TimeOnly? WindowEnd, bool DryRun, string OutputDirectory);
+```
+
+## ExecutionSimulationResult
+
+Qualified name: <code>Meridian.Application.Services.ExecutionSimulationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:16](../../../../src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs#L16).
+
+```csharp
+public sealed record ExecutionSimulationResult(string OutputDirectory, int SymbolsProcessed, int EventCount, bool DryRun);
+```
+
+## FirstTimeConfigOptions
+
+Qualified name: <code>Meridian.Application.Services.FirstTimeConfigOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:955](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L955).
+
+Options for first-time configuration generation.
+
+```csharp
+public sealed record FirstTimeConfigOptions(UseCase UseCase = UseCase.Development, SymbolPreset SymbolPreset = SymbolPreset.USMajorIndices, bool EnableBackfill = true, bool EnableCompression = true);
+```
+
 ## GcStats
 
 Qualified name: <code>Meridian.Application.Services.GcStats</code>. Kind: `class`.
@@ -481,7 +581,7 @@ public sealed record ArchivedSymbolsResult(ArchivedSymbolInfo[] Symbols, int Tot
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.AutoResubscribeOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:444](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L444).
+Source: [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:476](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L476).
 
 Configuration options for the auto-resubscribe policy.
 
@@ -493,13 +593,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IntegritySeverity MinSeverityForResubscribe { get; init; } = IntegritySeverity.Error;</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:450](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L450) | Minimum severity level required to trigger auto-resubscribe. Default: Error (only Error-level integrity events trigger resubscription). |
-| <code>public TimeSpan SymbolCooldown { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:457](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L457) | Cooldown period after a successful resubscription. Prevents rapid repeated resubscriptions for the same symbol. Default: 30 seconds. |
-| <code>public TimeSpan MinResubscribeInterval { get; init; } = TimeSpan.FromSeconds(5);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:464](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L464) | Minimum interval between resubscription attempts for the same symbol. Applies even if previous attempt failed. Default: 5 seconds. |
-| <code>public int CircuitBreakerThreshold { get; init; } = 5;</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:470](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L470) | Number of consecutive failures before the global circuit breaker opens. Default: 5 failures. |
-| <code>public TimeSpan CircuitBreakerDuration { get; init; } = TimeSpan.FromSeconds(60);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:476](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L476) | Duration the global circuit breaker remains open before transitioning to half-open. Default: 60 seconds. |
-| <code>public int SymbolCircuitBreakerThreshold { get; init; } = 3;</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:482](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L482) | Number of consecutive failures before a per-symbol circuit breaker opens. Default: 3 failures. |
-| <code>public TimeSpan SymbolCircuitBreakerDuration { get; init; } = TimeSpan.FromSeconds(120);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:488](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L488) | Duration a per-symbol circuit breaker remains open. Default: 120 seconds (longer than global to allow global recovery first). |
+| <code>public IntegritySeverity MinSeverityForResubscribe { get; init; } = IntegritySeverity.Error;</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:482](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L482) | Minimum severity level required to trigger auto-resubscribe. Default: Error (only Error-level integrity events trigger resubscription). |
+| <code>public TimeSpan SymbolCooldown { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:489](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L489) | Cooldown period after a successful resubscription. Prevents rapid repeated resubscriptions for the same symbol. Default: 30 seconds. |
+| <code>public TimeSpan MinResubscribeInterval { get; init; } = TimeSpan.FromSeconds(5);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:496](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L496) | Minimum interval between resubscription attempts for the same symbol. Applies even if previous attempt failed. Default: 5 seconds. |
+| <code>public int CircuitBreakerThreshold { get; init; } = 5;</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:502](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L502) | Number of consecutive failures before the global circuit breaker opens. Default: 5 failures. |
+| <code>public TimeSpan CircuitBreakerDuration { get; init; } = TimeSpan.FromSeconds(60);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:508](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L508) | Duration the global circuit breaker remains open before transitioning to half-open. Default: 60 seconds. |
+| <code>public int SymbolCircuitBreakerThreshold { get; init; } = 3;</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:514](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L514) | Number of consecutive failures before a per-symbol circuit breaker opens. Default: 3 failures. |
+| <code>public TimeSpan SymbolCircuitBreakerDuration { get; init; } = TimeSpan.FromSeconds(120);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:520](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L520) | Duration a per-symbol circuit breaker remains open. Default: 120 seconds (longer than global to allow global recovery first). |
 
 ## AutoResubscribePolicy
 
@@ -521,12 +621,12 @@ Declared public members:
 | <code>public CircuitState CurrentCircuitState =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:86](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L86) | Current state of the global circuit breaker. |
 | <code>public int SymbolsInCooldown =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:91](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L91) | Number of symbols currently in cooldown. |
 | <code>public int SymbolsWithOpenCircuit =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:96](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L96) | Number of symbols with open circuit breakers. |
-| <code>public async Task&lt;bool&gt; OnIntegrityEventAsync(string symbol, IntegritySeverity severity, AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:107](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L107) | Handles an integrity event and potentially triggers resubscription. This is the main entry point for the policy. |
-| <code>public Task&lt;bool&gt; OnDepthIntegrityEventAsync(DepthIntegrityEvent evt, AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:207](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L207) | Handles a depth integrity event. |
-| <code>public Task&lt;bool&gt; OnTradeIntegrityEventAsync(IntegrityEvent evt, AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:231](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L231) | Handles a trade integrity event. |
-| <code>public void ResetCircuitBreaker();</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:243](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L243) | Manually resets the circuit breaker to closed state. Use with caution. |
-| <code>public void ResetSymbolCircuit(string symbol);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:260](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L260) | Resets the circuit breaker for a specific symbol. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:345](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L345) |  |
+| <code>public Task&lt;bool&gt; OnIntegrityEventAsync(string symbol, IntegritySeverity severity, AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:107](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L107) | Handles an integrity event and potentially triggers resubscription. This is the main entry point for the policy. |
+| <code>public Task&lt;bool&gt; OnDepthIntegrityEventAsync(DepthIntegrityEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:233](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L233) | Handles a depth integrity event by re-requesting that symbol&#x27;s market depth and resetting its book (SubscriptionOrchestrator.ResubscribeDepthAsync). Every kind the order-book buffer marks stale is recoverable this way; an unchanged-config SubscriptionOrchestrator.ApplyAsync would keep the stale book. |
+| <code>public Task&lt;bool&gt; OnTradeIntegrityEventAsync(IntegrityEvent evt, AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:263](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L263) | Handles a trade integrity event. |
+| <code>public void ResetCircuitBreaker();</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:275](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L275) | Manually resets the circuit breaker to closed state. Use with caution. |
+| <code>public void ResetSymbolCircuit(string symbol);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:292](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L292) | Resets the circuit breaker for a specific symbol. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:377](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L377) |  |
 
 ## BatchOperationsService
 
@@ -866,137 +966,3 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; SearchFigiAsync(string query, int limit = 20, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:502](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L502) | Search OpenFIGI directly. |
 | <code>public void ClearCache();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:581](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L581) | Clear the search and details cache. |
 | <code>public void Dispose();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:588](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L588) |  |
-
-## SymbolStatusReport
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolStatusReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:764](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L764).
-
-Combined status report for a single symbol.
-
-```csharp
-public sealed record SymbolStatusReport(string Symbol, bool IsMonitored, bool HasArchivedData, SymbolConfig? MonitoredConfig, ArchivedSymbolInfo? ArchivedInfo);
-```
-
-## TemplateService
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.TemplateService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:15](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L15).
-
-Service for managing subscription templates (equity groups, sectors, indices).
-
-```csharp
-public sealed class TemplateService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TemplateService(ConfigStore configStore, string? templatesPath = null);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:22](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L22) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SymbolTemplate&gt;&gt; GetAllTemplatesAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:34](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L34) | Get all available templates (built-in + custom). |
-| <code>public async Task&lt;SymbolTemplate?&gt; GetTemplateAsync(string templateId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:45](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L45) | Get a specific template by ID. |
-| <code>public async Task&lt;ApplyTemplateResult&gt; ApplyTemplateAsync(ApplyTemplateRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:57](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L57) | Apply a template to the current subscriptions. |
-| <code>public async Task&lt;SymbolTemplate&gt; CreateTemplateAsync(string name, string description, TemplateCategory category, string[] symbols, TemplateSubscriptionDefaults? defaults = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:113](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L113) | Create a custom template. |
-| <code>public async Task&lt;bool&gt; DeleteTemplateAsync(string templateId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:142](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L142) | Delete a custom template. |
-| <code>public async Task&lt;SymbolTemplate&gt; CreateFromCurrentAsync(string name, string description, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:162](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L162) | Create a template from current subscriptions. |
-
-## WatchlistService
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.WatchlistService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:14](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L14).
-
-Service for managing symbol watchlists (groups of symbols for organization and bulk operations).
-
-```csharp
-public sealed class WatchlistService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WatchlistService(ConfigStore configStore, string? watchlistsPath = null);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:20](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L20) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;Watchlist&gt;&gt; GetAllWatchlistsAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:31](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L31) | Get all watchlists. |
-| <code>public async Task&lt;IReadOnlyList&lt;WatchlistSummary&gt;&gt; GetWatchlistSummariesAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:39](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L39) | Get watchlist summaries with subscription counts. |
-| <code>public async Task&lt;Watchlist?&gt; GetWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:69](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L69) | Get a specific watchlist by ID. |
-| <code>public async Task&lt;Watchlist&gt; CreateWatchlistAsync(CreateWatchlistRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:78](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L78) | Create a new watchlist. |
-| <code>public async Task&lt;Watchlist&gt; CreateWatchlistAsync(CreateWatchlistRequest request, string? retainedId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:82](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L82) | Creates or recovers the same watchlist after an import loses its completion receipt. |
-| <code>public async Task&lt;Watchlist?&gt; UpdateWatchlistAsync(string watchlistId, UpdateWatchlistRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:117](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L117) | Update an existing watchlist. |
-| <code>public async Task&lt;bool&gt; DeleteWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:146](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L146) | Delete a watchlist. |
-| <code>public async Task&lt;WatchlistOperationResult&gt; AddSymbolsAsync(AddSymbolsToWatchlistRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:163](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L163) | Add symbols to a watchlist. |
-| <code>public async Task&lt;WatchlistOperationResult&gt; RemoveSymbolsAsync(RemoveSymbolsFromWatchlistRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:206](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L206) | Remove symbols from a watchlist. |
-| <code>public async Task&lt;WatchlistOperationResult&gt; SubscribeWatchlistAsync(WatchlistSubscriptionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:252](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L252) | Subscribe to all symbols in a watchlist. |
-| <code>public async Task&lt;WatchlistOperationResult&gt; UnsubscribeWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:278](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L278) | Unsubscribe from all symbols in a watchlist. |
-| <code>public async Task&lt;IReadOnlyList&lt;Watchlist&gt;&gt; GetWatchlistsForSymbolAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:295](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L295) | Get all watchlists that contain a specific symbol. |
-| <code>public async Task&lt;Watchlist?&gt; ImportWatchlistAsync(string json, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:304](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L304) | Import watchlist from JSON. |
-| <code>public async Task&lt;string?&gt; ExportWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:340](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L340) | Export watchlist to JSON. |
-| <code>public async Task ReorderWatchlistsAsync(string[] watchlistIds, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:356](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L356) | Reorder watchlists. |
-
-## SubscriptionOrchestrator
-
-Qualified name: <code>Meridian.Application.Subscriptions.SubscriptionOrchestrator</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs:24](../../../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs#L24).
-
-Applies AppConfig symbol changes at runtime (hot reload). Responsible for: - registering symbols with collectors (domain) - subscribing/unsubscribing market depth (infrastructure) via IMarketDataClient - tracking option contract subscriptions for equity and index options Trades are currently always accepted by TradeDataCollector, but this class is future-proofed to support explicit per-symbol trade subscriptions once you wire them in (tick-by-tick reqs).
-
-```csharp
-public sealed class SubscriptionOrchestrator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SubscriptionOrchestrator(MarketDepthCollector depthCollector, TradeDataCollector tradeCollector, IMarketDataClient ibClient, string providerId, ISubscriptionOwnershipService? ownershipService = null, ILogger? log = null, OptionDataCollector? optionCollector = null, ISecurityMasterQueryService? securityMasterQuery = null, DataFreshnessSlaMonitor? freshness = null);</code> | [src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs:43](../../../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs#L43) |  |
-| <code>public IReadOnlyDictionary&lt;string, int&gt; DepthSubscriptions =&gt; …;</code> | [src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs:68](../../../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs#L68) |  |
-| <code>public IReadOnlyDictionary&lt;string, int&gt; TradeSubscriptions =&gt; …;</code> | [src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs:69](../../../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs#L69) |  |
-| <code>public IReadOnlyDictionary&lt;string, int&gt; OptionSubscriptions =&gt; …;</code> | [src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs:70](../../../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs#L70) |  |
-| <code>public int ActiveSubscriptionCount =&gt; …;</code> | [src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs:75](../../../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs#L75) | Gets the total number of active subscriptions (trades + depth + options). |
-| <code>public static bool IsOptionSymbol(SymbolConfig sc) =&gt; …;</code> | [src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs:80](../../../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs#L80) | Returns true if the given symbol config represents an option contract. |
-| <code>public async Task ApplyAsync(AppConfig cfg, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs:84](../../../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs#L84) |  |
-
-## AuthoritativeScopeFanOutService
-
-Qualified name: <code>Meridian.Application.Tenancy.AuthoritativeScopeFanOutService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs:20](../../../../src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs#L20).
-
-Composes the registered IScopeAssignmentProvider authorities into one fan-out answer. The composition rule is unanimity, not union: the result is authoritative only when every registered provider reported that it saw the whole of its own slice. A union over &quot;whichever authorities happened to answer&quot; is precisely the failure this service exists to prevent — it yields a confident-looking affected set that silently omits the scopes the unavailable authority owned, and a caller acting on it would apply a decision to some affected tenants and not others. Composing zero providers is likewise not an empty affected set. It is an unanswerable question, and is reported as such.
-
-```csharp
-public sealed class AuthoritativeScopeFanOutService : IAuthoritativeScopeFanOutService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AuthoritativeScopeFanOutService(IEnumerable&lt;IScopeAssignmentProvider&gt; providers, ILogger&lt;AuthoritativeScopeFanOutService&gt; logger);</code> | [src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs:31](../../../../src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs#L31) |  |
-| <code>public async Task&lt;ScopeFanOutResult&gt; ResolveAffectedScopesAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs:41](../../../../src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs#L41) |  |
-| <code>public async Task&lt;ScopeFanOutResult&gt; ResolveOwnedScopesAsync(string tenantId, string companyId, ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs:105](../../../../src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs#L105) |  |
-
-## FundAccountHoldingScopeAssignmentProvider
-
-Qualified name: <code>Meridian.Application.Tenancy.FundAccountHoldingScopeAssignmentProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:25](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L25).
-
-Resolves affected accounting scopes from custodied holdings: an account that held the security on the effective date is a scope the fact reaches. Custodian position lines are the authoritative holdings record here because they are externally sourced and account-keyed — they say who actually held the security, rather than who was configured to. The account row supplies the narrow scope (fund, portfolio, custody sub-account, ledger reference, functional currency), and IFundProfileTenancyRegistry supplies the owning tenant/company. Attribution is all-or-nothing. A holding this provider can see but cannot key to an owning tenant — an account with no fund, or a fund the registry has never bound — makes the whole slice non-authoritative. Dropping such a holding would under-report the affected set, and guessing an owner for it is exactly the defaulting that fail-closed tenancy forbids.
-
-```csharp
-public sealed class FundAccountHoldingScopeAssignmentProvider : IScopeAssignmentProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Authority = &quot;fund-account-custodied-holdings&quot;;</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:28](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L28) | Stable authority id stamped onto every assignment this provider asserts. |
-| <code>public FundAccountHoldingScopeAssignmentProvider(IFundAccountStore? accounts, IFundProfileTenancyRegistry? tenancy, ILogger&lt;FundAccountHoldingScopeAssignmentProvider&gt; logger);</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:34](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L34) |  |
-| <code>public string AuthorityId =&gt; …;</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:45](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L45) |  |
-| <code>public async Task&lt;ScopeAssignmentProviderResult&gt; ResolveAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:48](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L48) |  |

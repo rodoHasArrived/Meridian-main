@@ -195,6 +195,51 @@ that its writers are drained.
    remaining conditions and explicit accept/hold decision. Reopen writer admission only after all
    required receipts are present and the decision is accept. Retain the admission/controller receipt.
 
+## Historical Identifier Windows
+
+Bulk imports (`SecurityMasterImportService`) restamp every identifier's `ValidFrom` with the ingest
+time, so an import file cannot backdate an identifier, and a security imported today does not
+resolve before its ingest date. To load an identifier the security carried earlier (for example, a
+ticker used before a rename), stage it through the governed workbench instead:
+
+1. The maker calls `ProposeHistoricalIdentifierWindowAsync` with the kind, value, optional provider,
+   `ValidFrom`, optional `ValidTo`, an Evidence Vault reference, and a justification. The window
+   must start in the past. This creates a Draft revision on the reserved field path
+   `identifiers.historicalWindow`. The ordinary field-edit route refuses that path.
+2. Submit and approve the revision through the usual workbench gate. An independent reviewer is
+   always required for these revisions, whatever `RequireIndependentReviewer` says. The proposer
+   cannot be the assigned reviewer or the approver, even when another operator submits on the
+   proposer's behalf.
+3. Publish. `ApprovedHistoricalIdentifierWindowHandler` (order 6) adds the identifier as
+   non-primary through the governed publication amender, keeping the proposed `ValidFrom` and
+   `ValidTo`. The amendment itself takes effect at publish time. A retried publish detects that the
+   window is already in place and does not amend again. Discarding the proposal only rejects the
+   revision, because it stages no overlay value.
+
+Over HTTP, step 1 is `POST /api/security-master/{securityId}/workbench/historical-identifier-window`
+(permission `ModifySecurityMaster`). The body is a `ProposeHistoricalIdentifierWindowRequest`; the
+path's security id and the session's actor replace whatever the body says, so the recorded proposer
+is always the caller. A refused proposal returns 422 and a stale `expectedVersion` returns 409.
+Steps 2 and 3 use the existing workbench `submit`, `approve` and `publish` routes with the returned
+revision id.
+
+In the browser workstation, open the security's detail screen
+(`/accounting/security-master/detail?securityId=…`, or `/portfolio/asset-detail`), choose the
+**Passport** tab, and use **Propose historical identifier…**. The form checks the same rules before staging the draft, then
+the editor's **Submit for approval**, **Approve** and **Publish** actions carry it through the gate.
+The editor tracks one working revision, so a new proposal waits until the current one is published
+or discarded.
+
+`npm --prefix src/Meridian.Ui/dashboard run e2e:historical-window` drives that browser flow end to
+end (propose, submit, approve, publish, plus a refused proposal) against the real workstation app on
+a Vite dev server, mocking only the API responses. Set `MERIDIAN_CHROMIUM_PATH` when the installed
+Chromium is not the one the dashboard's Playwright version expects. It is not part of a CI workflow.
+
+The WPF desktop passport editor has the same form under **Propose historical identifier…**. It
+checks proposals with the server's own rules (`SecurityMasterHistoricalIdentifierWindow.Validate`),
+then **Stage window draft** creates the Draft that the desktop **Submit for approval**, **Approve**
+and **Publish** buttons carry through the gate, with the same one-revision-at-a-time rule.
+
 ## Concurrency and Recovery Rehearsal
 
 On an isolated non-production database, load `MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` through

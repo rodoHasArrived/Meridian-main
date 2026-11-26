@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Storage.Services.ResourceLimits</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1583](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1583).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1589](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1589).
 
 ```csharp
 public sealed record ResourceLimits(int MaxCpuPct = 80, int MaxMemoryPct = 70, int MaxDiskIoMbps = 500);
@@ -20,7 +20,7 @@ public sealed record ResourceLimits(int MaxCpuPct = 80, int MaxMemoryPct = 70, i
 
 Qualified name: <code>Meridian.Storage.Services.ResourceRequirements</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1618](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1618).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1624](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1624).
 
 ```csharp
 public sealed record ResourceRequirements(int CpuCores = 1, long MemoryBytes = 1_073_741_824, long DiskIoMbps = 100, long NetworkIoMbps = 0, bool RequiresExclusiveLock = false, string[]? ExclusivePaths = null);
@@ -106,7 +106,7 @@ public sealed record RetentionViolation(string FilePath, string Symbol, int AgeD
 
 Qualified name: <code>Meridian.Storage.Services.ScheduleDecision</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1637](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1637).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1643](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1643).
 
 ```csharp
 public sealed record ScheduleDecision(bool Allowed, string Reason, MaintenanceWindow? CurrentWindow, TimeSpan? WaitTime, ResourceLimits? ApplicableLimits);
@@ -116,7 +116,7 @@ public sealed record ScheduleDecision(bool Allowed, string Reason, MaintenanceWi
 
 Qualified name: <code>Meridian.Storage.Services.ScheduledJob</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1653](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1653).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1659](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1659).
 
 ```csharp
 public sealed record ScheduledJob(string Id, MaintenanceJob Job, DateTimeOffset ScheduledStart, JobStatus Status, DateTimeOffset CreatedAt);
@@ -126,7 +126,7 @@ public sealed record ScheduledJob(string Id, MaintenanceJob Job, DateTimeOffset 
 
 Qualified name: <code>Meridian.Storage.Services.ScheduleOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1661](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1661).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1667](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1667).
 
 ```csharp
 public sealed record ScheduleOptions(bool AllowImmediate = true, TimeSpan MaxWaitTime = default);
@@ -136,7 +136,7 @@ public sealed record ScheduleOptions(bool AllowImmediate = true, TimeSpan MaxWai
 
 Qualified name: <code>Meridian.Storage.Services.ScheduleSlot</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1645](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1645).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1651](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1651).
 
 ```csharp
 public sealed record ScheduleSlot(DateTimeOffset Start, DateTimeOffset End, MaintenanceWindow Window, ResourceLimits Limits, int AvailableConcurrencySlots);
@@ -447,7 +447,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.TierInfo</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:646](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L646).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:702](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L702).
 
 ```csharp
 public sealed record TierInfo(int FileCount, long TotalBytes, DateTime? OldestFile, DateTime? NewestFile);
@@ -471,15 +471,15 @@ Declared public members:
 | --- | --- | --- |
 | <code>public TierMigrationService(StorageOptions options, ISourceRegistry? sourceRegistry = null);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:33](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L33) |  |
 | <code>public async Task&lt;MigrationResult&gt; MigrateAsync(string sourcePath, StorageTier targetTier, MigrationOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:40](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L40) |  |
-| <code>public Task&lt;MigrationPlan&gt; PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:155](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L155) |  |
-| <code>public StorageTier DetermineTargetTier(string filePath);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:217](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L217) |  |
-| <code>public Task&lt;TierStatistics&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:236](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L236) |  |
+| <code>public Task&lt;MigrationPlan&gt; PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:168](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L168) | Plans every move from an age-bounded tier to the next tier in the chain for files that are due now or become due within horizon. Each action carries its PlannedMigrationAction.DueAt; callers that execute a plan should pass TimeSpan.Zero so nothing moves before its tier&#x27;s age limit. |
+| <code>public StorageTier DetermineTargetTier(string filePath);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:243](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L243) |  |
+| <code>public Task&lt;TierStatistics&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:262](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L262) |  |
 
 ## TierStatistics
 
 Qualified name: <code>Meridian.Storage.Services.TierStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:641](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L641).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:697](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L697).
 
 ```csharp
 public sealed record TierStatistics(DateTimeOffset GeneratedAt, Dictionary<StorageTier, TierInfo> TierInfo);
@@ -489,7 +489,7 @@ public sealed record TierStatistics(DateTimeOffset GeneratedAt, Dictionary<Stora
 
 Qualified name: <code>Meridian.Storage.Services.TradingSession</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1562](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1562).
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1568](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1568).
 
 ```csharp
 public sealed record TradingSession(string Name, DayOfWeek[] ActiveDays, TimeSpan PreMarketStart, TimeSpan RegularStart, TimeSpan RegularEnd, TimeSpan AfterHoursEnd, bool IncludesPreMarket = true, bool IncludesAfterHours = true);
@@ -615,24 +615,25 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public long EventsBuffered =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:144](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L144) | Total events currently buffered across all paths. |
-| <code>public long EventsWritten =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:149](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L149) | Total events written to disk. |
-| <code>public long BatchesWritten =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:154](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L154) | Total batches written to disk. |
-| <code>public bool IsBatchingEnabled =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:159](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L159) | Gets whether sink-side batching is enabled. |
-| <code>public int BatchSize =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:164](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L164) | Gets the configured batch size threshold. |
-| <code>public TimeSpan FlushInterval =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:169](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L169) | Gets the configured periodic flush interval for buffered batches. |
-| <code>public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, ILogger&lt;JsonlStorageSink&gt;? logger = null) : this(options, policy, JsonlBatchOptions.NoBatching, logger);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:174](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L174) | Creates a JsonlStorageSink with default options (no batching for backward compatibility). |
-| <code>public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, JsonlBatchOptions batchOptions, ILogger&lt;JsonlStorageSink&gt;? logger = null);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:193](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L193) | Creates a JsonlStorageSink with configurable batch options. |
-| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:241](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L241) |  |
-| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:423](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L423) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:440](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L440) |  |
-| <code>public JsonlStorageSinkStatistics GetStatistics();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:505](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L505) | Returns a diagnostics snapshot for buffered JSONL persistence. |
+| <code>public long EventsBuffered =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:159](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L159) | Total events currently buffered across all paths. |
+| <code>public long EventsWritten =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:164](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L164) | Total events written to disk. |
+| <code>public long BatchesWritten =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:169](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L169) | Total batches written to disk. |
+| <code>public long WriteFailures =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:175](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L175) | Gets the number of write attempts by this sink that failed (excluding cancellation). Each is also counted in mdc_sink_write_failures_total{sink=&quot;jsonl&quot;}. |
+| <code>public bool IsBatchingEnabled =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:180](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L180) | Gets whether sink-side batching is enabled. |
+| <code>public int BatchSize =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:185](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L185) | Gets the configured batch size threshold. |
+| <code>public TimeSpan FlushInterval =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:190](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L190) | Gets the configured periodic flush interval for buffered batches. |
+| <code>public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, ILogger&lt;JsonlStorageSink&gt;? logger = null) : this(options, policy, JsonlBatchOptions.NoBatching, logger);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:195](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L195) | Creates a JsonlStorageSink with default options (no batching for backward compatibility). |
+| <code>public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, JsonlBatchOptions batchOptions, ILogger&lt;JsonlStorageSink&gt;? logger = null);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:214](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L214) | Creates a JsonlStorageSink with configurable batch options. |
+| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:262](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L262) |  |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:461](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L461) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:478](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L478) |  |
+| <code>public JsonlStorageSinkStatistics GetStatistics();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:543](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L543) | Returns a diagnostics snapshot for buffered JSONL persistence. |
 
 ## JsonlStorageSinkStatistics
 
 Qualified name: <code>Meridian.Storage.Sinks.JsonlStorageSinkStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1221](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1221).
+Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1259](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1259).
 
 ```csharp
 public sealed record JsonlStorageSinkStatistics(bool IsBatchingEnabled, int BatchSize, TimeSpan FlushInterval, long EventsBuffered, long EventsWritten, long BatchesWritten, int WriterCount, int BufferCount, DateTimeOffset Timestamp, long FsyncCount = 0, int OpenWriterHandles = 0);
@@ -661,7 +662,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Storage.Sinks.ParquetStorageOptions</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:743](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L743).
+Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:759](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L759).
 
 Configuration options for Parquet storage.
 
@@ -673,33 +674,41 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int BufferSize { get; init; } = 10000;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:748](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L748) | Number of events to buffer before writing to disk. |
-| <code>public TimeSpan FlushInterval { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:753](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L753) | Maximum time between flushes. |
-| <code>public CompressionMethod CompressionMethod { get; init; } = CompressionMethod.Snappy;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:758](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L758) | Compression method for Parquet files. |
-| <code>public static ParquetStorageOptions Default =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:760](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L760) |  |
-| <code>public static ParquetStorageOptions HighCompression =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:762](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L762) |  |
-| <code>public static ParquetStorageOptions LowLatency =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:768](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L768) |  |
+| <code>public int BufferSize { get; init; } = 10000;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:764](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L764) | Number of events to buffer before writing to disk. |
+| <code>public TimeSpan FlushInterval { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:769](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L769) | Maximum time between flushes. |
+| <code>public CompressionMethod CompressionMethod { get; init; } = CompressionMethod.Snappy;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:774](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L774) | Compression method for Parquet files. |
+| <code>public static ParquetStorageOptions Default =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:776](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L776) |  |
+| <code>public static ParquetStorageOptions HighCompression =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:778](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L778) |  |
+| <code>public static ParquetStorageOptions LowLatency =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:784](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L784) |  |
 
 ## ParquetStorageSink
 
 Qualified name: <code>Meridian.Storage.Sinks.ParquetStorageSink</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:38](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L38).
+Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.Compaction.cs:32](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.Compaction.cs#L32).
 
-Apache Parquet storage sink for high-performance columnar storage. Provides 10-20x better compression than JSONL and optimized for analytics. Deliberately KEEPS copy-on-write row-group appends (unlike the JSONL sink&#x27;s persistent append streams): Parquet&#x27;s footer-at-end format means a persistently open writer leaves an unreadable, footerless file after a crash, violating the published-artifact readability invariant that copy-plus-rename guarantees; part-file compaction would change the one-file-per-day contract query/export paths consume. Row-group flushes are batched and lower-cadence than the JSONL hot path, so the O(day-file) copy is the accepted cost. Revisit only with a measured need. Based on: https://github.com/aloneguid/parquet-dotnet (MIT) Reference: docs/open-source-references.md #20
+Hourly part files and their compaction into the one-file-per-day Parquet file.
 
 ```csharp
-public sealed class ParquetStorageSink : IStorageSink
+public sealed partial class ParquetStorageSink
+```
+
+Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:41](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L41).
+
+Apache Parquet storage sink for high-performance columnar storage. Provides 10-20x better compression than JSONL and optimized for analytics. Every write is still copy-on-write (temp file plus atomic rename), never a persistently open writer: Parquet&#x27;s footer-at-end format means an open writer leaves an unreadable, footerless file after a crash. To keep that copy small, flushes append to an hourly part file ({day file}.h{HH}.{instance}-{seq}.parquet-part) instead of the day file; the pipeline flushes every few seconds, so appending to the day file copied the whole day&#x27;s file on each flush and left thousands of tiny row groups. When the hour closes (or the sink is disposed) each part is merged into the one-file-per-day *.parquet file as a single row group. Part files use a non-.parquet extension, so query, export, retention and tier services see only day files; a day file therefore trails the newest rows by up to about an hour, while JSONL stays the real-time copy. See ParquetStorageSink.Compaction.cs. Based on: https://github.com/aloneguid/parquet-dotnet (MIT) Reference: docs/open-source-references.md #20
+
+```csharp
+public sealed partial class ParquetStorageSink : IStorageSink
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ParquetStorageSink(StorageOptions options, ParquetStorageOptions? parquetOptions = null, IStoragePolicy? policy = null) : this(options, parquetOptions, WriteAtomicallyAsync, policy);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:109](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L109) |  |
-| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:137](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L137) |  |
-| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:159](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L159) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:697](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L697) |  |
+| <code>public ParquetStorageSink(StorageOptions options, ParquetStorageOptions? parquetOptions = null, IStoragePolicy? policy = null) : this(options, parquetOptions, WriteAtomicallyAsync, policy);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:113](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L113) |  |
+| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:143](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L143) |  |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:165](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L165) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:710](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L710) |  |
 
 ## SinkHealth
 
@@ -857,10 +866,10 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public const string DefaultProfile = &quot;Research&quot;;</code> | [src/Meridian.Storage/StorageProfiles.cs:30](../../../../src/Meridian.Storage/StorageProfiles.cs#L30) | Default storage profile when none is specified. The retained Research profile ID provides balanced defaults for strategy use cases. |
-| <code>public static StorageOptions ApplyProfile(string? profile, StorageOptions options, bool useDefaultIfEmpty = true);</code> | [src/Meridian.Storage/StorageProfiles.cs:120](../../../../src/Meridian.Storage/StorageProfiles.cs#L120) | Applies a storage profile to the given options. If no profile is specified, applies the default strategy profile. |
-| <code>public static StorageProfilePreset? GetProfile(string id);</code> | [src/Meridian.Storage/StorageProfiles.cs:138](../../../../src/Meridian.Storage/StorageProfiles.cs#L138) | Gets a profile preset by ID. |
-| <code>public static StorageOptions CreateFromProfile(string? profile, string rootPath, bool? compress = null);</code> | [src/Meridian.Storage/StorageProfiles.cs:147](../../../../src/Meridian.Storage/StorageProfiles.cs#L147) | Creates storage options from a profile without requiring a base options object. Uses default profile if none specified. |
-| <code>public static IReadOnlyList&lt;StorageProfilePreset&gt; GetPresets() =&gt; …;</code> | [src/Meridian.Storage/StorageProfiles.cs:158](../../../../src/Meridian.Storage/StorageProfiles.cs#L158) |  |
+| <code>public static StorageOptions ApplyProfile(string? profile, StorageOptions options, bool useDefaultIfEmpty = true);</code> | [src/Meridian.Storage/StorageProfiles.cs:123](../../../../src/Meridian.Storage/StorageProfiles.cs#L123) | Applies a storage profile to the given options. If no profile is specified, applies the default strategy profile. |
+| <code>public static StorageProfilePreset? GetProfile(string id);</code> | [src/Meridian.Storage/StorageProfiles.cs:141](../../../../src/Meridian.Storage/StorageProfiles.cs#L141) | Gets a profile preset by ID. |
+| <code>public static StorageOptions CreateFromProfile(string? profile, string rootPath, bool? compress = null);</code> | [src/Meridian.Storage/StorageProfiles.cs:150](../../../../src/Meridian.Storage/StorageProfiles.cs#L150) | Creates storage options from a profile without requiring a base options object. Uses default profile if none specified. |
+| <code>public static IReadOnlyList&lt;StorageProfilePreset&gt; GetPresets() =&gt; …;</code> | [src/Meridian.Storage/StorageProfiles.cs:161](../../../../src/Meridian.Storage/StorageProfiles.cs#L161) |  |
 
 ## StorageQuota
 

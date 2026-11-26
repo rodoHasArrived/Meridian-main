@@ -31,6 +31,8 @@ Start with:
 - [Intercompany Consolidation](intercompany-consolidation.md)
 - [Recurring Journal](recurring-journal.md)
 - [Fiscal-Year Close](fiscal-year-close.md)
+- [Short Carrying Charges](short-carry-charges.md)
+- [Partnership Waterfall Allocation](partnership-waterfall-allocation.md)
 - [Security](security.md)
 - [Contractual Schedule](contractual-schedule.md)
 - [Contractual Cash-Flow Projection](contractual-cash-flow-projection.md)

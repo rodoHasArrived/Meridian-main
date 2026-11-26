@@ -194,6 +194,18 @@ public sealed record ExecutionReport
     public decimal? LastFillQuantity { get; init; }
 
     /// <summary>
+    /// The broker's own identifier for the single execution this report describes (Interactive
+    /// Brokers' <c>execId</c>), when the gateway reports one. When present it is the fill's
+    /// canonical identity, so two executions with identical economics stay distinct and a
+    /// re-delivered execution resolves to the fill already recorded. Null for reports that do not
+    /// describe one execution (status updates, snapshots), and omitted from serialized payloads so
+    /// existing durable fill records keep their canonical content hash and FillId.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ExecutionId { get; init; }
+
+    /// <summary>
     /// The broker's asset class for the filled instrument, in the broker's own vocabulary (for
     /// Alpaca: <c>us_equity</c>, <c>us_option</c>, <c>crypto</c>, and the fixed-income classes),
     /// when the gateway reports it. Read only when a fill arrives for an order this process does

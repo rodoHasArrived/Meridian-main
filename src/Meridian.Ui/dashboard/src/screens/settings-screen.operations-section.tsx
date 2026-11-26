@@ -13,7 +13,7 @@ import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import { buildApprovalPolicyPermissionOptions } from "@/screens/settings-screen.operations-form-options";
 import { type SettingsScreenViewModel } from "@/screens/settings-screen.view-model";
-import type { OperationsApprovalPolicyMatrixRow, OperationsCloseCalendarItem, RolePermissionCatalog, SessionInfo } from "@/types";
+import type { OperationsApprovalPolicyMatrixRow, OperationsCloseCalendarItem, RolePermissionCatalog } from "@/types";
 import { ArrowRight, ExternalLink, Save, ShieldCheck } from "lucide-react";
 import { type FormEvent } from "react";
 import { Link } from "react-router-dom";
@@ -31,14 +31,13 @@ interface UseSettingsOperationsSectionStateParams {
   onRefresh: (() => Promise<void> | void) | undefined;
   rolePermissionProfile: RolePermissionProfileState;
   roleProfileDraft: { canSave: boolean; statusLabel: string; disabledReason: string | null; baseRoleOptions: Array<{ value: string; label: string; }>; permissionOptions: Array<{ value: string; label: string; group: string; }>; defaultBaseRole: string; defaultPermissionNames: string[]; };
-  session: SessionInfo | null;
   setApprovalPolicyRule: React.Dispatch<React.SetStateAction<ApprovalPolicyRuleState>>;
   setCloseCalendarItem: React.Dispatch<React.SetStateAction<CloseCalendarItemState>>;
   setLedgerMappingAssignment: React.Dispatch<React.SetStateAction<LedgerMappingAssignmentState>>;
   setRolePermissionProfile: React.Dispatch<React.SetStateAction<RolePermissionProfileState>>;
 }
 
-export function useSettingsOperationsSectionState({ approvalPolicyDraft, approvalPolicyRule, closeCalendarDraft, closeCalendarItem, ledgerMappingAssignment, onRefresh, rolePermissionProfile, roleProfileDraft, session, setApprovalPolicyRule, setCloseCalendarItem, setLedgerMappingAssignment, setRolePermissionProfile }: UseSettingsOperationsSectionStateParams) {
+export function useSettingsOperationsSectionState({ approvalPolicyDraft, approvalPolicyRule, closeCalendarDraft, closeCalendarItem, ledgerMappingAssignment, onRefresh, rolePermissionProfile, roleProfileDraft, setApprovalPolicyRule, setCloseCalendarItem, setLedgerMappingAssignment, setRolePermissionProfile }: UseSettingsOperationsSectionStateParams) {
   const submitLedgerMappingAssignment = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!ledgerMappingAssignment.accountId || !ledgerMappingAssignment.ledgerGroupId) {
@@ -63,7 +62,6 @@ export function useSettingsOperationsSectionState({ approvalPolicyDraft, approva
       const result = await assignLedgerMapping({
         accountId: ledgerMappingAssignment.accountId,
         ledgerGroupId: ledgerMappingAssignment.ledgerGroupId,
-        requestedBy: session?.displayName ?? "settings-screen",
         rationale: ledgerMappingAssignment.rationale,
         correlationId: `settings-ledger-map-${Date.now()}`
       });
@@ -129,7 +127,6 @@ export function useSettingsOperationsSectionState({ approvalPolicyDraft, approva
         description: rolePermissionProfile.description.trim() || null,
         baseRole: rolePermissionProfile.baseRole,
         permissionNames: rolePermissionProfile.permissionNames,
-        requestedBy: session?.displayName ?? "settings-screen",
         rationale: rolePermissionProfile.rationale,
         correlationId: `settings-role-profile-${Date.now()}`
       });
@@ -221,7 +218,6 @@ export function useSettingsOperationsSectionState({ approvalPolicyDraft, approva
         requiresChecklistControlApprovals: approvalPolicyRule.requiresChecklistControlApprovals,
         evidenceRequirement: approvalPolicyRule.evidenceRequirement,
         severity: approvalPolicyRule.severity,
-        requestedBy: session?.displayName ?? "settings-screen",
         rationale: approvalPolicyRule.rationale,
         correlationId: `settings-approval-policy-${Date.now()}`
       });
@@ -301,7 +297,6 @@ export function useSettingsOperationsSectionState({ approvalPolicyDraft, approva
         taskId: closeCalendarItem.taskId,
         dueDate: closeCalendarItem.dueDate,
         owner: closeCalendarItem.owner,
-        requestedBy: session?.displayName ?? "settings-screen",
         rationale: closeCalendarItem.rationale,
         correlationId: `settings-close-calendar-${Date.now()}`
       });

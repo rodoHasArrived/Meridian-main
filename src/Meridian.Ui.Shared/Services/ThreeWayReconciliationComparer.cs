@@ -7,7 +7,8 @@ public static class ThreeWayReconciliationComparer
 {
     public static IReadOnlyList<ThreeWayReconciliationCheckDto> Compare(
         IReadOnlyList<ThreeWaySourceSnapshotDto> sources, DateTimeOffset cutoffUtc,
-        TimeSpan maximumAge, TimeSpan maximumDrift)
+        TimeSpan maximumAge, TimeSpan maximumDrift,
+        decimal fillPriceTolerance = 0.0001m, decimal fillFeeTolerance = 0.01m)
     {
         if (maximumAge <= TimeSpan.Zero || maximumDrift < TimeSpan.Zero)
             throw new ArgumentOutOfRangeException(nameof(maximumAge));
@@ -68,9 +69,20 @@ public static class ThreeWayReconciliationComparer
                         : status == "Matched" ? "Retained operands agree within tolerance."
                         : measure == "quantity" ? "Quantity differs; inspect missing/duplicate fills and unapplied corporate actions."
                         : measure == "cash" ? "Cash differs; inspect settlement timing, fills, and independently evidenced fees."
-                        : "Cost basis differs; inspect retained acquisition and relief evidence."));
+                        : "Cost basis differs; inspect retained acquisition and relief evidence.")
+                {
+                    Classification = status == "Matched" ? null
+                        : measure == "quantity" ? "PositionQuantityMismatch"
+                        : measure == "cash" ? "CashDifference" : "CostBasisMismatch"
+                });
             }
         }
+
+        // Fill-level pairing explains the balance checks above: which executions are missing or differ.
+        var ledgerSource = normalized[0];
+        var brokerSource = normalized[2];
+        checks.AddRange(ThreeWayFillMatcher.Match(ledgerSource, brokerSource, fillPriceTolerance, fillFeeTolerance,
+            maximumDrift > TimeSpan.Zero ? maximumDrift : TimeSpan.FromMinutes(5)));
         return checks;
     }
 }

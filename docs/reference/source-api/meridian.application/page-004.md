@@ -190,12 +190,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public QualityMonitoringPublisher(IMarketEventPublisher inner, DataQualityMonitoringService quality, ILogger&lt;QualityMonitoringPublisher&gt;? logger = null, int sampleCapacity = DefaultSampleCapacity, DataFreshnessSlaMonitor? freshness = null);</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:45](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L45) |  |
-| <code>public long TradesObserved =&gt; …;</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:71](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L71) | Gets the number of trade events recorded into the quality monitors. |
-| <code>public long QuotesObserved =&gt; …;</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:74](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L74) | Gets the number of quote events recorded into the quality monitors. |
-| <code>public long SamplesDropped =&gt; …;</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:77](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L77) | Gets the number of quality samples dropped because the sample buffer was full. |
-| <code>public bool TryPublish(in MarketEvent evt);</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:80](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L80) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:172](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L172) |  |
+| <code>public QualityMonitoringPublisher(IMarketEventPublisher inner, DataQualityMonitoringService quality, ILogger&lt;QualityMonitoringPublisher&gt;? logger = null, int sampleCapacity = DefaultSampleCapacity, DataFreshnessSlaMonitor? freshness = null, Meridian.DataIntegration.Monitoring.ProviderLatencyService? latency = null);</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:52](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L52) |  |
+| <code>public long TradesObserved =&gt; …;</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:80](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L80) | Gets the number of trade events recorded into the quality monitors. |
+| <code>public long QuotesObserved =&gt; …;</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:83](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L83) | Gets the number of quote events recorded into the quality monitors. |
+| <code>public long SamplesDropped =&gt; …;</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:86](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L86) | Gets the number of quality samples dropped because the sample buffer was full. |
+| <code>public bool TryPublish(in MarketEvent evt);</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:89](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L89) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:192](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L192) |  |
 
 ## AccrualLedgerService
 

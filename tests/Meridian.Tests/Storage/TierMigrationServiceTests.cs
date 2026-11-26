@@ -89,7 +89,7 @@ public sealed class TierMigrationServiceTests : IDisposable
 
         result.Success.Should().BeTrue(string.Join("; ", result.Errors));
         File.Exists(source).Should().BeFalse();
-        var target = Path.Combine(_warm, "hot", "session.jsonl.gz");
+        var target = Path.Combine(_warm, "session.jsonl.gz");
         (await ReadGzipTextAsync(target)).Should().Be(jsonl, "one decompression must produce the original JSONL, never another gzip stream");
         var replayed = new List<MarketEvent>();
         await foreach (var evt in new JsonlReplayer(target).ReadEventsAsync())
@@ -193,11 +193,11 @@ public sealed class TierMigrationServiceTests : IDisposable
         result.FilesFailed.Should().Be(0);
         progress.Should().ContainSingle().Which.TotalFiles.Should().Be(1);
 
-        var targetFile = Path.Combine(_warm, "hot", "alpaca", "AAPL", "Trade", "session.jsonl.gz");
+        var targetFile = Path.Combine(_warm, "alpaca", "AAPL", "Trade", "session.jsonl.gz");
         File.Exists(targetFile).Should().BeTrue("compressed tier rollover must keep the original .jsonl filename before adding .gz");
         var migratedPayload = await ReadGzipTextAsync(targetFile);
         migratedPayload.Should().Be("{\"symbol\":\"AAPL\",\"price\":213.45}");
-        File.Exists(Path.Combine(_warm, "hot", "alpaca", "AAPL", "Trade", "notes.txt")).Should().BeFalse();
+        File.Exists(Path.Combine(_warm, "alpaca", "AAPL", "Trade", "notes.txt")).Should().BeFalse();
         File.Exists(sourceFile).Should().BeTrue();
     }
 
@@ -220,7 +220,7 @@ public sealed class TierMigrationServiceTests : IDisposable
         result.Errors.Should().BeEmpty();
         File.Exists(sourceFile).Should().BeFalse("verified rollover should delete the hot-tier file only after target checksum validation");
 
-        var targetFile = Path.Combine(_warm, "hot", "polygon", "SPY", "HistoricalBar", "2026-06-29.jsonl.gz");
+        var targetFile = Path.Combine(_warm, "polygon", "SPY", "HistoricalBar", "2026-06-29.jsonl.gz");
         File.Exists(targetFile).Should().BeTrue();
         var migratedPayload = await ReadGzipTextAsync(targetFile);
         migratedPayload.Should().Be("{\"symbol\":\"SPY\",\"close\":500.12}");
@@ -255,7 +255,7 @@ public sealed class TierMigrationServiceTests : IDisposable
         result.Success.Should().BeTrue("a configured storage root with a trailing separator must accept its enumerated child files");
         result.FilesProcessed.Should().Be(1);
         result.FilesFailed.Should().Be(0);
-        var targetFile = Path.Combine(_warm, "hot", "alpaca", "AAPL", "Trade", "session.jsonl.gz");
+        var targetFile = Path.Combine(_warm, "alpaca", "AAPL", "Trade", "session.jsonl.gz");
         File.Exists(targetFile).Should().BeTrue();
         (await ReadGzipTextAsync(targetFile)).Should().Be("{\"symbol\":\"AAPL\",\"price\":213.45}");
     }
@@ -348,7 +348,7 @@ public sealed class TierMigrationServiceTests : IDisposable
         File.SetLastWriteTimeUtc(agedFile, DateTime.UtcNow.AddDays(-10));
         File.SetLastWriteTimeUtc(recentFile, DateTime.UtcNow.AddDays(-2));
 
-        var plan = await _sut.PlanMigrationAsync(TimeSpan.FromDays(30));
+        var plan = await _sut.PlanMigrationAsync(TimeSpan.Zero);
 
         plan.Actions.Should().ContainSingle(action => action.SourcePath == agedFile).Which.Should().BeEquivalentTo(new
         {
@@ -356,8 +356,97 @@ public sealed class TierMigrationServiceTests : IDisposable
             Reason = "Age > 7 days",
             SizeBytes = new FileInfo(agedFile).Length
         }, options => options.ExcludingMissingMembers());
-        plan.Actions.Should().NotContain(action => action.SourcePath == recentFile);
+        plan.Actions.Single().DueAt.Should().BeBefore(DateTimeOffset.UtcNow);
+        plan.Actions.Should().NotContain(action => action.SourcePath == recentFile,
+            "with no horizon only files already past the tier's age limit are planned");
         plan.EstimatedBytesToMigrate.Should().Be(new FileInfo(agedFile).Length);
+    }
+
+    [Fact]
+    public async Task PlanMigrationAsync_Horizon_AddsFilesThatBecomeDueWithinIt()
+    {
+        var sourceDirectory = Path.Combine(_hot, "polygon", "MSFT", "HistoricalBar");
+        Directory.CreateDirectory(sourceDirectory);
+        var soonFile = Path.Combine(sourceDirectory, "soon.jsonl");
+        var laterFile = Path.Combine(sourceDirectory, "later.jsonl");
+        await File.WriteAllTextAsync(soonFile, "soon");
+        await File.WriteAllTextAsync(laterFile, "later");
+        File.SetLastWriteTimeUtc(soonFile, DateTime.UtcNow.AddDays(-5));  // due in ~2 days
+        File.SetLastWriteTimeUtc(laterFile, DateTime.UtcNow.AddDays(-1)); // due in ~6 days
+
+        var threeDays = await _sut.PlanMigrationAsync(TimeSpan.FromDays(3));
+        var none = await _sut.PlanMigrationAsync(TimeSpan.Zero);
+
+        none.Actions.Should().BeEmpty("neither file is past the 7-day hot limit yet");
+        var soon = threeDays.Actions.Should().ContainSingle("only the file reaching 7 days within the horizon is planned").Subject;
+        soon.SourcePath.Should().Be(soonFile);
+        soon.DueAt.Should().BeAfter(DateTimeOffset.UtcNow);
+        soon.Reason.Should().StartWith("Reaches 7 days on ");
+        threeDays.Horizon.Should().Be(TimeSpan.FromDays(3));
+    }
+
+    [Fact]
+    public async Task PlanMigrationAsync_TierWithoutMaxAge_ReceivesFilesFromTheLastAgedTier()
+    {
+        var cold = Path.Combine(_root, "cold");
+        var archive = Path.Combine(_root, "archive");
+        Directory.CreateDirectory(cold);
+        var service = new TierMigrationService(new StorageOptions
+        {
+            RootPath = _root,
+            Tiering = new TieringOptions
+            {
+                Enabled = true,
+                Tiers =
+                [
+                    new TierConfig { Name = "Archive", Path = archive, Format = "jsonl", Compression = CompressionCodec.Gzip },
+                    new TierConfig { Name = "Hot", Path = _hot, MaxAgeDays = 7, Format = "jsonl" },
+                    new TierConfig { Name = "Cold", Path = cold, MaxAgeDays = 180, Format = "jsonl", Compression = CompressionCodec.Gzip }
+                ]
+            }
+        });
+        var agedCold = Path.Combine(cold, "SPY", "old.jsonl.gz");
+        Directory.CreateDirectory(Path.GetDirectoryName(agedCold)!);
+        await File.WriteAllTextAsync(agedCold, "old");
+        File.SetLastWriteTimeUtc(agedCold, DateTime.UtcNow.AddDays(-200));
+
+        var plan = await service.PlanMigrationAsync(TimeSpan.Zero);
+
+        plan.Actions.Should().ContainSingle().Which.Should().BeEquivalentTo(new
+        {
+            SourcePath = agedCold,
+            TargetTier = StorageTier.Archive,
+            Reason = "Age > 180 days"
+        }, options => options.ExcludingMissingMembers());
+    }
+
+    [Fact]
+    public async Task PlanMigrationAsync_TierNameThatIsNotAStorageTier_IsSkippedNotMappedToWarm()
+    {
+        var nearline = Path.Combine(_root, "nearline");
+        var cold = Path.Combine(_root, "cold");
+        var service = new TierMigrationService(new StorageOptions
+        {
+            RootPath = _root,
+            Tiering = new TieringOptions
+            {
+                Enabled = true,
+                Tiers =
+                [
+                    new TierConfig { Name = "Hot", Path = _hot, MaxAgeDays = 7, Format = "jsonl" },
+                    new TierConfig { Name = "Nearline", Path = nearline, MaxAgeDays = 30, Format = "jsonl" },
+                    new TierConfig { Name = "Cold", Path = cold, MaxAgeDays = 180, Format = "jsonl" }
+                ]
+            }
+        });
+        var agedHot = Path.Combine(_hot, "aged.jsonl");
+        await File.WriteAllTextAsync(agedHot, "aged");
+        File.SetLastWriteTimeUtc(agedHot, DateTime.UtcNow.AddDays(-10));
+
+        var plan = await service.PlanMigrationAsync(TimeSpan.Zero);
+
+        plan.Actions.Should().ContainSingle().Which.TargetTier.Should().Be(StorageTier.Cold,
+            "MigrateAsync cannot address a tier named 'Nearline', so the chain skips to the next addressable tier");
     }
 
     [Fact]
@@ -523,7 +612,7 @@ public sealed class TierMigrationServiceTests : IDisposable
             result.FilesProcessed.Should().Be(1);
             result.FilesFailed.Should().Be(1);
             File.Exists(safe).Should().BeFalse();
-            File.Exists(Path.Combine(_warm, "hot", "safe.jsonl.gz")).Should().BeTrue();
+            File.Exists(Path.Combine(_warm, "safe.jsonl.gz")).Should().BeTrue();
             (await File.ReadAllTextAsync(evidence)).Should().Be("outside evidence");
             Directory.EnumerateFiles(_warm, "*", SearchOption.AllDirectories).Should().ContainSingle();
         }
@@ -546,9 +635,12 @@ public sealed class TierMigrationServiceTests : IDisposable
         Directory.CreateDirectory(outside);
         var evidence = Path.Combine(outside, "evidence.jsonl.gz");
         await File.WriteAllTextAsync(evidence, "outside evidence");
-        var source = Path.Combine(_hot, "evidence.jsonl");
+        // The target keeps the source's path inside its tier, so a link at warm/nested sits on
+        // the migration's write path for hot/nested/evidence.jsonl.
+        Directory.CreateDirectory(Path.Combine(_hot, "nested"));
+        var source = Path.Combine(_hot, "nested", "evidence.jsonl");
         await File.WriteAllTextAsync(source, "source evidence");
-        var parent = Path.Combine(_warm, "hot");
+        var parent = Path.Combine(_warm, "nested");
         var link = directoryLink ? parent : Path.Combine(parent, "evidence.jsonl.gz");
         try
         {
@@ -664,6 +756,68 @@ public sealed class TierMigrationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task MigrateAsync_KeepsThePathInsideTheTier_SoRepeatedMigrationsDoNotNestTierFolders()
+    {
+        var cold = Path.Combine(_root, "cold");
+        var service = new TierMigrationService(new StorageOptions
+        {
+            RootPath = _root,
+            Tiering = new TieringOptions
+            {
+                Enabled = true,
+                Tiers =
+                [
+                    new TierConfig { Name = "Hot", Path = _hot, MaxAgeDays = 7, Format = "jsonl", Compression = CompressionCodec.None },
+                    new TierConfig { Name = "Warm", Path = _warm, MaxAgeDays = 90, Format = "jsonl", Compression = CompressionCodec.None },
+                    new TierConfig { Name = "Cold", Path = cold, MaxAgeDays = 180, Format = "jsonl", Compression = CompressionCodec.None }
+                ]
+            }
+        });
+        var source = Path.Combine(_hot, "AAPL", "Trade", "2026-06-01.jsonl");
+        Directory.CreateDirectory(Path.GetDirectoryName(source)!);
+        await File.WriteAllTextAsync(source, "{\"symbol\":\"AAPL\"}");
+
+        (await service.MigrateAsync(source, StorageTier.Warm, new MigrationOptions(DeleteSource: true))).Success.Should().BeTrue();
+        var inWarm = Path.Combine(_warm, "AAPL", "Trade", "2026-06-01.jsonl");
+        File.Exists(inWarm).Should().BeTrue("hot/AAPL/... moves to warm/AAPL/..., not warm/hot/AAPL/...");
+
+        (await service.MigrateAsync(inWarm, StorageTier.Cold, new MigrationOptions(DeleteSource: true))).Success.Should().BeTrue();
+
+        File.Exists(Path.Combine(cold, "AAPL", "Trade", "2026-06-01.jsonl")).Should().BeTrue();
+        Directory.Exists(Path.Combine(cold, "warm")).Should().BeFalse();
+        Directory.Exists(Path.Combine(cold, "hot")).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task MigrateAsync_TierAtTheStorageRoot_UsesTheMostSpecificContainingTier()
+    {
+        // A hot tier configured as the storage root also "contains" the warm folder; a warm file
+        // must still be taken relative to warm, not to the root.
+        var cold = Path.Combine(_root, "cold");
+        var service = new TierMigrationService(new StorageOptions
+        {
+            RootPath = _root,
+            Tiering = new TieringOptions
+            {
+                Enabled = true,
+                Tiers =
+                [
+                    new TierConfig { Name = "Hot", Path = _root, MaxAgeDays = 7, Format = "jsonl", Compression = CompressionCodec.None },
+                    new TierConfig { Name = "Warm", Path = _warm, MaxAgeDays = 90, Format = "jsonl", Compression = CompressionCodec.None },
+                    new TierConfig { Name = "Cold", Path = cold, MaxAgeDays = 180, Format = "jsonl", Compression = CompressionCodec.None }
+                ]
+            }
+        });
+        var source = Path.Combine(_warm, "SPY", "2026-06-01.jsonl");
+        Directory.CreateDirectory(Path.GetDirectoryName(source)!);
+        await File.WriteAllTextAsync(source, "{\"symbol\":\"SPY\"}");
+
+        (await service.MigrateAsync(source, StorageTier.Cold, new MigrationOptions())).Success.Should().BeTrue();
+
+        File.Exists(Path.Combine(cold, "SPY", "2026-06-01.jsonl")).Should().BeTrue();
+    }
+
+    [Fact]
     public async Task Scenario_WindowsCaseEquivalentSource_UsesDiscoveredCanonicalPath()
     {
         if (!OperatingSystem.IsWindows())
@@ -676,7 +830,7 @@ public sealed class TierMigrationServiceTests : IDisposable
 
         result.Success.Should().BeTrue();
         result.FilesProcessed.Should().Be(1);
-        File.Exists(Path.Combine(_warm, "hot", "case-preserved.jsonl.gz")).Should().BeTrue();
+        File.Exists(Path.Combine(_warm, "case-preserved.jsonl.gz")).Should().BeTrue();
         File.Exists(source).Should().BeTrue();
     }
 

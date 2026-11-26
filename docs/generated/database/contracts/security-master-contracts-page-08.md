@@ -2,11 +2,13 @@
 
 # `security-master-contracts` data objects - page 8 of 8
 
-Objects 561-615 of 615. References crossing pages remain available in the dependency manifest.
+Objects 561-616 of 616. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingRole["SecurityUnderlyingRole"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto["SecurityValidationGateResultDto"] {
         +bool IsBlocked
         +bool IsResolved

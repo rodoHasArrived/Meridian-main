@@ -158,7 +158,7 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
         OnPropertyChanged(nameof(HasSchemaFields));
     }
 
-    /// <summary>Clears every field-edit, source-conflict, and approval write input to its default.</summary>
+    /// <summary>Clears every field-edit, historical-window, source-conflict, and approval write input to its default.</summary>
     private void ResetWriteInputs()
     {
         FieldPath = string.Empty;
@@ -173,6 +173,7 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
         ExpectedWorkflowVersion = 0;
         Reviewer = string.Empty;
         ReportPackId = string.Empty;
+        ResetWindowInputs();
     }
 
     // ── Header / identity ────────────────────────────────────────────────────
@@ -329,7 +330,8 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
         || AcknowledgePolicyDeviation
         || WorkflowId is not null
         || !string.IsNullOrWhiteSpace(Reviewer)
-        || !string.IsNullOrWhiteSpace(ReportPackId);
+        || !string.IsNullOrWhiteSpace(ReportPackId)
+        || HasUnsavedWindowInput;
 
     private bool CanSaveDraft()
         => HasLoadedPassport

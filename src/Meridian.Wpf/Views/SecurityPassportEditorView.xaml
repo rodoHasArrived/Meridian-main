@@ -96,6 +96,69 @@
                 </StackPanel>
             </Grid>
 
+            <!-- Historical identifier window (governed backdating; browser parity) -->
+            <Expander Header="Propose historical identifier…" Margin="0,18,0,0"
+                      AutomationProperties.Name="Historical identifier window">
+                <StackPanel Margin="0,8,0,0">
+                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,8"
+                               Text="Imports record identifiers as valid from the ingest date. Use this to add an identifier the security carried earlier, backed by evidence. An independent reviewer must approve it before it is published; you cannot review or approve your own proposal." />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,8">
+                            <TextBlock Text="Identifier kind" Opacity="0.8" />
+                            <ComboBox ItemsSource="{Binding WindowKinds}"
+                                      DisplayMemberPath="Label"
+                                      SelectedValuePath="Kind"
+                                      SelectedValue="{Binding WindowKind}"
+                                      AutomationProperties.Name="Identifier kind" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="8,0,0,8">
+                            <TextBlock Text="Identifier value" Opacity="0.8" />
+                            <TextBox Text="{Binding WindowValue, UpdateSourceTrigger=PropertyChanged}"
+                                     AutomationProperties.Name="Identifier value" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,8">
+                            <TextBlock Text="{Binding WindowProviderLabel}" Opacity="0.8" />
+                            <TextBox Text="{Binding WindowProvider, UpdateSourceTrigger=PropertyChanged}"
+                                     AutomationProperties.Name="Provider" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,8,8">
+                            <TextBlock Text="Valid from" Opacity="0.8" />
+                            <DatePicker SelectedDate="{Binding WindowValidFrom}" AutomationProperties.Name="Valid from" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="1" Margin="8,0,0,8">
+                            <TextBlock Text="Valid to (leave empty if still valid)" Opacity="0.8" />
+                            <DatePicker SelectedDate="{Binding WindowValidTo}" AutomationProperties.Name="Valid to" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,8,0">
+                            <TextBlock Text="Evidence Vault reference (required)" Opacity="0.8" />
+                            <TextBox Text="{Binding WindowEvidenceReference, UpdateSourceTrigger=PropertyChanged}"
+                                     AutomationProperties.Name="Evidence Vault reference" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="3" Grid.Column="1" Margin="8,0,0,0">
+                            <TextBlock Text="Justification (required)" Opacity="0.8" />
+                            <TextBox Text="{Binding WindowJustification, UpdateSourceTrigger=PropertyChanged}"
+                                     AutomationProperties.Name="Window justification" />
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <Button Content="Stage window draft" Command="{Binding ProposeHistoricalWindowCommand}" Padding="12,6" />
+                        <TextBlock Text="{Binding WindowBlockedReason}" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   VerticalAlignment="Center" TextWrapping="Wrap" Margin="12,0,0,0" />
+                    </StackPanel>
+                </StackPanel>
+            </Expander>
+
             <!-- Source conflict resolution -->
             <TextBlock Text="Source conflict" FontWeight="SemiBold" Margin="0,18,0,6" />
             <Grid>

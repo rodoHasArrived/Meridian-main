@@ -390,7 +390,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Composition.Startup.ModeRunners.CollectorModeRunner</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs:34](../../../../src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs#L34).
+Source: [src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs:36](../../../../src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs#L36).
 
 Runs the headless streaming data collector. Handles provider creation (with optional failover), symbol subscriptions, hot-reload, and simulate-feed. Does not start a UI server — desktop mode uses DesktopModeRunner which wraps this runner.
 
@@ -402,8 +402,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CollectorModeRunner(ILogger log) =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs:38](../../../../src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs#L38) |  |
-| <code>public async Task&lt;int&gt; RunAsync(StartupContext ctx, CancellationToken ct = default);</code> | [src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs:48](../../../../src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs#L48) | Executes the streaming collector loop. Creates and configures the host, connects to the data provider, applies symbol subscriptions, and runs until the process is cancelled or the provider disconnects. |
+| <code>public CollectorModeRunner(ILogger log) =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs:40](../../../../src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs#L40) |  |
+| <code>public async Task&lt;int&gt; RunAsync(StartupContext ctx, CancellationToken ct = default);</code> | [src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs:50](../../../../src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs#L50) | Executes the streaming collector loop. Creates and configures the host, connects to the data provider, applies symbol subscriptions, and runs until the process is cancelled or the provider disconnects. |
 
 ## CommandModeRunner
 

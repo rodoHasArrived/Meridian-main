@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GapAnalysisResult
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.GapAnalysisResult</code>. Kind: `record`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:94](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L94).
+
+Gap analysis result with visual timeline data.
+
+```csharp
+public sealed record GapAnalysisResult(string Symbol, DateOnly Date, int TotalGaps, TimeSpan TotalGapDuration, double DataAvailabilityPercent, IReadOnlyList<DataGap> Gaps, IReadOnlyList<TimelineEntry> Timeline, DateTimeOffset AnalyzedAt);
+```
+
 ## GapAnalyzer
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.GapAnalyzer</code>. Kind: `class`.
@@ -910,25 +922,3 @@ Timeline entry for visualizing data availability.
 ```csharp
 public sealed record TimelineEntry(DateTimeOffset Start, DateTimeOffset End, TimelineEntryType Type, long EventCount, string? Details);
 ```
-
-## TimelineEntryType
-
-Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.TimelineEntryType</code>. Kind: `enum`.
-
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:82](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L82).
-
-Type of timeline entry.
-
-```csharp
-public enum TimelineEntryType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>DataPresent</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:84](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L84) |  |
-| <code>Gap</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:85](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L85) |  |
-| <code>MarketClosed</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:86](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L86) |  |
-| <code>PreMarket</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:87](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L87) |  |
-| <code>AfterHours</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:88](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L88) |  |

@@ -330,7 +330,8 @@ export interface AccountingCashFlowSummary {
   totalCash: number;
   totalLedgerCash: number;
   netVariance: number;
-  totalFinancing: number;
+  /** Null when any contributing run's financing coverage is unavailable. */
+  totalFinancing: number | null;
   runsWithCashSignals: number;
   runsWithCashVariance: number;
   tone: "default" | "success" | "warning" | "danger";
@@ -1464,7 +1465,7 @@ export interface ReportingScheduleRecord {
   unresolvedPeriodCloseAfter?: string | null;
 }
 
-export type ReportingSchedulePeriodFrequency = "Monthly" | "Quarterly" | "Annually";
+export type ReportingSchedulePeriodFrequency = "Monthly" | "Quarterly" | "Annually" | "Weekly" | "Daily";
 
 export interface ReportingSchedulePeriodCadence {
   frequency: ReportingSchedulePeriodFrequency;

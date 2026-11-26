@@ -1007,6 +1007,8 @@ public sealed class ReportingTemplateRegistryService
         || string.Equals(identifier, "abs", StringComparison.OrdinalIgnoreCase)
         || string.Equals(identifier, "min", StringComparison.OrdinalIgnoreCase)
         || string.Equals(identifier, "max", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "median", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "stdev", StringComparison.OrdinalIgnoreCase)
         || string.Equals(identifier, "safeDivide", StringComparison.OrdinalIgnoreCase)
         || string.Equals(identifier, "percent", StringComparison.OrdinalIgnoreCase)
         || string.Equals(identifier, "basisPoints", StringComparison.OrdinalIgnoreCase)

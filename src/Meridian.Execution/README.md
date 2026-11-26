@@ -113,7 +113,7 @@ submission authority and durable intent claim metadata. Legacy null identities a
 JSON and preserve existing fingerprints; reusing an intent key with a different artifact is refused
 by the existing authority fingerprint check.
 
-`PaperSessionPersistenceService.GetSessionFillHistory` exposes cloned retained execution reports for order investigation without rebuilding portfolio/ledger views. Consumers initialize retained sessions before reading and keep canonical report identity, source event time, cumulative-versus-last quantity and price basis explicit; completed-order workspace summaries are not individual fills.
+`PaperSessionPersistenceService.GetSessionFillHistory` exposes cloned retained execution reports for order investigation without rebuilding portfolio/ledger views. `GetSessionFinancingCharges` returns the session's retained financing charges (`null` for a session that is not loaded, an empty list for none); a strategy run that owns its session reports them as its measured financing. Consumers initialize retained sessions before reading and keep canonical report identity, source event time, cumulative-versus-last quantity and price basis explicit; completed-order workspace summaries are not individual fills.
 
 Failed execution probes use bounded, single-line diagnostic fields, including provider error text.
 The original symbol remains authoritative for probing and order validation, and a failed probe
@@ -165,6 +165,11 @@ including values below 1, and a fill whose multiplier differs from the open posi
 `TradeExecutedEvent` carries the booked `ContractMultiplier`, so its `GrossValue` and the multiplied
 realized P&L reach the ledger handoff in the same money terms; events serialized before the member
 existed read as 1.
+Each paper position carries the realised P&L booked against its own symbol, so the aggregated
+`PaperTradingPortfolio.Positions` view sums to the account total instead of repeating it per symbol;
+a symbol held in several accounts reports a quantity-weighted cost basis. Per-position realised P&L
+starts at zero after canonical recovery and leaves with a removed flat entry; the account total stays
+authoritative.
 When the gateway supplies no lot multiplier, the OMS stamps its resolved multiplier onto the fill
 report before booking, so session projection and restart replay apply the same multiplier as the live
 book.
@@ -386,7 +391,9 @@ portfolio application, accounting acceptance, session persistence, authoritative
 observer publication. Accepted fills and their required handoffs drain before shutdown completes.
 
 These boundaries preserve public APIs, durable recovery formats, order and fill identities,
-comparison rules, and lock ordering. Command/risk/amendment coordination still spans the facade
+comparison rules, and lock ordering. A fill that carries the broker's `ExecutionReport.ExecutionId` takes its canonical
+`FillId` from that identity alone (`PaperSessionFillRecord.ComputeCanonicalFillId`); fills without one keep
+the original content-derived identity, so every retained record still validates. Command/risk/amendment coordination still spans the facade
 and its collaborators; the extraction does not move the whole order state machine into one new
 service.
 

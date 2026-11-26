@@ -86,12 +86,11 @@ interface UseSettingsProviderSectionStateParams {
   featureCapabilities: FeatureCapabilitySettingsResponse | null;
   legacyEmbeddedSettingsView: boolean;
   providerOpenApiImportState: Record<string, ProviderOpenApiImportState>;
-  session: SessionInfo | null;
   setProviderOpenApiImportState: React.Dispatch<React.SetStateAction<Record<string, ProviderOpenApiImportState>>>;
   vm: SettingsScreenViewModel;
 }
 
-export function useSettingsProviderSectionState({ activeProviderId, activeTaskView, allProviderRows, featureCapabilities, legacyEmbeddedSettingsView, providerOpenApiImportState, session, setProviderOpenApiImportState, vm }: UseSettingsProviderSectionStateParams) {
+export function useSettingsProviderSectionState({ activeProviderId, activeTaskView, allProviderRows, featureCapabilities, legacyEmbeddedSettingsView, providerOpenApiImportState, setProviderOpenApiImportState, vm }: UseSettingsProviderSectionStateParams) {
   const [providerSearch, setProviderSearch] = useState("");
   const [providerCapabilityFilter, setProviderCapabilityFilter] = useState<"all" | "brokerage" | "data" | "accounting">("all");
   const [providerHealthFilter, setProviderHealthFilter] = useState<"all" | "healthy" | "warning" | "blocked">("all");
@@ -265,7 +264,6 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
         scopes: formState.scopes.split(",").map((scope) => scope.trim()).filter(Boolean),
         capabilities,
         openApiDocumentJson: formState.openApiDocumentJson,
-        importedBy: session?.displayName ?? "settings-operator",
         importedAt: importedAt.toISOString(),
         expectedManifestReference: formState.result?.manifestReference?.manifestId === formState.manifestId.trim()
           ? formState.result.manifestReference
@@ -314,7 +312,6 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
       const result = await runDueProviderIntegrationSync(row.integrationConnectionId, {
         connectionId: row.integrationConnectionId,
         requestedAt: requestedAt.toISOString(),
-        requestedBy: session?.displayName ?? "settings-operator",
         maxPages: 2,
         pathParametersByCapability: {},
         queryParametersByCapability: {}
@@ -380,7 +377,6 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
       const result = await createProviderIntegrationReconciliationHandoff({
         connectionId: row.integrationConnectionId,
         stagingRecordIds,
-        requestedBy: session?.displayName ?? "settings-operator",
         requestedAt: requestedAt.toISOString(),
         approvalEvidenceId: providerRuntimeHandoffEvidenceId(row.integrationConnectionId, requestedAt),
         note: "Approved from the Settings Provider Connection Center promotion readiness panel.",
@@ -454,7 +450,6 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
         connectionId: row.integrationConnectionId,
         capability: replaySeed.capability,
         quarantineRecordIds,
-        requestedBy: session?.displayName ?? "settings-operator",
         requestedAt: requestedAt.toISOString(),
         mode: "Original"
       });
@@ -507,7 +502,6 @@ export function useSettingsProviderSectionState({ activeProviderId, activeTaskVi
         syncRunId: record.syncRunId,
         quarantineRecordId: record.quarantineRecordId,
         action,
-        reviewedBy: session?.displayName ?? "settings-operator",
         reviewedAt: reviewedAt.toISOString(),
         note: providerRuntimeQuarantineActionNote(action)
       });
@@ -761,7 +755,6 @@ export function SettingsProviderSection({ vm, showProviderSetupControls, inlineP
                     <ProviderIntegrationRuntimePanel
                       row={row}
                       state={providerRuntimeState[providerRuntimeStateKey(row)] ?? emptyProviderRuntimeEvidenceState}
-                      operatorName={session?.displayName ?? "settings-operator"}
                       openApiImportState={providerOpenApiImportState[providerRuntimeStateKey(row)] ?? createProviderOpenApiImportState(row)}
                       onOpenApiImportStateChange={(updater) => updateProviderOpenApiImportState(row, updater)}
                       onImportOpenApi={() => void submitProviderOpenApiImport(row)}

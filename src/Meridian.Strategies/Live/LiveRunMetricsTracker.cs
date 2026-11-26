@@ -56,9 +56,7 @@ internal sealed class LiveRunMetricsTracker
         // Amount alone carries the economic cash impact, matching SimulatedPortfolio.
         // Otherwise the quoted price is scaled by the contract multiplier, the same money terms
         // the paper book uses: one option contract at 2.50 with multiplier 100 is a $250 outflow.
-        var effectivePrice = usesFaceValuePercentageOfPar
-            ? fill.FillPrice / 100m
-            : fill.FillPrice * (contractMultiplier > 0m ? contractMultiplier : 1m);
+        var effectivePrice = fill.FillPrice * ValueFactor(usesFaceValuePercentageOfPar, contractMultiplier);
         var tradeCashFlow = new TradeCashFlow(
             Timestamp: timestamp,
             Amount: -(fill.FilledQuantity * effectivePrice),
@@ -81,6 +79,24 @@ internal sealed class LiveRunMetricsTracker
             _cashFlows.Add(commissionCashFlow);
             _currentDayCashFlows.Add(commissionCashFlow);
         }
+    }
+
+    /// <summary>
+    /// Money per unit of quantity per unit of price for a fill: 1/100 for a face-value fill
+    /// quoted as a percentage of par, otherwise the contract multiplier (1 when absent).
+    /// </summary>
+    internal static decimal ValueFactor(bool usesFaceValuePercentageOfPar, decimal contractMultiplier)
+        => usesFaceValuePercentageOfPar ? 0.01m : contractMultiplier > 0m ? contractMultiplier : 1m;
+
+    /// <summary>
+    /// Records a financing charge paid from the run's cash (positive amount = cost), as a margin
+    /// interest cash flow. The assessment carries no rate or loan balance, so both are zero.
+    /// </summary>
+    public void RecordFinancingCharge(DateTimeOffset timestamp, decimal amount, string? accountId)
+    {
+        var cashFlow = new MarginInterestCashFlow(timestamp, -amount, MarginBalance: 0m, AnnualRate: 0d, accountId);
+        _cashFlows.Add(cashFlow);
+        _currentDayCashFlows.Add(cashFlow);
     }
 
     public void RecordDayEnd(
@@ -106,13 +122,31 @@ internal sealed class LiveRunMetricsTracker
         var drawdownFraction = _peakEquity > 0m ? drawdown / _peakEquity : 0m;
         _maxDrawdownFraction = Math.Max(_maxDrawdownFraction, drawdownFraction);
 
+        // Long and short exposure come from the account snapshots, the same way the backtest
+        // engine sums them, so a long $100k / short $60k book reports $100k and -$60k (gross
+        // $160k). Equity minus cash nets the two, which reported $40k long and no short. With
+        // no account snapshot there is nothing to split the book by, so the net figure remains.
+        decimal longMarketValue, shortMarketValue, marginBalance;
+        if (accounts.Count > 0)
+        {
+            longMarketValue = accounts.Values.Sum(static account => account.LongMarketValue);
+            shortMarketValue = accounts.Values.Sum(static account => account.ShortMarketValue);
+            marginBalance = accounts.Values.Sum(static account => account.MarginBalance);
+        }
+        else
+        {
+            longMarketValue = Math.Max(0m, equity - cash);
+            shortMarketValue = Math.Min(0m, equity - cash);
+            marginBalance = 0m;
+        }
+
         _snapshots.Add(new PortfolioSnapshot(
             Timestamp: accountingEvidence?.AsOf ?? new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero),
             Date: date,
             Cash: cash,
-            MarginBalance: accountingEvidence is null ? 0m : accounts.Values.Sum(static account => account.MarginBalance),
-            LongMarketValue: accountingEvidence is null ? Math.Max(0m, equity - cash) : accounts.Values.Sum(static account => account.LongMarketValue),
-            ShortMarketValue: accountingEvidence is null ? Math.Min(0m, equity - cash) : accounts.Values.Sum(static account => account.ShortMarketValue),
+            MarginBalance: marginBalance,
+            LongMarketValue: longMarketValue,
+            ShortMarketValue: shortMarketValue,
             TotalEquity: equity,
             DailyReturn: dailyReturn,
             Positions: positions,

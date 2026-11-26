@@ -1786,7 +1786,6 @@ export interface SecurityAssetProfileDraftRequest {
   lifecycleStates: string[];
   accountingImpactHints: SecurityAssetProfileAccountingImpactHint[];
   dateOrderRules: SecurityAssetProfileDateOrderRule[];
-  requestedBy: string | null;
   rationale: string;
   correlationId?: string | null;
 }
@@ -1796,7 +1795,6 @@ export interface SecurityAssetProfileApprovalRequest {
   version: number;
   effectiveFrom: string;
   approvalReference: string;
-  requestedBy: string | null;
   rationale: string;
   correlationId?: string | null;
 }
@@ -1806,7 +1804,6 @@ export interface SecurityAssetProfileRollbackRequest {
   targetVersion: number;
   effectiveFrom: string;
   approvalReference: string;
-  requestedBy: string | null;
   rationale: string;
   correlationId?: string | null;
 }

@@ -12,7 +12,8 @@ public sealed class PostgresBankingStore : IBankingStore
     private const string PendingPaymentColumns =
         "pending_payment_id, entity_id, amount, effective_date, external_ref, notes, " +
         "status, reviewed_by, review_notes, initiated_at, reviewed_at, currency, " +
-        "currency_remediated_by, currency_remediation_reason, currency_remediated_at";
+        "currency_remediated_by, currency_remediation_reason, currency_remediated_at, " +
+        "tenant_id, company_id, ledger_book_id";
 
     private const string BankTransactionColumns =
         "bank_transaction_id, entity_id, transaction_type, effective_date, transaction_date, " +
@@ -54,11 +55,13 @@ public sealed class PostgresBankingStore : IBankingStore
             INSERT INTO {_options.Schema}.pending_payments
                 (pending_payment_id, entity_id, amount, effective_date, external_ref, notes,
                  status, reviewed_by, review_notes, initiated_at, reviewed_at, currency,
-                 currency_remediated_by, currency_remediation_reason, currency_remediated_at)
+                 currency_remediated_by, currency_remediation_reason, currency_remediated_at,
+                 tenant_id, company_id, ledger_book_id)
             VALUES
                 (@id, @eid, @amount, @eff, @xref, @notes,
                  @status, @reviewed_by, @review_notes, @initiated_at, @reviewed_at, @currency,
-                 @currency_remediated_by, @currency_remediation_reason, @currency_remediated_at)
+                 @currency_remediated_by, @currency_remediation_reason, @currency_remediated_at,
+                 @tenant_id, @company_id, @ledger_book_id)
             ON CONFLICT (pending_payment_id) DO NOTHING
             RETURNING pending_payment_id;
             """;
@@ -114,7 +117,10 @@ public sealed class PostgresBankingStore : IBankingStore
            && (retained.CurrencyRemediatedAt is null) == (candidate.CurrencyRemediatedAt is null)
            && (retained.CurrencyRemediatedAt is null
                || ToPostgresMicroseconds(retained.CurrencyRemediatedAt.Value)
-                   == ToPostgresMicroseconds(candidate.CurrencyRemediatedAt!.Value));
+                   == ToPostgresMicroseconds(candidate.CurrencyRemediatedAt!.Value))
+           && string.Equals(retained.TenantId, candidate.TenantId, StringComparison.Ordinal)
+           && string.Equals(retained.CompanyId, candidate.CompanyId, StringComparison.Ordinal)
+           && retained.LedgerBookId == candidate.LedgerBookId;
 
     private static long ToPostgresMicroseconds(DateTimeOffset value)
         => value.UtcTicks / TimeSpan.TicksPerMicrosecond;
@@ -489,6 +495,9 @@ public sealed class PostgresBankingStore : IBankingStore
         cmd.Parameters.AddWithValue("currency_remediated_by", (object?)payment.CurrencyRemediatedBy ?? DBNull.Value);
         cmd.Parameters.AddWithValue("currency_remediation_reason", (object?)payment.CurrencyRemediationReason ?? DBNull.Value);
         cmd.Parameters.AddWithValue("currency_remediated_at", (object?)payment.CurrencyRemediatedAt ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("tenant_id", (object?)payment.TenantId ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("company_id", (object?)payment.CompanyId ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("ledger_book_id", (object?)payment.LedgerBookId ?? DBNull.Value);
     }
 
     private static void AddBankTransactionParameters(NpgsqlCommand cmd, BankTransactionDto transaction)
@@ -523,7 +532,10 @@ public sealed class PostgresBankingStore : IBankingStore
             Currency: reader.IsDBNull(11) ? null : reader.GetString(11),
             CurrencyRemediatedBy: reader.IsDBNull(12) ? null : reader.GetString(12),
             CurrencyRemediationReason: reader.IsDBNull(13) ? null : reader.GetString(13),
-            CurrencyRemediatedAt: reader.IsDBNull(14) ? null : reader.GetFieldValue<DateTimeOffset>(14));
+            CurrencyRemediatedAt: reader.IsDBNull(14) ? null : reader.GetFieldValue<DateTimeOffset>(14),
+            TenantId: reader.IsDBNull(15) ? null : reader.GetString(15),
+            CompanyId: reader.IsDBNull(16) ? null : reader.GetString(16),
+            LedgerBookId: reader.IsDBNull(17) ? null : reader.GetGuid(17));
 
     private static BankTransactionDto ReadBankTransaction(NpgsqlDataReader reader)
         => new(

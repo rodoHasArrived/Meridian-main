@@ -23,6 +23,12 @@ When a workspace's ledger book is designated as a shadow book, the shared book-o
 - **Governed report release** returns `409 Conflict` with "cannot be released as the book of record".
   (`ReportingGovernanceService.ReleaseAsync`)
 - **Period hard-close** is blocked with `CLOSE_SHADOW_BOOK`. (`ClosePublicationReadinessGuard`)
+- **Payment approval** returns `409 Conflict` with the book's shadow status for a payment bound to the
+  book. A payment is bound when it is initiated with `ledgerBookId`
+  (`POST /api/banking/payments`); the server accepts only a book the signed-in tenant and company own
+  and records them with it. Payments initiated without a book carry nothing to check and approve as
+  before, so initiate payments for a shadow-mode entity with its book. A bound payment on a host
+  without the guard is refused. (`PaymentBookOfRecordBinding`)
 - **Close readiness** carries a `shadow-agreement` contributor for the selected ledger book. A book of
   record (never designated, or promoted) is `Ready`. A shadow book, or a withdrawn trial, raises the
   Critical blocker `close.shadow-agreement.blocked`. Its message gives the clean periods against the

@@ -379,6 +379,103 @@ public sealed class SecurityPassportEditorViewModelTests
         viewModel.SaveDraftCommand.CanExecute(null).Should().BeFalse("the published edit must not be re-stageable");
     }
 
+    [Fact]
+    public async Task HistoricalWindow_StagesADraftWithUtcDates_AndHandsItToSubmit()
+    {
+        var client = new Mock<IWorkstationSecurityMasterApiClient>();
+        ProposeHistoricalIdentifierWindowRequest? captured = null;
+        client
+            .Setup(c => c.ProposeHistoricalIdentifierWindowAsync(SecurityId, It.IsAny<ProposeHistoricalIdentifierWindowRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<Guid, ProposeHistoricalIdentifierWindowRequest, CancellationToken>((_, request, _) => captured = request)
+            .ReturnsAsync(ApiResponse<SecurityMasterEditResultDto>.Ok(EditResult(SecurityMasterRevisionStateDto.Draft, 7)));
+        var viewModel = new SecurityPassportEditorViewModel(client.Object)
+        {
+            SecurityId = SecurityId,
+            Version = 7,
+            FundProfileId = "fund-1"
+        };
+
+        viewModel.ProposeHistoricalWindowCommand.CanExecute(null).Should().BeFalse("an empty form cannot be staged");
+        viewModel.WindowValue = "FB";
+        viewModel.WindowValidFrom = new DateTime(2012, 5, 18);
+        viewModel.WindowValidTo = new DateTime(2022, 6, 9);
+        viewModel.WindowEvidenceReference = "evidence-vault://sm/meta-rename";
+        viewModel.WindowBlockedReason.Should().Contain("justification");
+        viewModel.ProposeHistoricalWindowCommand.CanExecute(null).Should().BeFalse();
+        viewModel.WindowJustification = "Listed as FB until the 2022 ticker change.";
+        viewModel.WindowBlockedReason.Should().BeNull();
+        viewModel.HasUnsavedWork.Should().BeTrue();
+
+        await viewModel.ProposeHistoricalWindowCommand.ExecuteAsync(null);
+
+        captured.Should().NotBeNull();
+        captured!.Kind.Should().Be(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Ticker);
+        captured.Value.Should().Be("FB");
+        captured.Provider.Should().BeNull();
+        captured.ValidFrom.Should().Be(new DateTimeOffset(2012, 5, 18, 0, 0, 0, TimeSpan.Zero));
+        captured.ValidTo.Should().Be(new DateTimeOffset(2022, 6, 9, 0, 0, 0, TimeSpan.Zero));
+        captured.ExpectedVersion.Should().Be(7);
+        captured.FundProfileId.Should().Be("fund-1");
+        captured.Actor.Should().BeEmpty("the proposer is server-derived from the session");
+        viewModel.RevisionState.Should().Be(SecurityMasterRevisionStateDto.Draft);
+        viewModel.SubmitCommand.CanExecute(null).Should().BeTrue();
+        viewModel.WindowValue.Should().BeEmpty("the staged window's inputs are cleared");
+        viewModel.WindowBlockedReason.Should().Contain("Publish or discard the current revision");
+        viewModel.ProposeHistoricalWindowCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
+    public void HistoricalWindow_UsesTheServerRules_ForProviderSymbolsAndFutureStarts()
+    {
+        var viewModel = new SecurityPassportEditorViewModel(new Mock<IWorkstationSecurityMasterApiClient>().Object)
+        {
+            SecurityId = SecurityId,
+            Version = 7,
+            WindowValue = "FB",
+            WindowValidFrom = new DateTime(2012, 5, 18),
+            WindowEvidenceReference = "evidence-vault://sm/x",
+            WindowJustification = "Because."
+        };
+        viewModel.ProposeHistoricalWindowCommand.CanExecute(null).Should().BeTrue();
+
+        viewModel.WindowKind = Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.ProviderSymbol;
+        viewModel.WindowProviderLabel.Should().Be("Provider (required)");
+        viewModel.WindowBlockedReason.Should().Contain("provider");
+        viewModel.ProposeHistoricalWindowCommand.CanExecute(null).Should().BeFalse();
+
+        viewModel.WindowProvider = "polygon";
+        viewModel.WindowValidFrom = DateTime.UtcNow.Date.AddDays(1);
+        viewModel.WindowBlockedReason.Should().Contain("start before");
+        viewModel.WindowKinds.Should().NotContain(option => option.Kind == Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Unknown);
+        viewModel.WindowKinds.Should().Contain(option => option.Label == "ISIN");
+    }
+
+    [Fact]
+    public async Task HistoricalWindow_RefusedProposal_ShowsTheServerReasonAndKeepsTheInput()
+    {
+        var client = new Mock<IWorkstationSecurityMasterApiClient>();
+        client
+            .Setup(c => c.ProposeHistoricalIdentifierWindowAsync(SecurityId, It.IsAny<ProposeHistoricalIdentifierWindowRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ApiResponse<SecurityMasterEditResultDto>.Fail(
+                "{\"error\":\"unprocessable\",\"message\":\"Historical identifier window refused: duplicate.\"}", 422));
+        var viewModel = new SecurityPassportEditorViewModel(client.Object)
+        {
+            SecurityId = SecurityId,
+            Version = 7,
+            WindowValue = "FB",
+            WindowValidFrom = new DateTime(2012, 5, 18),
+            WindowEvidenceReference = "evidence-vault://sm/x",
+            WindowJustification = "Because."
+        };
+
+        await viewModel.ProposeHistoricalWindowCommand.ExecuteAsync(null);
+
+        viewModel.BannerIsError.Should().BeTrue();
+        viewModel.BannerText.Should().Contain("refused: duplicate");
+        viewModel.WindowValue.Should().Be("FB");
+        viewModel.RevisionState.Should().BeNull();
+    }
+
     private static SecurityMasterEditResultDto EditResult(SecurityMasterRevisionStateDto state, long version)
         => new(
             SecurityId: SecurityId,

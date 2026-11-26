@@ -172,6 +172,79 @@ describe("SecurityPassportEditor", () => {
     expect(input).toMatchObject({ conflictId: "k1", chosenWinnerSource: "golden-copy", acknowledgePolicyDeviation: false, expectedVersion: 7 });
   });
 
+  it("stages a historical identifier window and hands it to the submit step", async () => {
+    const user = userEvent.setup();
+    const proposeHistoricalWindow = vi.fn().mockResolvedValue(
+      editResult({ revisionId: "rev-window", newVersion: 7, state: "Draft" })
+    );
+    render(
+      <SecurityPassportEditor
+        securityId={SECURITY_ID}
+        symbol="META"
+        version={7}
+        fundProfileId="fund-1"
+        service={{ proposeHistoricalWindow }}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /propose historical identifier/i }));
+    const stage = screen.getByRole("button", { name: /stage window draft/i });
+    expect(stage).toBeDisabled();
+
+    await user.type(screen.getByLabelText("Identifier value"), "FB");
+    await user.type(screen.getByLabelText("Valid from"), "2012-05-18");
+    await user.type(screen.getByLabelText("Valid to"), "2022-06-09");
+    await user.type(screen.getByLabelText("Evidence Vault reference"), "evidence-vault://sm/meta-rename");
+    expect(stage).toBeDisabled();
+    await user.type(screen.getByLabelText("Window justification"), "Listed as FB until the 2022 ticker change.");
+    expect(stage).toBeEnabled();
+
+    await user.click(stage);
+
+    await waitFor(() => expect(proposeHistoricalWindow).toHaveBeenCalledTimes(1));
+    const [securityId, input] = proposeHistoricalWindow.mock.calls[0];
+    expect(securityId).toBe(SECURITY_ID);
+    expect(input).toEqual({
+      expectedVersion: 7,
+      kind: "Ticker",
+      value: "FB",
+      provider: null,
+      validFrom: "2012-05-18T00:00:00Z",
+      validTo: "2022-06-09T00:00:00Z",
+      evidenceReference: "evidence-vault://sm/meta-rename",
+      justification: "Listed as FB until the 2022 ticker change.",
+      fundProfileId: "fund-1"
+    });
+    expect(await screen.findByText(/historical window staged/i)).toBeInTheDocument();
+    expect(screen.getByText("Draft")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Submit for approval" })).toBeEnabled();
+    // The form closes, and a second proposal waits until this revision is published or discarded.
+    await user.click(screen.getByRole("button", { name: /propose historical identifier/i }));
+    expect(screen.getByText(/publish or discard the current revision/i)).toBeInTheDocument();
+  });
+
+  it("keeps a refused window proposal open and shows the server's reason", async () => {
+    const user = userEvent.setup();
+    const proposeHistoricalWindow = vi.fn().mockRejectedValue(
+      new ApiError({
+        path: "/x",
+        status: 422,
+        responseBody: JSON.stringify({ error: "unprocessable", message: "Historical identifier window refused: duplicate." })
+      })
+    );
+    render(<SecurityPassportEditor securityId={SECURITY_ID} symbol="META" version={7} service={{ proposeHistoricalWindow }} />);
+
+    await user.click(screen.getByRole("button", { name: /propose historical identifier/i }));
+    await user.type(screen.getByLabelText("Identifier value"), "FB");
+    await user.type(screen.getByLabelText("Valid from"), "2012-05-18");
+    await user.type(screen.getByLabelText("Evidence Vault reference"), "evidence-vault://sm/x");
+    await user.type(screen.getByLabelText("Window justification"), "Because.");
+    await user.click(screen.getByRole("button", { name: /stage window draft/i }));
+
+    expect(await screen.findByText(/refused: duplicate/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("Identifier value")).toHaveValue("FB");
+  });
+
   it("requires acknowledgement before an override deviation can resolve", async () => {
     const user = userEvent.setup();
     const resolveConflict = vi.fn().mockResolvedValue({

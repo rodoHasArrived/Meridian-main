@@ -559,7 +559,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Reporting.IReportingRunStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:270](../../../../src/Meridian.Reporting/ReportingContracts.cs#L270).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:261](../../../../src/Meridian.Reporting/ReportingContracts.cs#L261).
 
 Stores reporting run manifests and audit trails, including tenant-scoped reads and creation claims.
 
@@ -571,23 +571,23 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>bool SupportsDurableCreateClaims =&gt; …;</code> | [src/Meridian.Reporting/ReportingContracts.cs:273](../../../../src/Meridian.Reporting/ReportingContracts.cs#L273) | True only when create leases and fencing are durable across independent processes. |
-| <code>IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(int limit = 25);</code> | [src/Meridian.Reporting/ReportingContracts.cs:274](../../../../src/Meridian.Reporting/ReportingContracts.cs#L274) |  |
-| <code>IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, int limit = 25);</code> | [src/Meridian.Reporting/ReportingContracts.cs:275](../../../../src/Meridian.Reporting/ReportingContracts.cs#L275) |  |
-| <code>IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, string? companyId, int limit = 25) =&gt; …;</code> | [src/Meridian.Reporting/ReportingContracts.cs:288](../../../../src/Meridian.Reporting/ReportingContracts.cs#L288) |  |
-| <code>IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, string? companyId, int offset, int limit);</code> | [src/Meridian.Reporting/ReportingContracts.cs:294](../../../../src/Meridian.Reporting/ReportingContracts.cs#L294) |  |
-| <code>ReportingOutputManifest? GetManifest(string runId);</code> | [src/Meridian.Reporting/ReportingContracts.cs:326](../../../../src/Meridian.Reporting/ReportingContracts.cs#L326) |  |
-| <code>ReportingOutputManifest? GetManifest(string tenantId, string runId);</code> | [src/Meridian.Reporting/ReportingContracts.cs:327](../../../../src/Meridian.Reporting/ReportingContracts.cs#L327) |  |
-| <code>IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string runId);</code> | [src/Meridian.Reporting/ReportingContracts.cs:349](../../../../src/Meridian.Reporting/ReportingContracts.cs#L349) |  |
-| <code>IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string tenantId, string runId);</code> | [src/Meridian.Reporting/ReportingContracts.cs:350](../../../../src/Meridian.Reporting/ReportingContracts.cs#L350) |  |
-| <code>string? GetRevision(string runId);</code> | [src/Meridian.Reporting/ReportingContracts.cs:382](../../../../src/Meridian.Reporting/ReportingContracts.cs#L382) |  |
-| <code>string? GetRevision(string tenantId, string runId);</code> | [src/Meridian.Reporting/ReportingContracts.cs:391](../../../../src/Meridian.Reporting/ReportingContracts.cs#L391) |  |
-| <code>Task&lt;ReportingRunCreateClaimResult&gt; TryClaimCreateAsync(string tenantId, string runId, string leaseOwner, DateTimeOffset nowUtc, TimeSpan leaseDuration, CancellationToken ct = default);</code> | [src/Meridian.Reporting/ReportingContracts.cs:403](../../../../src/Meridian.Reporting/ReportingContracts.cs#L403) |  |
-| <code>Task&lt;bool&gt; RenewCreateClaimAsync(string tenantId, string runId, string leaseOwner, long leaseVersion, TimeSpan leaseDuration, CancellationToken ct = default);</code> | [src/Meridian.Reporting/ReportingContracts.cs:430](../../../../src/Meridian.Reporting/ReportingContracts.cs#L430) |  |
-| <code>Task ReleaseCreateClaimAsync(string tenantId, string runId, string leaseOwner, long leaseVersion, CancellationToken ct = default);</code> | [src/Meridian.Reporting/ReportingContracts.cs:453](../../../../src/Meridian.Reporting/ReportingContracts.cs#L453) |  |
-| <code>Task SaveClaimedCreateAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, string leaseOwner, long leaseVersion, CancellationToken ct = default);</code> | [src/Meridian.Reporting/ReportingContracts.cs:468](../../../../src/Meridian.Reporting/ReportingContracts.cs#L468) |  |
-| <code>Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, CancellationToken ct = default);</code> | [src/Meridian.Reporting/ReportingContracts.cs:482](../../../../src/Meridian.Reporting/ReportingContracts.cs#L482) |  |
-| <code>Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, string? expectedRevision, CancellationToken ct = default);</code> | [src/Meridian.Reporting/ReportingContracts.cs:484](../../../../src/Meridian.Reporting/ReportingContracts.cs#L484) |  |
+| <code>bool SupportsDurableCreateClaims =&gt; …;</code> | [src/Meridian.Reporting/ReportingContracts.cs:264](../../../../src/Meridian.Reporting/ReportingContracts.cs#L264) | True only when create leases and fencing are durable across independent processes. |
+| <code>IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(int limit = 25);</code> | [src/Meridian.Reporting/ReportingContracts.cs:265](../../../../src/Meridian.Reporting/ReportingContracts.cs#L265) |  |
+| <code>IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, int limit = 25);</code> | [src/Meridian.Reporting/ReportingContracts.cs:266](../../../../src/Meridian.Reporting/ReportingContracts.cs#L266) |  |
+| <code>IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, string? companyId, int limit = 25) =&gt; …;</code> | [src/Meridian.Reporting/ReportingContracts.cs:279](../../../../src/Meridian.Reporting/ReportingContracts.cs#L279) |  |
+| <code>IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, string? companyId, int offset, int limit);</code> | [src/Meridian.Reporting/ReportingContracts.cs:285](../../../../src/Meridian.Reporting/ReportingContracts.cs#L285) |  |
+| <code>ReportingOutputManifest? GetManifest(string runId);</code> | [src/Meridian.Reporting/ReportingContracts.cs:317](../../../../src/Meridian.Reporting/ReportingContracts.cs#L317) |  |
+| <code>ReportingOutputManifest? GetManifest(string tenantId, string runId);</code> | [src/Meridian.Reporting/ReportingContracts.cs:318](../../../../src/Meridian.Reporting/ReportingContracts.cs#L318) |  |
+| <code>IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string runId);</code> | [src/Meridian.Reporting/ReportingContracts.cs:340](../../../../src/Meridian.Reporting/ReportingContracts.cs#L340) |  |
+| <code>IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string tenantId, string runId);</code> | [src/Meridian.Reporting/ReportingContracts.cs:341](../../../../src/Meridian.Reporting/ReportingContracts.cs#L341) |  |
+| <code>string? GetRevision(string runId);</code> | [src/Meridian.Reporting/ReportingContracts.cs:373](../../../../src/Meridian.Reporting/ReportingContracts.cs#L373) |  |
+| <code>string? GetRevision(string tenantId, string runId);</code> | [src/Meridian.Reporting/ReportingContracts.cs:382](../../../../src/Meridian.Reporting/ReportingContracts.cs#L382) |  |
+| <code>Task&lt;ReportingRunCreateClaimResult&gt; TryClaimCreateAsync(string tenantId, string runId, string leaseOwner, DateTimeOffset nowUtc, TimeSpan leaseDuration, CancellationToken ct = default);</code> | [src/Meridian.Reporting/ReportingContracts.cs:394](../../../../src/Meridian.Reporting/ReportingContracts.cs#L394) |  |
+| <code>Task&lt;bool&gt; RenewCreateClaimAsync(string tenantId, string runId, string leaseOwner, long leaseVersion, TimeSpan leaseDuration, CancellationToken ct = default);</code> | [src/Meridian.Reporting/ReportingContracts.cs:421](../../../../src/Meridian.Reporting/ReportingContracts.cs#L421) |  |
+| <code>Task ReleaseCreateClaimAsync(string tenantId, string runId, string leaseOwner, long leaseVersion, CancellationToken ct = default);</code> | [src/Meridian.Reporting/ReportingContracts.cs:444](../../../../src/Meridian.Reporting/ReportingContracts.cs#L444) |  |
+| <code>Task SaveClaimedCreateAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, string leaseOwner, long leaseVersion, CancellationToken ct = default);</code> | [src/Meridian.Reporting/ReportingContracts.cs:459](../../../../src/Meridian.Reporting/ReportingContracts.cs#L459) |  |
+| <code>Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, CancellationToken ct = default);</code> | [src/Meridian.Reporting/ReportingContracts.cs:473](../../../../src/Meridian.Reporting/ReportingContracts.cs#L473) |  |
+| <code>Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, string? expectedRevision, CancellationToken ct = default);</code> | [src/Meridian.Reporting/ReportingContracts.cs:475](../../../../src/Meridian.Reporting/ReportingContracts.cs#L475) |  |
 
 ## IReportingScheduleStore
 

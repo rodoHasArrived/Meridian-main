@@ -124,6 +124,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 "Operator field edits require a justification.", nameof(request));
         }
 
+        EnsureFieldEditDoesNotTargetWindowPath(request);
+
         // The passport-displayed security version is an optimistic-concurrency staleness guard: a
         // stale view of the canonical security (it was amended/deactivated since the operator
         // loaded it) is rejected before any overlay write and rechecked atomically by the store.

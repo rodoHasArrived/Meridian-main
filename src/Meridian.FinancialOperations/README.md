@@ -384,6 +384,10 @@ a book-of-record guard is composed:
 - a shadow book or withdrawn trial is `Blocked`, with clean-period and unexplained-difference figures
 - an unreadable status is `Unavailable`
 
+Both banking services refuse to approve a payment intent bound to a ledger book unless
+`IBookOfRecordGuard` reports that book as the book of record (`PaymentBookOfRecordBinding`, `409`); a bound
+intent on a host without the guard is refused. Unbound legacy intents carry no book to check.
+
 `AccountingSystemIntegrationService.Onboarding` adds a read-only capture seam over an already
 retained import and explicitly selected certified mapping. Existing GL reconciliation runs against
 a private retained ledger snapshot. Mapping content and full decimal payloads are retained without

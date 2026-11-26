@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "1da27b754b62f74b7c50aa0014d1ce9530e62f4083b7ba8a3f64d4193027b6da",
+  "database_fingerprint": "e92fe7135093873825f331bd35458bb39929065533730c680a7b778a75a54234",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -383,6 +383,42 @@
       "target": "banking.bank_transactions.pending_payment_id",
       "target_kind": "table column",
       "target_name": "bank_transactions",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "ec1901a264ebba44ab92b4a3c220143b118fafc880e77027a53b8e17a0cdea94",
+      "kind": "normal",
+      "source": "banking.ck_pending_payments_book_binding on banking.pending_payments",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.pending_payments.company_id",
+      "target_kind": "table column",
+      "target_name": "pending_payments",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "ae7de30fd1d332c93c2dc8a6bfdd8a5cd93ed8afe62a26e767cb6625bd0b79d8",
+      "kind": "normal",
+      "source": "banking.ck_pending_payments_book_binding on banking.pending_payments",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.pending_payments.ledger_book_id",
+      "target_kind": "table column",
+      "target_name": "pending_payments",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "d17576596167263f5b333b228ade51de7370dad12016e1595857520122c5a8f6",
+      "kind": "normal",
+      "source": "banking.ck_pending_payments_book_binding on banking.pending_payments",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.pending_payments.tenant_id",
+      "target_kind": "table column",
+      "target_name": "pending_payments",
       "target_schema": "banking"
     },
     {
@@ -15303,6 +15339,10 @@
       "object": "column:banking.pending_payments.amount"
     },
     {
+      "fingerprint": "5eb3a7b8ae05bd764bd4f1e018529bdb4ce52e9c992c4794ec01ff54e8791dd9",
+      "object": "column:banking.pending_payments.company_id"
+    },
+    {
       "fingerprint": "cabbd8d175f6e479804edc6319eeae6525415f02760c7a4943dd552679f73ba7",
       "object": "column:banking.pending_payments.currency"
     },
@@ -15335,6 +15375,10 @@
       "object": "column:banking.pending_payments.initiated_at"
     },
     {
+      "fingerprint": "bacbf88be3e6ec701389564f2d4f24042b25208fc8ccc91eb67006020e91f068",
+      "object": "column:banking.pending_payments.ledger_book_id"
+    },
+    {
       "fingerprint": "d2e4b7fc20af4dd1082f2226fadafd8d09d9bc36efb869844ac20132d9894ba5",
       "object": "column:banking.pending_payments.notes"
     },
@@ -15357,6 +15401,10 @@
     {
       "fingerprint": "c739de1a25b26dc941d698a1b36f89b41be802b19099e9fe679e5ac243c67075",
       "object": "column:banking.pending_payments.status"
+    },
+    {
+      "fingerprint": "3f3f4f0d0cadce108f557ecccc69406a8dacb84df9f3c3416a7a58ade3b94ccf",
+      "object": "column:banking.pending_payments.tenant_id"
     },
     {
       "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
@@ -24179,7 +24227,7 @@
       "object": "column:security_master.otc_collateral_agreements.eligible_collateral"
     },
     {
-      "fingerprint": "f2b7d36c12fcea540ff13aa8d5dc80ea7983fa1fd499765e5c731905f4bbded3",
+      "fingerprint": "b8cdf27dd72d4e075cd623bebeb081fbb5397af32973a01de6404275a4385adf",
       "object": "column:security_master.otc_collateral_agreements.independent_amount"
     },
     {
@@ -24187,7 +24235,7 @@
       "object": "column:security_master.otc_collateral_agreements.master_agreement_id"
     },
     {
-      "fingerprint": "25f3ca51d15ad2cb7a2cf94afdee67e99e490d5d8d12dbb843f5fb3d21ba3119",
+      "fingerprint": "fdd34faf0ceb9430f83bd61984b715081bfdf3deddfdfa964ea0edc2381836a2",
       "object": "column:security_master.otc_collateral_agreements.minimum_transfer_amount"
     },
     {
@@ -24195,7 +24243,7 @@
       "object": "column:security_master.otc_collateral_agreements.notes"
     },
     {
-      "fingerprint": "a7121639844a218e0680f52e946b13f670d14f24aa878d369131ac1eb762918c",
+      "fingerprint": "518518d1638b59ae548b82e7372bc22072608e2cbe9b4e95c4d36e26413b0c64",
       "object": "column:security_master.otc_collateral_agreements.rounding_amount"
     },
     {
@@ -24203,11 +24251,11 @@
       "object": "column:security_master.otc_collateral_agreements.termination_date"
     },
     {
-      "fingerprint": "14969bf8aede362cc23046af29ce391a0b0b1debbcf91a43b5e271da9dfbc4a9",
+      "fingerprint": "4fee1e3d31ac1bf71f455a705b7920e066ecd45dc2d60a5d16c6985ef588aac7",
       "object": "column:security_master.otc_collateral_agreements.threshold_ours"
     },
     {
-      "fingerprint": "fe38cf487c0ddc9b3b0f312ac005a3095f9d54903f3ef7ea2ae81f7aee78566f",
+      "fingerprint": "e9e7e109a7042abc424cb5abce4e292a3a3208ab47ac092868b9bc2142c969be",
       "object": "column:security_master.otc_collateral_agreements.threshold_theirs"
     },
     {
@@ -24247,7 +24295,7 @@
       "object": "column:security_master.otc_collateral_balances.eligible_collateral_description"
     },
     {
-      "fingerprint": "fccbb4818c38c3e1c8d13bc4a5badba319b084e975ff0bf638f3f35566108698",
+      "fingerprint": "d8bdb1b7daa0e3cb61dd8849350eb9538ae4f04d72e7c6d08c98ce3ceb5690ba",
       "object": "column:security_master.otc_collateral_balances.haircut_percent"
     },
     {
@@ -24259,7 +24307,7 @@
       "object": "column:security_master.otc_collateral_balances.notes"
     },
     {
-      "fingerprint": "e435c9161a04a3f95f22a22b8c1847ec5002236a29d0c9b91eface32af41c8af",
+      "fingerprint": "60a7d8fd8bbb4b4d96de844f4cb67e22c292b0f60b073deb182de5a1402aa52d",
       "object": "column:security_master.otc_collateral_balances.quantity"
     },
     {
@@ -24271,7 +24319,7 @@
       "object": "column:security_master.otc_collateral_balances.security_id"
     },
     {
-      "fingerprint": "a0610939a63d6e42afefbf020d7dec2b3d60bec6d97abe668fad3f9af8c15be1",
+      "fingerprint": "c20dc77f750bd3f1890c429e801750d18a8905eb87fde9153bf672cb5d721f62",
       "object": "column:security_master.otc_collateral_balances.unit_value"
     },
     {
@@ -24283,7 +24331,7 @@
       "object": "column:security_master.otc_collateral_balances.updated_by"
     },
     {
-      "fingerprint": "e561848bdb15c1107e0b1c7351fa1cbca6a28257ffb57ff57d009946cff924d0",
+      "fingerprint": "d853d0164e33ad3b6ad3a96d88f5615216b3dc71d53f8509cbc48f815c5212ca",
       "object": "column:security_master.otc_collateral_balances.valued_amount"
     },
     {
@@ -24359,7 +24407,7 @@
       "object": "column:security_master.otc_contracts.notes"
     },
     {
-      "fingerprint": "69fe92f5d4980bceb2428034ab45a316b03fbec89664a0ff295139dcd71c72aa",
+      "fingerprint": "a58f9c1c1729c1a62856bd831f968ebde6bf7971a3b03e122f6ee7a53aa87218",
       "object": "column:security_master.otc_contracts.notional"
     },
     {
@@ -24415,15 +24463,15 @@
       "object": "column:security_master.otc_exposure_snapshots.currency"
     },
     {
-      "fingerprint": "05de88c23e5d69ee2b96df2c8c9b4e29afddc2d22678b51a796d18c98a552c2d",
+      "fingerprint": "cecac1aa04eb51f87ee3b75913d7ef1ca33a55602c5a9cc914ba3d8c67a8053f",
       "object": "column:security_master.otc_exposure_snapshots.gross_negative"
     },
     {
-      "fingerprint": "4761d91f7a6782e4b6f56342169ff8978df8c140c1ea312a26caa8f8fa5550b6",
+      "fingerprint": "f74827a531378042a6db133d4f9c4b8d8dbb6f521c0e83f622ba5484194c75f1",
       "object": "column:security_master.otc_exposure_snapshots.gross_positive"
     },
     {
-      "fingerprint": "198708d529f3b9e3c6651ced596265ece86ee6e4ece556aebf7ce477a504604c",
+      "fingerprint": "ffedbe6d78209e00fe46c8c3199790c643d32b0fbdd8a081b9d7757527538c21",
       "object": "column:security_master.otc_exposure_snapshots.net_exposure"
     },
     {
@@ -24467,11 +24515,11 @@
       "object": "column:security_master.otc_exposure_snapshots.version"
     },
     {
-      "fingerprint": "8e5f502d7baca7aebbe740516822c5d92e1c8e80d787fadd254e60816c18a2ed",
+      "fingerprint": "54c3c47714adc2bb070fab2c2c9c21df8fd8a02d5a15c6ff994d6e1ff66dcd86",
       "object": "column:security_master.otc_margin_calls.amount_agreed"
     },
     {
-      "fingerprint": "b5ce73293a81c418165dc1f9115ed3b785221a602ed48a9dc4eaf791cbe38437",
+      "fingerprint": "376c70f1b522aa297f4a8f7ae50cb9d52cedb80b9f1e07e03b6ef2b4a018e245",
       "object": "column:security_master.otc_margin_calls.amount_called"
     },
     {
@@ -24515,7 +24563,7 @@
       "object": "column:security_master.otc_margin_calls.notes"
     },
     {
-      "fingerprint": "e5271f6051e34da247787e3ff39deb589f7181f8f88381da5f897cd9d2a91567",
+      "fingerprint": "1cfbfd57f2558cbc0768f99bce34ecc42adeaf367b4a58e023fb591b128f9414",
       "object": "column:security_master.otc_margin_calls.settled_amount"
     },
     {
@@ -27593,6 +27641,10 @@
     {
       "fingerprint": "1cfc9d644417e54c299006727681c14515f40e2fde455537ecb07dc6315130e8",
       "object": "constraint:banking.bank_transactions.fk_bank_transactions_pending_payment"
+    },
+    {
+      "fingerprint": "d610daa8c264580b303ec2304993f99f15a6fe093f07b1c4c5a9e126e311f43f",
+      "object": "constraint:banking.pending_payments.ck_pending_payments_book_binding"
     },
     {
       "fingerprint": "0f0895bdbd9ad16d1df3beb494f13ab8331eedc4b2c1148061986618ed78dd9c",
@@ -31721,6 +31773,18 @@
     {
       "fingerprint": "ac967e1192d98a8525ce94bcaf3adbb4abef001af56d7e7468ea61d68c06121f",
       "object": "dependency:banking.ck_bank_transactions_payment_evidence on banking.bank_transactions->banking.bank_transactions.pending_payment_id:normal"
+    },
+    {
+      "fingerprint": "ec1901a264ebba44ab92b4a3c220143b118fafc880e77027a53b8e17a0cdea94",
+      "object": "dependency:banking.ck_pending_payments_book_binding on banking.pending_payments->banking.pending_payments.company_id:normal"
+    },
+    {
+      "fingerprint": "ae7de30fd1d332c93c2dc8a6bfdd8a5cd93ed8afe62a26e767cb6625bd0b79d8",
+      "object": "dependency:banking.ck_pending_payments_book_binding on banking.pending_payments->banking.pending_payments.ledger_book_id:normal"
+    },
+    {
+      "fingerprint": "d17576596167263f5b333b228ade51de7370dad12016e1595857520122c5a8f6",
+      "object": "dependency:banking.ck_pending_payments_book_binding on banking.pending_payments->banking.pending_payments.tenant_id:normal"
     },
     {
       "fingerprint": "384fa8323142aad546a80c041af685071d595d6b8ed663d3bfdb08cc15c9f03b",
@@ -36947,6 +37011,10 @@
       "object": "index:banking.ix_pending_payments_entity_id"
     },
     {
+      "fingerprint": "45b5cc10174d6f0c313c8af6fad648110cb5f9350aac0fa7fe70ba564e9a9d60",
+      "object": "index:banking.ix_pending_payments_ledger_book_id"
+    },
+    {
       "fingerprint": "cdff6b1f17644d97dfdf99283a9a06ed6c62da30fd1009cfc4cf8691245caee4",
       "object": "index:banking.ix_pending_payments_status"
     },
@@ -40839,7 +40907,7 @@
       "object": "schema:asset_operations"
     },
     {
-      "fingerprint": "13eb851755849f99d829e419847342c0ee8065d83fcb48e16b188c7c1ea89b90",
+      "fingerprint": "36c365cb3d7d06cc3abeed4d4441755d5df11b587277ba8041a2a765d1b339c3",
       "object": "schema:banking"
     },
     {
@@ -40875,7 +40943,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "89a45b169b8ce11676012834f4be987b1f63517ca5f9eeb9d4b6e1ef3dfdc296",
+      "fingerprint": "a35f459f84569020f1ec051364cc23fe2fc7ff531bbf1fb9509e64afef57f2c3",
       "object": "schema:security_master"
     },
     {
@@ -40991,7 +41059,7 @@
       "object": "table:banking.bank_transactions"
     },
     {
-      "fingerprint": "2ee6d7539cb127fd3267b26c497c546db925bab9a55a503e32d095eda995a103",
+      "fingerprint": "ae6e1d36217b5a19d2f1ccfbface2d0c12b57ebfb803193a0c8a0ba6b4163721",
       "object": "table:banking.pending_payments"
     },
     {
@@ -41807,11 +41875,11 @@
       "object": "table:security_master.option_series_projection"
     },
     {
-      "fingerprint": "8799f73bf8f2c7b5cf0da73a90389f3533599c523cd7af22337e25e5fc0be452",
+      "fingerprint": "0d178525d83cfabb5406a603c7f50928a0fe6fa5159d046f39f1d4a3a58dd992",
       "object": "table:security_master.otc_collateral_agreements"
     },
     {
-      "fingerprint": "b458f3bb1db166eb48ce09d13456e6e92b66854315d7c30cc48d1bae8da502ea",
+      "fingerprint": "c9b1f57a3dec6886b558ac7527175e95254b8e9554d33ed4aa5eac929941b899",
       "object": "table:security_master.otc_collateral_balances"
     },
     {
@@ -41819,15 +41887,15 @@
       "object": "table:security_master.otc_contract_lifecycle_events"
     },
     {
-      "fingerprint": "e4d1cb31dacbde6ac06dab448ddb84bfad2a088c56a2275d94a4a71063dbeec5",
+      "fingerprint": "bceb7fae6a7da3b672220ce611acbf50de835019343d2fe26424c55b084a5ff1",
       "object": "table:security_master.otc_contracts"
     },
     {
-      "fingerprint": "7215e60bada604e105c5a99ed21de880282e678bbb8db482f73b0d696c1961c5",
+      "fingerprint": "8e665d106d55deedfafe7a75f933e2115b1b76a6033289c25362064435d9b2a3",
       "object": "table:security_master.otc_exposure_snapshots"
     },
     {
-      "fingerprint": "a6c136bf019b0b1f66e63d0ffeab382fbc22aedd5ee0b7bd3fa9a80f16516207",
+      "fingerprint": "c05aefe01a0938879da899bc3a028b1684e271c7b7314c9cf38b9416aa871f4e",
       "object": "table:security_master.otc_margin_calls"
     },
     {
@@ -54832,6 +54900,42 @@
           "target_schema": "banking"
         },
         {
+          "fingerprint": "ec1901a264ebba44ab92b4a3c220143b118fafc880e77027a53b8e17a0cdea94",
+          "kind": "normal",
+          "source": "banking.ck_pending_payments_book_binding on banking.pending_payments",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "banking",
+          "target": "banking.pending_payments.company_id",
+          "target_kind": "table column",
+          "target_name": "pending_payments",
+          "target_schema": "banking"
+        },
+        {
+          "fingerprint": "ae7de30fd1d332c93c2dc8a6bfdd8a5cd93ed8afe62a26e767cb6625bd0b79d8",
+          "kind": "normal",
+          "source": "banking.ck_pending_payments_book_binding on banking.pending_payments",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "banking",
+          "target": "banking.pending_payments.ledger_book_id",
+          "target_kind": "table column",
+          "target_name": "pending_payments",
+          "target_schema": "banking"
+        },
+        {
+          "fingerprint": "d17576596167263f5b333b228ade51de7370dad12016e1595857520122c5a8f6",
+          "kind": "normal",
+          "source": "banking.ck_pending_payments_book_binding on banking.pending_payments",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "banking",
+          "target": "banking.pending_payments.tenant_id",
+          "target_kind": "table column",
+          "target_name": "pending_payments",
+          "target_schema": "banking"
+        },
+        {
           "fingerprint": "384fa8323142aad546a80c041af685071d595d6b8ed663d3bfdb08cc15c9f03b",
           "kind": "normal",
           "source": "banking.ck_pending_payments_currency on banking.pending_payments",
@@ -54920,7 +55024,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "13eb851755849f99d829e419847342c0ee8065d83fcb48e16b188c7c1ea89b90",
+      "fingerprint": "36c365cb3d7d06cc3abeed4d4441755d5df11b587277ba8041a2a765d1b339c3",
       "foreign_tables": [],
       "functions": [],
       "logical_modules": [
@@ -55725,10 +55829,80 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "3f3f4f0d0cadce108f557ecccc69406a8dacb84df9f3c3416a7a58ade3b94ccf",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5eb3a7b8ae05bd764bd4f1e018529bdb4ce52e9c992c4794ec01ff54e8791dd9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "bacbf88be3e6ec701389564f2d4f24042b25208fc8ccc91eb67006020e91f068",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": true,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "tenant_id",
+                "company_id",
+                "ledger_book_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (tenant_id IS NULL AND company_id IS NULL AND ledger_book_id IS NULL OR tenant_id IS NOT NULL AND btrim(tenant_id) <> ''::text AND company_id IS NOT NULL AND btrim(company_id) <> ''::text AND ledger_book_id IS NOT NULL) NOT VALID",
+              "delete_action": null,
+              "fingerprint": "d610daa8c264580b303ec2304993f99f15a6fe093f07b1c4c5a9e126e311f43f",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_pending_payments_book_binding",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": false
+            },
             {
               "columns": [
                 "currency"
@@ -55795,7 +55969,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "2ee6d7539cb127fd3267b26c497c546db925bab9a55a503e32d095eda995a103",
+          "fingerprint": "ae6e1d36217b5a19d2f1ccfbface2d0c12b57ebfb803193a0c8a0ba6b4163721",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -55815,6 +55989,28 @@
               "options": [],
               "owner": "meridian",
               "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_pending_payments_ledger_book_id ON banking.pending_payments USING btree (ledger_book_id) WHERE (ledger_book_id IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "45b5cc10174d6f0c313c8af6fad648110cb5f9350aac0fa7fe70ba564e9a9d60",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "ledger_book_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_pending_payments_ledger_book_id",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "ledger_book_id IS NOT NULL",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -56865,10 +57061,80 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "3f3f4f0d0cadce108f557ecccc69406a8dacb84df9f3c3416a7a58ade3b94ccf",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5eb3a7b8ae05bd764bd4f1e018529bdb4ce52e9c992c4794ec01ff54e8791dd9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "bacbf88be3e6ec701389564f2d4f24042b25208fc8ccc91eb67006020e91f068",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": true,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "tenant_id",
+                "company_id",
+                "ledger_book_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (tenant_id IS NULL AND company_id IS NULL AND ledger_book_id IS NULL OR tenant_id IS NOT NULL AND btrim(tenant_id) <> ''::text AND company_id IS NOT NULL AND btrim(company_id) <> ''::text AND ledger_book_id IS NOT NULL) NOT VALID",
+              "delete_action": null,
+              "fingerprint": "d610daa8c264580b303ec2304993f99f15a6fe093f07b1c4c5a9e126e311f43f",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_pending_payments_book_binding",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": false
+            },
             {
               "columns": [
                 "currency"
@@ -56935,7 +57201,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "2ee6d7539cb127fd3267b26c497c546db925bab9a55a503e32d095eda995a103",
+          "fingerprint": "ae6e1d36217b5a19d2f1ccfbface2d0c12b57ebfb803193a0c8a0ba6b4163721",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -56955,6 +57221,28 @@
               "options": [],
               "owner": "meridian",
               "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_pending_payments_ledger_book_id ON banking.pending_payments USING btree (ledger_book_id) WHERE (ledger_book_id IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "45b5cc10174d6f0c313c8af6fad648110cb5f9350aac0fa7fe70ba564e9a9d60",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "ledger_book_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_pending_payments_ledger_book_id",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "ledger_book_id IS NOT NULL",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -188226,7 +188514,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "89a45b169b8ce11676012834f4be987b1f63517ca5f9eeb9d4b6e1ef3dfdc296",
+      "fingerprint": "a35f459f84569020f1ec051364cc23fe2fc7ff531bbf1fb9509e64afef57f2c3",
       "foreign_tables": [],
       "functions": [
         {
@@ -215034,9 +215322,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "14969bf8aede362cc23046af29ce391a0b0b1debbcf91a43b5e271da9dfbc4a9",
+              "fingerprint": "4fee1e3d31ac1bf71f455a705b7920e066ecd45dc2d60a5d16c6985ef588aac7",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -215050,9 +215338,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "fe38cf487c0ddc9b3b0f312ac005a3095f9d54903f3ef7ea2ae81f7aee78566f",
+              "fingerprint": "e9e7e109a7042abc424cb5abce4e292a3a3208ab47ac092868b9bc2142c969be",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -215066,9 +215354,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "25f3ca51d15ad2cb7a2cf94afdee67e99e490d5d8d12dbb843f5fb3d21ba3119",
+              "fingerprint": "fdd34faf0ceb9430f83bd61984b715081bfdf3deddfdfa964ea0edc2381836a2",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -215082,9 +215370,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "f2b7d36c12fcea540ff13aa8d5dc80ea7983fa1fd499765e5c731905f4bbded3",
+              "fingerprint": "b8cdf27dd72d4e075cd623bebeb081fbb5397af32973a01de6404275a4385adf",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -215098,9 +215386,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "a7121639844a218e0680f52e946b13f670d14f24aa878d369131ac1eb762918c",
+              "fingerprint": "518518d1638b59ae548b82e7372bc22072608e2cbe9b4e95c4d36e26413b0c64",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -215330,7 +215618,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "8799f73bf8f2c7b5cf0da73a90389f3533599c523cd7af22337e25e5fc0be452",
+          "fingerprint": "0d178525d83cfabb5406a603c7f50928a0fe6fa5159d046f39f1d4a3a58dd992",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -215555,9 +215843,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "e435c9161a04a3f95f22a22b8c1847ec5002236a29d0c9b91eface32af41c8af",
+              "fingerprint": "60a7d8fd8bbb4b4d96de844f4cb67e22c292b0f60b073deb182de5a1402aa52d",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -215571,9 +215859,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "a0610939a63d6e42afefbf020d7dec2b3d60bec6d97abe668fad3f9af8c15be1",
+              "fingerprint": "c20dc77f750bd3f1890c429e801750d18a8905eb87fde9153bf672cb5d721f62",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -215587,9 +215875,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "e561848bdb15c1107e0b1c7351fa1cbca6a28257ffb57ff57d009946cff924d0",
+              "fingerprint": "d853d0164e33ad3b6ad3a96d88f5615216b3dc71d53f8509cbc48f815c5212ca",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -215603,9 +215891,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "fccbb4818c38c3e1c8d13bc4a5badba319b084e975ff0bf638f3f35566108698",
+              "fingerprint": "d8bdb1b7daa0e3cb61dd8849350eb9538ae4f04d72e7c6d08c98ce3ceb5690ba",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -215864,7 +216152,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "b458f3bb1db166eb48ce09d13456e6e92b66854315d7c30cc48d1bae8da502ea",
+          "fingerprint": "c9b1f57a3dec6886b558ac7527175e95254b8e9554d33ed4aa5eac929941b899",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -216539,9 +216827,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "69fe92f5d4980bceb2428034ab45a316b03fbec89664a0ff295139dcd71c72aa",
+              "fingerprint": "a58f9c1c1729c1a62856bd831f968ebde6bf7971a3b03e122f6ee7a53aa87218",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -216864,7 +217152,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "e4d1cb31dacbde6ac06dab448ddb84bfad2a088c56a2275d94a4a71063dbeec5",
+          "fingerprint": "bceb7fae6a7da3b672220ce611acbf50de835019343d2fe26424c55b084a5ff1",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -217199,9 +217487,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "198708d529f3b9e3c6651ced596265ece86ee6e4ece556aebf7ce477a504604c",
+              "fingerprint": "ffedbe6d78209e00fe46c8c3199790c643d32b0fbdd8a081b9d7757527538c21",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -217215,9 +217503,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "4761d91f7a6782e4b6f56342169ff8978df8c140c1ea312a26caa8f8fa5550b6",
+              "fingerprint": "f74827a531378042a6db133d4f9c4b8d8dbb6f521c0e83f622ba5484194c75f1",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -217231,9 +217519,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "05de88c23e5d69ee2b96df2c8c9b4e29afddc2d22678b51a796d18c98a552c2d",
+              "fingerprint": "cecac1aa04eb51f87ee3b75913d7ef1ca33a55602c5a9cc914ba3d8c67a8053f",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -217476,7 +217764,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "7215e60bada604e105c5a99ed21de880282e678bbb8db482f73b0d696c1961c5",
+          "fingerprint": "8e665d106d55deedfafe7a75f933e2115b1b76a6033289c25362064435d9b2a3",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -217746,9 +218034,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "b5ce73293a81c418165dc1f9115ed3b785221a602ed48a9dc4eaf791cbe38437",
+              "fingerprint": "376c70f1b522aa297f4a8f7ae50cb9d52cedb80b9f1e07e03b6ef2b4a018e245",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -217762,9 +218050,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "8e5f502d7baca7aebbe740516822c5d92e1c8e80d787fadd254e60816c18a2ed",
+              "fingerprint": "54c3c47714adc2bb070fab2c2c9c21df8fd8a02d5a15c6ff994d6e1ff66dcd86",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -217858,9 +218146,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "e5271f6051e34da247787e3ff39deb589f7181f8f88381da5f897cd9d2a91567",
+              "fingerprint": "1cfbfd57f2558cbc0768f99bce34ecc42adeaf367b4a58e023fb591b128f9414",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -218173,7 +218461,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "a6c136bf019b0b1f66e63d0ffeab382fbc22aedd5ee0b7bd3fa9a80f16516207",
+          "fingerprint": "c05aefe01a0938879da899bc3a028b1684e271c7b7314c9cf38b9416aa871f4e",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -267134,9 +267422,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "14969bf8aede362cc23046af29ce391a0b0b1debbcf91a43b5e271da9dfbc4a9",
+              "fingerprint": "4fee1e3d31ac1bf71f455a705b7920e066ecd45dc2d60a5d16c6985ef588aac7",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -267150,9 +267438,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "fe38cf487c0ddc9b3b0f312ac005a3095f9d54903f3ef7ea2ae81f7aee78566f",
+              "fingerprint": "e9e7e109a7042abc424cb5abce4e292a3a3208ab47ac092868b9bc2142c969be",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -267166,9 +267454,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "25f3ca51d15ad2cb7a2cf94afdee67e99e490d5d8d12dbb843f5fb3d21ba3119",
+              "fingerprint": "fdd34faf0ceb9430f83bd61984b715081bfdf3deddfdfa964ea0edc2381836a2",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -267182,9 +267470,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "f2b7d36c12fcea540ff13aa8d5dc80ea7983fa1fd499765e5c731905f4bbded3",
+              "fingerprint": "b8cdf27dd72d4e075cd623bebeb081fbb5397af32973a01de6404275a4385adf",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -267198,9 +267486,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "a7121639844a218e0680f52e946b13f670d14f24aa878d369131ac1eb762918c",
+              "fingerprint": "518518d1638b59ae548b82e7372bc22072608e2cbe9b4e95c4d36e26413b0c64",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -267430,7 +267718,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "8799f73bf8f2c7b5cf0da73a90389f3533599c523cd7af22337e25e5fc0be452",
+          "fingerprint": "0d178525d83cfabb5406a603c7f50928a0fe6fa5159d046f39f1d4a3a58dd992",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -267655,9 +267943,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "e435c9161a04a3f95f22a22b8c1847ec5002236a29d0c9b91eface32af41c8af",
+              "fingerprint": "60a7d8fd8bbb4b4d96de844f4cb67e22c292b0f60b073deb182de5a1402aa52d",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -267671,9 +267959,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "a0610939a63d6e42afefbf020d7dec2b3d60bec6d97abe668fad3f9af8c15be1",
+              "fingerprint": "c20dc77f750bd3f1890c429e801750d18a8905eb87fde9153bf672cb5d721f62",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -267687,9 +267975,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "e561848bdb15c1107e0b1c7351fa1cbca6a28257ffb57ff57d009946cff924d0",
+              "fingerprint": "d853d0164e33ad3b6ad3a96d88f5615216b3dc71d53f8509cbc48f815c5212ca",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -267703,9 +267991,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "fccbb4818c38c3e1c8d13bc4a5badba319b084e975ff0bf638f3f35566108698",
+              "fingerprint": "d8bdb1b7daa0e3cb61dd8849350eb9538ae4f04d72e7c6d08c98ce3ceb5690ba",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -267964,7 +268252,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "b458f3bb1db166eb48ce09d13456e6e92b66854315d7c30cc48d1bae8da502ea",
+          "fingerprint": "c9b1f57a3dec6886b558ac7527175e95254b8e9554d33ed4aa5eac929941b899",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -268639,9 +268927,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "69fe92f5d4980bceb2428034ab45a316b03fbec89664a0ff295139dcd71c72aa",
+              "fingerprint": "a58f9c1c1729c1a62856bd831f968ebde6bf7971a3b03e122f6ee7a53aa87218",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -268964,7 +269252,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "e4d1cb31dacbde6ac06dab448ddb84bfad2a088c56a2275d94a4a71063dbeec5",
+          "fingerprint": "bceb7fae6a7da3b672220ce611acbf50de835019343d2fe26424c55b084a5ff1",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -269299,9 +269587,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "198708d529f3b9e3c6651ced596265ece86ee6e4ece556aebf7ce477a504604c",
+              "fingerprint": "ffedbe6d78209e00fe46c8c3199790c643d32b0fbdd8a081b9d7757527538c21",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -269315,9 +269603,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "4761d91f7a6782e4b6f56342169ff8978df8c140c1ea312a26caa8f8fa5550b6",
+              "fingerprint": "f74827a531378042a6db133d4f9c4b8d8dbb6f521c0e83f622ba5484194c75f1",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -269331,9 +269619,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "05de88c23e5d69ee2b96df2c8c9b4e29afddc2d22678b51a796d18c98a552c2d",
+              "fingerprint": "cecac1aa04eb51f87ee3b75913d7ef1ca33a55602c5a9cc914ba3d8c67a8053f",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -269576,7 +269864,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "7215e60bada604e105c5a99ed21de880282e678bbb8db482f73b0d696c1961c5",
+          "fingerprint": "8e665d106d55deedfafe7a75f933e2115b1b76a6033289c25362064435d9b2a3",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -269846,9 +270134,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "b5ce73293a81c418165dc1f9115ed3b785221a602ed48a9dc4eaf791cbe38437",
+              "fingerprint": "376c70f1b522aa297f4a8f7ae50cb9d52cedb80b9f1e07e03b6ef2b4a018e245",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -269862,9 +270150,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "8e5f502d7baca7aebbe740516822c5d92e1c8e80d787fadd254e60816c18a2ed",
+              "fingerprint": "54c3c47714adc2bb070fab2c2c9c21df8fd8a02d5a15c6ff994d6e1ff66dcd86",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -269958,9 +270246,9 @@
             {
               "collation": null,
               "comment": null,
-              "data_type": "numeric(28,10)",
+              "data_type": "numeric",
               "default": null,
-              "fingerprint": "e5271f6051e34da247787e3ff39deb589f7181f8f88381da5f897cd9d2a91567",
+              "fingerprint": "1cfbfd57f2558cbc0768f99bce34ecc42adeaf367b4a58e023fb591b128f9414",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -270273,7 +270561,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "a6c136bf019b0b1f66e63d0ffeab382fbc22aedd5ee0b7bd3fa9a80f16516207",
+          "fingerprint": "c05aefe01a0938879da899bc3a028b1684e271c7b7314c9cf38b9416aa871f4e",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
