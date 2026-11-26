@@ -25,6 +25,11 @@ legacy data is explicitly Unknown. See the [migration notes](../../docs/developm
 
 Ledger migration `V_ledger_084__security_revision_workflow_scope.sql` replaces the open-workflow
 
+Security Master migration `070_rate_repair_governance.sql` stores immutable rate-repair batch
+manifests and versioned per-item progress. Triggers reject manifest UPDATE/DELETE/TRUNCATE and
+progress DELETE/TRUNCATE. The scoped schema-control waiver covers only the lexical TRUNCATE in those
+rejection triggers.
+
 Security Master migration `069_security_revision_review_context.sql` adds the governed revision's
 maker, first submitter, optional repair batch/evidence binding and reviewed impact-receipt binding,
 with checks and a trigger that keep them write-once. Legacy rows keep unknown maker/submitter.
@@ -33,7 +38,7 @@ over ledger dependency tables while a reviewed revision finalizes. `PostgresSecu
 lets canonical event/projection reads and writes join an active mutation transaction, records the
 canonical fence held by a reviewed publication and defers derived work until the outer commit.
 
-Ledger migration `V_ledger_083__security_revision_workflow_scope.sql` replaces the open-workflow
+Ledger migration `V_ledger_084__security_revision_workflow_scope.sql` replaces the open-workflow
 unique index in one transaction: a workflow whose `purpose` is absent or `Close` keeps account/period
 uniqueness, and each `SecurityMasterRevision` subject is unique by its revision UUID. A check refuses
 unknown or explicit-null purposes and incomplete subject authority, and a trigger keeps purpose,

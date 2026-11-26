@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MarginRequirement
+
+Qualified name: <code>Meridian.Ui.Shared.Services.MarginRequirement</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:27](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L27).
+
+```csharp
+public sealed record MarginRequirement(string Counterparty, decimal RequiredCollateral, decimal InitialMargin, decimal VariationMargin);
+```
+
 ## MultiAssetCoverageReadService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.MultiAssetCoverageReadService</code>. Kind: `class`.
@@ -966,15 +976,3 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyDictionary&lt;string, string&gt;?&gt; ReadCredentialRecordAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:56](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L56) |  |
 | <code>public async Task&lt;IReadOnlySet&lt;string&gt;&gt; GetStoredKeyNamesAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:71](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L71) |  |
 | <code>public async Task DeleteCredentialsAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:82](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L82) |  |
-
-## ProviderDataProjectionSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderDataProjectionSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:30](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L30).
-
-Shared, typed snapshot consumed unchanged by browser endpoints and WPF view models.
-
-```csharp
-public sealed record ProviderDataProjectionSnapshot(IReadOnlyList<ProviderNewsReadModel> News, IReadOnlyList<ProviderScannerReadModel> ScannerResults, IReadOnlyList<ProviderPnlReadModel> PnlStreams, IReadOnlyList<ProviderCalendarReadModel> Calendars, IReadOnlyList<ProviderMarketRuleReadModel> MarketRules, IReadOnlyList<ProviderInstrumentDiscoveryReadModel> Instruments);
-```

@@ -261,3 +261,15 @@ An individual passport draft freezes an explicitly selected fund profile; server
 establishes tenant/company ownership. The browser requires the retained content-hash receipt for that
 security/revision/fund to be loaded and inspected before approve or publish. A displayed identifier
 alone does not establish inspection, and the server still rechecks canonical/dependency authority.
+
+## Governed rate-unit repairs
+
+Scalar rate-unit repair freezes exact security IDs/base versions, source field/schema, rate role,
+chosen unit and evidence applicability. Vendor/class/issuer filters help discovery but do not prove
+a common interpretation. The retained numeric scalar never changes. Every selected item receives
+its own governed revision and subject-addressed workflow; the authenticated maker, submitter and
+independent assigned reviewer remain distinct authority facts. Explicit publication and resumable
+per-item outcomes preserve conflicts instead of extending an approval to changed records. Bond's
+coupon structure still uses the full schedule migration path. Discovery is a bounded live scan;
+projection gaps and changed overlapping rows cannot become zero missing records or a complete catalog.
+See [operator repairs and evidence](../operators/security-master-repairs-and-evidence.md).

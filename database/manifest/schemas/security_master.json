@@ -328,6 +328,18 @@
       "object_type": "table"
     },
     {
+      "comment": "Immutable rate-unit repair manifest retaining the exact selected roster, base versions, declared interpretation and evidence scope for an authenticated batch.",
+      "fingerprint": "0e328246c75ebc5048ca97d096203b263ddf45e14a8b85607ff3b2b09b157f30",
+      "object": "security_master.security_rate_repair_batches",
+      "object_type": "table"
+    },
+    {
+      "comment": "Versioned compare-and-swap progress for a frozen repair batch, retaining each record draft, workflow, impact receipt and explicit item outcome while manifest authority remains immutable.",
+      "fingerprint": "1284cb5c666ce6af9230bc0d77f9764cfa18841a7ffd65723a60eada06d07118",
+      "object": "security_master.security_rate_repair_state",
+      "object_type": "table"
+    },
+    {
       "comment": "The underlying graph: one edge per row from an instrument to the security or named reference it depends on, in a stated role, with its validity window. Derived rows follow the terms; declared rows are governed through the graph API.",
       "fingerprint": "3196bcd5b9acc9893b0be578b9c52d921151071f0927fa05999ef599d30c6d7f",
       "object": "security_master.security_underlying_links",
@@ -4765,6 +4777,54 @@
       "target_schema": "security_master"
     },
     {
+      "fingerprint": "1dd17d2457722f89a73c6ed298c085a8309ec56b756a72aac247d903d9242743",
+      "kind": "normal",
+      "source": "security_master.security_rate_repair_batches_command_sha256_check on security_master.security_rate_repair_batches",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_rate_repair_batches.command_sha256",
+      "target_kind": "table column",
+      "target_name": "security_rate_repair_batches",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "b90cb33b000ea24b5f4b3600e3d4765c7551b60f02798e035ac91ed7ae445232",
+      "kind": "normal",
+      "source": "security_master.security_rate_repair_state_batch_id_fkey on security_master.security_rate_repair_state",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_rate_repair_batches.batch_id",
+      "target_kind": "table column",
+      "target_name": "security_rate_repair_batches",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "d3f72182314c59656cbf587ea82630876021c5d3eaef4c5371a6d4fc4cbeeb56",
+      "kind": "normal",
+      "source": "security_master.security_rate_repair_state_batch_id_fkey on security_master.security_rate_repair_state",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_rate_repair_batches_pkey",
+      "target_kind": "index",
+      "target_name": "security_rate_repair_batches_pkey",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "07a0923ea010f91126034cc9cf76d9d2173c7a1eb8dd00a50ef6a89d9958d522",
+      "kind": "normal",
+      "source": "security_master.security_rate_repair_state_version_check on security_master.security_rate_repair_state",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_rate_repair_state.version",
+      "target_kind": "table column",
+      "target_name": "security_rate_repair_state",
+      "target_schema": "security_master"
+    },
+    {
       "fingerprint": "a422474deabf1dd0d6b8a0fcc35fa970586ef71242a6584ab3a3f826277f6c26",
       "kind": "normal",
       "source": "security_master.security_raw_prices_security_id_fkey on security_master.security_raw_prices",
@@ -5261,7 +5321,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "89a45b169b8ce11676012834f4be987b1f63517ca5f9eeb9d4b6e1ef3dfdc296",
+  "fingerprint": "af4f0ed956debc869cbd36512a2189a7d163b88e7f212091b85a28495779af91",
   "foreign_tables": [],
   "functions": [
     {
@@ -5509,6 +5569,37 @@
       "security_definer": false,
       "security_labels": [],
       "signature": "reject_price_selection_receipt_mutation()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "27f946f65326f42290085c5651fb35e98b04772c2f6cdf18ff1f2c56e451417a",
+      "fingerprint": "6e7c9b3f2fb40944a45d83cb6f790f18e76e13a5f55db7124ffa8b803aac4864",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "reject_rate_repair_manifest_mutation",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "security_master",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "reject_rate_repair_manifest_mutation()",
       "strict": false,
       "volatility": "volatile"
     },
@@ -49342,6 +49433,550 @@
           "comment": null,
           "data_type": "uuid",
           "default": null,
+          "fingerprint": "5c45a5847ecbc50fb2ddbca89e005533a2cffb365f2f30b3343408dba69d7be5",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "batch_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "85dbc0fc36597916d01510a1466660d6fc78a5b6a002d073648aba5018a31b2a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "a097f3b4f51736d749e25bb881ea175248554a0ba8d80ce23c965ee7cfab2a29",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "company_id",
+          "nullable": true,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "968928dfd524e6a1d946f6c1a4edd91de9d6935066b441d1ac21bc4d63a1d879",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "command_sha256",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "1d27aa0b1bc557266d2205a54c71ad27dea4b74180244b00a45c334ee2b906ff",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "created_by",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "df3d9d1c5b05a7f9c69808583b5da5898d3746cc324b75b27e2524902bcd4c3c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "created_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "3b34e35de189f8ba21f5e71ce607f76d318e9f6dc4662acbc78031a7f7d94524",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "manifest_json",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Immutable rate-unit repair manifest retaining the exact selected roster, base versions, declared interpretation and evidence scope for an authenticated batch.",
+      "constraints": [
+        {
+          "columns": [
+            "command_sha256"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (command_sha256 ~ '^[a-f0-9]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "e0022dcb65500389b3e4fc0696b3d295f97a397731c71e4ae76c3d98eb58bfb7",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_rate_repair_batches_command_sha256_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "batch_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (batch_id)",
+          "delete_action": null,
+          "fingerprint": "8c907ae69aa1dbe33537da01dfce80d91445853f9c4bdb8c72a217809d9a1ffd",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_rate_repair_batches_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "9e94af06386fd89926077fdc05d29166f34a0a400c08fd65eeabb9a6c39b7160",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_security_rate_repair_batches_tenant ON security_master.security_rate_repair_batches USING btree (tenant_id, created_at DESC)",
+          "expression": null,
+          "fingerprint": "00a3dc6b2288220272121d21e3afe0709c39be654897e53624548b6d3934bfea",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "created_at"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_security_rate_repair_batches_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_rate_repair_batches_pkey ON security_master.security_rate_repair_batches USING btree (batch_id)",
+          "expression": null,
+          "fingerprint": "6b2094566b3bea7fa670e192fc94e114f594a8832cd188847ad576542a962402",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "batch_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_rate_repair_batches_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_rate_repair_batches",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER rate_repair_manifest_immutable BEFORE DELETE OR UPDATE ON security_master.security_rate_repair_batches FOR EACH ROW EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+          "definition_hash": "2fa6126d3c2695fda0ff0c63e0f517a8a52a776dead1d65a535dd7222c61f8c8",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "11c391f05aef5decb8acc4174894400f06cd415af6e496c08dc3404de9f13123",
+          "function_schema": "security_master",
+          "function_signature": "reject_rate_repair_manifest_mutation()",
+          "level": "row",
+          "name": "rate_repair_manifest_immutable",
+          "relation": "security_rate_repair_batches",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER rate_repair_manifest_no_truncate BEFORE TRUNCATE ON security_master.security_rate_repair_batches FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+          "definition_hash": "a7bb0813b1355b7a2afff5596f839447f4b722fb4989cc043a38d60fb63d9772",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "5d53207f779144792a2d87f9a277031c8cda6abfaa9910066d69af8700befa3f",
+          "function_schema": "security_master",
+          "function_signature": "reject_rate_repair_manifest_mutation()",
+          "level": "statement",
+          "name": "rate_repair_manifest_no_truncate",
+          "relation": "security_rate_repair_batches",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "5c45a5847ecbc50fb2ddbca89e005533a2cffb365f2f30b3343408dba69d7be5",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "batch_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "80d93d5d46995c55b204733af221fcfa619955aaaca0cb34d576a8c01c36fe1b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "1b960e446ff7f0ad9807c2f3665dc923f11b2b5c85554a51e7ab42398ef059bb",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "state_json",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Versioned compare-and-swap progress for a frozen repair batch, retaining each record draft, workflow, impact receipt and explicit item outcome while manifest authority remains immutable.",
+      "constraints": [
+        {
+          "columns": [
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (version >= 1)",
+          "delete_action": null,
+          "fingerprint": "ee9d92193961b5d2a862c5c336eaf163970655b64ae0a5910b784cd72d18cbd6",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_rate_repair_state_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "batch_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (batch_id) REFERENCES security_master.security_rate_repair_batches(batch_id)",
+          "delete_action": "no_action",
+          "fingerprint": "fc7ffb03b119184fa24e0ba525a0fb6ec013f1251337b76c68ad1ebe3fc7ccb0",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "security_rate_repair_state_batch_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "batch_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "security_rate_repair_batches",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "batch_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (batch_id)",
+          "delete_action": null,
+          "fingerprint": "c8a5f8a875940c329d9237436d2291d39802cc6976b947b22ae6868386c1b9f3",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_rate_repair_state_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "fc5140ec14b9f8c234d6a9638186ec623b6d8907ce54ea5d2413b9278e3e5e54",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_rate_repair_state_pkey ON security_master.security_rate_repair_state USING btree (batch_id)",
+          "expression": null,
+          "fingerprint": "dff210bf31555485188f4756c86f92a973b9da517c3ca248869a43f4f1197a04",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "batch_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_rate_repair_state_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_rate_repair_state",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER rate_repair_progress_no_delete BEFORE DELETE ON security_master.security_rate_repair_state FOR EACH ROW EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+          "definition_hash": "82116ee45afefa94badcbf6849eb98f72f48c7abec1b7c8a6327335823f069b5",
+          "enabled": "origin",
+          "events": [
+            "delete"
+          ],
+          "fingerprint": "99a84451e0ba375c67f7798669c7186e02d553a4c3ade0628d4c0e05f78580dd",
+          "function_schema": "security_master",
+          "function_signature": "reject_rate_repair_manifest_mutation()",
+          "level": "row",
+          "name": "rate_repair_progress_no_delete",
+          "relation": "security_rate_repair_state",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER rate_repair_progress_no_truncate BEFORE TRUNCATE ON security_master.security_rate_repair_state FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+          "definition_hash": "28d8d3dd168cc3af440a327ea8f75d7152e3dea80425714bd656f9ec846370c8",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "96eb4ec8939df83f5b368f4bbe5ad53d3feba8d04946ced509ad9e015d43cc7a",
+          "function_schema": "security_master",
+          "function_signature": "reject_rate_repair_manifest_mutation()",
+          "level": "statement",
+          "name": "rate_repair_progress_no_truncate",
+          "relation": "security_rate_repair_state",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
           "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
           "generated": null,
           "generated_expression": null,
@@ -57538,6 +58173,22 @@
       "forced": false,
       "policies": [],
       "relation": "security_pricing_hierarchy_history",
+      "schema": "security_master"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "f26aeca565487b6ecf95c15e66d81acc468499e53ce2941e99fb9a79c083994a",
+      "forced": false,
+      "policies": [],
+      "relation": "security_rate_repair_batches",
+      "schema": "security_master"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "0528306f048c258aea739e409e3b7b01076840e13d610fcb2556eb642527244d",
+      "forced": false,
+      "policies": [],
+      "relation": "security_rate_repair_state",
       "schema": "security_master"
     },
     {
@@ -101283,6 +101934,550 @@
           "comment": null,
           "data_type": "uuid",
           "default": null,
+          "fingerprint": "5c45a5847ecbc50fb2ddbca89e005533a2cffb365f2f30b3343408dba69d7be5",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "batch_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "85dbc0fc36597916d01510a1466660d6fc78a5b6a002d073648aba5018a31b2a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "a097f3b4f51736d749e25bb881ea175248554a0ba8d80ce23c965ee7cfab2a29",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "company_id",
+          "nullable": true,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "968928dfd524e6a1d946f6c1a4edd91de9d6935066b441d1ac21bc4d63a1d879",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "command_sha256",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "1d27aa0b1bc557266d2205a54c71ad27dea4b74180244b00a45c334ee2b906ff",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "created_by",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "df3d9d1c5b05a7f9c69808583b5da5898d3746cc324b75b27e2524902bcd4c3c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "created_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "3b34e35de189f8ba21f5e71ce607f76d318e9f6dc4662acbc78031a7f7d94524",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "manifest_json",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Immutable rate-unit repair manifest retaining the exact selected roster, base versions, declared interpretation and evidence scope for an authenticated batch.",
+      "constraints": [
+        {
+          "columns": [
+            "command_sha256"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (command_sha256 ~ '^[a-f0-9]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "e0022dcb65500389b3e4fc0696b3d295f97a397731c71e4ae76c3d98eb58bfb7",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_rate_repair_batches_command_sha256_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "batch_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (batch_id)",
+          "delete_action": null,
+          "fingerprint": "8c907ae69aa1dbe33537da01dfce80d91445853f9c4bdb8c72a217809d9a1ffd",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_rate_repair_batches_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "9e94af06386fd89926077fdc05d29166f34a0a400c08fd65eeabb9a6c39b7160",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_security_rate_repair_batches_tenant ON security_master.security_rate_repair_batches USING btree (tenant_id, created_at DESC)",
+          "expression": null,
+          "fingerprint": "00a3dc6b2288220272121d21e3afe0709c39be654897e53624548b6d3934bfea",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "created_at"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_security_rate_repair_batches_tenant",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_rate_repair_batches_pkey ON security_master.security_rate_repair_batches USING btree (batch_id)",
+          "expression": null,
+          "fingerprint": "6b2094566b3bea7fa670e192fc94e114f594a8832cd188847ad576542a962402",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "batch_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_rate_repair_batches_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_rate_repair_batches",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER rate_repair_manifest_immutable BEFORE DELETE OR UPDATE ON security_master.security_rate_repair_batches FOR EACH ROW EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+          "definition_hash": "2fa6126d3c2695fda0ff0c63e0f517a8a52a776dead1d65a535dd7222c61f8c8",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "11c391f05aef5decb8acc4174894400f06cd415af6e496c08dc3404de9f13123",
+          "function_schema": "security_master",
+          "function_signature": "reject_rate_repair_manifest_mutation()",
+          "level": "row",
+          "name": "rate_repair_manifest_immutable",
+          "relation": "security_rate_repair_batches",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER rate_repair_manifest_no_truncate BEFORE TRUNCATE ON security_master.security_rate_repair_batches FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+          "definition_hash": "a7bb0813b1355b7a2afff5596f839447f4b722fb4989cc043a38d60fb63d9772",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "5d53207f779144792a2d87f9a277031c8cda6abfaa9910066d69af8700befa3f",
+          "function_schema": "security_master",
+          "function_signature": "reject_rate_repair_manifest_mutation()",
+          "level": "statement",
+          "name": "rate_repair_manifest_no_truncate",
+          "relation": "security_rate_repair_batches",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "5c45a5847ecbc50fb2ddbca89e005533a2cffb365f2f30b3343408dba69d7be5",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "batch_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "80d93d5d46995c55b204733af221fcfa619955aaaca0cb34d576a8c01c36fe1b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "1b960e446ff7f0ad9807c2f3665dc923f11b2b5c85554a51e7ab42398ef059bb",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "state_json",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Versioned compare-and-swap progress for a frozen repair batch, retaining each record draft, workflow, impact receipt and explicit item outcome while manifest authority remains immutable.",
+      "constraints": [
+        {
+          "columns": [
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (version >= 1)",
+          "delete_action": null,
+          "fingerprint": "ee9d92193961b5d2a862c5c336eaf163970655b64ae0a5910b784cd72d18cbd6",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_rate_repair_state_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "batch_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (batch_id) REFERENCES security_master.security_rate_repair_batches(batch_id)",
+          "delete_action": "no_action",
+          "fingerprint": "fc7ffb03b119184fa24e0ba525a0fb6ec013f1251337b76c68ad1ebe3fc7ccb0",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "security_rate_repair_state_batch_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "batch_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "security_rate_repair_batches",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "batch_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (batch_id)",
+          "delete_action": null,
+          "fingerprint": "c8a5f8a875940c329d9237436d2291d39802cc6976b947b22ae6868386c1b9f3",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_rate_repair_state_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "fc5140ec14b9f8c234d6a9638186ec623b6d8907ce54ea5d2413b9278e3e5e54",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_rate_repair_state_pkey ON security_master.security_rate_repair_state USING btree (batch_id)",
+          "expression": null,
+          "fingerprint": "dff210bf31555485188f4756c86f92a973b9da517c3ca248869a43f4f1197a04",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "batch_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_rate_repair_state_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_rate_repair_state",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER rate_repair_progress_no_delete BEFORE DELETE ON security_master.security_rate_repair_state FOR EACH ROW EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+          "definition_hash": "82116ee45afefa94badcbf6849eb98f72f48c7abec1b7c8a6327335823f069b5",
+          "enabled": "origin",
+          "events": [
+            "delete"
+          ],
+          "fingerprint": "99a84451e0ba375c67f7798669c7186e02d553a4c3ade0628d4c0e05f78580dd",
+          "function_schema": "security_master",
+          "function_signature": "reject_rate_repair_manifest_mutation()",
+          "level": "row",
+          "name": "rate_repair_progress_no_delete",
+          "relation": "security_rate_repair_state",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER rate_repair_progress_no_truncate BEFORE TRUNCATE ON security_master.security_rate_repair_state FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+          "definition_hash": "28d8d3dd168cc3af440a327ea8f75d7152e3dea80425714bd656f9ec846370c8",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "96eb4ec8939df83f5b368f4bbe5ad53d3feba8d04946ced509ad9e015d43cc7a",
+          "function_schema": "security_master",
+          "function_signature": "reject_rate_repair_manifest_mutation()",
+          "level": "statement",
+          "name": "rate_repair_progress_no_truncate",
+          "relation": "security_rate_repair_state",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
           "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
           "generated": null,
           "generated_expression": null,
@@ -109247,6 +110442,75 @@
       "level": "statement",
       "name": "security_price_selection_receipts_no_truncate",
       "relation": "security_price_selection_receipts",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER rate_repair_manifest_immutable BEFORE DELETE OR UPDATE ON security_master.security_rate_repair_batches FOR EACH ROW EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+      "definition_hash": "2fa6126d3c2695fda0ff0c63e0f517a8a52a776dead1d65a535dd7222c61f8c8",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "11c391f05aef5decb8acc4174894400f06cd415af6e496c08dc3404de9f13123",
+      "function_schema": "security_master",
+      "function_signature": "reject_rate_repair_manifest_mutation()",
+      "level": "row",
+      "name": "rate_repair_manifest_immutable",
+      "relation": "security_rate_repair_batches",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER rate_repair_manifest_no_truncate BEFORE TRUNCATE ON security_master.security_rate_repair_batches FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+      "definition_hash": "a7bb0813b1355b7a2afff5596f839447f4b722fb4989cc043a38d60fb63d9772",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "5d53207f779144792a2d87f9a277031c8cda6abfaa9910066d69af8700befa3f",
+      "function_schema": "security_master",
+      "function_signature": "reject_rate_repair_manifest_mutation()",
+      "level": "statement",
+      "name": "rate_repair_manifest_no_truncate",
+      "relation": "security_rate_repair_batches",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER rate_repair_progress_no_delete BEFORE DELETE ON security_master.security_rate_repair_state FOR EACH ROW EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+      "definition_hash": "82116ee45afefa94badcbf6849eb98f72f48c7abec1b7c8a6327335823f069b5",
+      "enabled": "origin",
+      "events": [
+        "delete"
+      ],
+      "fingerprint": "99a84451e0ba375c67f7798669c7186e02d553a4c3ade0628d4c0e05f78580dd",
+      "function_schema": "security_master",
+      "function_signature": "reject_rate_repair_manifest_mutation()",
+      "level": "row",
+      "name": "rate_repair_progress_no_delete",
+      "relation": "security_rate_repair_state",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER rate_repair_progress_no_truncate BEFORE TRUNCATE ON security_master.security_rate_repair_state FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_rate_repair_manifest_mutation()",
+      "definition_hash": "28d8d3dd168cc3af440a327ea8f75d7152e3dea80425714bd656f9ec846370c8",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "96eb4ec8939df83f5b368f4bbe5ad53d3feba8d04946ced509ad9e015d43cc7a",
+      "function_schema": "security_master",
+      "function_signature": "reject_rate_repair_manifest_mutation()",
+      "level": "statement",
+      "name": "rate_repair_progress_no_truncate",
+      "relation": "security_rate_repair_state",
       "schema": "security_master",
       "timing": "before"
     }

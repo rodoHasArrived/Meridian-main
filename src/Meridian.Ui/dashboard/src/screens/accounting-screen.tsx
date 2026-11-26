@@ -75,6 +75,7 @@ import { AccountingCaseWorkbenchSection } from "@/screens/accounting-screen.case
 import { CaseInspector } from "./case-inspector";
 import { AccountingCloseLanding, AccountingPeriodPreparation } from "./accounting-screen.close-landing";
 import { isSecurityMasterDrillInTabId, resolveSecurityMasterDrillInTab, buildSecurityMasterDrillInSearch, resolveExplorerSecurityId, parseCloseWorkflowQuery } from "./accounting-screen.route-context";
+import { SecurityRateRepairQueueRegion } from "@/screens/security-master-rate-repair-queue";
 import { AccountingConfigurationPanel } from "@/screens/accounting-screen.configuration-panel";
 import { ManualJournalEntryWorkbenchPanel } from "@/screens/accounting-screen.manual-journal-panel";
 import { AccountingApprovalsWorkstream } from "@/screens/accounting-screen.approvals-workstream";
@@ -1454,6 +1455,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           onSelectRecord={selectSecurityFromExplorer}
         >
         <section className="space-y-6">
+          <SecurityRateRepairQueueRegion key={JSON.stringify([session?.displayName, session?.role, session?.environment])} />
           <div id="bond-ladders" className="scroll-mt-6">
             <BondReferenceLadderPanel onSelectSecurity={(securityId) => {
               ladderScroll.current = [];

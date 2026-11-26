@@ -69,6 +69,19 @@ or unknown latest observations produce an unavailable mark rather than an older 
 This guard does not supply the dedicated raw accounting-close capability or expand its provider
 coverage. Legacy `IsAdjusted=false` alone cannot qualify an accounting mark.
 
+`SecurityRateRepairService` governs bulk repair of a missing scalar `rateUnit`. Discovery is a
+bounded, paged live scan that reports projection gaps and per-record blockers instead of treating
+them as zero records. A frozen batch retains the exact security IDs and base versions, source
+system/field/schema, rate role, declared unit, effective date and server-hashed Evidence Vault
+identity; a matching request ID recovers the same roster instead of reselecting current data, and the
+numeric scalar is never changed. Stage, Submit, Approve and Publish are separate versioned commands
+under a cross-host command lease, with a resumable per-item outcome. Each item gets its own governed
+revision, retained impact receipt and subject-scoped approval workflow whose authority
+(`SecurityRateRepairWorkflowAuthority`) is resolved from the retained batch, revision and ledger
+scope. Only the original maker stages; the reviewer must differ from maker and submitter; the maker
+cannot approve. The service requires PostgreSQL Security Master, revision and ledger stores. See the
+[operator procedure](../../docs/operators/security-master-repairs-and-evidence.md).
+
 `SecurityMasterImpactPreviewService` retains an immutable, content-addressed impact receipt for a
 governed Security Master draft: full previous and proposed terms (built by the shared
 `SecurityMasterProposedTermsBuilder` that publication also uses), typed before/after cash-flow

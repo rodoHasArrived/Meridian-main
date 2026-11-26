@@ -1,11 +1,11 @@
 {
-  "total_files": 1292,
+  "total_files": 1294,
   "orphaned_count": 379,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 297,
   "health_score": 86,
-  "signal_digest": "sha256:ade44bd8645fcb1d8b4bc91b73a86bbb349c014139f9ccb9593283fd622113a9",
+  "signal_digest": "sha256:0ccebfe7e86b5882bbc7cab14476376851d1e312190882aa5a69340a0825b8dc",
   "orphaned_files": [
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
@@ -3500,6 +3500,13 @@
       "stale": false
     },
     {
+      "path": "docs/operators/security-master-repairs-and-evidence.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/operators/security-master-terms-contract-rollout.md",
       "has_heading": true,
       "todo_count": 0,
@@ -4719,6 +4726,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.contracts/page-082.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-083.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

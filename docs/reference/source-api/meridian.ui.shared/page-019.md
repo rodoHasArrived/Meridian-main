@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SensitiveActionType
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SensitiveActionType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:10](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L10).
+
+```csharp
+public enum SensitiveActionType
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>RuleEdit</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:12](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L12) |  |
+| <code>BreakClosure</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:13](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L13) |  |
+| <code>PaymentRelease</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:14](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L14) |  |
+| <code>OverrideApproval</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:15](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L15) |  |
+
 ## SettlementInstruction
 
 Qualified name: <code>Meridian.Ui.Shared.Services.SettlementInstruction</code>. Kind: `record`.
@@ -748,7 +767,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:91](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L91) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1680](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1680) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1681](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1681) |  |
 
 ## WorkstationWorkflowReadScope
 
@@ -827,24 +846,3 @@ Declared public members:
 | <code>public void NotifyQuoteChanged(string symbol) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:52](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L52) |  |
 | <code>public QuoteStreamSubscription? TrySubscribe(StreamTopic topic, string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:55](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L55) |  |
 | <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:66](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L66) |  |
-
-## QuoteStreamOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:7](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L7).
-
-Tuning knobs for the workstation quote-stream fan-out. Bindable from configuration under SectionName.
-
-```csharp
-public sealed class QuoteStreamOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SectionName = &quot;Workstation:QuoteStream&quot;;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:10](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L10) | Configuration section name. |
-| <code>public int CoalesceIntervalMs { get; set; } = 250;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:16](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L16) | Maximum push cadence: dirty topics are rebuilt and fanned out at most this often. Also the floor for how quickly a change reaches subscribers. |
-| <code>public int MaxConcurrentStreamsPerSession { get; set; } = 4;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:19](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L19) | Maximum concurrent stream connections per session. |
-| <code>public int SubscriberChannelCapacity { get; set; } = 1;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L25) | Per-subscriber channel capacity. 1 means latest-snapshot-wins (drop-oldest), so a slow client can never block the broadcaster — it only drops intermediate snapshots. |

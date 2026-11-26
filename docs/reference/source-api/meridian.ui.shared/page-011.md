@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DemoWorkspaceResetReport
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DemoWorkspaceResetReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:425](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L425).
+
+Outcome of tearing down the demo workspace.
+
+```csharp
+public sealed record DemoWorkspaceResetReport(string DemoRoot, bool Deleted);
+```
+
 ## DemoWorkspaceSeeder
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DemoWorkspaceSeeder</code>. Kind: `class`.
@@ -890,13 +902,3 @@ Declared public members:
 | <code>public Task&lt;OnboardingWorkspaceDto?&gt; GetAsync(string tenantId, string companyId, string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:44](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L44) |  |
 | <code>public Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListByLedgerBookAsync(string tenantId, string? companyId, Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:51](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L51) |  |
 | <code>public async Task SaveAsync(OnboardingWorkspaceDto workspace, int? expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:62](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L62) |  |
-
-## Snapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileOnboardingWorkspaceStore.Snapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:14](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L14).
-
-```csharp
-public sealed record Snapshot(IReadOnlyList<OnboardingWorkspaceDto> Workspaces);
-```
