@@ -327,9 +327,9 @@ close. Preserve the adjacent `reconciliation-break-queue-audit.jsonl` legacy mig
 `reconciliation-break-queue.lock` coordination file when present, but never edit, replay, or
 restore either one independently of the current queue snapshot and coordinated recovery point.
 Persisted legacy `statement-report-*` workflows can resume from the retained
-`reporting/statement-to-report/` directory. Canonical callers receive current Statement
-Reconciliation Report routes; pre-rename HTTP and service compatibility contracts project their
-original route and DTO shape directly over that same workflow.
+`reporting/statement-to-report/` directory. All callers use the current Statement
+Reconciliation Report routes; the pre-rename HTTP routes and service contracts were removed on
+2026-11-25.
 
 For break/case handling, see [Reconciliation Operations](./reconciliation-operations.md). For general
 receipt and artifact failure rules, see [Verified Outcome Recovery](./verified-outcome-recovery.md).

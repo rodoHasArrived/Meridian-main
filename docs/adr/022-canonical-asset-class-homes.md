@@ -11,7 +11,7 @@
 ## Context
 
 The Security Master extensibility review
-([security-master-extensibility-review.md](../../archive/docs/architecture/security-master-extensibility-review.md),
+([security-master-extensibility-review.md](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/architecture/security-master-extensibility-review.md),
 finding 2) identified instruments with three or four legitimate modeling routes:
 
 - **MBS / ABS / CLO / CMBS / CDO tranches and IO/PO strips** could be modeled as `Bond` with a
@@ -174,7 +174,7 @@ own consistency (every class but OtherSecurity has a family, derivative flag ⇔
 
 ## References
 
-- [Security Master extensibility review](../../archive/docs/architecture/security-master-extensibility-review.md)
+- [Security Master extensibility review](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/architecture/security-master-extensibility-review.md)
   — finding 2 and re-ranked priority 2.
 - [Adding a Security Master asset class](../engineering/security-master-adding-an-asset-class.md)
   — the checklist a new first-class home (including a reclassifying-profile target) follows.
