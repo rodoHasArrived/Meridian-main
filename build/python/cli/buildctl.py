@@ -1883,10 +1883,18 @@ def cmd_metrics(_args: argparse.Namespace) -> int:
     commits = result.stdout.strip().splitlines() if result.returncode == 0 else []
     print(f"  Recent commits analysed : {len(commits)}")
 
-    src_files = list((REPO_ROOT / "src").rglob("*.cs")) if (REPO_ROOT / "src").is_dir() else []
-    test_files = list((REPO_ROOT / "tests").rglob("*.cs")) if (REPO_ROOT / "tests").is_dir() else []
-    print(f"  C# source files         : {len(src_files)}")
-    print(f"  C# test files           : {len(test_files)}")
+    def count_cs_files(base: Path) -> int:
+        # Prune before descending: src/ also holds the dashboard's node_modules tree.
+        count = 0
+        for _current, directories, files in base.walk():
+            directories[:] = [name for name in directories if name != "node_modules"]
+            count += sum(1 for name in files if name.endswith(".cs"))
+        return count
+
+    src_count = count_cs_files(REPO_ROOT / "src") if (REPO_ROOT / "src").is_dir() else 0
+    test_count = count_cs_files(REPO_ROOT / "tests") if (REPO_ROOT / "tests").is_dir() else 0
+    print(f"  C# source files         : {src_count}")
+    print(f"  C# test files           : {test_count}")
     return 0
 
 

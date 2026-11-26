@@ -54,10 +54,18 @@ class BuildFingerprint:
 
     def _hash_files(self) -> str:
         hasher = hashlib.sha256()
-        for path in sorted(self.root.rglob("*")):
-            if path.is_file() and ".git" not in path.parts and "bin" not in path.parts and "obj" not in path.parts:
+        files: list[Path] = []
+        for current, directories, names in self.root.walk():
+            # Prune before descending: VCS metadata, build outputs, and installed npm
+            # packages are not source and would dominate the walk.
+            directories[:] = [name for name in directories if name not in self._EXCLUDED_DIRECTORIES]
+            files.extend(current / name for name in names)
+        for path in sorted(files):
+            if path.is_file():
                 hasher.update(path.read_bytes())
         return hasher.hexdigest()
+
+    _EXCLUDED_DIRECTORIES = frozenset({".git", "bin", "obj", "node_modules"})
 
     def _tool_versions(self) -> dict:
         versions = {}

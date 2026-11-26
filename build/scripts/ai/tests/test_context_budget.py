@@ -156,6 +156,17 @@ class ContextBudgetTests(unittest.TestCase):
         self.assertIn("contextPack", payload)
         self.assertIn("classification", payload)
 
+    def test_directory_expansion_skips_node_modules(self) -> None:
+        dashboard = self.root / "src/Meridian.Ui/dashboard"
+        (dashboard / "node_modules/a-pkg").mkdir(parents=True)
+        (dashboard / "node_modules/a-pkg/index.ts").write_text("export {};\n", encoding="utf-8")
+        (dashboard / "src").mkdir(parents=True)
+        (dashboard / "src/main.tsx").write_text("export {};\n", encoding="utf-8")
+
+        expanded = context_budget._expand_candidate_path(self.root, "src/Meridian.Ui/dashboard", limit=5)
+
+        self.assertEqual(["src/Meridian.Ui/dashboard/src/main.tsx"], expanded)
+
 
 if __name__ == "__main__":
     unittest.main()
