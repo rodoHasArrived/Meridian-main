@@ -63,6 +63,7 @@ remains in the [roadmap registry](../../roadmap/README.md) and
 
 | [Browser Workstation UX Implementation (2026-11)](../plans/browser-workstation-ux-roadmap-2026-11.md) | `docs/engineering/plans/` | Browser / shared financial controls | Active implementation evidence; source limitations remain explicit |
 | [Security Master Review Remediation](../plans/security-master-review-remediation-plan.md) | `docs/engineering/plans/` | Security Master / audit | Draft; consolidates dated review evidence; domain-policy and migration approvals remain open |
+| [Security Master Class-Plumbing Codegen](../plans/security-master-class-plumbing-codegen.md) | `docs/engineering/plans/` | Security Master | Active; generated code (`W11-PACK-002`, `DEC-PACK-CODEGEN-001`); the declaration is authoritative |
 | [Security Master Integrity and Traceability](../plans/security-master-integrity-implementation-plan.md) | `docs/engineering/plans/` | Security Master / audit | Draft; phased slices from the 2026-11-18 review; six owner decisions (D-XCCY, D-DUP, D-LIN, D-PERM, D-FIX, D-VT) gate later phases |
 | [W9 Close-Out Delivery Plan (2026-08)](../../product/plans/w9-close-out-delivery-plan-2026-08.md) | `docs/product/plans/` | Program | Accepted planning input (`DEC-W9-CLOSEOUT-001`); sequences `W9-SAFETY-007`, `W9-GOV-008`, `W9-INGEST-009` |
 | [2026-07 First-Order Improvement Slate](../../product/plans/product-roadmap-priorities-2026-07.md) | `docs/product/plans/` | Program | Accepted planning input (`DEC-PRIORITY-SLATE-001`); ranked W9 rationale |

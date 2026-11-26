@@ -6,6 +6,79 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAgreementRules
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:8](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L8).
+
+```csharp
+public static partial class IntercompanyAgreementRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IntercompanyAgreementDraftDto Normalize(IntercompanyAgreementDraftDto draft) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:10](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L10) |  |
+| <code>public static void ValidateShape(IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:30](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L30) |  |
+| <code>public static void ValidateComplete(IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:46](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L46) |  |
+| <code>public static void ValidateImmutableParties(IntercompanyAgreementDraftDto initial, IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:80](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L80) |  |
+| <code>public static void ValidateExistence(IntercompanyAgreementDraftDto draft, IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt; revisions, LegalEntitySummaryDto first, LegalEntitySummaryDto second);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:88](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L88) |  |
+| <code>public static string ReviewedHash(IntercompanyAgreementReviewPayloadDto payload) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:133](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L133) |  |
+| <code>public static string CommandHash(IntercompanyAgreementCommandDto command) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:135](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L135) |  |
+| <code>public static bool SameEvidence(IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; first, IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; second) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:137](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L137) |  |
+| <code>public static bool SameActor(string? first, string? second) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:139](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L139) |  |
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs:7](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs#L7).
+
+```csharp
+public static partial class IntercompanyAgreementRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaximumFixingLagBusinessDays = 10;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs:133](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs#L133) | Upper bound on a declared in-advance fixing lag. |
+
+## IntercompanyAgreementService
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:9](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L9).
+
+Agreement commands execute under the store&#x27;s durable authority lock, including approval rechecks.
+
+```csharp
+public sealed partial class IntercompanyAgreementService(IIntercompanyAgreementStore store, IIntercompanyAgreementAccessAuthority access, IIntercompanyAgreementEvidenceAuthority evidence, TimeProvider? timeProvider = null, IEntityLifecycleStore? lifecycleStore = null, IFundStructureStore? structureStore = null) : IIntercompanyAgreementService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; CreateAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:16](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L16) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; CreateProposalAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:18](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L18) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; SaveDraftAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:20](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L20) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; SubmitAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:22](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L22) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; ApproveAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:24](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L24) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; RejectAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:26](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L26) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; WithdrawAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:28](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L28) |  |
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs:6](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs#L6).
+
+```csharp
+public sealed partial class IntercompanyAgreementService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IntercompanyAgreementDetailDto?&gt; GetAsync(IntercompanyAgreementCallContext context, Guid agreementId, DateOnly? asOf = null, DateTimeOffset? knownAtUtc = null, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs:8](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs#L8) |  |
+| <code>public async Task&lt;IntercompanyAgreementListDto&gt; ListAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs:22](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs#L22) |  |
+
 ## IntercompanyAgreementTimeline
 
 Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementTimeline</code>. Kind: `class`.
@@ -949,50 +1022,3 @@ Declared public members:
 | <code>public void Start(TimeSpan interval);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:39](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L39) |  |
 | <code>public async Task WriteOnceAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:73](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L73) |  |
 | <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:98](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L98) |  |
-
-## DeadLetterSink
-
-Qualified name: <code>Meridian.Application.Pipeline.DeadLetterSink</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Pipeline/DeadLetterSink.cs:32](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L32).
-
-Persists events that failed validation to a JSONL dead-letter file for later inspection and replay. Each line contains the original event together with the validation errors that caused rejection.
-
-```csharp
-public sealed class DeadLetterSink : IEventQuarantineSink, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DeadLetterSink(string dataRoot, ILogger&lt;DeadLetterSink&gt;? logger = null) : this(dataRoot, logger, appendLinesAsync : null);</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:51](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L51) | Initialises a new DeadLetterSink. |
-| <code>public long TotalRejected =&gt; …;</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:81](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L81) | Gets the total number of rejected events recorded so far. |
-| <code>public long TotalPersisted =&gt; …;</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:84](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L84) | Gets the number of rejected events durably written to the dead-letter file. |
-| <code>public long PendingRetryCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:87](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L87) | Gets the number of rejected events held in memory awaiting a successful write. |
-| <code>public long TotalLost =&gt; …;</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:90](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L90) | Gets the number of rejected events that could not be written and were discarded. |
-| <code>public IReadOnlyDictionary&lt;string, long&gt; RejectedCountsBySymbol =&gt; …;</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:93](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L93) | Gets rejection counts keyed by effective symbol. |
-| <code>public async ValueTask RecordAsync(MarketEvent evt, IReadOnlyList&lt;string&gt; errors, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:102](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L102) | Records a rejected event and its validation errors to the dead-letter file. |
-| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:171](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L171) | Writes any dead-letter records still held in memory after an earlier failed write. |
-| <code>public DeadLetterStatistics GetStatistics();</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:182](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L182) | Returns a snapshot of dead-letter statistics. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:212](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L212) |  |
-
-## DeadLetterStatistics
-
-Qualified name: <code>Meridian.Application.Pipeline.DeadLetterStatistics</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Pipeline/DeadLetterSink.cs:263](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L263).
-
-Statistics about rejected events for API exposure.
-
-```csharp
-public sealed record DeadLetterStatistics(long TotalRejected, IReadOnlyDictionary<string, long> RejectedBySymbol, string DeadLetterFilePath, DateTimeOffset Timestamp)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public long TotalPersisted { get; init; }</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:270](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L270) | Rejected events durably written to the dead-letter file. |
-| <code>public long PendingRetry { get; init; }</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:273](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L273) | Rejected events held in memory awaiting a successful write. |
-| <code>public long TotalLost { get; init; }</code> | [src/Meridian.Application/Pipeline/DeadLetterSink.cs:276](../../../../src/Meridian.Application/Pipeline/DeadLetterSink.cs#L276) | Rejected events that could not be written and were discarded. |

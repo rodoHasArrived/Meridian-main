@@ -376,7 +376,7 @@ jobs:
   documentation-evidence:
     name: same-commit documentation evidence
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -397,15 +397,36 @@ jobs:
       - name: Install docs script dependencies
         run: python -m pip install --requirement build/scripts/docs/requirements.txt
 
-      - name: Run deterministic documentation automation
-        run: >-
-          python build/scripts/docs/run-docs-automation.py
-          --profile core
-          --json-output artifacts/docs/production-certification.json
-          --summary-output artifacts/docs/production-certification.md
+      - name: Set up maintained diagram toolchain
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-      - name: Reject generated documentation drift
-        run: git diff --exit-code
+      - name: Install documentation diagram dependencies from lockfile
+        run: npm ci --no-fund --no-audit
+
+      # Use the merge gate's producer and drift policy (scripts/ci.sh verify-docs). Running the
+      # core profile alone left CI-only outputs (docs/status/docs-automation-summary.*,
+      # database/manifest/contracts.json) absent, so generate-workflow-manifest reported
+      # drift-detected, and `git diff --exit-code` rejected machine outputs main accepts.
+      - name: Generate maintained documentation
+        run: >-
+          python build/scripts/run-maintained-generation.py
+          --docs-only
+          --report artifacts/docs/generation.json
+
+      # PRD-017 evidence keeps its artifact name and file: the core-profile run report.
+      - name: Publish core docs automation report
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/docs
+          cp docs/status/docs-automation-summary.json artifacts/docs/production-certification.json
+          cp docs/status/docs-automation-summary.md artifacts/docs/production-certification.md
+
+      - name: Reject reviewed generated documentation drift
+        run: python build/scripts/ci/check-generated-output.py
 
       - name: Upload documentation evidence
         if: always()

@@ -224,6 +224,67 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn('page=2', api.call_args_list[1].args[0])
         self.assertIn('page=2', api.call_args_list[3].args[0])
 
+    def signals(self, **overrides):
+        signals = {name: dict(runId='50', runAttempt='1', commitSha=self.expected['commitSha'], event='schedule',
+                              conclusion='success', completedAt=(self.now - timedelta(days=1)).isoformat(), failedJobs=[])
+                   for name in readiness.SIGNALS}
+        for name, change in overrides.items():
+            signals[name] = change if change is None else dict(signals[name], **change)
+        return dict(schemaVersion=1, **self.expected, signals={k: v for k, v in signals.items() if v is not None})
+
+    def test_preflight_reports_certification_nightly_and_rehearsal_results(self):
+        result = readiness.report('preflight', self.needs, self.expected, self.signing, None, self.runners, self.now,
+                                  signals=self.signals())
+        self.assertEqual(result['status'], 'ready')
+        names = [item['name'] for item in result['checks']]
+        for name in readiness.SIGNALS:
+            self.assertIn(name, names)
+
+    def test_failed_certification_blocks_with_failed_job_names(self):
+        snapshot = self.signals(**{'Production certification': dict(conclusion='failure',
+                                                                     failedJobs=['same-commit documentation evidence'])})
+        rows = {item['name']: item for item in readiness.signal_status(snapshot, self.expected, self.now)}
+        self.assertEqual(rows['Production certification']['status'], 'blocked')
+        self.assertIn('same-commit documentation evidence', rows['Production certification']['detail'])
+
+    def test_stale_missing_unbound_or_uncollected_signals_are_not_ready(self):
+        stale = self.signals(**{'Nightly full verification': dict(completedAt=(self.now - timedelta(days=4)).isoformat())})
+        rows = {item['name']: item['status'] for item in readiness.signal_status(stale, self.expected, self.now)}
+        self.assertEqual(rows['Nightly full verification'], 'unknown')
+        missing = self.signals(**{'Signed release rehearsal': {}, 'Production certification': {}})
+        missing['signals']['Signed release rehearsal'] = {}
+        missing['signals']['Production certification'] = dict(collectionError=True)
+        rows = {item['name']: item['status'] for item in readiness.signal_status(missing, self.expected, self.now)}
+        self.assertEqual(rows['Signed release rehearsal'], 'warning')
+        self.assertEqual(rows['Production certification'], 'unknown')
+        unbound = dict(self.signals(), runAttempt='1')
+        self.assertTrue(all(item['status'] == 'unknown' for item in readiness.signal_status(unbound, self.expected, self.now)))
+        self.assertTrue(all(item['status'] == 'unknown' for item in readiness.signal_status({}, self.expected, self.now)))
+
+    def test_signal_collector_uses_main_schedule_runs_and_named_nightly_job(self):
+        def run(run_id, event='schedule', conclusion='failure'):
+            return dict(id=run_id, run_attempt=1, head_sha='c' * 40, event=event, conclusion=conclusion,
+                        updated_at=self.now.isoformat(), head_repository=dict(full_name='owner/repo'))
+        responses = [
+            {'workflow_runs': [run(1, event='workflow_call'), run(2)]},
+            {'jobs': [dict(name='same-commit documentation evidence', conclusion='failure'), dict(name='x', conclusion='success')]},
+            {'workflow_runs': [run(3, conclusion='success')]},
+            {'jobs': [dict(name='Secret Scan', conclusion='success'), dict(name='verify-full (coverage + scenario tests)', conclusion='success')]},
+            {'workflow_runs': [run(4, conclusion='success')]},
+            {'jobs': [dict(name='validate-release-eligibility', conclusion='skipped')]},
+        ]
+        with patch.object(readiness, 'gh_json', side_effect=responses) as api:
+            snapshot = readiness.collect_signals('owner/repo', self.expected, self.now)
+        signals = snapshot['signals']
+        self.assertEqual(signals['Production certification']['runId'], '2')
+        self.assertEqual(signals['Production certification']['failedJobs'], ['same-commit documentation evidence'])
+        self.assertEqual(signals['Nightly full verification']['conclusion'], 'success')
+        self.assertEqual(signals['Signed release rehearsal'], {})
+        self.assertIn('branch=main', api.call_args_list[0].args[0])
+        with patch.object(readiness, 'gh_json', side_effect=subprocess.CalledProcessError(1, 'gh')):
+            snapshot = readiness.collect_signals('owner/repo', self.expected, self.now)
+        self.assertTrue(all(item.get('collectionError') for item in snapshot['signals'].values()))
+
     def test_identity_rejects_branch_names_zero_attempt_and_short_shas(self):
         for values in (('main', '42', '1'), ('a' * 40, '42', '0'), ('a' * 40, '-1', '1')):
             with self.assertRaises(ValueError):

@@ -27,6 +27,18 @@ RUNNER_LABELS = {
     'windows-11-arm / native ARM64 lifecycle': 'windows-11-arm',
     'windows-2025 / consumer packaging': 'windows-2025',
 }
+# Release blockers that live outside the coordinator run. Each row reports the newest completed
+# main-branch run of a scheduled or manual workflow, so a weekly failure surfaces here before a tag.
+SIGNALS = {
+    'Production certification': dict(workflow='production-certification.yml', job=None, maxAgeDays=14,
+                                      action='Inspect the failing Production Certification jobs and rerun it on main before tagging.'),
+    'Nightly full verification': dict(workflow='ci.yml', job='verify-full (coverage + scenario tests)', maxAgeDays=3,
+                                      action='Inspect the nightly verify-full coverage and scenario run on main before tagging.'),
+    'Signed release rehearsal': dict(workflow='desktop-installer-packaging.yml', job=None, maxAgeDays=14,
+                                     action='Dispatch Desktop Installer Release as a signed rehearsal, or enable MDC_ENABLE_RELEASE_REHEARSALS.'),
+}
+SIGNAL_EVENTS = ('schedule', 'workflow_dispatch')
+FAILED_CONCLUSIONS = ('failure', 'cancelled', 'timed_out', 'action_required', 'startup_failure')
 
 
 def timestamp(value: str) -> datetime:
@@ -167,8 +179,45 @@ def runner_status(snapshot: dict | None, expected: dict, now: datetime, version:
     return result
 
 
+def signal_status(snapshot: dict | None, expected: dict, now: datetime) -> list[dict]:
+    if not isinstance(snapshot, dict) or not bound(snapshot, expected) or snapshot.get('schemaVersion') != 1:
+        return [row(name, 'unknown', 'No bound release-signal snapshot for this run attempt.', spec['action'])
+                for name, spec in SIGNALS.items()]
+    signals = snapshot.get('signals', {})
+    result = []
+    for name, spec in SIGNALS.items():
+        item = signals.get(name) if isinstance(signals, dict) else None
+        if not isinstance(item, dict) or item.get('collectionError'):
+            result.append(row(name, 'unknown', 'Actions history could not be queried.', 'Check Actions read access and retry the readiness workflow.'))
+            continue
+        if not item.get('runId'):
+            status = 'warning' if name == 'Signed release rehearsal' else 'unknown'
+            result.append(row(name, status, f"No completed {spec['workflow']} run on main from a schedule or manual dispatch.", spec['action']))
+            continue
+        try:
+            completed = timestamp(item.get('completedAt'))
+        except (ValueError, TypeError):
+            result.append(row(name, 'unknown', 'Run completion time is missing or invalid.', spec['action']))
+            continue
+        commit = str(item.get('commitSha', ''))
+        where = f"run {item['runId']} attempt {item.get('runAttempt')} at {commit[:12]}, completed {completed.isoformat()}"
+        where += ' (candidate commit)' if commit == expected['commitSha'] else ' (earlier main commit)'
+        conclusion = item.get('conclusion')
+        if conclusion in FAILED_CONCLUSIONS:
+            failed = ', '.join(str(job) for job in item.get('failedJobs', [])) or 'not reported'
+            result.append(row(name, 'blocked', f'{conclusion}: {where}. Failed jobs: {failed}.', spec['action']))
+        elif conclusion != 'success':
+            result.append(row(name, 'unknown', f'Unexpected conclusion {conclusion!r}: {where}.', spec['action']))
+        elif now - completed > timedelta(days=spec['maxAgeDays']):
+            result.append(row(name, 'unknown', f"Last success is older than {spec['maxAgeDays']} days: {where}.", spec['action']))
+        else:
+            result.append(row(name, 'ready', f'Succeeded: {where}.'))
+    return result
+
+
 def report(mode: str, needs: dict, expected: dict, signing: dict | None, gate: dict | None,
-           runners: dict | None, now: datetime, warning_days: int = 30, version: str | None = None) -> dict:
+           runners: dict | None, now: datetime, warning_days: int = 30, version: str | None = None,
+           signals: dict | None = None) -> dict:
     rows = []
     if mode == 'coordinator':
         for name in sorted(GATES):
@@ -182,6 +231,8 @@ def report(mode: str, needs: dict, expected: dict, signing: dict | None, gate: d
         rows.append(promotion_status(gate, expected))
     else:
         rows.extend(runner_status(runners, expected, now, version))
+        if signals is not None:
+            rows.extend(signal_status(signals, expected, now))
     resumed = (mode == 'coordinator' and isinstance(gate, dict) and gate.get('schemaVersion') == 2
                and str(gate.get('runAttempt')) != expected['runAttempt']
                and promotion_status(gate, expected)['status'] == 'ready'
@@ -265,6 +316,43 @@ def collect_runners(repository: str, expected: dict, now: datetime) -> dict:
     return snapshot
 
 
+def collect_signals(repository: str, expected: dict, now: datetime) -> dict:
+    if not re.fullmatch('[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', repository):
+        raise ValueError('Expected owner/repository.')
+    signals = {}
+    for name, spec in SIGNALS.items():
+        try:
+            response = gh_json(f"repos/{repository}/actions/workflows/{spec['workflow']}/runs?branch=main&status=completed&per_page=30")
+            runs = response['workflow_runs']
+            if not isinstance(runs, list):
+                raise ValueError('Invalid run response.')
+            found = {}
+            for run in runs:
+                if (run.get('event') not in SIGNAL_EVENTS or run.get('head_repository', {}).get('full_name') != repository
+                        or run.get('conclusion') in (None, 'skipped', 'neutral')):
+                    continue
+                run_id, attempt = str(run['id']), str(run['run_attempt'])
+                identity(run['head_sha'], run_id, attempt)
+                jobs = gh_json(f'repos/{repository}/actions/runs/{run_id}/attempts/{attempt}/jobs?per_page=100')['jobs']
+                conclusion = run['conclusion']
+                if spec['job']:
+                    job = next((job for job in jobs if job.get('name') == spec['job']), None)
+                    if job is None or job.get('conclusion') in (None, 'skipped'):
+                        continue
+                    conclusion = job['conclusion']
+                    jobs = [job]
+                elif all(job.get('conclusion') in ('skipped', None) for job in jobs):
+                    continue  # An opt-in rehearsal that never left eligibility is not evidence.
+                found = dict(runId=run_id, runAttempt=attempt, commitSha=run['head_sha'], event=run['event'],
+                             conclusion=conclusion, completedAt=run.get('updated_at'),
+                             failedJobs=sorted(str(job.get('name')) for job in jobs if job.get('conclusion') in FAILED_CONCLUSIONS))
+                break
+            signals[name] = found
+        except (subprocess.SubprocessError, OSError, ValueError, KeyError, TypeError):
+            signals[name] = dict(collectionError=True)
+    return dict(schemaVersion=1, **expected, observedAt=now.isoformat(), signals=signals)
+
+
 def read_receipt(directory: Path, filename: str) -> dict | None:
     files = list(directory.rglob(filename)) if directory.exists() else []
     if not files:
@@ -280,7 +368,7 @@ def read_receipt(directory: Path, filename: str) -> dict | None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=('collect-runners', 'summary'))
+    parser.add_argument('command', choices=('collect-runners', 'collect-signals', 'summary'))
     parser.add_argument('--mode', choices=('coordinator', 'preflight'), default='preflight')
     parser.add_argument('--evidence-dir', type=Path, default=Path('artifacts/readiness-input'))
     parser.add_argument('--output', type=Path, required=True)
@@ -294,13 +382,16 @@ def main() -> int:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     if args.command == 'collect-runners':
         payload = collect_runners(os.environ['GITHUB_REPOSITORY'], expected, now)
+    elif args.command == 'collect-signals':
+        payload = collect_signals(os.environ['GITHUB_REPOSITORY'], expected, now)
     else:
         needs = json.loads(os.environ.get('RELEASE_NEEDS', '{}'))
         if not isinstance(needs, dict):
             raise ValueError('Release dependencies must be an object.')
         payload = report(args.mode, needs, expected, read_receipt(args.evidence_dir, 'signing.json'),
                          read_receipt(args.evidence_dir, 'release-gate-evidence.json'),
-                         read_receipt(args.evidence_dir, 'runners.json'), now, args.warning_days, args.version)
+                         read_receipt(args.evidence_dir, 'runners.json'), now, args.warning_days, args.version,
+                         (read_receipt(args.evidence_dir, 'signals.json') or {}) if args.mode == 'preflight' else None)
         rendered = markdown(payload)
         args.output.with_suffix('.md').write_text(rendered, encoding='utf-8')
         if os.environ.get('GITHUB_STEP_SUMMARY'):

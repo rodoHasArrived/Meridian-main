@@ -711,7 +711,8 @@ public sealed partial class PaperFinancingPostingTests
 
     private static Dictionary<string, string> RolloverFileHashes(string root) => Directory
         .EnumerateFiles(root, "*", SearchOption.AllDirectories)
-        .Where(path => !string.Equals(Path.GetFileName(path), "writer.lock", StringComparison.Ordinal))
+        .Where(path => !string.Equals(Path.GetFileName(path), "writer.lock", StringComparison.Ordinal)
+            && !string.Equals(Path.GetFileName(path), WriteAheadLog.OwnerLockFileName, StringComparison.Ordinal))
         .ToDictionary(path => Path.GetRelativePath(root, path),
             path => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))), StringComparer.Ordinal);
 
