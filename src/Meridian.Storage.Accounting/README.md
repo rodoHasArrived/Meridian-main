@@ -6,10 +6,16 @@ module_id: SRC-STORAGE-ACCOUNTING
 path: src/Meridian.Storage.Accounting
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Storage.Accounting
+
+Forward ledger migration 083 adds statement-level `TRUNCATE` guards to retained external-GL
+mapping revisions, posting packages, decisions and provider receipts. Direct and cascading
+truncation refuse with the existing immutable-evidence error. Ordinary appended mapping revisions,
+reviewed approvals and outbox status/lease transitions retain their existing authority and behavior.
+`ExternalGlPostingPostgresTests` exercises those guards on isolated synthetic schemas.
 
 The linked native intercompany registry retains optional structured legal declarations in its
 existing PostgreSQL JSONB state, approved revisions, audit snapshots and command receipts. New
@@ -171,3 +177,7 @@ Preserve database transaction boundaries, migration hashes and tenant/accounting
 
 The external GL posting migration adds the retained package, decision, outbox and receipt
 tables. Monthly and fiscal close check confirmation in the transaction for books that opt in.
+
+## Complete journal selections
+
+`LedgerJournalExportSelection` selects complete journals from one book/period reporting capture. With no date bounds, retained period membership includes late postings whose effective dates precede the period. Supplying either bound enables an explicit effective-date window within the period, with the missing bound taken from the period boundary. Explicit IDs must all exist in the selected population; no line filtering can silently unbalance a journal. The source digest binds original raw values and the period version independently of external account labels or output format. Canonical JSON property ordering preserves dictionary equivalence without hashing formula-escaped cells. CSV uses explicit CRLF and retains invariant decimal precision. Focused coverage lives in `LedgerJournalExportSelectionTests` and `LedgerJournalExporterTests`.

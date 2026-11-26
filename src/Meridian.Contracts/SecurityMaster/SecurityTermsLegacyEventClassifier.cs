@@ -12,9 +12,10 @@ namespace Meridian.Contracts.SecurityMaster;
 /// an untagged payload with a precise error. Migration 068 declared the family on every current-state
 /// row and its <c>ck_securities_terms_format_declared</c> constraint refuses new untagged rows, but
 /// <c>security_events</c> is append-only (migration 059) and retained snapshots keep their pre-tag
-/// bytes, so event and snapshot decoding still meets untagged retained terms. Only that decoding —
-/// <c>SecurityMasterMapping.FromEconomicPayload</c> and the rebuild paths fed by it — classifies them
-/// here, and only in memory: nothing is ever written back to an event.
+/// bytes, so event, snapshot and immutable cash-flow receipt decoding still meets untagged terms.
+/// Only those explicit retained decoding boundaries — <c>SecurityMasterMapping.FromEconomicPayload</c>,
+/// its rebuild paths and receipt replay after original content verification — classify them here,
+/// and only in memory: nothing is ever written back to retained evidence.
 /// </para>
 /// <para>
 /// The rule is frozen with the population it classifies and must never grow: a profile envelope

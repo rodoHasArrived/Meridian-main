@@ -6,26 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## FundStructureTenantBackfillException
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillException</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:22](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L22).
-
-```csharp
-public sealed record FundStructureTenantBackfillException(Guid NodeId, string NodeKind, string Reason, IReadOnlyList<string> CandidateTenantIds);
-```
-
-## FundStructureTenantBackfillReceipt
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillReceipt</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:28](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L28).
-
-```csharp
-public sealed record FundStructureTenantBackfillReceipt(Guid RunId, string PlanHash, string OperatorId, string ReviewReference, DateTimeOffset AppliedAt, int StampedRows, int QuarantinedRows, JsonElement Plan);
-```
-
 ## FundStructureTenantBackfillRow
 
 Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillRow</code>. Kind: `record`.
@@ -598,22 +578,6 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Integrations.FileProviderIntegrationManifestStore</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.ActorFlags.cs:10](../../../../src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.ActorFlags.cs#L10).
-
-Append-only actor flags (IProviderIntegrationActorFlagStore). Flags live in their own category and never touch the flagged record: manifest versions stay immutable and digest-verified.
-
-```csharp
-public sealed partial class FileProviderIntegrationManifestStore : IProviderIntegrationActorFlagStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderIntegrationStoredActorValue&gt;&gt; ScanStoredActorValuesAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.ActorFlags.cs:23](../../../../src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.ActorFlags.cs#L23) |  |
-| <code>public async Task&lt;bool&gt; TryAppendActorFlagAsync(ProviderIntegrationActorFlagDto flag, CancellationToken ct = default);</code> | [src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.ActorFlags.cs:111](../../../../src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.ActorFlags.cs#L111) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderIntegrationActorFlagDto&gt;&gt; ListActorFlagsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.ActorFlags.cs:133](../../../../src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.ActorFlags.cs#L133) |  |
-
 Source: [src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.cs:22](../../../../src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.cs#L22).
 
 File-backed provider-integration manifest, connection, payload, quarantine, and staging store.
@@ -1116,10 +1080,45 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Ledger.AtomicLotReferenceVersions</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:513](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L513).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:504](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L504).
 
 Approved reference versions bound to a new acquisition or disposal command.
 
 ```csharp
 public sealed record AtomicLotReferenceVersions(long SecurityMasterVersion, long BookPositionVersion);
 ```
+
+## AtomicTaxLotJournalCommand
+
+Qualified name: <code>Meridian.Storage.Ledger.AtomicTaxLotJournalCommand</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:506](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L506).
+
+```csharp
+public sealed record AtomicTaxLotJournalCommand(Guid MutationBatchId, Guid LedgerBookId, LedgerJournalEntryWrite Journal, Guid SourceEventId, string IdempotencyKey, string CanonicalFingerprint, long ExpectedPeriodVersion, AtomicTaxLotMutationKind MutationKind, IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence, LedgerTaxLotRecord? AcquisitionLot = null, IReadOnlyList<LedgerTaxLotDisposalSelection>? DisposalSelections = null, Guid? CorrectsMutationBatchId = null, string? ReliefMethod = null, string? PolicyRevision = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? DisposalSalePrice = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? Amortization = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] OpenLotDirection Direction = OpenLotDirection.Long, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] AtomicLotReferenceVersions? ReferenceVersions = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static AtomicTaxLotJournalCommand Create(Guid mutationBatchId, Guid ledgerBookId, LedgerJournalEntryWrite journal, Guid sourceEventId, string idempotencyKey, long expectedPeriodVersion, AtomicTaxLotMutationKind mutationKind, IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; retainedEvidence, LedgerTaxLotRecord? acquisitionLot = null, IReadOnlyList&lt;LedgerTaxLotDisposalSelection&gt;? disposalSelections = null, Guid? correctsMutationBatchId = null, string? reliefMethod = null, string? policyRevision = null, decimal? disposalSalePrice = null, Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? amortization = null, Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? corporateAction = null, Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? capitalReturn = null, OpenLotDirection direction = OpenLotDirection.Long, AtomicLotReferenceVersions? referenceVersions = null, Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? factorPaydown = null);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:536](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L536) |  |
+| <code>public AtomicTaxLotJournalCommand WithComputedFingerprint() =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:583](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L583) |  |
+
+## AtomicTaxLotJournalFingerprint
+
+Qualified name: <code>Meridian.Storage.Ledger.AtomicTaxLotJournalFingerprint</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs:16](../../../../src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs#L16).
+
+Produces the stable identity for an atomic journal/tax-lot command. The supplied fingerprint is deliberately excluded, so AtomicTaxLotJournalCommand.WithComputedFingerprint can never recursively hash an already populated value.
+
+```csharp
+public static class AtomicTaxLotJournalFingerprint
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string Compute(AtomicTaxLotJournalCommand command);</code> | [src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs:20](../../../../src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs#L20) |  |

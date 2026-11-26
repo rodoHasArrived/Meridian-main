@@ -636,18 +636,20 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         wal2.CorruptionDetected += count => Interlocked.Add(ref corruptionSignals, count);
 
         var sink = new FaultSink();
-        await using var pipeline = new EventPipeline(sink, capacity: 100, enablePeriodicFlush: false, wal: wal2);
+        await using (var pipeline = new EventPipeline(sink, capacity: 100, enablePeriodicFlush: false, wal: wal2))
+        {
+            await pipeline.RecoverAsync();
 
-        await pipeline.RecoverAsync();
-
-        sink.AppendedEvents.Should().ContainSingle("the healthy record must still be replayed");
-        Interlocked.Read(ref corruptionSignals).Should().BeGreaterThanOrEqualTo(1,
-            "Alert mode must raise the corruption signal for an undeserializable payload");
-        wal2.CorruptedRecordCount.Should().BeGreaterThanOrEqualTo(1,
-            "the semantic payload failure must be counted as corruption, never dropped silently");
+            sink.AppendedEvents.Should().ContainSingle("the healthy record must still be replayed");
+            Interlocked.Read(ref corruptionSignals).Should().BeGreaterThanOrEqualTo(1,
+                "Alert mode must raise the corruption signal for an undeserializable payload");
+            wal2.CorruptedRecordCount.Should().BeGreaterThanOrEqualTo(1,
+                "the semantic payload failure must be counted as corruption, never dropped silently");
+        }
 
         // The trailing poison record is committed past after its one signal: a fresh
-        // recovery finds nothing to replay or re-alert on.
+        // recovery (after the first pipeline stopped and released the WAL directory) finds
+        // nothing to replay or re-alert on.
         var wal3 = new WriteAheadLog(walDir, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,

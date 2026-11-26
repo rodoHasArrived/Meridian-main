@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Execution.Interfaces;
+using Meridian.Contracts.Operations;
 
 namespace Meridian.Execution.Adapters;
 
@@ -26,6 +27,9 @@ public sealed class LiveMarketDataCache : ILiveFeedAdapter
         LOBSnapshot? OrderBook)
     {
         public static readonly SymbolMarketState Empty = new(null, null, null, null);
+        public IReadOnlyList<MarketDataInputEvidence>? QuoteEvidence { get; init; }
+        public IReadOnlyList<MarketDataInputEvidence>? TradeEvidence { get; init; }
+        public IReadOnlyList<MarketDataInputEvidence>? BarEvidence { get; init; }
     }
 
     private readonly ConcurrentDictionary<string, SymbolMarketState> _states = new(StringComparer.OrdinalIgnoreCase);
@@ -44,20 +48,28 @@ public sealed class LiveMarketDataCache : ILiveFeedAdapter
 
     /// <summary>Records the most recent trade tick for a symbol.</summary>
     public void RecordTrade(string symbol, Trade trade)
+        => RecordTrade(symbol, trade, null);
+
+    public void RecordTrade(string symbol, Trade trade, IReadOnlyList<MarketDataInputEvidence>? evidence)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
         ArgumentNullException.ThrowIfNull(trade);
         _subscribedSymbols.TryAdd(symbol, 0);
-        Mutate(symbol, trade, static (state, value) => state with { Trade = value });
+        Mutate(symbol, (Payload: trade, Evidence: MarketDataInputEvidenceTags.Freeze(evidence)),
+            static (state, value) => state with { Trade = value.Payload, TradeEvidence = value.Evidence });
     }
 
     /// <summary>Records the most recent best-bid/offer quote for a symbol.</summary>
     public void RecordQuote(string symbol, BboQuotePayload quote)
+        => RecordQuote(symbol, quote, null);
+
+    public void RecordQuote(string symbol, BboQuotePayload quote, IReadOnlyList<MarketDataInputEvidence>? evidence)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
         ArgumentNullException.ThrowIfNull(quote);
         _subscribedSymbols.TryAdd(symbol, 0);
-        Mutate(symbol, quote, static (state, value) => state with { Quote = value });
+        Mutate(symbol, (Payload: quote, Evidence: MarketDataInputEvidenceTags.Freeze(evidence)),
+            static (state, value) => state with { Quote = value.Payload, QuoteEvidence = value.Evidence });
     }
 
     /// <summary>Records the most recent Level-2 order book snapshot for a symbol.</summary>
@@ -71,11 +83,15 @@ public sealed class LiveMarketDataCache : ILiveFeedAdapter
 
     /// <summary>Records the most recent completed bar for a symbol.</summary>
     public void RecordBar(string symbol, HistoricalBar bar)
+        => RecordBar(symbol, bar, null);
+
+    public void RecordBar(string symbol, HistoricalBar bar, IReadOnlyList<MarketDataInputEvidence>? evidence)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
         ArgumentNullException.ThrowIfNull(bar);
         _subscribedSymbols.TryAdd(symbol, 0);
-        Mutate(symbol, bar, static (state, value) => state with { Bar = value });
+        Mutate(symbol, (Payload: bar, Evidence: MarketDataInputEvidenceTags.Freeze(evidence)),
+            static (state, value) => state with { Bar = value.Payload, BarEvidence = value.Evidence });
     }
 
     /// <inheritdoc/>
@@ -97,7 +113,8 @@ public sealed class LiveMarketDataCache : ILiveFeedAdapter
     public MarketDataSnapshot GetSnapshot(string symbol)
     {
         var state = GetState(symbol);
-        return new MarketDataSnapshot(state.Quote, state.Trade, state.Bar);
+        return new MarketDataSnapshot(state.Quote, state.Trade, state.Bar)
+        { QuoteEvidence = state.QuoteEvidence, TradeEvidence = state.TradeEvidence, BarEvidence = state.BarEvidence };
     }
 
     private SymbolMarketState GetState(string symbol) =>

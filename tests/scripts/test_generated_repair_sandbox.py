@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib.util
 import hashlib
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -217,6 +218,40 @@ class SandboxTests(unittest.TestCase):
         os.link(external, self.raw / "report.json")
         with self.assertRaises(ValueError):
             sandbox.collect_exports(self.raw, self.output)
+
+    def test_review_required_is_a_neutral_outcome_with_a_step_summary(self):
+        report = {"successful": False, "status": "review_required",
+                  "conflicts": ["docs/a.md", "`evil`\n## injected"],
+                  "reviewed_hashes": {"review_required": {"SRC-APP": "Merged module differs\nfrom review"}}}
+        self.output.mkdir()
+        (self.output / "report.json").write_text(json.dumps(report))
+        summary = self.root / "summary.md"
+        with mock.patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": str(summary)}):
+            self.assertTrue(sandbox.neutral_review_outcome(sandbox.REVIEW_REQUIRED_EXIT, self.output))
+        text = summary.read_text()
+        self.assertIn("Generated repair needs review", text)
+        self.assertIn("`docs/a.md`", text)
+        self.assertIn("`SRC-APP`: `Merged module differs from review`", text)
+        # Untrusted values stay inert single-line code: no new heading, no escaping backticks.
+        self.assertNotIn("\n## injected", text)
+        self.assertIn("`'evil' ## injected`", text)
+
+    def test_only_an_orderly_review_required_exit_is_neutral(self):
+        self.output.mkdir()
+        cases = [(1, {"successful": False, "status": "generation_failed"}),
+                 (1, {"successful": False, "status": "dependency_failure"}),
+                 (1, {"successful": True, "status": "review_required"}),
+                 (2, {"successful": False, "status": "review_required"}),
+                 (125, {"successful": False, "status": "review_required"}),
+                 (1, ["review_required"])]
+        for code, report in cases:
+            with self.subTest(code=code, report=report):
+                (self.output / "report.json").write_text(json.dumps(report))
+                self.assertFalse(sandbox.neutral_review_outcome(code, self.output))
+        (self.output / "report.json").write_text("not json")
+        self.assertFalse(sandbox.neutral_review_outcome(1, self.output))
+        (self.output / "report.json").unlink()
+        self.assertFalse(sandbox.neutral_review_outcome(1, self.output))
 
     def test_oversized_or_unexpected_files_fail_before_upload(self):
         (self.raw / "repair.patch").write_text("123")

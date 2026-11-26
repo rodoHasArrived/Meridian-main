@@ -11,6 +11,42 @@ namespace Meridian.Wpf.Tests.ViewModels;
 public sealed class StrategyRunDetailViewModelTests
 {
     [Fact]
+    public void QualityWarningPresentation_PreservesAffectedFillsAndUnavailableAssessmentFields()
+    {
+        var rows = StrategyRunDetailViewModel.BuildReplayQualityWarnings([
+            new Meridian.Contracts.Operations.MarketDataQualityWarningDto("Repaired", "Opening fill used repaired data.", 2,
+                [new Meridian.Contracts.Operations.MarketDataInputEvidence(ProviderId: "synthetic", Repaired: true,
+                    RepairReceiptId: "repair-receipt-1", QualityScore: .7, QualityThreshold: .8, AssessmentFrom: new DateOnly(2026, 11, 1), AssessmentTo: new DateOnly(2026, 11, 20))])
+        ]);
+        rows.Should().ContainSingle();
+        rows[0].Kind.Should().Be("Repaired data");
+        rows[0].Message.Should().Contain("Affected fills: 2");
+        rows[0].Evidence.Should().Contain("repair-receipt-1").And.Contain("gap-filled Unknown").And.Contain("2026-11-01 to 2026-11-20").And.Contain("retained threshold 0.8");
+    }
+    [Fact]
+    public async Task PaperRun_WithOnlyUnknownInputQuality_OpensExistingEvidencePanel()
+    {
+        var (viewModel, store) = CreateViewModelWithStore();
+        var run = StrategyRunWorkspaceTestData.BuildRun("paper-input-quality");
+        run = run with
+        {
+            RunType = Meridian.Strategies.Models.RunType.Paper,
+            Metrics = run.Metrics! with { Fills = [new Meridian.Backtesting.Sdk.FillEvent(
+                Guid.NewGuid(), Guid.NewGuid(), "AAPL", 1, 40m, 0m, run.StartedAt)] }
+        };
+        await store.RecordRunAsync(run);
+
+        await viewModel.LoadRunAsync(run.RunId);
+
+        viewModel.ShowReplayEvidence.Should().BeTrue();
+        viewModel.ReplayProvenance.Should().NotBeNull();
+        viewModel.ReplayProvenance!.SourceMix.Should().BeEmpty();
+        viewModel.ReplayProvenance.Revisions.Should().BeEmpty();
+        viewModel.ReplayQualityWarnings.Should().ContainSingle(row => row.Kind == "Unknown source quality");
+        viewModel.ReplayQualityWarnings[0].Message.Should().Contain("Affected fills: 1");
+    }
+
+    [Fact]
     public void InitialState_ShowsRunSelectionGuidanceAndDisablesDrillIns()
     {
         var viewModel = CreateEmptyViewModel();

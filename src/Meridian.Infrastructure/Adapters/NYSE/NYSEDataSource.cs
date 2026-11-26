@@ -483,7 +483,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         CancellationToken ct = default)
     {
         var adjusted = await GetAdjustedDailyBarsAsync(symbol, from, to, ct).ConfigureAwait(false);
-        return adjusted.Select(b => b.ToHistoricalBar(preferAdjusted: false)).ToList();
+        return adjusted.Select(b => b.ToHistoricalBar()).ToList();
     }
 
     public Task<IReadOnlyList<AdjustedHistoricalBar>> GetAdjustedDailyBarsAsync(

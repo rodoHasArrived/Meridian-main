@@ -2,26 +2,11 @@
 
 # `security-master-contracts` data objects - page 7 of 8
 
-Objects 481-560 of 613. References crossing pages remain available in the dependency manifest.
+Objects 481-560 of 615. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
-    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendRequestDto["SecurityMasterCorporateActionAppendRequestDto"] {
-        +string Actor
-        +CorporateActionDto CorporateAction
-        +string? CorrelationId
-        +string? FundProfileId
-        +string? Reason
-        +Guid SecurityId
-        +string? SourceRecordId
-        +string SourceSystem
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto["SecurityMasterCorporateActionAppendResultDto"] {
-        +SecurityMasterCorporateActionAuditDto Audit
-        +CorporateActionDto CorporateAction
-        +SecurityMasterCorporateActionRestatementDto? Restatement
-    }
     class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAuditDto["SecurityMasterCorporateActionAuditDto"] {
         +string Actor
         +string AuditId
@@ -272,7 +257,16 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityRecordRateUnit["SecurityRecordRateUnit"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityResolutionStatus["SecurityResolutionStatus"] {
+    class Meridian_Contracts_SecurityMaster_SecurityRecurringAccrualPolicies["SecurityRecurringAccrualPolicies"] {
+        +IReadOnlyList~SecurityRecurringAccrualPolicy~ All
+        +SecurityRecurringAccrualPolicy ExistingFixedIncome
+        +SecurityRecurringAccrualPolicy FixedBulletActual365
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityRecurringAccrualPolicy["SecurityRecurringAccrualPolicy"] {
+        +string Id
+        +SecurityRecurringAccrualProfile Profile
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityRecurringAccrualProfile["SecurityRecurringAccrualProfile"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityScheduleDecimal["SecurityScheduleDecimal"] {
     }
@@ -405,8 +399,6 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityUnderlyingRole["SecurityUnderlyingRole"] {
     }
-    Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAuditDto
-    Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionRestatementDto
     Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionBlockerDto
     Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionDisposition
     Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionReportDto --> Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionCandidateDto
@@ -428,6 +420,8 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityRatePointEvidenceDto --> Meridian_Contracts_SecurityMaster_SecurityRateObservationDto
     Meridian_Contracts_SecurityMaster_SecurityRawPriceDto --> Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence
     Meridian_Contracts_SecurityMaster_SecurityRawPriceDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
+    Meridian_Contracts_SecurityMaster_SecurityRecurringAccrualPolicies --> Meridian_Contracts_SecurityMaster_SecurityRecurringAccrualPolicy
+    Meridian_Contracts_SecurityMaster_SecurityRecurringAccrualPolicy --> Meridian_Contracts_SecurityMaster_SecurityRecurringAccrualProfile
     Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult --> Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic
     Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult --> Meridian_Contracts_SecurityMaster_SecuritySchedulePresence
     Meridian_Contracts_SecurityMaster_SecurityScheduleValidationException --> Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic

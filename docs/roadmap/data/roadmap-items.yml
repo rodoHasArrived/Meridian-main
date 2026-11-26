@@ -55,11 +55,11 @@ items:
     workspace:
       - Data
     owner_lane: Data Confidence and Validation
-    status: planned
-    health: yellow
+    status: in_progress
+    health: on_track
     priority: low
-    evidence_posture: planned_evidence
-    status_note: No alignment execution or preview service is wired into the host. Both routes answer 501 and create nothing; the WPF Time Series Alignment page disables its run action and says alignment is unavailable once the host reports the 501. The browser workstation has no alignment screen.
+    evidence_posture: in_progress
+    status_note: Shared alignment routes compute retained archive rows and provider differences. WPF previews and exports the results. Browser adoption remains sequenced under W8-WPF-PARITY-001.
     decision_ids: []
     pr_references: []
     exit_criteria:
@@ -68,6 +68,8 @@ items:
       - Preview estimates are computed from the stored data, not fabricated.
       - Browser and WPF surfaces consume the same alignment routes, or the browser gap is sequenced under W8-WPF-PARITY-001.
     source_modules:
+      - SRC-CONTRACTS
+      - SRC-STORAGE
       - SRC-UI-SHARED
       - SRC-UI-SERVICES
       - SRC-WPF
@@ -76,13 +78,15 @@ items:
     evidence:
       - type: source
         path: src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/TimeSeriesAlignmentEndpointsTests.cs
       - type: source
         path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
       - type: source
         path: src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs
       - type: test
         path: tests/Meridian.Wpf.Tests/ViewModels/TimeSeriesAlignmentViewModelTests.cs
-    last_reviewed: 2026-11-19
+    last_reviewed: 2026-11-20
 
   - id: W1-DATA-DEDUP-001
     title: Archive deduplication maintenance task
@@ -2774,7 +2778,7 @@ items:
     last_reviewed: 2026-11-14
 
   - id: W11-PACK-001
-    title: Governed contract-pack lifecycle on the Security Master asset-class registry
+    title: Runtime contract-pack governance for profile-backed Security Master classes
     wave: W11
     sequence: 5
     stage_gates:
@@ -2787,16 +2791,18 @@ items:
     health: green
     priority: medium
     evidence_posture: planned_evidence
-    status_note: Govern asset-class contract packs from the existing registry; planned scope retains the recorded migration and acceptance requirements.
+    status_note: Narrowed under DEC-PACK-SPLIT-001 to runtime packs for profile-backed (CustomAsset-style) classes. Compiled-class plumbing moved to W11-PACK-002. Planned; no implementation is claimed.
     decision_ids:
     - DEC-CHARTER-DIRECTION-001
+    - DEC-PACK-SPLIT-001
     pr_references: []
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W11-PACK-001.md
     exit_criteria:
-      - A contract pack is a versioned, content-hashed unit that declares its asset class, term schema, lifecycle events, cash-flow behavior, valuation methods, accounting rule bindings, validations, and reporting taxonomy, and the existing asset-class registry is its first source.
+      - A contract pack is a versioned, content-hashed unit for a profile-backed (CustomAsset-style) class. It declares the term schema, lifecycle events, cash-flow behavior, valuation methods, accounting rule bindings, validations and reporting taxonomy, and the existing custom-profile and asset-pack registries are its first source.
       - A pack moves through Draft, Tested, Reviewed, Approved, Active, Superseded, and Retired, and activation requires passing pack tests and a recorded approval.
       - Records keep the pack version they were created under, so activating a new version never silently reinterprets existing terms; migrating records to a new version is an explicit, audited operation.
-      - The coverage tests that lock the registry to the F# SecurityKind union, validators, and storage writers extend to every active pack.
+      - Compiled SecurityKind classes are out of scope. They change through code review and the class plumbing tracked by W11-PACK-002, not through runtime activation, and a pack cannot claim a compiled class.
+      - The coverage tests that lock profile-backed packs to validators and storage writers extend to every active pack.
       - Roadmap status remains planned until this item links the pack contract, the lifecycle, the version-pinning behavior, and the activation and reinterpretation tests.
     source_modules:
       - SRC-DESIGN-INSTRUMENTS
@@ -2810,8 +2816,47 @@ items:
       - type: reference
         path: docs/product/meridian-design-document.md
       - type: reference
-        path: docs/architecture/security-master-extensibility-review.md
-    last_reviewed: 2026-10-16
+        path: docs/engineering/plans/security-master-class-plumbing-codegen.md
+    last_reviewed: 2026-11-25
+
+  - id: W11-PACK-002
+    title: Generated Security Master class plumbing from one declaration
+    wave: W11
+    sequence: 7
+    workspace:
+      - Data
+    owner_lane: Accounting and Ledger
+    status: accepted
+    health: green
+    priority: medium
+    evidence_posture: complete
+    status_note: Accepted by the owner (DEC-PACK-ACCEPT-001). SecurityAssetClassDeclarations generates five marked regions in src (decode now goes through the #3744 class-module registry), and a unit test fails on drift. Per-class semantic sites stay hand-written and are listed in the plan.
+    decision_ids:
+    - DEC-PACK-SPLIT-001
+    - DEC-PACK-CODEGEN-001
+    - DEC-PACK-ACCEPT-001
+    pr_references:
+    - 3760
+    exit_criteria:
+      - One declaration per class (SecurityAssetClassDeclarations), built on SecurityAssetTermsCodecBindings and SecurityAssetClassCatalog, generates the F# plumbing (SecurityKind union cases, AssetClassRegistry key arms and classification rows, flat-writer dispatch) and the C# SecurityAssetClassNames constants. The ToSecurityKind decode dispatch was generated until #3744 replaced it with the class-module codec registry; the declaration is now checked against SecurityAssetClassModules.
+      - The generated code is committed source between generated-region markers. SecurityClassPlumbingGenerationTests regenerates every region and fails when the committed text differs; MERIDIAN_ACCEPT_GENERATED_CODEC=1 writes the regenerated regions, as for the flat codec.
+      - The repository owner recorded the switch to generated code (DEC-PACK-CODEGEN-001). The declaration follows the F# union order; the catalog row order stays its hand-written presentation order and is checked as a set.
+      - Each remaining per-class site is listed in the plan as a deliberate semantic edit, not generated.
+      - The owner accepted the generated regions (DEC-PACK-ACCEPT-001) after Meridian CI / quality-gate passed on the PR head.
+    source_modules:
+      - SRC-CONTRACTS
+      - SRC-FSHARP
+      - SRC-APP
+    evidence:
+      - type: doc
+        path: docs/engineering/plans/security-master-class-plumbing-codegen.md
+      - type: source
+        path: src/Meridian.Contracts/SecurityMaster/SecurityAssetClassDeclarations.cs
+      - type: test
+        path: tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerationTests.cs
+      - type: test
+        path: tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerator.cs
+    last_reviewed: 2026-11-26
 
   - id: W11-EXEC-001
     title: Trading and Execution bounded-context ownership

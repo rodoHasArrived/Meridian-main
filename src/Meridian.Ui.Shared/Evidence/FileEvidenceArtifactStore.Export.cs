@@ -279,15 +279,19 @@ public sealed partial class FileEvidenceArtifactStore
                     StoragePublicationJsonContext.Default.StoragePublicationIntent), ct)
                 .ConfigureAwait(false);
             Directory.Move(_stagedPackageDirectory, _packageDirectory);
-            await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(_packageDirectory)!, CancellationToken.None)
+            // Strict until the index is published: the index move is the publication boundary.
+            // On a throw no index exists, so recovery removes the package and manifest under the
+            // durable intent and a retry publishes afresh.
+            await AtomicFileWriter.SyncDirectoryOrThrowAsync(Path.GetDirectoryName(_packageDirectory)!, CancellationToken.None)
                 .ConfigureAwait(false);
             ct.ThrowIfCancellationRequested();
             File.Move(Path.Combine(_stagingDirectory, "manifest.json"), _manifestPath, overwrite: false);
-            await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(_manifestPath)!, CancellationToken.None)
+            await AtomicFileWriter.SyncDirectoryOrThrowAsync(Path.GetDirectoryName(_manifestPath)!, CancellationToken.None)
                 .ConfigureAwait(false);
             ct.ThrowIfCancellationRequested();
             File.Move(Path.Combine(_stagingDirectory, "index.json"), _indexPath, overwrite: false);
             // Once visible, preserve evidence even if flushing or the reservation commit fails.
+            // Best effort: the index move has published the package.
             await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(_indexPath)!, CancellationToken.None)
                 .ConfigureAwait(false);
         }

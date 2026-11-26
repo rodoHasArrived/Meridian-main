@@ -1,6 +1,6 @@
 flowchart LR
   W1_DATA_001["W1-DATA-001\nW1 - done / green"]
-  W1_DATA_ALIGN_001["W1-DATA-ALIGN-001\nW1 - planned / yellow"]
+  W1_DATA_ALIGN_001["W1-DATA-ALIGN-001\nW1 - in_progress / on_track"]
   W1_DATA_001 --> W1_DATA_ALIGN_001
   W1_DATA_DEDUP_001["W1-DATA-DEDUP-001\nW1 - planned / yellow"]
   W1_DATA_ALIGN_001 --> W1_DATA_DEDUP_001
@@ -104,8 +104,10 @@ flowchart LR
   W11_SHADOW_001 --> W11_PACK_001
   W11_EXEC_001["W11-EXEC-001\nW11 - planned / green"]
   W11_PACK_001 --> W11_EXEC_001
+  W11_PACK_002["W11-PACK-002\nW11 - accepted / green"]
+  W11_EXEC_001 --> W11_PACK_002
   W12_BOOK_001["W12-BOOK-001\nW12 - planned / green"]
-  W11_EXEC_001 --> W12_BOOK_001
+  W11_PACK_002 --> W12_BOOK_001
   W12_CAPITAL_001["W12-CAPITAL-001\nW12 - in_progress / green"]
   W12_BOOK_001 --> W12_CAPITAL_001
   W12_CREDIT_001["W12-CREDIT-001\nW12 - planned / green"]

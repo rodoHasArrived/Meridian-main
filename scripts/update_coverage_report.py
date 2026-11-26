@@ -28,24 +28,39 @@ def _find_coverage_files(results_dir: Path) -> list[Path]:
     return list(results_dir.rglob("coverage.cobertura.xml"))
 
 
-def _parse_line_rate(xml_path: Path) -> float | None:
+def _collect_line_hits(xml_path: Path, hits: dict[tuple[str, int], bool]) -> bool:
+    """Merge one Cobertura file's per-line results into ``hits``; False when unreadable."""
     try:
-        tree = ET.parse(xml_path)
-        root = tree.getroot()
-        rate = root.attrib.get("line-rate")
-        if rate is not None:
-            return float(rate)
-    except Exception:
-        pass
-    return None
+        filename = ""
+        for event, element in ET.iterparse(xml_path, events=("start", "end")):
+            if event == "start":
+                if element.tag == "class":
+                    filename = element.attrib.get("filename", "")
+                continue
+            if element.tag == "line" and filename:
+                key = (filename, int(element.attrib["number"]))
+                hits[key] = hits.get(key, False) or int(element.attrib.get("hits", "0")) > 0
+            elif element.tag == "class":
+                # Coverage files for the whole solution are large; release parsed classes.
+                element.clear()
+    except (ET.ParseError, OSError, KeyError, ValueError):
+        return False
+    return True
 
 
-def _aggregate_coverage(files: list[Path]) -> float | None:
-    """Average line rate across all coverage files (simple aggregate)."""
-    rates = [r for f in files if (r := _parse_line_rate(f)) is not None]
-    if not rates:
+def _aggregate_coverage(files: list[Path]) -> tuple[float, int] | None:
+    """Line rate over the union of every instrumented line, and that line count.
+
+    Each test project writes its own Cobertura file and most of them instrument the same
+    production assemblies. Averaging the per-file rates weighted a 300-line assembly like a
+    300,000-line one and counted a line as uncovered once for every project that did not
+    reach it. A line is covered here when any project executed it.
+    """
+    hits: dict[tuple[str, int], bool] = {}
+    readable = [path for path in files if _collect_line_hits(path, hits)]
+    if not readable or not hits:
         return None
-    return sum(rates) / len(rates)
+    return sum(hits.values()) / len(hits), len(hits)
 
 
 def main() -> int:
@@ -61,12 +76,16 @@ def main() -> int:
     results_dir = REPO_ROOT / args.results_dir if not args.results_dir.is_absolute() else args.results_dir
 
     coverage_files = _find_coverage_files(results_dir)
-    rate = _aggregate_coverage(coverage_files)
+    aggregate = _aggregate_coverage(coverage_files)
     today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
 
-    if rate is not None:
+    if aggregate is not None:
+        rate, line_count = aggregate
         pct = f"{rate * 100:.1f}%"
-        summary_line = f"**Last run:** {today} — line coverage: **{pct}** ({len(coverage_files)} project(s))"
+        summary_line = (
+            f"**Last run:** {today} — line coverage: **{pct}** of {line_count:,} instrumented lines "
+            f"({len(coverage_files)} project(s))"
+        )
     else:
         summary_line = f"**Last run:** {today} — no coverage data found in `{results_dir}`"
 

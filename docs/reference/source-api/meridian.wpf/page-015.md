@@ -505,6 +505,16 @@ Declared public members:
 | <code>public SolidColorBrush? UsageColor { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:830](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L830) |  |
 | <code>public SolidColorBrush? StatusBackground { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:831](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L831) |  |
 
+## ReplayDataQualityWarningRow
+
+Qualified name: <code>Meridian.Wpf.ViewModels.ReplayDataQualityWarningRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:540](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L540).
+
+```csharp
+public sealed record ReplayDataQualityWarningRow(string Kind, string Message, string Evidence);
+```
+
 ## ReportingWorkspaceShellViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.ReportingWorkspaceShellViewModel</code>. Kind: `class`.
@@ -1219,160 +1229,6 @@ Source: [src/Meridian.Wpf/ViewModels/SecurityMaster/CashDividendAttestationViewM
 public sealed record CashDividendCaseChoice(Guid CaseId, string Label);
 ```
 
-## SecurityMasterExceptionCaseRow
-
-Qualified name: <code>Meridian.Wpf.ViewModels.SecurityMaster.SecurityMasterExceptionCaseRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:14](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L14).
-
-One exception case with the server&#x27;s SLA verdict and age.
-
-```csharp
-public sealed record SecurityMasterExceptionCaseRow(Guid CaseId, Guid? SecurityId, string Category, string RuleCode, string Severity, string Title, string Detail, string Status, string Assignee, string Sla, bool SlaBreached, string Age, bool IsOpen)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecurityMasterExceptionCaseRow From(SecurityMasterExceptionCaseQueueItemDto item) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:29](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L29) |  |
-| <code>public bool HasSecurity =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:44](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L44) |  |
-
-## SecurityMasterExceptionQueueViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.SecurityMaster.SecurityMasterExceptionQueueViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:52](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L52).
-
-The deployment-global Security Master exception queue (review D2): conflicts, identifier ambiguities and data-quality violations with SLA due dates and assignment. Sync asks the server to reconcile open cases with current conditions; the SLA verdict and age are the server&#x27;s, never recomputed here.
-
-```csharp
-public sealed class SecurityMasterExceptionQueueViewModel : BindableBase, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterExceptionQueueViewModel(ISecurityMasterReviewQueueApiClient client, Func&lt;Guid, Task&gt;? openSecurity = null, string? defaultAssignee = null);</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:65](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L65) |  |
-| <code>public IReadOnlyList&lt;string&gt; StatusFilters { get; } = [SecurityMasterExceptionCaseStatusDto.Open, SecurityMasterExceptionCaseStatusDto.Closed];</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:81](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L81) |  |
-| <code>public ObservableCollection&lt;SecurityMasterExceptionCaseRow&gt; Rows { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:82](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L82) |  |
-| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:83](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L83) |  |
-| <code>public IAsyncRelayCommand SyncCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:84](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L84) |  |
-| <code>public IAsyncRelayCommand AssignCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:85](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L85) |  |
-| <code>public IAsyncRelayCommand&lt;SecurityMasterExceptionCaseRow&gt; OpenSecurityCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:86](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L86) |  |
-| <code>public string StatusFilter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:88](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L88) |  |
-| <code>public SecurityMasterExceptionCaseRow? SelectedCase { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:107](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L107) |  |
-| <code>public string Assignee { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:114](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L114) | The principal to assign the selected case to. |
-| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:120](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L120) |  |
-| <code>public int BreachedCount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:134](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L134) |  |
-| <code>public bool IsLoaded { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L135) |  |
-| <code>public bool IsEmpty =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L136) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L137) |  |
-| <code>public string? ErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:138](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L138) |  |
-| <code>public bool HasError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L139) |  |
-| <code>public Task RefreshAsync() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:143](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L143) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs:288](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterExceptionQueueViewModel.cs#L288) |  |
-
-## SecurityMasterHeldAmendmentRow
-
-Qualified name: <code>Meridian.Wpf.ViewModels.SecurityMaster.SecurityMasterHeldAmendmentRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:14](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L14).
-
-One held amendment as served.
-
-```csharp
-public sealed record SecurityMasterHeldAmendmentRow(Guid HeldAmendmentId, Guid SecurityId, string SourceSystem, string DominatedFields, int ConflictCount, long HeldAtVersion, string HeldAt, string Status, string ClosedBy, bool CanDiscard)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecurityMasterHeldAmendmentRow From(SecurityMasterHeldAmendmentDto dto) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:26](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L26) |  |
-
-## SecurityMasterHeldAmendmentsViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.SecurityMaster.SecurityMasterHeldAmendmentsViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:45](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L45).
-
-Ingest amendments held by source ranking (Security Master review A2): a lower-ranked source tried to overwrite a value a higher-ranked source supplied, so the whole amendment was held. The operator adopts the held value through the conflict&#x27;s governed resolution (open the security and resolve the named conflict, which stages a draft) or discards the row. The desktop decides nothing about ranking.
-
-```csharp
-public sealed class SecurityMasterHeldAmendmentsViewModel : BindableBase, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterHeldAmendmentsViewModel(ISecurityMasterReviewQueueApiClient client, Func&lt;Guid, Task&gt;? openSecurity = null);</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:56](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L56) |  |
-| <code>public IReadOnlyList&lt;string&gt; StatusFilters { get; } = [SecurityMasterHeldAmendmentStatusDto.Held, SecurityMasterHeldAmendmentStatusDto.Replayed, SecurityMasterHeldAmendmentStatusDto.Discarded];</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:67](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L67) |  |
-| <code>public ObservableCollection&lt;SecurityMasterHeldAmendmentRow&gt; Rows { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:70](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L70) |  |
-| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:71](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L71) |  |
-| <code>public IAsyncRelayCommand&lt;SecurityMasterHeldAmendmentRow&gt; DiscardCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:72](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L72) |  |
-| <code>public IAsyncRelayCommand&lt;SecurityMasterHeldAmendmentRow&gt; OpenSecurityCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:73](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L73) |  |
-| <code>public string StatusFilter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:76](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L76) | A changed filter discards the loaded rows; reload to see the new population. |
-| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:93](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L93) |  |
-| <code>public bool IsLoaded { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:106](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L106) |  |
-| <code>public bool IsEmpty =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:107](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L107) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:108](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L108) |  |
-| <code>public string? ErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:109](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L109) |  |
-| <code>public bool HasError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:110](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L110) |  |
-| <code>public Task RefreshAsync() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:112](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L112) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs:214](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterHeldAmendmentsViewModel.cs#L214) |  |
-
-## SecurityMasterPendingRevisionRow
-
-Qualified name: <code>Meridian.Wpf.ViewModels.SecurityMaster.SecurityMasterPendingRevisionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs:12](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs#L12).
-
-One pending revision as the browser inbox shows it.
-
-```csharp
-public sealed record SecurityMasterPendingRevisionRow(Guid RevisionId, Guid SecurityId, SecurityMasterRevisionStateDto State, string Field, string ProposedValue, string DraftedBy, string Waiting, string? Justification, bool CanDiscard)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecurityMasterPendingRevisionRow From(SecurityMasterPendingRevisionDto dto) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs:23](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs#L23) |  |
-
-## SecurityMasterReviewInboxViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.SecurityMaster.SecurityMasterReviewInboxViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs:41](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs#L41).
-
-Desktop parity for the browser review inbox (Security Master review P5/D1): governed revisions awaiting action across every security, oldest first. Opening a row hands the security and revision to the passport editor so a reviewer who is not the drafter can approve or publish it; discarding withdraws an abandoned Draft or gate-rejected Submitted revision. Rows come from the shared route as served.
-
-```csharp
-public sealed class SecurityMasterReviewInboxViewModel : BindableBase, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string DiscardReason = &quot;Discarded from the review inbox.&quot;;</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs:43](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs#L43) |  |
-| <code>public SecurityMasterReviewInboxViewModel(ISecurityMasterReviewQueueApiClient client, Func&lt;SecurityMasterPendingRevisionRow, Task&gt;? openRevision = null);</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs:53](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs#L53) |  |
-| <code>public ObservableCollection&lt;SecurityMasterPendingRevisionRow&gt; Rows { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs:64](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs#L64) |  |
-| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs:65](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs#L65) |  |
-| <code>public IAsyncRelayCommand&lt;SecurityMasterPendingRevisionRow&gt; DiscardCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs:66](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs#L66) |  |
-| <code>public IAsyncRelayCommand&lt;SecurityMasterPendingRevisionRow&gt; OpenCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs:67](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs#L67) |  |
-| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs:69](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs#L69) |  |
-| <code>public bool IsLoaded { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs:82](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs#L82) |  |
-| <code>public bool IsEmpty =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs:83](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs#L83) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs:84](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs#L84) |  |
-| <code>public string? ErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs:85](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs#L85) |  |
-| <code>public bool HasError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs:86](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs#L86) |  |
-| <code>public Task RefreshAsync() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs:88](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs#L88) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs:191](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel.cs#L191) |  |
-
 ## SecurityMasterDeactivateViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SecurityMasterDeactivateViewModel</code>. Kind: `class`.
@@ -1424,3 +1280,419 @@ Declared public members:
 | <code>public SecurityMasterEditViewModel(WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService, ISecurityMasterService service, WpfServices.IDesktopAuthorizationSource? operatorContext = null, WpfServices.IDesktopMutationAuthorization? mutationAuthorization = null, Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy? governedTermAmendmentPolicy = null);</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterEditViewModel.cs:101](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterEditViewModel.cs#L101) |  |
 | <code>public static SecurityMasterEditViewModel CreateNew(WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService, ISecurityMasterService service, WpfServices.IDesktopAuthorizationSource? operatorContext = null, WpfServices.IDesktopMutationAuthorization? mutationAuthorization = null, Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy? governedTermAmendmentPolicy = null);</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterEditViewModel.cs:168](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterEditViewModel.cs#L168) |  |
 | <code>public void LoadForEdit(SecurityDetailDto dto);</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterEditViewModel.cs:189](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterEditViewModel.cs#L189) |  |
+
+## SecurityMasterViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SecurityMasterViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Assurance.cs:3](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Assurance.cs#L3).
+
+```csharp
+public sealed partial class SecurityMasterViewModel
+```
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Authorization.cs:14](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Authorization.cs#L14).
+
+The Security Master mutation gate, split out of the main view-model file like the bulk-import flow so the authorization posture reads in one piece. The desktop lane reaches Meridian.Contracts.SecurityMaster.ISecurityMasterService in-process with no endpoint filter in between, so these members are the only place the ModifySecurityMaster grant every HTTP mutation route requires can be enforced.
+
+```csharp
+public sealed partial class SecurityMasterViewModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool CanModifySecurityMaster =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Authorization.cs:26](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Authorization.cs#L26) | Whether this desktop session may mutate the Security Master golden record. Every HTTP route that mutates it requires UserPermission.ModifySecurityMaster; the desktop create, edit, deactivate, and file-import commands reach the same services in-process, so they are held to the same grant. Both halves of the gate must agree: the host posture must grant the permission (so a credential-free host whose MDC_ANONYMOUS_ROLE names a read-only role refuses) and the active desktop session must name an authorized operator to record the write against. Gates command enablement and is re-checked by every handler before the service call. |
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Conflicts.cs:25](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Conflicts.cs#L25).
+
+```csharp
+public sealed partial class SecurityMasterViewModel
+```
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.CorporateActions.cs:25](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.CorporateActions.cs#L25).
+
+```csharp
+public sealed partial class SecurityMasterViewModel
+```
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:30](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L30).
+
+ViewModel for the Security Master workstation page. Wraps SecurityMasterWorkstationDto-backed search and detail surfaced by the /api/workstation/security-master endpoints.
+
+```csharp
+public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ObservableCollection&lt;SecurityMasterWorkstationDto&gt; Results =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:99](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L99) |  |
+| <code>public ObservableCollection&lt;SecurityMasterWorkstationDto&gt; FilteredResults =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:101](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L101) |  |
+| <code>public ObservableCollection&lt;string&gt; AssetClassFilterOptions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:103](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L103) |  |
+| <code>public ObservableCollection&lt;string&gt; ProviderFilterOptions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:105](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L105) |  |
+| <code>public ObservableCollection&lt;CorporateActionDto&gt; CorporateActions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:107](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L107) |  |
+| <code>public ObservableCollection&lt;SecurityMasterConflict&gt; OpenConflicts =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:109](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L109) |  |
+| <code>public ObservableCollection&lt;SecurityConflictLaneGroup&gt; ConflictGroups =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:111](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L111) |  |
+| <code>public ObservableCollection&lt;SecurityMasterSourceCandidateDto&gt; ProvenanceCandidates =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:113](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L113) |  |
+| <code>public ObservableCollection&lt;SecurityMasterConflict&gt; FilteredConflicts =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:115](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L115) |  |
+| <code>public ObservableCollection&lt;SecurityMasterRecommendedActionDto&gt; RecommendedActions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:117](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L117) |  |
+| <code>public ObservableCollection&lt;SecurityMasterImpactLinkDto&gt; DownstreamImpactLinks =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:119](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L119) |  |
+| <code>public ObservableCollection&lt;SecurityMasterPresentationField&gt; CompanyProfileFields =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:121](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L121) |  |
+| <code>public ObservableCollection&lt;SecurityMasterPresentationField&gt; CompanyCoverageFields =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:123](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L123) |  |
+| <code>public ObservableCollection&lt;SecurityMasterPresentationField&gt; InstrumentPassportFields =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L125) |  |
+| <code>public ObservableCollection&lt;SecurityValidationIssueDto&gt; ValidationIssues =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L127) |  |
+| <code>public ObservableCollection&lt;SecurityMasterChangeHistoryItemDto&gt; ChangeHistoryItems =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L129) |  |
+| <code>public ObservableCollection&lt;SecurityMasterPresentationField&gt; ScheduleBookFields =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:131](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L131) |  |
+| <code>public ObservableCollection&lt;SecurityMasterScheduleEventDto&gt; ScheduleBookEvents =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L133) |  |
+| <code>public ObservableCollection&lt;SecurityMasterFactorPointDto&gt; ScheduleBookFactorHistory =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L135) |  |
+| <code>public ObservableCollection&lt;SecurityMasterScheduleProvenanceDto&gt; ScheduleBookProvenanceHistory =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L137) |  |
+| <code>public ObservableCollection&lt;SecurityMasterPresentationField&gt; OpenLotReadModelFields =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L139) |  |
+| <code>public ObservableCollection&lt;SecurityMasterOpenLotDto&gt; OpenLotRows =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:141](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L141) |  |
+| <code>public ObservableCollection&lt;SecurityMasterOpenLotProvenanceDto&gt; OpenLotProvenanceHistory =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:143](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L143) |  |
+| <code>public ObservableCollection&lt;SecurityMasterPrintSectionItem&gt; PrintSections =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:145](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L145) |  |
+| <code>public ObservableCollection&lt;SecurityMasterChecklistItem&gt; PrintChecklistItems =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L147) |  |
+| <code>public ObservableCollection&lt;SecurityMasterEvidenceItem&gt; PrintEvidenceItems =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:149](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L149) |  |
+| <code>public IReadOnlyList&lt;string&gt; CorpActTypes =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:154](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L154) | Static list of corporate action types available for recording. |
+| <code>public string SearchQuery { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:157](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L157) |  |
+| <code>public bool ActiveOnly { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:169](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L169) |  |
+| <code>public string SelectedAssetClassFilter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:181](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L181) |  |
+| <code>public string SelectedProviderFilter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L193) |  |
+| <code>public bool ShowMappingGapsOnly { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:205](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L205) |  |
+| <code>public bool IsLoading { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:217](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L217) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:229](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L229) |  |
+| <code>public SecurityMasterWorkstationDto? SelectedSecurity { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:237](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L237) |  |
+| <code>public string HistoryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:276](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L276) |  |
+| <code>public bool IsEditPanelVisible { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:290](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L290) |  |
+| <code>public bool IsDeactivatePanelVisible { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:298](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L298) |  |
+| <code>public SecurityMasterEditViewModel? EditVm { get; internal set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:306](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L306) |  |
+| <code>public SecurityMasterDeactivateViewModel? DeactivateVm { get; internal set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:314](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L314) |  |
+| <code>public int SelectedDetailTab { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:322](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L322) |  |
+| <code>public bool IsRecordCorpActionVisible { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:328](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L328) |  |
+| <code>public string CorpActType { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:334](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L334) |  |
+| <code>public string CorpActExDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:340](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L340) |  |
+| <code>public decimal CorpActAmount { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:346](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L346) |  |
+| <code>public string CorpActCurrency { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:352](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L352) |  |
+| <code>public bool IsBackfillingTradingParams { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:360](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L360) |  |
+| <code>public string BackfillStatus { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:375](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L375) |  |
+| <code>public int ImportTotal { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:388](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L388) |  |
+| <code>public int ImportProcessed { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:401](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L401) |  |
+| <code>public int ImportImported { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:414](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L414) |  |
+| <code>public int ImportFailed { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:426](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L426) |  |
+| <code>public bool IsImporting { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:438](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L438) |  |
+| <code>public string ImportStatus { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:451](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L451) |  |
+| <code>public bool IsImportResultVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:461](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L461) |  |
+| <code>public string ImportResultSummary { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:473](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L473) |  |
+| <code>public string ImportSessionSummary { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:485](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L485) |  |
+| <code>public string WorkflowStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:497](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L497) |  |
+| <code>public string WorkflowRetrievedAtText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:509](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L509) |  |
+| <code>public string ConflictOperatorText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:517](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L517) |  |
+| <code>public string ConflictNoteText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:531](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L531) |  |
+| <code>public SecurityMasterConflict? SelectedConflict { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:539](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L539) |  |
+| <code>public SecurityConflictLaneGroup? SelectedConflictGroup { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:555](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L555) |  |
+| <code>public SecurityConflictLaneEntry? SelectedConflictEntry { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:576](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L576) |  |
+| <code>public InstrumentPassportDto? SelectedInstrumentPassport { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:621](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L621) |  |
+| <code>public string InstrumentPassportSummaryText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:634](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L634) |  |
+| <code>public string InstrumentPassportProviderConfidenceText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:638](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L638) |  |
+| <code>public string InstrumentPassportErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:644](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L644) |  |
+| <code>public bool HasInstrumentPassportError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:656](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L656) |  |
+| <code>public SecurityMasterTrustSnapshotDto? SelectedTrustSnapshot { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:660](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L660) |  |
+| <code>public bool IsTrustSnapshotLoading { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:675](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L675) |  |
+| <code>public SecurityMaster.BondReferenceLadderViewModel ReferenceLadders { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:697](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L697) | Issuer and maturity ladders over the bounded keyset routes (web-UI parity). |
+| <code>public SecurityMaster.CashDividendAttestationViewModel CashDividendAttestation { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:698](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L698) |  |
+| <code>public SecurityPassportEditorViewModel PassportEditor { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:700](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L700) |  |
+| <code>public bool IsPassportEditorOpen { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:708](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L708) |  |
+| <code>public string TrustSnapshotErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:716](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L716) |  |
+| <code>public bool HasTrustSnapshotError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:729](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L729) |  |
+| <code>public bool ShowOnlySelectedSecurityConflicts { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:733](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L733) |  |
+| <code>public bool ShowHighImpactConflictsOnly { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:747](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L747) |  |
+| <code>public bool ShowBulkEligibleConflictsOnly { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:761](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L761) |  |
+| <code>public string TrustScoreText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:775](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L775) |  |
+| <code>public string TrustSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:783](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L783) |  |
+| <code>public string GoldenCopySourceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:791](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L791) |  |
+| <code>public string GoldenCopyRuleText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:799](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L799) |  |
+| <code>public string TradingParametersStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:807](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L807) |  |
+| <code>public string ProvenanceSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:815](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L815) |  |
+| <code>public string DownstreamImpactSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:823](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L823) |  |
+| <code>public string ConflictFilterSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:831](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L831) |  |
+| <code>public string SelectedConflictRecommendedActionText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:839](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L839) |  |
+| <code>public string SelectedConflictWinnerText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:847](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L847) |  |
+| <code>public string CorporateActionReadinessText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:857](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L857) |  |
+| <code>public string CorporateActionImpactSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:865](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L865) |  |
+| <code>public string BulkPreviewSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:873](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L873) |  |
+| <code>public bool CanApplyRecommendedConflictResolution { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:881](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L881) |  |
+| <code>public bool CanApplyBulkRecommendedResolutions { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:889](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L889) |  |
+| <code>public bool HasSelectedSecurity =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:896](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L896) |  |
+| <code>public int LoadedResultCount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:898](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L898) |  |
+| <code>public int ResultCount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:900](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L900) |  |
+| <code>public bool HasSearchQuery =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:902](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L902) |  |
+| <code>public bool HasSearchResults =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:904](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L904) |  |
+| <code>public bool HasLoadedResults =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:906](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L906) |  |
+| <code>public bool HasActiveSearchWorkspaceFilters =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:908](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L908) |  |
+| <code>public bool IsSearchRecoveryVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:913](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L913) |  |
+| <code>public string SearchRecoveryTitle { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:915](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L915) |  |
+| <code>public string SearchRecoveryDetail { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:935](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L935) |  |
+| <code>public string SearchScopeText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:955](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L955) |  |
+| <code>public string SearchResultCountLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:961](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L961) |  |
+| <code>public string SearchMetaLabel { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:976](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L976) |  |
+| <code>public string SearchStatusChipLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1005](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1005) |  |
+| <code>public string SearchFilterSummaryText { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1009](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1009) |  |
+| <code>public string MappingHealthSummaryText { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1043](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1043) |  |
+| <code>public string SearchDeckLeadText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1060](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1060) |  |
+| <code>public string SearchDeckDetailText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1064](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1064) |  |
+| <code>public string SelectedAssetClass =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1068](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1068) |  |
+| <code>public string SelectedCurrency =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1071](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1071) |  |
+| <code>public string SelectedStatusBadge =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1074](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1074) |  |
+| <code>public string SelectedIdentifier =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1077](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1077) |  |
+| <code>public string CompanyCardTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1082](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1082) |  |
+| <code>public string CompanyCardSubtitle { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1086](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1086) |  |
+| <code>public string CompanyCardDescription { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1104](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1104) |  |
+| <code>public string PrintPacketIdText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1127](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1127) |  |
+| <code>public string PrintGeneratedAtText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1131](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1131) |  |
+| <code>public string PrintDistributionText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1133](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1133) |  |
+| <code>public string PrintSummaryText { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1137](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1137) |  |
+| <code>public bool HasScheduleBookEvents =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1158](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1158) |  |
+| <code>public bool HasOpenLotRows =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1160](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1160) |  |
+| <code>public bool HasChangeHistoryItems =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1162](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1162) |  |
+| <code>public string ValidationIssuesStatusText { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1164](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1164) |  |
+| <code>public string ChangeHistoryStatusText { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1200](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1200) |  |
+| <code>public string ScheduleBookStatusText { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1225](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1225) |  |
+| <code>public string OpenLotReadModelStatusText { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1255](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1255) |  |
+| <code>public string RuntimeStatusLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1285](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1285) |  |
+| <code>public string RuntimeStatusDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1289](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1289) |  |
+| <code>public string ConflictSummaryText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1293](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1293) |  |
+| <code>public string ConflictQueueSummaryText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1297](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1297) |  |
+| <code>public string SelectionSummaryText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1301](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1301) |  |
+| <code>public string SelectionLifecycleText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1305](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1305) |  |
+| <code>public string SelectedSecurityConflictSummaryText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1309](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1309) |  |
+| <code>public string SelectedTrustPostureText { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1318](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1318) |  |
+| <code>public string SelectedProvenanceText { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1350](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1350) |  |
+| <code>public string SelectedTradingParameterCoverageText { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1390](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1390) |  |
+| <code>public string CorporateActionSummaryText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1416](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1416) |  |
+| <code>public string LatestHistoryEventText { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1424](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1424) |  |
+| <code>public string ImportSessionText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1445](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1445) |  |
+| <code>public int ConflictGroupCount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1449](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1449) |  |
+| <code>public bool HasConflictGroups =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1451](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1451) |  |
+| <code>public bool HasSelectedConflictGroup =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1453](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1453) |  |
+| <code>public bool HasSelectedConflictEntry =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1455](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1455) |  |
+| <code>public string SelectedConflictSummaryText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1457](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1457) |  |
+| <code>public string SelectedConflictSeverityText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1461](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1461) |  |
+| <code>public string SelectedConflictConfidenceText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1463](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1463) |  |
+| <code>public string SelectedConflictImpactText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1465](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1465) |  |
+| <code>public string SelectedConflictAutoResolveText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1470](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1470) |  |
+| <code>public string SelectedConflictDetectedText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1472](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1472) |  |
+| <code>public string AcceptPrimaryConflictLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1476](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1476) |  |
+| <code>public string AcceptSecondaryConflictLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1480](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1480) |  |
+| <code>public string ActionInspectorLeadText { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1484](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1484) |  |
+| <code>public string ActionInspectorDetailText { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1506](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1506) |  |
+| <code>public string ActionInspectorNoActionText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1528](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1528) |  |
+| <code>public bool ShowFundReviewActions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1532](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1532) |  |
+| <code>public bool ShowReconciliationAction =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1534](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1534) |  |
+| <code>public bool ShowCashFlowAction =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1536](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1536) |  |
+| <code>public bool ShowReportPackAction =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1538](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1538) |  |
+| <code>public bool ShowBackfillTradingParamsAction =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1540](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1540) |  |
+| <code>public bool ShowAnyDownstreamAction =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1544](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1544) |  |
+| <code>public bool HasPortfolioImpactLink =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1551](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1551) |  |
+| <code>public bool HasLedgerImpactLink =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1553](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1553) |  |
+| <code>public bool HasReconciliationImpactLink =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1555](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1555) |  |
+| <code>public bool HasReportPackImpactLink =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1557](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1557) |  |
+| <code>public IRelayCommand CreateNewCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1560](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1560) |  |
+| <code>public IRelayCommand EditSelectedCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1561](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1561) |  |
+| <code>public IRelayCommand DeactivateSelectedCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1562](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1562) |  |
+| <code>public IRelayCommand LoadCorporateActionsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1563](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1563) |  |
+| <code>public IRelayCommand ShowRecordCorpActionCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1564](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1564) |  |
+| <code>public IRelayCommand CancelRecordCorpActionCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1565](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1565) |  |
+| <code>public IRelayCommand RecordCorpActionCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1566](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1566) |  |
+| <code>public IAsyncRelayCommand BackfillTradingParamsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1567](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1567) |  |
+| <code>public IAsyncRelayCommand ImportFromFileCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1568](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1568) |  |
+| <code>public IRelayCommand CloseImportResultCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1569](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1569) |  |
+| <code>public IAsyncRelayCommand SearchCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1570](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1570) |  |
+| <code>public IRelayCommand ClearSearchCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1571](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1571) |  |
+| <code>public IRelayCommand ResetSearchFiltersCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1572](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1572) |  |
+| <code>public IAsyncRelayCommand RefreshConflictCountCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1573](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1573) |  |
+| <code>public IAsyncRelayCommand RefreshWorkflowCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1574](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1574) |  |
+| <code>public IAsyncRelayCommand RefreshSelectedTrustSnapshotCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1575](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1575) |  |
+| <code>public IRelayCommand OpenPassportEditorCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1576](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1576) |  |
+| <code>public IRelayCommand ClosePassportEditorCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1577](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1577) |  |
+| <code>public IAsyncRelayCommand AcceptPrimaryConflictCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1578](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1578) |  |
+| <code>public IAsyncRelayCommand AcceptSecondaryConflictCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1579](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1579) |  |
+| <code>public IAsyncRelayCommand DismissConflictCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1580](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1580) |  |
+| <code>public IAsyncRelayCommand ApplyRecommendedConflictResolutionCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1581](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1581) |  |
+| <code>public IRelayCommand ResetConflictFiltersCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1582](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1582) |  |
+| <code>public IRelayCommand PreviewBulkRecommendedResolutionsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1583](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1583) |  |
+| <code>public IAsyncRelayCommand ApplyBulkRecommendedResolutionsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1584](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1584) |  |
+| <code>public IRelayCommand OpenFundPortfolioCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1585](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1585) |  |
+| <code>public IRelayCommand OpenFundLedgerCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1586](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1586) |  |
+| <code>public IRelayCommand OpenFundReconciliationCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1587](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1587) |  |
+| <code>public IRelayCommand OpenFundCashFlowCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1588](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1588) |  |
+| <code>public IRelayCommand OpenFundReportPackCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1589](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1589) |  |
+| <code>public IRelayCommand OpenSelectedSecurityPortfolioImpactCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1590](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1590) |  |
+| <code>public IRelayCommand OpenSelectedSecurityLedgerImpactCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1591](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1591) |  |
+| <code>public IRelayCommand OpenSelectedSecurityReconciliationImpactCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1592](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1592) |  |
+| <code>public IRelayCommand OpenSelectedSecurityReportPackImpactCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1593](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1593) |  |
+| <code>public IRelayCommand CopySelectedIdentifierCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1594](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1594) |  |
+| <code>public int OpenConflictCount { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1598](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1598) | Number of open identifier conflicts detected in Security Master. Drives the badge. |
+| <code>public bool HasOpenConflicts =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1612](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1612) | True when at least one open conflict exists. Drives badge visibility. |
+| <code>public bool CanResolveSelectedConflict =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1614](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1614) |  |
+| <code>public SecurityMasterViewModel(WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService, ITradingParametersBackfillService backfillService, ISecurityMasterImportService importService, ISecurityMasterRuntimeStatus securityMasterRuntimeStatus, WpfServices.ISecurityMasterOperatorWorkflowClient workflowClient, WpfServices.IWorkstationSecurityMasterApiClient workstationSecurityMasterApiClient, WpfServices.FundContextService fundContextService, WpfServices.NavigationService navigationService, ISmQueryService queryService, ISmService service, WpfServices.DesktopAuthenticationSession? authenticationSession = null, WpfServices.IWorkstationContractualCashFlowApiClient? cashFlowClient = null, Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy? governedTermAmendmentPolicy = null);</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1635](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1635) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1782](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1782) |  |
+| <code>public object? Parameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:1813](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L1813) |  |
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.EditWorkflow.cs:25](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.EditWorkflow.cs#L25).
+
+```csharp
+public sealed partial class SecurityMasterViewModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.EditWorkflow.cs:232](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.EditWorkflow.cs#L232) |  |
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Import.cs:15](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Import.cs#L15).
+
+Bulk import of securities from a CSV or JSON file. Split out of the main view-model file so the import flow -- including the actor it records every created security against -- reads in one piece.
+
+```csharp
+public sealed partial class SecurityMasterViewModel
+```
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.OperatorWorkflow.cs:25](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.OperatorWorkflow.cs#L25).
+
+```csharp
+public sealed partial class SecurityMasterViewModel
+```
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.PolicyEvidence.cs:6](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.PolicyEvidence.cs#L6).
+
+```csharp
+public sealed partial class SecurityMasterViewModel
+```
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Search.cs:25](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Search.cs#L25).
+
+```csharp
+public sealed partial class SecurityMasterViewModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task LoadDetailAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Search.cs:153](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Search.cs#L153) |  |
+| <code>public async Task LoadSelectedTrustSnapshotAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Search.cs:156](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Search.cs#L156) |  |
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.SelectionDetail.cs:25](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.SelectionDetail.cs#L25).
+
+```csharp
+public sealed partial class SecurityMasterViewModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task SearchAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.SelectionDetail.cs:254](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.SelectionDetail.cs#L254) |  |
+
+## SecurityPassportEditorParameter
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SecurityPassportEditorParameter</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:602](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L602).
+
+Navigation context for opening the passport editor against a selected security. Supplied by the shell when launching the editor contextually (e.g. from the Security Master page); the editor hydrates its identity and optimistic-concurrency token from it.
+
+```csharp
+public sealed record SecurityPassportEditorParameter(Guid SecurityId, long Version, string? Symbol = null, string? AssetClass = null, string? TrustPosture = null, string? FundProfileId = null);
+```
+
+## SecurityPassportEditorViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SecurityPassportEditorViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:24](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L24).
+
+Desktop parity for the Security Master passport governed-write editor. Mirrors the browser editor&#x27;s lifecycle rules over the same command DTOs — there are no WPF-local governance rules; the server re-validates every transition. The acting principal is server-derived, so the desktop posts the business fields only and leaves identity to the session.
+
+```csharp
+public sealed partial class SecurityPassportEditorViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityPassportEditorViewModel(IWorkstationSecurityMasterApiClient client, IWorkstationContractualCashFlowApiClient? cashFlowClient = null);</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:30](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L30) |  |
+| <code>public object? Parameter { set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:42](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L42) | Navigation hook. The shell sets this when the editor is opened contextually for a selected passport (e.g. from the Security Master page); a SecurityPassportEditorParameter hydrates the editor identity and optimistic-concurrency token. Opening the route without a parameter (command palette) leaves the editor unloaded and every governed write disabled. |
+| <code>public BondAnalyticsViewModel? BondAnalytics { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:95](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L95) | Calculated bond analytics for Bond/CD passports; null for every other asset class. |
+| <code>public BondMigrationPreviewViewModel? BondMigration { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:102](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L102) | Hash-bound convention migration preview for Bond/CD passports; null otherwise. |
+| <code>public bool HasBondTools =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:108](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L108) |  |
+| <code>public CashFlows.ContractualCashFlowScenarioViewModel? CashFlowScenarios { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:111](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L111) | Cash-flow scenario workbench (web-UI parity); null when the host registers no cash-flow client. |
+| <code>public bool HasCashFlowScenarios =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:117](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L117) |  |
+| <code>public async Task LoadSchemaAsync(string? assetClass);</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L125) | Loads the asset-class registry definition that the term picker is built from. A failed or missing schema leaves the free-text field path in place. |
+| <code>public bool HasBanner =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:221](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L221) |  |
+| <code>public ObservableCollection&lt;SecurityAssetTermFieldDefinitionDto&gt; SchemaFields { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:235](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L235) | The scalar-editable terms of the passport&#x27;s asset class, from the registry. |
+| <code>public bool HasSchemaFields =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:237](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L237) |  |
+| <code>public IReadOnlyList&lt;string&gt; SchemaValueChoices =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:266](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L266) |  |
+| <code>public bool HasSchemaValueChoices =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:268](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L268) |  |
+| <code>public string? SchemaValueError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:271](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L271) | Client-side pre-check of the value against the selected term; the server stays authoritative. |
+| <code>public bool HasLoadedPassport =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:306](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L306) |  |
+| <code>public bool HasUnsavedWork =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs:320](../../../../src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs#L320) | True when the editor holds a still-editable revision or any unsaved operator input. A host reusing this editor across contextual launches must not silently discard such work by re-hydrating; a terminal published/rejected session is not preserve-worthy. |
+
+## ServiceManagerViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.ServiceManagerViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:14](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L14).
+
+ViewModel for the Service Manager page. Wraps BackendServiceManager and LoggingService with bindable status properties and async command objects.
+
+```csharp
+public sealed class ServiceManagerViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:51](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L51) |  |
+| <code>public string HealthText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:57](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L57) |  |
+| <code>public string ProcessIdText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:63](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L63) |  |
+| <code>public string ExecutablePathText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:69](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L69) |  |
+| <code>public string OperationResultText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:75](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L75) |  |
+| <code>public string ServiceStateBadgeText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:81](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L81) |  |
+| <code>public string RecommendedActionText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:87](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L87) |  |
+| <code>public string RuntimePostureText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:95](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L95) |  |
+| <code>public string RegistrationPostureText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:99](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L99) |  |
+| <code>public string StatusLoadStateText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:103](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L103) |  |
+| <code>public string StatusLoadDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:109](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L109) |  |
+| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:117](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L117) |  |
+| <code>public bool IsStatusLoading { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:130](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L130) |  |
+| <code>public bool IsStatusLoadFailed { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:143](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L143) |  |
+| <code>public bool IsStatusLoadInfoVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:155](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L155) |  |
+| <code>public bool CanInstall =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:185](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L185) |  |
+| <code>public bool CanStart =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:186](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L186) |  |
+| <code>public bool CanStop =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:187](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L187) |  |
+| <code>public bool CanRestart =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:188](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L188) |  |
+| <code>public bool CanRefresh =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:189](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L189) |  |
+| <code>public IAsyncRelayCommand InstallCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L193) |  |
+| <code>public IAsyncRelayCommand StartCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:194](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L194) |  |
+| <code>public IAsyncRelayCommand StopCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:195](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L195) |  |
+| <code>public IAsyncRelayCommand RestartCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:196](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L196) |  |
+| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:197](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L197) |  |
+| <code>public Task InitializeAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:201](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L201) |  |
+
+## BondCutoverBatchPreviewRow
+
+Qualified name: <code>Meridian.Wpf.ViewModels.Settings.BondCutoverBatchPreviewRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:45](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L45).
+
+One batch preview result row; amounts are never resubmitted.
+
+```csharp
+public sealed record BondCutoverBatchPreviewRow(string DisplayName, long Version, int ChangedPayments, string Gaps, bool CanStage, string PreviewHash);
+```

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildNotificationCenterModel } from "@/lib/notification-center/merge";
 import { emptyNotificationReadState } from "@/lib/notification-center/read-state";

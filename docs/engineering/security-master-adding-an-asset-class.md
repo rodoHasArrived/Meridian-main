@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-11-18
+**Reviewed:** 2026-11-25
 **Audience:** contributors and agents adding a first-class Security Master kind
 
 This is the checklist for adding a first-class asset class, or for giving a governed CustomAsset
@@ -34,26 +34,28 @@ build warnings for each file above. Run
 
 | File | What to add |
 | --- | --- |
-| `SecurityAssetClassCatalog.cs` | A `SecurityAssetClassNames` constant for the class, and the `SecurityAssetClassDescriptor` (use the constant for `AssetClass`): asset pack ids, lot unit, cash-flow behaviour, `ProjectionKind`, preferred identifier kinds, Asset Operations capabilities, aliases, accounting class, `SupportsProfileBackedTerms`, `ClassificationLabels` and, for a promotion target, `ReclassifyingProfileIds`. |
-| `SecurityAssetTermsSchema.cs` | The class's fields in `FieldsByAssetClass`. Declaration order is the required-field refusal order on read. A field added after version 1 needs `.Since(n)` and, when required, `ReadsAbsentAs(...)`. List the class in `ReadsProfileResolvedTerms` when it reads profile-resolved terms. |
-| `SecurityAssetTermsCodecBindings.cs` | The flat codec bindings for the class's members, when the class uses the schema-bound codec. |
-| `SecurityAssetSpecificTermsUpcasterChain.cs`, `SecurityRateFieldUnits.cs` | Rate units and any key renames the class's terms carry. |
+| `SecurityAssetClassCatalog.cs` | A `SecurityAssetClassNames` constant for the class. The catalog composes its descriptors from the class modules; it holds no per-class table. |
+| `AssetModules/<Class>AssetModule.cs` | The class's `SecurityAssetClassModule`, with `AssetClass` set from the constant. `Descriptor`: asset pack ids, lot unit, cash-flow behaviour, `ProjectionKind`, preferred identifier kinds, Asset Operations capabilities, aliases, accounting class, `SupportsProfileBackedTerms`, `ClassificationLabels` and, for a promotion target, `ReclassifyingProfileIds`. |
+| `AssetModules/<Class>AssetModule.cs` (terms) | `Fields`: the class's terms. Declaration order is the required-field refusal order on read. A field added after version 1 needs `.Since(n)` and, when required, `ReadsAbsentAs(...)`. `ElementShapes`: the fields of each nested array or object term. `RateFields`: the unit, range and readers of each rate term. `CodecBinding`: the flat codec bindings for the class's members (set `ReadsResolvedTerms` when the class reads profile-resolved terms), and `EconomicFlattenings`: the key renames its economic-terms history carries. |
+| `SecurityAssetClassModules.cs` | The module's `Create()` call in `All`, in catalog order. Give the module the next free `SchemaOrder`, `CodecOrder`, `EconomicFlatteningOrder` and nested `ElementShapes` orders; these keep the existing registry enumeration order and never renumber. Composition refuses a duplicate class, order or element path at type initialization. |
 | `ClassificationLabelReader.cs`, `SecurityAssetPackRegistry*.cs` | The classification label and the pack's readiness specification. |
-| `SecurityAssetClassCatalog.cs` (lot unit) | The `LotUnit` also governs ledger postings: only a `FaceValue` class may be booked with a `Face` quantity basis (`LotQuantityBasisRules`, enforced by the acquisition reference authority). |
+| `AssetModules/<Class>AssetModule.cs` (lot unit) | The descriptor's `LotUnit` also governs ledger postings: only a `FaceValue` class may be booked with a `Face` quantity basis (`LotQuantityBasisRules`, enforced by the acquisition reference authority). |
 | `InstrumentTypeDescriptorCatalog.cs` | When an instrument type maps to the class, its family and sub-type labels must equal the F# table's, or be listed in `DomainLabelExceptions` / `ApproximateDomainLabelMappings`. |
 
 ## 3. Application codec and validation (`src/Meridian.Application/SecurityMaster/`)
 
 | File | What to add |
 | --- | --- |
-| `SecurityMasterMapping.cs` | The decode arm in `ToSecurityKind`, and the class in `SchemaBoundDecodeClasses` when it decodes through the schema-bound reader. |
-| `Validation/AssetClassValidatorRegistry.cs` | The class's semantic rules. Schema rules are generated from the schema. |
+| `SecurityMasterMapping.GeneratedDecode.cs` | Generated from the class's codec binding, including its decoder contribution; regenerate it with `SecurityFlatCodecGenerationTests` rather than editing it. `SecurityMasterMapping.AssetPackCodecs.cs` composes the contributions and refuses a catalog class without exactly one decoder, so add a handwritten contribution there only for a class with no generated binding. |
+| `Validation/Modules/<Class>AssetValidationModule.cs` | The class's semantic rules, as a `SecurityAssetValidationContribution`. Schema rules are generated from the schema. |
+| `Validation/Modules/SecurityAssetValidationModules.cs` | The contribution in `All`. Composition refuses a missing, duplicate or mismatched class. |
 
 ## 4. Storage (`src/Meridian.Storage/SecurityMaster/`)
 
 | File | What to add |
 | --- | --- |
-| `SecurityTermsProjectionRegistry.cs` | The `SecurityTermsProjectionDescriptor`: table, columns, child and satellite tables. The registry writes the projection and `RegistryProjectionReadService.cs` reads it; no hand-written writer or reader is needed. |
+| `AssetPacks/<Class>StorageModule.cs` | The class's `SecurityTermsStorageContribution`. A declarative class supplies its `SecurityTermsProjectionDescriptor`: table, columns, child and satellite tables. `SecurityTermsProjectionRegistry.cs` writes the projection and `RegistryProjectionReadService.cs` reads it; no hand-written writer or reader is needed. |
+| `AssetPacks/SecurityTermsStorageModules.cs` | The contribution in `All`. Composition refuses a catalog class without a contribution, or one whose disposition differs from the catalog's `ProjectionKind`. |
 | `Migrations/<ordinal>_<slug>.sql` | The projection table. Scaffold the ordinal with `python build/scripts/schema-control.py new-migration --migration-set security-master --name <slug>`, never reuse a retired ordinal, and never edit an applied migration. See [PostgreSQL schema control](README.md#postgresql-schema-control). |
 
 Regenerate the schema-control outputs (`database/manifest/**`, `docs/generated/database/**`) as the

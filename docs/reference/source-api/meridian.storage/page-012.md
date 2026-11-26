@@ -6,288 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## PostgresSecurityMasterStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresSecurityMasterStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.Aliases.cs:13](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.Aliases.cs#L13).
-
-Alias write and recorded-history paths. security_aliases holds the current alias row used by identifier resolution and posting authority. Every recorded change to an alias first appends a row to the append-only security_alias_revisions table without overwriting earlier revisions. Recorded-as-of reads filter stored timestamp eligibility; these are not historical commit-visibility snapshots.
-
-```csharp
-public sealed partial class PostgresSecurityMasterStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;SecurityAliasDto?&gt; UpsertAliasAsync(SecurityAliasDto alias, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.Aliases.cs:23](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.Aliases.cs#L23) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SecurityAliasDto&gt;&gt; GetAliasesRecordedAsOfAsync(Guid securityId, DateTimeOffset recordedAsOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.Aliases.cs:98](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.Aliases.cs#L98) |  |
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L9).
-
-```csharp
-public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresSecurityMasterStore(SecurityMasterOptions options, SecurityMasterNodeIdentity? nodeIdentity = null);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:103](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L103) |  |
-| <code>public async Task UpsertProjectionAsync(SecurityProjectionRecord record, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:109](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L109) |  |
-| <code>public async Task PersistProjectionBatchAsync(string projectionName, long lastGlobalSequence, IReadOnlyList&lt;SecurityProjectionRecord&gt; records, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:141](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L141) |  |
-| <code>public async Task DeactivateProjectionAsync(Guid securityId, DateTimeOffset effectiveTo, long version, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:202](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L202) |  |
-| <code>public async Task&lt;SecurityDetailDto?&gt; GetDetailAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:260](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L260) |  |
-| <code>public async Task&lt;SecurityProjectionRecord?&gt; GetProjectionAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:266](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L266) |  |
-| <code>public async Task&lt;SecurityProjectionRecord?&gt; GetByIdentifierAsync(SecurityIdentifierKind kind, string value, string? provider, DateTimeOffset asOfUtc, bool includeInactive, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:272](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L272) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SecuritySummaryDto&gt;&gt; SearchAsync(SecuritySearchRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:279](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L279) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; LoadAllAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:367](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L367) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; LoadActiveAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:370](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L370) |  |
-| <code>public async Task&lt;int&gt; CountUntaggedAssetSpecificTermsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:415](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L415) | One aggregate over securities (ADR-024 decision 5): a row is untagged when its payload is not a JSON object or its termsFormat member is absent or not a string — the same verdict SecurityTermsEnvelope.GetDeclaredFormat reaches, without loading a single projection. SecurityMasterPostgresRoundTripTests pins the SQL to the C# semantics row by row. |
-| <code>public async Task&lt;long?&gt; GetCheckpointAsync(string projectionName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:429](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L429) |  |
-| <code>public async Task SaveCheckpointAsync(string projectionName, long lastGlobalSequence, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:444](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L444) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SecurityIdentityClaim&gt;&gt; FindIdentityClaimsAsync(SecurityIdentifierKind kind, string value, string? provider, DateTimeOffset asOfUtc, bool ignoreValidityWindow = false, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs:914](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs#L914) |  |
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.CustomAssetProfileFields.cs:8](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.CustomAssetProfileFields.cs#L8).
-
-```csharp
-public sealed partial class PostgresSecurityMasterStore
-```
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.IdentifierCandidates.cs:5](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.IdentifierCandidates.cs#L5).
-
-```csharp
-public sealed partial class PostgresSecurityMasterStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; FindIdentifierCandidatesAsync(IReadOnlyList&lt;SecurityIdentifierDto&gt; identifiers, IReadOnlyCollection&lt;Guid&gt; excludedSecurityIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.IdentifierCandidates.cs:7](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.IdentifierCandidates.cs#L7) |  |
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.IdentifierHistory.cs:13](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.IdentifierHistory.cs#L13).
-
-Identifier replacement and its recorded history. security_identifiers is the current-state projection; every replacement appends Added/Amended/Expired/Removed revisions for the rows it changes to the append-only security_identifier_revisions table (migration 062) in the same transaction, so the projection and its history commit or roll back together.
-
-```csharp
-public sealed partial class PostgresSecurityMasterStore : ISecurityIdentifierHistoryStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;SecurityIdentifierRevision&gt;&gt; GetIdentifierRevisionsAsync(Guid securityId, DateTimeOffset recordedAsOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.IdentifierHistory.cs:225](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.IdentifierHistory.cs#L225) |  |
-| <code>public async Task&lt;SecurityIdentifiersRecordedView&gt; GetIdentifiersRecordedAsOfAsync(Guid securityId, DateTimeOffset recordedAsOfUtc, DateTimeOffset? validAsOfUtc = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.IdentifierHistory.cs:247](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.IdentifierHistory.cs#L247) |  |
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.PostingAuthority.cs:7](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.PostingAuthority.cs#L7).
-
-```csharp
-public sealed partial class PostgresSecurityMasterStore
-```
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.TermsProjection.cs:10](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.TermsProjection.cs#L10).
-
-```csharp
-public sealed partial class PostgresSecurityMasterStore
-```
-
-## PostgresSecurityMasterTermsCapabilityStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresSecurityMasterTermsCapabilityStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterTermsCapabilityStore.cs:7](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterTermsCapabilityStore.cs#L7).
-
-Reads the capability floor without migrating, activating or modifying it.
-
-```csharp
-public sealed class PostgresSecurityMasterTermsCapabilityStore : ISecurityMasterTermsCapabilityStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresSecurityMasterTermsCapabilityStore(SecurityMasterOptions options) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterTermsCapabilityStore.cs:12](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterTermsCapabilityStore.cs#L12) | Uses the same connection and schema as the configured Security Master writer. |
-| <code>public async Task&lt;SecurityMasterTermsCapabilityState&gt; ReadAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterTermsCapabilityStore.cs:16](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterTermsCapabilityStore.cs#L16) |  |
-
-## PostgresSecurityUnderlyingGraphStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresSecurityUnderlyingGraphStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityUnderlyingGraphStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityUnderlyingGraphStore.cs#L13).
-
-PostgreSQL store for the underlying graph (security_underlying_links). Declared links are written here, each change appending to security_governance_events in the same transaction; derived links are written by PostgresSecurityMasterStore inside the projection transaction (see SecurityUnderlyingLinkWriter), so both read from one table.
-
-```csharp
-public sealed class PostgresSecurityUnderlyingGraphStore : ISecurityUnderlyingGraphStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresSecurityUnderlyingGraphStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityUnderlyingGraphStore.cs:17](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityUnderlyingGraphStore.cs#L17) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SecurityUnderlyingLinkDto&gt;&gt; GetUnderlyingsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityUnderlyingGraphStore.cs:22](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityUnderlyingGraphStore.cs#L22) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SecurityUnderlyingLinkDto&gt;&gt; GetDependentsAsync(Guid underlyingSecurityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityUnderlyingGraphStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityUnderlyingGraphStore.cs#L35) |  |
-| <code>public async Task&lt;SecurityUnderlyingLinkDto&gt; DeclareAsync(DeclareSecurityUnderlyingLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityUnderlyingGraphStore.cs:48](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityUnderlyingGraphStore.cs#L48) |  |
-| <code>public async Task&lt;bool&gt; RemoveDeclaredAsync(Guid securityId, Guid linkId, string removedBy, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityUnderlyingGraphStore.cs:114](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityUnderlyingGraphStore.cs#L114) |  |
-
-## PostgresStructuredCreditReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresStructuredCreditReferenceProjectionStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresStructuredCreditReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresStructuredCreditReferenceProjectionStore.cs#L9).
-
-Reads structured credit reference projections from PostgreSQL, including pool and tranche information.
-
-```csharp
-public sealed class PostgresStructuredCreditReferenceProjectionStore : IStructuredCreditReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresStructuredCreditReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresStructuredCreditReferenceProjectionStore.cs:42](../../../../src/Meridian.Storage/SecurityMaster/PostgresStructuredCreditReferenceProjectionStore.cs#L42) |  |
-| <code>public Task&lt;StructuredCreditProjectionRow?&gt; GetStructuredCreditAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresStructuredCreditReferenceProjectionStore.cs:54](../../../../src/Meridian.Storage/SecurityMaster/PostgresStructuredCreditReferenceProjectionStore.cs#L54) |  |
-| <code>public Task&lt;IReadOnlyList&lt;StructuredCreditProjectionRow&gt;&gt; GetByPoolAsync(string poolId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresStructuredCreditReferenceProjectionStore.cs:57](../../../../src/Meridian.Storage/SecurityMaster/PostgresStructuredCreditReferenceProjectionStore.cs#L57) |  |
-| <code>public Task&lt;IReadOnlyList&lt;StructuredCreditProjectionRow&gt;&gt; GetByCollateralTypeAsync(string collateralType, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresStructuredCreditReferenceProjectionStore.cs:60](../../../../src/Meridian.Storage/SecurityMaster/PostgresStructuredCreditReferenceProjectionStore.cs#L60) |  |
-| <code>public Task&lt;IReadOnlyList&lt;StructuredCreditFactorScheduleRow&gt;&gt; GetFactorScheduleAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresStructuredCreditReferenceProjectionStore.cs:63](../../../../src/Meridian.Storage/SecurityMaster/PostgresStructuredCreditReferenceProjectionStore.cs#L63) |  |
-| <code>public Task&lt;StructuredCreditFactorScheduleRow?&gt; GetFactorAsOfAsync(Guid securityId, DateOnly asOfDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresStructuredCreditReferenceProjectionStore.cs:66](../../../../src/Meridian.Storage/SecurityMaster/PostgresStructuredCreditReferenceProjectionStore.cs#L66) |  |
-
-## PostgresSwapReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresSwapReferenceProjectionStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSwapReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresSwapReferenceProjectionStore.cs#L9).
-
-Reads swap reference projections from PostgreSQL by security, type, and maturity.
-
-```csharp
-public sealed class PostgresSwapReferenceProjectionStore : ISwapReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresSwapReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSwapReferenceProjectionStore.cs:28](../../../../src/Meridian.Storage/SecurityMaster/PostgresSwapReferenceProjectionStore.cs#L28) |  |
-| <code>public Task&lt;SwapProjectionRow?&gt; GetSwapAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSwapReferenceProjectionStore.cs:36](../../../../src/Meridian.Storage/SecurityMaster/PostgresSwapReferenceProjectionStore.cs#L36) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SwapProjectionRow&gt;&gt; GetBySwapTypeAsync(string swapType, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSwapReferenceProjectionStore.cs:39](../../../../src/Meridian.Storage/SecurityMaster/PostgresSwapReferenceProjectionStore.cs#L39) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SwapProjectionRow&gt;&gt; GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSwapReferenceProjectionStore.cs:42](../../../../src/Meridian.Storage/SecurityMaster/PostgresSwapReferenceProjectionStore.cs#L42) |  |
-
-## ProjectionBatchRebuiltPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ProjectionBatchRebuiltPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:40](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L40).
-
-ProjectionRebuild / ProjectionBatchRebuilt: one persisted rebuild batch.
-
-```csharp
-public sealed record ProjectionBatchRebuiltPayload(string ProjectionName, long LastGlobalSequence, IReadOnlyList<ProjectionBatchRebuiltRecord> Records) : ISecurityGovernancePayload;
-```
-
-## ProjectionBatchRebuiltRecord
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ProjectionBatchRebuiltRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:46](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L46).
-
-A record written by a rebuild batch. Version 1 stored these two names in PascalCase.
-
-```csharp
-public sealed record ProjectionBatchRebuiltRecord([property : JsonPropertyName("SecurityId")] Guid SecurityId, [property : JsonPropertyName("Version")] long Version);
-```
-
-## RegistryProjectionReadService
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.RegistryProjectionReadService</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs:69](../../../../src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs#L69).
-
-The PostgreSQL implementation of IRegistryProjectionReadService. The security&#x27;s current asset class gates the read: it is taken from ISecurityMasterStore.GetProjectionAsync and must be the requested class, so a request can never read another class&#x27;s table for a security, nor a stale row a reclassified security left behind. The composite itself is read from one database snapshot: the class is confirmed again, and the parent row, every child table and every satellite are read, on one connection inside one read-only REPEATABLE READ transaction. The writer commits all of a security&#x27;s tables together, so an amend that commits while the read is under way is either wholly visible or wholly invisible; the result is never an old parent with new child rows.
-
-```csharp
-public sealed class RegistryProjectionReadService : IRegistryProjectionReadService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RegistryProjectionReadService(SecurityMasterOptions options, ISecurityMasterStore store) : this(options, store, rows : null);</code> | [src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs:78](../../../../src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs#L78) |  |
-| <code>public async Task&lt;SecurityTermsProjectionReadDto?&gt; GetAsync(string assetClass, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs:109](../../../../src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs#L109) |  |
-
-## SecurityFactorObservationRecord
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityFactorObservationRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityFactorObservations.cs:8](../../../../src/Meridian.Storage/SecurityMaster/SecurityFactorObservations.cs#L8).
-
-One recorded pool-factor observation (review C3).
-
-```csharp
-public sealed record SecurityFactorObservationRecord(Guid ObservationId, Guid SecurityId, DateOnly EffectiveDate, decimal Factor, string Source, string? EvidenceRef, DateTimeOffset RecordedAt, string RecordedBy);
-```
-
-## SecurityGovernanceEvent
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernanceEvent</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:30](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L30).
-
-One recorded governance event. Payload is the stored JSON as written; ReadPayload{TPayload} reads it through the declared contract for Stream/EventType, dispatching on PayloadVersion.
-
-```csharp
-public sealed record SecurityGovernanceEvent(long GlobalSequence, Guid? SecurityId, string Stream, string EventType, string Actor, DateTimeOffset OccurredAt, JsonElement Payload, int PayloadVersion)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TPayload ReadPayload&lt;TPayload&gt;() where TPayload : class, ISecurityGovernancePayload =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:46](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L46) | The payload as its declared type. Throws SecurityGovernancePayloadContractException when the event type has no contract on this node, SecurityGovernancePayloadVersionException when PayloadVersion has no reader, and InvalidOperationException when TPayload is not the declared type. |
-| <code>public bool TryReadPayload&lt;TPayload&gt;([NotNullWhen(true)] out TPayload? payload) where TPayload : class, ISecurityGovernancePayload;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:55](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L55) | Reads the payload when this node declares a contract and a reader for its version and TPayload is the declared type; otherwise returns false and leaves the raw Payload as the only reading. Malformed JSON for a declared version still throws. |
-
-## SecurityGovernanceJsonContext
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernanceJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:235](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L235).
-
-Source-generated metadata for every governance payload version. The camelCase policy and the default encoder and null handling reproduce the reflective JsonSerializer.Serialize(object) output the version-1 writers produced; dictionary keys are written as stored.
-
-```csharp
-public sealed partial class SecurityGovernanceJsonContext : JsonSerializerContext;
-```
-
-## SecurityGovernancePayloadContract
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernancePayloadContract</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:241](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L241).
-
-The declared payload contract of one governance stream/event type: its payload type, the version new writes carry, and a reader for every version that may be stored.
-
-```csharp
-public sealed class SecurityGovernancePayloadContract
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Stream { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:262](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L262) |  |
-| <code>public string EventType { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:263](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L263) |  |
-| <code>public Type PayloadType { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:264](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L264) |  |
-| <code>public int CurrentVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:267](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L267) | The payload_version new writes record. |
-| <code>public IReadOnlyList&lt;int&gt; ReadableVersions =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:270](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L270) | The stored versions this node can read, ascending. |
-
 ## SecurityGovernancePayloadContractException
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernancePayloadContractException</code>. Kind: `class`.
@@ -424,18 +142,6 @@ Declared public members:
 | --- | --- | --- |
 | <code>public bool IsHistoryAvailable =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:64](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L64) | False when the cutoff precedes the migrated baseline, so rows that already existed then cannot be reported. True when no baseline applies or the cutoff is at or after it. |
 
-## SecurityMasterChangeRecord
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterChangeRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterChangeOutbox.cs:8](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterChangeOutbox.cs#L8).
-
-One durable change record: a committed economic event of one security.
-
-```csharp
-public sealed record SecurityMasterChangeRecord(Guid ChangeId, Guid SecurityId, long StreamVersion, string EventType, string Actor, DateTimeOffset RecordedAt, string? RestatementDecisionJson, DateTimeOffset? ProcessedAt);
-```
-
 ## SecurityMasterDbMapper
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterDbMapper</code>. Kind: `class`.
@@ -454,67 +160,6 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static SecuritySummaryDto ToSummary(SecurityProjectionRecord record) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs:10](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs#L10) |  |
 | <code>public static SecurityDetailDto ToDetail(SecurityProjectionRecord record) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs:20](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs#L20) |  |
-
-## SecurityMasterExceptionCase
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterExceptionCase</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs:8](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs#L8).
-
-One Security Master exception case (review D2).
-
-```csharp
-public sealed record SecurityMasterExceptionCase(Guid CaseId, string CaseKey, string Category, string RuleCode, Guid? SecurityId, string Severity, string Title, string Detail, string Status, string? Assignee, DateTimeOffset OpenedAt, DateTimeOffset LastSeenAt, DateTimeOffset SlaDueAt, DateTimeOffset? ClosedAt, string? ClosedReason)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsBreached(DateTimeOffset asOf) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs:25](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs#L25) |  |
-
-## SecurityMasterExceptionCaseStatus
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterExceptionCaseStatus</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs:29](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs#L29).
-
-Case statuses.
-
-```csharp
-public static class SecurityMasterExceptionCaseStatus
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Open = &quot;Open&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs:31](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs#L31) |  |
-| <code>public const string Closed = &quot;Closed&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs:32](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs#L32) |  |
-
-## SecurityMasterExceptionObservation
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterExceptionObservation</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs:36](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs#L36).
-
-A source condition the sync wants represented by an open case.
-
-```csharp
-public sealed record SecurityMasterExceptionObservation(string CaseKey, string Category, string RuleCode, Guid? SecurityId, string Severity, string Title, string Detail, DateTimeOffset SlaDueAt);
-```
-
-## SecurityMasterExceptionSyncResult
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterExceptionSyncResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs:47](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs#L47).
-
-Result of reconciling observed conditions with open cases.
-
-```csharp
-public sealed record SecurityMasterExceptionSyncResult(int Opened, int Refreshed, int Closed);
-```
 
 ## SecurityMasterMigrationRunner
 
@@ -597,18 +242,6 @@ Declared public members:
 | <code>public void ReplaceAll(IEnumerable&lt;SecurityProjectionRecord&gt; records);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:169](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L169) | Replaces the cached master with records as a single reference swap. |
 | <code>public async Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; ReplaceAllAsync(Func&lt;CancellationToken, Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt;&gt; buildReplacement, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:199](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L199) | Builds the replacement with buildReplacement and installs it as ReplaceAll does, but opens the upsert capture BEFORE the build reads its source. A local create or amend whose cache upsert lands while a warm is still reading or rebuilding is therefore replayed into the replacement even when the warm&#x27;s read preceded that write&#x27;s commit, instead of being dropped or downgraded by the swap. |
 | <code>public IReadOnlyCollection&lt;SecurityProjectionRecord&gt; Snapshot() =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:292](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L292) |  |
-
-## SecurityMasterRedirect
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterRedirect</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs:8](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs#L8).
-
-A retired security and the survivor it was merged into (review C1).
-
-```csharp
-public sealed record SecurityMasterRedirect(Guid RetiredSecurityId, Guid SurvivorSecurityId, DateTimeOffset MergedAt, string MergedBy, string Reason);
-```
 
 ## SecurityMasterStreamVersionConflictException
 
@@ -924,3 +557,296 @@ Source: [src/Meridian.Storage/Services/DataQualityService.cs:1187](../../../../s
 ```csharp
 public sealed record ConsolidatedDataset(string Symbol, DateTimeOffset Date, string[] SelectedSources, long TotalEvents, int GapsFilled, double QualityScore, string? OutputPath);
 ```
+
+## ConsolidationOptions
+
+Qualified name: <code>Meridian.Storage.Services.ConsolidationOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataQualityService.cs:1197](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1197).
+
+```csharp
+public sealed record ConsolidationOptions(SourceSelectionStrategy Strategy = SourceSelectionStrategy.HighestQualityScore, bool FillGapsFromAlternates = true, bool ValidateCrossSource = true, decimal PriceTolerancePct = 0.01m, long VolumeTolerancePct = 5);
+```
+
+## ConversionSummary
+
+Qualified name: <code>Meridian.Storage.Services.ConversionSummary</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/ParquetConversionService.cs:387](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L387).
+
+Summary of a Parquet conversion batch run.
+
+```csharp
+public sealed class ConversionSummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int FilesConverted { get; set; }</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:389](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L389) |  |
+| <code>public long RecordsConverted { get; set; }</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:390](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L390) |  |
+| <code>public long BytesSaved { get; set; }</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:391](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L391) |  |
+| <code>public int SkippedAlreadyConverted { get; set; }</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:392](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L392) |  |
+| <code>public int SkippedEmpty { get; set; }</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:393](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L393) |  |
+| <code>public int Errors { get; set; }</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:394](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L394) |  |
+
+## DataCatalog
+
+Qualified name: <code>Meridian.Storage.Services.DataCatalog</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:816](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L816).
+
+```csharp
+public sealed record DataCatalog(DateTimeOffset GeneratedAt, string RootPath, IReadOnlyList<StorageSymbolCatalogEntry> Symbols, IReadOnlyList<string> Sources, IReadOnlyList<string> EventTypes, DateRange DateRange, long TotalEvents, long TotalBytes);
+```
+
+## DataInsight
+
+Qualified name: <code>Meridian.Storage.Services.DataInsight</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/MetadataTagService.cs:611](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L611).
+
+An insight derived from data content analysis.
+
+```csharp
+public sealed record DataInsight(string Category, string Description, double? NumericValue, string? Unit, DateTime ComputedAtUtc, InsightSeverity Severity = InsightSeverity.Info);
+```
+
+## DataLineageService
+
+Qualified name: <code>Meridian.Storage.Services.DataLineageService</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/DataLineageService.cs:16](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L16).
+
+Service for tracking data lineage: provenance, transformations, and dependency graphs across the entire storage system. Records where data came from, what transformations were applied, and how data flows between storage tiers and formats.
+
+```csharp
+public sealed class DataLineageService : IDataLineageService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DataLineageService(string lineageStorePath, ILogger&lt;DataLineageService&gt; logger) : this(lineageStorePath, logger, static (path, content) =&gt; AtomicFileWriter.Write(path, content), static (path, content, ct) =&gt; AtomicFileWriter.WriteAsync(path, content, ct));</code> | [src/Meridian.Storage/Services/DataLineageService.cs:25](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L25) |  |
+| <code>public void RecordIngestion(string filePath, IngestionRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:48](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L48) |  |
+| <code>public void RecordTransformation(string sourceFilePath, string targetFilePath, TransformationRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:61](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L61) |  |
+| <code>public void RecordMigration(string sourceFilePath, string targetFilePath, MigrationRecord record);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:80](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L80) |  |
+| <code>public void RecordDeletion(string filePath, string reason);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:98](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L98) |  |
+| <code>public LineageGraph? GetLineageGraph(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:115](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L115) |  |
+| <code>public IReadOnlyList&lt;string&gt; GetUpstream(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:122](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L122) |  |
+| <code>public IReadOnlyList&lt;string&gt; GetDownstream(string filePath);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:134](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L134) |  |
+| <code>public LineageReport GenerateReport();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:146](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L146) |  |
+| <code>public async Task SaveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataLineageService.cs:175](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L175) |  |
+
+## DataQualityReport
+
+Qualified name: <code>Meridian.Storage.Services.DataQualityReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataQualityService.cs:1148](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1148).
+
+```csharp
+public sealed record DataQualityReport(DateTimeOffset GeneratedAt, int FilesAnalyzed, double AverageScore, Dictionary<string, double> ScoresByDimension, IReadOnlyList<DataQualityScore> LowQualityFiles, IReadOnlyList<string> Recommendations)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int FilesAttempted { get; init; }</code> | [src/Meridian.Storage/Services/DataQualityService.cs:1157](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1157) |  |
+| <code>public int FilesSucceeded { get; init; }</code> | [src/Meridian.Storage/Services/DataQualityService.cs:1158](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1158) |  |
+| <code>public int FilesFailed { get; init; }</code> | [src/Meridian.Storage/Services/DataQualityService.cs:1159](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1159) |  |
+| <code>public IReadOnlyList&lt;DataQualityReportIssue&gt; Issues { get; init; } = [];</code> | [src/Meridian.Storage/Services/DataQualityService.cs:1160](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1160) |  |
+
+## DataQualityReportIssue
+
+Qualified name: <code>Meridian.Storage.Services.DataQualityReportIssue</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataQualityService.cs:1163](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1163).
+
+```csharp
+public sealed record DataQualityReportIssue(string Path, string Message, string? ExceptionType);
+```
+
+## DataQualityScore
+
+Qualified name: <code>Meridian.Storage.Services.DataQualityScore</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataQualityService.cs:1131](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1131).
+
+```csharp
+public sealed record DataQualityScore(string Path, DateTimeOffset EvaluatedAt, double OverallScore, QualityDimension[] Dimensions)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public VerifiedOperationOutcome? Outcome { get; init; }</code> | [src/Meridian.Storage/Services/DataQualityService.cs:1138](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1138) |  |
+
+## DataQualityScoringReport
+
+Qualified name: <code>Meridian.Storage.Services.DataQualityScoringReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataQualityScoringService.cs:488](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L488).
+
+```csharp
+public sealed record DataQualityScoringReport(DateTime GeneratedAtUtc, IReadOnlyList<QualityAssessment> Assessments, QualityReportSummary Summary);
+```
+
+## DataQualityScoringService
+
+Qualified name: <code>Meridian.Storage.Services.DataQualityScoringService</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/DataQualityScoringService.cs:16](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L16).
+
+Service that computes quality scores for stored data files and performs best-of-breed selection when multiple sources provide overlapping data. Quality scores are based on completeness, sequence integrity, latency, and cross-source consistency.
+
+```csharp
+public sealed class DataQualityScoringService : IDataQualityScoringService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DataQualityScoringService(StorageOptions options, ILogger&lt;DataQualityScoringService&gt; logger, ISourceRegistry? sourceRegistry = null, IMetadataTagService? metadataService = null);</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:27](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L27) |  |
+| <code>public async Task&lt;QualityAssessment&gt; ScoreFileAsync(string filePath, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:41](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L41) |  |
+| <code>public async Task&lt;BestOfBreedResult&gt; SelectBestSourceAsync(string symbol, string eventType, DateTimeOffset? date = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:107](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L107) |  |
+| <code>public async Task&lt;DataQualityScoringReport&gt; GenerateReportAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:166](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L166) |  |
+
+## DataQualityService
+
+Qualified name: <code>Meridian.Storage.Services.DataQualityService</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/DataQualityService.cs:18](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L18).
+
+Service for data quality scoring, best-of-breed selection, and quality monitoring.
+
+```csharp
+public sealed class DataQualityService : IDataQualityService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DataQualityService(StorageOptions options, ISourceRegistry? sourceRegistry = null, IQualityTrendStore? trendStore = null, ILogger&lt;DataQualityService&gt;? logger = null);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:27](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L27) |  |
+| <code>public async Task&lt;DataQualityScore&gt; ScoreAsync(string path, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:39](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L39) |  |
+| <code>public async Task&lt;DataQualityReport&gt; GenerateReportAsync(QualityReportOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:382](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L382) |  |
+| <code>public Task&lt;DataQualityScore[]&gt; GetHistoricalScoresAsync(string path, TimeSpan window, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:509](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L509) |  |
+| <code>public async Task&lt;SourceRanking[]&gt; RankSourcesAsync(string symbol, DateTimeOffset date, MarketEventType type, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:520](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L520) |  |
+| <code>public async Task&lt;ConsolidatedDataset&gt; CreateGoldenRecordAsync(string symbol, DateTimeOffset date, ConsolidationOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:595](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L595) |  |
+| <code>public async Task&lt;QualityTrend&gt; GetTrendAsync(string symbol, TimeSpan window, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:656](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L656) |  |
+| <code>public Task&lt;QualityAlert[]&gt; GetQualityAlertsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:811](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L811) |  |
+
+## DataReplacementCostByEventType
+
+Qualified name: <code>Meridian.Storage.Services.DataReplacementCostByEventType</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:203](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L203).
+
+Per-event-type slice of the symbol-day cost basis.
+
+```csharp
+public sealed record DataReplacementCostByEventType(string EventType, long SymbolDays, decimal EstimatedUsd);
+```
+
+## DataReplacementCostEstimate
+
+Qualified name: <code>Meridian.Storage.Services.DataReplacementCostEstimate</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:173](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L173).
+
+Replacement-cost estimate for the local market-data store.
+
+```csharp
+public sealed record DataReplacementCostEstimate(DateTimeOffset GeneratedAtUtc, string Currency, decimal ConservativeEstimateUsd, decimal SymbolDayBasisUsd, decimal VolumeBasisUsd, int TotalSymbols, long TotalSymbolDays, decimal TotalGigabytes, IReadOnlyList<DataReplacementCostByEventType> EventTypeBreakdown, string RateCardSource, string RateCardLastVerified, string MethodologyNote)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static DataReplacementCostEstimate Empty(DataReplacementCostOptions options) =&gt; …;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:187](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L187) |  |
+
+## DataReplacementCostEstimator
+
+Qualified name: <code>Meridian.Storage.Services.DataReplacementCostEstimator</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:12](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L12).
+
+Estimates what the locally collected market-data store would cost to repurchase from commercial metered vendors, priced against a configurable rate card. Estimates are deliberately conservative: two independent bases are computed (per symbol-day and per gigabyte) and the lower one is reported as the headline figure. This is a pure post-processing pass over the StorageCatalog; it never touches the data files.
+
+```csharp
+public static class DataReplacementCostEstimator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static DataReplacementCostEstimate Estimate(StorageCatalog catalog, DataReplacementCostOptions options);</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:19](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L19) | Computes a replacement-cost estimate for catalog using options. Returns a zero-valued estimate when the catalog is empty or the meter is disabled. |
+
+## DataReplacementCostOptions
+
+Qualified name: <code>Meridian.Storage.Services.DataReplacementCostOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:140](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L140).
+
+Rate card and toggles for the data replacement-cost meter, bound from the DataReplacementCost configuration section. Defaults are conservative low-end list prices as of the recorded verification date; operators should refresh them from current vendor rate cards rather than treating them as quotes.
+
+```csharp
+public sealed class DataReplacementCostOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SectionName = &quot;DataReplacementCost&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:142](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L142) |  |
+| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:144](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L144) |  |
+| <code>public string Currency { get; set; } = &quot;USD&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:146](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L146) |  |
+| <code>public Dictionary&lt;string, decimal&gt;? HistoricalRatePerSymbolDayUsd { get; set; } = new (StringComparer.OrdinalIgnoreCase) {[&quot;Trade&quot;]= 0.10m, [&quot;Quote&quot;]= 0.10m, [&quot;Depth&quot;]= 0.25m, [&quot;OrderBook&quot;]= 0.25m, };</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:149](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L149) | Historical per-symbol-day rates keyed by event type (e.g. Trade, Quote, Depth). |
+| <code>public decimal DefaultRatePerSymbolDayUsd { get; set; } = 0.10m;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:159](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L159) | Fallback rate applied to event types not present in the rate card. |
+| <code>public decimal RatePerGigabyteUsd { get; set; } = 5.00m;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:162](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L162) | Metered per-gigabyte rate applied to uncompressed stored volume. |
+| <code>public string RateCardSource { get; set; } = &quot;Conservative low-end of published metered vendor list prices (per-symbol-day historical and per-GB tick data).&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:165](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L165) | Provenance note for the configured rates. |
+| <code>public string RateCardLastVerified { get; set; } = &quot;2026-07-01&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:169](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L169) | Date the rate card values were last checked against vendor pricing pages. |
+
+## DateIndex
+
+Qualified name: <code>Meridian.Storage.Services.DateIndex</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:841](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L841).
+
+```csharp
+public sealed record DateIndex(string Date, List<string> Files);
+```
+
+## DateRange
+
+Qualified name: <code>Meridian.Storage.Services.DateRange</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:837](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L837).
+
+```csharp
+public sealed record DateRange(DateTimeOffset Start, DateTimeOffset End);
+```
+
+## DefragOptions
+
+Qualified name: <code>Meridian.Storage.Services.DefragOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:945](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L945).
+
+```csharp
+public sealed record DefragOptions(long MinFileSizeBytes = 1_048_576, int MaxFilesPerMerge = 100, bool PreserveOriginals = false, System.IO.Compression.CompressionLevel TargetCompression = System.IO.Compression.CompressionLevel.Optimal, TimeSpan MaxFileAge = default, bool DryRun = false)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TimeSpan MaxFileAge { get; init; } = MaxFileAge == default? TimeSpan.FromDays(1) : MaxFileAge;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:954](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L954) |  |
+| <code>public DefragOptions() : this(1_048_576);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:956](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L956) |  |

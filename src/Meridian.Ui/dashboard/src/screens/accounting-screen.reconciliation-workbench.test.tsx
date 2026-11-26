@@ -207,8 +207,10 @@ describe("Reconciliation workbench", () => {
     const readResult = vi.fn(async (): Promise<ReconciliationBulkCaseworkResult> => {
       const result = bulkResult(services.execute.mock.calls[0][0], () => true);
       return { ...result, results: result.results.map((entry) => {
-        if (!entry.item) throw new Error("The retained fixture result must include its case.");
-        return { ...entry, item: { ...entry.item, sourceType: "statement", evidenceLinks: ["urn:meridian:statement-casework-handoff:pending:fixture"] } };
+        if (!entry.item) throw new Error(`The bulk fixture has no retained queue item for ${entry.breakId}.`);
+        return { ...entry,
+          item: { ...entry.item, sourceType: "statement", evidenceLinks: ["urn:meridian:statement-casework-handoff:pending:fixture"] }
+        };
       }) };
     });
     renderWorkbench(undefined, { ...services, readResult });

@@ -6,10 +6,20 @@ module_id: SRC-UI-SERVICES
 path: src/Meridian.Ui.Services
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-21
+
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Ui.Services
+
+`ApiClientService.PostArtifactAsync` uses the existing authenticated endpoint session and mutation
+headers to return server artifact bytes. The desktop posted-ledger CSV action consumes it without
+reformatting journal amounts or treating authorization failures as fixture data.
+
+Stored historical-bar reads preserve explicit `PriceBasis` and the legacy adjustment flag.
+Missing basis remains Unknown; contradictory declarations are rejected as malformed records rather
+than relabeled raw. This keeps workstation-loaded prices consistent with provider and storage evidence.
 
 Provider health keeps unavailable numeric metrics null in snapshots and history. Ranking uses
 measured values, and composite scores require every weighted component.
@@ -60,6 +70,12 @@ tenant-scoped registry and advisory journal-line routes. The workspace retains u
 input, server capabilities, exact approved versions, evidence and review history without duplicating
 agreement authority in the desktop client. Source-line responses verify agreement/book/date identity
 and retain exact amount strings. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+`IntercompanyAgreementWorkQueueWorkspace` and the client's work-queue partial consume the same
+durable lifecycle cases as the browser. They retain current scope, version/hash and source
+fingerprint, clear prior book/date state, and send explicit observation or update commands.
+Guarantee caps and unavailable measured exposure remain separate. See
+[lifecycle casework](../../docs/operators/intercompany-entity-controls.md#tracking-agreement-lifecycle-work).
 
 `IntercompanyManagementFeeWorkspace` is the desktop state for fixed management fees over the client's fee
 preview and draft calls; the agreement workspace carries the fixed-fee basis. See
@@ -162,7 +178,14 @@ a missing or default source cannot confirm a `NotRequired` result.
 `CredentialService` is a no-op test and fallback base that never yields a token. Provider ids come
 from the host's `OAuthTokenResourcePrefix` (WPF: `Meridian.OAuth.<provider>`), and `.refresh`
 companion entries are skipped. The WPF host starts the service after desktop activation and disposes
-it on exit. `TimeSeriesAlignmentService` reports an HTTP 501 as `IsServiceUnavailable` so callers can
+it on exit. `TimeSeriesAlignmentService` sends the same options for preview and execution and writes
+the completed rows atomically on the workstation. Exports retain the source IDs, adjustment basis
+and gap status. The service recognizes HTTP 501 from older hosts.
+
+it on exit. The first and subsequent scheduled checks share the same exception handling and
+cancellation. Concurrent scheduled and manual refreshes share one request and outcome per provider.
+A cancelled caller waiting on an existing request only stops its own wait. `TimeSeriesAlignmentService`
+reports an HTTP 501 as `IsServiceUnavailable` so callers can
 present alignment as unavailable rather than as a failed run.
 Provider IDs use the shared ProviderSdk identity map for request paths, mutation acknowledgements,
 status joins and catalog deduplication. Aliases resolve to one canonical status row and retain the

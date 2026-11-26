@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildWorkflowContinuityViewModel } from "@/app-shell.workflow-continuity-view-model";
 import { workspaceForPath } from "@/lib/workspace";

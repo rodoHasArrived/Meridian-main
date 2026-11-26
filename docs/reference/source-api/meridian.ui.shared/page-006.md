@@ -6,42 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## QuantTemplatesResponse
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantTemplatesResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:415](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L415).
-
-Response returned by /api/quant/templates.
-
-```csharp
-public sealed record QuantTemplatesResponse(IReadOnlyList<QuantTemplateDto> Templates);
-```
-
-## QuantTradeDto
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantTradeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:390](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L390).
-
-JSON-friendly script-emitted trade row.
-
-```csharp
-public sealed record QuantTradeDto(string Timestamp, string Symbol, string Side, decimal Quantity, decimal Price, decimal Commission);
-```
-
-## RecordFactorObservationRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.RecordFactorObservationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs#L18).
-
-An observed pool factor for an effective date.
-
-```csharp
-public sealed record RecordFactorObservationRequest(DateOnly EffectiveDate, decimal Factor, string Source, string? EvidenceRef);
-```
-
 ## RegisterFixedAssetRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.RegisterFixedAssetRequest</code>. Kind: `record`.
@@ -377,30 +341,6 @@ Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:13](
 public static partial class SecurityMasterEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.EntityMaster.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.EntityMaster.cs#L18).
-
-```csharp
-public static partial class SecurityMasterEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs#L20).
-
-```csharp
-public static partial class SecurityMasterEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.HeldAmendments.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.HeldAmendments.cs#L13).
-
-```csharp
-public static partial class SecurityMasterEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Merge.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Merge.cs#L14).
-
-```csharp
-public static partial class SecurityMasterEndpoints
-```
-
 Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ObservedFixings.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ObservedFixings.cs#L17).
 
 ```csharp
@@ -414,12 +354,6 @@ public static partial class SecurityMasterEndpoints
 ```
 
 Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs#L12).
-
-```csharp
-public static partial class SecurityMasterEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.PricingEntitlements.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.PricingEntitlements.cs#L19).
 
 ```csharp
 public static partial class SecurityMasterEndpoints
@@ -447,37 +381,6 @@ Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.WriteRefusals.
 
 ```csharp
 public static partial class SecurityMasterEndpoints
-```
-
-## SecurityMasterReviewQueueProjection
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.SecurityMasterReviewQueueProjection</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterReviewQueueProjection.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterReviewQueueProjection.cs#L11).
-
-Maps Security Master review-queue rows (held amendments, exception cases) to the shared contract DTOs both workstations read, so neither client deserializes an Application or Storage type.
-
-```csharp
-public static class SecurityMasterReviewQueueProjection
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecurityMasterHeldAmendmentDto ToDto(AppSecurityMaster.SecurityMasterHeldAmendment row);</code> | [src/Meridian.Ui.Shared/Endpoints/SecurityMasterReviewQueueProjection.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterReviewQueueProjection.cs#L13) |  |
-| <code>public static SecurityMasterExceptionCaseQueueItemDto ToQueueItem(SecurityMasterExceptionCase row, DateTimeOffset asOf);</code> | [src/Meridian.Ui.Shared/Endpoints/SecurityMasterReviewQueueProjection.cs:31](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterReviewQueueProjection.cs#L31) | The queue row with the SLA verdict and age (hours, one decimal) computed at asOf. |
-
-## SetEntityParentRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.SetEntityParentRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.EntityMaster.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.EntityMaster.cs#L13).
-
-Body linking an entity to its direct parent from a date.
-
-```csharp
-public sealed record SetEntityParentRequest(Guid ParentEntityId, DateOnly ValidFrom);
 ```
 
 ## StatusEndpoints
@@ -1253,3 +1156,89 @@ Declared public members:
 | --- | --- | --- |
 | <code>public WorkstationFundScopeTenantAccessor(IHttpContextAccessor httpContextAccessor);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:110](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L110) |  |
 | <code>public string? ResolveCallerTenant();</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:116](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L116) |  |
+
+## WorkstationTenantCompanyScopeEndpointFilters
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationTenantCompanyScopeEndpointFilters</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:178](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L178).
+
+Unconditional isolation gate for workstation routes whose durable identity is tenant plus company. Unlike the broader rollout-controlled fund-write gate, this filter never permits or merely logs an incomplete scope.
+
+```csharp
+public static class WorkstationTenantCompanyScopeEndpointFilters
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RouteHandlerBuilder RequireWorkstationTenantCompanyScope(this RouteHandlerBuilder builder);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:183](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L183) |  |
+
+## WorkstationTenantContext
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationTenantContext</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L14).
+
+Request-scoped operator and tenant context resolved from authenticated workstation middleware.
+
+```csharp
+public sealed record WorkstationTenantContext(string? TenantId, string? CompanyId, string? Actor, string? RoleProfileName, UserPermission Permissions)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool HasTenantScope =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L21) |  |
+
+## WorkstationTenantScopeEndpointFilters
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationTenantScopeEndpointFilters</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:142](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L142).
+
+Adds tenant-scope metadata and request filters to route groups and individual endpoints.
+
+```csharp
+public static class WorkstationTenantScopeEndpointFilters
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RouteGroupBuilder RequireWorkstationTenantScope(this RouteGroupBuilder group);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:146](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L146) |  |
+| <code>public static RouteHandlerBuilder RequireWorkstationTenantScope(this RouteHandlerBuilder builder);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:153](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L153) |  |
+
+## WorkstationTenantScopeMetadata
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationTenantScopeMetadata</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:137](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L137).
+
+Marks endpoints that require an authenticated workstation tenant scope.
+
+```csharp
+public sealed class WorkstationTenantScopeMetadata;
+```
+
+## AccountCashForecastEvidenceAdapter
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastEvidenceAdapter</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L37).
+
+Exact supported source economics and accepted review, scoped to a single account/book.
+
+```csharp
+public sealed class AccountCashForecastEvidenceAdapter(IEvidenceArtifactStore store)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task VerifyMonitoringAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:47](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L47) |  |
+| <code>public async Task VerifyAsync(AccountCashForecastRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:71](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L71) |  |

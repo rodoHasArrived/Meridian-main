@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileBusinessDayCalendarSource
+
+Qualified name: <code>Meridian.Storage.Calendars.FileBusinessDayCalendarSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs:38](../../../../src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs#L38).
+
+The business-day calendars held as files under &lt;dataRoot&gt;/calendars, one calendar per {ID}.json file, loaded once (there is no hot reload) plus the built-in BusinessDayCalendars.WeekendsOnly calendar (ADR-025).
+
+```csharp
+public sealed class FileBusinessDayCalendarSource : IBusinessDayCalendarSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string DirectoryName = &quot;calendars&quot;;</code> | [src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs:41](../../../../src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs#L41) | The directory under the data root that holds calendar files. |
+| <code>public string CalendarDirectory { get; }</code> | [src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs:70](../../../../src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs#L70) | The directory the calendars were read from: &lt;dataRoot&gt;/calendars. |
+| <code>public IReadOnlyList&lt;HolidayBusinessDayCalendar&gt; Calendars { get; }</code> | [src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs:76](../../../../src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs#L76) | The calendars loaded from files, sorted by ordinal id. The built-in WEEKENDS calendar is not listed here but always resolves. |
+| <code>public IReadOnlyList&lt;BusinessDayCalendarFileRefusal&gt; RefusedFiles { get; }</code> | [src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs:79](../../../../src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs#L79) | The refused calendar files, in ordinal file-name order. |
+| <code>public static FileBusinessDayCalendarSource Load(string dataRoot, ILogger&lt;FileBusinessDayCalendarSource&gt;? logger = null);</code> | [src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs:87](../../../../src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs#L87) | Reads every top-level *.json file under &lt;dataRoot&gt;/calendars once, in ordinal file-name order, logging one Information line per loaded calendar (id, version, hash and coverage) and one Warning per refused file. Subdirectories and other files are ignored. |
+| <code>public bool TryGet(string calendarId, [NotNullWhen(true)] out IBusinessDayCalendar? calendar) =&gt; …;</code> | [src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs:180](../../../../src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs#L180) |  |
+| <code>public bool TryResolve(IReadOnlyList&lt;string&gt; calendarIds, [NotNullWhen(true)] out IBusinessDayCalendar? calendar) =&gt; …;</code> | [src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs:184](../../../../src/Meridian.Storage/Calendars/FileBusinessDayCalendarSource.cs#L184) |  |
+
+## CompressionCodec
+
+Qualified name: <code>Meridian.Storage.CompressionCodec</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:210](../../../../src/Meridian.Storage/StorageOptions.cs#L210).
+
+Compression codec options.
+
+```csharp
+public enum CompressionCodec : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Storage/StorageOptions.cs:213](../../../../src/Meridian.Storage/StorageOptions.cs#L213) | No compression. |
+| <code>LZ4</code> | [src/Meridian.Storage/StorageOptions.cs:215](../../../../src/Meridian.Storage/StorageOptions.cs#L215) | LZ4 - fast compression, lower ratio. |
+| <code>Gzip</code> | [src/Meridian.Storage/StorageOptions.cs:217](../../../../src/Meridian.Storage/StorageOptions.cs#L217) | Gzip - balanced compression. |
+| <code>Zstd</code> | [src/Meridian.Storage/StorageOptions.cs:219](../../../../src/Meridian.Storage/StorageOptions.cs#L219) | Zstd - high compression ratio. |
+| <code>Brotli</code> | [src/Meridian.Storage/StorageOptions.cs:221](../../../../src/Meridian.Storage/StorageOptions.cs#L221) | Brotli - high compression, slower. |
+
 ## ConflictStrategy
 
 Qualified name: <code>Meridian.Storage.ConflictStrategy</code>. Kind: `enum`.
@@ -406,22 +452,22 @@ Declared public members:
 | <code>public async Task&lt;JournalEntryDto?&gt; GetJournalEntryAsync(Guid journalEntryId, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:493](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L493) |  |
 | <code>public async Task&lt;JournalEntryDto?&gt; MarkJournalPostedAsync(Guid journalEntryId, DateTimeOffset postedAt, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:517](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L517) |  |
 | <code>public async Task&lt;ReconciliationRunDto&gt; SaveReconciliationRunAsync(ReconciliationRunDto run, IReadOnlyList&lt;ReconciliationResultDto&gt; results, IReadOnlyList&lt;ReconciliationExceptionDto&gt; exceptions, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:535](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L535) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationRunDto&gt;&gt; GetReconciliationRunsAsync(Guid loanId, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:707](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L707) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationResultDto&gt;&gt; GetReconciliationResultsAsync(Guid reconciliationRunId, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:741](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L741) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationExceptionDto&gt;&gt; GetReconciliationExceptionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:793](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L793) |  |
-| <code>public async Task&lt;ReconciliationExceptionDto?&gt; ResolveReconciliationExceptionAsync(Guid exceptionId, string resolutionNote, string? assignedTo, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:831](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L831) |  |
-| <code>public async Task&lt;ServicerReportBatchDto&gt; SaveServicerBatchAsync(ServicerReportBatchDto batch, IReadOnlyList&lt;ServicerPositionReportLineDto&gt; positionLines, IReadOnlyList&lt;ServicerTransactionReportLineDto&gt; transactionLines, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:855](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L855) |  |
-| <code>public async Task&lt;ServicerReportBatchDto?&gt; GetServicerBatchAsync(Guid batchId, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1047](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1047) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ServicerPositionReportLineDto&gt;&gt; GetServicerPositionLinesAsync(Guid batchId, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1091](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1091) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ServicerTransactionReportLineDto&gt;&gt; GetServicerTransactionLinesAsync(Guid batchId, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1139](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1139) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;DirectLendingOutboxMessage&gt;&gt; GetPendingOutboxMessagesAsync(int take, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1193](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1193) |  |
-| <code>public async Task MarkOutboxProcessedAsync(Guid outboxMessageId, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1245](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1245) |  |
-| <code>public async Task MarkOutboxFailedAsync(Guid outboxMessageId, string error, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1254](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1254) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;Guid&gt;&gt; GetLoanIdsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1271](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1271) |  |
-| <code>public async Task&lt;long&gt; GetLatestEventPositionAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1286](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1286) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;Guid&gt;&gt; GetLoanIdsSinceEventPositionAsync(long lastProcessedPosition, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1294](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1294) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;RebuildCheckpointDto&gt;&gt; GetCheckpointsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1317](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1317) |  |
-| <code>public async Task UpsertCheckpointAsync(RebuildCheckpointDto checkpoint, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1349](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1349) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationRunDto&gt;&gt; GetReconciliationRunsAsync(Guid loanId, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:717](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L717) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationResultDto&gt;&gt; GetReconciliationResultsAsync(Guid reconciliationRunId, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:752](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L752) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationExceptionDto&gt;&gt; GetReconciliationExceptionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:805](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L805) |  |
+| <code>public async Task&lt;ReconciliationExceptionDto?&gt; ResolveReconciliationExceptionAsync(Guid exceptionId, string resolutionNote, string? assignedTo, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:843](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L843) |  |
+| <code>public async Task&lt;ServicerReportBatchDto&gt; SaveServicerBatchAsync(ServicerReportBatchDto batch, IReadOnlyList&lt;ServicerPositionReportLineDto&gt; positionLines, IReadOnlyList&lt;ServicerTransactionReportLineDto&gt; transactionLines, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:867](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L867) |  |
+| <code>public async Task&lt;ServicerReportBatchDto?&gt; GetServicerBatchAsync(Guid batchId, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1059](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1059) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ServicerPositionReportLineDto&gt;&gt; GetServicerPositionLinesAsync(Guid batchId, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1103](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1103) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ServicerTransactionReportLineDto&gt;&gt; GetServicerTransactionLinesAsync(Guid batchId, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1151](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1151) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;DirectLendingOutboxMessage&gt;&gt; GetPendingOutboxMessagesAsync(int take, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1205](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1205) |  |
+| <code>public async Task MarkOutboxProcessedAsync(Guid outboxMessageId, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1257](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1257) |  |
+| <code>public async Task MarkOutboxFailedAsync(Guid outboxMessageId, string error, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1266](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1266) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;Guid&gt;&gt; GetLoanIdsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1283](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1283) |  |
+| <code>public async Task&lt;long&gt; GetLatestEventPositionAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1298](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1298) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;Guid&gt;&gt; GetLoanIdsSinceEventPositionAsync(long lastProcessedPosition, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1306](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1306) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;RebuildCheckpointDto&gt;&gt; GetCheckpointsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1329](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1329) |  |
+| <code>public async Task UpsertCheckpointAsync(RebuildCheckpointDto checkpoint, CancellationToken ct = default);</code> | [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs:1361](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs#L1361) |  |
 
 Source: [src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Publication.cs:6](../../../../src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Publication.cs#L6).
 
@@ -477,95 +523,6 @@ Declared public members:
 | <code>public double MinReservePct { get; init; } = 10;</code> | [src/Meridian.Storage/StorageOptions.cs:432](../../../../src/Meridian.Storage/StorageOptions.cs#L432) | Minimum reserve percentage to keep free. |
 | <code>public double OverprovisionFactor { get; init; } = 1.1;</code> | [src/Meridian.Storage/StorageOptions.cs:435](../../../../src/Meridian.Storage/StorageOptions.cs#L435) | Allow burst above quota by this factor. |
 | <code>public bool StealFromInactive { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:438](../../../../src/Meridian.Storage/StorageOptions.cs#L438) | Reallocate from unused quotas. |
-
-## EntityMasterMigrationRunner
-
-Qualified name: <code>Meridian.Storage.EntityMaster.EntityMasterMigrationRunner</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:17](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L17).
-
-Applies the entity-master migration set.
-
-```csharp
-public sealed class EntityMasterMigrationRunner
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EntityMasterMigrationRunner(EntityMasterOptions options);</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:21](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L21) |  |
-| <code>public Task EnsureMigratedAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:37](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L37) |  |
-
-## EntityMasterOptions
-
-Qualified name: <code>Meridian.Storage.EntityMaster.EntityMasterOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:9](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L9).
-
-Connection settings for the entity master (ADR-033).
-
-```csharp
-public sealed class EntityMasterOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ConnectionString { get; set; } = string.Empty;</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:11](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L11) |  |
-| <code>public string Schema { get; set; } = &quot;entity_master&quot;;</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:13](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L13) |  |
-
-## InMemoryEntityMasterStore
-
-Qualified name: <code>Meridian.Storage.EntityMaster.InMemoryEntityMasterStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:41](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L41).
-
-Process-local entity master for hosts without PostgreSQL.
-
-```csharp
-public sealed class InMemoryEntityMasterStore : IEntityMasterStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;LegalEntityDto&gt; CreateEntityAsync(CreateLegalEntityRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:48](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L48) |  |
-| <code>public Task&lt;LegalEntityDto?&gt; GetEntityAsync(Guid entityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:67](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L67) |  |
-| <code>public Task&lt;LegalEntityDto?&gt; FindByLeiAsync(string lei, CancellationToken ct = default);</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:70](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L70) |  |
-| <code>public Task&lt;LegalEntityDto?&gt; FindByCikAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:76](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L76) |  |
-| <code>public Task&lt;EntityParentLinkDto&gt; SetParentAsync(Guid entityId, Guid parentEntityId, DateOnly validFrom, string actor, CancellationToken ct = default);</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:82](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L82) |  |
-| <code>public Task&lt;EntityParentLinkDto?&gt; GetParentAsync(Guid entityId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:98](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L98) |  |
-| <code>public Task&lt;SecurityIssuerLinkDto&gt; LinkIssuerAsync(Guid securityId, Guid issuerEntityId, DateOnly validFrom, string actor, CancellationToken ct = default);</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:106](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L106) |  |
-| <code>public Task&lt;SecurityIssuerLinkDto?&gt; GetIssuerAsync(Guid securityId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:119](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L119) |  |
-
-## PostgresEntityMasterStore
-
-Qualified name: <code>Meridian.Storage.EntityMaster.PostgresEntityMasterStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:145](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L145).
-
-PostgreSQL entity master (ADR-033), migrated on first use.
-
-```csharp
-public sealed class PostgresEntityMasterStore : IEntityMasterStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresEntityMasterStore(EntityMasterOptions options);</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:151](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L151) |  |
-| <code>public async Task&lt;LegalEntityDto&gt; CreateEntityAsync(CreateLegalEntityRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:158](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L158) |  |
-| <code>public Task&lt;LegalEntityDto?&gt; GetEntityAsync(Guid entityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:189](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L189) |  |
-| <code>public Task&lt;LegalEntityDto?&gt; FindByLeiAsync(string lei, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:192](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L192) |  |
-| <code>public Task&lt;LegalEntityDto?&gt; FindByCikAsync(string cik, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:195](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L195) |  |
-| <code>public async Task&lt;EntityParentLinkDto&gt; SetParentAsync(Guid entityId, Guid parentEntityId, DateOnly validFrom, string actor, CancellationToken ct = default);</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:198](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L198) |  |
-| <code>public async Task&lt;EntityParentLinkDto?&gt; GetParentAsync(Guid entityId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:228](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L228) |  |
-| <code>public async Task&lt;SecurityIssuerLinkDto&gt; LinkIssuerAsync(Guid securityId, Guid issuerEntityId, DateOnly validFrom, string actor, CancellationToken ct = default);</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:246](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L246) |  |
-| <code>public async Task&lt;SecurityIssuerLinkDto?&gt; GetIssuerAsync(Guid securityId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Storage/EntityMaster/EntityMasterStores.cs:273](../../../../src/Meridian.Storage/EntityMaster/EntityMasterStores.cs#L273) |  |
 
 ## EtlAuditStore
 
@@ -745,6 +702,12 @@ XLSX (Excel) format export with Open XML generation.
 public sealed partial class AnalysisExportService
 ```
 
+Source: [src/Meridian.Storage/Export/AnalysisExportService.PriceBasis.cs:6](../../../../src/Meridian.Storage/Export/AnalysisExportService.PriceBasis.cs#L6).
+
+```csharp
+public sealed partial class AnalysisExportService
+```
+
 Source: [src/Meridian.Storage/Export/AnalysisExportService.TextTables.cs:8](../../../../src/Meridian.Storage/Export/AnalysisExportService.TextTables.cs#L8).
 
 ```csharp
@@ -835,7 +798,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Export.CompressionSettings</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Export/ExportProfile.cs:297](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L297).
+Source: [src/Meridian.Storage/Export/ExportProfile.cs:300](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L300).
 
 Compression settings for exports.
 
@@ -847,14 +810,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;type&quot;)] public CompressionType Type { get; set; } = CompressionType.None;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:300](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L300) |  |
-| <code>[JsonPropertyName(&quot;level&quot;)] public int Level { get; set; } = 6;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:303](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L303) |  |
+| <code>[JsonPropertyName(&quot;type&quot;)] public CompressionType Type { get; set; } = CompressionType.None;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:303](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L303) |  |
+| <code>[JsonPropertyName(&quot;level&quot;)] public int Level { get; set; } = 6;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:306](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L306) |  |
 
 ## CompressionType
 
 Qualified name: <code>Meridian.Storage.Export.CompressionType</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Export/ExportProfile.cs:309](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L309).
+Source: [src/Meridian.Storage/Export/ExportProfile.cs:312](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L312).
 
 Supported compression types.
 
@@ -866,12 +829,12 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>None</code> | [src/Meridian.Storage/Export/ExportProfile.cs:311](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L311) |  |
-| <code>Gzip</code> | [src/Meridian.Storage/Export/ExportProfile.cs:312](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L312) |  |
-| <code>Snappy</code> | [src/Meridian.Storage/Export/ExportProfile.cs:313](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L313) |  |
-| <code>Zstd</code> | [src/Meridian.Storage/Export/ExportProfile.cs:314](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L314) |  |
-| <code>Lz4</code> | [src/Meridian.Storage/Export/ExportProfile.cs:315](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L315) |  |
-| <code>Zip</code> | [src/Meridian.Storage/Export/ExportProfile.cs:316](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L316) |  |
+| <code>None</code> | [src/Meridian.Storage/Export/ExportProfile.cs:314](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L314) |  |
+| <code>Gzip</code> | [src/Meridian.Storage/Export/ExportProfile.cs:315](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L315) |  |
+| <code>Snappy</code> | [src/Meridian.Storage/Export/ExportProfile.cs:316](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L316) |  |
+| <code>Zstd</code> | [src/Meridian.Storage/Export/ExportProfile.cs:317](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L317) |  |
+| <code>Lz4</code> | [src/Meridian.Storage/Export/ExportProfile.cs:318](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L318) |  |
+| <code>Zip</code> | [src/Meridian.Storage/Export/ExportProfile.cs:319](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L319) |  |
 
 ## DataGap
 
@@ -1021,7 +984,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Export.ExportFormat</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Export/ExportProfile.cs:276](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L276).
+Source: [src/Meridian.Storage/Export/ExportProfile.cs:279](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L279).
 
 Supported export formats.
 
@@ -1033,13 +996,13 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Parquet</code> | [src/Meridian.Storage/Export/ExportProfile.cs:279](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L279) | Apache Parquet - columnar format for analytics. |
-| <code>Csv</code> | [src/Meridian.Storage/Export/ExportProfile.cs:281](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L281) | Comma-separated values. |
-| <code>Jsonl</code> | [src/Meridian.Storage/Export/ExportProfile.cs:283](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L283) | JSON Lines - one JSON object per line. |
-| <code>Lean</code> | [src/Meridian.Storage/Export/ExportProfile.cs:285](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L285) | QuantConnect Lean native format. |
-| <code>Xlsx</code> | [src/Meridian.Storage/Export/ExportProfile.cs:287](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L287) | Microsoft Excel XLSX format. |
-| <code>Sql</code> | [src/Meridian.Storage/Export/ExportProfile.cs:289](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L289) | SQL statements (INSERT or COPY). |
-| <code>Arrow</code> | [src/Meridian.Storage/Export/ExportProfile.cs:291](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L291) | Apache Arrow IPC format (Feather v2). |
+| <code>Parquet</code> | [src/Meridian.Storage/Export/ExportProfile.cs:282](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L282) | Apache Parquet - columnar format for analytics. |
+| <code>Csv</code> | [src/Meridian.Storage/Export/ExportProfile.cs:284](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L284) | Comma-separated values. |
+| <code>Jsonl</code> | [src/Meridian.Storage/Export/ExportProfile.cs:286](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L286) | JSON Lines - one JSON object per line. |
+| <code>Lean</code> | [src/Meridian.Storage/Export/ExportProfile.cs:288](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L288) | QuantConnect Lean native format. |
+| <code>Xlsx</code> | [src/Meridian.Storage/Export/ExportProfile.cs:290](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L290) | Microsoft Excel XLSX format. |
+| <code>Sql</code> | [src/Meridian.Storage/Export/ExportProfile.cs:292](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L292) | SQL statements (INSERT or COPY). |
+| <code>Arrow</code> | [src/Meridian.Storage/Export/ExportProfile.cs:294](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L294) | Apache Arrow IPC format (Feather v2). |
 
 ## ExportPreflightContext
 
@@ -1138,23 +1101,23 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;format&quot;)] public ExportFormat Format { get; set; } = ExportFormat.Parquet;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:39](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L39) | Output format (Parquet, CSV, JSONL, Lean, XLSX, SQL). |
 | <code>[JsonPropertyName(&quot;compression&quot;)] public CompressionSettings Compression { get; set; } = new ();</code> | [src/Meridian.Storage/Export/ExportProfile.cs:45](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L45) | Compression settings. |
 | <code>[JsonPropertyName(&quot;timestampSettings&quot;)] public TimestampSettings TimestampSettings { get; set; } = new ();</code> | [src/Meridian.Storage/Export/ExportProfile.cs:51](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L51) | Timestamp handling settings. |
-| <code>[JsonPropertyName(&quot;includeFields&quot;)] public string[]? IncludeFields { get; set; }</code> | [src/Meridian.Storage/Export/ExportProfile.cs:57](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L57) | Fields to include in export (null = all fields). |
-| <code>[JsonPropertyName(&quot;excludeFields&quot;)] public string[]? ExcludeFields { get; set; }</code> | [src/Meridian.Storage/Export/ExportProfile.cs:63](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L63) | Fields to exclude from export. |
-| <code>[JsonPropertyName(&quot;includeLoaderScript&quot;)] public bool IncludeLoaderScript { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:69](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L69) | Whether to generate sample loader code. |
-| <code>[JsonPropertyName(&quot;includeDataDictionary&quot;)] public bool IncludeDataDictionary { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:75](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L75) | Whether to generate data dictionary. |
-| <code>[JsonPropertyName(&quot;fileNamePattern&quot;)] public string FileNamePattern { get; set; } = &quot;{symbol}_{date}.{format}&quot;;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:82](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L82) | File naming pattern. Variables: {symbol}, {date}, {type}, {format} |
-| <code>[JsonPropertyName(&quot;splitBySymbol&quot;)] public bool SplitBySymbol { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:88](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L88) | Whether to split files by symbol. |
-| <code>[JsonPropertyName(&quot;splitByDate&quot;)] public bool SplitByDate { get; set; }</code> | [src/Meridian.Storage/Export/ExportProfile.cs:94](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L94) | Whether to split files by date. |
-| <code>[JsonPropertyName(&quot;maxRecordsPerFile&quot;)] public long? MaxRecordsPerFile { get; set; }</code> | [src/Meridian.Storage/Export/ExportProfile.cs:100](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L100) | Maximum records per file (null = unlimited). |
-| <code>public static ExportProfile PythonPandas =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:105](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L105) | Pre-built profile for Python/Pandas. |
-| <code>public static ExportProfile RStats =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:121](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L121) | Pre-built profile for R. |
-| <code>public static ExportProfile QuantConnectLean =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:137](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L137) | Pre-built profile for QuantConnect Lean. |
-| <code>public static ExportProfile Excel =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:155](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L155) | Pre-built profile for Excel. |
-| <code>public static ExportProfile PostgreSql =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:172](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L172) | Pre-built profile for PostgreSQL/TimescaleDB. |
-| <code>public static ExportProfile ArrowFeather =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:189](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L189) | Pre-built profile for Apache Arrow/Feather. |
-| <code>public static ExportProfile RunMat =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:205](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L205) | Pre-built profile for RunMat. |
-| <code>public ExportProfile WithFormat(ExportFormat newFormat) =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:239](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L239) | Creates a copy of this profile with only the format overridden. All other settings (compression, timestamps, loader script, data dictionary, file naming, etc.) are preserved. |
-| <code>public static IReadOnlyList&lt;ExportProfile&gt; GetBuiltInProfiles() =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:261](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L261) | Get all pre-built profiles. |
+| <code>[JsonPropertyName(&quot;includeFields&quot;)] public string[]? IncludeFields { get; set; }</code> | [src/Meridian.Storage/Export/ExportProfile.cs:59](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L59) | Fields to include in export (null = all fields). Historical OHLC exports retain PriceBasis and IsAdjusted companions when prices are selected; optional adjusted price fields retain their independent AdjustedPriceBasis. |
+| <code>[JsonPropertyName(&quot;excludeFields&quot;)] public string[]? ExcludeFields { get; set; }</code> | [src/Meridian.Storage/Export/ExportProfile.cs:66](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L66) | Fields to exclude from export. Historical price-basis companions cannot be removed while retaining the prices they describe. |
+| <code>[JsonPropertyName(&quot;includeLoaderScript&quot;)] public bool IncludeLoaderScript { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:72](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L72) | Whether to generate sample loader code. |
+| <code>[JsonPropertyName(&quot;includeDataDictionary&quot;)] public bool IncludeDataDictionary { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:78](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L78) | Whether to generate data dictionary. |
+| <code>[JsonPropertyName(&quot;fileNamePattern&quot;)] public string FileNamePattern { get; set; } = &quot;{symbol}_{date}.{format}&quot;;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:85](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L85) | File naming pattern. Variables: {symbol}, {date}, {type}, {format} |
+| <code>[JsonPropertyName(&quot;splitBySymbol&quot;)] public bool SplitBySymbol { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:91](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L91) | Whether to split files by symbol. |
+| <code>[JsonPropertyName(&quot;splitByDate&quot;)] public bool SplitByDate { get; set; }</code> | [src/Meridian.Storage/Export/ExportProfile.cs:97](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L97) | Whether to split files by date. |
+| <code>[JsonPropertyName(&quot;maxRecordsPerFile&quot;)] public long? MaxRecordsPerFile { get; set; }</code> | [src/Meridian.Storage/Export/ExportProfile.cs:103](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L103) | Maximum records per file (null = unlimited). |
+| <code>public static ExportProfile PythonPandas =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:108](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L108) | Pre-built profile for Python/Pandas. |
+| <code>public static ExportProfile RStats =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:124](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L124) | Pre-built profile for R. |
+| <code>public static ExportProfile QuantConnectLean =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:140](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L140) | Pre-built profile for QuantConnect Lean. |
+| <code>public static ExportProfile Excel =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:158](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L158) | Pre-built profile for Excel. |
+| <code>public static ExportProfile PostgreSql =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:175](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L175) | Pre-built profile for PostgreSQL/TimescaleDB. |
+| <code>public static ExportProfile ArrowFeather =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:192](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L192) | Pre-built profile for Apache Arrow/Feather. |
+| <code>public static ExportProfile RunMat =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:208](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L208) | Pre-built profile for RunMat. |
+| <code>public ExportProfile WithFormat(ExportFormat newFormat) =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:242](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L242) | Creates a copy of this profile with only the format overridden. All other settings (compression, timestamps, loader script, data dictionary, file naming, etc.) are preserved. |
+| <code>public static IReadOnlyList&lt;ExportProfile&gt; GetBuiltInProfiles() =&gt; …;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:264](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L264) | Get all pre-built profiles. |
 
 ## ExportQualitySummary
 
@@ -1214,3 +1177,63 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;features&quot;)] public FeatureSettings? Features { get; set; }</code> | [src/Meridian.Storage/Export/ExportRequest.cs:89](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L89) | Feature engineering settings. |
 | <code>[JsonPropertyName(&quot;minQualityScore&quot;)] public double? MinQualityScore { get; set; }</code> | [src/Meridian.Storage/Export/ExportRequest.cs:95](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L95) | Quality threshold (0-1). Exclude data below this quality score. |
 | <code>[JsonPropertyName(&quot;sessionFilter&quot;)] public SessionFilter SessionFilter { get; set; } = SessionFilter.All;</code> | [src/Meridian.Storage/Export/ExportRequest.cs:101](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L101) | Session filter (include only regular market hours, etc.) |
+
+## ExportResult
+
+Qualified name: <code>Meridian.Storage.Export.ExportResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Export/ExportResult.cs:8](../../../../src/Meridian.Storage/Export/ExportResult.cs#L8).
+
+Result of an export operation.
+
+```csharp
+public sealed class ExportResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;jobId&quot;)] public string JobId { get; set; } = Guid.NewGuid().ToString();</code> | [src/Meridian.Storage/Export/ExportResult.cs:14](../../../../src/Meridian.Storage/Export/ExportResult.cs#L14) | Unique ID for this export job. |
+| <code>[JsonPropertyName(&quot;success&quot;)] public bool Success { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:20](../../../../src/Meridian.Storage/Export/ExportResult.cs#L20) | Whether the export completed successfully. |
+| <code>[JsonPropertyName(&quot;profileId&quot;)] public string ProfileId { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportResult.cs:26](../../../../src/Meridian.Storage/Export/ExportResult.cs#L26) | Export profile used. |
+| <code>[JsonPropertyName(&quot;startedAt&quot;)] public DateTime StartedAt { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:32](../../../../src/Meridian.Storage/Export/ExportResult.cs#L32) | Start time of export. |
+| <code>[JsonPropertyName(&quot;completedAt&quot;)] public DateTime? CompletedAt { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:38](../../../../src/Meridian.Storage/Export/ExportResult.cs#L38) | Completion time of export. |
+| <code>[JsonPropertyName(&quot;durationSeconds&quot;)] public double DurationSeconds =&gt; …;</code> | [src/Meridian.Storage/Export/ExportResult.cs:44](../../../../src/Meridian.Storage/Export/ExportResult.cs#L44) | Duration in seconds. |
+| <code>[JsonPropertyName(&quot;filesGenerated&quot;)] public int FilesGenerated { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:52](../../../../src/Meridian.Storage/Export/ExportResult.cs#L52) | Number of files generated. |
+| <code>[JsonPropertyName(&quot;totalRecords&quot;)] public long TotalRecords { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:58](../../../../src/Meridian.Storage/Export/ExportResult.cs#L58) | Total records exported. |
+| <code>[JsonPropertyName(&quot;totalBytes&quot;)] public long TotalBytes { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:64](../../../../src/Meridian.Storage/Export/ExportResult.cs#L64) | Total bytes written. |
+| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Export/ExportResult.cs:70](../../../../src/Meridian.Storage/Export/ExportResult.cs#L70) | Symbols exported. |
+| <code>[JsonPropertyName(&quot;dateRange&quot;)] public ExportDateRange? DateRange { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:76](../../../../src/Meridian.Storage/Export/ExportResult.cs#L76) | Date range exported. |
+| <code>[JsonPropertyName(&quot;outputDirectory&quot;)] public string OutputDirectory { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportResult.cs:82](../../../../src/Meridian.Storage/Export/ExportResult.cs#L82) | Output directory. |
+| <code>[JsonPropertyName(&quot;files&quot;)] public ExportedFile[] Files { get; set; } = Array.Empty&lt;ExportedFile&gt;();</code> | [src/Meridian.Storage/Export/ExportResult.cs:88](../../../../src/Meridian.Storage/Export/ExportResult.cs#L88) | Generated files. |
+| <code>[JsonPropertyName(&quot;dataDictionaryPath&quot;)] public string? DataDictionaryPath { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:94](../../../../src/Meridian.Storage/Export/ExportResult.cs#L94) | Path to generated data dictionary. |
+| <code>[JsonPropertyName(&quot;loaderScriptPath&quot;)] public string? LoaderScriptPath { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:100](../../../../src/Meridian.Storage/Export/ExportResult.cs#L100) | Path to generated loader script. |
+| <code>[JsonPropertyName(&quot;lineageManifestPath&quot;)] public string? LineageManifestPath { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:106](../../../../src/Meridian.Storage/Export/ExportResult.cs#L106) | Path to generated lineage manifest (provenance tracking). |
+| <code>[JsonPropertyName(&quot;qualitySummary&quot;)] public ExportQualitySummary? QualitySummary { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:112](../../../../src/Meridian.Storage/Export/ExportResult.cs#L112) | Data quality summary. |
+| <code>[JsonPropertyName(&quot;warnings&quot;)] public string[] Warnings { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Export/ExportResult.cs:118](../../../../src/Meridian.Storage/Export/ExportResult.cs#L118) | Warnings encountered during export. |
+| <code>[JsonPropertyName(&quot;error&quot;)] public string? Error { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:124](../../../../src/Meridian.Storage/Export/ExportResult.cs#L124) | Error message if failed. |
+| <code>public static ExportResult CreateSuccess(string profileId, string outputDir) =&gt; …;</code> | [src/Meridian.Storage/Export/ExportResult.cs:129](../../../../src/Meridian.Storage/Export/ExportResult.cs#L129) | Create a success result. |
+| <code>public static ExportResult CreateFailure(string profileId, string error) =&gt; …;</code> | [src/Meridian.Storage/Export/ExportResult.cs:140](../../../../src/Meridian.Storage/Export/ExportResult.cs#L140) | Create a failure result. |
+
+## ExportValidationIssue
+
+Qualified name: <code>Meridian.Storage.Export.ExportValidationIssue</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Export/ExportValidator.cs:292](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L292).
+
+A single issue found during pre-export validation.
+
+```csharp
+public sealed class ExportValidationIssue
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;ruleId&quot;)] public string RuleId { get; init; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:295](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L295) |  |
+| <code>[JsonPropertyName(&quot;severity&quot;)] public ExportValidationSeverity Severity { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:298](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L298) |  |
+| <code>[JsonPropertyName(&quot;code&quot;)] public string Code { get; init; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:301](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L301) |  |
+| <code>[JsonPropertyName(&quot;message&quot;)] public string Message { get; init; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:304](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L304) |  |
+| <code>[JsonPropertyName(&quot;remediation&quot;)] public string? Remediation { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:307](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L307) |  |

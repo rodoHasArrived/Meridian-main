@@ -313,7 +313,7 @@ internal static partial class SecurityMasterMapping
     private static SecurityKind ToSecurityKind(string assetClass, JsonElement json, JsonElement commonTerms,
         SecurityKindMappingMode mode = SecurityKindMappingMode.Read, JsonElement? retainedTerms = null)
     {
-        // The switch below and every per-class rule it consults are keyed by canonical names; a
+        // The codec contributions and every per-class rule they consult use canonical names; a
         // registered alias ("Loan", "MBS", "PrivateFund") is the class it names, not an unknown
         // class to refuse on write or to degrade to OtherSecurity on read.
         assetClass = SecurityAssetClassCatalog.Canonicalize(assetClass);
@@ -363,63 +363,26 @@ internal static partial class SecurityMasterMapping
         // remains the old codec's order even when several required fields are absent.
         if (mode == SecurityKindMappingMode.Read)
             EnsureLegacyRequiredReadOrder(assetClass, bound, boundTerms);
-        var kind = assetClass switch
+        SecurityKind kind;
+        if (AssetPackDecoders.TryGetValue(assetClass, out var codec))
         {
-            "Equity" => DecodeGeneratedEquity(bound, mode, assetClass, json),
-            "Option" => DecodeGeneratedOption(bound, mode, assetClass, json),
-            "Future" => DecodeGeneratedFuture(bound, mode, assetClass, json),
-            "Bond" => DecodeBond(bound, mode, assetClass, json, versionedTerms, economicSchedules!),
-            "FxSpot" => DecodeGeneratedFxSpot(bound, mode, assetClass, json),
-            "Deposit" => DecodeGeneratedDeposit(bound, mode, assetClass, json),
-            "MoneyMarketFund" => DecodeGeneratedMoneyMarketFund(bound, mode, assetClass, json),
-            "CertificateOfDeposit" => DecodeGeneratedCertificateOfDeposit(bound, mode, assetClass, json, versionedTerms),
-            "CommercialPaper" => DecodeGeneratedCommercialPaper(bound, mode, assetClass, json),
-            "TreasuryBill" => DecodeGeneratedTreasuryBill(bound, mode, assetClass, json),
-            "Repo" => DecodeGeneratedRepo(bound, mode, assetClass, json),
-            "CashSweep" => DecodeGeneratedCashSweep(bound, mode, assetClass, json),
-            "OtherSecurity" => DecodeGeneratedOtherSecurity(bound, mode, assetClass, json),
-            "CustomAsset" => ToCustomAssetKind(bound, mode),
-            "Swap" => DecodeGeneratedSwap(bound, mode, assetClass, json, versionedTerms),
-            "DirectLoan" => DecodeGeneratedDirectLoan(bound, mode, assetClass, json, economicSchedules!),
-            // Typed tranche terms are optional, but a WRITE must not read a malformed supplied value
-            // as absent (the Strict reads); the declared-schedule containers come from the root, so a
-            // profile envelope's profileFields never reach them.
-            "StructuredCredit" => DecodeGeneratedStructuredCredit(boundTerms, mode, assetClass, json, versionedTerms, economicSchedules!),
-            "PrivateFundInterest" => DecodeGeneratedPrivateFundInterest(boundTerms, mode, assetClass, json),
-            "PrivateCompanyEquity" => DecodeGeneratedPrivateCompanyEquity(boundTerms, mode, assetClass, json),
-            "RealEstateHolding" => DecodeGeneratedRealEstateHolding(boundTerms, mode, assetClass, json),
-            "CommitmentGuarantee" => DecodeGeneratedCommitmentGuarantee(boundTerms, mode, assetClass, json, terms),
-            "Commodity" => DecodeGeneratedCommodity(bound, mode, assetClass, json),
-            "CryptoCurrency" => DecodeGeneratedCryptoCurrency(bound, mode, assetClass, json),
-            "Cfd" => DecodeGeneratedCfd(bound, mode, assetClass, json),
-            "Warrant" => DecodeGeneratedWarrant(bound, mode, assetClass, json),
-            "FxForward" => DecodeGeneratedFxForward(bound, mode, assetClass, json),
-            "NonDeliverableForward" => DecodeGeneratedNonDeliverableForward(bound, mode, assetClass, json),
-            "CreditDefaultSwap" => DecodeGeneratedCreditDefaultSwap(bound, mode, assetClass, json),
-            "Swaption" => DecodeGeneratedSwaption(bound, mode, assetClass, json),
-            "CapFloor" => DecodeGeneratedCapFloor(bound, mode, assetClass, json),
-            "StructuredNote" => DecodeGeneratedStructuredNote(bound, mode, assetClass, json),
-            "InvestmentFund" => DecodeGeneratedInvestmentFund(bound, mode, assetClass, json),
-            // Read tolerance must not become write tolerance. On a create, an unrecognized class
-            // ("ExchangeTradedFund", which the pack registry only PLANS; a typo like "Equitiy")
-            // would otherwise persist silently as OtherSecurity — and because OtherSecurity is a
-            // catalog class, every later amend passes the round-trip guard, so the
-            // misclassification is permanent and never surfaces. Amend and deactivate are guarded
-            // in SecurityMasterService.EnsureAssetClassIsRecognizedHere before they reach here;
-            // this arm is the one guard the create path has.
-            _ when mode == SecurityKindMappingMode.Write =>
-                throw new InvalidOperationException(UnrecognizedAssetClassOnWrite(assetClass)),
-            // Unknown classes degrade to OtherSecurity with the raw class preserved as the category
-            // instead of failing every read of the row. A newer node can register a class this node
-            // has no deserializer for; throwing here made that a total read outage per security
-            // (see the InvestmentFund regression in SecurityMasterMappingInteropTests).
-            _ => ToUnrecognizedClassKind(
-                assetClass,
+            kind = codec.Decode(new AssetPackDecodeContext(assetClass, json, terms, bound, boundTerms,
+                mode, versionedTerms, economicSchedules));
+        }
+        else if (mode == SecurityKindMappingMode.Write)
+        {
+            // Historical read tolerance must never silently reclassify an unknown submitted class.
+            throw new InvalidOperationException(UnrecognizedAssetClassOnWrite(assetClass));
+        }
+        else
+        {
+            // A class introduced by a newer node remains readable with its raw class retained.
+            kind = ToUnrecognizedClassKind(assetClass,
                 GetOptionalString(json, "subType"),
                 GetOptionalDateOnly(json, "maturity"),
                 GetOptionalString(json, "issuerName"),
-                GetOptionalString(json, "settlementType"))
-        };
+                GetOptionalString(json, "settlementType"));
+        }
 
         EnsureDeclaredVocabulariesOnWrite(assetClass, json, mode, versionedTerms);
         return kind;
@@ -1294,12 +1257,7 @@ internal static partial class SecurityMasterMapping
     /// Structural decodes (coupon structures, schedules and their entries, the schedule-conventions
     /// block, swap legs, covenants, the profile envelope) keep their bespoke readers.
     /// </summary>
-    public static IReadOnlyList<string> SchemaBoundDecodeClasses { get; } =
-        ["FxSpot", "Deposit", "MoneyMarketFund", "Commodity", "CryptoCurrency", "Cfd",
-         "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Repo", "CashSweep", "OtherSecurity", "Warrant",
-         "Option", "Future", "FxForward", "NonDeliverableForward", "CreditDefaultSwap", "Swaption", "CapFloor", "StructuredNote",
-         "DirectLoan", "StructuredCredit", "PrivateFundInterest", "PrivateCompanyEquity", "RealEstateHolding", "CommitmentGuarantee", "Swap",
-         "Equity", "Bond", "InvestmentFund", "CustomAsset"];
+    public static IReadOnlyList<string> SchemaBoundDecodeClasses => AssetPackDecodeClasses;
 
     private static JsonElement ResolveAssetTermsJson(JsonElement json)
         => json.TryGetProperty("profileFields", out var profileFields) && profileFields.ValueKind == JsonValueKind.Object

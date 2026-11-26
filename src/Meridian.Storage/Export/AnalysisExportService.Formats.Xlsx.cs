@@ -161,7 +161,9 @@ public sealed partial class AnalysisExportService
         }
 
         // Build shared strings and sheet content
-        var headers = allRecords[0].Keys.ToList();
+        var headers = PreserveHistoricalBasisColumns(allRecords[0].Keys, allRecords);
+        foreach (var record in allRecords)
+            RequireHistoricalBasisColumns(record, headers);
         foreach (var header in headers)
         {
             if (!sharedStringIndex.ContainsKey(header))

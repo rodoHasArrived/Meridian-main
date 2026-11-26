@@ -6,6 +6,238 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OrderExecute
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.OrderExecute</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/Models/OrderExecute.cs:11](../../../../src/Meridian.Contracts/Domain/Models/OrderExecute.cs#L11).
+
+Represents the execution of a resting order (full or partial fill). The resting order is always identified; the aggressor order ID is provided when the venue includes it in the execution message.
+
+```csharp
+public sealed record OrderExecute(string RestingOrderId, decimal ExecPrice, long ExecSize, AggressorSide AggressorSide, long SequenceNumber, string? TakerOrderId = null, string? TradeId = null, string? StreamId = null, string? Venue = null) : MarketEventPayload;
+```
+
+## OrderFlowStatistics
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.OrderFlowStatistics</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs:8](../../../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs#L8).
+
+Rolling order-flow statistics derived from recent trades.
+
+```csharp
+public sealed record OrderFlowStatistics(DateTimeOffset Timestamp, string Symbol, long BuyVolume, long SellVolume, long UnknownVolume, decimal VWAP, decimal Imbalance, ushort TradeCount, long SequenceNumber, string? StreamId = null, string? Venue = null) : MarketEventPayload;
+```
+
+## OrderModify
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.OrderModify</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/Models/OrderModify.cs:9](../../../../src/Meridian.Contracts/Domain/Models/OrderModify.cs#L9).
+
+Represents a modification to an existing order&#x27;s price, size, or flags. Only the fields that changed are populated; null values indicate no change.
+
+```csharp
+public sealed record OrderModify(string OrderId, long SequenceNumber, decimal? NewPrice = null, long? NewDisplayedSize = null, long? NewHiddenSize = null, bool LosesPriority = false, string? StreamId = null, string? Venue = null) : MarketEventPayload;
+```
+
+## OrderReplace
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.OrderReplace</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/Models/OrderReplace.cs:11](../../../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs#L11).
+
+Represents a venue-side order replace, where the venue cancels the original order and immediately re-enters it under a new order identifier. This is distinct from OrderModify because the venue reassigns the order ID, which breaks continuity of the original order&#x27;s life cycle.
+
+```csharp
+public sealed record OrderReplace(string OldOrderId, string NewOrderId, long SequenceNumber, decimal? NewPrice = null, long? NewDisplayedSize = null, long? NewHiddenSize = null, bool LosesPriority = true, string? StreamId = null, string? Venue = null) : MarketEventPayload;
+```
+
+## SessionStats
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.SessionStats</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/Models/SessionStats.cs:15](../../../../src/Meridian.Contracts/Domain/Models/SessionStats.cs#L15).
+
+Per-symbol intraday session statistics derived from observed trades. Captures the conventional &quot;today&quot; reference points a watchlist or quote display needs: open, high, low, last, total volume, and a volume-weighted average price.
+
+```csharp
+public sealed record SessionStats(string Symbol, DateOnly SessionDate, decimal Open, decimal High, decimal Low, decimal Last, long Volume, decimal Vwap, long TradeCount, DateTimeOffset FirstTradeAt, DateTimeOffset LastTradeAt)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal Change =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/SessionStats.cs:31](../../../../src/Meridian.Contracts/Domain/Models/SessionStats.cs#L31) | Absolute change in price from the session open to the most recent trade. |
+| <code>public decimal? ChangePercent =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/SessionStats.cs:37](../../../../src/Meridian.Contracts/Domain/Models/SessionStats.cs#L37) | Percentage change from the session open to the most recent trade. Returns null when the open price is zero (cannot compute a percentage). |
+
+## Trade
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.Trade</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/Models/Trade.cs:9](../../../../src/Meridian.Contracts/Domain/Models/Trade.cs#L9).
+
+Immutable tick-by-tick trade record.
+
+```csharp
+public sealed record Trade : MarketEventPayload
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTimeOffset Timestamp { get; }</code> | [src/Meridian.Contracts/Domain/Models/Trade.cs:14](../../../../src/Meridian.Contracts/Domain/Models/Trade.cs#L14) | Gets the timestamp when the trade was executed. |
+| <code>public string Symbol { get; }</code> | [src/Meridian.Contracts/Domain/Models/Trade.cs:19](../../../../src/Meridian.Contracts/Domain/Models/Trade.cs#L19) | Gets the ticker symbol for the security. |
+| <code>public decimal Price { get; }</code> | [src/Meridian.Contracts/Domain/Models/Trade.cs:24](../../../../src/Meridian.Contracts/Domain/Models/Trade.cs#L24) | Gets the execution price of the trade. |
+| <code>public long Size { get; }</code> | [src/Meridian.Contracts/Domain/Models/Trade.cs:29](../../../../src/Meridian.Contracts/Domain/Models/Trade.cs#L29) | Gets the number of shares traded. |
+| <code>public AggressorSide Aggressor { get; }</code> | [src/Meridian.Contracts/Domain/Models/Trade.cs:34](../../../../src/Meridian.Contracts/Domain/Models/Trade.cs#L34) | Gets the side that initiated the trade (buyer or seller). |
+| <code>public long SequenceNumber { get; }</code> | [src/Meridian.Contracts/Domain/Models/Trade.cs:39](../../../../src/Meridian.Contracts/Domain/Models/Trade.cs#L39) | Gets the sequence number for ordering events. |
+| <code>public string? StreamId { get; }</code> | [src/Meridian.Contracts/Domain/Models/Trade.cs:44](../../../../src/Meridian.Contracts/Domain/Models/Trade.cs#L44) | Gets the stream identifier for data source tracking. |
+| <code>public string? Venue { get; }</code> | [src/Meridian.Contracts/Domain/Models/Trade.cs:49](../../../../src/Meridian.Contracts/Domain/Models/Trade.cs#L49) | Gets the trading venue or exchange identifier. |
+| <code>public string[]? RawConditions { get; init; }</code> | [src/Meridian.Contracts/Domain/Models/Trade.cs:55](../../../../src/Meridian.Contracts/Domain/Models/Trade.cs#L55) | Gets the raw provider-specific condition codes exactly as received from the data source. Preserved for auditability; use CanonicalConditions for cross-provider filtering. |
+| <code>public CanonicalTradeCondition[]? CanonicalConditions { get; init; }</code> | [src/Meridian.Contracts/Domain/Models/Trade.cs:61](../../../../src/Meridian.Contracts/Domain/Models/Trade.cs#L61) | Gets the canonicalized condition codes mapped from RawConditions by EventCanonicalizer. Null until the event has been canonicalized. |
+| <code>public Trade(DateTimeOffset Timestamp, string Symbol, decimal Price, long Size, AggressorSide Aggressor, long SequenceNumber, string? StreamId = null, string? Venue = null, string[]? RawConditions = null);</code> | [src/Meridian.Contracts/Domain/Models/Trade.cs:66](../../../../src/Meridian.Contracts/Domain/Models/Trade.cs#L66) | Validates trade data at construction time to prevent corrupt datasets. |
+
+## OrderBookLevelDto
+
+Qualified name: <code>Meridian.Contracts.Domain.OrderBookLevelDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Domain/MarketDataModels.cs:146](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L146).
+
+Order book level data transfer object.
+
+```csharp
+public sealed class OrderBookLevelDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;side&quot;)] public string Side { get; set; } = &quot;Bid&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:152](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L152) | Gets or sets the order book side. |
+| <code>[JsonPropertyName(&quot;level&quot;)] public int Level { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:158](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L158) | Gets or sets the depth level. |
+| <code>[JsonPropertyName(&quot;price&quot;)] public decimal Price { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:164](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L164) | Gets or sets the price at this level. |
+| <code>[JsonPropertyName(&quot;size&quot;)] public decimal Size { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:170](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L170) | Gets or sets the size at this level. |
+| <code>[JsonPropertyName(&quot;marketMaker&quot;)] public string? MarketMaker { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:176](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L176) | Gets or sets the market maker identifier, if available. |
+| <code>[JsonPropertyName(&quot;orderCount&quot;)] public int? OrderCount { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:182](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L182) | Gets or sets the order count at this level, if available. |
+
+## OrderBookSideValues
+
+Qualified name: <code>Meridian.Contracts.Domain.OrderBookSideValues</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Domain/MarketDataModels.cs:345](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L345).
+
+Order book side enumeration values.
+
+```csharp
+public static class OrderBookSideValues
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Bid = &quot;Bid&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:350](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L350) | Indicates the bid side of the book. |
+| <code>public const string Ask = &quot;Ask&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:354](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L354) | Indicates the ask side of the book. |
+
+## OrderBookSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Domain.OrderBookSnapshotDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Domain/MarketDataModels.cs:188](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L188).
+
+Order book snapshot data transfer object.
+
+```csharp
+public sealed class OrderBookSnapshotDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;timestamp&quot;)] public DateTimeOffset Timestamp { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:194](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L194) | Gets or sets the snapshot timestamp. |
+| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:200](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L200) | Gets or sets the symbol for the snapshot. |
+| <code>[JsonPropertyName(&quot;bids&quot;)] public OrderBookLevelDto[] Bids { get; set; } = Array.Empty&lt;OrderBookLevelDto&gt;();</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:206](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L206) | Gets or sets the bid levels for the order book. |
+| <code>[JsonPropertyName(&quot;asks&quot;)] public OrderBookLevelDto[] Asks { get; set; } = Array.Empty&lt;OrderBookLevelDto&gt;();</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:212](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L212) | Gets or sets the ask levels for the order book. |
+| <code>[JsonPropertyName(&quot;midPrice&quot;)] public decimal? MidPrice { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:218](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L218) | Gets or sets the mid price at the snapshot time. |
+| <code>[JsonPropertyName(&quot;microPrice&quot;)] public decimal? MicroPrice { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:224](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L224) | Gets or sets the micro price at the snapshot time. |
+| <code>[JsonPropertyName(&quot;imbalance&quot;)] public decimal? Imbalance { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:230](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L230) | Gets or sets the order book imbalance, if available. |
+| <code>[JsonPropertyName(&quot;marketState&quot;)] public string MarketState { get; set; } = &quot;Normal&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:236](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L236) | Gets or sets the market state indicator. |
+| <code>[JsonPropertyName(&quot;sequenceNumber&quot;)] public long SequenceNumber { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:242](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L242) | Gets or sets the sequence number associated with the snapshot. |
+
+## PositionRecord
+
+Qualified name: <code>Meridian.Contracts.Domain.PositionRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:13](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L13).
+
+Serialisation-friendly snapshot of a single position for persistence. Used by IPositionSnapshotStore — deliberately flat so that the storage layer has no dependency on Meridian.Execution types.
+
+```csharp
+public sealed record PositionRecord(string Symbol, decimal Quantity, decimal CostBasis, decimal UnrealisedPnl, decimal RealisedPnl)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:26](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L26) | Accrued interest receivable on the holding at snapshot time (absolute, in the account&#x27;s base currency) for coupon-bearing positions whose source reports it; null otherwise. Omitted from serialized snapshots when null so retained records are unchanged. |
+
+## PositionSnapshotConflictException
+
+Qualified name: <code>Meridian.Contracts.Domain.PositionSnapshotConflictException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:92](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L92).
+
+Raised when a position-snapshot partition already contains a different payload at the same logical timestamp. Callers must fail closed rather than selecting a winner by append order.
+
+```csharp
+public sealed class PositionSnapshotConflictException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PositionSnapshotConflictException(string runId, string accountId, DateTimeOffset asOf) : base($&quot;Position snapshot scope &#x27;{runId.Trim()}&#124;{accountId.Trim()}&#x27; contains a different &quot; + $&quot;payload at the same source timestamp {asOf.ToUniversalTime():O}.&quot;);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:94](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L94) |  |
+| <code>public string RunId { get; }</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:104](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L104) |  |
+| <code>public string AccountId { get; }</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:106](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L106) |  |
+| <code>public DateTimeOffset AsOf { get; }</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:108](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L108) |  |
+
+## PositionSnapshotEquivalence
+
+Qualified name: <code>Meridian.Contracts.Domain.PositionSnapshotEquivalence</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:115](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L115).
+
+Defines the canonical equivalence used by snapshot stores and their callers. Position order and symbol casing do not change the payload; owner, balance, P&amp;L, and position-value differences do.
+
+```csharp
+public static class PositionSnapshotEquivalence
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool AreEquivalent(AccountSnapshotRecord left, AccountSnapshotRecord right);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:117](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L117) |  |
+
+## PositionSnapshotOwnerScope
+
+Qualified name: <code>Meridian.Contracts.Domain.PositionSnapshotOwnerScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:69](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L69).
+
+Immutable accounting-owner scope used to retrieve a position snapshot without crossing a tenant, company, fund, ledger-book, or entity boundary.
+
+```csharp
+public sealed record PositionSnapshotOwnerScope(string TenantId, string CompanyId, string FundProfileId, Guid LedgerBookId, string EntityId);
+```
+
 ## PositionSnapshotSaveOutcome
 
 Qualified name: <code>Meridian.Contracts.Domain.PositionSnapshotSaveOutcome</code>. Kind: `enum`.
@@ -261,99 +493,6 @@ Declared public members:
 | <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:62](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L62) |  |
 | <code>public static bool operator == (VenueCode left, VenueCode right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:65](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L65) |  |
 | <code>public static bool operator != (VenueCode left, VenueCode right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:68](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L68) |  |
-
-## CreateLegalEntityRequest
-
-Qualified name: <code>Meridian.Contracts.EntityMaster.CreateLegalEntityRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:18](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L18).
-
-Request to register a legal entity.
-
-```csharp
-public sealed record CreateLegalEntityRequest(string LegalName, string? Lei, string? Cik, string? Jurisdiction, Guid? EntityId = null);
-```
-
-## EntityMasterRules
-
-Qualified name: <code>Meridian.Contracts.EntityMaster.EntityMasterRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:82](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L82).
-
-Shared validation for entity-master writes.
-
-```csharp
-public static class EntityMasterRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string? NormalizeLei(string? lei);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:85](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L85) | Normalizes an LEI (ISO 17442: 20 alphanumerics); null when absent. |
-| <code>public static string? NormalizeCik(string? cik);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:96](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L96) | Normalizes a CIK to its 10-digit zero-padded form; null when absent. |
-
-## EntityParentLinkDto
-
-Qualified name: <code>Meridian.Contracts.EntityMaster.EntityParentLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:26](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L26).
-
-A direct-parent relationship valid over &#91;ValidFrom, ValidTo).
-
-```csharp
-public sealed record EntityParentLinkDto(Guid EntityId, Guid ParentEntityId, DateOnly ValidFrom, DateOnly? ValidTo, DateTimeOffset RecordedAt, string RecordedBy);
-```
-
-## IEntityMasterStore
-
-Qualified name: <code>Meridian.Contracts.EntityMaster.IEntityMasterStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:47](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L47).
-
-Entity master persistence (ADR-033). Parent and issuer links carry valid-time windows; a new link for an entity or security closes the open one at the new link&#x27;s valid-from, so history is kept.
-
-```csharp
-public interface IEntityMasterStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;LegalEntityDto&gt; CreateEntityAsync(CreateLegalEntityRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:49](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L49) |  |
-| <code>Task&lt;LegalEntityDto?&gt; GetEntityAsync(Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:51](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L51) |  |
-| <code>Task&lt;LegalEntityDto?&gt; FindByLeiAsync(string lei, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:53](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L53) |  |
-| <code>Task&lt;LegalEntityDto?&gt; FindByCikAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:55](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L55) |  |
-| <code>Task&lt;EntityParentLinkDto&gt; SetParentAsync(Guid entityId, Guid parentEntityId, DateOnly validFrom, string actor, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:57](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L57) |  |
-| <code>Task&lt;EntityParentLinkDto?&gt; GetParentAsync(Guid entityId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:59](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L59) |  |
-| <code>Task&lt;SecurityIssuerLinkDto&gt; LinkIssuerAsync(Guid securityId, Guid issuerEntityId, DateOnly validFrom, string actor, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:61](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L61) |  |
-| <code>Task&lt;SecurityIssuerLinkDto?&gt; GetIssuerAsync(Guid securityId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:63](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L63) |  |
-| <code>async Task&lt;LegalEntityDto?&gt; GetUltimateParentAsync(Guid entityId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:66](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L66) | Follows parent links as of asOf to the top of the hierarchy (bounded depth). |
-
-## LegalEntityDto
-
-Qualified name: <code>Meridian.Contracts.EntityMaster.LegalEntityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:8](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L8).
-
-ADR-033: a legal entity in the entity master, the bounded context shared by Security Master issuers, counterparties and fund structure. Identified by EntityId; LEI and CIK are optional external identifiers, each unique when present.
-
-```csharp
-public sealed record LegalEntityDto(Guid EntityId, string LegalName, string? Lei, string? Cik, string? Jurisdiction, DateTimeOffset RecordedAt, string RecordedBy);
-```
-
-## SecurityIssuerLinkDto
-
-Qualified name: <code>Meridian.Contracts.EntityMaster.SecurityIssuerLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:35](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L35).
-
-A security&#x27;s issuer link valid over &#91;ValidFrom, ValidTo).
-
-```csharp
-public sealed record SecurityIssuerLinkDto(Guid SecurityId, Guid IssuerEntityId, DateOnly ValidFrom, DateOnly? ValidTo, DateTimeOffset RecordedAt, string RecordedBy);
-```
 
 ## CreateEnvironmentDraftRequest
 
@@ -729,160 +868,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;deliverySlaMinutes&quot;)] public int? DeliverySlaMinutes { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:201](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L201) |  |
 | <code>[JsonPropertyName(&quot;requiresRemoteAck&quot;)] public bool RequiresRemoteAck { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:204](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L204) |  |
 | <code>[JsonPropertyName(&quot;hostKeySha256Fingerprint&quot;)] public string? HostKeySha256Fingerprint { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:207](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L207) |  |
-
-## EtlDestinationKind
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlDestinationKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:21](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L21).
-
-```csharp
-public enum EtlDestinationKind : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>StorageCatalog = 0</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:23](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L23) |  |
-| <code>Local = 1</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:24](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L24) |  |
-| <code>Sftp = 2</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:25](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L25) |  |
-
-## EtlFileManifest
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlFileManifest</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:240](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L240).
-
-Identifies a staged ETL file by relative path, SHA-256 checksum, and size.
-
-```csharp
-public sealed class EtlFileManifest
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;fileName&quot;)] public required string FileName { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:243](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L243) |  |
-| <code>[JsonPropertyName(&quot;relativePath&quot;)] public required string RelativePath { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:246](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L246) |  |
-| <code>[JsonPropertyName(&quot;checksumSha256&quot;)] public required string ChecksumSha256 { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:249](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L249) |  |
-| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:252](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L252) |  |
-| <code>[JsonPropertyName(&quot;stagedAtUtc&quot;)] public DateTime StagedAtUtc { get; init; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:255](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L255) |  |
-
-## EtlFilePreview
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlFilePreview</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:407](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L407).
-
-Carries a file&#x27;s preview disposition, sampled rows, validation issues, and content identity.
-
-```csharp
-public sealed class EtlFilePreview
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;sourceFile&quot;)] public required EtlRemoteFile SourceFile { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:410](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L410) |  |
-| <code>[JsonPropertyName(&quot;schemaId&quot;)] public required string SchemaId { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:413](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L413) |  |
-| <code>[JsonPropertyName(&quot;disposition&quot;)] public EtlPreviewDisposition Disposition { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:416](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L416) |  |
-| <code>[JsonPropertyName(&quot;recordCount&quot;)] public int RecordCount { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:419](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L419) |  |
-| <code>[JsonPropertyName(&quot;sampleRows&quot;)] public IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string?&gt;&gt; SampleRows { get; init; } = [];</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:422](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L422) |  |
-| <code>[JsonPropertyName(&quot;issues&quot;)] public IReadOnlyList&lt;EtlFilePreviewIssue&gt; Issues { get; init; } = [];</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:425](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L425) |  |
-| <code>[JsonPropertyName(&quot;fileHashSha256&quot;)] public string? FileHashSha256 { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:428](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L428) |  |
-| <code>[JsonPropertyName(&quot;idempotencyKey&quot;)] public string? IdempotencyKey { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:431](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L431) |  |
-
-## EtlFilePreviewIssue
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlFilePreviewIssue</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:389](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L389).
-
-Describes a field or row issue found while previewing an ETL file.
-
-```csharp
-public sealed class EtlFilePreviewIssue
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;severity&quot;)] public required string Severity { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:392](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L392) |  |
-| <code>[JsonPropertyName(&quot;field&quot;)] public required string Field { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:395](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L395) |  |
-| <code>[JsonPropertyName(&quot;message&quot;)] public required string Message { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:398](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L398) |  |
-| <code>[JsonPropertyName(&quot;rowNumber&quot;)] public int? RowNumber { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:401](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L401) |  |
-
-## EtlFlowDirection
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlFlowDirection</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:6](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L6).
-
-```csharp
-public enum EtlFlowDirection : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Import = 0</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:8](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L8) |  |
-| <code>Export = 1</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:9](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L9) |  |
-| <code>RoundTrip = 2</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:10](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L10) |  |
-
-## EtlJobDefinition
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlJobDefinition</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:72](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L72).
-
-Defines an ETL flow&#x27;s source, destination, partner schema, and processing scope.
-
-```csharp
-public sealed class EtlJobDefinition
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;jobId&quot;)] public required string JobId { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:75](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L75) |  |
-| <code>[JsonPropertyName(&quot;flowDirection&quot;)] public required EtlFlowDirection FlowDirection { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:78](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L78) |  |
-| <code>[JsonPropertyName(&quot;partnerSchemaId&quot;)] public required string PartnerSchemaId { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:81](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L81) |  |
-| <code>[JsonPropertyName(&quot;logicalSourceName&quot;)] public required string LogicalSourceName { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:84](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L84) |  |
-| <code>[JsonPropertyName(&quot;source&quot;)] public required EtlSourceDefinition Source { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:87](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L87) |  |
-| <code>[JsonPropertyName(&quot;destination&quot;)] public required EtlDestinationDefinition Destination { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:90](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L90) |  |
-| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; init; } = [];</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:93](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L93) |  |
-| <code>[JsonPropertyName(&quot;eventTypes&quot;)] public string[] EventTypes { get; init; } = [];</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:96](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L96) |  |
-| <code>[JsonPropertyName(&quot;fromDateUtc&quot;)] public DateTime? FromDateUtc { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:99](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L99) |  |
-| <code>[JsonPropertyName(&quot;toDateUtc&quot;)] public DateTime? ToDateUtc { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:102](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L102) |  |
-| <code>[JsonPropertyName(&quot;publishPortablePackage&quot;)] public bool PublishPortablePackage { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:105](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L105) |  |
-| <code>[JsonPropertyName(&quot;publishNormalizedExtract&quot;)] public bool PublishNormalizedExtract { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:108](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L108) |  |
-| <code>[JsonPropertyName(&quot;continueOnRecordError&quot;)] public bool ContinueOnRecordError { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:111](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L111) |  |
-| <code>[JsonPropertyName(&quot;validateChecksums&quot;)] public bool ValidateChecksums { get; init; } = true;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:114](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L114) |  |
-| <code>[JsonPropertyName(&quot;failRoundTripOnExportError&quot;)] public bool FailRoundTripOnExportError { get; init; } = true;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:117](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L117) |  |
-| <code>[JsonPropertyName(&quot;checkpointEveryRecords&quot;)] public int CheckpointEveryRecords { get; init; } = 5_000;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:120](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L120) |  |
-| <code>[JsonPropertyName(&quot;rejectSampleLimit&quot;)] public int RejectSampleLimit { get; init; } = 1_000;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:123](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L123) |  |
-| <code>[JsonPropertyName(&quot;createdBy&quot;)] public string? CreatedBy { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:126](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L126) |  |
-| <code>[JsonPropertyName(&quot;createdAtUtc&quot;)] public DateTime CreatedAtUtc { get; init; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:129](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L129) |  |
-
-## EtlPackageFormat
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlPackageFormat</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:54](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L54).
-
-```csharp
-public enum EtlPackageFormat : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Zip = 0</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:56](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L56) |  |
-| <code>TarGz = 1</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:57](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L57) |  |

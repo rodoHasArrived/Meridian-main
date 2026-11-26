@@ -493,64 +493,6 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;MoneyMarketFundProjectionRow&gt;&gt; GetByFundFamilyAsync(string fundFamily, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IMoneyMarketFundReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/IMoneyMarketFundReferenceProjectionStore.cs#L9) |  |
 | <code>Task&lt;IReadOnlyList&lt;MoneyMarketFundProjectionRow&gt;&gt; GetBySweepEligibilityAsync(bool sweepEligible, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IMoneyMarketFundReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/IMoneyMarketFundReferenceProjectionStore.cs#L10) |  |
 
-## InMemorySecurityFactorObservationStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.InMemorySecurityFactorObservationStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityFactorObservations.cs:37](../../../../src/Meridian.Storage/SecurityMaster/SecurityFactorObservations.cs#L37).
-
-Process-local factor observations.
-
-```csharp
-public sealed class InMemorySecurityFactorObservationStore : ISecurityFactorObservationStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;SecurityFactorObservationRecord&gt; RecordAsync(Guid securityId, DateOnly effectiveDate, decimal factor, string source, string? evidenceRef, string actor, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityFactorObservations.cs:41](../../../../src/Meridian.Storage/SecurityMaster/SecurityFactorObservations.cs#L41) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SecurityFactorObservationRecord&gt;&gt; ListAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityFactorObservations.cs:50](../../../../src/Meridian.Storage/SecurityMaster/SecurityFactorObservations.cs#L50) |  |
-
-## InMemorySecurityMasterExceptionCaseStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.InMemorySecurityMasterExceptionCaseStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs:69](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs#L69).
-
-Process-local exception cases.
-
-```csharp
-public sealed class InMemorySecurityMasterExceptionCaseStore : ISecurityMasterExceptionCaseStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;SecurityMasterExceptionSyncResult&gt; SyncAsync(IReadOnlyCollection&lt;string&gt; categories, IReadOnlyList&lt;SecurityMasterExceptionObservation&gt; observations, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs:74](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs#L74) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SecurityMasterExceptionCase&gt;&gt; ListAsync(string? status, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs:109](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs#L109) |  |
-| <code>public Task&lt;bool&gt; AssignAsync(Guid caseId, string assignee, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs:114](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs#L114) |  |
-
-## InMemorySecurityMasterRedirectStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.InMemorySecurityMasterRedirectStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs:44](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs#L44).
-
-Process-local redirects for hosts without PostgreSQL.
-
-```csharp
-public sealed class InMemorySecurityMasterRedirectStore : ISecurityMasterRedirectStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task AddAsync(SecurityMasterRedirect redirect, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs:48](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs#L48) |  |
-| <code>public Task&lt;SecurityMasterRedirect?&gt; GetAsync(Guid retiredSecurityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs:61](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs#L61) |  |
-
 ## IOperatorOverridesStore
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.IOperatorOverridesStore</code>. Kind: `interface`.
@@ -610,26 +552,6 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;SecurityTermsProjectionReadDto?&gt; GetAsync(string assetClass, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs:23](../../../../src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs#L23) | The projection of securityId read as assetClass, or null when the class has no registry descriptor, the security does not exist, its current asset class is a different class, or it has no projection row (a gating term is absent). assetClass accepts a catalog name or alias in any casing. |
-
-## ISecurityFactorObservationStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityFactorObservationStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityFactorObservations.cs:19](../../../../src/Meridian.Storage/SecurityMaster/SecurityFactorObservations.cs#L19).
-
-Append-only pool-factor observations (migration 075).
-
-```csharp
-public interface ISecurityFactorObservationStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityFactorObservationRecord&gt; RecordAsync(Guid securityId, DateOnly effectiveDate, decimal factor, string source, string? evidenceRef, string actor, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityFactorObservations.cs:21](../../../../src/Meridian.Storage/SecurityMaster/SecurityFactorObservations.cs#L21) |  |
-| <code>Task&lt;IReadOnlyList&lt;SecurityFactorObservationRecord&gt;&gt; ListAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityFactorObservations.cs:25](../../../../src/Meridian.Storage/SecurityMaster/SecurityFactorObservations.cs#L25) | Every observation of the security, oldest recording first. |
-| <code>async Task&lt;IReadOnlyList&lt;SecurityFactorObservationRecord&gt;&gt; ListEffectiveAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityFactorObservations.cs:28](../../../../src/Meridian.Storage/SecurityMaster/SecurityFactorObservations.cs#L28) | The effective observation per date: the latest recorded one. |
 
 ## ISecurityFieldProvenanceStore
 
@@ -738,27 +660,6 @@ Declared public members:
 | <code>Task&lt;SecurityCashFlowSourceDto?&gt; GetSourceAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterCashFlowStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterCashFlowStore.cs#L10) |  |
 | <code>Task UpsertSourceAsync(SecurityCashFlowSourceDto source, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterCashFlowStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterCashFlowStore.cs#L11) |  |
 
-## ISecurityMasterChangeOutbox
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterChangeOutbox</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterChangeOutbox.cs:24](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterChangeOutbox.cs#L24).
-
-Review A4 / P4: the Security Master change outbox (migration 072). Every economic event append writes a change record in the same transaction, so every write origin produces exactly one record per event. Consumers claim with FOR UPDATE SKIP LOCKED, which cannot skip a late-committing event the way a global_sequence &gt; cursor reader can.
-
-```csharp
-public interface ISecurityMasterChangeOutbox
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;SecurityMasterChangeRecord&gt;&gt; ClaimAsync(string consumer, int batchSize, TimeSpan claimTimeout, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterChangeOutbox.cs:30](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterChangeOutbox.cs#L30) | Claims up to batchSize unprocessed records for consumer. A claim older than claimTimeout is treated as abandoned and reclaimable. |
-| <code>Task&lt;int&gt; MarkProcessedAsync(string consumer, IReadOnlyCollection&lt;Guid&gt; changeIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterChangeOutbox.cs:33](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterChangeOutbox.cs#L33) | Marks claimed records processed; only rows still claimed by consumer change. |
-| <code>Task&lt;bool&gt; RecordRestatementDecisionAsync(Guid securityId, long streamVersion, string decisionJson, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterChangeOutbox.cs:36](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterChangeOutbox.cs#L36) | Persists the restatement routing a publish computed for the change at streamVersion. |
-| <code>Task&lt;IReadOnlyList&lt;SecurityMasterChangeRecord&gt;&gt; ListAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterChangeOutbox.cs:39](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterChangeOutbox.cs#L39) | The change records of one security, oldest first. |
-
 ## ISecurityMasterEventStore
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterEventStore</code>. Kind: `interface`.
@@ -782,26 +683,6 @@ Declared public members:
 | <code>Task AppendCorporateActionAsync(CorporateActionDto action, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:51](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L51) | Appends one or more corporate action events for a security. |
 | <code>Task&lt;IReadOnlyList&lt;CorporateActionDto&gt;&gt; LoadCorporateActionsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:56](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L56) | Returns all corporate action events for a security in ascending ex-date order. |
 | <code>Task&lt;CorporateActionEventTypeNormalizationResult&gt; NormalizeCorporateActionEventTypesAsync(bool apply, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:65](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L65) | Reports — and when apply is true, rewrites in one transaction — stored corporate-action EventType values that are non-canonical aliases of the catalog vocabulary (e.g. legacy &quot;Split&quot; rows becoming &quot;StockSplit&quot;). Values that do not normalize are reported and left untouched. Stores without rewrite support (the default) report an empty result. |
-
-## ISecurityMasterExceptionCaseStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterExceptionCaseStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs:50](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs#L50).
-
-Deployment-global Security Master exception cases (migration 074).
-
-```csharp
-public interface ISecurityMasterExceptionCaseStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityMasterExceptionSyncResult&gt; SyncAsync(IReadOnlyCollection&lt;string&gt; categories, IReadOnlyList&lt;SecurityMasterExceptionObservation&gt; observations, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs:57](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs#L57) | Makes the open cases of categories match observations: opens a case for each new key, refreshes existing ones, and closes open cases whose key was not observed. Idempotent for the same input. |
-| <code>Task&lt;IReadOnlyList&lt;SecurityMasterExceptionCase&gt;&gt; ListAsync(string? status, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs:63](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs#L63) |  |
-| <code>Task&lt;bool&gt; AssignAsync(Guid caseId, string assignee, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs:65](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterExceptionCases.cs#L65) |  |
 
 ## ISecurityMasterMutationParticipant
 
@@ -868,27 +749,6 @@ Declared public members:
 | <code>Task&lt;SecurityMasterQualityReportDto?&gt; GetLatestAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterQualityReportStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterQualityReportStore.cs#L10) |  |
 | <code>Task SaveAsync(SecurityMasterQualityReportDto report, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterQualityReportStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterQualityReportStore.cs#L11) |  |
 
-## ISecurityMasterRedirectStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterRedirectStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs:16](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs#L16).
-
-Durable survivorship redirects (migration 073).
-
-```csharp
-public interface ISecurityMasterRedirectStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task AddAsync(SecurityMasterRedirect redirect, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs:19](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs#L19) | Records a redirect; idempotent for the same pair, refused for a different survivor. |
-| <code>Task&lt;SecurityMasterRedirect?&gt; GetAsync(Guid retiredSecurityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs:21](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs#L21) |  |
-| <code>async Task&lt;Guid&gt; ResolveSurvivorAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs:24](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs#L24) | Follows redirects from securityId; returns it unchanged when none exists. |
-| <code>const int MaxRedirectDepth = 8;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs:40](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterRedirects.cs#L40) | Bound on followed merges so a malformed cycle cannot loop. |
-
 ## ISecurityMasterSnapshotStore
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore</code>. Kind: `interface`.
@@ -933,14 +793,13 @@ Declared public members:
 | <code>Task&lt;SecurityDetailDto?&gt; GetDetailAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:48](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L48) |  |
 | <code>Task&lt;SecurityProjectionRecord?&gt; GetProjectionAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:49](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L49) |  |
 | <code>Task&lt;SecurityProjectionRecord?&gt; GetByIdentifierAsync(SecurityIdentifierKind kind, string value, string? provider, DateTimeOffset asOfUtc, bool includeInactive, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:50](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L50) |  |
-| <code>async Task&lt;IReadOnlyList&lt;SecurityIdentityClaim&gt;&gt; FindIdentityClaimsAsync(SecurityIdentifierKind kind, string value, string? provider, DateTimeOffset asOfUtc, bool ignoreValidityWindow = false, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:64](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L64) | Returns every security that claims value as an identifier, alias, or legacy primary identifier of kind. Provider participates in identity only for provider-scoped kinds (SecurityIdentifierNormalizer.IsProviderScoped); on every other kind it is provenance and is ignored. Unlike GetByIdentifierAsync this never picks one claimant, so a caller can tell a unique match from an ambiguous one. With ignoreValidityWindow the identifier and alias validity windows are not applied. |
-| <code>Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; FindIdentifierCandidatesAsync(IReadOnlyList&lt;SecurityIdentifierDto&gt; identifiers, IReadOnlyCollection&lt;Guid&gt; excludedSecurityIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:89](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L89) | Returns projections outside excludedSecurityIds that claim at least one normalized kind/value pair in identifiers. The caller applies validity- window overlap because each returned projection carries the complete identifier history. |
-| <code>Task&lt;IReadOnlyList&lt;SecuritySummaryDto&gt;&gt; SearchAsync(SecuritySearchRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:98](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L98) | Returns an offset page in deterministic order, using the unique security ID to break equal relevance and display-name ties. Repeated pages over unchanged projections must neither omit nor repeat a security. Separate requests do not share a database snapshot. |
-| <code>Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; LoadAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:99](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L99) |  |
-| <code>Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; LoadActiveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:100](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L100) |  |
-| <code>Task&lt;int&gt; CountUntaggedAssetSpecificTermsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:109](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L109) | The ADR-024 decision-5 retirement-gate count: stored securities rows, active and inactive, whose asset-specific terms declare no string termsFormat tag. A single aggregate — never a projection load — with the same semantics as SecurityTermsEnvelope.GetDeclaredFormat: a non-object payload or a missing or non-string tag counts as untagged. |
-| <code>Task&lt;long?&gt; GetCheckpointAsync(string projectionName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:110](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L110) |  |
-| <code>Task SaveCheckpointAsync(string projectionName, long lastGlobalSequence, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:111](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L111) |  |
+| <code>Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; FindIdentifierCandidatesAsync(IReadOnlyList&lt;SecurityIdentifierDto&gt; identifiers, IReadOnlyCollection&lt;Guid&gt; excludedSecurityIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:56](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L56) | Returns projections outside excludedSecurityIds that claim at least one normalized kind/value pair in identifiers. The caller applies validity- window overlap because each returned projection carries the complete identifier history. |
+| <code>Task&lt;IReadOnlyList&lt;SecuritySummaryDto&gt;&gt; SearchAsync(SecuritySearchRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:65](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L65) | Returns an offset page in deterministic order, using the unique security ID to break equal relevance and display-name ties. Repeated pages over unchanged projections must neither omit nor repeat a security. Separate requests do not share a database snapshot. |
+| <code>Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; LoadAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:66](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L66) |  |
+| <code>Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; LoadActiveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:67](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L67) |  |
+| <code>Task&lt;int&gt; CountUntaggedAssetSpecificTermsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:76](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L76) | The ADR-024 decision-5 retirement-gate count: stored securities rows, active and inactive, whose asset-specific terms declare no string termsFormat tag. A single aggregate — never a projection load — with the same semantics as SecurityTermsEnvelope.GetDeclaredFormat: a non-object payload or a missing or non-string tag counts as untagged. |
+| <code>Task&lt;long?&gt; GetCheckpointAsync(string projectionName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:77](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L77) |  |
+| <code>Task SaveCheckpointAsync(string projectionName, long lastGlobalSequence, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:78](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L78) |  |
 
 ## ISecurityMasterTermsCapabilityStore
 
@@ -981,3 +840,123 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;StructuredCreditProjectionRow&gt;&gt; GetByCollateralTypeAsync(string collateralType, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs#L15) |  |
 | <code>Task&lt;IReadOnlyList&lt;StructuredCreditFactorScheduleRow&gt;&gt; GetFactorScheduleAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs:18](../../../../src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs#L18) | The tranche&#x27;s dated factor points in the order the terms document declares them. |
 | <code>Task&lt;StructuredCreditFactorScheduleRow?&gt; GetFactorAsOfAsync(Guid securityId, DateOnly asOfDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs:25](../../../../src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs#L25) | The latest factor point effective on or before asOfDate, or null when the schedule starts after that date. The relational counterpart of the resolver&#x27;s in-memory FactorAsOf walk, resolved in one indexed read. |
+
+## ISwapReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.ISwapReferenceProjectionStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:6](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L6).
+
+Queries swap reference projections by security, swap type, and maturity.
+
+```csharp
+public interface ISwapReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SwapProjectionRow?&gt; GetSwapAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L8) |  |
+| <code>Task&lt;IReadOnlyList&lt;SwapProjectionRow&gt;&gt; GetBySwapTypeAsync(string swapType, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L9) |  |
+| <code>Task&lt;IReadOnlyList&lt;SwapProjectionRow&gt;&gt; GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L10) |  |
+
+## MoneyMarketFundProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.MoneyMarketFundProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IMoneyMarketFundReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IMoneyMarketFundReferenceProjectionStore.cs#L13).
+
+```csharp
+public sealed record MoneyMarketFundProjectionRow(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool SweepEligible, int? WeightedAverageMaturityDays, bool LiquidityFeeEligible, string PrimaryIdentifierValue, long Version);
+```
+
+## OperatorOverrideCanonicalVersionConflictException
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideCanonicalVersionConflictException</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:101](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L101).
+
+Thrown when an overlay patch was submitted for a canonical Security Master version that no longer matches the stream version observed while the patch transaction held the stream lock.
+
+```csharp
+public sealed class OperatorOverrideCanonicalVersionConflictException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperatorOverrideCanonicalVersionConflictException(Guid securityId, long expectedVersion, long currentVersion) : base($&quot;Security stream version conflict for {securityId}. Expected {expectedVersion}, actual {currentVersion}.&quot;);</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:103](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L103) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:111](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L111) |  |
+| <code>public long ExpectedVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:112](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L112) |  |
+| <code>public long CurrentVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:113](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L113) |  |
+
+## OperatorOverrideDecision
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L38).
+
+Internal store command for an operator-override approval decision. Unlike the public OperatorOverrideDecisionRequest, it carries the Reviewer identity that the API layer derives from the authenticated principal before calling the store.
+
+```csharp
+public sealed record OperatorOverrideDecision(SecurityOverrideApprovalStatusDto Decision, string Reviewer, string? Comment = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool RestoresPriorDecision { get; init; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:49](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L49) | True only when the decision re-records a decision an independent reviewer already made (a compensating revert or a discard restored the overlay to values that reviewer decided). Restorations are exempt from the self-approval rule because they assert no new review; the governance log records the flag. API callers never set it. |
+
+## OperatorOverrideReviewRules
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideReviewRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:53](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L53).
+
+The independent-review rule for operator-override decisions.
+
+```csharp
+public static class OperatorOverrideReviewRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsSelfApproval(string? stagedBy, string? reviewer) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:59](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L59) | Whether reviewer is the actor who staged the overlay&#x27;s current values. Actor identities compare case-insensitively after trimming. |
+| <code>public static void EnsureIndependentReview(Guid securityId, OperatorOverridesDto overlay, OperatorOverrideDecision decision);</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:69](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L69) | Fails when decision approves values the reviewer staged themselves. A rejection (withdrawing one&#x27;s own staged values) and a restoration of a prior independent decision are allowed. |
+
+## OperatorOverridesDecisionPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverridesDecisionPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:61](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L61).
+
+OperatorOverrides / Approved or Rejected: a recorded review decision.
+
+```csharp
+public sealed record OperatorOverridesDecisionPayload(string Decision, string Reviewer, string StagedBy, string? Comment, string? ReasonCode, bool RestoresPriorDecision, IReadOnlyDictionary<string, string> Values) : ISecurityGovernancePayload;
+```
+
+## OperatorOverrideSelfApprovalException
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideSelfApprovalException</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:83](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L83).
+
+Raised when a reviewer attempts to approve operator-override values they staged.
+
+```csharp
+public sealed class OperatorOverrideSelfApprovalException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperatorOverrideSelfApprovalException(Guid securityId, string reviewer) : base($&quot;Operator overrides for security &#x27;{securityId:D}&#x27; were staged by &#x27;{reviewer}&#x27;, who cannot also approve them; an independent reviewer must decide.&quot;);</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:85](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L85) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:92](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L92) |  |
+| <code>public string Reviewer { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:94](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L94) |  |

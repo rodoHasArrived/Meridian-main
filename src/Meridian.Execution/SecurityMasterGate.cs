@@ -42,7 +42,10 @@ public sealed class SecurityMasterGate : ISecurityMasterGate
         switch (resolution.Status)
         {
             case SecurityResolutionStatus.Resolved:
-                return new SecurityMasterGateResult(true);
+                return new SecurityMasterGateResult(true)
+                {
+                    SecurityId = resolution.SecurityId is { } id && id != Guid.Empty ? id : null
+                };
 
             case SecurityResolutionStatus.Ambiguous:
                 var candidates = string.Join(", ", resolution.CandidateSecurityIds);

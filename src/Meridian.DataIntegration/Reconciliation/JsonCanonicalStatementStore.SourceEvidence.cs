@@ -37,7 +37,8 @@ public sealed partial class JsonCanonicalStatementStore
         await ReadSourceAsync(hash, ct).ConfigureAwait(false);
         // A prior writer may have stopped after replacement but before directory durability. Reusing
         // the verified bytes still requires syncing their publication before an import can be complete.
-        await _atomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(path)!, CancellationToken.None).ConfigureAwait(false);
+        // Strict: the import is published only after this; a retry re-verifies and syncs again.
+        await _atomicFileWriter.SyncDirectoryOrThrowAsync(Path.GetDirectoryName(path)!, CancellationToken.None).ConfigureAwait(false);
     }
 
     private string SourceEvidencePath(string hash)

@@ -341,6 +341,11 @@ python3 build/scripts/docs/validate-roadmap-registry.py --summary
 python3 build/scripts/docs/validate-docs-structure.py --summary
 ```
 
+### Data workspace alignment parity
+
+WPF Time Series Alignment uses the shared `/api/alignment/preview` and `/api/alignment/create`
+routes. Browser adoption is sequenced under this plan and will consume the same routes.
+
 ## Definition of Done for W8-WPF-PARITY-001
 
 - Every browser workstation screen has a WPF equivalent page/view model or an explicitly sequenced

@@ -331,10 +331,22 @@
       "review_after": "2027-05-17"
     },
     {
-      "path": "src/Meridian.Storage/SecurityMaster/Migrations/071_corporate_actions_append_only_guard.sql",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_083__external_gl_evidence_truncate_guards.sql",
+      "rule_id": "migration-drop-object",
+      "reason": "Each DROP TRIGGER IF EXISTS immediately recreates the same named BEFORE TRUNCATE protection trigger on the same table. The migration runner applies this DDL under its transaction and advisory migration lock, so a failed recreation restores the preceding protections. No table, column, row, mapping revision, package, decision or receipt is removed. This exact path/rule exception follows V_ledger_030/V_ledger_031 and permits only the documented replacement guards, not omission of a replacement trigger.",
+      "review_after": "2027-05-21"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_083__external_gl_evidence_truncate_guards.sql",
       "rule_id": "migration-truncate",
-      "reason": "The lexical TRUNCATE match is the migration's own BEFORE TRUNCATE guard trigger, which rejects truncation of declared corporate actions (Security Master review A6). The migration truncates nothing; CorporateActionsAppendOnlyGuardPostgresTests attempts truncation and verifies refusal.",
-      "review_after": "2027-05-25"
+      "reason": "The lexical TRUNCATE matches are BEFORE TRUNCATE rejection-trigger declarations on immutable external-GL mapping revisions, posting packages, decisions and provider receipts. They call the existing mutation-refusal function and execute no data truncation. PostgreSQL regression coverage requires direct and cascading truncation to refuse while retaining the original approvals and permitting ordinary appended revisions. This exact path/rule exception preserves all UPDATE/DELETE protections and authorizes no data removal.",
+      "review_after": "2027-05-21"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_084__security_revision_workflow_scope.sql",
+      "rule_id": "migration-drop-object",
+      "reason": "Row-preserving replacement of only ux_operations_continuity_open_workflow: the same transaction recreates close-lane uniqueness for workflows whose purpose is absent or Close and adds canonical-UUID uniqueness for each Security Master revision subject. New checks reject unknown or explicit-null purposes and malformed subject authority; subject and owning scope are immutable. No table, column, workflow or audit row is deleted or rewritten. This SQL was authored as ordinal 073 in the unmerged security-pack change (#3603) and is renumbered unchanged to 084 because main later took 073 and then 083. On 2026-11-26 the renumbered file was applied through the migration runner on a disposable local PostgreSQL 16 database carrying ledger migrations 001-083, and the three SecurityRevisionWorkflowPostgresTests passed against it: missing purpose retains Close uniqueness while distinct revision subjects coexist; null, unknown and incomplete purposes are refused at the database boundary; a retained subject and its accounting scope cannot be rewritten. Apply through the existing transactional/advisory-lock runner with purpose-aware consumers; do not delete retained revision workflows to restore the former all-purpose index. This exact path/rule exception is technical review, not a claim of independent human approval or live rollout.",
+      "review_after": "2027-05-26"
     }
   ],
   "removed_migrations": [

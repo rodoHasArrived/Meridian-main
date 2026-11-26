@@ -117,7 +117,7 @@ public sealed class PostgresOperationsContinuityStore :
             select workflow_id,
                    workflow_json::text
             from {Qualified("operations_continuity_workflows")}
-            where 1 = 1
+            where coalesce(workflow_json ->> 'purpose', 'Close') = 'Close'
             """;
 
         if (fundAccountId.HasValue)

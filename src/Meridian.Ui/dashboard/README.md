@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-23
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.Ui/dashboard
@@ -101,11 +101,22 @@ operator identifiers remain visible. Cash Ladder keeps its engine version in Pro
 Reconciliation case evidence retains exact source, scope, and policy IDs in Evidence identifiers
 and groups missing comparison context into one explicit notice. Screenshot readiness checks
 exercise the current Match Workbench's retained case evidence.
+Financial value groups show missing condition evidence once while keeping each value's condition,
+reason and matching Amount passport accessible. Known conditions keep their own labels. Instrument
+positions identify their source, and raw case, report-run and mark-policy IDs remain in technical details.
+
+Designer run proof follows the account and complete document, date and evidence request submitted
+by the browser. Context changes withhold earlier proof and late responses while retaining unsaved
+drafts. This local receipt records the request; retained account ownership and posting permissions
+come from server evidence and governance.
 
 `FinancialValue.conditionContextId` links unavailable data conditions to one visible shared
 notice in Trial Balance, case comparisons, and instrument positions. Each value keeps its exact
 amount, currency/unit, individual reason, and scoped proof control; the focused proof control
 references the notice through `aria-describedby`. Other conditions remain visible inline.
+An explicit condition context takes precedence over an inherited `FinancialValueConditionGroup`
+notice; the inherited context remains a fallback for existing grouped callers. Both paths preserve
+the value's own reason and the focused proof control's accessible description.
 Primary summaries use business labels while immutable IDs stay in technical disclosures and
 continue to drive requests, record identity, and evidence links. Reporting review and income
 comparison panels use distinct per-run keys so form updates retain stable review evidence.
@@ -118,6 +129,12 @@ Native intercompany agreement editors capture structured terms without calculati
 Externally reviewed attestations retain the operator and external reviewer separately. The entity
 workspace presents advisory obligation monitoring and reviewed legacy coverage corrections or
 revocations; close advisories stay outside blockers. See [intercompany controls](../../../docs/operators/intercompany-entity-controls.md).
+
+The Obligation monitor includes the shared lifecycle case queue: explicit tracking, owner assignment,
+notes/evidence, awaiting-review/resolved/reopened history and current-versus-retained findings.
+Updates pin case and source versions. The guarantee register displays approved legal caps with
+measured exposure explicitly unavailable. See
+[lifecycle casework](../../../docs/operators/intercompany-entity-controls.md#tracking-agreement-lifecycle-work).
 
 The Providers route also includes on-demand backfill tier/priority controls, a read-only routing
 preview, and bounded quota history. The server catalog supplies tier defaults and ceilings.
@@ -160,18 +177,36 @@ Focused coverage: `data-screen.symbol-mapping-editor.test.tsx` and existing cano
 The Data provider workspace includes an on-demand streaming failover editor. It reads authoritative
 saved settings, distinguishes unavailable runtime state, and refreshes the active provider after a
 committed switch/reset. Settings and rule create/edit/delete use shared guarded API saves and show
-what the host reported (`describeConfigurationApply` over `changeImpact.lastApply`): "Applied live",
-"Provider routing updated live" or "Pending host restart" with per-setting reasons; without host
-evidence the banner stays "Pending host restart". Relaxed rule thresholds require an audited reason. Focused coverage lives in
-`data-screen.failover.test.tsx` and the shared `FailoverEndpointTests`.
+the exact saved revision's collector status. The shared Data and Settings activation banner updates
+after a save and on refresh and shows saved, applied live, deferred, failed or unknown application.
+Operators can inspect the current revision and its matching, active collector evidence. Relaxed rule
+thresholds require an audited reason. Focused coverage lives in `data-screen.failover.test.tsx`,
+`settings-change-impact.test.tsx`, and the shared `FailoverEndpointTests`.
 Deleting a rule also requires an explicit operator reason and retains the removed protection snapshot.
 
 Data-quality watch includes an on-demand Cross-provider tolerances panel
 (`data-quality-watch.cross-provider-policy.tsx`, API in `lib/api/cross-provider-tolerance.api.ts`):
 bounded tolerances, volume mode, asset-class overrides, a required reason when loosening, audit
 history and a preview of what the draft would have flagged over the last 30 days for one symbol,
-with its provider-call cost shown first. Focused coverage:
-`data-quality-watch.cross-provider-policy.test.tsx`.
+with its provider-call cost shown first. Preview shows the symbol registry class or base
+tolerances when the class is unknown, plus the daily-close and volume thresholds it applied.
+See `data-quality-watch.cross-provider-policy.test.tsx` for focused coverage.
+
+## Posted journals and retained input quality
+
+Ledger Explorer offers **Download journal CSV** for the selected book period through the shared
+`POST /api/ledger/periods/{periodId}/journal-export` route. The download preserves the server artifact;
+its complete-period scope is independent of the table's filters. A changed book or period aborts a
+pending download, and authorization or storage failures remain visible for retry.
+
+Reconciliation queue labels, accessible descriptions and tolerance details preserve the retained
+quantity or monetary unit. Unavailable comparisons do not fall back to a dollar residual.
+
+Strategy run **Replay data sources** shows retained repaired, gap-filled, low-quality and unknown
+input warnings with affected-fill counts and expandable source assessments. Missing assessment
+coverage remains distinct from an assessed run without warnings. Focused coverage lives in
+`PostedJournalCsvButton.test.tsx`, `ledger-journal-export.test.ts` and
+`strategy-screen.replay-provenance.test.tsx`; these tests use synthetic responses.
 
 ## Fixed-income workflow access
 
@@ -1324,6 +1359,12 @@ durations and stable test identity digests support the manual CI concurrency ben
 test-file roster and of how files are dealt to shards, and `scripts/merge-vitest-shards.mjs`
 is the lane's verdict: it rejects a run unless the shard(s) together ran every test file in the
 checkout exactly once with no failure.
+
+Tests run under jsdom by default. A test file that needs no DOM (view models, API clients,
+formatters, and other pure modules) starts with `// @vitest-environment node`, which skips
+building a jsdom window for that file; 181 files carry the marker, and the full suite fell from
+550 to 486 seconds locally with the same 7,219 tests passing. Remove the marker when a file starts
+to render components or read `window`, `document`, or browser storage.
 
 `AmountPassportTrigger` opens the shared Amount passport rail from Ledger Explorer, posted journal
 detail, retained brokerage positions, and retained trial-balance amounts in governed reports. Each
@@ -3576,6 +3617,13 @@ The private-capital retained source and election-calendar companion formats are 
 
 See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 `docs/source/data/diagram-index.yml`.
+
+## Vanilla interest-rate swap preview
+
+`previewVanillaInterestRateSwap` in `src/lib/api/contractual-cash-flow.api.ts` calls the existing
+Security contractual cash-flow preview with `calculationProfile: "vanilla-irs-v1"`. It is an
+analytical read with no development fallback and no posting action. See
+[contractual projections](../../../docs/domain/contractual-cash-flow-projection.md).
 
 ## Roadmap traceability
 

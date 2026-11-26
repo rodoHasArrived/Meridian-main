@@ -2,7 +2,7 @@
 
 **Status:** active guidance
 **Owner:** Accounting and Ledger
-**Reviewed:** 2026-11-11
+**Reviewed:** 2026-11-25
 
 A recurring journal schedules a versioned, balanced journal template for a cadence and an exact
 tenant, company, fund profile, ledger book, entity and currency. Each effective date identifies one
@@ -105,6 +105,9 @@ Rules that keep an amount from being drafted twice:
   retirement. Assets are registered through `/api/ledger/fixed-assets`. A registered asset's cost,
   salvage value, life, method, currency and in-service date cannot be changed, because periods
   already depreciated are not recomputed; retire it and register the revised asset under a new id.
+  Each asset's charge is retained as source evidence with a SHA-256 content hash of the book scope,
+  asset, period end and posted lines, because recurring provenance requires every source to carry a
+  content hash or source version.
 - **A coupon accrues across windows, once.** The bond calculation drafts the day-count share of
   each coupon period that falls inside the window and the premium or discount amortized over the
   same days. Each share is a difference of rounded cumulative amounts, so the windows covering a
@@ -150,6 +153,43 @@ ledger postings has no production caller and is not marked
 `[PostingCalculationNotYetConnected("reason")]`. Three markers remain, each stating what it is
 waiting for: the corporate-action ledger bridge, the short-lot tuple reversal, and the
 whole-coupon ledger-postings builder.
+
+## Declared CertificateOfDeposit accrual profile
+
+Class admission selects a registered, tested recurring profile instead of a class-wide boolean.
+The first new profile, `fixed-bullet-actual365-v1`, accepts only a complete fixed-rate bullet CD:
+explicit issue/start date, maturity, principal, coupon and rate unit, Actual/365, AtMaturity,
+noncallable and unadjusted. Actual held long face lots must be at par with NoAmortization and a
+compatible approved journal template. Fees, OID/discount, premium, floating/reset economics,
+PIK, options and unsupported principal schedules remain refused. Declaring a profile does not
+bypass source authority, period locks, approval or the declared-schedule posting gate.
+
+CD terms version 6 introduces optional `issueDate`, `principal` and `paymentFrequency`; the new
+CD calculation/context uses version 6. A retained CD below declaration stamp 6 keeps its existing
+version-5 analytical captures and replay; module policy alone cannot reinterpret it. An explicit
+stamp-6 declaration must pass the strict profile and cannot fall back to normalized legacy economics.
+Raw issue/principal/cadence keys below their introduction stamp are not reviewed accrual anchors.
+An explicit reviewed amendment activates those fields; older-stamp residue cannot activate during
+an unrelated edit. Existing Bond/StructuredCredit
+version-5 calculations and old retained receipt bytes remain unchanged. Other classes, including
+DirectLoan and CommercialPaper, require their own tested profiles.
+
+Before intake, the recurring store pins write-once daily-lot economic-obligation keys to the
+retained occurrence under its exclusive document lease. The file and PostgreSQL stores share that
+session and its document validation. Identity includes tenant/company/book,
+security, book position, lot and accrual date; it excludes schedule, template and model versions.
+Overlapping windows from another schedule or cadence therefore refuse rather than create a second
+draft. Exact retries retain ownership across process failure and restart. Claims persist after a
+failed attempt; a correction follows the existing audited reversal/rebook workflow. The draft's
+independent claim digest is checked during recovery, submission, approval and posting. Optional
+claim fields are omitted from old occurrence and Bond evidence payloads.
+
+Proof cases are in `SecurityRecurringAccrualPolicyTests`,
+`CertificateOfDepositCalculationProfileTests`,
+`RecurringJournalCalculationTests.CertificateOfDeposit`,
+`RecurringJournalCalculationTests.CertificateOfDepositObligations` and
+`RecurringJournalStoreTests.EconomicObligations`. Their presence is implementation evidence,
+not deployment or operator acceptance.
 
 ## Event-driven calculations
 

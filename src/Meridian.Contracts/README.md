@@ -6,10 +6,51 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-23
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.Contracts
+
+`Operations/MarketDataInputEvidence.cs` retains observation-time provider, dataset/checkpoint,
+repair and range-bound quality facts through fills and journal tags. Versioned tags use
+source-generated JSON; missing or invalid assertions remain unassessed. Run warnings count logical
+fills, including acquisition inputs, without inventing a monetary P&L attribution. Optional
+`BackfillBatchReceipt.InputEvidence` travels with the existing sealed receipt and content hash.
+
+Strategy position reconciliation carries signed native quantity, unit/multiplier, retained monetary
+basis, functional currency and canonical security identity separately. Incompatible comparisons
+remain unavailable. `FundReconciliationItem` and `ReconciliationSummary` expose nullable
+`ComparableBreakAmountTotal`, `BreakAmountCurrency` and `BreakAmountUnavailableReason`; consumers
+must use this evidence instead of formatting the legacy scalar as money. Quantity residuals never
+become currency totals, and an unavailable monetary dimension cannot be discarded to produce a
+partial subtotal. Direct-lending reconciliation retains its as-of date, servicing revision,
+journal identities, currency and single-use payment-allocation evidence. Missing legacy evidence
+does not imply a zero balance or a match.
+
+External-GL export packages optionally pin `MappingContentHash` alongside the mapping version.
+The field is omitted when absent to preserve historical manifest preimages.
+
+`HistoricalPriceBasis` declares Raw, SplitAdjusted, DividendAdjusted, FullyAdjusted or Unknown
+for a complete historical OHLC set. `HistoricalBar.PriceBasis` survives JSON as a readable enum;
+its default is omitted so retained legacy payloads remain unknown without rewriting their bytes.
+`IsAdjusted` remains a compatibility flag and cannot establish precise basis by itself.
+`AdjustedHistoricalBar` declares primary and optional adjusted sets independently. Raw and exact-basis
+requests reject unavailable sets; partial adjusted OHLC never borrows primary components. See
+[historical provider price bases](../../docs/development/provider-implementation.md#historical-price-bases).
+`SecurityAssetClassModules` composes the 32 built-in `SecurityAssetClassModule` contributions under
+`SecurityMaster/AssetModules/`. Each class module owns its descriptor (including its terms-upgrade,
+term-role and accounting declarations), its root and nested term schema, its rate-field
+declarations, and its codec and economic-flattening bindings. `SecurityAssetClassCatalog`,
+`SecurityAssetTermsSchema`, `SecurityRateFieldUnits`, `SecurityAssetTermsCodecBindings` and the
+economic-terms upcaster keep their public members and enumeration order as facades over the
+modules; they hold no per-class table of their own. The 31 flat-codec classes keep their
+generation inputs, and CustomAsset declares its opaque approved-profile codec. Composition refuses
+a duplicate class, schema order or nested element path, a rate or codec row naming another class,
+and a module without its codec rows, at type initialization. The F# `AssetClassRegistry` remains
+the source of per-class classification facts; `SecurityAssetClassFactParityTests` still holds the
+C# declarations to it. A module declaration confers no posting or pack-activation authority.
+`SecurityAssetClassModuleTests` covers the composition contract. To add a class, follow
+[Adding a Security Master asset class](../../docs/engineering/security-master-adding-an-asset-class.md).
 
 `AccountingSystemReconciliationRowDto` and `AccountingSystemReconciliationSummaryDto` retain their
 numeric fields and add read-only invariant `*Exact` string companions for debit, credit, variance
@@ -59,6 +100,12 @@ strings; omitted companions preserve retained legal command/review hashes. Separ
 attestations retain reviewer and operator identities, while obligation-monitor DTOs carry advisory
 source/freshness evidence outside blocking close contributors. See
 [the native legal contract](../../docs/domain/intercompany-agreements.md).
+
+`IntercompanyAgreementWorkQueueDtos` separates current lifecycle findings from durable operator
+cases, version/hash-bound actions and case history. Guarantee disclosure retains exact decimal caps
+and nullable unavailable measured exposure. The obligation finding's optional typed due date
+identifies its legal boundary without parsing display text. See
+[agreement lifecycle casework](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#agreement-lifecycle-work-queue).
 
 Fixed management-fee terms add a null-omitted `FixedFeeBasis` (per period or per annum).
 `IntercompanyFeeAccrualDtos` and `IntercompanyFeeAccrualEvidenceDtos` define rule `intercompany-fee-v1`, its
@@ -2347,6 +2394,29 @@ See the [Security Master extensibility review](../../docs/architecture/security-
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
+## Bounded CertificateOfDeposit accrual policy (2026-11-25)
+
+`SecurityRecurringAccrualPolicies` selects tested recurring accrual profiles; the descriptor's
+`SupportsRecurringFixedIncomeAccrual` is now a wrapper over `RecurringAccrualPolicy`. CD version 6
+adds explicit issue date, principal and cadence for `fixed-bullet-actual365-v1`; the profile requires
+Actual/365, AtMaturity, fixed scalar rate/unit and par face lots with NoAmortization.
+`SecurityVersionedScalarTerms` and the versioned scalar amendment rules prevent older-stamp residue
+activating during unrelated edits, and the schedule factory reads only anchors declared at the
+record's terms version. Bond/StructuredCredit v5 evidence stays stable. CDs below the declaration
+stamp keep v5 analytical capture/replay; explicit v6 profile declarations must pass the strict terms
+contract and cannot fall back to normalized legacy economics. The policy adds no posting authority.
+See [recurring journals](../../docs/domain/recurring-journal.md#declared-certificateofdeposit-accrual-profile).
+
+## Bounded vanilla interest-rate swap profile (2026-11-25)
+
+`SecurityVanillaSwapProfile` (`vanilla-irs-v1`) adapts exactly two same-currency opposite
+fixed/floating legs to the shared contractual cash-flow engine with explicit per-leg rate units,
+conventions and dated rate authority; Swap leg `scheduleConventions` are writable only through that
+bounded validation. Optional `calculationProfile` on `ContractualCashFlowRequest` preserves old
+omitted request bytes and adds no posting authority. Cross-currency exchange, notional schedules,
+optionality and undated index rates remain refused. See
+[contractual projections](../../docs/domain/contractual-cash-flow-projection.md).
+
 ## Roadmap traceability
 
 <!-- source-roadmap-traceability:begin module=SRC-CONTRACTS -->
@@ -2390,6 +2460,10 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-todos:end -->
 
 ## API and contract notes
+
+`Api/TimeSeriesAlignmentContracts.cs` carries the shared request, aligned rows, coverage,
+price-basis evidence and content hash used by the host and the desktop workstation.
+
 
 Canonical symbol registries retain their stable read/write interfaces. Implementations that can
 apply a startup seed batch atomically opt into `ICanonicalSymbolRegistryMigrationWriter`; callers

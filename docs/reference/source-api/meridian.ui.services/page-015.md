@@ -6,30 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## StorageOptimizationAdvisorService
-
-Qualified name: <code>Meridian.Ui.Services.StorageOptimizationAdvisorService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:24](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L24).
-
-Service for analyzing storage and providing optimization recommendations. Implements Feature Refinement #63 - Archive Storage Optimization Advisor. This service provides storage analysis and delegates operations to the core service via HTTP API endpoints when available: - /api/storage/catalog - Storage catalog for file discovery - /api/storage/tiers/statistics - Tier statistics - /api/storage/tiers/plan - Migration planning - /api/storage/tiers/migrate - Tier migration execution - /api/storage/maintenance/defrag - Defragmentation execution
-
-```csharp
-public sealed class StorageOptimizationAdvisorService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static StorageOptimizationAdvisorService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:36](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L36) |  |
-| <code>public async Task&lt;StorageOptimizationReport&gt; AnalyzeStorageAsync(string dataRoot, StorageAnalysisOptions options, IProgress&lt;StorageAnalysisProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:46](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L46) | Analyzes storage and generates optimization recommendations. |
-| <code>public async Task&lt;OptimizationExecutionResult&gt; ExecuteOptimizationAsync(OptimizationRecommendation recommendation, IProgress&lt;OptimizationProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:495](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L495) | Executes a specific optimization recommendation. |
-| <code>public async Task&lt;TierStatisticsApiResult?&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1238](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1238) | Gets tier statistics from the core API. |
-| <code>public async Task&lt;MigrationPlanApiResult?&gt; GetMigrationPlanAsync(string targetTier = &quot;cold&quot;, int ageDaysThreshold = 90, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1256](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1256) | Gets a migration plan from the core API for files to move between tiers. |
-| <code>public async Task&lt;DefragmentationApiResult?&gt; RunDefragmentationAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1284](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1284) | Runs defragmentation via the core API. |
-| <code>public async Task&lt;StorageCatalogApiResult?&gt; GetStorageCatalogAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1302](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1302) | Gets the storage catalog from the core API for comprehensive file analysis. |
-
 ## StorageOptimizationReport
 
 Qualified name: <code>Meridian.Ui.Services.StorageOptimizationReport</code>. Kind: `class`.
@@ -1226,3 +1202,27 @@ Declared public members:
 | <code>public string? SuggestedExchange { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:610](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L610) |  |
 | <code>public string? SecurityType { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:611](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L611) |  |
 | <code>public bool IsAvailableForTrading { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:612](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L612) |  |
+
+## SystemEvent
+
+Qualified name: <code>Meridian.Ui.Services.SystemEvent</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SystemHealthService.cs:263](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L263).
+
+Describes a timestamped system event with severity, source, message, and structured details.
+
+```csharp
+public sealed class SystemEvent
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:265](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L265) |  |
+| <code>public string EventType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:266](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L266) |  |
+| <code>public string Severity { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:267](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L267) |  |
+| <code>public string Source { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:268](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L268) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:269](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L269) |  |
+| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:270](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L270) |  |
+| <code>public Dictionary&lt;string, object&gt;? Details { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:271](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L271) |  |

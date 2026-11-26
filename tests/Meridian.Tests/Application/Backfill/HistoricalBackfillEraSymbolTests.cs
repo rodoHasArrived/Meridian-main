@@ -55,6 +55,9 @@ public sealed class HistoricalBackfillEraSymbolTests : IAsyncLifetime
         _sink.StoredEvents.Should().NotBeEmpty();
         _sink.StoredEvents.Should().OnlyContain(evt => evt.Symbol == "META",
             "fetched bars must land under the canonical requested symbol");
+        _sink.StoredEvents.Select(evt => (HistoricalBar)evt.Payload).Should()
+            .OnlyContain(bar => bar.PriceBasis == HistoricalPriceBasis.DividendAdjusted,
+                "canonical symbol retagging must preserve the provider's price basis");
     }
 
     [Fact]
@@ -113,7 +116,8 @@ public sealed class HistoricalBackfillEraSymbolTests : IAsyncLifetime
             requestedSymbols.Add(symbol);
             var sessionDate = from ?? new DateOnly(2022, 1, 3);
             return Task.FromResult<IReadOnlyList<HistoricalBar>>(
-                [new HistoricalBar(symbol, sessionDate, 100m, 101m, 99m, 100.5m, 1_000, "test")]);
+                [new HistoricalBar(symbol, sessionDate, 100m, 101m, 99m, 100.5m, 1_000, "test",
+                    PriceBasis: HistoricalPriceBasis.DividendAdjusted)]);
         });
 
     /// <summary>META traded as FB strictly before the rename date.</summary>

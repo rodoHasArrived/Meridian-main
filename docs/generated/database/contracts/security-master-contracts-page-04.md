@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 4 of 8
 
-Objects 241-320 of 613. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 615. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -460,9 +460,6 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_ResolveConflictRequest["ResolveConflictRequest"] {
         +string? ChosenWinnerSource
         +Guid ConflictId
-        +bool? IsPolicyDeviation
-        +string? PolicyRule
-        +string? PolicyWinnerSource
         +string? Reason
         +string Resolution
         +string ResolvedBy

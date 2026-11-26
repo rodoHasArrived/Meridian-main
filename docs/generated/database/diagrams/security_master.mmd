@@ -1234,6 +1234,7 @@ erDiagram
         text[] notes
         timestamp_with_time_zone created_at
         uuid projected_cash_flow_id
+        jsonb evidence_json
     }
     security_master_reconciliation_run {
         uuid reconciliation_run_id PK
@@ -1242,6 +1243,7 @@ erDiagram
         timestamp_with_time_zone requested_at
         timestamp_with_time_zone completed_at
         text status
+        jsonb evidence_json
     }
     security_master_repo_projection {
         uuid security_id PK

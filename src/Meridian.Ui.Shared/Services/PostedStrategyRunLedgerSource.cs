@@ -71,7 +71,7 @@ public sealed class PostedStrategyRunLedgerSource(
             {
                 ct.ThrowIfCancellationRequested();
                 var entry = record.Entry;
-                if (entry.Metadata.Tags?.TryGetValue(LedgerQuery.StrategyRunIdTag, out var sourceRunId) != true
+                if (!LedgerRunAttribution.TryGetTrustedRunId(entry.Metadata, out var sourceRunId)
                     || !string.Equals(sourceRunId, run.RunId, StringComparison.Ordinal))
                     continue;
                 if (!periods.TryGetValue(record.PeriodId, out var period))
@@ -114,6 +114,53 @@ public sealed class PostedStrategyRunLedgerSource(
             result = id;
         }
         return (result, hasLegacyLabel);
+    }
+
+    public IChartOfAccounts? GetPostingChart(IReadOnlyLedger ledger, DateTimeOffset? asOf = null)
+    {
+        var registrations = new Dictionary<LedgerAccount, LedgerAccountChartReference>();
+        foreach (var entry in ledger.Journal)
+        {
+            if (asOf.HasValue && entry.Timestamp > asOf.Value)
+                continue;
+            // The canonical preparer retains this exact role when it resolves the approved chart.
+            // An account code or a similar-looking name is not role authority.
+            if (entry.Metadata.ActivityType != "execution.trade-fill"
+                || entry.Metadata.Tags?.TryGetValue("execution.securities-account", out var name) != true
+                || !entry.Metadata.Tags.ContainsKey(SecurityTradePositionEvidence.VersionTag))
+                continue;
+            var lines = entry.Lines.Where(line => line.Account.Name == name
+                && line.Account.AccountType == LedgerAccountType.Asset
+                && line.Account.Symbol == entry.Metadata.Symbol
+                && string.Equals(line.Account.FinancialAccountId, entry.Metadata.FinancialAccountId, StringComparison.OrdinalIgnoreCase)).ToArray();
+            if (lines.Length != 1 || lines[0].ChartAccount is not { } reference)
+                throw new InvalidDataException("Retained canonical securities-role evidence is incomplete or ambiguous.");
+            // Conflicting historical chart references cannot establish a single posting registry.
+            if (!registrations.TryAdd(lines[0].Account, reference) && registrations[lines[0].Account] != reference)
+                throw new InvalidDataException("Retained canonical securities-role chart references disagree.");
+        }
+        return registrations.Count == 0 ? null : new RetainedPostingChart(registrations);
+    }
+
+    public string? GetBalanceComparisonUnavailableReason(IReadOnlyLedger ledger)
+        => "Run-attributed journal activity does not establish complete financial-account opening balances and all account cash flows; account cash and NAV require a complete account/book population.";
+
+    private sealed class RetainedPostingChart(IReadOnlyDictionary<LedgerAccount, LedgerAccountChartReference> registrations) : IChartOfAccounts
+    {
+        public LedgerAccount GetDefinition(LedgerAccountRole role) => StandardChartOfAccounts.Instance.GetDefinition(role);
+        public LedgerAccount Resolve(LedgerAccountRole role, string? financialAccountId = null, string? symbol = null)
+            => StandardChartOfAccounts.Instance.Resolve(role, financialAccountId, symbol);
+        public bool TryGetRegistered(LedgerAccount account, out LedgerAccountRole role)
+        {
+            if (registrations.ContainsKey(account))
+            {
+                role = LedgerAccountRole.Securities;
+                return true;
+            }
+            return StandardChartOfAccounts.Instance.TryGetRegistered(account, out role);
+        }
+        public LedgerAccountChartReference? GetPostingReference(LedgerAccount account)
+            => registrations.TryGetValue(account, out var reference) ? reference : StandardChartOfAccounts.Instance.GetPostingReference(account);
     }
 
 }

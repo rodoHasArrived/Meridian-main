@@ -2,11 +2,18 @@
 
 # `security-master-contracts` data objects - page 6 of 8
 
-Objects 401-480 of 613. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 615. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityCashFlowTermBinding["SecurityCashFlowTermBinding"] {
+        +string Key
+        +bool ReadAfterSharedSpellings
+        +SecurityCashFlowTermRole Role
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRole["SecurityCashFlowTermRole"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRoles["SecurityCashFlowTermRoles"] {
         +IReadOnlyDictionary~SecurityCashFlowTermRole__IReadOnlyList~string~~ SharedSpellings
     }
@@ -15,6 +22,7 @@ classDiagram
         +SecurityCodecInputs Inputs
         +IReadOnlyList~SecurityTermBinding~ Members
         +bool ReadsResolvedTerms
+        +IReadOnlyList~string~ VersionedOptionalScalarKeys
         +bool VersionedSchedules
         +bool WritesConventionsFlag
     }
@@ -183,18 +191,6 @@ classDiagram
         +string? IssuerType
         +string? LegacyAssetClass
     }
-    class Meridian_Contracts_SecurityMaster_SecurityEconomicDisposition["SecurityEconomicDisposition"] {
-        +string? Code
-        +SecurityEconomicDispositionKind Kind
-        +string? Reason
-        +SecurityEconomicDisposition Supported
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityEconomicDispositionKind["SecurityEconomicDispositionKind"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityEconomicDispositions["SecurityEconomicDispositions"] {
-        +IReadOnlyList~string~ Consumers
-        +IReadOnlyList~string~ CouponStructures
-    }
     class Meridian_Contracts_SecurityMaster_SecurityEconomicScheduleKind["SecurityEconomicScheduleKind"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityEconomicScheduleParser["SecurityEconomicScheduleParser"] {
@@ -287,10 +283,6 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_SecurityIdentifierKind["SecurityIdentifierKind"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityIdentifierNormalizer["SecurityIdentifierNormalizer"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityIdentityClaim["SecurityIdentityClaim"] {
-        +bool IsActive
-        +Guid SecurityId
     }
     class Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlow["SecurityIncomeCashFlow"] {
         +decimal AmountPerUnit
@@ -407,14 +399,14 @@ classDiagram
         +string ConflictKind
         +DateTimeOffset DetectedAt
         +string FieldPath
-        +bool? IsPolicyDeviation
-        +string? PolicyRule
-        +string? PolicyWinnerSource
         +string ProviderA
         +string ProviderB
         +DateTimeOffset? ResolvedAt
         +string? ResolvedBy
         +string? ResolvedReason
+        +string? ResolvedWinnerSource
+        +Guid SecurityId
+        +string Status
     }
     class Meridian_Contracts_SecurityMaster_SecurityMasterConflictFieldCategories["SecurityMasterConflictFieldCategories"] {
     }
@@ -426,6 +418,23 @@ classDiagram
         +IReadOnlySet~string~ ProviderEvidenceSegments
         +IReadOnlySet~string~ TermContainers
     }
+    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendRequestDto["SecurityMasterCorporateActionAppendRequestDto"] {
+        +string Actor
+        +CorporateActionDto CorporateAction
+        +string? CorrelationId
+        +string? FundProfileId
+        +string? Reason
+        +Guid SecurityId
+        +string? SourceRecordId
+        +string SourceSystem
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto["SecurityMasterCorporateActionAppendResultDto"] {
+        +SecurityMasterCorporateActionAuditDto Audit
+        +CorporateActionDto CorporateAction
+        +SecurityMasterCorporateActionRestatementDto? Restatement
+    }
+    Meridian_Contracts_SecurityMaster_SecurityCashFlowTermBinding --> Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRole
+    Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRoles --> Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRole
     Meridian_Contracts_SecurityMaster_SecurityClassCodecBinding --> Meridian_Contracts_SecurityMaster_SecurityCodecInputs
     Meridian_Contracts_SecurityMaster_SecurityClassificationDriftReportDto --> Meridian_Contracts_SecurityMaster_SecurityClassificationDriftEntryDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceInputDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto
@@ -441,7 +450,6 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsRead --> Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsStatus
     Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto
     Meridian_Contracts_SecurityMaster_SecurityEconomicDefinitionRecord --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto
-    Meridian_Contracts_SecurityMaster_SecurityEconomicDisposition --> Meridian_Contracts_SecurityMaster_SecurityEconomicDispositionKind
     Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint
     Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict
     Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint

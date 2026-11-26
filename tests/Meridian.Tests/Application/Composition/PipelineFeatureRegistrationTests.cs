@@ -47,6 +47,73 @@ public sealed class PipelineFeatureRegistrationTests : IDisposable
     }
 
     [Fact]
+    public async Task Register_CollectorAndBackfillWorkloads_OwnSeparateDurabilityDirectories()
+    {
+        var root = CreateTempDirectory();
+        var dataRoot = Path.Combine(root, "persistent-data");
+        var configPath = WriteConfig(root, new AppConfig(DataRoot: "persistent-data"));
+
+        // State left by the shared pre-workload layout: one segment and one ledger.
+        var legacyWal = Path.Combine(dataRoot, "_wal");
+        await using (var legacy = new Meridian.Storage.Archival.WriteAheadLog(legacyWal))
+        {
+            await legacy.InitializeAsync();
+            await legacy.AppendAsync("legacy-record", "Trade");
+            await legacy.FlushAsync();
+        }
+        Directory.CreateDirectory(Path.Combine(dataRoot, "_dedup"));
+        await File.WriteAllTextAsync(Path.Combine(dataRoot, "_dedup", "dedup_ledger.jsonl"), string.Empty);
+
+        await using var collector = BuildPipelineProvider(dataRoot, CompositionOptions.Streaming with { ConfigPath = configPath });
+        await using var backfill = BuildPipelineProvider(dataRoot, CompositionOptions.BackfillOnly with { ConfigPath = configPath });
+
+        var collectorWal = collector.GetRequiredService<Meridian.Storage.Archival.WriteAheadLog>();
+        var backfillWal = backfill.GetRequiredService<Meridian.Storage.Archival.WriteAheadLog>();
+        collectorWal.WalDirectory.Should().Be(Path.Combine(dataRoot, "_wal", "collector"));
+        backfillWal.WalDirectory.Should().Be(Path.Combine(dataRoot, "_wal", "backfill"));
+
+        // Both workloads initialize against one data root at the same time.
+        await backfillWal.InitializeAsync();
+        await collectorWal.InitializeAsync();
+
+        Directory.GetFiles(legacyWal, "*.wal").Should().BeEmpty("the collector adopts legacy segments");
+        var collectorRecords = new List<string>();
+        await foreach (var record in collectorWal.GetUncommittedRecordsAsync())
+            collectorRecords.Add(record.DeserializePayload<string>()!);
+        collectorRecords.Should().Equal("legacy-record");
+        var backfillRecords = 0;
+        await foreach (var _ in backfillWal.GetUncommittedRecordsAsync())
+            backfillRecords++;
+        backfillRecords.Should().Be(0, "only one workload may replay legacy segments");
+
+        collector.GetRequiredService<PersistentDedupLedger>().LedgerPath
+            .Should().Be(Path.Combine(dataRoot, "_dedup", "collector", "dedup_ledger.jsonl"));
+        backfill.GetRequiredService<PersistentDedupLedger>().LedgerPath
+            .Should().Be(Path.Combine(dataRoot, "_dedup", "backfill", "dedup_ledger.jsonl"));
+        File.Exists(Path.Combine(dataRoot, "_dedup", "collector", "dedup_ledger.jsonl")).Should().BeTrue();
+        File.Exists(Path.Combine(dataRoot, "_dedup", "dedup_ledger.jsonl")).Should().BeFalse("the collector adopted the legacy ledger");
+    }
+
+    [Fact]
+    public void CompositionPresets_SelectTheExpectedPipelineWorkload()
+    {
+        CompositionOptions.BackfillOnly.PipelineWorkload.Should().Be(PipelineWorkload.Backfill);
+        CompositionOptions.Streaming.PipelineWorkload.Should().Be(PipelineWorkload.Collector);
+        CompositionOptions.Default.PipelineWorkload.Should().Be(PipelineWorkload.Collector);
+        CompositionOptions.WebDashboard.PipelineWorkload.Should().Be(PipelineWorkload.Collector);
+    }
+
+    private static ServiceProvider BuildPipelineProvider(string dataRoot, CompositionOptions options)
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new StorageOptions { RootPath = dataRoot });
+        new ConfigurationFeatureRegistration().Register(services, options);
+        new PipelineFeatureRegistration().Register(services, options);
+        return services.BuildServiceProvider();
+    }
+
+    [Fact]
     public async Task Register_UsesDurableStreamingBackpressurePolicyForMarketDataPipeline()
     {
         var root = CreateTempDirectory();

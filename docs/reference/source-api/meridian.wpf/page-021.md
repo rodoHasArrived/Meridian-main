@@ -6,69 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## InspectorPanelControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Layout.InspectorPanelControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:45](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L45).
-
-Hosts inspector content with separate header and footer content slots.
-
-```csharp
-public sealed class InspectorPanelControl : ContentControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty HeaderContentProperty = DependencyProperty.Register(nameof(HeaderContent), typeof(object), typeof(InspectorPanelControl));</code> | [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:47](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L47) |  |
-| <code>public static readonly DependencyProperty FooterContentProperty = DependencyProperty.Register(nameof(FooterContent), typeof(object), typeof(InspectorPanelControl));</code> | [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:50](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L50) |  |
-| <code>public object? HeaderContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:53](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L53) |  |
-| <code>public object? FooterContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:59](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L59) |  |
-
-## SplitPaneLayoutControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Layout.SplitPaneLayoutControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:9](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L9).
-
-Provides a content host styled as a split-pane workstation layout.
-
-```csharp
-public sealed class SplitPaneLayoutControl : ContentControl
-```
-
-## WorkflowTabHostControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Layout.WorkflowTabHostControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:23](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L23).
-
-Provides a tabbed host for workstation workflows.
-
-```csharp
-public sealed class WorkflowTabHostControl : TabControl
-```
-
-## AccountingPreparerAttestationPresentation
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.AccountingPreparerAttestationPresentation</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs:6](../../../../src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs#L6).
-
-Displays native accounting decision classification without inferring review or coverage.
-
-```csharp
-public static class AccountingPreparerAttestationPresentation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;string&gt; Describe(LedgerAmountProofDto proof, out string summary, IReadOnlyList&lt;Guid&gt;? reportJournalEntryIds = null);</code> | [src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs:10](../../../../src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs#L10) |  |
-
 ## AuditTimelineEntryModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.AuditTimelineEntryModel</code>. Kind: `record`.
@@ -737,3 +674,56 @@ Declared public members:
 | <code>public string SearchText { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:307](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L307) |  |
 | <code>public string ScopeText { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:309](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L309) |  |
 | <code>public IReadOnlyList&lt;string&gt; ActiveFilters { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:311](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L311) |  |
+
+## WorkstationMetricModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationMetricModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:244](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L244).
+
+```csharp
+public sealed record WorkstationMetricModel(string Label, string Value, string Detail = "", string Glyph = "", string Tone = WorkspaceTone.Neutral, Brush? AccentBrush = null);
+```
+
+## WorkstationReadinessTone
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationReadinessTone</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:18](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L18).
+
+```csharp
+public enum WorkstationReadinessTone
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Neutral</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:20](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L20) |  |
+| <code>Ready</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:21](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L21) |  |
+| <code>Warning</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:22](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L22) |  |
+| <code>Blocked</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:23](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L23) |  |
+| <code>Stale</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:24](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L24) |  |
+| <code>Recovery</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:25](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L25) |  |
+| <code>SignoffRequired</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:26](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L26) |  |
+| <code>EvidenceLinked</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:27](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L27) |  |
+
+## WorkstationRecoveryActionModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationRecoveryActionModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:36](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L36).
+
+```csharp
+public sealed record WorkstationRecoveryActionModel(string Label, string Detail, string Target = "", string Tone = WorkspaceTone.Info);
+```
+
+## WorkstationSignoffRequirementModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationSignoffRequirementModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:42](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L42).
+
+```csharp
+public sealed record WorkstationSignoffRequirementModel(string Role, string Status, string Detail = "", string Tone = WorkspaceTone.Warning);
+```

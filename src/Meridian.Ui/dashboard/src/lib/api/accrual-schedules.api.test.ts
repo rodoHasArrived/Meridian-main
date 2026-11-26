@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { configureAccrualSchedule, previewAccrualSchedule, runAccrualSchedule, type AccrualScheduleInput } from "./accrual-schedules.api";
 import * as api from "@/lib/api";

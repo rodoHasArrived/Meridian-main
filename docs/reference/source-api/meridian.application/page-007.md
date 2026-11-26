@@ -6,6 +6,87 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderRuntimeCredentialMutationGuard
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialMutationGuard</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:9](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L9).
+
+Serializes host selection/application with mutations that could invalidate a running provider&#x27;s keys.
+
+```csharp
+public sealed class ProviderRuntimeCredentialMutationGuard(ConfigStore configStore, ProviderCredentialOwnershipPolicy? ownershipPolicy = null, IProviderRuntimeCredentialApplier? applier = null, ProviderRuntimeCredentialApplicationTracker? tracker = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IDisposable&gt; AcquireOperationAsync(string providerId, CancellationToken ct);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:18](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L18) |  |
+| <code>public async Task&lt;MutationLease&gt; AcquireForConnectionAsync(string providerId, string connectionId, string tenantId, CancellationToken ct);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:28](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L28) |  |
+| <code>public async Task&lt;MutationLease&gt; AcquireForSelectionAsync(string providerId, string connectionId, string tenantId, CancellationToken ct);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:34](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L34) |  |
+| <code>public async Task&lt;MutationLease&gt; AcquireAsync(string providerId, ProviderCredentialScope? scope, CancellationToken ct);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:41](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L41) | Returns ownership and operation leases held until the vault/configuration mutation completes. |
+
+## MutationLease
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialMutationGuard.MutationLease</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:113](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L113).
+
+```csharp
+public sealed class MutationLease(IDisposable ownership, IDisposable operation) : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public void ReleaseConfigurationLease() =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:119](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L119) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:120](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L120) |  |
+
+## ProviderRuntimeCredentialQuiescenceException
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialQuiescenceException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:135](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L135).
+
+A bound secret cannot change until its running instances are proven stopped and drained.
+
+```csharp
+public sealed class ProviderRuntimeCredentialQuiescenceException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderRuntimeCredentialQuiescenceException() : base(&quot;Running provider instances cannot be stopped and drained by this host. Stop the host and perform credential maintenance offline before restarting; the requested change was refused.&quot;);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:137](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L137) |  |
+
+## ProviderRuntimeCredentialService
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:12](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L12).
+
+Explicit host credential selection and ownership-checked migration commands.
+
+```csharp
+public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IProviderCredentialStore credentialStore, ILogger<ProviderRuntimeCredentialService>? logger = null, ProviderRuntimeCredentialApplicationTracker? applicationTracker = null, IProviderRuntimeCredentialApplier? applier = null, ProviderRuntimeCredentialMutationGuard? mutationGuard = null, ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ProviderCredentialStoreStatus&gt; GetMigrationPreviewAsync(string providerId, string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:24](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L24) |  |
+| <code>public async Task&lt;ProviderRuntimeCredentialBinding&gt; BindAsync(string providerId, string connectionId, string tenantId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:36](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L36) |  |
+| <code>public ProviderRuntimeCredentialApplicationStatus GetApplicationStatus(string providerId, string connectionId, string tenantId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:70](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L70) | Whether the retained binding for this connection has reached running instances of this host. |
+| <code>public async Task&lt;ProviderRuntimeCredentialApplicationStatus&gt; ApplyAsync(string providerId, string connectionId, string tenantId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:90](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L90) | Asks the host&#x27;s applier to recycle the provider&#x27;s running instances under the retained binding. The default host has no in-process recycle and reports the binding as pending a deliberate restart. |
+| <code>public async Task&lt;ProviderCredentialMigrationReceipt&gt; TransferAsync(string providerId, string connectionId, string tenantId, string migrationId, string? expectedGeneration, string actor, bool rollback, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:136](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L136) |  |
+| <code>public async Task&lt;ProviderCredentialMigrationReceipt&gt; FinalizeAsync(string providerId, string connectionId, string tenantId, string migrationId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:160](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L160) | Retires a verified migration: rollback ends and the provider-wide record is released; the receipt stays in audit. |
+| <code>public static ProviderCredentialScope? ResolveScope(AppConfig config, string providerId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:176](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L176) | Null is permitted only for an entirely legacy provider family, never a partial owner or dangling default. |
+| <code>public static ProviderCredentialScope RequireScope(AppConfig config, string providerId, string connectionId, string tenantId, bool requireEnabled = true);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:205](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L205) |  |
+
 ## ProviderSetupService
 
 Qualified name: <code>Meridian.Application.ProviderRouting.ProviderSetupService</code>. Kind: `class`.
@@ -283,17 +364,17 @@ Declared public members:
 | <code>public async Task&lt;BackfillSchedule&gt; UpdateScheduleAsync(BackfillSchedule schedule, CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:222](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L222) | Update an existing schedule. |
 | <code>public async Task&lt;BackfillSchedule?&gt; SetPreferredProvidersAsync(string scheduleId, IReadOnlyList&lt;string&gt; preferredProviders, CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:256](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L256) | Edits ordered preferences without replacing schedule timing or execution state. |
 | <code>public async Task&lt;bool&gt; DeleteScheduleAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:307](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L307) | Delete a schedule. |
-| <code>public BackfillSchedule? GetSchedule(string scheduleId);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:381](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L381) | Get a schedule by ID. |
-| <code>public IReadOnlyList&lt;BackfillSchedule&gt; GetAllSchedules();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:391](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L391) | Get all schedules. |
-| <code>public IReadOnlyList&lt;BackfillSchedule&gt; GetEnabledSchedules();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:402](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L402) | Get enabled schedules. |
-| <code>public IReadOnlyList&lt;BackfillSchedule&gt; GetDueSchedules(DateTimeOffset? asOf = null);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:414](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L414) | Get schedules due for execution. |
-| <code>public BackfillSchedule? GetNextDueSchedule(DateTimeOffset? asOf = null);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:427](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L427) | Get next schedule to execute. |
-| <code>public async Task&lt;bool&gt; SetScheduleEnabledAsync(string scheduleId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:435](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L435) | Enable or disable a schedule. |
-| <code>public async Task RecordExecutionAsync(BackfillSchedule schedule, BackfillExecutionLog execution, CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:474](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L474) | Record that a schedule has been executed. |
-| <code>public BackfillExecutionLog CreateManualExecution(BackfillSchedule schedule);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:550](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L550) | Trigger a manual execution of a schedule. |
-| <code>public IReadOnlyList&lt;BackfillSchedule&gt; GetSchedulesByTag(string tag);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:567](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L567) | Get schedules by tag. |
-| <code>public bool HasRunningSchedules();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:579](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L579) | Check if any schedules are currently running. |
-| <code>public ScheduleStatusSummary GetStatusSummary();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:588](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L588) | Get schedule status summary. |
+| <code>public BackfillSchedule? GetSchedule(string scheduleId);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:385](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L385) | Get a schedule by ID. |
+| <code>public IReadOnlyList&lt;BackfillSchedule&gt; GetAllSchedules();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:395](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L395) | Get all schedules. |
+| <code>public IReadOnlyList&lt;BackfillSchedule&gt; GetEnabledSchedules();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:406](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L406) | Get enabled schedules. |
+| <code>public IReadOnlyList&lt;BackfillSchedule&gt; GetDueSchedules(DateTimeOffset? asOf = null);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:418](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L418) | Get schedules due for execution. |
+| <code>public BackfillSchedule? GetNextDueSchedule(DateTimeOffset? asOf = null);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:431](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L431) | Get next schedule to execute. |
+| <code>public async Task&lt;bool&gt; SetScheduleEnabledAsync(string scheduleId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:439](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L439) | Enable or disable a schedule. |
+| <code>public async Task RecordExecutionAsync(BackfillSchedule schedule, BackfillExecutionLog execution, CancellationToken ct = default);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:478](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L478) | Record that a schedule has been executed. |
+| <code>public BackfillExecutionLog CreateManualExecution(BackfillSchedule schedule);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:554](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L554) | Trigger a manual execution of a schedule. |
+| <code>public IReadOnlyList&lt;BackfillSchedule&gt; GetSchedulesByTag(string tag);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:571](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L571) | Get schedules by tag. |
+| <code>public bool HasRunningSchedules();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:583](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L583) | Check if any schedules are currently running. |
+| <code>public ScheduleStatusSummary GetStatusSummary();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:592](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L592) | Get schedule status summary. |
 
 ## BackfillSchedulePresets
 
@@ -527,7 +608,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Scheduling.ScheduleStatusSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:716](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L716).
+Source: [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:721](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L721).
 
 Summary of all schedule statuses.
 
@@ -539,15 +620,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int TotalSchedules { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:718](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L718) |  |
-| <code>public int EnabledSchedules { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:719](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L719) |  |
-| <code>public int DisabledSchedules { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:720](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L720) |  |
-| <code>public int SchedulesDueNow { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:721](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L721) |  |
-| <code>public DateTimeOffset NextScheduledExecution { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:722](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L722) |  |
-| <code>public int TotalExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:723](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L723) |  |
-| <code>public int TotalSuccesses { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:724](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L724) |  |
-| <code>public int TotalFailures { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:725](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L725) |  |
-| <code>public double OverallSuccessRate =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:726](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L726) |  |
+| <code>public int TotalSchedules { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:723](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L723) |  |
+| <code>public int EnabledSchedules { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:724](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L724) |  |
+| <code>public int DisabledSchedules { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:725](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L725) |  |
+| <code>public int SchedulesDueNow { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:726](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L726) |  |
+| <code>public DateTimeOffset NextScheduledExecution { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:727](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L727) |  |
+| <code>public int TotalExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:728](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L728) |  |
+| <code>public int TotalSuccesses { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:729](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L729) |  |
+| <code>public int TotalFailures { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:730](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L730) |  |
+| <code>public double OverallSuccessRate =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:731](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L731) |  |
 
 ## SymbolExecutionResult
 
@@ -726,91 +807,6 @@ Declared public members:
 | <code>public async Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs:44](../../../../src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs#L44) |  |
 | <code>public Task StopAsync(CancellationToken cancellationToken) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs:97](../../../../src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs#L97) |  |
 
-## CashFlowEngineShadowComparer
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CashFlow.CashFlowEngineShadowComparer</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:52](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L52).
-
-Review B1 (owner decision 2026-11-25: shadow-compare only). Runs the legacy SecurityMasterCashFlowService and the declared ContractualCashFlowEngine preview over the same securities and reports where they disagree, by payment date, without changing which engine any consumer uses. The decision to route undeclared records through the contractual engine rests on this report. Amounts are compared unsigned per date (interest and principal), at a cent tolerance, from the valuation date forward.
-
-```csharp
-public sealed class CashFlowEngineShadowComparer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CashFlowEngineShadowComparer(ISecurityMasterCashFlowService legacy, IContractualCashFlowPreviewService contractual);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:59](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L59) |  |
-| <code>public async Task&lt;CashFlowShadowReport&gt; CompareAsync(IReadOnlyList&lt;Guid&gt; securityIds, DateOnly valuationDate, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:65](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L65) |  |
-| <code>public async Task&lt;CashFlowShadowComparison&gt; CompareAsync(Guid securityId, DateOnly valuationDate, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:77](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L77) |  |
-
-## CashFlowShadowComparison
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CashFlow.CashFlowShadowComparison</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:26](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L26).
-
-The comparison of one security.
-
-```csharp
-public sealed record CashFlowShadowComparison(Guid SecurityId, CashFlowShadowOutcome Outcome, int LegacyPaymentDates, int ContractualPaymentDates, IReadOnlyList<CashFlowShadowDifference> Differences, string? LegacyBlocker, IReadOnlyList<string> ContractualBlockers);
-```
-
-## CashFlowShadowDifference
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CashFlow.CashFlowShadowDifference</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:18](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L18).
-
-One payment date on which the engines disagree.
-
-```csharp
-public sealed record CashFlowShadowDifference(DateOnly Date, decimal LegacyInterest, decimal ContractualInterest, decimal LegacyPrincipal, decimal ContractualPrincipal);
-```
-
-## CashFlowShadowOutcome
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CashFlow.CashFlowShadowOutcome</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:7](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L7).
-
-How the two cash-flow engines compare for one security (review B1).
-
-```csharp
-public enum CashFlowShadowOutcome
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Match</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:9](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L9) |  |
-| <code>Differs</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:10](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L10) |  |
-| <code>LegacyOnlyBlocked</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:11](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L11) |  |
-| <code>ContractualOnlyBlocked</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:12](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L12) |  |
-| <code>BothBlocked</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:13](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L13) |  |
-| <code>NotFound</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:14](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L14) |  |
-
-## CashFlowShadowReport
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CashFlow.CashFlowShadowReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:36](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L36).
-
-A diff report across securities.
-
-```csharp
-public sealed record CashFlowShadowReport(DateOnly ValuationDate, DateTimeOffset GeneratedAt, IReadOnlyList<CashFlowShadowComparison> Securities)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int Count(CashFlowShadowOutcome outcome) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs:41](../../../../src/Meridian.Application/SecurityMaster/CashFlow/CashFlowEngineShadowComparison.cs#L41) |  |
-
 ## ContractualCashFlowPreviewService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CashFlow.ContractualCashFlowPreviewService</code>. Kind: `class`.
@@ -828,9 +824,9 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;ContractualCashFlowResult?&gt; PreviewSecurityAsync(Guid securityId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:20](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L20) |  |
-| <code>public async Task&lt;ContractualCashFlowResult?&gt; PreviewLoanAsync(Guid loanId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:42](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L42) |  |
-| <code>public static ContractualCashFlowContract FromSecurity(SecurityDetailDto security);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:121](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L121) |  |
-| <code>public static ContractualCashFlowContract FromLoan(DirectLendingTermsDto terms, LoanServicingStateDto servicing);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:244](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L244) |  |
+| <code>public async Task&lt;ContractualCashFlowResult?&gt; PreviewLoanAsync(Guid loanId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:53](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L53) |  |
+| <code>public static ContractualCashFlowContract FromSecurity(SecurityDetailDto security);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:134](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L134) |  |
+| <code>public static ContractualCashFlowContract FromLoan(DirectLendingTermsDto terms, LoanServicingStateDto servicing);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:257](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L257) |  |
 
 ## FileBondExerciseNoticeStore
 
@@ -1117,3 +1113,15 @@ Declared public members:
 | --- | --- | --- |
 | <code>public CorporateActionIngestOrchestrator(IEnumerable&lt;ICorporateActionProvider&gt; providers, ISecurityMasterStore store, ISecurityMasterEventStore eventStore, ISecurityMasterCorporateActionCommandService commandService, ILogger&lt;CorporateActionIngestOrchestrator&gt; logger, ICorporateActionOperationsService? operationsService = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:104](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L104) |  |
 | <code>public async Task&lt;CorporateActionIngestResult&gt; IngestAsync(CorporateActionIngestRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:120](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L120) |  |
+
+## CorporateActionIngestRequest
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:17](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L17).
+
+Request for a corporate-action ingest sweep. When Symbols is null or empty the sweep covers every active security with a ticker identifier. Announcements whose distinct agreeing sources reach MinimumSourcesToApply are confidence-scored, but production ingest still records a durable proposal for explicit operator acceptance.
+
+```csharp
+public sealed record CorporateActionIngestRequest(IReadOnlyList<string>? Symbols = null, bool DryRun = false, int MinimumSourcesToApply = 2, string? Actor = null, string? CorrelationId = null);
+```

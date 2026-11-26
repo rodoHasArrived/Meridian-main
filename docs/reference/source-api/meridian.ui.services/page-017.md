@@ -6,25 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## WatchlistGroup
-
-Qualified name: <code>Meridian.Ui.Services.WatchlistGroup</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WatchlistService.cs:123](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L123).
-
-A group of symbols in a watchlist.
-
-```csharp
-public sealed class WatchlistGroup
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:125](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L125) |  |
-| <code>public List&lt;string&gt; Symbols { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:126](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L126) |  |
-
 ## WatchlistItem
 
 Qualified name: <code>Meridian.Ui.Services.WatchlistItem</code>. Kind: `class`.

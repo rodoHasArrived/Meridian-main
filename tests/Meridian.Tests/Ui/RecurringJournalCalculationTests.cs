@@ -205,7 +205,9 @@ public sealed partial class RecurringJournalCalculationTests : IDisposable
         await SeedAsync(FixedAssetDepreciationCalculation.CalculationKind, new());
         var fixture = await CreateFixtureAsync(assets: register);
 
-        await fixture.Runner.RunDueAsync(Due(FebruaryEnd));
+        var firstRun = await fixture.Runner.RunDueAsync(Due(FebruaryEnd));
+        // A saved draft is not enough: the occurrence must also accept the draft's provenance.
+        firstRun.Should().HaveCount(2).And.OnlyContain(result => result.State == AutomatedJournalScheduleStateDto.DraftReady);
         await (await CreateFixtureAsync(assets: register)).Runner.RunDueAsync(Due(FebruaryEnd).AddHours(1));
 
         var drafts = await fixture.Drafts.ListAsync(Fund, Book);
@@ -680,7 +682,6 @@ public sealed partial class RecurringJournalCalculationTests : IDisposable
 
     [Theory]
     [InlineData("DirectLoan")]
-    [InlineData("CertificateOfDeposit")]
     [InlineData("Deposit")]
     [InlineData("StructuredNote")]
     [InlineData("UnknownClass")]
@@ -695,7 +696,7 @@ public sealed partial class RecurringJournalCalculationTests : IDisposable
         var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
 
         result.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
-        result.Blockers.Should().ContainSingle().Which.Should().Contain("supports Bond and StructuredCredit only");
+        result.Blockers.Should().ContainSingle().Which.Should().Contain("no registered recurring fixed-income accrual policy");
         (await fixture.Drafts.ListAsync(Fund, Book)).Should().BeEmpty();
     }
 
@@ -879,7 +880,8 @@ public sealed partial class RecurringJournalCalculationTests : IDisposable
         var posted = new List<LedgerJournalEntryRecord>();
         var postingLookup = journal.As<ILedgerPostingIdentityCollisionLookup>();
         postingLookup.Setup(value => value.FindPostingIdentityCollisionsAsync(It.IsAny<LedgerPostingIdentity>(), It.IsAny<CancellationToken>()))
-            .Returns((LedgerPostingIdentity _, CancellationToken _) => Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(posted.ToArray()));
+            .Returns((LedgerPostingIdentity identity, CancellationToken _) => Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
+                posted.Where(record => LedgerPostingIdentityCollisionLookupExtensions.IsCollision(record, identity)).ToArray()));
         journal.Setup(value => value.GetLedgerBookAsync(Book, It.IsAny<CancellationToken>())).ReturnsAsync(
             new LedgerBookRecord(Book, Fund, Guid.Parse("11223344-1122-3344-5566-778899aabbcc"),
                 Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Entity, "Calculated accrual book", "USD", Registered, Registered));

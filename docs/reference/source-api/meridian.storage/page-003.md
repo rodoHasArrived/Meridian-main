@@ -6,66 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ExportResult
-
-Qualified name: <code>Meridian.Storage.Export.ExportResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Export/ExportResult.cs:8](../../../../src/Meridian.Storage/Export/ExportResult.cs#L8).
-
-Result of an export operation.
-
-```csharp
-public sealed class ExportResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;jobId&quot;)] public string JobId { get; set; } = Guid.NewGuid().ToString();</code> | [src/Meridian.Storage/Export/ExportResult.cs:14](../../../../src/Meridian.Storage/Export/ExportResult.cs#L14) | Unique ID for this export job. |
-| <code>[JsonPropertyName(&quot;success&quot;)] public bool Success { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:20](../../../../src/Meridian.Storage/Export/ExportResult.cs#L20) | Whether the export completed successfully. |
-| <code>[JsonPropertyName(&quot;profileId&quot;)] public string ProfileId { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportResult.cs:26](../../../../src/Meridian.Storage/Export/ExportResult.cs#L26) | Export profile used. |
-| <code>[JsonPropertyName(&quot;startedAt&quot;)] public DateTime StartedAt { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:32](../../../../src/Meridian.Storage/Export/ExportResult.cs#L32) | Start time of export. |
-| <code>[JsonPropertyName(&quot;completedAt&quot;)] public DateTime? CompletedAt { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:38](../../../../src/Meridian.Storage/Export/ExportResult.cs#L38) | Completion time of export. |
-| <code>[JsonPropertyName(&quot;durationSeconds&quot;)] public double DurationSeconds =&gt; …;</code> | [src/Meridian.Storage/Export/ExportResult.cs:44](../../../../src/Meridian.Storage/Export/ExportResult.cs#L44) | Duration in seconds. |
-| <code>[JsonPropertyName(&quot;filesGenerated&quot;)] public int FilesGenerated { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:52](../../../../src/Meridian.Storage/Export/ExportResult.cs#L52) | Number of files generated. |
-| <code>[JsonPropertyName(&quot;totalRecords&quot;)] public long TotalRecords { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:58](../../../../src/Meridian.Storage/Export/ExportResult.cs#L58) | Total records exported. |
-| <code>[JsonPropertyName(&quot;totalBytes&quot;)] public long TotalBytes { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:64](../../../../src/Meridian.Storage/Export/ExportResult.cs#L64) | Total bytes written. |
-| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Export/ExportResult.cs:70](../../../../src/Meridian.Storage/Export/ExportResult.cs#L70) | Symbols exported. |
-| <code>[JsonPropertyName(&quot;dateRange&quot;)] public ExportDateRange? DateRange { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:76](../../../../src/Meridian.Storage/Export/ExportResult.cs#L76) | Date range exported. |
-| <code>[JsonPropertyName(&quot;outputDirectory&quot;)] public string OutputDirectory { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportResult.cs:82](../../../../src/Meridian.Storage/Export/ExportResult.cs#L82) | Output directory. |
-| <code>[JsonPropertyName(&quot;files&quot;)] public ExportedFile[] Files { get; set; } = Array.Empty&lt;ExportedFile&gt;();</code> | [src/Meridian.Storage/Export/ExportResult.cs:88](../../../../src/Meridian.Storage/Export/ExportResult.cs#L88) | Generated files. |
-| <code>[JsonPropertyName(&quot;dataDictionaryPath&quot;)] public string? DataDictionaryPath { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:94](../../../../src/Meridian.Storage/Export/ExportResult.cs#L94) | Path to generated data dictionary. |
-| <code>[JsonPropertyName(&quot;loaderScriptPath&quot;)] public string? LoaderScriptPath { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:100](../../../../src/Meridian.Storage/Export/ExportResult.cs#L100) | Path to generated loader script. |
-| <code>[JsonPropertyName(&quot;lineageManifestPath&quot;)] public string? LineageManifestPath { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:106](../../../../src/Meridian.Storage/Export/ExportResult.cs#L106) | Path to generated lineage manifest (provenance tracking). |
-| <code>[JsonPropertyName(&quot;qualitySummary&quot;)] public ExportQualitySummary? QualitySummary { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:112](../../../../src/Meridian.Storage/Export/ExportResult.cs#L112) | Data quality summary. |
-| <code>[JsonPropertyName(&quot;warnings&quot;)] public string[] Warnings { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Export/ExportResult.cs:118](../../../../src/Meridian.Storage/Export/ExportResult.cs#L118) | Warnings encountered during export. |
-| <code>[JsonPropertyName(&quot;error&quot;)] public string? Error { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:124](../../../../src/Meridian.Storage/Export/ExportResult.cs#L124) | Error message if failed. |
-| <code>public static ExportResult CreateSuccess(string profileId, string outputDir) =&gt; …;</code> | [src/Meridian.Storage/Export/ExportResult.cs:129](../../../../src/Meridian.Storage/Export/ExportResult.cs#L129) | Create a success result. |
-| <code>public static ExportResult CreateFailure(string profileId, string error) =&gt; …;</code> | [src/Meridian.Storage/Export/ExportResult.cs:140](../../../../src/Meridian.Storage/Export/ExportResult.cs#L140) | Create a failure result. |
-
-## ExportValidationIssue
-
-Qualified name: <code>Meridian.Storage.Export.ExportValidationIssue</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Export/ExportValidator.cs:292](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L292).
-
-A single issue found during pre-export validation.
-
-```csharp
-public sealed class ExportValidationIssue
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;ruleId&quot;)] public string RuleId { get; init; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:295](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L295) |  |
-| <code>[JsonPropertyName(&quot;severity&quot;)] public ExportValidationSeverity Severity { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:298](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L298) |  |
-| <code>[JsonPropertyName(&quot;code&quot;)] public string Code { get; init; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:301](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L301) |  |
-| <code>[JsonPropertyName(&quot;message&quot;)] public string Message { get; init; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:304](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L304) |  |
-| <code>[JsonPropertyName(&quot;remediation&quot;)] public string? Remediation { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:307](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L307) |  |
-
 ## ExportValidationResult
 
 Qualified name: <code>Meridian.Storage.Export.ExportValidationResult</code>. Kind: `class`.
@@ -332,7 +272,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Storage.Export.LedgerJournalExporter</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Export/LedgerJournalExporter.cs:17](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L17).
+Source: [src/Meridian.Storage/Export/LedgerJournalExporter.cs:18](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L18).
 
 Exports one row per immutable journal line, retaining the full audit envelopes. Decimal amounts are invariant decimal text in both formats so Parquet readers cannot truncate monetary precision. Mapping changes only the external account column and never the source journal.
 
@@ -344,10 +284,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static byte[] ExportCsv(IReadOnlyLedger ledger, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, LedgerQuery? query = null, IReadOnlyDictionary&lt;Guid, string&gt;? postingMetadata = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:27](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L27) |  |
-| <code>public static async Task&lt;byte[]&gt; ExportParquetAsync(IReadOnlyLedger ledger, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, LedgerQuery? query = null, CancellationToken ct = default, IReadOnlyDictionary&lt;Guid, string&gt;? postingMetadata = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:41](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L41) |  |
-| <code>public static byte[] ExportCsv(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, Guid? ledgerBookId = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:69](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L69) | Preserves governed posting metadata (book, period, source event, rules and approval). |
-| <code>public static Task&lt;byte[]&gt; ExportParquetAsync(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, CancellationToken ct = default, Guid? ledgerBookId = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:75](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L75) |  |
+| <code>public static byte[] ExportCsv(IReadOnlyLedger ledger, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, LedgerQuery? query = null, IReadOnlyDictionary&lt;Guid, string&gt;? postingMetadata = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:28](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L28) |  |
+| <code>public static async Task&lt;byte[]&gt; ExportParquetAsync(IReadOnlyLedger ledger, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, LedgerQuery? query = null, CancellationToken ct = default, IReadOnlyDictionary&lt;Guid, string&gt;? postingMetadata = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:42](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L42) |  |
+| <code>public static byte[] ExportCsv(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, Guid? ledgerBookId = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:70](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L70) | Preserves governed posting metadata (book, period, source event, rules and approval). |
+| <code>public static Task&lt;byte[]&gt; ExportParquetAsync(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, IReadOnlyDictionary&lt;string, string&gt;? accountMapping = null, CancellationToken ct = default, Guid? ledgerBookId = null);</code> | [src/Meridian.Storage/Export/LedgerJournalExporter.cs:76](../../../../src/Meridian.Storage/Export/LedgerJournalExporter.cs#L76) |  |
 
 ## NormalizationType
 
@@ -531,7 +471,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Export.TimestampFormat</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Export/ExportProfile.cs:337](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L337).
+Source: [src/Meridian.Storage/Export/ExportProfile.cs:340](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L340).
 
 Supported timestamp formats.
 
@@ -543,17 +483,17 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Iso8601</code> | [src/Meridian.Storage/Export/ExportProfile.cs:340](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L340) | ISO 8601 string format. |
-| <code>UnixSeconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:342](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L342) | Unix timestamp in seconds. |
-| <code>UnixMilliseconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:344](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L344) | Unix timestamp in milliseconds. |
-| <code>UnixNanoseconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:346](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L346) | Unix timestamp in nanoseconds (for pandas datetime64&#91;ns&#93;). |
-| <code>ExcelSerial</code> | [src/Meridian.Storage/Export/ExportProfile.cs:348](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L348) | Excel serial date format. |
+| <code>Iso8601</code> | [src/Meridian.Storage/Export/ExportProfile.cs:343](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L343) | ISO 8601 string format. |
+| <code>UnixSeconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:345](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L345) | Unix timestamp in seconds. |
+| <code>UnixMilliseconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:347](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L347) | Unix timestamp in milliseconds. |
+| <code>UnixNanoseconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:349](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L349) | Unix timestamp in nanoseconds (for pandas datetime64&#91;ns&#93;). |
+| <code>ExcelSerial</code> | [src/Meridian.Storage/Export/ExportProfile.cs:351](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L351) | Excel serial date format. |
 
 ## TimestampSettings
 
 Qualified name: <code>Meridian.Storage.Export.TimestampSettings</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Export/ExportProfile.cs:322](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L322).
+Source: [src/Meridian.Storage/Export/ExportProfile.cs:325](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L325).
 
 Timestamp handling settings.
 
@@ -565,9 +505,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;format&quot;)] public TimestampFormat Format { get; set; } = TimestampFormat.Iso8601;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:325](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L325) |  |
-| <code>[JsonPropertyName(&quot;timezone&quot;)] public string Timezone { get; set; } = &quot;UTC&quot;;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:328](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L328) |  |
-| <code>[JsonPropertyName(&quot;includeNanoseconds&quot;)] public bool IncludeNanoseconds { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:331](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L331) |  |
+| <code>[JsonPropertyName(&quot;format&quot;)] public TimestampFormat Format { get; set; } = TimestampFormat.Iso8601;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:328](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L328) |  |
+| <code>[JsonPropertyName(&quot;timezone&quot;)] public string Timezone { get; set; } = &quot;UTC&quot;;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:331](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L331) |  |
+| <code>[JsonPropertyName(&quot;includeNanoseconds&quot;)] public bool IncludeNanoseconds { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:334](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L334) |  |
 
 ## TimeStats
 
@@ -1052,4 +992,24 @@ Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs
 
 ```csharp
 public sealed record FundStructureTenantBackfillEvidence(Guid BookId, string FundProfileId, Guid NodeId, string? TenantId, string? CompanyId, JsonElement RetainedBook, JsonElement? RetainedRegistryEntry);
+```
+
+## FundStructureTenantBackfillException
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillException</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:22](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L22).
+
+```csharp
+public sealed record FundStructureTenantBackfillException(Guid NodeId, string NodeKind, string Reason, IReadOnlyList<string> CandidateTenantIds);
+```
+
+## FundStructureTenantBackfillReceipt
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:28](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L28).
+
+```csharp
+public sealed record FundStructureTenantBackfillReceipt(Guid RunId, string PlanHash, string OperatorId, string ReviewReference, DateTimeOffset AppliedAt, int StampedRows, int QuarantinedRows, JsonElement Plan);
 ```

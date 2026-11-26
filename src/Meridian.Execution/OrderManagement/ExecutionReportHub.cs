@@ -111,6 +111,7 @@ internal sealed class ExecutionReportHub
     {
         internal Subscriber[]? Targets;
         internal HashSet<long> DeliveredSubscriberIds { get; } = [];
+        internal ExecutionReport? PublishedReport;
         internal bool SubscribersPublished;
         public bool IsComplete { get; internal set; }
     }
@@ -122,6 +123,12 @@ internal sealed class ExecutionReportHub
     {
         if (checkpoint.IsComplete)
             return;
+
+        // This identity is owned by the accepted OMS handoff, never by a gateway-supplied field.
+        // Preserve the retained delivery object across retries, including legacy null identity.
+        var canonicalFillId = fillId is { } known && known != Guid.Empty ? known : (Guid?)null;
+        report = checkpoint.PublishedReport ??= report.AccountingFillId == canonicalFillId
+            ? report : report with { AccountingFillId = canonicalFillId };
 
         if (!checkpoint.SubscribersPublished)
         {
