@@ -55,6 +55,7 @@
     <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
     <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
     <ProjectReference Include="..\Meridian.Strategies\Meridian.Strategies.csproj" />
+    <ProjectReference Include="..\Meridian.Workstation.Abstractions\Meridian.Workstation.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>
