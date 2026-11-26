@@ -77,4 +77,98 @@ public sealed class WriteAheadLogProcessTests
             Directory.Delete(root, recursive: true);
         }
     }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task LiveWriterInAnotherProcess_RefusesSecondWriterAndRepair_UntilItExits()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), $"meridian-wal-lock-{Guid.NewGuid():N}");
+        var walDirectory = Path.Combine(dataRoot, "_wal");
+        Directory.CreateDirectory(walDirectory);
+        // A closed segment with a corrupt record: exactly what a repair would rewrite.
+        var damaged = Path.Combine(walDirectory, "wal_20200101_000000_000000000000.wal");
+        await File.WriteAllTextAsync(damaged, "MDCWAL02|2|2020-01-01T00:00:00.0000000Z\nGARBAGE|not-a-timestamp|bad|bad|{}\n");
+        var ready = Path.Combine(dataRoot, "writer.ready");
+        var marker = $"retained-{Guid.NewGuid():N}";
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        var start = new ProcessStartInfo("dotnet")
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardError = true
+        };
+        foreach (var argument in new[]
+        {
+            "exec", "--depsfile", Path.Combine(AppContext.BaseDirectory, $"{typeof(WriteAheadLogProcessTests).Assembly.GetName().Name}.deps.json"),
+            "--runtimeconfig", Path.Combine(AppContext.BaseDirectory, $"{typeof(WriteAheadLogProcessTests).Assembly.GetName().Name}.runtimeconfig.json"),
+            typeof(ProcessTestHelperMarker).Assembly.Location, "wal-append-and-wait", walDirectory, ready, marker
+        })
+            start.ArgumentList.Add(argument);
+        using var writer = Process.Start(start) ?? throw new InvalidOperationException("WAL writer did not start.");
+        var errors = writer.StandardError.ReadToEndAsync();
+        try
+        {
+            while (!File.Exists(ready))
+            {
+                Assert.False(writer.HasExited, writer.HasExited ? await errors : "");
+                await Task.Delay(20, timeout.Token);
+            }
+
+            var damagedBefore = await File.ReadAllBytesAsync(damaged, timeout.Token);
+            var segmentsBefore = Directory.GetFiles(walDirectory, "*.wal").Order().ToArray();
+            var options = new WalOptions { WriterLockTimeout = TimeSpan.FromMilliseconds(200) };
+
+            await using (var second = new WriteAheadLog(walDirectory, options))
+                await Assert.ThrowsAsync<WalDirectoryInUseException>(() => second.InitializeAsync(timeout.Token));
+
+            await using (var repair = new WriteAheadLog(walDirectory, options))
+                await Assert.ThrowsAsync<WalDirectoryInUseException>(() => repair.RepairAsync(timeout.Token));
+
+            Assert.False(writer.HasExited);
+            Assert.Equal(damagedBefore, await File.ReadAllBytesAsync(damaged, timeout.Token));
+            Assert.Equal(segmentsBefore, Directory.GetFiles(walDirectory, "*.wal").Order().ToArray());
+            Assert.False(Directory.Exists(Path.Combine(walDirectory, "quarantine")));
+
+            // Let the live writer's delayed flush land, then kill it: the operating system must
+            // release the lock with the process, and its record must still be recoverable.
+            var visible = false;
+            while (!visible)
+            {
+                foreach (var walPath in Directory.GetFiles(walDirectory, "*.wal"))
+                {
+                    await using var stream = new FileStream(walPath, FileMode.Open, FileAccess.Read,
+                        FileShare.ReadWrite | FileShare.Delete);
+                    using var reader = new StreamReader(stream);
+                    visible |= (await reader.ReadToEndAsync(timeout.Token)).Contains(marker, StringComparison.Ordinal);
+                }
+                if (!visible)
+                    await Task.Delay(20, timeout.Token);
+            }
+
+            writer.Kill(entireProcessTree: true);
+            await writer.WaitForExitAsync(timeout.Token);
+
+            await using (var repair = new WriteAheadLog(walDirectory, options))
+            {
+                var repaired = await repair.RepairAsync(timeout.Token);
+                Assert.Equal(1, repaired.CorruptedRecords);
+                Assert.Equal(1, repaired.RepairedFiles);
+            }
+
+            await using var recovered = new WriteAheadLog(walDirectory, options);
+            await recovered.InitializeAsync(timeout.Token);
+            var records = new List<WalRecord>();
+            await foreach (var retained in recovered.GetUncommittedRecordsAsync(timeout.Token))
+                records.Add(retained);
+            var record = Assert.Single(records);
+            Assert.Equal(marker, record.DeserializePayload<string>());
+        }
+        finally
+        {
+            if (!writer.HasExited)
+                writer.Kill(entireProcessTree: true);
+            await writer.WaitForExitAsync();
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
 }

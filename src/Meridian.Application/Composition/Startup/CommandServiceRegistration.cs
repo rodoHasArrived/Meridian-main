@@ -160,7 +160,7 @@ internal static class CommandServiceRegistration
             sp.GetRequiredService<Meridian.Workflow.Runbooks.JsonRunbookStore>(),
             sp.GetRequiredService<Meridian.Workflow.Runbooks.RunbookExecutor>()));
         services.AddSingleton<ICliCommand>(sp => new WalRepairCommand(
-            sp.GetRequiredService<AppConfig>(),
+            sp.GetRequiredService<StorageOptions>().RootPath,
             sp.GetRequiredService<ILogger>()));
         services.AddSingleton<ICliCommand>(sp => new ProviderCalibrationCommand(
             sp.GetRequiredService<CommandServicePaths>().DataRoot,

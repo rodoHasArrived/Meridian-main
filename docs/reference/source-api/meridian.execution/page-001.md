@@ -635,7 +635,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Events.PaperFinancingAdmissionException</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:361](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L361).
+Source: [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:365](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L365).
 
 This call failed before accepting a new durable source. An earlier acceptance can still exist on a retry. The original error preserves validation, cancellation and availability.
 
@@ -684,7 +684,7 @@ Declared public members:
 | <code>public async Task&lt;bool&gt; PostAsync(PaperFinancingCharge charge, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:62](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L62) | Durably accepts and confirms a cash-paid charge. Cancellation is observed before acceptance; after acceptance failures retain the assessment for an idempotent retry. |
 | <code>public async Task&lt;IReadOnlyList&lt;PaperFinancingCharge&gt;&gt; LoadAndRecoverAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:142](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L142) | Replays pending assessments before exposing a rebuilt session book. |
 | <code>public async Task&lt;IReadOnlyList&lt;PaperFinancingCharge&gt;&gt; LoadSourcesAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:163](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L163) | Reads independent accepted source assessments for completeness controls. This does not post or acknowledge any journal. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:336](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L336) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/PaperFinancingPostingService.cs:340](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.cs#L340) |  |
 
 Source: [src/Meridian.Execution/Events/PaperFinancingPostingService.HistoricalReads.cs:8](../../../../src/Meridian.Execution/Events/PaperFinancingPostingService.HistoricalReads.cs#L8).
 

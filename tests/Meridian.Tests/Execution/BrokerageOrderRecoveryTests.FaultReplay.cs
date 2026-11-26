@@ -38,10 +38,18 @@ public sealed partial class BrokerageOrderRecoveryTests
         var postingTarget = new EventDrivenDecouplingTests.InMemoryTradeFillLedgerPostingTarget();
         // Current fills carry exact lot-mutation evidence from the synthetic portfolio.
         var portfolio = new PaperTradingPortfolio(100_000m);
-        LedgerPostingConsumer NewConsumer() => new(postingTarget, NullLogger<LedgerPostingConsumer>.Instance,
-            new WalTradeFillPostingStore(new TradeFillPostingStoreOptions(Path.GetDirectoryName(directory.Path)!, posting),
-                NullLogger<WalTradeFillPostingStore>.Instance), posting,
-            securityValidationGate: new EventDrivenDecouplingTests.PassingSecurityValidationGate());
+        // The consumer does not own its store (the host container does), and the store's WAL
+        // directory admits one writer, so each "process lifetime" below disposes its own store
+        // before the next one opens the same scope.
+        WalTradeFillPostingStore? store = null;
+        LedgerPostingConsumer NewConsumer()
+        {
+            store = new WalTradeFillPostingStore(
+                new TradeFillPostingStoreOptions(Path.GetDirectoryName(directory.Path)!, posting),
+                NullLogger<WalTradeFillPostingStore>.Instance);
+            return new(postingTarget, NullLogger<LedgerPostingConsumer>.Instance, store, posting,
+                securityValidationGate: new EventDrivenDecouplingTests.PassingSecurityValidationGate());
+        }
 
         var gateway = new RecoveryGateway
         {
@@ -66,6 +74,7 @@ public sealed partial class BrokerageOrderRecoveryTests
             (await DrainThroughMarkerAsync(oms, gateway)).Should().BeEmpty();
             oms.GetOrder(orderId)!.FilledQuantity.Should().Be(firstQuantity);
         }
+        await store!.DisposeAsync();
 
         var reconnect = new RecoveryGateway();
         await using (var consumer = NewConsumer())
@@ -87,6 +96,7 @@ public sealed partial class BrokerageOrderRecoveryTests
             recovered.GetOrder(orderId)!.FilledQuantity.Should().Be(finalQuantity);
             recovered.GetOrder(orderId)!.Status.Should().Be(finalQuantity == 10 ? OrderStatus.Filled : OrderStatus.Cancelled);
         }
+        await store!.DisposeAsync();
 
         postingTarget.RetainedEntries.Should().HaveCount(2);
         postingTarget.RetainedEntries.Sum(entry => entry.Lines.Sum(line => line.Debit))

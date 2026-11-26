@@ -6,6 +6,69 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageSinkRegistry
+
+Qualified name: <code>Meridian.Storage.StorageSinkRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/StorageSinkRegistry.cs:20](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L20).
+
+Registry for discovering and registering IStorageSink plugins that are decorated with StorageSinkAttribute.
+
+```csharp
+public sealed class StorageSinkRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;StorageSinkMetadata&gt; Sinks =&gt; …;</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:27](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L27) | Gets the discovered storage sink metadata entries, in the order they were found. |
+| <code>public void DiscoverFromAssemblies(params Assembly[] assemblies);</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:40](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L40) | Scans the provided assemblies for concrete types decorated with StorageSinkAttribute that implement IStorageSink, and adds their metadata to the registry. |
+| <code>public void RegisterServices(IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton);</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:77](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L77) | Registers all discovered sink implementation types into the service collection so that they can be resolved by IServiceProvider during composition. |
+| <code>public bool TryGetSink(string id, out StorageSinkMetadata? metadata);</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:103](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L103) | Attempts to find a registered sink by its identifier (case-insensitive). |
+
+## StorageTier
+
+Qualified name: <code>Meridian.Storage.StorageTier</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:242](../../../../src/Meridian.Storage/StorageOptions.cs#L242).
+
+Storage tier designation.
+
+```csharp
+public enum StorageTier : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Hot</code> | [src/Meridian.Storage/StorageOptions.cs:245](../../../../src/Meridian.Storage/StorageOptions.cs#L245) | Hot tier - real-time access, NVMe SSD. |
+| <code>Warm</code> | [src/Meridian.Storage/StorageOptions.cs:247](../../../../src/Meridian.Storage/StorageOptions.cs#L247) | Warm tier - daily batch access, SSD/HDD. |
+| <code>Cold</code> | [src/Meridian.Storage/StorageOptions.cs:249](../../../../src/Meridian.Storage/StorageOptions.cs#L249) | Cold tier - weekly/monthly access, HDD/NAS. |
+| <code>Archive</code> | [src/Meridian.Storage/StorageOptions.cs:251](../../../../src/Meridian.Storage/StorageOptions.cs#L251) | Archive tier - rare bulk access, object storage. |
+| <code>Glacier</code> | [src/Meridian.Storage/StorageOptions.cs:253](../../../../src/Meridian.Storage/StorageOptions.cs#L253) | Glacier tier - emergency only, tape/deep archive. |
+
+## CompositeMarketDataStore
+
+Qualified name: <code>Meridian.Storage.Store.CompositeMarketDataStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Store/CompositeMarketDataStore.cs:23](../../../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs#L23).
+
+IMarketDataStore that aggregates results from multiple underlying stores and merges them in ascending MarketEvent.Timestamp order.
+
+```csharp
+public sealed class CompositeMarketDataStore : IMarketDataStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CompositeMarketDataStore(IEnumerable&lt;IMarketDataStore&gt; stores);</code> | [src/Meridian.Storage/Store/CompositeMarketDataStore.cs:34](../../../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs#L34) | Initialises a composite store that fans out queries to stores and merges results by timestamp. |
+| <code>public CompositeMarketDataStore(IMarketDataStore first, IMarketDataStore second) : this(new[] { first, second });</code> | [src/Meridian.Storage/Store/CompositeMarketDataStore.cs:43](../../../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs#L43) | Convenience constructor for two stores (e.g. JSONL + Parquet). |
+| <code>public async IAsyncEnumerable&lt;MarketEvent&gt; QueryAsync(MarketDataQuery query, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Store/CompositeMarketDataStore.cs:47](../../../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs#L47) |  |
+
 ## IBDataResultStoreOptions
 
 Qualified name: <code>Meridian.Storage.Store.IBDataResultStoreOptions</code>. Kind: `record`.

@@ -681,7 +681,14 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
         if (_options.SnapshotWriteOverride is { } snapshotWriteOverride)
             await snapshotWriteOverride(json, ct).ConfigureAwait(false);
         else
+        {
             await AtomicFileWriter.WriteAsync(_options.SnapshotPath, json, ct).ConfigureAwait(false);
+            // The watermark below licenses WAL truncation. The snapshot's rename must be durable
+            // first, and the write above only makes that a best effort; a failure here leaves
+            // the watermark, and therefore the WAL records, where they were.
+            await AtomicFileWriter.SyncDirectoryStrictAsync(
+                Path.GetDirectoryName(_options.SnapshotPath) ?? ".", CancellationToken.None).ConfigureAwait(false);
+        }
         _snapshotAppliedThroughWalSequence = _lastAppliedWalSequence;
     }
 

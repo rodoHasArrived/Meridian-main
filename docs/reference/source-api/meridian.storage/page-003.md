@@ -6,6 +6,72 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExportValidationIssue
+
+Qualified name: <code>Meridian.Storage.Export.ExportValidationIssue</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Export/ExportValidator.cs:292](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L292).
+
+A single issue found during pre-export validation.
+
+```csharp
+public sealed class ExportValidationIssue
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;ruleId&quot;)] public string RuleId { get; init; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:295](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L295) |  |
+| <code>[JsonPropertyName(&quot;severity&quot;)] public ExportValidationSeverity Severity { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:298](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L298) |  |
+| <code>[JsonPropertyName(&quot;code&quot;)] public string Code { get; init; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:301](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L301) |  |
+| <code>[JsonPropertyName(&quot;message&quot;)] public string Message { get; init; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:304](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L304) |  |
+| <code>[JsonPropertyName(&quot;remediation&quot;)] public string? Remediation { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:307](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L307) |  |
+
+## ExportValidationResult
+
+Qualified name: <code>Meridian.Storage.Export.ExportValidationResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Export/ExportValidator.cs:263](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L263).
+
+Result of a pre-export validation run.
+
+```csharp
+public sealed class ExportValidationResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;isValid&quot;)] public bool IsValid { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:266](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L266) |  |
+| <code>[JsonPropertyName(&quot;estimatedRecordCount&quot;)] public long EstimatedRecordCount { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:269](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L269) |  |
+| <code>[JsonPropertyName(&quot;estimatedSizeBytes&quot;)] public long EstimatedSizeBytes { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:272](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L272) |  |
+| <code>[JsonPropertyName(&quot;availableDiskSpaceBytes&quot;)] public long AvailableDiskSpaceBytes { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:275](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L275) |  |
+| <code>[JsonPropertyName(&quot;issues&quot;)] public IReadOnlyList&lt;ExportValidationIssue&gt; Issues { get; init; } = Array.Empty&lt;ExportValidationIssue&gt;();</code> | [src/Meridian.Storage/Export/ExportValidator.cs:278](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L278) |  |
+| <code>[JsonIgnore] public IEnumerable&lt;ExportValidationIssue&gt; Errors =&gt; …;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:281](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L281) |  |
+| <code>[JsonIgnore] public IEnumerable&lt;ExportValidationIssue&gt; Warnings =&gt; …;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:285](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L285) |  |
+
+## ExportValidationRulesRequest
+
+Qualified name: <code>Meridian.Storage.Export.ExportValidationRulesRequest</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Export/ExportRequest.cs:284](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L284).
+
+Per-request override of export validation rules.
+
+```csharp
+public sealed class ExportValidationRulesRequest
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;diskSpaceMultiplier&quot;)] public double DiskSpaceMultiplier { get; set; } = 1.2;</code> | [src/Meridian.Storage/Export/ExportRequest.cs:291](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L291) | Multiplier applied to the estimated output size to determine required free disk space. A value of 1.2 means 20 % headroom is required. Defaults to 1.2. |
+| <code>[JsonPropertyName(&quot;requireData&quot;)] public bool RequireData { get; set; }</code> | [src/Meridian.Storage/Export/ExportRequest.cs:298](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L298) | When true the export is aborted (rather than warned) when no data is found for the requested filters. |
+| <code>[JsonPropertyName(&quot;warnCsvComplexTypes&quot;)] public bool WarnCsvComplexTypes { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportRequest.cs:304](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L304) | Emit a warning when exporting nested data (e.g. LOBSnapshot) to CSV format. |
+
 ## ExportValidationSeverity
 
 Qualified name: <code>Meridian.Storage.Export.ExportValidationSeverity</code>. Kind: `enum`.
@@ -958,36 +1024,4 @@ Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs
 
 ```csharp
 public sealed record FundStructureTenantBackfillException(Guid NodeId, string NodeKind, string Reason, IReadOnlyList<string> CandidateTenantIds);
-```
-
-## FundStructureTenantBackfillReceipt
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillReceipt</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:28](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L28).
-
-```csharp
-public sealed record FundStructureTenantBackfillReceipt(Guid RunId, string PlanHash, string OperatorId, string ReviewReference, DateTimeOffset AppliedAt, int StampedRows, int QuarantinedRows, JsonElement Plan);
-```
-
-## FundStructureTenantBackfillRow
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:6](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L6).
-
-Maintenance-only snapshot; this is not an operator-session read API.
-
-```csharp
-public sealed record FundStructureTenantBackfillRow(string Table, Guid Id, string Kind, bool IsNode, string? TenantId, IReadOnlyList<Guid> Parents, IReadOnlyList<Guid> Children, JsonElement RetainedRow, bool IsInferred = false);
-```
-
-## FundStructureTenantBackfillSnapshot
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:14](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L14).
-
-```csharp
-public sealed record FundStructureTenantBackfillSnapshot(string SourceIdentity, string SchemaIdentity, IReadOnlyList<FundStructureTenantBackfillRow> Rows, IReadOnlyList<FundStructureTenantBackfillEvidence> Evidence, IReadOnlyList<JsonElement> RetainedQuarantine, bool SupportsAtomicApply = true);
 ```

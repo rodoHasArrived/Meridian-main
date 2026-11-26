@@ -428,7 +428,8 @@ COMMANDS:
     --error-codes           Show error code reference guide
     --check-schemas         Check stored data schema compatibility
     --fund-tenant-backfill  Review/apply retained fund tenant evidence (--action preview|apply)
-    --wal-repair            Scan WAL files for corruption and rewrite only valid records
+    --wal-repair            Repair corrupted WAL segments; stop Meridian first (originals kept
+                            in _wal/quarantine). Add --dry-run to scan without changes
     --simulate-feed         Emit a synthetic event for smoke testing
     --selftest              Run comprehensive system self-tests
     --dry-run               Full validation without starting collection

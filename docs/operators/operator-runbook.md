@@ -239,7 +239,11 @@ misconfigured.
 1. **Check disk space immediately.** A full data root is the most common cause and the fastest fix.
 2. Verify storage path ownership and permissions.
 3. Check WAL integrity and capture the corrupted records before any repair — they are the only
-   evidence of what was lost.
+   evidence of what was lost. `--wal-repair --dry-run` scans every record with checksum validation,
+   changes nothing, and is safe while Meridian is running. A real `--wal-repair` refuses to run
+   until Meridian is stopped, and copies each segment it rewrites to `_wal/quarantine/` first;
+   keep that folder with the incident record. "Incomplete final writes" in its output are
+   interrupted appends that were never acknowledged, not corruption.
 4. Review storage error logs for the root cause.
 
 **Do not** truncate or delete the WAL to clear the alert. That destroys the record of what failed

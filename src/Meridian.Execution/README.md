@@ -287,6 +287,12 @@ If confirmation fails, the current session refuses further fills, settlements an
 the same source is successfully retried or startup recovers the pending assessment. Order history
 and cancellation evidence remain recordable while recovery is pending.
 
+The paper-financing and trade-fill posting stores make their snapshot's directory entry durable
+with a strict directory sync before they commit and truncate the WAL behind it; if that sync fails
+the WAL records stay in place and replay on the next start. Each store's WAL directory, and the
+execution audit WAL, admit a single live writer: a second store or host opening the same scope
+fails at initialization instead of sharing the log.
+
 New sessions created with this composition retain the exact book, period, aggregate and
 policy binding, plus their local `default` account identity. A missing accounting owner makes
 that session's portfolio unavailable instead of silently omitting financing. Legacy sessions remain
