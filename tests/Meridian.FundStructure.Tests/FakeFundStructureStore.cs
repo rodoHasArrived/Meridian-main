@@ -226,9 +226,6 @@ public sealed class FakeFundStructureStore : IFundStructureStore
         }
     }
 
-    public Task<bool> IsEmptyAsync(CancellationToken ct = default)
-        => Task.FromResult(_organizations.IsEmpty && _businesses.IsEmpty && _clients.IsEmpty && _funds.IsEmpty);
-
     public Task<FundStructureTenantMap> GetNodeTenantsAsync(CancellationToken ct = default)
         => Task.FromResult(_isTenantPartitioned
             ? new FundStructureTenantMap(IsPartitioned: true, new Dictionary<Guid, string>(_nodeTenants))

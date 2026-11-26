@@ -799,10 +799,10 @@ def _check_adr_documentation(
     items: List[SourceItem],
     root: Path,
 ) -> CategoryResult:
-    """Check that each referenced ADR has a matching file in docs/adr/ or archive/docs/adr/."""
+    """Check that each referenced ADR has a matching file in docs/adr/ or docs/adr/historical/."""
     existing_adrs: Set[str] = set()
 
-    for adr_dir in (root / "docs" / "adr", root / "archive" / "docs" / "adr"):
+    for adr_dir in (root / "docs" / "adr", root / "docs" / "adr" / "historical"):
         if adr_dir.is_dir():
             for f in adr_dir.iterdir():
                 m = ADR_FILE_RE.match(f.name)

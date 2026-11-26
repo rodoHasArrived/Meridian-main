@@ -172,7 +172,7 @@ class RepairGeneratedTests(unittest.TestCase):
         self.write(self.repo, "src/A/second.cs", b"// second base\n")
         merger = repair.load_resolver().load_hash_merger()
         def refresh():
-            self.write(self.repo, merger.MANIFEST, json.dumps(merger.actual_manifest(self.repo), indent=2, sort_keys=True).encode())
+            merger.load_validator().write_manifest_directory(self.repo / merger.MANIFEST, merger.actual_manifest(self.repo))
         refresh()
         self.commit("register reviewed module")
         return refresh

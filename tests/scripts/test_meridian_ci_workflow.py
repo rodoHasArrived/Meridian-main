@@ -29,8 +29,7 @@ class MeridianCiWorkflowTests(unittest.TestCase):
                 self.assertIn(f"bash scripts/ci.sh --lane {lane}", self.workflow)
 
     def test_dotnet_lane_uses_bounded_test_concurrency_without_changing_gate(self) -> None:
-        dotnet_job = self.workflow.split("  dotnet-shards:\n", 1)[1].split("  verify-dotnet:\n", 1)[0]
-        # Runner fan-out is not a process-count promotion: each runner keeps two processes.
+        dotnet_job = self.workflow.split("  verify-dotnet:\n", 1)[1].split("  verify-browser:\n", 1)[0]
         self.assertIn('MERIDIAN_CI_TEST_MAX_PARALLEL: "2"', dotnet_job)
         self.assertIn("bash scripts/ci.sh --lane verify-dotnet", dotnet_job)
         self.assertNotIn("continue-on-error", dotnet_job)
@@ -53,79 +52,78 @@ class MeridianCiWorkflowTests(unittest.TestCase):
         self.assertIn("npm --prefix src/Meridian.Ui/dashboard run typecheck:strict", ci_script)
         self.assertIn("npm --prefix src/Meridian.Ui/dashboard run test", ci_script)
 
-    def test_dotnet_consumes_same_run_workstation_assets_before_msbuild(self):
+    def test_lanes_do_not_queue_behind_other_jobs(self):
         import yaml
         workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
-        shards = workflow["jobs"]["dotnet-shards"]
-        # The .NET shards need the bundle, not the browser test verdict, so they must not
-        # queue behind the browser lane. quality-gate still requires both lanes.
-        self.assertEqual(shards["needs"], ["changes", "build-workstation"])
-        self.assertNotIn("needs", workflow["jobs"]["browser-shards"])
-        steps = shards["steps"]
-        download = next(step for step in steps if step.get("name") == "Download same-revision workstation assets")
-        run = next(step for step in steps if step.get("name") == "Run .NET lane")
-        self.assertLess(steps.index(download), steps.index(run))
-        builder = workflow["jobs"]["build-workstation"]
-        self.assertNotIn("needs", builder)
-        self.assertNotIn("if", builder)
-        build = next(step for step in builder["steps"]
-                     if step.get("name") == "Build and validate workstation assets")
-        # ensure-workstation-assets.py installs from the lockfile, builds and validates.
-        self.assertEqual(build["run"], "python build/scripts/ensure-workstation-assets.py")
-        producer = next(step for step in builder["steps"]
-                        if step.get("name") == "Upload same-revision workstation assets")
-        self.assertLess(builder["steps"].index(build), builder["steps"].index(producer))
-        # A failed .NET job may be rerun without rerunning its successful
-        # producer. The consumer must use that producer's ID instead of the
-        # consumer's newer github.run_attempt.
-        self.assertEqual(download["with"]["artifact-ids"], "${{ needs.build-workstation.outputs.workstation-artifact-id }}")
-        self.assertEqual(builder["outputs"]["workstation-artifact-id"], "${{ steps.workstation.outputs.artifact-id }}")
-        self.assertEqual(producer["id"], "workstation")
-        self.assertNotIn("name", download["with"])
-        self.assertNotIn("github.run_attempt", download["with"]["artifact-ids"])
-        self.assertIn("github.sha", producer["with"]["name"])
-        self.assertNotIn("run-id", download["with"])
-        self.assertEqual(producer["with"]["if-no-files-found"], "error")
+        jobs = workflow["jobs"]
+        # Every job is a fresh hosted-runner queue wait, so the lanes run and report their
+        # verdicts in one job each, with no builder or shard hop in front of them.
+        for removed in ("build-workstation", "dotnet-shards", "browser-shards"):
+            self.assertNotIn(removed, jobs)
+        for lane in ("verify-dotnet", "verify-browser", "verify-docs", "verify-workflows"):
+            with self.subTest(lane=lane):
+                self.assertEqual(jobs[lane]["name"], lane)
+                self.assertNotIn("needs", jobs[lane])
+                self.assertNotIn("if", jobs[lane])
 
-    def test_dotnet_shards_cover_the_roster_and_report_one_verdict(self):
+    def test_dotnet_lane_prepares_workstation_assets_before_msbuild(self):
         import yaml
         workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
-        shards = workflow["jobs"]["dotnet-shards"]
-        indices = shards["strategy"]["matrix"]["shard"]
-        total = len(indices)
-        self.assertEqual(indices, [str(index) for index in range(1, total + 1)])
-        self.assertEqual(shards["strategy"]["fail-fast"], "false")
-        self.assertEqual(shards["env"]["MERIDIAN_CI_DOTNET_SHARD"], "${{ matrix.shard }}/" + str(total))
-        self.assertEqual(shards["if"], "needs.changes.outputs.dotnet == 'true'")
-        # Every leg publishes its own immutable evidence ID.
-        self.assertEqual(sorted(shards["outputs"]), [f"artifact-id-{index}" for index in range(1, total + 1)])
-        upload = next(step for step in shards["steps"] if step.get("name") == "Upload .NET shard artifacts")
-        self.assertEqual(upload["if"], "always()")
-        self.assertIn("${{ matrix.shard }}", upload["with"]["name"])
+        steps = workflow["jobs"]["verify-dotnet"]["steps"]
+        names = [step.get("name") for step in steps]
+        # ensure-workstation-assets.py installs from the lockfile, builds and validates the
+        # bundle inside the lane, so Node must be ready before it runs.
+        self.assertLess(names.index("Set up Node.js"), names.index("Run .NET lane"))
+        ci_script = (REPO_ROOT / "scripts" / "ci.sh").read_text(encoding="utf-8")
+        lane = ci_script.split("verify_dotnet() {\n", 1)[1].split("\n}\n", 1)[0]
+        self.assertLess(lane.index("build/scripts/ensure-workstation-assets.py"),
+                        lane.index("dotnet restore Meridian.sln"))
 
-        verdict = workflow["jobs"]["verify-dotnet"]
-        self.assertEqual(verdict["name"], "verify-dotnet")
-        self.assertEqual(verdict["needs"], ["changes", "dotnet-shards"])
-        # always(): a failed or cancelled shard must fail the lane, not skip its verdict.
-        self.assertEqual(verdict["if"], "always() && needs.changes.outputs.dotnet == 'true'")
-        steps = {step["name"]: step for step in verdict["steps"]}
-        merge = steps["Require the complete roster across shards"]["run"]
+    def test_dotnet_lane_classifies_changes_in_job_and_gate_requires_agreement(self):
+        import yaml
+        workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
+        job = workflow["jobs"]["verify-dotnet"]
+        steps = {step["name"]: step for step in job["steps"]}
+        detect = steps["Detect .NET changes"]
+        self.assertEqual(detect["id"], "changes")
+        self.assertIn("build/scripts/ci/detect-dotnet-changes.py", detect["run"])
+        self.assertIn('echo "dotnet=true"', detect["run"])
+        self.assertEqual(job["outputs"]["dotnet-required"], "${{ steps.changes.outputs.dotnet }}")
+        # Only the change decision may skip work; never a cache or other signal.
+        guard = "steps.changes.outputs.dotnet == 'true'"
+        for name in ("Check out repository", "Set up .NET SDK", "Cache NuGet packages", "Run .NET lane"):
+            self.assertEqual(steps[name]["if"], guard)
+        for name in ("Require the complete roster", "Upload .NET lane artifacts"):
+            self.assertEqual(steps[name]["if"], f"always() && {guard}")
+        # No separate changes job: every lane would otherwise wait for one more runner.
+        self.assertNotIn("changes", workflow["jobs"])
+        gate = workflow["jobs"]["quality-gate"]["steps"][0]
+        self.assertEqual(gate["env"]["DOTNET_LANE_DECISION"], "${{ needs.verify-dotnet.outputs.dotnet-required }}")
+        self.assertIn('if [[ "$DOTNET_LANE_DECISION" != "true" && "$DOTNET_LANE_DECISION" != "false" ]]; then',
+                      gate["run"])
+        # The integration lane classifies independently; its gate requires the two to agree.
+        integration = workflow["jobs"]["integration-gate"]["steps"][0]
+        self.assertEqual(integration["env"]["DOTNET_LANE_DECISION"],
+                         "${{ needs.verify-dotnet.outputs.dotnet-required }}")
+        self.assertIn('if [[ "$INTEGRATION_DECISION" != "$DOTNET_LANE_DECISION" ]]; then', integration["run"])
+
+    def test_dotnet_lane_proves_the_complete_roster(self):
+        import yaml
+        workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
+        job = workflow["jobs"]["verify-dotnet"]
+        self.assertEqual(job["env"]["MERIDIAN_CI_DOTNET_SHARD"], "1/1")
+        steps = {step["name"]: step for step in job["steps"]}
+        merge = steps["Require the complete roster"]["run"]
         self.assertIn("build/scripts/ci/merge-dotnet-shard-summaries.py", merge)
-        self.assertIn(f"--expected-shards {total}", merge)
-        self.assertNotIn("if", steps["Require the complete roster across shards"])
-        download = steps["Download shard evidence"]["with"]["artifact-ids"]
-        for index in range(1, total + 1):
-            self.assertIn(f"needs.dotnet-shards.outputs.artifact-id-{index}", download)
-        result = steps["Require every shard to succeed"]
-        self.assertEqual(result["env"]["SHARDS_RESULT"], "${{ needs.dotnet-shards.result }}")
-        self.assertIn('"$SHARDS_RESULT" != "success"', result["run"])
+        self.assertIn("--expected-shards 1", merge)
+        names = list(steps)
+        self.assertLess(names.index("Run .NET lane"), names.index("Require the complete roster"))
         # Release promotion requires this exact evidence name for the lane.
         self.assertEqual(
             steps["Upload .NET lane artifacts"]["with"]["name"],
             "meridian-ci-dotnet-${{ github.run_number }}-${{ github.run_attempt }}",
         )
-        for job in (shards, verdict):
-            self.assertNotIn("continue-on-error", str(job))
+        self.assertNotIn("continue-on-error", str(job))
 
     def test_first_dotnet_shard_owns_static_checks_and_unsharded_runs_keep_them(self) -> None:
         ci_script = (REPO_ROOT / "scripts" / "ci.sh").read_text(encoding="utf-8")
@@ -140,45 +138,24 @@ class MeridianCiWorkflowTests(unittest.TestCase):
         # Unset means the whole lane: parse_lane_shard reports index 0 for it.
         self.assertIn('dotnet_shard_index="$(parse_lane_shard MERIDIAN_CI_DOTNET_SHARD verify-dotnet)" || exit 2', ci_script)
 
-    def test_browser_shards_cover_the_test_files_and_report_one_verdict(self):
+    def test_browser_lane_proves_every_test_file(self):
         import yaml
         workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
-        shards = workflow["jobs"]["browser-shards"]
-        indices = shards["strategy"]["matrix"]["shard"]
-        total = len(indices)
-        self.assertEqual(indices, [str(index) for index in range(1, total + 1)])
-        self.assertEqual(shards["strategy"]["fail-fast"], "false")
-        self.assertEqual(shards["env"]["MERIDIAN_CI_BROWSER_SHARD"], "${{ matrix.shard }}/" + str(total))
-        # The browser lane always runs: no change classification may skip it.
-        self.assertNotIn("if", shards)
-        self.assertNotIn("needs", shards)
-        self.assertEqual(sorted(shards["outputs"]), [f"artifact-id-{index}" for index in range(1, total + 1)])
-        upload = next(step for step in shards["steps"] if step.get("name") == "Upload browser shard artifacts")
+        job = workflow["jobs"]["verify-browser"]
+        self.assertEqual(job["env"]["MERIDIAN_CI_BROWSER_SHARD"], "1/1")
+        steps = {step["name"]: step for step in job["steps"]}
+        # The browser lane always runs: no change classification may skip any step.
+        self.assertNotIn("if", steps["Run browser workstation lane"])
+        merge = steps["Require every dashboard test file"]
+        self.assertEqual(merge["if"], "always()")
+        self.assertIn("src/Meridian.Ui/dashboard/scripts/merge-vitest-shards.mjs", merge["run"])
+        self.assertIn("--expected-shards 1", merge["run"])
+        upload = steps["Upload browser lane artifacts"]
         self.assertEqual(upload["if"], "always()")
-        self.assertIn("${{ matrix.shard }}", upload["with"]["name"])
-
-        verdict = workflow["jobs"]["verify-browser"]
-        self.assertEqual(verdict["name"], "verify-browser")
-        self.assertEqual(verdict["needs"], ["browser-shards"])
-        self.assertEqual(verdict["if"], "always()")
-        steps = {step["name"]: step for step in verdict["steps"]}
-        merge = steps["Require every dashboard test file across shards"]["run"]
-        self.assertIn("src/Meridian.Ui/dashboard/scripts/merge-vitest-shards.mjs", merge)
-        self.assertIn(f"--expected-shards {total}", merge)
-        self.assertNotIn("if", steps["Require every dashboard test file across shards"])
-        download = steps["Download shard evidence"]["with"]["artifact-ids"]
-        for index in range(1, total + 1):
-            self.assertIn(f"needs.browser-shards.outputs.artifact-id-{index}", download)
-        result = steps["Require every shard to succeed"]
-        self.assertEqual(result["env"]["SHARDS_RESULT"], "${{ needs.browser-shards.result }}")
-        self.assertIn('"$SHARDS_RESULT" != "success"', result["run"])
         # Release promotion requires this exact evidence name for the lane.
-        self.assertEqual(
-            steps["Upload browser lane artifacts"]["with"]["name"],
-            "meridian-ci-browser-${{ github.run_number }}-${{ github.run_attempt }}",
-        )
-        for job in (shards, verdict):
-            self.assertNotIn("continue-on-error", str(job))
+        self.assertEqual(upload["with"]["name"],
+                         "meridian-ci-browser-${{ github.run_number }}-${{ github.run_attempt }}")
+        self.assertNotIn("continue-on-error", str(job))
 
     def test_first_browser_shard_owns_static_checks_and_unsharded_runs_keep_them(self) -> None:
         ci_script = (REPO_ROOT / "scripts" / "ci.sh").read_text(encoding="utf-8")

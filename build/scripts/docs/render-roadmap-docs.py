@@ -115,16 +115,13 @@ def main() -> int:
     root = repo_root(args.root)
     program, roadmap, inputs = load_roadmap(root)
     output_dir = root / "docs" / "roadmap" / "generated"
-    status_dir = root / "docs" / "status"
     outputs = [
         output_dir / "ROADMAP_SUMMARY.md",
         output_dir / "roadmap-register.md",
-        status_dir / "ROADMAP_SUMMARY.md",
     ]
     changed = [
         write_text_if_changed(outputs[0], render_summary(root, program, roadmap, inputs)),
         write_text_if_changed(outputs[1], render_register(root, program, roadmap, inputs)),
-        write_text_if_changed(outputs[2], render_summary(root, program, roadmap, inputs)),
     ]
     manifest_changed = write_manifest(output_dir / "MANIFEST.json", "build/scripts/docs/render-roadmap-docs.py", inputs, outputs, root, ROADMAP_RENDERER_VERSION)
     if args.summary:

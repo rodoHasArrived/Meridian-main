@@ -964,12 +964,6 @@ public static class UiApiRoutes
     public const string ReconciliationStatementReconciliationReportById = "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}";
     public const string ReconciliationStatementReconciliationReportResume = "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}/resume";
     public const string ReconciliationStatementReconciliationReportArtifact = "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}/artifacts/{artifactId}";
-    // Compatibility aliases keep retained pre-rename status/resume/download links recoverable.
-    // New clients and all newly persisted workflow projections use the truthful reconciliation-report name.
-    public const string ReconciliationStatementToReport = "/api/workstation/reconciliation/statement-to-report";
-    public const string ReconciliationStatementToReportById = "/api/workstation/reconciliation/statement-to-report/{workflowId}";
-    public const string ReconciliationStatementToReportResume = "/api/workstation/reconciliation/statement-to-report/{workflowId}/resume";
-    public const string ReconciliationStatementToReportArtifact = "/api/workstation/reconciliation/statement-to-report/{workflowId}/artifacts/{artifactId}";
     public const string ReconciliationStatementFetchPreview = "/api/workstation/reconciliation/statement-imports/fetch-preview";
     public const string ReconciliationStatementFetchSchedules = "/api/workstation/reconciliation/statement-fetch-schedules";
     public const string ReconciliationStatementFetchScheduleById = "/api/workstation/reconciliation/statement-fetch-schedules/{scheduleId}";

@@ -49,15 +49,16 @@ coverage.
 CI and Maintenance concurrency separates event types. Scheduled/manual runs are not cancelled by
 ordinary pushes; manual runs have distinct run IDs. This avoids losing scheduled coverage while
 preserving cancellation of superseded PR/push validation. It does not establish additional runner
-capacity or alter release serialization.
+capacity or alter release serialization. Meridian CI additionally never cancels a running `main`
+push run (see the November 25 runner-saturation entry below).
 
 Meridian CI retains exactly its four canonical `scripts/ci.sh` lanes and the existing
 `quality-gate` aggregation. Its additional `service-backed-integrations` job calls the same
 `service-backed-integrations.yml` implementation used by Production Certification. The
 always-reported `integration-gate` companion requires success and fails for failed, cancelled
-or skipped integration execution, with one exception: a pull request that the `changes` job
-successfully classifies as documentation-only skips the integration job, as it already skips
-`verify-dotnet`, and the gate accepts exactly that skip. It uses no path filters; main pushes,
+or skipped integration execution, with one exception: a pull request that the integration job
+itself classifies as documentation-only skips the suite's steps, as `verify-dotnet` skips its
+.NET steps, and the gate accepts exactly that result when both lanes' decisions agree. It uses no path filters; main pushes,
 merge groups and manual/reusable calls always classify as requiring the tests.
 
 The shared implementation uses the certification `postgres:17` service, health checks and
@@ -433,6 +434,33 @@ pending request with a newer request in the same concurrency group. For benchmar
 that includes distinct subjects, refs and commits. This is not a durable FIFO queue. Operators
 who need every request executed must wait for completion before submitting the next.
 Production certification and release serialization retain their existing policies.
+
+### Runner saturation relief — November 25, 2026 (ci-health-013)
+
+On November 25 every one of 16 pushes to `main` was cancelled by the next merge before
+`quality-gate` ran, so `main` had no completed Meridian CI run after November 24 12:16Z.
+Hosted jobs waited 60–76 minutes for a runner while 23 open PRs created about 300 workflow
+runs in 85 minutes, and the median wall-clock of a successful run grew from 29–43 to 160
+minutes. Three changes reduce demand without changing any check identity:
+
+- *Main is always verified.* Meridian CI no longer cancels in-progress `push` runs. Each merge's
+  run completes; GitHub still replaces an older *pending* run in the group with the newest, so a
+  burst of merges cannot queue without bound. PR and merge-group runs still cancel superseded work.
+- *One fewer runner wait per run.* The `changes` job is gone. The reusable integration job
+  classifies the change in-job when Meridian CI passes `skip-when-docs-only: true`, using the same
+  detector as `verify-dotnet`; `integration-gate` requires the two decisions to agree, and
+  `evidence-gate` accepts a missing evidence artifact only for that opted-in docs-only decision.
+  The integration path drops from four serial runner waits to three. A docs-only PR now starts the
+  integration job (and its PostgreSQL service container) before its steps skip.
+- *Drafts skip high-volume workflows.* CodeQL, `Secret Scan`, Windows Desktop Build and Roadmap
+  Source Docs skip draft PRs at job level and run on `ready_for_review`. This deliberately accepts
+  what the step-level CodeQL skip below avoids for ready PRs: on a draft, the skipped matrix job
+  reports an unexpanded name, so the required `Analyze <language>` contexts stay expected until the
+  PR is marked ready. A draft cannot merge, so no merge can pass on a skipped scan. Meridian CI
+  and Generated Repair continue to run on drafts.
+
+Confirm with: a completed `quality-gate` for every merge to `main`, runner waits under five
+minutes, and successful-run wall-clock back in the 30–40 minute range.
 
 ### Critical-path restructuring — November 25, 2026
 
@@ -829,3 +857,41 @@ empty commit arrays. Those events use the same Gitleaks 8.25.1 scanner and repos
 through `scan-commit-secrets.py`, with a verified download checksum. It verifies the checkout
 SHA and scans complete reachable history, including merge-resolution changes. Fresh SARIF
 evidence is mandatory; unsupported events and empty webhook arrays cannot produce a false pass.
+
+## Runner-queue findings and docs-only CodeQL skip (2026-11-25)
+
+**Evidence.** The 60 most recent completed Meridian CI runs at the time of review were 52
+cancelled, 6 successful and 2 failed. The "has job failures" percentage in the Actions usage
+export counts cancellations, so its 55% figure for Meridian CI is mostly superseded pushes, not
+red builds. A representative successful PR run (45612764201) took about 95 minutes wall time for
+about 50 minutes of job execution: each job waited 8–32 minutes for a hosted runner, and the
+one-second `quality-gate` waited 17 minutes. Latency is dominated by runner queueing caused by
+per-push fan-out across workflows, not by test duration.
+
+**Changes.**
+
+- *CodeQL per-language skip.* Pull requests are classified per language by
+  `detect-codeql-languages.py`, which builds on the Meridian CI docs-only rule. Documentation
+  never requires analysis; dashboard-only changes skip C#; .NET source and project files skip
+  JavaScript/TypeScript. Unknown paths, workflows, scripts, Razor/cshtml and empty diffs analyze
+  both. The required `Analyze <language>` checks still run and report success; main pushes,
+  merge groups, schedules, manual runs and the reusable release gate always analyze, so release
+  SARIF evidence is unchanged. The skip is step-level on purpose: a skipped matrix job reports an
+  unexpanded check name and would leave the required contexts pending.
+- *Meridian CI lane jobs.* `build-workstation`, `dotnet-shard (1/1)` and `browser-shard (1/1)`
+  were folded into `verify-dotnet` and `verify-browser`. Each lane job runs the lane and the same
+  roster verdict (`--expected-shards 1`) over its own summary and publishes the same evidence
+  names. `verify-dotnet` classifies the PR in-job instead of waiting for `changes`; on docs-only
+  PRs it reports success with its .NET steps skipped, and `quality-gate` fails unless its decision
+  matches `changes`. The .NET path to `quality-gate` went from five queued jobs to two; check
+  identities `verify-dotnet`, `verify-browser` and `quality-gate` are unchanged.
+- *Golden Path WPF.* `WPF W4 Acceptance` (Windows) now runs only on manual dispatch, and WPF-only
+  paths no longer trigger Golden Path. Windows Desktop Build's `full` slice already runs every
+  `Category=W4Acceptance` test. Its path filter was missing 13 projects in WPF's reference graph
+  (including `Meridian.Ledger`, `Meridian.Risk`, `Meridian.Domain` and `Meridian.ProviderSdk`);
+  they were added, and a test now walks the `ProjectReference` graph so the filter cannot drift.
+- Roadmap Source Docs' phase-scope checkout uses a blobless full-history clone; the gate only
+  compares changed path names.
+
+**Still open (owner decision).** Larger or self-hosted runners raise the concurrency ceiling
+directly. Re-introduce .NET sharding only when runner capacity, not queueing, is the limit.

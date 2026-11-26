@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Services;
 using Xunit;
+using Meridian.Tests.TestHelpers;
 
 namespace Meridian.Tests.Architecture;
 
@@ -104,7 +105,7 @@ public sealed class ProviderAssetClassCodeRatchetTests
             RegexOptions.CultureInvariant);
 
         var counts = new Dictionary<string, int>(StringComparer.Ordinal);
-        foreach (var file in Directory.EnumerateFiles(Path.Combine(root, "src"), "*.*", SearchOption.AllDirectories))
+        foreach (var file in RepositoryFileWalker.EnumerateFiles(Path.Combine(root, "src"), "*.*"))
         {
             if (Path.GetExtension(file) is not (".cs" or ".fs"))
             {

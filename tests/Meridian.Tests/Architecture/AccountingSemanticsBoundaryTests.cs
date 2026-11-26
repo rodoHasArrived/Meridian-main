@@ -1,4 +1,5 @@
 using Xunit;
+using Meridian.Tests.TestHelpers;
 
 namespace Meridian.Tests.Architecture;
 
@@ -23,8 +24,8 @@ public sealed class AccountingSemanticsBoundaryTests
             "BuildReportOutputReadiness("
         };
 
-        var offenders = Directory
-            .EnumerateFiles(uiSharedRoot, "*.cs", SearchOption.AllDirectories)
+        var offenders = RepositoryFileWalker
+            .EnumerateFiles(uiSharedRoot, "*.cs")
             .SelectMany(file =>
             {
                 var text = File.ReadAllText(file);

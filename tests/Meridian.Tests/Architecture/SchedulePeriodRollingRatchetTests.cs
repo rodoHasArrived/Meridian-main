@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using FluentAssertions;
+using Meridian.Tests.TestHelpers;
 
 namespace Meridian.Tests.Architecture;
 
@@ -120,7 +121,7 @@ public sealed class SchedulePeriodRollingRatchetTests
         var root = FindRepositoryRoot();
         var counts = new Dictionary<string, int>(StringComparer.Ordinal);
         var files = ScannedRoots.SelectMany(scanned => scanned.EndsWith('/')
-            ? Directory.EnumerateFiles(Path.Combine(root, scanned), "*.*", SearchOption.AllDirectories)
+            ? RepositoryFileWalker.EnumerateFiles(Path.Combine(root, scanned), "*.*")
             : new[] { Path.Combine(root, scanned) });
         foreach (var file in files.Where(File.Exists))
         {

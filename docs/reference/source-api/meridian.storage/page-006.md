@@ -6,237 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## IConsolidationTransitionStore
-
-Qualified name: <code>Meridian.Storage.Ledger.IConsolidationTransitionStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs:5](../../../../src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs#L5).
-
-```csharp
-public interface IConsolidationTransitionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;ConsolidationTransitionReceiptDto&gt;&gt; ListAsync(Guid organizationId, Guid ownershipRootId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs:7](../../../../src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs#L7) |  |
-| <code>Task&lt;ConsolidationTransitionReceiptDto?&gt; GetAsync(Guid transitionId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs:8](../../../../src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs#L8) |  |
-| <code>Task&lt;ConsolidationTransitionPreviewDto&gt; RetainPreviewAsync(ConsolidationTransitionPreviewDto preview, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs:9](../../../../src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs#L9) |  |
-| <code>Task&lt;ConsolidationTransitionPreviewDto?&gt; GetPreviewAsync(Guid previewId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs:10](../../../../src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs#L10) |  |
-| <code>Task&lt;ConsolidationTransitionReceiptDto&gt; AppendAsync(ConsolidationTransitionReceiptDto receipt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs:11](../../../../src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs#L11) |  |
-| <code>Task&lt;ConsolidationTransitionReceiptDto&gt; AppendValidatedAsync(ConsolidationTransitionReceiptDto receipt, Func&lt;CancellationToken, Task&gt; revalidate, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs:14](../../../../src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs#L14) | Runs read-only final source revalidation under the exclusive route/append fence. |
-| <code>Task&lt;ConsolidationTransitionReceiptDto&gt; AppendValidatedWithAuthorityAsync(ConsolidationTransitionReceiptDto receipt, Func&lt;CancellationToken, Task&lt;IAsyncDisposable&gt;&gt; acquireAuthority, Func&lt;CancellationToken, Task&gt; revalidate, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs:18](../../../../src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs#L18) | Acquires book mapping authority before domain leases, then exclusive routing and append authority. |
-| <code>Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs:22](../../../../src/Meridian.Storage/Ledger/IConsolidationTransitionStore.cs#L22) | Hold through the consumer&#x27;s ledger commit; route writers retain the exclusive side. |
-
-## IControlledCloseAuthorizationStore
-
-Qualified name: <code>Meridian.Storage.Ledger.IControlledCloseAuthorizationStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs:7](../../../../src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs#L7).
-
-```csharp
-public interface IControlledCloseAuthorizationStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ControlledCloseAuthorizationDto&gt; SaveCloseAuthorizationAsync(ControlledCloseAuthorizationDto authorization, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs:9](../../../../src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs#L9) |  |
-| <code>Task&lt;ControlledCloseAuthorizationDto?&gt; GetCloseAuthorizationAsync(Guid authorizationId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs:10](../../../../src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs#L10) |  |
-| <code>Task&lt;ControlledCloseAuthorizationDto?&gt; FindCloseAuthorizationAsync(Guid bookId, Guid journalId, int draftVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs:11](../../../../src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs#L11) |  |
-
-## IFiscalYearCloseReceiptStore
-
-Qualified name: <code>Meridian.Storage.Ledger.IFiscalYearCloseReceiptStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:6](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L6).
-
-Projects and retains the authorized fiscal close of one continuous ledger book.
-
-```csharp
-public interface IFiscalYearCloseReceiptStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;FiscalYearClosePlanDto&gt; GetFiscalYearClosePlanAsync(Guid ledgerBookId, int fiscalYear, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:8](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L8) |  |
-| <code>Task&lt;FiscalYearCloseReceiptDto?&gt; GetFiscalYearCloseReceiptAsync(Guid ledgerBookId, int fiscalYear, Guid? receiptId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:11](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L11) |  |
-| <code>Task&lt;FiscalYearCloseReceiptDto&gt; FinalizeFiscalYearCloseAsync(Guid ledgerBookId, int fiscalYear, FinalizeFiscalYearCloseRequestDto request, string actor, string controllerRole, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:14](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L14) |  |
-
-## IGovernedLedgerPostingTarget
-
-Qualified name: <code>Meridian.Storage.Ledger.IGovernedLedgerPostingTarget</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs:13](../../../../src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs#L13).
-
-Durable posting seam used after a governed workflow has approved a journal write. The workflow remains responsible for validation and approval; this target owns the idempotent handoff to the authoritative journal store.
-
-```csharp
-public interface IGovernedLedgerPostingTarget
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;GovernedLedgerPostingResult&gt; PostAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs:15](../../../../src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs#L15) |  |
-
-## IIntercompanyAgreementBatchPostingAuthority
-
-Qualified name: <code>Meridian.Storage.Ledger.IIntercompanyAgreementBatchPostingAuthority</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:14](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L14).
-
-Validates a transaction&#x27;s union of agreement IDs under one sorted retained lease.
-
-```csharp
-public interface IIntercompanyAgreementBatchPostingAuthority : IIntercompanyAgreementPostingAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IAsyncDisposable&gt; AcquireValidatedBatchLeaseAsync(IReadOnlyList&lt;IntercompanyAgreementPostingRequest&gt; requests, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:16](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L16) |  |
-
-## IIntercompanyAgreementJournalValidation
-
-Qualified name: <code>Meridian.Storage.Ledger.IIntercompanyAgreementJournalValidation</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:21](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L21).
-
-Read-only preparation/review validation using the same authority as durable append.
-
-```csharp
-public interface IIntercompanyAgreementJournalValidation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task ValidateIntercompanyAgreementReferencesAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:23](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L23) |  |
-
-## IIntercompanyAgreementPostingAuthority
-
-Qualified name: <code>Meridian.Storage.Ledger.IIntercompanyAgreementPostingAuthority</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:6](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L6).
-
-Checks approved agreement authority and retains exclusion against amendments through ledger commit.
-
-```csharp
-public interface IIntercompanyAgreementPostingAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IAsyncDisposable&gt; AcquireValidatedLeaseAsync(IntercompanyAgreementPostingRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:8](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L8) |  |
-
-## IIntercompanyProposalStore
-
-Qualified name: <code>Meridian.Storage.Ledger.IIntercompanyProposalStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs:5](../../../../src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs#L5).
-
-```csharp
-public interface IIntercompanyProposalStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;IntercompanyProposalDto&gt;&gt; ListAsync(string tenantId, Guid sourceBookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs:7](../../../../src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs#L7) |  |
-| <code>Task&lt;IntercompanyProposalDto?&gt; GetAsync(string tenantId, Guid proposalId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs:8](../../../../src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs#L8) |  |
-| <code>Task&lt;IReadOnlyList&lt;IntercompanyProposalDto&gt;&gt; ClaimAsync(string workerId, int limit, TimeSpan lease, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs:10](../../../../src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs#L10) | Trusted background-only claim; tenant identity comes from the retained source row. |
-| <code>Task CompleteAsync(string tenantId, Guid proposalId, string claimToken, Guid targetBookId, Guid targetJournalId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs:11](../../../../src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs#L11) |  |
-| <code>Task FailAsync(string tenantId, Guid proposalId, string claimToken, string error, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs:13](../../../../src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs#L13) |  |
-| <code>Task LinkAsync(string tenantId, Guid proposalId, LinkIntercompanyCounterpartRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs:14](../../../../src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs#L14) |  |
-| <code>Task LinkRejectedDraftAsync(string tenantId, Guid proposalId, LinkIntercompanyCounterpartRequest request, string actor, RejectedIntercompanyDraftEvidenceDto rejectedDraft, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs:16](../../../../src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs#L16) |  |
-| <code>Task RetryAsync(string tenantId, Guid proposalId, RetryIntercompanyProposalRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs:19](../../../../src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs#L19) |  |
-
-## ILedgerBalanceSnapshotSource
-
-Qualified name: <code>Meridian.Storage.Ledger.ILedgerBalanceSnapshotSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerBalanceSnapshotSource.cs:9](../../../../src/Meridian.Storage/Ledger/ILedgerBalanceSnapshotSource.cs#L9).
-
-Reads account balances from an authenticated immutable close checkpoint and the remaining journal population without materializing every historical journal.
-
-```csharp
-public interface ILedgerBalanceSnapshotSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyDictionary&lt;LedgerAccount, decimal&gt;&gt; ReadTrialBalanceAsOfAsync(Guid ledgerBookId, DateTimeOffset asOfUtc, string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerBalanceSnapshotSource.cs:11](../../../../src/Meridian.Storage/Ledger/ILedgerBalanceSnapshotSource.cs#L11) |  |
-
-## ILedgerBookControlPreflight
-
-Qualified name: <code>Meridian.Storage.Ledger.ILedgerBookControlPreflight</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:52](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L52).
-
-Preflight participants must resolve their own authoritative facts, never caller claims.
-
-```csharp
-public interface ILedgerBookControlPreflight
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string ControlName =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:54](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L54) |  |
-| <code>Task&lt;LedgerBookControlPreflightLease&gt; CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:55](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L55) |  |
-
-## ILedgerBookControlStore
-
-Qualified name: <code>Meridian.Storage.Ledger.ILedgerBookControlStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:43](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L43).
-
-```csharp
-public interface ILedgerBookControlStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;LedgerBookControlProfileDto?&gt; GetBookControlsAsync(Guid bookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:45](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L45) |  |
-| <code>Task&lt;LedgerBookControlPreflightDto&gt; PrepareBookControlsAsync(Guid bookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:46](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L46) |  |
-| <code>Task&lt;LedgerBookControlProfileDto&gt; ActivateBookControlsAsync(Guid bookId, long expectedVersion, string preflightDigest, string actor, string reason, string evidenceReference, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:47](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L47) |  |
-
-## ILedgerBookFxSettlementStore
-
-Qualified name: <code>Meridian.Storage.Ledger.ILedgerBookFxSettlementStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs:6](../../../../src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs#L6).
-
-Retains a reviewed FX sale set and captures approved journal consequences without appending journals.
-
-```csharp
-public interface ILedgerBookFxSettlementStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;BookFxSettlementSetDto?&gt; GetBookFxSettlementSetAsync(Guid setId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs:8](../../../../src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs#L8) |  |
-| <code>Task&lt;BookFxSettlementSetDto&gt; RetainBookFxSettlementSetAsync(RetainBookFxSettlementSetRequestDto request, string actor, string controllerRole, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs:11](../../../../src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs#L11) |  |
-| <code>Task&lt;BookFxSettlementLegReceiptDto&gt; CaptureBookFxSettlementLegAsync(Guid setId, CaptureBookFxSettlementLegRequestDto request, string actor, string controllerRole, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs:14](../../../../src/Meridian.Storage/Ledger/ILedgerBookFxSettlementStore.cs#L14) |  |
-
 ## ILedgerEntityControlJournalValidation
 
 Qualified name: <code>Meridian.Storage.Ledger.ILedgerEntityControlJournalValidation</code>. Kind: `interface`.
@@ -322,16 +91,15 @@ Declared public members:
 | <code>Task&lt;LedgerBookRecord?&gt; GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:48](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L48) |  |
 | <code>Task&lt;IReadOnlyList&lt;LedgerBookRecord&gt;&gt; ListLedgerBooksAsync(string? fundProfileId = null, Guid? fundStructureNodeId = null, FundStructureNodeKindDto? fundStructureNodeKind = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:50](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L50) |  |
 | <code>Task&lt;LedgerBookRecord&gt; SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:56](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L56) |  |
-| <code>Task&lt;IReadOnlyList&lt;Guid&gt;&gt; ListLedgerBookIdsHoldingSecurityAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:63](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L63) | The ledger books that have ever held a tax lot of securityId (open or closed). Restatement routing for a Security Master revision with no fund scope uses this to find every book a correction could affect (review P4, owner decision 2026-11-25). |
-| <code>Task&lt;LedgerAccountTaxLotPolicyRecord&gt; SaveTaxLotPolicyAsync(LedgerAccountTaxLotPolicyRecord policy, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:67](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L67) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerAccountTaxLotPolicyRecord&gt;&gt; ListTaxLotPoliciesAsync(Guid ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:73](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L73) |  |
-| <code>Task&lt;LedgerTaxLotRecord&gt; SaveTaxLotAsync(LedgerTaxLotRecord lot, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:84](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L84) | Saves a non-atomic compatibility lot. Governed production stores reject this operation; use IAtomicTaxLotJournalStore for journal-backed lot mutations and the reviewed backfill workflow for retained legacy acquisition facts. |
-| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLotRecord&gt;&gt; ListOpenTaxLotsAsync(Guid ledgerBookId, LedgerAccount account, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:90](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L90) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLotRecord&gt;&gt; GetTaxLotsByIdsAsync(Guid ledgerBookId, IReadOnlyList&lt;Guid&gt; taxLotRecordIds, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:97](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L97) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLotRecord&gt;&gt; GetTaxLotsByLotIdsAsync(Guid ledgerBookId, LedgerAccount account, IReadOnlyList&lt;string&gt; lotIds, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:105](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L105) | Finds retained labels across open and closed lots in the exact ledger book and account key. |
-| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLotRecord&gt;&gt; ListOpenTaxLotsByAssetScopeAsync(Guid ledgerBookId, Guid securityId, Guid bookPositionId, DateOnly effectiveDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:126](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L126) | Lists the lots of record open under one (security, book position) scope and acquired on or before effectiveDate. Face-denominated economics -- principal paydown above all -- must be derived from the lots that actually held the position on the event&#x27;s date rather than from a caller-supplied quantity, and the account a lot sits under is not known at that point; this read is the asset-scoped seam that makes the lot of record reachable from the projection path. The acquisition bound matters because factors publish after the fact: a paydown is always posted with a lag, and a lot bought between the effective date and the posting would otherwise be paid down for a period it did not hold. Reconstructs open quantity at the end of that effective date from retained journal-backed mutations, including lots fully disposed since then. Missing or inconsistent historical quantity evidence fails closed; returned versions remain current concurrency tokens. |
-| <code>Task&lt;IReadOnlyList&lt;Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding&gt;&gt; ListTaxLotAccrualSnapshotsAsync(Guid ledgerBookId, Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:142](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L142) | Reconstructs daily face-value accrual entitlements from retained mutation evidence in one scoped read. Closing acquisitions/disposals retain their existing timing; a same-day factor paydown follows interest, including the final day of a full paydown that closes the lot. Missing face terms or incomplete history refuses the whole read. Returned acquisition facts and current version tokens are evidence, not writable historical lot records. |
-| <code>Task&lt;AtomicTaxLotJournalResult?&gt; GetAtomicTaxLotPostingAsync(Guid mutationBatchId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:157](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L157) | Resolves one immutable atomic tax-lot posting batch together with its journal and mutation evidence. Public Posted projections use this read to prove that a supplied mutation-batch identity is durable authority rather than caller-provided lifecycle metadata. |
+| <code>Task&lt;LedgerAccountTaxLotPolicyRecord&gt; SaveTaxLotPolicyAsync(LedgerAccountTaxLotPolicyRecord policy, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:58](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L58) |  |
+| <code>Task&lt;IReadOnlyList&lt;LedgerAccountTaxLotPolicyRecord&gt;&gt; ListTaxLotPoliciesAsync(Guid ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:64](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L64) |  |
+| <code>Task&lt;LedgerTaxLotRecord&gt; SaveTaxLotAsync(LedgerTaxLotRecord lot, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:75](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L75) | Saves a non-atomic compatibility lot. Governed production stores reject this operation; use IAtomicTaxLotJournalStore for journal-backed lot mutations and the reviewed backfill workflow for retained legacy acquisition facts. |
+| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLotRecord&gt;&gt; ListOpenTaxLotsAsync(Guid ledgerBookId, LedgerAccount account, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:81](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L81) |  |
+| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLotRecord&gt;&gt; GetTaxLotsByIdsAsync(Guid ledgerBookId, IReadOnlyList&lt;Guid&gt; taxLotRecordIds, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:88](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L88) |  |
+| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLotRecord&gt;&gt; GetTaxLotsByLotIdsAsync(Guid ledgerBookId, LedgerAccount account, IReadOnlyList&lt;string&gt; lotIds, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:96](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L96) | Finds retained labels across open and closed lots in the exact ledger book and account key. |
+| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLotRecord&gt;&gt; ListOpenTaxLotsByAssetScopeAsync(Guid ledgerBookId, Guid securityId, Guid bookPositionId, DateOnly effectiveDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:117](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L117) | Lists the lots of record open under one (security, book position) scope and acquired on or before effectiveDate. Face-denominated economics -- principal paydown above all -- must be derived from the lots that actually held the position on the event&#x27;s date rather than from a caller-supplied quantity, and the account a lot sits under is not known at that point; this read is the asset-scoped seam that makes the lot of record reachable from the projection path. The acquisition bound matters because factors publish after the fact: a paydown is always posted with a lag, and a lot bought between the effective date and the posting would otherwise be paid down for a period it did not hold. Reconstructs open quantity at the end of that effective date from retained journal-backed mutations, including lots fully disposed since then. Missing or inconsistent historical quantity evidence fails closed; returned versions remain current concurrency tokens. |
+| <code>Task&lt;IReadOnlyList&lt;Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding&gt;&gt; ListTaxLotAccrualSnapshotsAsync(Guid ledgerBookId, Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:133](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L133) | Reconstructs daily face-value accrual entitlements from retained mutation evidence in one scoped read. Closing acquisitions/disposals retain their existing timing; a same-day factor paydown follows interest, including the final day of a full paydown that closes the lot. Missing face terms or incomplete history refuses the whole read. Returned acquisition facts and current version tokens are evidence, not writable historical lot records. |
+| <code>Task&lt;AtomicTaxLotJournalResult?&gt; GetAtomicTaxLotPostingAsync(Guid mutationBatchId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:148](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L148) | Resolves one immutable atomic tax-lot posting batch together with its journal and mutation evidence. Public Posted projections use this read to prove that a supplied mutation-batch identity is durable authority rather than caller-provided lifecycle metadata. |
 
 ## ILedgerOpenLotSuccessorHistory
 
@@ -392,7 +160,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Ledger.ILedgerPostingIdentityCollisionLookup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:228](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L228).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:219](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L219).
 
 Optional optimized lookup for every retained journal that collides with a proposed posting identity. Journal-entry and command identifiers are global identities; source-event and idempotency identities are scoped to the accounting aggregate.
 
@@ -404,7 +172,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; FindPostingIdentityCollisionsAsync(LedgerPostingIdentity identity, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:230](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L230) |  |
+| <code>Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; FindPostingIdentityCollisionsAsync(LedgerPostingIdentity identity, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:221](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L221) |  |
 
 ## ILedgerReportingSnapshotSource
 
@@ -617,7 +385,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Ledger.ITransactionalLedgerJournalStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:192](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L192).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:183](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L183).
 
 Appends ledger journal entries within a caller-owned PostgreSQL transaction.
 
@@ -629,8 +397,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IAsyncDisposable&gt; AcquirePostingAuthorityAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, IReadOnlyList&lt;LedgerJournalEntryWrite&gt; entries, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:197](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L197) | Retain this scope through commit/rollback of the caller-owned transaction. |
-| <code>Task AppendAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, LedgerJournalEntryWrite entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:204](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L204) |  |
+| <code>Task&lt;IAsyncDisposable&gt; AcquirePostingAuthorityAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, IReadOnlyList&lt;LedgerJournalEntryWrite&gt; entries, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:188](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L188) | Retain this scope through commit/rollback of the caller-owned transaction. |
+| <code>Task AppendAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, LedgerJournalEntryWrite entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:195](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L195) |  |
 
 ## IWashSaleDeferralStore
 
@@ -655,7 +423,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountingPeriod</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:373](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L373).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:364](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L364).
 
 ```csharp
 public sealed record LedgerAccountingPeriod(Guid PeriodId, Guid? LedgerBookId, int FiscalYear, int PeriodNo, string Label, DateOnly StartDate, DateOnly EndDate, string Status, DateTimeOffset OpenedAt, DateTimeOffset? ClosedAt, long Version)
@@ -665,13 +433,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? MutationActor { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:387](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L387) | Actual command actor for this mutation; absent legacy attribution remains explicit. |
+| <code>public string? MutationActor { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:378](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L378) | Actual command actor for this mutation; absent legacy attribution remains explicit. |
 
 ## LedgerAccountTaxLotPolicyRecord
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountTaxLotPolicyRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:418](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L418).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:409](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L409).
 
 ```csharp
 public sealed record LedgerAccountTaxLotPolicyRecord(Guid PolicyRecordId, Guid LedgerBookId, LedgerAccount Account, LedgerTaxLotReliefMethod ReliefMethod, string PolicyId, DateOnly EffectiveDate, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string? Rationale = null, WashSalePolicy? WashSalePolicy = null)
@@ -681,7 +449,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public WashSalePolicy EffectiveWashSalePolicy =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:431](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L431) | The configured wash-sale policy with its governing tax-lot revision, or the disabled default. |
+| <code>public WashSalePolicy EffectiveWashSalePolicy =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:422](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L422) | The configured wash-sale policy with its governing tax-lot revision, or the disabled default. |
 
 ## LedgerBalanceSnapshotExtensions
 
@@ -733,7 +501,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerBookRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:390](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L390).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:381](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L381).
 
 ```csharp
 public sealed record LedgerBookRecord(Guid LedgerBookId, string FundProfileId, Guid FundStructureNodeId, FundStructureNodeKindDto FundStructureNodeKind, string DisplayName, string BaseCurrency, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string? Description = null, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1");
@@ -882,7 +650,7 @@ public sealed record LedgerJournalChainVerification(string ScopeId, bool IsIntac
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerJournalEntryQuery</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:334](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L334).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:325](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L325).
 
 Conjunctive journal filters; an exact journal identity remains subject to every supplied scope filter.
 
@@ -894,13 +662,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? JournalEntryIdPrefix { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:352](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L352) |  |
+| <code>public string? JournalEntryIdPrefix { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:343](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L343) |  |
 
 ## LedgerJournalEntryRecord
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerJournalEntryRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:355](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L355).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:346](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L346).
 
 ```csharp
 public sealed record LedgerJournalEntryRecord(JournalEntry Entry, Guid AggregateId, Guid PeriodId, Guid? CommandId, Guid? CorrelationId, long GlobalSequence, DateTimeOffset CreatedAt, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, Guid? SourceEventId = null, Guid? SourceJournalEntryId = null, LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null);
@@ -910,8 +678,221 @@ public sealed record LedgerJournalEntryRecord(JournalEntry Entry, Guid Aggregate
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerJournalEntryWrite</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:315](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L315).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:306](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L306).
 
 ```csharp
 public sealed record LedgerJournalEntryWrite(JournalEntry Entry, Guid AggregateId, Guid PeriodId, Guid? CommandId = null, Guid? CorrelationId = null, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, Guid? SourceEventId = null, Guid? SourceJournalEntryId = null, LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null, AccountingPostingCommandDto? PostingCommand = null, Guid? LedgerBookId = null);
 ```
+
+## LedgerJournalStoreHydrationExtensions
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerJournalStoreHydrationExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerJournalStoreHydrationExtensions.cs:9](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreHydrationExtensions.cs#L9).
+
+Reconstructs a ledger from queried journal entries, including as-of and accounting period views.
+
+```csharp
+public static class LedgerJournalStoreHydrationExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static async Task&lt;Meridian.Ledger.Ledger&gt; HydrateLedgerAsync(this ILedgerJournalStore store, LedgerJournalEntryQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreHydrationExtensions.cs:11](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreHydrationExtensions.cs#L11) |  |
+| <code>public static Task&lt;Meridian.Ledger.Ledger&gt; HydrateLedgerAsOfAsync(this ILedgerJournalStore store, Guid ledgerBookId, DateTimeOffset asOfUtc, LedgerLineDimensionSet? lineDimensions = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreHydrationExtensions.cs:23](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreHydrationExtensions.cs#L23) |  |
+| <code>public static Task&lt;Meridian.Ledger.Ledger&gt; HydrateLedgerPeriodAsync(this ILedgerJournalStore store, Guid ledgerBookId, Guid periodId, LedgerLineDimensionSet? lineDimensions = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreHydrationExtensions.cs:45](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreHydrationExtensions.cs#L45) |  |
+| <code>public static async Task&lt;Meridian.Ledger.Ledger&gt; HydrateFundLedgerAsOfAsync(this ILedgerJournalStore store, string fundProfileId, DateTimeOffset asOfUtc, AccountingBasisKindDto? accountingBasis = AccountingBasisKindDto.Primary, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreHydrationExtensions.cs:77](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreHydrationExtensions.cs#L77) | Rebuilds one fund-wide ledger projection from every durable ledger book on the requested accounting basis. Journal records retain durable global-sequence order when timestamps are equal, so statements, trial balance, and NAV share replay semantics. |
+
+## LedgerJournalStoreOptions
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerJournalStoreOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs:4](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs#L4).
+
+Configuration for the Postgres-backed ledger journal store.
+
+```csharp
+public sealed class LedgerJournalStoreOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ConnectionString { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs:7](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs#L7) | Postgres connection string used for journal and accounting-period persistence. |
+| <code>public string SchemaName { get; set; } = &quot;ledger&quot;;</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs:10](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs#L10) | Database schema that owns the ledger tables. |
+| <code>public string PrivateCapitalBankingSchema { get; set; } = &quot;banking&quot;;</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs:13](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs#L13) | Same-database banking authority required for atomic capital-call funding. |
+| <code>public bool EnablePeriodLocking { get; set; } = true;</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs:20](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs#L20) | Enables explicit row locking when period records are updated. Serializable transactions still protect writes; this flag controls whether the store also issues FOR UPDATE before applying the optimistic-version guard. |
+| <code>public bool RequireGovernedPostingCommand { get; set; }</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs:27](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs#L27) | Rejects every append that does not carry the typed accounting posting command and every standalone tax-lot save. Production lot mutations must use the atomic journal/lot boundary. Supported production composition enables this; isolated compatibility tests may leave it disabled. |
+| <code>public bool RequireExpectedVersion { get; set; }</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs:33](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs#L33) | Requires the typed posting command to carry the accounting-period version observed by the caller. The store compares it while holding the same transaction/row lock as the append. |
+
+## LedgerJournalStream
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerJournalStream</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerJournalStream.cs:16](../../../../src/Meridian.Storage/Ledger/LedgerJournalStream.cs#L16).
+
+Streams every entry posted to a global::Meridian.Ledger.Ledger into an ILedgerJournalLog in posting order. Posting stays synchronous: entries are handed to a bounded channel and written by one background writer, so a run is not slowed by an fsync per entry until the channel fills, and then posting waits for the writer to catch up.
+
+```csharp
+public sealed class LedgerJournalStream : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LedgerJournalStream Attach(global::Meridian.Ledger.Ledger ledger, ILedgerJournalLog log, int capacity = 4096);</code> | [src/Meridian.Storage/Ledger/LedgerJournalStream.cs:41](../../../../src/Meridian.Storage/Ledger/LedgerJournalStream.cs#L41) | Starts streaming ledger into log. The ledger must be empty so the log holds its complete history. |
+| <code>public ILedgerJournalLog Log =&gt; …;</code> | [src/Meridian.Storage/Ledger/LedgerJournalStream.cs:55](../../../../src/Meridian.Storage/Ledger/LedgerJournalStream.cs#L55) | The journal log entries are written to. |
+| <code>public async Task CompleteAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LedgerJournalStream.cs:88](../../../../src/Meridian.Storage/Ledger/LedgerJournalStream.cs#L88) | Waits until every posted entry is durable, then stops accepting entries. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Ledger/LedgerJournalStream.cs:99](../../../../src/Meridian.Storage/Ledger/LedgerJournalStream.cs#L99) | Stops the writer. Entries already written stay durable; entries still queued are not written, which matches a crash at the same point. Call CompleteAsync first for a clean finish. |
+
+## LedgerMigrationRunner
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerMigrationRunner</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs:8](../../../../src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs#L8).
+
+Applies the PostgreSQL migrations used by the ledger journal store.
+
+```csharp
+public sealed class LedgerMigrationRunner
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerMigrationRunner(LedgerJournalStoreOptions options);</code> | [src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs:12](../../../../src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs#L12) |  |
+| <code>public Task EnsureMigratedAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs:36](../../../../src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs#L36) |  |
+
+## LedgerOpenLotProjection
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerOpenLotProjection</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs:7](../../../../src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs#L7).
+
+Projects the existing lot of record without inventing missing acquisition facts.
+
+```csharp
+public static class LedgerOpenLotProjection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static OpenLotDto ToOpenLot(this LedgerTaxLotRecord record);</code> | [src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs:9](../../../../src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs#L9) |  |
+
+## LedgerPeriodCloseSnapshot
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodCloseSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:15](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L15).
+
+Immutable journal population retained in the same transaction as a hard close. The payload includes opening history, closing journals, source lineage, currency and dimensions, so the closed trial balance can be rebuilt without consulting a subsequently restated journal.
+
+```csharp
+public sealed record LedgerPeriodCloseSnapshot(Guid? LedgerBookId, Guid PeriodId, long PeriodVersion, Guid CloseEventId, DateTimeOffset ClosedAt, string PayloadJson, string ContentHashSha256)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LedgerPeriodCloseSnapshot Capture(LedgerAccountingPeriod period, PeriodCloseEventRecord closeEvent, IReadOnlyList&lt;LedgerJournalEntryRecord&gt; entries);</code> | [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:24](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L24) |  |
+| <code>public LedgerPeriodCloseSnapshotPayload VerifyIntegrity();</code> | [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:63](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L63) | Checks retained bytes and the scope bound into them before serving a snapshot. |
+
+## LedgerPeriodCloseSnapshotJsonContext
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodCloseSnapshotJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:123](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L123).
+
+```csharp
+public sealed partial class LedgerPeriodCloseSnapshotJsonContext : JsonSerializerContext;
+```
+
+## LedgerPeriodCloseSnapshotPayload
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodCloseSnapshotPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:114](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L114).
+
+```csharp
+public sealed record LedgerPeriodCloseSnapshotPayload(int SchemaVersion, LedgerAccountingPeriod Period, PeriodCloseEventRecord CloseEvent, IReadOnlyList<LedgerJournalEntryRecord> Entries);
+```
+
+## LedgerPeriodPostingGuard
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodPostingGuard</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs:10](../../../../src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs#L10).
+
+Rejects journal postings that violate the selected accounting period&#x27;s scope, dates, or state.
+
+```csharp
+public static class LedgerPeriodPostingGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void Validate(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period) =&gt; …;</code> | [src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs:12](../../../../src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs#L12) |  |
+
+## LedgerPeriodTransitionException
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodTransitionException</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerBookServiceException.cs:51](../../../../src/Meridian.Storage/Ledger/LedgerBookServiceException.cs#L51).
+
+Signals an invalid transition between accounting period states.
+
+```csharp
+public sealed class LedgerPeriodTransitionException : LedgerBookServiceException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerPeriodTransitionException(string message) : base(message);</code> | [src/Meridian.Storage/Ledger/LedgerBookServiceException.cs:53](../../../../src/Meridian.Storage/Ledger/LedgerBookServiceException.cs#L53) |  |
+
+## LedgerPostingAuthorityContext
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerPostingAuthorityContext</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:26](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L26).
+
+```csharp
+public sealed record LedgerPostingAuthorityContext(LedgerJournalEntryWrite Write, LedgerBookRecord Book, LedgerBookControlProfileDto Controls, string? TenantId)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IList&lt;LedgerControlDecisionDto&gt; Decisions { get; } = new List&lt;LedgerControlDecisionDto&gt;();</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:32](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L32) |  |
+| <code>public LegalEntityReadAuthorityProof? StructureAuthorityProof { get; private set; }</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:33](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L33) |  |
+| <code>public bool IsReviewOnly { get; internal set; }</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:34](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L34) |  |
+| <code>public IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt; VerifiedCanonicalAgreementRevisions { get; internal set; } = [];</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:35](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L35) |  |
+| <code>public void RetainStructureAuthority(IAsyncDisposable lease);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:36](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L36) |  |
+
+## LedgerPostingIdentity
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerPostingIdentity</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:226](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L226).
+
+```csharp
+public sealed record LedgerPostingIdentity(Guid JournalEntryId, Guid AggregateId, Guid? CommandId, Guid? SourceEventId, string? IdempotencyKey)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LedgerPostingIdentity FromWrite(LedgerJournalEntryWrite write);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:233](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L233) |  |

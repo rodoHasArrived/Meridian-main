@@ -37,20 +37,6 @@ public sealed class FundAccountCloseReadinessService
         _breakQueueRepository = breakQueueRepository;
     }
 
-    [Obsolete(
-        "Authoritative close readiness requires an authenticated tenant and company scope. " +
-        "Use GetAsync(Guid, ReconciliationBreakQueueScope, CancellationToken).")]
-    public Task<FundAccountCloseReadinessDto?> GetAsync(
-        Guid accountId,
-        CancellationToken ct = default)
-    {
-        ct.ThrowIfCancellationRequested();
-        return Task.FromResult<FundAccountCloseReadinessDto?>(BuildFailClosedReadiness(
-            accountId,
-            "close.authority.scope_required",
-            "A tenant- and company-scoped request context is required before authoritative close readiness can be evaluated."));
-    }
-
     public async Task<FundAccountCloseReadinessDto?> GetAsync(
         Guid accountId,
         ReconciliationBreakQueueScope accessScope,

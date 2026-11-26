@@ -6,73 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## AccountingSystemReconciliationRowDto
-
-Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingSystemReconciliationRowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1479](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1479).
-
-```csharp
-public sealed record AccountingSystemReconciliationRowDto(string RowId, string AccountCode, string AccountName, string Currency, AccountingSystemReconciliationStatusDto Status, decimal ExternalDebit, decimal ExternalCredit, decimal MeridianDebit, decimal MeridianCredit, decimal Variance, string Detail, string? EvidenceRef = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ExternalDebitExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1494](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1494) | Invariant decimal text accompanies numeric compatibility fields for precise workstation reads. |
-| <code>public string ExternalCreditExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1495](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1495) |  |
-| <code>public string MeridianDebitExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1496](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1496) |  |
-| <code>public string MeridianCreditExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1497](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1497) |  |
-| <code>public string VarianceExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1498](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1498) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)] public string? ExternalCurrency { get; init; }</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1502](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1502) | Currency declared by the external trial-balance source; null means unavailable or no source row. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)] public string? MeridianCurrency { get; init; }</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1506](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1506) | Currency declared by the resolved Meridian ledger book; null means unavailable or no ledger row. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? PeriodDebit { get; init; }</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1510](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1510) | Gross activity in the requested export period, separate from report balances. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? PeriodCredit { get; init; }</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1513](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1513) |  |
-| <code>public IReadOnlyList&lt;string&gt; ExternalEvidenceReferences { get; init; } = [];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1515](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1515) |  |
-| <code>public IReadOnlyList&lt;string&gt; MeridianEvidenceReferences { get; init; } = [];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1517](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1517) |  |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = [];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1519](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1519) |  |
-
-## AccountingSystemReconciliationStatusDto
-
-Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingSystemReconciliationStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:27](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L27).
-
-```csharp
-public enum AccountingSystemReconciliationStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Matched</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:29](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L29) |  |
-| <code>Variance</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:30](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L30) |  |
-| <code>MissingExternal</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:31](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L31) |  |
-| <code>MissingMeridian</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:32](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L32) |  |
-| <code>ReviewRequired</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:33](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L33) |  |
-
-## AccountingSystemReconciliationSummaryDto
-
-Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingSystemReconciliationSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1449](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1449).
-
-```csharp
-public sealed record AccountingSystemReconciliationSummaryDto(string ReconciliationId, string ImportId, string ProviderId, string FundProfileId, DateOnly PeriodStart, DateOnly PeriodEnd, DateTimeOffset GeneratedAtUtc, int MatchedCount, int BreakCount, decimal TotalExternalDebits, decimal TotalExternalCredits, decimal TotalMeridianDebits, decimal TotalMeridianCredits, bool PostingEnabled, string PostingDisabledReason, IReadOnlyList<AccountingSystemReconciliationRowDto> Rows, IReadOnlyList<string> EvidenceReferences, Guid? LedgerBookId = null, string? ImportContentHash = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string TotalExternalDebitsExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1471](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1471) | Invariant decimal text accompanies numeric compatibility fields for precise workstation reads. |
-| <code>public string TotalExternalCreditsExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1472](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1472) |  |
-| <code>public string TotalMeridianDebitsExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1473](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1473) |  |
-| <code>public string TotalMeridianCreditsExact =&gt; …;</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1474](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1474) |  |
-| <code>public IReadOnlyList&lt;AccountingSystemReconciliationEvidencePackageDto&gt; EvidencePackages { get; init; } = [];</code> | [src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs:1476](../../../../src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs#L1476) |  |
-
 ## AccountingSystemTrialBalanceBasisDto
 
 Qualified name: <code>Meridian.Contracts.AccountingSystem.AccountingSystemTrialBalanceBasisDto</code>. Kind: `record`.
@@ -864,3 +797,74 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;description&quot;)] public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:376](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L376) | Gets or sets the description of the preset. |
 | <code>[JsonPropertyName(&quot;cronExpression&quot;)] public string CronExpression { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:382](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L382) | Gets or sets the cron expression that schedules the preset. |
 | <code>[JsonPropertyName(&quot;lookbackDays&quot;)] public int LookbackDays { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:388](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L388) | Gets or sets the lookback window in days for backfill. |
+
+## BackfillProviderHealth
+
+Qualified name: <code>Meridian.Contracts.Api.BackfillProviderHealth</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:40](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L40).
+
+Individual backfill provider health status.
+
+```csharp
+public sealed class BackfillProviderHealth
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;isAvailable&quot;)] public bool IsAvailable { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:46](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L46) | Gets or sets whether the provider is currently available. |
+| <code>[JsonPropertyName(&quot;latencyMs&quot;)] public float? LatencyMs { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:52](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L52) | Gets or sets the most recent latency measurement in milliseconds. |
+| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:58](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L58) | Gets or sets the last error message reported by the provider, if any. |
+| <code>[JsonPropertyName(&quot;lastChecked&quot;)] public DateTime? LastChecked { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:64](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L64) | Gets or sets the last time the provider was checked. |
+
+## BackfillProviderInfo
+
+Qualified name: <code>Meridian.Contracts.Api.BackfillProviderInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Api/StatusModels.cs:219](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L219).
+
+Backfill provider information.
+
+```csharp
+public sealed class BackfillProviderInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:222](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L222) |  |
+| <code>[JsonPropertyName(&quot;displayName&quot;)] public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:225](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L225) |  |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:228](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L228) |  |
+| <code>[JsonPropertyName(&quot;isAvailable&quot;)] public bool IsAvailable { get; set; } = true;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:231](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L231) |  |
+| <code>[JsonPropertyName(&quot;requiresApiKey&quot;)] public bool RequiresApiKey { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:234](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L234) |  |
+| <code>[JsonPropertyName(&quot;supportsIntraday&quot;)] public bool SupportsIntraday { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:237](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L237) |  |
+| <code>[JsonPropertyName(&quot;supportedGranularities&quot;)] public string[] SupportedGranularities { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/StatusModels.cs:240](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L240) |  |
+
+## BackfillRemediationSlaDto
+
+Qualified name: <code>Meridian.Contracts.Api.BackfillRemediationSlaDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:284](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L284).
+
+Typed remediation SLA evidence projected for browser and desktop queues.
+
+```csharp
+public sealed class BackfillRemediationSlaDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;tier&quot;)] public BackfillRemediationSlaTierDto Tier { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:287](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L287) |  |
+| <code>[JsonPropertyName(&quot;status&quot;)] public BackfillRemediationSlaStatusDto Status { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:290](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L290) |  |
+| <code>[JsonPropertyName(&quot;dueAtUtc&quot;)] public DateTimeOffset DueAtUtc { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:293](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L293) |  |
+| <code>[JsonPropertyName(&quot;requiresOwnerAssignment&quot;)] public bool RequiresOwnerAssignment { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:296](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L296) |  |
+| <code>[JsonPropertyName(&quot;downstreamWorkflow&quot;)] public string DownstreamWorkflow { get; set; } = &quot;unassigned&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:299](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L299) |  |
+| <code>[JsonPropertyName(&quot;reasonCode&quot;)] public string ReasonCode { get; set; } = &quot;Unknown&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:302](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L302) |  |
+| <code>[JsonPropertyName(&quot;provider&quot;)] public string Provider { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:305](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L305) |  |
+| <code>[JsonPropertyName(&quot;triggerSource&quot;)] public string? TriggerSource { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:308](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L308) |  |
+| <code>[JsonPropertyName(&quot;isCompatibilityDerived&quot;)] public bool IsCompatibilityDerived { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:311](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L311) |  |

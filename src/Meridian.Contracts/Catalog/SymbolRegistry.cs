@@ -63,13 +63,6 @@ public sealed class SymbolRegistry
     /// </summary>
     [JsonPropertyName("migrationMarkers")]
     public Dictionary<string, string> MigrationMarkers { get; set; } = new(StringComparer.OrdinalIgnoreCase);
-
-    /// <summary>
-    /// Exact manifests and evidence references for explicitly selected legacy identifier cleanup.
-    /// A receipt records the requested cleanup; it does not establish independent approval.
-    /// </summary>
-    [JsonPropertyName("legacyIdentifierCleanupReceipts")]
-    public Dictionary<string, SecurityMasterLegacyIdentifierCleanupReceipt> LegacyIdentifierCleanupReceipts { get; set; } = new();
 }
 
 /// <summary>
