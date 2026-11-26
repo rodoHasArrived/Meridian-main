@@ -6,6 +6,118 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DirectLendingErrorCode
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingErrorCode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:3](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L3).
+
+```csharp
+public enum DirectLendingErrorCode : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Validation = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:5](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L5) |  |
+| <code>NotFound = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:6](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L6) |  |
+| <code>ConcurrencyConflict = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:7](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L7) |  |
+| <code>Conflict = 3</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:8](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L8) |  |
+| <code>FixingMissing = 4</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:11](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L11) | A scheduled rate reset has no index fixing for its observation date (fail closed). |
+
+## DirectLendingIndexFixingDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingIndexFixingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:121](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L121).
+
+An observed index fixing held in the direct-lending fixing store.
+
+```csharp
+public sealed record DirectLendingIndexFixingDto(Guid FixingId, string IndexName, DateOnly ObservationDate, int Revision, DeclaredRate DeclaredRate, decimal RateFraction, string? SourceRef, DateTimeOffset RecordedAt, string? RecordedBy);
+```
+
+## DirectLendingOperationsCalendarItemDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsCalendarItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:479](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L479).
+
+```csharp
+public sealed record DirectLendingOperationsCalendarItemDto(Guid LoanId, string FacilityName, string ItemType, DateOnly DueDate, string Status, string Detail, string Route);
+```
+
+## DirectLendingOperationsCloseBlockerDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsCloseBlockerDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:516](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L516).
+
+```csharp
+public sealed record DirectLendingOperationsCloseBlockerDto(Guid LoanId, string FacilityName, string BlockerType, string Severity, string Detail, string Route);
+```
+
+## DirectLendingOperationsCollateralCoverageDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsCollateralCoverageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:457](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L457).
+
+```csharp
+public sealed record DirectLendingOperationsCollateralCoverageDto(Guid LoanId, string FacilityName, decimal PrincipalOutstanding, decimal CollateralValue, decimal CoverageRatio, string Status, string Detail, string Route);
+```
+
+## DirectLendingOperationsEvidenceItemDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsEvidenceItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:488](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L488).
+
+```csharp
+public sealed record DirectLendingOperationsEvidenceItemDto(Guid LoanId, string FacilityName, string EvidenceType, string Label, string Status, string Route);
+```
+
+## DirectLendingOperationsJournalPostureDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsJournalPostureDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:496](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L496).
+
+```csharp
+public sealed record DirectLendingOperationsJournalPostureDto(Guid LoanId, string FacilityName, int DraftCount, int PostedCount, string Status, string Detail, string Route);
+```
+
+## DirectLendingOperationsLoanHealthDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsLoanHealthDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:439](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L439).
+
+```csharp
+public sealed record DirectLendingOperationsLoanHealthDto(Guid LoanId, string FacilityName, string BorrowerName, LoanStatus Status, CurrencyCode Currency, decimal CommitmentAmount, decimal PrincipalOutstanding, decimal InterestAccruedUnpaid, decimal PenaltyAccruedUnpaid, DateOnly MaturityDate, DateOnly? LastAccrualDate, DateOnly? LastPaymentDate, string HealthStatus, string HealthDetail, string Route, Guid? SecurityId = null);
+```
+
+## DirectLendingOperationsReadModelDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsReadModelDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:424](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L424).
+
+```csharp
+public sealed record DirectLendingOperationsReadModelDto(DateTimeOffset AsOf, string Status, string StatusDetail, IReadOnlyList<DirectLendingOperationsLoanHealthDto> LoanHealth, IReadOnlyList<DirectLendingOperationsCollateralCoverageDto> CollateralCoverage, IReadOnlyList<DirectLendingOperationsStatusPostureDto> CovenantStatusPosture, IReadOnlyList<DirectLendingOperationsCalendarItemDto> ServicingCalendar, IReadOnlyList<DirectLendingOperationsEvidenceItemDto> Evidence, IReadOnlyList<DirectLendingOperationsJournalPostureDto> Journals, IReadOnlyList<DirectLendingOperationsReconciliationExceptionDto> ReconciliationExceptions, IReadOnlyList<DirectLendingOperationsCloseBlockerDto> CloseBlockers, IReadOnlyList<DirectLendingOperationsServicerStatementDto>? ServicerStatements = null, Guid? LedgerBookId = null);
+```
+
+## DirectLendingOperationsReconciliationExceptionDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsReconciliationExceptionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:505](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L505).
+
+```csharp
+public sealed record DirectLendingOperationsReconciliationExceptionDto(Guid ExceptionId, Guid LoanId, string FacilityName, string ExceptionType, decimal DifferenceAmount, string Status, string AssignedTo, string Detail, string Route);
+```
+
 ## DirectLendingOperationsServicerStatementDto
 
 Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsServicerStatementDto</code>. Kind: `record`.
@@ -59,7 +171,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOutboxMessageDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:463](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L463).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:478](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L478).
 
 ```csharp
 public sealed record DirectLendingOutboxMessageDto(Guid OutboxMessageId, string Topic, string MessageKey, string PayloadJson, DateTimeOffset OccurredAt, DateTimeOffset VisibleAfter, DateTimeOffset? ProcessedAt, int ErrorCount, string? LastError);
@@ -111,7 +223,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingReplayCheckpointDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:474](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L474).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:489](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L489).
 
 ```csharp
 public sealed record DirectLendingReplayCheckpointDto(string ProjectionName, long LastProcessedPosition, Guid? LastEventId, DateTimeOffset? LastRebuiltAt, string Status, string? Details);
@@ -584,168 +696,4 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:347](../../..
 
 ```csharp
 public sealed record PostDailyAccrualRequest(DateOnly AccrualDate);
-```
-
-## ProjectedCashFlowDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ProjectedCashFlowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:153](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L153).
-
-```csharp
-public sealed record ProjectedCashFlowDto(Guid ProjectedCashFlowId, Guid ProjectionRunId, Guid LoanId, int FlowSequenceNumber, string FlowType, DateOnly DueDate, DateOnly? AccrualStartDate, DateOnly? AccrualEndDate, decimal Amount, CurrencyCode Currency, decimal? PrincipalBasis, decimal? AnnualRate, string? FormulaTraceJson, DateTimeOffset CreatedAt);
-```
-
-## ProjectionRunDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ProjectionRunDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:138](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L138).
-
-```csharp
-public sealed record ProjectionRunDto(Guid ProjectionRunId, Guid LoanId, int LoanTermsVersion, long ServicingRevision, DateOnly ProjectionAsOf, DateOnly? MarketDataAsOf, Guid? TriggerEventId, string TriggerType, string TermsHash, string EngineVersion, ProjectionRunStatus Status, Guid? SupersedesProjectionRunId, DateTimeOffset GeneratedAt);
-```
-
-## ProjectionRunStatus
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ProjectionRunStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:124](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L124).
-
-```csharp
-public enum ProjectionRunStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Requested = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:126](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L126) |  |
-| <code>Completed = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:127](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L127) |  |
-| <code>Failed = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:128](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L128) |  |
-| <code>Superseded = 3</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:129](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L129) |  |
-
-## RateNormalizationResult
-
-Qualified name: <code>Meridian.Contracts.DirectLending.RateNormalizationResult</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:53](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L53).
-
-Outcome of normalizing one declared rate.
-
-```csharp
-public readonly record struct RateNormalizationResult(decimal Fraction, string? Error)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsSuccess =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:55](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L55) |  |
-
-## RateResetDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.RateResetDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:250](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L250).
-
-```csharp
-public sealed record RateResetDto(DateOnly EffectiveDate, string IndexName, decimal ObservedRate, decimal SpreadBps, decimal AllInRate, string? SourceRef)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public RateResetKind? ResetKind { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:260](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L260) | Manual (operator request) or Scheduled (reset schedule); null on resets recorded before schedules existed. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? FixingObservationDate { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:264](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L264) | The date the applied fixing was observed (reset date minus lookback) for a scheduled reset. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Guid? FixingId { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:268](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L268) | The stored fixing a scheduled reset applied, so a later fixing revision cannot obscure which one was used. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public int? FixingRevision { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:272](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L272) | The revision of FixingId&#x27;s (index, observation date) that was applied. |
-
-## RateResetFrequency
-
-Qualified name: <code>Meridian.Contracts.DirectLending.RateResetFrequency</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:34](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L34).
-
-How often a floating rate resets.
-
-```csharp
-public enum RateResetFrequency : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Monthly = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:36](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L36) |  |
-| <code>Quarterly = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:37](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L37) |  |
-| <code>SemiAnnual = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:38](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L38) |  |
-| <code>Annual = 3</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:39](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L39) |  |
-
-## RateResetKind
-
-Qualified name: <code>Meridian.Contracts.DirectLending.RateResetKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:66](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L66).
-
-Whether a rate reset came from an operator request or the reset schedule.
-
-```csharp
-public enum RateResetKind : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Manual = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:68](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L68) |  |
-| <code>Scheduled = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:69](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L69) |  |
-
-## RateTypeKind
-
-Qualified name: <code>Meridian.Contracts.DirectLending.RateTypeKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:55](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L55).
-
-```csharp
-public enum RateTypeKind : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Fixed = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:57](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L57) |  |
-| <code>Floating = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:58](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L58) |  |
-
-## RateUnitNormalizer
-
-Qualified name: <code>Meridian.Contracts.DirectLending.RateUnitNormalizer</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:68](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L68).
-
-Converts declared direct-lending rates to fractions using the declared unit only.
-
-```csharp
-public static class RateUnitNormalizer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const decimal MaxAbsoluteFraction = 10m;</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:74](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L74) | Absolute bound on any normalized rate. 10 (1,000%) is far outside any loan rate and catches a value declared in the wrong unit (for example 500 declared as Percent instead of bps). |
-| <code>public static RateNormalizationResult Normalize(DeclaredRate? rate, DirectLendingRateField field);</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:76](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L76) |  |
-| <code>public static decimal ToFraction(DeclaredRate rate, DirectLendingRateField field);</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:113](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L113) | Normalizes a value that must be valid; throws when it is not. |
-| <code>public static decimal ToBasisPoints(decimal fraction) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:120](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L120) | Expresses a fraction in basis points (the unit RateResetDto.SpreadBps records). |
-
-## RebuildCheckpointDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.RebuildCheckpointDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:482](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L482).
-
-```csharp
-public sealed record RebuildCheckpointDto(string ProjectionName, long LastProcessedPosition, Guid? LastEventId, DateTimeOffset? LastRebuiltAt, string Status, string? Details);
 ```

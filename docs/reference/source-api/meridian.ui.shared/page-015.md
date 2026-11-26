@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MultiAssetCoverageReadService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.MultiAssetCoverageReadService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs:24](../../../../src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs#L24).
+
+Builds multi-asset coverage summaries from declared instruments and supporting services.
+
+```csharp
+public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MultiAssetCoverageReadService(ISecurityMasterOperationalReadinessService readinessService, ProviderLedgerReconciliationService? providerLedgerReconciliation = null, FundAccountCloseReadinessService? closeReadiness = null, ISecurityMasterQueryService? securityMasterQuery = null);</code> | [src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs:31](../../../../src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs#L31) |  |
+| <code>public async Task&lt;MultiAssetCoverageSummaryDto&gt; GetCoverageAsync(string? fundAccountId, string? entity, string? assetClass, ReconciliationBreakQueueScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs:43](../../../../src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs#L43) |  |
+
 ## OmsIntegrationService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.OmsIntegrationService</code>. Kind: `class`.
@@ -684,6 +703,8 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;IReadOnlyLedger?&gt; ReadAsync(StrategyRunEntry run, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs:16](../../../../src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs#L16) |  |
+| <code>public IChartOfAccounts? GetPostingChart(IReadOnlyLedger ledger, DateTimeOffset? asOf = null);</code> | [src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs:119](../../../../src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs#L119) |  |
+| <code>public string? GetBalanceComparisonUnavailableReason(IReadOnlyLedger ledger) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs:145](../../../../src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs#L145) |  |
 
 ## PostgresManualJournalMutationRecoveryStore
 
@@ -957,27 +978,3 @@ Shared, typed snapshot consumed unchanged by browser endpoints and WPF view mode
 ```csharp
 public sealed record ProviderDataProjectionSnapshot(IReadOnlyList<ProviderNewsReadModel> News, IReadOnlyList<ProviderScannerReadModel> ScannerResults, IReadOnlyList<ProviderPnlReadModel> PnlStreams, IReadOnlyList<ProviderCalendarReadModel> Calendars, IReadOnlyList<ProviderMarketRuleReadModel> MarketRules, IReadOnlyList<ProviderInstrumentDiscoveryReadModel> Instruments);
 ```
-
-## ProviderDataReadModelService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderDataReadModelService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:43](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L43).
-
-Aggregates provider-neutral read interfaces. Rows are de-duplicated by the stable provenance key (ProviderDataProvenance.StableDeduplicationKey), so repeated live snapshots replace older evidence rather than making either workstation show duplicate vendor data.
-
-```csharp
-public sealed class ProviderDataReadModelService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderDataReadModelService(IEnumerable&lt;IProviderDataReadService&gt; providers, IEnumerable&lt;IProviderNewsReadService&gt;? newsProviders = null, IEnumerable&lt;IProviderCalendarReadService&gt;? calendarProviders = null, IEnumerable&lt;IProviderInstrumentDiscoveryReadService&gt;? instrumentProviders = null, IEnumerable&lt;IProviderDataAvailabilityReadService&gt;? availabilityProviders = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:51](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L51) |  |
-| <code>public IReadOnlyList&lt;ProviderDataRequestReadModel&gt; GetRequests() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:69](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L69) | Returns only providers whose contract is explicitly unscoped. Tenant/company-aware providers are excluded rather than downgraded to their compatibility read surface. |
-| <code>public IReadOnlyList&lt;ProviderDataRequestReadModel&gt; GetRequests(string tenantId, string companyId);</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L76) |  |
-| <code>public async IAsyncEnumerable&lt;ProviderDataProjectionSnapshot&gt; WatchAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:92](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L92) | Emits the initial projection and a refreshed snapshot after any optional provider stream changes. |
-| <code>public async IAsyncEnumerable&lt;ProviderDataProjectionSnapshot&gt; WatchAsync(string tenantId, string companyId, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:113](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L113) | Emits only projection updates owned by the requested tenant and company. Tenant-scoped providers are never consumed through their unscoped watch surface. |
-| <code>public ProviderDataProjectionSnapshot GetProjection() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:147](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L147) |  |
-| <code>public ProviderDataProjectionSnapshot GetProjection(string tenantId, string companyId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:150](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L150) |  |

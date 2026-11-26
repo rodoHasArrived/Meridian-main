@@ -1090,6 +1090,32 @@ describe("OperationsContinuityScreen", () => {
     expect(within(recordDetails).getByText(requirePresent(detail.accountingRecordSummary, "Accounting record summary").summary ?? "")).toBeVisible();
   });
 
+  it("opens the exact calendar and workflow account identities without issuing a decision", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+    const calendar = await screen.findByRole("table", { name: "Operations continuity close calendar" });
+    const calendarAccount = await within(calendar).findByText(fundAccountId, { exact: true });
+    expect(calendarAccount).not.toBeVisible();
+    const calendarDetails = calendarAccount.closest("details");
+    expect(calendarDetails).not.toBeNull();
+    if (!calendarDetails) throw new Error("Calendar identity disclosure was not rendered.");
+    await user.click(within(calendarDetails).getByText("System details", { exact: true }));
+    expect(calendarAccount).toBeVisible();
+    expect(within(calendarDetails).getByText(workflowId, { exact: true })).toBeVisible();
+
+    const workflows = await screen.findByRole("table", { name: "Private-capital close cockpit workflows" });
+    const workflowAccount = await within(workflows).findByText(fundAccountId, { exact: true });
+    expect(workflowAccount).not.toBeVisible();
+    const workflowDetails = workflowAccount.closest("details");
+    expect(workflowDetails).not.toBeNull();
+    if (!workflowDetails) throw new Error("Workflow identity disclosure was not rendered.");
+    await user.click(within(workflowDetails).getByText("System details", { exact: true }));
+    expect(workflowAccount).toBeVisible();
+    expect(within(workflowDetails).getByText(workflowId, { exact: true })).toBeVisible();
+    expect(assignOperationsContinuityBreakCase).not.toHaveBeenCalled();
+    expect(resolveOperationsContinuityBreakCase).not.toHaveBeenCalled();
+  });
+
   it("keeps Close tab and workflow selection shareable without dropping scope or anchors", async () => {
     const user = userEvent.setup();
     render(<MemoryRouter initialEntries={["/accounting/close?periodId=2026-05&fundAccountId=fund-1#manifest"]}>
@@ -1273,7 +1299,10 @@ describe("OperationsContinuityScreen", () => {
     expect(within(reviewedAutomationQueue).getByText("Cannot publish reports or release support packages.")).toBeInTheDocument();
     const operatorQueue = screen.getByRole("table", { name: "Financial Operations operator queue" });
     expect(within(operatorQueue).getByText("Cash Balance")).toBeInTheDocument();
-    expect(within(operatorQueue).getAllByText("approval-close-2026-05")).toHaveLength(2);
+    const approvalIdentifiers = within(operatorQueue).getAllByText("approval-close-2026-05");
+    expect(approvalIdentifiers).toHaveLength(2);
+    approvalIdentifiers.forEach((identifier) => expect(identifier).not.toBeVisible());
+    expect(within(operatorQueue).getByText("recon-break-42", { exact: true })).not.toBeVisible();
     expect(within(operatorQueue).getByText("Reconciliation check; Level 2 at May 8, 2026, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Reconciliation workstream")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("MBS factor reconciliation")).toBeInTheDocument();
@@ -2261,11 +2290,13 @@ describe("OperationsContinuityScreen fund narrowing", () => {
 
     const calendar = await screen.findByRole("table", { name: "Operations continuity close calendar" });
     await waitFor(() => expect(within(calendar).getByText("2026-05 close")).toBeInTheDocument());
+    expect(within(calendar).getByText(fundAccountId, { exact: true })).not.toBeVisible();
 
     rerender(tree({ structure, loading: false, entityId: null, fundId: "F-2", names: { fundId: "Fund Two" } }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(`Workflow ${workflowId} is outside the chosen fund or entity.`);
     await waitFor(() => expect(screen.queryByText("2026-05 close")).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryAllByText(fundAccountId, { exact: true })).toHaveLength(0));
   });
 
   it("lists every workflow, with an honest note, when the organization graph is unavailable", async () => {

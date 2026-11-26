@@ -1193,7 +1193,7 @@ public static class DirectLendingEndpoints
         .RequireRateLimiting(UiEndpoints.DirectLendingMutationRateLimitPolicy)
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        mutationGroup.MapPost("/{loanId:guid}/reconcile", async (Guid loanId, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/reconcile", async (Guid loanId, ReconcileLoanRequest? request, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -1207,7 +1207,9 @@ public static class DirectLendingEndpoints
 
             try
             {
-                var run = await service.ReconcileAsync(loanId, context.RequestAborted, metadata).ConfigureAwait(false);
+                var run = request is null
+                    ? await service.ReconcileAsync(loanId, context.RequestAborted, metadata).ConfigureAwait(false)
+                    : await service.ReconcileAsync(loanId, request, context.RequestAborted, metadata).ConfigureAwait(false);
                 return run is null ? Results.NotFound() : Results.Json(run, jsonOptions);
             }
             catch (DirectLendingCommandException ex)

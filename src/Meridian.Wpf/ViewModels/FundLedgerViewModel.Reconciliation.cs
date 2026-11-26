@@ -866,7 +866,7 @@ public sealed partial class FundLedgerViewModel
         ReconciliationDetailTotalChecksText = detail.TotalChecks.ToString("N0");
         ReconciliationDetailMatchedText = detail.TotalMatched.ToString("N0");
         ReconciliationDetailBreaksText = detail.TotalBreaks.ToString("N0");
-        ReconciliationDetailBreakAmountText = FormatCurrency(detail.BreakAmountTotal, baseCurrency);
+        ReconciliationDetailBreakAmountText = detail.BreakAmountDisplayOverride ?? "Unavailable";
         ReconciliationDetailSecurityIssuesText = detail.SecurityIssueCount.ToString("N0");
 
         SynchronizeCollection(ReconciliationSection.ExceptionRows, detail.ExceptionRows);

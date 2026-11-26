@@ -11,6 +11,7 @@ namespace Meridian.Storage.Export;
 [JsonSerializable(typeof(LedgerLineDimensionSet))]
 [JsonSerializable(typeof(LedgerEntryCurrency))]
 [JsonSerializable(typeof(LedgerJournalPostingExportMetadata))]
+[JsonSerializable(typeof(LedgerJournalEntryRecord[]))]
 internal partial class LedgerJournalExportJsonContext : JsonSerializerContext;
 
 // The journal and line envelopes have dedicated columns. Avoid repeating an entire multi-line

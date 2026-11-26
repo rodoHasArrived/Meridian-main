@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
+using System.Xml.Linq;
 using Apache.Arrow;
 using Apache.Arrow.Ipc;
 using Apache.Arrow.Types;
@@ -36,6 +37,369 @@ public class AnalysisExportServiceTests : IDisposable
             Directory.Delete(_testDataRoot, recursive: true);
         if (Directory.Exists(_testOutputDir))
             Directory.Delete(_testOutputDir, recursive: true);
+    }
+
+    [Theory]
+    [InlineData(ExportFormat.Csv)]
+    [InlineData(ExportFormat.Parquet)]
+    [InlineData(ExportFormat.Arrow)]
+    [InlineData(ExportFormat.Xlsx)]
+    public async Task ExportAsync_HistoricalBars_PreservesEveryBasisAfterLegacyRows(ExportFormat format)
+    {
+        var records = new[]
+        {
+            PriceBasisRecord(),
+            PriceBasisRecord(adjusted: false),
+            PriceBasisRecord("Raw", false),
+            PriceBasisRecord("SplitAdjusted", true),
+            PriceBasisRecord("DividendAdjusted", true),
+            PriceBasisRecord("FullyAdjusted", true)
+        };
+        await CreateTestJsonlFileAsync("SPY.HistoricalBar.jsonl", records);
+
+        var result = await _service.ExportAsync(PriceBasisExportRequest(format));
+
+        result.Success.Should().BeTrue(result.Error);
+        result.TotalRecords.Should().Be(6);
+        var bases = await ReadPriceBasisColumnAsync(result.Files.Single().Path, format);
+        bases.Should().Equal("Unknown", "Unknown", "Raw", "SplitAdjusted", "DividendAdjusted", "FullyAdjusted");
+    }
+
+    [Fact]
+    public async Task ExportAsync_CustomCsvPriceSelection_CannotRemoveBasisCompanions()
+    {
+        await CreateTestJsonlFileAsync("SPY.HistoricalBar.jsonl", [PriceBasisRecord("SplitAdjusted", true)]);
+        var request = PriceBasisExportRequest(ExportFormat.Csv);
+        request.CustomProfile!.IncludeFields = ["Close"];
+        request.CustomProfile.ExcludeFields = ["pricebasis", "ISADJUSTED"];
+
+        var result = await _service.ExportAsync(request);
+
+        result.Success.Should().BeTrue(result.Error);
+        var lines = await File.ReadAllLinesAsync(result.Files.Single().Path);
+        lines.Should().Equal("Close,PriceBasis,IsAdjusted", "50,SplitAdjusted,True");
+    }
+
+    [Theory]
+    [InlineData("FullyAdjusted", "FullyAdjusted")]
+    [InlineData(null, "Unknown")]
+    public async Task ExportAsync_CustomAdjustedCloseSelection_RetainsItsIndependentBasis(string? basis, string expected)
+    {
+        await CreateTestJsonlFileAsync("SPY.HistoricalBar.jsonl", [AdjustedPriceBasisRecord(basis)]);
+        var request = PriceBasisExportRequest(ExportFormat.Csv);
+        request.CustomProfile!.IncludeFields = ["AdjustedClose"];
+        request.CustomProfile.ExcludeFields = ["PriceBasis", "IsAdjusted", "AdjustedPriceBasis"];
+
+        var result = await _service.ExportAsync(request);
+
+        result.Success.Should().BeTrue(result.Error);
+        var lines = await File.ReadAllLinesAsync(result.Files.Single().Path);
+        lines.Should().Equal("AdjustedClose,AdjustedPriceBasis", $"25,{expected}");
+    }
+
+    [Theory]
+    [InlineData(ExportFormat.Csv)]
+    [InlineData(ExportFormat.Parquet)]
+    [InlineData(ExportFormat.Arrow)]
+    [InlineData(ExportFormat.Xlsx)]
+    public async Task ExportAsync_DifferentPrimaryAndOptionalBases_RemainIndependent(ExportFormat format)
+    {
+        await CreateTestJsonlFileAsync("SPY.HistoricalBar.jsonl", new[]
+        {
+            AdjustedPriceBasisRecord(),
+            AdjustedPriceBasisRecord("FullyAdjusted"),
+            AdjustedPriceBasisRecord("DividendAdjusted")
+        });
+
+        var result = await _service.ExportAsync(PriceBasisExportRequest(format));
+
+        result.Success.Should().BeTrue(result.Error);
+        var file = result.Files.Single().Path;
+        (await ReadPriceBasisColumnAsync(file, format)).Should().Equal("Raw", "Raw", "Raw");
+        (await ReadPriceBasisColumnAsync(file, format, "AdjustedPriceBasis"))
+            .Should().Equal("Unknown", "FullyAdjusted", "DividendAdjusted");
+    }
+
+    [Theory]
+    [InlineData("Unknown, Raw", false)]
+    [InlineData("1", false)]
+    [InlineData("Unknown, SplitAdjusted", true)]
+    [InlineData("2", true)]
+    public async Task ExportAsync_MalformedBasisName_RefusesCompoundOrNumericStrings(string basis, bool optionalSet)
+    {
+        var record = optionalSet ? AdjustedPriceBasisRecord(basis) : PriceBasisRecord(basis);
+        await CreateTestJsonlFileAsync("SPY.HistoricalBar.jsonl", [record]);
+
+        var result = await _service.ExportAsync(PriceBasisExportRequest(ExportFormat.Csv));
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("unsupported");
+        result.Files.Should().BeEmpty();
+        Directory.EnumerateFiles(_testOutputDir, "*", SearchOption.AllDirectories).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("PriceBasis", "SplitAdjusted")]
+    [InlineData("AdjustedPriceBasis", "Raw")]
+    [InlineData("IsAdjusted", true)]
+    public async Task ExportAsync_DuplicateCaseVariantMetadata_FailsInsteadOfChoosingOneDeclaration(string duplicateKey, object value)
+    {
+        var record = AdjustedPriceBasisRecord("FullyAdjusted");
+        record[duplicateKey] = value;
+        await CreateTestJsonlFileAsync("SPY.HistoricalBar.jsonl", [record]);
+
+        var result = await _service.ExportAsync(PriceBasisExportRequest(ExportFormat.Csv));
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("duplicate");
+        result.Files.Should().BeEmpty();
+        Directory.EnumerateFiles(_testOutputDir, "*", SearchOption.AllDirectories).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(ExportFormat.Csv)]
+    [InlineData(ExportFormat.Parquet)]
+    [InlineData(ExportFormat.Arrow)]
+    [InlineData(ExportFormat.Xlsx)]
+    public async Task ExportAsync_BufferedSchemaMissingLaterHistoricalPrices_FailsInsteadOfDroppingPrices(ExportFormat format)
+    {
+        await CreateTestJsonlFileAsync("SPY.HistoricalBar.jsonl", new[]
+        {
+            new Dictionary<string, object?> { ["Symbol"] = "SPY", ["Price"] = 50m, ["PriceBasis"] = "Raw" },
+            PriceBasisRecord("Raw", false)
+        });
+        var request = PriceBasisExportRequest(format);
+        if (format == ExportFormat.Csv)
+            request.Features = new FeatureSettings { IncludeReturns = true, ReturnHorizons = [1], UseLogReturns = false };
+
+        var result = await _service.ExportAsync(request);
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("Historical price columns cannot be omitted");
+        result.Files.Should().BeEmpty();
+        Directory.EnumerateFiles(_testOutputDir, "*", SearchOption.AllDirectories).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("Raw", "SplitAdjusted")]
+    [InlineData("Raw", "Unknown")]
+    [InlineData(null, "Raw")]
+    public async Task ExportAsync_HistoricalFeatures_RejectsMixedOrUnknownBases(string? firstBasis, string secondBasis)
+    {
+        var first = PriceBasisRecord(firstBasis);
+        first["close"] = 100m;
+        first["high"] = 101m;
+        var second = PriceBasisRecord(secondBasis);
+        await CreateTestJsonlFileAsync("SPY.HistoricalBar.jsonl", [first, second]);
+        var request = PriceBasisExportRequest(ExportFormat.Csv);
+        request.Features = new FeatureSettings { IncludeReturns = true, ReturnHorizons = [1], UseLogReturns = false };
+
+        var result = await _service.ExportAsync(request);
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("one explicit known price basis");
+        result.Files.Should().BeEmpty();
+        Directory.EnumerateFiles(_testOutputDir, "*.csv").Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("Raw")]
+    [InlineData("SplitAdjusted")]
+    public async Task ExportAsync_HistoricalFeatures_KeepsReturnsWithinOneKnownBasis(string basis)
+    {
+        var first = PriceBasisRecord(basis);
+        var second = PriceBasisRecord(basis);
+        second["high"] = 56m;
+        second["close"] = 55m;
+        await CreateTestJsonlFileAsync("SPY.HistoricalBar.jsonl", [first, second]);
+        var request = PriceBasisExportRequest(ExportFormat.Csv);
+        request.Features = new FeatureSettings { IncludeReturns = true, ReturnHorizons = [1], UseLogReturns = false };
+
+        var result = await _service.ExportAsync(request);
+
+        result.Success.Should().BeTrue(result.Error);
+        var lines = await File.ReadAllLinesAsync(result.Files.Single().Path);
+        var returnColumn = System.Array.IndexOf(lines[0].Split(','), "return_1");
+        returnColumn.Should().BeGreaterThanOrEqualTo(0);
+        lines[2].Split(',')[returnColumn].Should().Be("0.1");
+        (await ReadPriceBasisColumnAsync(result.Files.Single().Path, ExportFormat.Csv)).Should().Equal(basis, basis);
+    }
+
+    [Fact]
+    public async Task ExportAsync_RunMatHistoricalBars_AppendsBasisWithoutMovingNumericColumns()
+    {
+        await CreateTestJsonlFileAsync("SPY.HistoricalBar.jsonl", [PriceBasisRecord("DividendAdjusted", true)]);
+        var request = PriceBasisExportRequest(ExportFormat.Csv);
+        request.CustomProfile = ExportProfile.RunMat;
+        request.CustomProfile.IncludeLoaderScript = false;
+        request.CustomProfile.IncludeDataDictionary = false;
+
+        var result = await _service.ExportAsync(request);
+
+        result.Success.Should().BeTrue(result.Error);
+        var lines = await File.ReadAllLinesAsync(result.Files.Single().Path);
+        lines[0].Should().Be("Timestamp,Price,Size,BidPrice,BidSize,AskPrice,AskSize,Open,High,Low,Close,Volume,PriceBasis,IsAdjusted");
+        var values = lines[1].Split(',');
+        values[10].Should().Be("50");
+        values[12].Should().Be("DividendAdjusted");
+        values[13].Should().Be("True");
+    }
+
+    [Fact]
+    public async Task ExportAsync_CsvHistoricalPayload_RetainsBasisAlongsidePayloadProjection()
+    {
+        await CreateTestJsonlFileAsync("SPY.HistoricalBar.jsonl",
+            [new { Symbol = "SPY", Type = "HistoricalBar", Payload = PriceBasisRecord("FullyAdjusted", true) }]);
+        var request = PriceBasisExportRequest(ExportFormat.Csv);
+        request.CustomProfile!.IncludeFields = ["Payload"];
+        request.CustomProfile.ExcludeFields = ["PriceBasis", "IsAdjusted"];
+
+        var result = await _service.ExportAsync(request);
+
+        result.Success.Should().BeTrue(result.Error);
+        var lines = await File.ReadAllLinesAsync(result.Files.Single().Path);
+        lines[0].Should().Be("Payload,PriceBasis,IsAdjusted");
+        lines[1].Should().EndWith(",FullyAdjusted,True");
+    }
+
+    [Fact]
+    public async Task ExportAsync_CsvAdjustedHistoricalPayload_RetainsBothIndependentBases()
+    {
+        await CreateTestJsonlFileAsync("SPY.HistoricalBar.jsonl",
+            [new { Symbol = "SPY", Type = "HistoricalBar", Payload = AdjustedPriceBasisRecord("FullyAdjusted") }]);
+        var request = PriceBasisExportRequest(ExportFormat.Csv);
+        request.CustomProfile!.IncludeFields = ["Payload"];
+        request.CustomProfile.ExcludeFields = ["PriceBasis", "IsAdjusted", "AdjustedPriceBasis"];
+
+        var result = await _service.ExportAsync(request);
+
+        result.Success.Should().BeTrue(result.Error);
+        var lines = await File.ReadAllLinesAsync(result.Files.Single().Path);
+        lines[0].Should().Be("Payload,PriceBasis,IsAdjusted,AdjustedPriceBasis");
+        lines[1].Should().EndWith(",Raw,False,FullyAdjusted");
+    }
+
+    [Theory]
+    [InlineData(ExportFormat.Csv)]
+    [InlineData(ExportFormat.Parquet)]
+    [InlineData(ExportFormat.Arrow)]
+    [InlineData(ExportFormat.Xlsx)]
+    public async Task ExportAsync_ContradictoryHistoricalBasis_FailsWithoutArtifact(ExportFormat format)
+    {
+        await CreateTestJsonlFileAsync("SPY.HistoricalBar.jsonl", [PriceBasisRecord("Raw", true)]);
+
+        var result = await _service.ExportAsync(PriceBasisExportRequest(format));
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("contradicts");
+        result.Files.Should().BeEmpty();
+        Directory.EnumerateFiles(_testOutputDir, "*", SearchOption.AllDirectories).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ExportAsync_StreamingCsvWithLaterHistoricalSchema_FailsInsteadOfDroppingBasis()
+    {
+        await CreateTestJsonlFileAsync("SPY.HistoricalBar.jsonl", new[]
+        {
+            new Dictionary<string, object?> { ["Symbol"] = "SPY", ["Price"] = 50m },
+            PriceBasisRecord("SplitAdjusted", true)
+        });
+
+        var result = await _service.ExportAsync(PriceBasisExportRequest(ExportFormat.Csv));
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("require PriceBasis and IsAdjusted");
+        Directory.EnumerateFiles(_testOutputDir, "*.csv").Should().BeEmpty();
+    }
+
+    private ExportRequest PriceBasisExportRequest(ExportFormat format) => new()
+    {
+        CustomProfile = CreateFormatProfile(format, "historical-price-basis"),
+        OutputDirectory = _testOutputDir,
+        EventTypes = ["HistoricalBar"],
+        Symbols = ["SPY"],
+        StartDate = new DateTime(2026, 1, 1),
+        EndDate = new DateTime(2026, 1, 5),
+        ValidateBeforeExport = false,
+        IncludeManifest = false
+    };
+
+    private static Dictionary<string, object?> PriceBasisRecord(string? basis = null, bool? adjusted = null)
+    {
+        var record = new Dictionary<string, object?>
+        {
+            ["symbol"] = "SPY",
+            ["sessionDate"] = "2026-01-03",
+            ["open"] = 50m,
+            ["high"] = 51m,
+            ["low"] = 49m,
+            ["close"] = 50m,
+            ["volume"] = 1_000
+        };
+        if (basis is not null)
+            record["priceBasis"] = basis;
+        if (adjusted.HasValue)
+            record["isAdjusted"] = adjusted;
+        return record;
+    }
+
+    private static Dictionary<string, object?> AdjustedPriceBasisRecord(string? basis = null)
+    {
+        var record = PriceBasisRecord("Raw", false);
+        record["adjustedOpen"] = 25m;
+        record["adjustedHigh"] = 25.5m;
+        record["adjustedLow"] = 24.5m;
+        record["adjustedClose"] = 25m;
+        if (basis is not null)
+            record["adjustedPriceBasis"] = basis;
+        return record;
+    }
+
+    private static async Task<string[]> ReadPriceBasisColumnAsync(string path, ExportFormat format, string columnName = "PriceBasis")
+    {
+        if (format == ExportFormat.Csv)
+        {
+            var lines = await File.ReadAllLinesAsync(path);
+            var column = System.Array.FindIndex(lines[0].Split(','), field => field.Equals(columnName, StringComparison.OrdinalIgnoreCase));
+            column.Should().BeGreaterThanOrEqualTo(0);
+            return lines.Skip(1).Select(line => line.Split(',')[column]).ToArray();
+        }
+
+        if (format == ExportFormat.Parquet)
+        {
+            await using var stream = File.OpenRead(path);
+            using var reader = await ParquetReader.CreateAsync(stream);
+            var field = reader.Schema.GetDataFields().Single(item => item.Name.Equals(columnName, StringComparison.OrdinalIgnoreCase));
+            using var group = reader.OpenRowGroupReader(0);
+            var column = await group.ReadColumnAsync(field);
+            return (string[])column.Data;
+        }
+
+        if (format == ExportFormat.Arrow)
+        {
+            await using var stream = File.OpenRead(path);
+            using var reader = new ArrowFileReader(stream);
+            using var batch = await reader.ReadRecordBatchAsync(0);
+            var field = batch.Schema.FieldsList.Single(item => item.Name.Equals(columnName, StringComparison.OrdinalIgnoreCase));
+            var column = (StringArray)batch.Column(field.Name);
+            return Enumerable.Range(0, batch.Length).Select(index => column.GetString(index)!).ToArray();
+        }
+
+        using var archive = ZipFile.OpenRead(path);
+        using var stringsStream = archive.GetEntry("xl/sharedStrings.xml")!.Open();
+        using var sheetStream = archive.GetEntry("xl/worksheets/sheet1.xml")!.Open();
+        var stringsDocument = XDocument.Load(stringsStream);
+        XNamespace ns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+        var strings = stringsDocument.Descendants(ns + "si").Select(item => item.Element(ns + "t")!.Value).ToArray();
+        var rows = XDocument.Load(sheetStream).Descendants(ns + "row").ToArray();
+        var header = rows[0].Elements(ns + "c").Single(cell =>
+            strings[int.Parse(cell.Element(ns + "v")!.Value)].Equals(columnName, StringComparison.OrdinalIgnoreCase));
+        var letter = new string(header.Attribute("r")!.Value.TakeWhile(char.IsLetter).ToArray());
+        return rows.Skip(1).Select(row =>
+        {
+            var cell = row.Elements(ns + "c").Single(item => item.Attribute("r")!.Value == letter + row.Attribute("r")!.Value);
+            return strings[int.Parse(cell.Element(ns + "v")!.Value)];
+        }).ToArray();
     }
 
     [Fact]

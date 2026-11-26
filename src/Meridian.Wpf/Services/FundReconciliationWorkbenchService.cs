@@ -365,7 +365,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             StatusIcon: GetQueueStatusIcon(item.Status),
             CategoryLabel: Humanize(item.Category),
             Variance: item.Variance,
-            VarianceText: FormatCurrency(item.Variance, "USD"),
+            VarianceText: FormatQueueVariance(item),
             Reason: item.Reason,
             AssignedToLabel: string.IsNullOrWhiteSpace(item.AssignedTo) ? "Unassigned" : item.AssignedTo,
             DetectedAt: item.DetectedAt,
@@ -403,6 +403,24 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
              LastActivityText: item.LastActivityAt.HasValue ? FormatTimestamp(item.LastActivityAt.Value) : FormatTimestamp(item.LastUpdatedAt),
              SignOffChecklist: BuildSignOffChecklist(item))
         { Lineage = item.Lineage };
+    }
+
+    internal static string FormatMonetaryTotal(decimal? amount, string? currency, string? unavailableReason)
+    {
+        if (unavailableReason is not null || !amount.HasValue) return "Unavailable";
+        if (amount == 0m && currency is null) return "No monetary breaks";
+        return string.IsNullOrWhiteSpace(currency) ? "Unavailable" : FormatCurrency(amount, currency);
+    }
+
+    internal static string FormatQueueVariance(ReconciliationBreakQueueItem item)
+    {
+        if (item.Measures is not { Count: > 0 }) return FormatCurrency(item.Variance, "USD");
+        if (item.Measures.Count > 1) return "Multiple measures";
+        var measure = item.Measures[0];
+        if (measure.UnavailableReason is not null || measure.Variance is null) return "Unavailable";
+        var unit = string.IsNullOrWhiteSpace(measure.Unit) || measure.Unit == "currency"
+            ? "Currency unavailable" : measure.Unit;
+        return $"{measure.Variance.Value.ToString("G29", System.Globalization.CultureInfo.InvariantCulture)} {unit}";
     }
 
     private static string JoinOrDefault(IReadOnlyList<string>? values, string fallback)
@@ -488,7 +506,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             TotalMatched: item.TotalMatched,
             TotalBreaks: item.TotalBreaks,
             BreakAmountTotal: item.BreakAmountTotal,
-            BreakAmountText: FormatCurrency(item.BreakAmountTotal, "USD"),
+            BreakAmountText: FormatMonetaryTotal(item.ComparableBreakAmountTotal, item.BreakAmountCurrency, item.BreakAmountUnavailableReason),
             RequestedAt: item.RequestedAt,
             RequestedAtText: FormatTimestamp(item.RequestedAt),
             CompletedAt: item.CompletedAt,
@@ -512,35 +530,11 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             ?? detail.Summary.RunId;
         var lastUpdated = detail.Summary.CreatedAt;
         var exceptionRows = detail.Breaks
-            .Select(breakItem => new FundReconciliationCheckDetailRow(
-                RowKey: breakItem.CheckId,
-                CheckLabel: breakItem.Label,
-                CategoryLabel: Humanize(breakItem.Category),
-                StatusLabel: Humanize(breakItem.Status),
-                StatusIcon: GetBreakStatusIcon(breakItem.Status),
-                SourceLabel: breakItem.MissingSource,
-                ExpectedAmountText: FormatCurrency(breakItem.ExpectedAmount, baseCurrency),
-                ActualAmountText: FormatCurrency(breakItem.ActualAmount, baseCurrency),
-                VarianceText: FormatCurrency(Math.Abs(breakItem.Variance), baseCurrency),
-                Reason: breakItem.Reason,
-                ExpectedAsOfText: FormatTimestamp(breakItem.ExpectedAsOf),
-                ActualAsOfText: FormatTimestamp(breakItem.ActualAsOf),
-                IsHighlighted: focusBreak?.BreakId.EndsWith($":{breakItem.CheckId}", StringComparison.OrdinalIgnoreCase) == true))
+            .SelectMany(breakItem => MapStrategyBreakMeasures(breakItem, baseCurrency,
+                focusBreak?.BreakId.EndsWith($":{breakItem.CheckId}", StringComparison.OrdinalIgnoreCase) == true))
             .ToArray();
         var allChecks = detail.Matches
-            .Select(match => new FundReconciliationCheckDetailRow(
-                RowKey: $"match:{match.CheckId}",
-                CheckLabel: match.Label,
-                CategoryLabel: "Matched",
-                StatusLabel: "Matched",
-                StatusIcon: "\u2713",
-                SourceLabel: $"{match.ExpectedSource} \u2192 {match.ActualSource}",
-                ExpectedAmountText: FormatCurrency(match.ExpectedAmount, baseCurrency),
-                ActualAmountText: FormatCurrency(match.ActualAmount, baseCurrency),
-                VarianceText: FormatCurrency(Math.Abs(match.Variance), baseCurrency),
-                Reason: "Matched",
-                ExpectedAsOfText: FormatTimestamp(match.ExpectedAsOf),
-                ActualAsOfText: FormatTimestamp(match.ActualAsOf)))
+            .SelectMany(match => MapStrategyMatchMeasures(match, baseCurrency))
             .Concat(exceptionRows)
             .ToArray();
 
@@ -600,6 +594,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
 
         auditRows.Sort(static (left, right) => right.Timestamp.CompareTo(left.Timestamp));
 
+        var monetaryTotal = ReconciliationMonetaryTotal.FromBreaks(detail.Breaks);
         return new FundReconciliationDetailModel(
             SourceType: FundReconciliationSourceType.StrategyRun,
             DetailKey: runOverride?.RowKey ?? $"strategy:{detail.Summary.RunId}",
@@ -618,14 +613,15 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             TotalChecks: detail.Summary.MatchCount + detail.Summary.BreakCount,
             TotalMatched: detail.Summary.MatchCount,
             TotalBreaks: detail.Summary.BreakCount,
-            BreakAmountTotal: detail.Breaks.Sum(item => Math.Abs(item.Variance)),
+            BreakAmountTotal: monetaryTotal.Amount ?? 0m,
             SecurityIssueCount: detail.Summary.SecurityIssueCount,
             EmptyExceptionsText: "No open strategy-run exceptions remain for this reconciliation.",
             EmptySecurityCoverageText: "Security coverage is fully aligned for this strategy-run reconciliation.",
             ExceptionRows: exceptionRows,
             AllCheckRows: allChecks,
             SecurityCoverageRows: securityCoverage,
-            AuditRows: auditRows);
+            AuditRows: auditRows)
+        { BreakAmountDisplayOverride = FormatMonetaryTotal(monetaryTotal.Amount, monetaryTotal.Currency, monetaryTotal.UnavailableReason) };
     }
 
     private static FundReconciliationDetailModel BuildAccountDetail(
@@ -682,7 +678,68 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             ExceptionRows: exceptionRows,
             AllCheckRows: allRows,
             SecurityCoverageRows: [],
-            AuditRows: auditRows);
+            AuditRows: auditRows)
+        { BreakAmountDisplayOverride = runRow.BreakAmountText };
+    }
+
+    internal static IReadOnlyList<FundReconciliationCheckDetailRow> MapStrategyBreakMeasures(
+        ReconciliationBreakDto item, string baseCurrency, bool highlighted = false) => MapStrategyMeasures(new(
+            RowKey: item.CheckId,
+            CheckLabel: item.Label,
+            CategoryLabel: Humanize(item.Category),
+            StatusLabel: Humanize(item.Status),
+            StatusIcon: GetBreakStatusIcon(item.Status),
+            SourceLabel: item.MissingSource,
+            ExpectedAmountText: FormatCurrency(item.ExpectedAmount, baseCurrency),
+            ActualAmountText: FormatCurrency(item.ActualAmount, baseCurrency),
+            VarianceText: FormatCurrency(Math.Abs(item.Variance), baseCurrency),
+            Reason: item.Reason,
+            ExpectedAsOfText: FormatTimestamp(item.ExpectedAsOf),
+            ActualAsOfText: FormatTimestamp(item.ActualAsOf),
+            IsHighlighted: highlighted), item.Measures);
+
+    internal static IReadOnlyList<FundReconciliationCheckDetailRow> MapStrategyMatchMeasures(
+        ReconciliationMatchDto item, string baseCurrency) => MapStrategyMeasures(new(
+            RowKey: $"match:{item.CheckId}",
+            CheckLabel: item.Label,
+            CategoryLabel: "Matched",
+            StatusLabel: "Matched",
+            StatusIcon: "\u2713",
+            SourceLabel: $"{item.ExpectedSource} \u2192 {item.ActualSource}",
+            ExpectedAmountText: FormatCurrency(item.ExpectedAmount, baseCurrency),
+            ActualAmountText: FormatCurrency(item.ActualAmount, baseCurrency),
+            VarianceText: FormatCurrency(Math.Abs(item.Variance), baseCurrency),
+            Reason: "Matched",
+            ExpectedAsOfText: FormatTimestamp(item.ExpectedAsOf),
+            ActualAsOfText: FormatTimestamp(item.ActualAsOf)), item.Measures);
+
+    private static IReadOnlyList<FundReconciliationCheckDetailRow> MapStrategyMeasures(
+        FundReconciliationCheckDetailRow row, IReadOnlyList<ReconciliationBreakMeasureDto>? measures)
+    {
+        if (measures is not { Count: > 0 }) return [row];
+        return measures.Select(measure =>
+        {
+            var label = measure.Kind switch
+            {
+                ReconciliationBreakMeasureKindDto.Quantity => "Quantity",
+                ReconciliationBreakMeasureKindDto.CostBasis => "Cost basis",
+                _ => "Value"
+            };
+            string FormatMeasure(decimal? value) => value.HasValue
+                ? $"{value.Value.ToString("G29", System.Globalization.CultureInfo.InvariantCulture)} {measure.Unit}".TrimEnd()
+                : "Unavailable";
+            return row with
+            {
+                RowKey = $"{row.RowKey}:{measure.Kind}",
+                CheckLabel = $"{row.CheckLabel} · {label}",
+                ExpectedAmountText = FormatMeasure(measure.Expected),
+                ActualAmountText = FormatMeasure(measure.Actual),
+                VarianceText = FormatMeasure(measure.Variance),
+                ToleranceText = FormatMeasure(measure.Tolerance),
+                Reason = string.IsNullOrWhiteSpace(measure.UnavailableReason)
+                    ? row.Reason : $"{row.Reason} {measure.UnavailableReason}"
+            };
+        }).ToArray();
     }
 
     private static FundReconciliationCheckDetailRow MapAccountResult(AccountReconciliationResultDto result, string baseCurrency)

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PartnershipInvestorAllocation
+
+Qualified name: <code>Meridian.Ledger.PartnershipInvestorAllocation</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/PartnershipInvestorAllocation.cs:6](../../../../src/Meridian.Ledger/PartnershipInvestorAllocation.cs#L6).
+
+Investor-level profit/loss allocation resulting from a partnership accounting projection.
+
+```csharp
+public sealed record PartnershipInvestorAllocation(PartnershipInvestor Investor, decimal AllocatedProfitOrLoss, LedgerAccount CapitalAccount);
+```
+
 ## PartnershipInvestorAllocationInput
 
 Qualified name: <code>Meridian.Ledger.PartnershipInvestorAllocationInput</code>. Kind: `record`.
@@ -859,6 +871,39 @@ Immutable audit record of a locked accounting period being reopened, capturing t
 public sealed record ReopenedAccountingPeriod(LockedAccountingPeriod Period, DateTimeOffset ReopenedAtUtc, string ReopenedBy, PeriodReopenEvidence Evidence);
 ```
 
+## SecurityTradePositionEffect
+
+Qualified name: <code>Meridian.Ledger.SecurityTradePositionEffect</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:7](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L7).
+
+Native-unit changes and exact monetary basis changes from the existing trade projector.
+
+```csharp
+public sealed record SecurityTradePositionEffect(decimal LongQuantityChange, decimal ShortQuantityChange, decimal LongBasisChange, decimal ShortBasisChange, SecurityLotUnitKind QuantityUnit, decimal Multiplier);
+```
+
+## SecurityTradePositionEvidence
+
+Qualified name: <code>Meridian.Ledger.SecurityTradePositionEvidence</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:11](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L11).
+
+Retains position facts alongside trade journals; fees and financing do not invent units.
+
+```csharp
+public static class SecurityTradePositionEvidence
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string VersionTag = &quot;positionEvidence.version&quot;;</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:13](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L13) |  |
+| <code>public const string ReversalSignTag = &quot;positionEvidence.reversalSign&quot;;</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:14](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L14) |  |
+| <code>public static JournalEntryMetadata WithPostings(JournalEntryMetadata metadata, IReadOnlyList&lt;SecurityTradePosting&gt; postings, SecurityLotUnitKind unit, decimal multiplier);</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:17](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L17) |  |
+| <code>public static bool TryRead(JournalEntry journal, out SecurityTradePositionEffect? effect, out string? failure, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:67](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L67) |  |
+
 ## SecurityTradePosting
 
 Qualified name: <code>Meridian.Ledger.SecurityTradePosting</code>. Kind: `record`.
@@ -897,50 +942,3 @@ Enum declarations:
 | <code>CloseLong</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:7](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L7) |  |
 | <code>OpenShort</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:8](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L8) |  |
 | <code>CoverShort</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:9](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L9) |  |
-
-## SecurityTradePostingProjector
-
-Qualified name: <code>Meridian.Ledger.SecurityTradePostingProjector</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/SecurityTradePostingProjector.cs:7](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L7).
-
-Shared double-entry projection for simulated, paper, and durable execution fills. Callers supply retained lot economics; this service does not select lots or infer position direction.
-
-```csharp
-public static class SecurityTradePostingProjector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; Project(SecurityTradePosting posting, string symbol, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:9](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L9) |  |
-| <code>public static void Validate(SecurityTradePosting posting);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:84](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L84) | Validates exact trade facts without resolving or mutating any accounts. |
-| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; Commission(decimal amount, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:110](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L110) |  |
-| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; VariationMargin(string symbol, decimal amount, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:127](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L127) |  |
-| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; ShortCollateral(decimal amount, bool release, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:143](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L143) |  |
-| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; MarginFinancing(decimal borrowed, decimal repaid, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:162](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L162) | Projects the financing cash movement separately from the security trade for statement attribution. |
-
-## ShadowNavOverrideDraft
-
-Qualified name: <code>Meridian.Ledger.ShadowNavOverrideDraft</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/ShadowNavOverrideDraft.cs:6](../../../../src/Meridian.Ledger/ShadowNavOverrideDraft.cs#L6).
-
-Governance handoff record for a material shadow-NAV variance that needs review.
-
-```csharp
-public sealed record ShadowNavOverrideDraft(Guid OverrideDraftId, DateTimeOffset CreatedAtUtc, string CreatedBy, string Reason, string PolicyId, string? ReviewerGroup, LedgerBookKey ActualLedgerKey, LedgerBookKey ShadowLedgerKey, DateTimeOffset AsOf, decimal ActualNav, decimal ShadowNav, decimal NavVariance, IReadOnlyList<ShadowNavValidationFinding> Findings);
-```
-
-## ShadowNavValidationFinding
-
-Qualified name: <code>Meridian.Ledger.ShadowNavValidationFinding</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/ShadowNavValidationFinding.cs:6](../../../../src/Meridian.Ledger/ShadowNavValidationFinding.cs#L6).
-
-Account-level variance between the actual ledger and an independent shadow-NAV ledger.
-
-```csharp
-public sealed record ShadowNavValidationFinding(LedgerAccount Account, decimal ActualBalance, decimal ShadowBalance, decimal Variance, decimal AbsoluteVariance, bool RequiresOverride);
-```

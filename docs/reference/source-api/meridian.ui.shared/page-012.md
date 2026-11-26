@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FilePrivateCapitalLifecycleSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FilePrivateCapitalLifecycleSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:26](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L26).
+
+Reads a versioned retained source cut under the workstation data directory. Provisioners replace the document atomically and retain prior snapshot revisions. No writes or approval authority.
+
+```csharp
+public sealed class FilePrivateCapitalLifecycleSource(string dataDirectory) : IPrivateCapitalLifecycleSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PrivateCapitalLifecycleRead&gt; ReadAsync(string familyOfficeId, IReadOnlySet&lt;string&gt; entityIds, DateOnly asOf, DateTimeOffset knownAt, CancellationToken ct = default, Func&lt;DateOnly, CancellationToken, Task&lt;IReadOnlySet&lt;string&gt;&gt;&gt;? historicalEntityScope = null);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:31](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L31) |  |
+| <code>public static PrivateCapitalLifecycleRead Project(PrivateCapitalLifecycleDocumentDto document, string familyOfficeId, IReadOnlySet&lt;string&gt; entityIds, DateOnly asOf, DateTimeOffset knownAt, IReadOnlyDictionary&lt;DateOnly, IReadOnlySet&lt;string&gt;&gt;? historicalEntityScopes = null);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:68](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L68) |  |
+
 ## FileReconciliationSlaCalendarResolver
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FileReconciliationSlaCalendarResolver</code>. Kind: `class`.
@@ -1136,21 +1155,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;BookReceiptSourceSnapshotDto&gt; LoadAsync(BookReceiptQueryDto query, IReadOnlyList&lt;BookReceiptExpectationDto&gt; expectations, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs:22](../../../../src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs#L22) |  |
-
-## IBookReceiptRunStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IBookReceiptRunStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:10](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L10).
-
-```csharp
-public interface IBookReceiptRunStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ValueTask&lt;IAsyncDisposable&gt; AcquireAsync(BookReceiptScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:12](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L12) |  |
-| <code>Task&lt;IReadOnlyList&lt;BookReceiptRunDto&gt;&gt; ReadAsync(BookReceiptScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:13](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L13) |  |
-| <code>Task SaveAsync(BookReceiptRunDto run, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:14](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L14) |  |

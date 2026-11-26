@@ -58,5 +58,6 @@ Keep smoke stubs deterministic and clearly separated from production provider ad
 
 ## Related docs
 
-- `docs/providers/`
-- `docs/status/provider-validation-matrix.md`
+- `docs/development/provider-implementation.md`
+- `docs/reference/provider-capability-matrix.md`
+- `docs/reference/provider-validation-matrix.md`

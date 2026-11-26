@@ -13,6 +13,7 @@ import type {
   EvidenceVaultDocumentEntry,
   StrategyDesignDocument,
   StrategyDesignDraftSummary,
+  StrategyDesignRunBacktestRequest,
   StrategyDesignRunBacktestResponse
 } from "@/types";
 import type {
@@ -52,6 +53,28 @@ function fromStrategyDesignDocument(document: StrategyDesignDocument): StrategyB
   };
 }
 
+type DesignerCommand = "saving" | "opening" | "running";
+
+interface DesignerCommandToken {
+  id: number;
+  kind: DesignerCommand;
+  runEpoch: number | null;
+}
+
+interface DesignerRunReceipt {
+  epoch: number;
+  outcome: StrategyDesignRunBacktestResponse;
+}
+
+function hasConflictingResponseAccount(outcome: StrategyDesignRunBacktestResponse, submittedAccount: string): boolean {
+  // The current response contract has no account field. An absent claim stays unknown;
+  // check only this explicit claim if a response supplies it, never an inferred alias.
+  const retained = (outcome as StrategyDesignRunBacktestResponse & { fundAccountId?: unknown }).fundAccountId;
+  if (retained == null) return false;
+  return typeof retained !== "string"
+    || normalizeFundAccountGuid(retained)?.toLowerCase() !== submittedAccount.toLowerCase();
+}
+
 export function useHostedDesigner(
   document: StrategyBuilderDocument,
   applyDocument: (value: StrategyBuilderDocument) => void,
@@ -65,16 +88,43 @@ export function useHostedDesigner(
   const [criteria, setCriteria] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [busy, setBusy] = useState<"saving" | "opening" | "running" | null>(null);
-  const pending = useRef(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [run, setRun] = useState<StrategyDesignRunBacktestResponse | null>(null);
+  const [busy, setBusy] = useState<DesignerCommand | null>(null);
+  const pending = useRef<DesignerCommandToken | null>(null);
+  const commandSequence = useRef(0);
+  const mounted = useRef(true);
+  const [messageValue, setMessage] = useState("");
+  const [errorValue, setError] = useState("");
+  const [statusEpoch, setStatusEpoch] = useState<number | null>(null);
+  const [runReceipt, setRunReceipt] = useState<DesignerRunReceipt | null>(null);
   const priceFilter = document.cells.find(cell => cell.cellId === "price-filter");
   const fixedShares = document.cells.find(cell => cell.cellId === "fixed-shares");
   const supportedTemplate = Boolean(priceFilter && fixedShares);
+  const request: StrategyDesignRunBacktestRequest = {
+    document: toStrategyDesignDocument(document),
+    fundAccountId: account,
+    from,
+    to,
+    operatorAcceptanceCriteria: [criteria.trim()],
+    retainedEvidenceReferences: [vaultReference.trim()],
+    accountingRecordReferences: [],
+    approvalReferences: [],
+    paperValidationReferences: [],
+    governedReportReferences: []
+  };
+  const requestJson = JSON.stringify(request);
+  const scopeKey = JSON.stringify([requestJson, Boolean(document.dirty)]);
+  const scope = useRef({ key: scopeKey, epoch: 0 });
+  // Withhold earlier proof in this render. A monotonic epoch also rejects A → B → A,
+  // without driving state updates or replacing the operator's draft on a scope change.
+  if (scope.current.key !== scopeKey) scope.current = { key: scopeKey, epoch: scope.current.epoch + 1 };
+  const epoch = scope.current.epoch;
+  const run = runReceipt?.epoch === epoch ? runReceipt.outcome : null;
+  const message = statusEpoch === null || statusEpoch === epoch ? messageValue : "";
+  const error = statusEpoch === null || statusEpoch === epoch ? errorValue : "";
+  const previousRunPending = pending.current?.kind === "running" && pending.current.runEpoch !== epoch;
 
   useEffect(() => {
+    mounted.current = true;
     const controller = new AbortController();
     const options = { signal: controller.signal };
     void getStrategyDesignerDrafts(options).then(value => {
@@ -87,10 +137,11 @@ export function useHostedDesigner(
     void listEvidenceVaultDocuments({ maxResults: 25 }, options).then(value => {
       if (!controller.signal.aborted) setEvidence(value);
     }).catch(() => undefined);
-    return () => controller.abort();
+    return () => { mounted.current = false; controller.abort(); };
   }, []);
 
-  const blocker = !supportedTemplate ? "Load the equity price filter template for this backtest."
+  const blocker = previousRunPending ? "A backtest from a previous scope is still running. Wait for it to finish before starting another."
+    : !supportedTemplate ? "Load the equity price filter template for this backtest."
     : !document.revision || document.dirty ? "Save the current design before running."
     : !account ? "Select a brokerage account in the workspace scope."
     : !from || !to || from > to ? "Select a valid historical date range."
@@ -99,25 +150,32 @@ export function useHostedDesigner(
       ? "Select or enter a retained Evidence Vault reference."
       : null;
 
-  async function command(kind: NonNullable<typeof busy>, task: () => Promise<void>) {
+  async function command(kind: DesignerCommand, task: (isCurrent: () => boolean) => Promise<void>) {
     if (pending.current) return;
-    pending.current = true;
+    if (kind === "running" && scope.current.epoch !== epoch) return;
+    const token: DesignerCommandToken = { id: ++commandSequence.current, kind, runEpoch: kind === "running" ? epoch : null };
+    pending.current = token;
     setBusy(kind);
+    setStatusEpoch(token.runEpoch);
     setError("");
     setMessage("");
+    const isCurrent = () => mounted.current && pending.current?.id === token.id
+      && (token.runEpoch === null || scope.current.epoch === token.runEpoch);
     try {
-      await task();
+      await task(isCurrent);
     } catch (cause) {
-      setError(errorText(cause, "The Designer command failed."));
+      if (isCurrent()) setError(errorText(cause, "The Designer command failed."));
     } finally {
-      pending.current = false;
-      setBusy(null);
+      if (pending.current?.id === token.id) {
+        pending.current = null;
+        if (mounted.current) setBusy(null);
+      }
     }
   }
 
   function replaceDraft(next: StrategyBuilderDocument) {
     applyDocument(next);
-    setRun(null);
+    setRunReceipt(null);
   }
 
   function newEquityDraft() {
@@ -169,24 +227,19 @@ export function useHostedDesigner(
   }
 
   function runBacktest() {
-    if (blocker || !account) return;
-    void command("running", async () => {
-      setRun(null);
-      const outcome = await runStrategyDesignerBacktest({
-        document: toStrategyDesignDocument(document),
-        fundAccountId: account,
-        from,
-        to,
-        operatorAcceptanceCriteria: [criteria.trim()],
-        retainedEvidenceReferences: [vaultReference.trim()],
-        accountingRecordReferences: [],
-        approvalReferences: [],
-        paperValidationReferences: [],
-        governedReportReferences: []
-      });
+    if (blocker || !account || scope.current.epoch !== epoch) return;
+    // Capture exactly the serialized request, independently of later draft graph edits.
+    const submittedRequest = JSON.parse(requestJson) as StrategyDesignRunBacktestRequest;
+    void command("running", async (isCurrent) => {
+      setRunReceipt(null);
+      const outcome = await runStrategyDesignerBacktest(submittedRequest);
+      if (!isCurrent()) return;
+      if (outcome.strategyId !== submittedRequest.document.documentId || hasConflictingResponseAccount(outcome, account))
+        throw new Error("The backtest response did not match the submitted design or account scope.");
       if (!outcome.success || !outcome.runId)
         throw new Error(outcome.runtimeError ?? "The backtest did not produce retained evidence.");
-      setRun(outcome);
+      // This receipt binds the local request epoch, not retained account ownership.
+      setRunReceipt({ epoch, outcome });
       setMessage("Backtest completed and retained.");
     });
   }

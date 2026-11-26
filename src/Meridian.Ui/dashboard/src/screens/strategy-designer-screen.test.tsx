@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
@@ -11,7 +11,7 @@ import {
   saveStrategyDesignerDraft
 } from "@/lib/api";
 import { ApiError } from "@/lib/api-errors";
-import type { StrategyDesignDocument } from "@/types";
+import type { StrategyDesignDocument, StrategyDesignRunBacktestResponse } from "@/types";
 
 vi.mock("@/lib/api", () => ({
   getStrategyDesignerDraft: vi.fn(),
@@ -41,6 +41,35 @@ const template: StrategyDesignDocument = {
   updatedAt: "2024-01-02T00:00:00Z"
 };
 const validation = { isValid: true, summary: "Valid", messages: [] };
+
+function retainedRun(document: StrategyDesignDocument, runId: string): StrategyDesignRunBacktestResponse {
+  return { success: true, runId, strategyId: document.documentId, strategyName: document.name,
+    validation, compiled: { source: "", datasetFingerprint: "", fieldRefs: [], disabledFieldRefs: [] },
+    trace: [], previewRows: [], metrics: { "Net P&L": "19" }, runtimeError: null,
+    promotionCandidatePath: null, reviewPacketPath: null };
+}
+
+async function prepareScopedProof(account: string) {
+  const user = userEvent.setup();
+  vi.mocked(getStrategyDesignerTemplates).mockResolvedValue([{
+    templateId: "equity-price-filter", name: template.name, description: template.description,
+    category: "Equity", sourcePrototype: "Designer", tags: [], document: template
+  }]);
+  vi.mocked(saveStrategyDesignerDraft).mockImplementation(async ({ document }) => {
+    const saved = { ...document, revision: "revision-1" };
+    return { document: saved, summary: { ...saved, cellCount: 2, transitionCount: 0, validationSummary: "Valid" }, validation, trace: [] };
+  });
+  const view = render(<MemoryRouter><StrategyDesignerScreen fundAccountId={account} /></MemoryRouter>);
+  await user.click(screen.getByText("Templates and backtest proof"));
+  await user.click(await screen.findByRole("button", { name: "New equity price filter draft" }));
+  await user.click(screen.getByRole("button", { name: "Save strategy design draft" }));
+  await screen.findByText("Draft saved.");
+  fireEvent.change(screen.getByLabelText("From date"), { target: { value: "2024-01-02" } });
+  fireEvent.change(screen.getByLabelText("To date"), { target: { value: "2024-01-05" } });
+  fireEvent.change(screen.getByLabelText("Acceptance criterion"), { target: { value: "Retain account-scoped evidence." } });
+  fireEvent.change(screen.getByLabelText("Evidence Vault reference"), { target: { value: "evidence://evidence-vault/ev-0123456789abcdef01234567" } });
+  return { ...view, user };
+}
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -163,5 +192,51 @@ describe("StrategyDesignerScreen", () => {
     await user.click(screen.getByRole("button", { name: "Save strategy design draft" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Reopen the latest revision");
     expect(saveStrategyDesignerDraft).toHaveBeenLastCalledWith(expect.objectContaining({ expectedRevision: "revision-1" }));
+  });
+
+  it("removes the prior account's proof on a scope change without discarding an unsaved draft", async () => {
+    const accountA = "da6b82e6-2dd9-4733-8e77-a079e25be637";
+    const accountB = "8b5a0f81-ce89-46fa-b67d-33a50f7a6e92";
+    vi.mocked(runStrategyDesignerBacktest).mockImplementation(async ({ document }) => retainedRun(document, "account-a-run"));
+    const view = await prepareScopedProof(accountA);
+    await view.user.click(screen.getByRole("button", { name: "Run backtest proof" }));
+    expect(await screen.findByRole("link", { name: "Open run evidence" })).toHaveAttribute("href", expect.stringContaining("subjectId=account-a-run"));
+
+    view.rerender(<MemoryRouter><StrategyDesignerScreen fundAccountId={accountB} /></MemoryRouter>);
+    expect(screen.getByText(accountB)).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Retained Designer run" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Backtest completed and retained.")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Equity ticker"), { target: { value: "UNSAVED-B" } });
+    view.rerender(<MemoryRouter><StrategyDesignerScreen fundAccountId={accountA} /></MemoryRouter>);
+    expect(screen.getByLabelText("Equity ticker")).toHaveValue("UNSAVED-B");
+    expect(screen.queryByRole("region", { name: "Retained Designer run" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Run backtest proof" })).toBeDisabled();
+    expect(saveStrategyDesignerDraft).toHaveBeenCalledTimes(1);
+  });
+
+  it("ignores a late account-A response after the same saved design moves to account B", async () => {
+    const accountA = "da6b82e6-2dd9-4733-8e77-a079e25be637";
+    const accountB = "8b5a0f81-ce89-46fa-b67d-33a50f7a6e92";
+    let resolveA!: (value: StrategyDesignRunBacktestResponse) => void;
+    const delayedA = new Promise<StrategyDesignRunBacktestResponse>((resolve) => { resolveA = resolve; });
+    vi.mocked(runStrategyDesignerBacktest).mockImplementationOnce(() => delayedA);
+    const view = await prepareScopedProof(accountA);
+    await view.user.click(screen.getByRole("button", { name: "Run backtest proof" }));
+    const submitted = vi.mocked(runStrategyDesignerBacktest).mock.calls[0][0];
+    expect(submitted.fundAccountId).toBe(accountA);
+    view.rerender(<MemoryRouter><StrategyDesignerScreen fundAccountId={accountB} /></MemoryRouter>);
+    expect(screen.getByText(accountB)).toBeInTheDocument();
+    await act(async () => { resolveA(retainedRun(submitted.document, "late-account-a-run")); await delayedA; });
+    expect(screen.queryByRole("region", { name: "Retained Designer run" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Backtest completed and retained.")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Equity ticker")).toHaveValue("TESTX");
+    expect(saveStrategyDesignerDraft).toHaveBeenCalledTimes(1);
+
+    vi.mocked(runStrategyDesignerBacktest).mockImplementationOnce(async ({ document }) => retainedRun(document, "account-b-run"));
+    await view.user.click(screen.getByRole("button", { name: "Run backtest proof" }));
+    expect(await screen.findByRole("link", { name: "Open run evidence" })).toHaveAttribute("href", expect.stringContaining("subjectId=account-b-run"));
+    expect(runStrategyDesignerBacktest).toHaveBeenLastCalledWith(expect.objectContaining({
+      fundAccountId: accountB, document: expect.objectContaining({ documentId: submitted.document.documentId, revision: submitted.document.revision })
+    }));
   });
 });

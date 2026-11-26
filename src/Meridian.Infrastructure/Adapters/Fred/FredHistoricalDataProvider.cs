@@ -244,7 +244,9 @@ public sealed partial class FredHistoricalDataProvider : BaseHistoricalDataProvi
             Close: value,
             Volume: 0,
             Source: Name,
-            SequenceNumber: sessionDate.DayNumber
+            SequenceNumber: sessionDate.DayNumber,
+            // Economic observations are not evidence of raw exchange prices.
+            PriceBasis: HistoricalPriceBasis.Unknown
         );
     }
 

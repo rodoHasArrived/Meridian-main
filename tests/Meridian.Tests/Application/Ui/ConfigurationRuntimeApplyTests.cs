@@ -78,7 +78,7 @@ public sealed class ConfigurationRuntimeApplyTests : IDisposable
     }
 
     [Fact]
-    public async Task ApplierFailure_DoesNotFailTheSaveAndIsReportedAsDeferred()
+    public async Task ApplierFailure_DoesNotFailTheSaveAndIsReportedAsFailed()
     {
         var store = await CreateStore();
         using var _ = ConfigurationRuntimeAppliers.Attach(store.ConfigPath, new ThrowingApplier());
@@ -88,7 +88,7 @@ public sealed class ConfigurationRuntimeApplyTests : IDisposable
         store.Load().DataSources!.FailoverRules![0].FailoverThreshold.Should().Be(1, "the save is durable regardless");
         var status = store.GetChangeStatus();
         status.RequiresRestart.Should().BeTrue();
-        status.LastApply!.Entries.Should().OnlyContain(entry => entry.Kind == ConfigurationApplyKind.Deferred);
+        status.LastApply!.Entries.Should().OnlyContain(entry => entry.Kind == ConfigurationApplyKind.Failed);
     }
 
     [Fact]

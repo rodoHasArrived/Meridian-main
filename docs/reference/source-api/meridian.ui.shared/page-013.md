@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IBookReceiptRunStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IBookReceiptRunStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:10](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L10).
+
+```csharp
+public interface IBookReceiptRunStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;IAsyncDisposable&gt; AcquireAsync(BookReceiptScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:12](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L12) |  |
+| <code>Task&lt;IReadOnlyList&lt;BookReceiptRunDto&gt;&gt; ReadAsync(BookReceiptScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:13](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L13) |  |
+| <code>Task SaveAsync(BookReceiptRunDto run, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:14](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L14) |  |
+
 ## IBResultQueryService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IBResultQueryService</code>. Kind: `class`.
@@ -953,21 +971,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>ValueTask&lt;ReportingCertifiedLedgerPresentationInput?&gt; ResolveExactAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L100) |  |
-
-## IReportingDeliveryGrantCredentialDeriver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IReportingDeliveryGrantCredentialDeriver</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:26](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L26).
-
-Derives a stable, opaque delivery credential without persisting its plaintext bearer. The binding key must be the durable delivery idempotency identity plus its committed attempt.
-
-```csharp
-public interface IReportingDeliveryGrantCredentialDeriver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ReportingDerivedAccessGrantCredential Derive(string bindingKey);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L28) |  |

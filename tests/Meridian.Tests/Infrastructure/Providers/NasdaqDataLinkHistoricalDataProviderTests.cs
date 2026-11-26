@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using FluentAssertions;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Tests.TestHelpers;
@@ -15,6 +16,48 @@ namespace Meridian.Tests.Infrastructure.Providers;
 public sealed class NasdaqDataLinkHistoricalDataProviderTests
 {
     private const string ApiKey = "test-nasdaq-key";
+
+    [Fact]
+    public async Task IncompletePrimaryWithCompleteAdjustedSet_SelectsWholeCandleWithoutClaimingRawBasis()
+    {
+        const string response = """
+            {"dataset":{
+              "column_names":["Date","Open","High","Low","Close","Volume","Adj. Open","Adj. High","Adj. Low","Adj. Close","Adj. Volume"],
+              "data":[["2024-01-02",100,null,90,100,1000,50,55,45,50,2000]]
+            }}
+            """;
+        using var handler = new StubHttpMessageHandler(_ => JsonResponse(response));
+        using var http = new HttpClient(handler);
+        using var provider = new NasdaqDataLinkHistoricalDataProvider(ApiKey, database: "CUSTOM", httpClient: http);
+        var session = new DateOnly(2024, 1, 2);
+
+        var bar = (await provider.GetAdjustedDailyBarsAsync("AAPL", session, session)).Should().ContainSingle().Subject;
+
+        (bar.Open, bar.High, bar.Low, bar.Close, bar.Volume).Should().Be((50m, 55m, 45m, 50m, 2000L));
+        bar.PriceBasis.Should().Be(HistoricalPriceBasis.Unknown);
+        bar.ToHistoricalBar().PriceBasis.Should().Be(HistoricalPriceBasis.Unknown);
+        var raw = () => bar.ToHistoricalBar(preferAdjusted: false);
+        raw.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task ComplementaryPartialPriceSets_RefuseToFabricateMixedCandle()
+    {
+        const string response = """
+            {"dataset":{
+              "column_names":["Date","Open","High","Low","Close","Volume","Adj. Open","Adj. High","Adj. Low","Adj. Close","Adj. Volume"],
+              "data":[["2024-01-02",100,110,90,null,1000,null,55,45,50,2000]]
+            }}
+            """;
+        using var handler = new StubHttpMessageHandler(_ => JsonResponse(response));
+        using var http = new HttpClient(handler);
+        using var provider = new NasdaqDataLinkHistoricalDataProvider(ApiKey, database: "EOD", httpClient: http);
+        var session = new DateOnly(2024, 1, 2);
+
+        var fetch = () => provider.GetAdjustedDailyBarsAsync("AAPL", session, session);
+
+        await fetch.Should().ThrowAsync<DataProviderException>().WithMessage("*no complete OHLC price set*");
+    }
 
     private static readonly string WikiDatasetResponse = """
         {
@@ -80,6 +123,8 @@ public sealed class NasdaqDataLinkHistoricalDataProviderTests
         bars[0].AdjustedClose.Should().Be(184.80m);
         bars[0].AdjustedVolume.Should().Be(3_860_000);
         bars[0].SequenceNumber.Should().Be(from.DayNumber);
+        bars[0].PriceBasis.Should().Be(HistoricalPriceBasis.Unknown);
+        bars[0].AdjustedPriceBasis.Should().Be(HistoricalPriceBasis.Unknown);
 
         bars[1].SessionDate.Should().Be(to);
         bars[1].AdjustedOpen.Should().Be(186.40m);
