@@ -38,9 +38,18 @@ GitHub repository rules allow, use the pull-request workflow:
 5. Run the checks for the change's Level 1/2/3 tier in `docs/ai/solo-developer-workflow.md#verification-tiers` (routine, financial/architectural, sensitive/destructive); attempt `bash scripts/ci.sh` when proportionate or required, and state precisely if it was not run.
 6. Never claim a check passed when it failed, was unavailable, or was not attempted.
 7. Commit the completed change to the feature branch.
-8. Push the feature branch to GitHub.
-9. Open or update a pull request targeting `main`.
-10. Report the commands run and their results in the pull request.
+8. Before every push: `dotnet format whitespace Meridian.sln --verify-no-changes`,
+   `python build/python/cli/buildctl.py regen --fix`, then `make verify-fast` (or the touched
+   lane; without `make`, `bash scripts/ci.sh --lane verify-fast`). Commit the regenerated reviewed
+   files in the same push. Install the tracked hooks with `bash scripts/dev/install-git-hooks.sh`
+   so the pre-push hook enforces the whitespace check.
+9. Push the feature branch to GitHub.
+10. Before opening a PR, list open PRs touching the same `src/<Project>/` directory; if one exists,
+    build on its branch or name it in the body under `Overlaps`.
+11. Open or update a pull request targeting `main`. Fill `.github/pull_request_template.md`
+    verbatim, keeping its `<!-- phase:PRx -->` first line set to this PR's phase. Keep
+    hand-authored changes under ~40 files per PR; split larger work into stacked PRs.
+12. Report the commands run and their results in the pull request.
 
 ### GitHub Actions Authority
 

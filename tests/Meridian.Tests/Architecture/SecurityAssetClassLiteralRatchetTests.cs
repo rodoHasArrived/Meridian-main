@@ -46,6 +46,9 @@ public sealed class SecurityAssetClassLiteralRatchetTests
         "src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs",
         "src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs",
         "src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs",
+        // The class-plumbing declaration (W11-PACK-002): SecurityClassPlumbingGenerationTests holds
+        // it to the catalog and the compiled union, and generates the dispatch regions from it.
+        "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassDeclarations.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs",
         "src/Meridian.FSharp/Domain/SecurityClassification.fs",

@@ -73,6 +73,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
 
     let unstampedAssetSpecificTermsJson =
         match record.Kind with
+        // <generated:flat-writer-dispatch> Do not edit: edit SecurityAssetClassDeclarations, then regenerate with MERIDIAN_ACCEPT_GENERATED_CODEC=1 and SecurityClassPlumbingGenerationTests.
         | SecurityKind.Equity terms -> GeneratedFlatWriter.writeEquity schemaVersion terms
         | SecurityKind.Option terms -> GeneratedFlatWriter.writeOption schemaVersion terms
         | SecurityKind.Future terms -> GeneratedFlatWriter.writeFuture schemaVersion terms
@@ -104,6 +105,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
         | SecurityKind.CapFloor terms -> GeneratedFlatWriter.writeCapFloor schemaVersion terms
         | SecurityKind.StructuredNote terms -> GeneratedFlatWriter.writeStructuredNote schemaVersion terms
         | SecurityKind.InvestmentFund terms -> GeneratedFlatWriter.writeInvestmentFund schemaVersion terms
+        // </generated:flat-writer-dispatch>
         | SecurityKind.CustomAsset terms ->
             // The custom-asset document is emitted verbatim: it already carries its own
             // schemaVersion (the CustomAssetProfile family) and its dynamic, profile-governed

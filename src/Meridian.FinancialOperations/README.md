@@ -32,6 +32,15 @@ seen, actor, evidence and source fingerprint under case-sequence/hash concurrenc
 finding never resolves a case. Approved guarantee caps remain separate from unavailable measured
 exposure. See [agreement lifecycle casework](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#agreement-lifecycle-work-queue).
 
+Operations Continuity workflows carry a `purpose`. A workflow without one remains a legacy `Close`
+workflow; `SecurityMasterRevision` names one immutable Security Master revision subject with its
+retained maker, source evidence and account/book/period authority, resolved on the server through
+`ISecurityMasterRevisionWorkflowAuthority`. Revision workflows stay out of close listings and do not
+consume the account/period close lane. They accept only the approval transitions: broker import,
+ledger posting and other close transitions refuse with `WORKFLOW_PURPOSE_MISMATCH`. Approval must name
+the exact `security-master-revision:{id}` subject, and the retained maker cannot be the reviewer. A
+host that registers no revision authority cannot start one. An unknown purpose is never executable.
+
 External-GL reconciliation projects each row's external trial-balance currency and resolved ledger
 book currency separately. Unknown or absent source currencies remain null rather than inheriting
 the legacy display fallback. This additive metadata lets the workstation preserve conflicting units;

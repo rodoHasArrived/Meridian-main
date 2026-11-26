@@ -1,3 +1,4 @@
+using Meridian.Application.Composition;
 using Meridian.Core.Config;
 using Meridian.Platform.Results;
 using Meridian.Storage.Archival;
@@ -27,17 +28,67 @@ internal sealed class WalRepairCommand : ICliCommand
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {
-        var walDir = Path.Combine(_cfg.DataRoot, "_wal");
+        var workloadArg = CliArguments.GetValue(args, "--workload");
+        PipelineWorkload? onlyWorkload = null;
+        if (workloadArg is not null)
+        {
+            if (!PipelineDurabilityPaths.TryParse(workloadArg, out var parsed))
+            {
+                Console.WriteLine();
+                Console.WriteLine($"  Unknown --workload '{workloadArg}'. Expected one of: " +
+                    string.Join(", ", PipelineDurabilityPaths.AllWorkloads.Select(PipelineDurabilityPaths.DirectoryName)));
+                Console.WriteLine();
+                return CliResult.Fail(ErrorCode.ValidationFailed);
+            }
 
-        if (!Directory.Exists(walDir))
+            onlyWorkload = parsed;
+        }
+
+        var walDirs = ResolveWalDirectories(_cfg.DataRoot, onlyWorkload);
+        if (walDirs.Count == 0)
         {
             Console.WriteLine();
-            Console.WriteLine($"  WAL directory not found: {walDir}");
+            Console.WriteLine($"  No WAL directories found under: {PipelineDurabilityPaths.LegacyWalDirectory(_cfg.DataRoot)}");
             Console.WriteLine("  Nothing to repair.");
             Console.WriteLine();
             return CliResult.Ok();
         }
 
+        CliResult? failure = null;
+        foreach (var walDir in walDirs)
+        {
+            var result = await RepairDirectoryAsync(walDir, args, ct).ConfigureAwait(false);
+            if (!result.Success)
+                failure ??= result;
+        }
+
+        return failure ?? CliResult.Ok();
+    }
+
+    /// <summary>
+    /// Every workload's WAL directory that exists, plus the pre-workload shared directory while it
+    /// still holds segments a collector has not adopted yet.
+    /// </summary>
+    internal static IReadOnlyList<string> ResolveWalDirectories(string dataRoot, PipelineWorkload? onlyWorkload)
+    {
+        if (onlyWorkload is { } workload)
+        {
+            var dir = PipelineDurabilityPaths.WalDirectory(dataRoot, workload);
+            return Directory.Exists(dir) ? [dir] : [];
+        }
+
+        var dirs = PipelineDurabilityPaths.AllWorkloads
+            .Select(w => PipelineDurabilityPaths.WalDirectory(dataRoot, w))
+            .Where(Directory.Exists)
+            .ToList();
+        var legacy = PipelineDurabilityPaths.LegacyWalDirectory(dataRoot);
+        if (Directory.Exists(legacy) && Directory.GetFiles(legacy, "*.wal").Length > 0)
+            dirs.Add(legacy);
+        return dirs;
+    }
+
+    private async Task<CliResult> RepairDirectoryAsync(string walDir, string[] args, CancellationToken ct)
+    {
         var outputPath = CliArguments.GetValue(args, "--output");
         var dryRun = CliArguments.HasFlag(args, "--dry-run");
 
@@ -80,7 +131,21 @@ internal sealed class WalRepairCommand : ICliCommand
 
         _log.Information("Starting WAL repair in {WalDir}", walDir);
 
-        var result = await wal.RepairAsync(ct);
+        WalRepairResult result;
+        try
+        {
+            // RepairAsync takes the directory's owner lock, so a repair never rewrites segments
+            // a running collector or backfill is still writing.
+            result = await wal.RepairAsync(ct);
+        }
+        catch (WalDirectoryInUseException ex)
+        {
+            _log.Error(ex, "WAL repair refused for {WalDir}: the directory is owned by a running process", walDir);
+            Console.WriteLine("  ERROR: this WAL directory is in use by a running Meridian process.");
+            Console.WriteLine("  Stop that process before repairing. No files were changed.");
+            Console.WriteLine();
+            return CliResult.Fail(ErrorCode.FileAccessDenied);
+        }
 
         Console.WriteLine("  Repair Results");
         Console.WriteLine("  " + new string('-', 50));
@@ -138,7 +203,9 @@ internal sealed class WalRepairCommand : ICliCommand
             using var reader = new StreamReader(stream);
 
             var header = await reader.ReadLineAsync(ct);
-            if (header == null || !header.StartsWith("MDCWAL01", StringComparison.Ordinal))
+            if (header == null ||
+                (!header.StartsWith("MDCWAL01|", StringComparison.Ordinal) &&
+                 !header.StartsWith("MDCWAL02|", StringComparison.Ordinal)))
             {
                 Console.WriteLine($"  WARNING: {Path.GetFileName(walFile)} has an invalid header.");
                 continue;
