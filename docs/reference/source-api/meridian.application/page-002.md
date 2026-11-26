@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExistingDataInfo
+
+Qualified name: <code>Meridian.Application.Backfill.ExistingDataInfo</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Backfill/BackfillPreview.cs:40](../../../../src/Meridian.Application/Backfill/BackfillPreview.cs#L40).
+
+Information about existing data for a symbol.
+
+```csharp
+public sealed record ExistingDataInfo(bool HasData, bool IsComplete, DateOnly? ExistingFrom, DateOnly? ExistingTo, int FileCount, long TotalSizeBytes);
+```
+
 ## GapBackfillService
 
 Qualified name: <code>Meridian.Application.Backfill.GapBackfillService</code>. Kind: `class`.
@@ -48,9 +60,10 @@ Declared public members:
 | <code>public HistoricalBackfillService(IEnumerable&lt;IHistoricalDataProvider&gt; providers, ILogger? logger = null, IEventMetrics? metrics = null, BackfillJobsConfig? jobsConfig = null, BackfillStatusStore? checkpointStore = null, Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null, TimeZoneInfo? intradaySessionTimeZone = null, IReadOnlyDictionary&lt;string, ProviderValidationProfile&gt;? validationProfiles = null, IDisposable? ownedProvider = null);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:40](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L40) |  |
 | <code>public IReadOnlyCollection&lt;IHistoricalDataProvider&gt; Providers =&gt; …;</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:64](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L64) |  |
 | <code>public Func&lt;string, DateOnly, DateOnly, CancellationToken, Task&lt;HistoricalSessionSchedule?&gt;&gt;? ResolveSessionsAsync { get; init; }</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:67](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L67) | Calendar evidence for instruments whose listing is known to the host. |
-| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:82](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L82) |  |
-| <code>public void ValidateRequest(BackfillRequest request);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:92](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L92) |  |
-| <code>public async Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, EventPipeline pipeline, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:121](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L121) |  |
+| <code>public Func&lt;string, MarketDataInputEvidence?&gt;? CaptureInputEvidence { get; init; }</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:68](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L68) |  |
+| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:83](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L83) |  |
+| <code>public void ValidateRequest(BackfillRequest request);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:93](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L93) |  |
+| <code>public async Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, EventPipeline pipeline, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:122](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L122) |  |
 
 ## IBackfillExecutionGateway
 
@@ -996,23 +1009,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public string? ResolveCallerTenant() =&gt; …;</code> | [src/Meridian.Application/Composition/TenantScopeServiceRegistration.cs:87](../../../../src/Meridian.Application/Composition/TenantScopeServiceRegistration.cs#L87) |  |
-
-## SecurityMasterGovernanceProfileGuard
-
-Qualified name: <code>Meridian.Application.Composition.SecurityMasterGovernanceProfileGuard</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs:22](../../../../src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs#L22).
-
-Refuses to start a host whose configuration contradicts its Security Master governance profile: an Institutional profile with one of the three requirements explicitly set to false, a production composition with SecurityMasterWorkbench:GovernanceProfile explicitly set to Standard, or a profile key that stopped declaring Institutional after this process had already run it. The refusal names each contradicted key.
-
-```csharp
-public sealed class SecurityMasterGovernanceProfileGuard : IStartupRefusalGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterGovernanceProfileGuard(ISecurityMasterGovernanceRequirements requirements);</code> | [src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs:26](../../../../src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs#L26) |  |
-| <code>public Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs:31](../../../../src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs#L31) |  |
-| <code>public Task StopAsync(CancellationToken cancellationToken) =&gt; …;</code> | [src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs:59](../../../../src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs#L59) |  |

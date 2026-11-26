@@ -363,7 +363,7 @@ status and decision are in Section 5.3):
 | Asset accounting event spine with atomic lot posting (`AssetAccountingEventSpineService`, `src/Meridian.FinancialOperations/Ledger/`) | Activated | `W9-ASSET-010` |
 | Corporate action approval and posting lane (`CorporateActionOperationsService` in `src/Meridian.Application/SecurityMaster/CorporateActions/`, `CorporateActionAccountingProjectionService` in `src/Meridian.Instruments/AssetOperations/`, `PostgresCorporateActionOperationsStore` in `src/Meridian.Storage/SecurityMaster/`) | Activated and accepted 2026-10-19 (`DEC-W9-ACCEPTANCE-007`); proven end to end on PostgreSQL (post and replay included), with unsupported branches deliberately blocked and posting permission assigned only through governed custom roles | `W9-CORPACT-011` |
 | Operational Evidence Graph as a shared product surface | Not yet a product surface; explorer, proof-drawer, and manifest primitives exist, and the first shared proof drawer over posted ledger amounts is being built under `W10-PROV-001` | `W5X-OEG-001` |
-| Registry-driven Security Master asset classes (`SecurityAssetClassRegistry`, versioned terms and event payloads, typed day-count and settlement conventions, typed corporate-action economics, income and factor-history projections, append-only governance write log) | Supported foundation in source as of 2026-10-16, with no acceptance gate. It is the nearest in-source precursor to contract packs (Section 22.2) | `W11-PACK-001` (governs the pack lifecycle built on it) |
+| Registry-driven Security Master asset classes (`SecurityAssetClassRegistry`, versioned terms and event payloads, typed day-count and settlement conventions, typed corporate-action economics, income and factor-history projections, append-only governance write log) | Supported foundation in source as of 2026-10-16, with no acceptance gate. It is the nearest in-source precursor to contract packs (Section 22.2) | `W11-PACK-002` (generated class plumbing, `DEC-PACK-CODEGEN-001`) and `W11-PACK-001` (runtime pack governance for profile-backed classes), split under `DEC-PACK-SPLIT-001` |
 
 Governance (`W9-GOV-008`) and institutional intake (`W9-INGEST-009`) were accepted on 2026-10-18
 under `DEC-W9-ACCEPTANCE-006`, and the corporate-action approval and posting lane (`W9-CORPACT-011`)
@@ -779,8 +779,9 @@ does not adopt ranks, accept an entire row, or reprioritize the adopted work:
 | W11 · 2 | `W11-COVER-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Verified Coverage measurement and operator surface (Sections 1.5, 22.3) |
 | W11 · 3 | `W11-STAKE-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Governed stakeholder verification access on delivered packages (Section 22.3) |
 | W11 · 4 | `W11-SHADOW-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Shadow-mode onboarding with opening-balance reconciliation (Section 22.3) |
-| W11 · 5 | `W11-PACK-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Governed contract-pack lifecycle on the Security Master asset-class registry (Section 22.2) |
+| W11 · 5 | `W11-PACK-001` | `planned` | `DEC-CHARTER-DIRECTION-001`, `DEC-PACK-SPLIT-001` | Runtime contract-pack governance for profile-backed (CustomAsset-style) classes (Section 22.2) |
 | W11 · 6 | `W11-EXEC-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Trading & Execution bounded-context ownership (Section 7.1) |
+| W11 · 7 | `W11-PACK-002` | `accepted` | `DEC-PACK-SPLIT-001`, `DEC-PACK-CODEGEN-001`, `DEC-PACK-ACCEPT-001` | Generated Security Master class plumbing from one declaration (Section 22.2) |
 | W12 · unranked | `W12-BOOK-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | Accounting book, basis, and FX control workbench (Sections 6.2.1, 11.7) |
 | W12 · unranked | `W12-CAPITAL-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | Governed investor capital and allocation lifecycle (Sections 6.2.2, 6.7) |
 | W12 · unranked | `W12-YEND-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | Fiscal year-end close and opening-balance roll-forward (Sections 6.2.1, 11.7) |
@@ -1084,7 +1085,7 @@ distribution income and a dated factor history are projected from effective corp
 Governance writes (override decisions, alias revisions, projection rebuilds) append to an
 append-only log in the same transaction as the change. Browser and WPF passport editors build
 their term forms from the same registry. These are engineering foundations recorded in
-[`docs/architecture/security-master-extensibility-review.md`](../../archive/docs/architecture/security-master-extensibility-review.md);
+[`docs/architecture/security-master-extensibility-review.md`](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/architecture/security-master-extensibility-review.md);
 no registry row yet accepts them as a product capability.
 
 ### 6.7 Entity & Relationship Management
@@ -2197,8 +2198,12 @@ reconciliation, permission, and reporting hooks. Versioned packs define contract
 events, valuation methods, accounting rules, validations, and reporting taxonomy. Launch prefers
 wide capture and narrow automation.
 
-The path runs from the Security Master asset-class registry (Section 6.6). What it already has, and
-what a governed pack adds (`W11-PACK-001`):
+The path runs from the Security Master asset-class registry (Section 6.6). Under
+`DEC-PACK-SPLIT-001` (2026-11-25), runtime pack governance applies to profile-backed
+(CustomAsset-style) classes only. Compiled classes change through code review, and `W11-PACK-002`
+generates their mechanical plumbing from one declaration (`SecurityAssetClassDeclarations`,
+`DEC-PACK-CODEGEN-001`). The table compares what the registry already has
+with what a governed pack adds (`W11-PACK-001`):
 
 | Pack element | Registry today (supported foundation) | Governed pack adds |
 | --- | --- | --- |
@@ -2566,7 +2571,8 @@ tooling; mobile (closed).
 **Bounded direction preserves unrelated scope gates.** The W11 rows (Section 22.4) are bounded so they do
 not reopen a deferred lane: `W11-STAKE-001` grants read-only access to one delivered package and is
 not the broad client portal; `W11-SHADOW-001` reconciles against the customer's books and moves no
-money; `W11-PACK-001` governs packs for already-modeled classes and adds no asset-operations lane.
+money; `W11-PACK-001` governs runtime packs for profile-backed classes and adds no asset-operations lane, and
+`W11-PACK-002` changes only how compiled-class plumbing is produced.
 
 The W12 direction (Section 22.5) similarly deepens existing accounting and fund operations:
 `W12-CREDIT-001` is bounded to the already-modeled DirectLoan path and retained evidence;

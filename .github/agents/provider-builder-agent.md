@@ -39,17 +39,17 @@ What does this provider supply?
 ├── Real-time streaming ticks / quotes / L2 order book
 │   └── Extend WebSocketProviderBase (implements IMarketDataClient)
 │       Base: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-│       Template: src/Meridian.Infrastructure/Adapters/_Template/TemplateMarketDataClient.cs
+│       Template: docs/examples/provider-template/TemplateMarketDataClient.cs
 │
 ├── Historical OHLCV / tick data (backfill use case)
 │   └── Extend BaseHistoricalDataProvider (implements IHistoricalDataProvider)
 │       Base: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
 │       Interface: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-│       Template: src/Meridian.Infrastructure/Adapters/_Template/TemplateHistoricalDataProvider.cs
+│       Template: docs/examples/provider-template/TemplateHistoricalDataProvider.cs
 │
 ├── Symbol search / lookup (resolving tickers)
 │   └── Extend BaseSymbolSearchProvider (implements ISymbolSearchProvider)
-│       Template: src/Meridian.Infrastructure/Adapters/_Template/TemplateSymbolSearchProvider.cs
+│       Template: docs/examples/provider-template/TemplateSymbolSearchProvider.cs
 │       Variant: IFilterableSymbolSearchProvider — if provider supports asset-type / exchange filters
 │
 ├── Order execution / brokerage gateway
@@ -72,9 +72,9 @@ What does this provider supply?
 
 | Provider type | Template file |
 |---|---|
-| Streaming | `src/Meridian.Infrastructure/Adapters/_Template/TemplateMarketDataClient.cs` |
-| Historical | `src/Meridian.Infrastructure/Adapters/_Template/TemplateHistoricalDataProvider.cs` |
-| Symbol search | `src/Meridian.Infrastructure/Adapters/_Template/TemplateSymbolSearchProvider.cs` |
+| Streaming | `docs/examples/provider-template/TemplateMarketDataClient.cs` |
+| Historical | `docs/examples/provider-template/TemplateHistoricalDataProvider.cs` |
+| Symbol search | `docs/examples/provider-template/TemplateSymbolSearchProvider.cs` |
 | Brokerage gateway | `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` |
 | Options chain | No template — model from `IOptionsChainProvider` interface and existing providers |
 

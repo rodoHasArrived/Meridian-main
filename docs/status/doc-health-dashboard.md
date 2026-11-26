@@ -11,7 +11,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 ## Overall Health Score
 
 ```text
-  [##########################----] 85/100
+  [##########################----] 86/100
   Rating: Good
 ```
 
@@ -19,12 +19,12 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 1301 |
-| Orphaned files | 392 |
+| Total documentation files | 1293 |
+| Orphaned files | 379 |
 | Files without headings | 231 |
 | Stale files (>90 days) | 0 |
 | TODO/FIXME markers | 303 |
-| **Health score** | **85/100** |
+| **Health score** | **86/100** |
 
 Line counts (total, average and per file) change on every Markdown edit, so they are not
 tracked here; they still feed the score. Pass `--volatile-json-output` to the generator to
@@ -67,10 +67,11 @@ These files lack a Markdown heading, making them harder to navigate:
 
 These files are not linked from any other Markdown file in the repository:
 
-- `.agents/skills/meridian-archive-organizer/SKILL.md`
 - `.agents/skills/meridian-blueprint/SKILL.md`
 - `.agents/skills/meridian-brainstorm/SKILL.md`
 - `.agents/skills/meridian-browser-workstation/SKILL.md`
+- `.agents/skills/meridian-ci-cd/SKILL.md`
+- `.agents/skills/meridian-ci-cd/references/workflow-inventory.md`
 - `.agents/skills/meridian-cleanup/SKILL.md`
 - `.agents/skills/meridian-docs/SKILL.md`
 - `.agents/skills/meridian-implementation-assurance/SKILL.md`
@@ -86,8 +87,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-05-research-promotion-roadmap-review.md`
 - `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-06-provider-health-usability-lab.md`
 - `.agents/skills/meridian-simulated-user-panel/references/artifact-bundles.md`
-- `.agents/skills/meridian-simulated-user-panel/references/personas.md`
-- ... and 372 more
+- ... and 359 more
 
 ## Trend
 
@@ -95,7 +95,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 85 | 1301 | 392 | 0 |
+| 1970-01-01 | 86 | 1293 | 379 | 0 |
 
 ---
 

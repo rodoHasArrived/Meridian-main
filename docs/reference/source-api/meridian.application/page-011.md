@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityValidationSnapshotStore
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.ISecurityValidationSnapshotStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:14](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L14).
+
+Records retained snapshots of Security Master validation evidence.
+
+```csharp
+public interface ISecurityValidationSnapshotStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityValidationSnapshotDto&gt; RecordAsync(SecurityValidationReportDto report, SecurityValidationSnapshotRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:16](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L16) |  |
+
 ## NullSecurityValidationGateService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.Validation.NullSecurityValidationGateService</code>. Kind: `class`.
@@ -300,7 +318,7 @@ public sealed record ConfigPresetInfo(ConfigPreset Preset, string Name, string D
 
 Qualified name: <code>Meridian.Application.Services.ConfigurationPresets</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:992](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L992).
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:990](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L990).
 
 Role-based configuration presets that configure ~15 settings at once. Reduces time-to-value from 30+ minutes of manual config to a single --preset flag.
 
@@ -312,9 +330,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlyList&lt;string&gt; AvailablePresets =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:997](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L997) | Available preset names. |
-| <code>public static IReadOnlyDictionary&lt;string, string&gt; PresetDescriptions =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1005](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1005) | Gets the preset description for display. |
-| <code>public static AppConfig ApplyPreset(string presetName, AppConfig config);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1016](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1016) | Applies a named preset to the given config, returning a new config with preset values. |
+| <code>public static IReadOnlyList&lt;string&gt; AvailablePresets =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:995](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L995) | Available preset names. |
+| <code>public static IReadOnlyDictionary&lt;string, string&gt; PresetDescriptions =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1003](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1003) | Gets the preset description for display. |
+| <code>public static AppConfig ApplyPreset(string presetName, AppConfig config);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1014](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1014) | Applies a named preset to the given config, returning a new config with preset values. |
 
 ## ConfigurationService
 
@@ -952,28 +970,3 @@ Service metadata for discovery and documentation.
 ```csharp
 public sealed record ServiceInfo(string Name, ServiceCategory Category, string Description, Type ServiceType, bool IsAsync = true);
 ```
-
-## ServiceRegistry
-
-Qualified name: <code>Meridian.Application.Services.ServiceRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/ServiceRegistry.cs:77](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L77).
-
-Centralized registry for application services providing discovery, categorization, and dependency resolution capabilities.
-
-```csharp
-public sealed class ServiceRegistry : IDisposable, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ServiceRegistry(ILogger? log = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:84](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L84) |  |
-| <code>public void Register&lt;T&gt;(T instance, ServiceCategory category, string description) where T : class;</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:96](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L96) | Registers a service with metadata. |
-| <code>public T? Get&lt;T&gt;() where T : class;</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:112](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L112) | Gets a service by type. |
-| <code>public IReadOnlyList&lt;ServiceInfo&gt; GetByCategory(ServiceCategory category);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:122](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L122) | Gets all services in a category. |
-| <code>public IReadOnlyList&lt;ServiceInfo&gt; GetAll();</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:131](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L131) | Gets all registered services. |
-| <code>public IReadOnlyDictionary&lt;ServiceCategory, int&gt; GetSummary();</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:140](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L140) | Gets a summary of registered services by category. |
-| <code>public void Dispose();</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:147](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L147) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:170](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L170) |  |

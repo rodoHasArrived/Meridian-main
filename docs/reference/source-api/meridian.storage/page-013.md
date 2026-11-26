@@ -6,121 +6,11 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## DataReplacementCostByEventType
-
-Qualified name: <code>Meridian.Storage.Services.DataReplacementCostByEventType</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:203](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L203).
-
-Per-event-type slice of the symbol-day cost basis.
-
-```csharp
-public sealed record DataReplacementCostByEventType(string EventType, long SymbolDays, decimal EstimatedUsd);
-```
-
-## DataReplacementCostEstimate
-
-Qualified name: <code>Meridian.Storage.Services.DataReplacementCostEstimate</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:173](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L173).
-
-Replacement-cost estimate for the local market-data store.
-
-```csharp
-public sealed record DataReplacementCostEstimate(DateTimeOffset GeneratedAtUtc, string Currency, decimal ConservativeEstimateUsd, decimal SymbolDayBasisUsd, decimal VolumeBasisUsd, int TotalSymbols, long TotalSymbolDays, decimal TotalGigabytes, IReadOnlyList<DataReplacementCostByEventType> EventTypeBreakdown, string RateCardSource, string RateCardLastVerified, string MethodologyNote)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static DataReplacementCostEstimate Empty(DataReplacementCostOptions options) =&gt; …;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:187](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L187) |  |
-
-## DataReplacementCostEstimator
-
-Qualified name: <code>Meridian.Storage.Services.DataReplacementCostEstimator</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:12](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L12).
-
-Estimates what the locally collected market-data store would cost to repurchase from commercial metered vendors, priced against a configurable rate card. Estimates are deliberately conservative: two independent bases are computed (per symbol-day and per gigabyte) and the lower one is reported as the headline figure. This is a pure post-processing pass over the StorageCatalog; it never touches the data files.
-
-```csharp
-public static class DataReplacementCostEstimator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static DataReplacementCostEstimate Estimate(StorageCatalog catalog, DataReplacementCostOptions options);</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:19](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L19) | Computes a replacement-cost estimate for catalog using options. Returns a zero-valued estimate when the catalog is empty or the meter is disabled. |
-
-## DataReplacementCostOptions
-
-Qualified name: <code>Meridian.Storage.Services.DataReplacementCostOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:140](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L140).
-
-Rate card and toggles for the data replacement-cost meter, bound from the DataReplacementCost configuration section. Defaults are conservative low-end list prices as of the recorded verification date; operators should refresh them from current vendor rate cards rather than treating them as quotes.
-
-```csharp
-public sealed class DataReplacementCostOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SectionName = &quot;DataReplacementCost&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:142](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L142) |  |
-| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:144](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L144) |  |
-| <code>public string Currency { get; set; } = &quot;USD&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:146](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L146) |  |
-| <code>public Dictionary&lt;string, decimal&gt;? HistoricalRatePerSymbolDayUsd { get; set; } = new (StringComparer.OrdinalIgnoreCase) {[&quot;Trade&quot;]= 0.10m, [&quot;Quote&quot;]= 0.10m, [&quot;Depth&quot;]= 0.25m, [&quot;OrderBook&quot;]= 0.25m, };</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:149](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L149) | Historical per-symbol-day rates keyed by event type (e.g. Trade, Quote, Depth). |
-| <code>public decimal DefaultRatePerSymbolDayUsd { get; set; } = 0.10m;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:159](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L159) | Fallback rate applied to event types not present in the rate card. |
-| <code>public decimal RatePerGigabyteUsd { get; set; } = 5.00m;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:162](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L162) | Metered per-gigabyte rate applied to uncompressed stored volume. |
-| <code>public string RateCardSource { get; set; } = &quot;Conservative low-end of published metered vendor list prices (per-symbol-day historical and per-GB tick data).&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:165](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L165) | Provenance note for the configured rates. |
-| <code>public string RateCardLastVerified { get; set; } = &quot;2026-07-01&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:169](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L169) | Date the rate card values were last checked against vendor pricing pages. |
-
-## DateIndex
-
-Qualified name: <code>Meridian.Storage.Services.DateIndex</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:841](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L841).
-
-```csharp
-public sealed record DateIndex(string Date, List<string> Files);
-```
-
-## DateRange
-
-Qualified name: <code>Meridian.Storage.Services.DateRange</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:837](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L837).
-
-```csharp
-public sealed record DateRange(DateTimeOffset Start, DateTimeOffset End);
-```
-
-## DefragOptions
-
-Qualified name: <code>Meridian.Storage.Services.DefragOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:943](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L943).
-
-```csharp
-public sealed record DefragOptions(long MinFileSizeBytes = 1_048_576, int MaxFilesPerMerge = 100, bool PreserveOriginals = false, System.IO.Compression.CompressionLevel TargetCompression = System.IO.Compression.CompressionLevel.Optimal, TimeSpan MaxFileAge = default, bool DryRun = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TimeSpan MaxFileAge { get; init; } = MaxFileAge == default? TimeSpan.FromDays(1) : MaxFileAge;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:952](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L952) |  |
-| <code>public DefragOptions() : this(1_048_576);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:954](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L954) |  |
-
 ## DefragResult
 
 Qualified name: <code>Meridian.Storage.Services.DefragResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:957](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L957).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:959](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L959).
 
 ```csharp
 public sealed record DefragResult(int FilesProcessed, int FilesCreated, long BytesBefore, long BytesAfter, double CompressionImprovement, TimeSpan Duration, int MergeGroupsAttempted = 0, int MergeGroupsSucceeded = 0, int FilesDeleted = 0, IReadOnlyList<string>? Errors = null);
@@ -208,7 +98,7 @@ public sealed record FacetedSearchResult(int TotalMatches, int FileCount, Dictio
 
 Qualified name: <code>Meridian.Storage.Services.FileCompressionOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:426](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L426).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:436](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L436).
 
 ```csharp
 public sealed record FileCompressionOptions(bool DryRun = false, bool BackupBeforeCompression = true, string? BackupPath = null, string[]? Paths = null, TimeSpan MinimumQuietPeriod = default, bool OnlyClosedPeriods = true);
@@ -218,7 +108,7 @@ public sealed record FileCompressionOptions(bool DryRun = false, bool BackupBefo
 
 Qualified name: <code>Meridian.Storage.Services.FileCompressionResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:434](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L434).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:444](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L444).
 
 ```csharp
 public sealed record FileCompressionResult(int FilesProcessed, int FilesCompressed, IReadOnlyList<string> Errors, bool DryRun, IReadOnlyList<string>? PlannedActions = null)
@@ -228,12 +118,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; RecoveryCopies { get; init; } = [];</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:441](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L441) |  |
-| <code>public IReadOnlyList&lt;string&gt; Deferred { get; init; } = [];</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:443](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L443) | Files left plain because they may still receive appends; informational, never a failure. |
-| <code>public long BytesBefore { get; init; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:444](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L444) |  |
-| <code>public long BytesAfter { get; init; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:445](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L445) |  |
-| <code>public int FilesUncompressed =&gt; …;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:446](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L446) |  |
-| <code>public bool Success =&gt; …;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:447](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L447) |  |
+| <code>public IReadOnlyList&lt;string&gt; RecoveryCopies { get; init; } = [];</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:451](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L451) |  |
+| <code>public IReadOnlyList&lt;string&gt; Deferred { get; init; } = [];</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:453](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L453) | Files left plain because they may still receive appends; informational, never a failure. |
+| <code>public long BytesBefore { get; init; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:454](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L454) |  |
+| <code>public long BytesAfter { get; init; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:455](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L455) |  |
+| <code>public int FilesUncompressed =&gt; …;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:456](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L456) |  |
+| <code>public bool Success =&gt; …;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:457](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L457) |  |
 
 ## FileMaintenanceService
 
@@ -458,7 +348,7 @@ public sealed record FileSearchResult(string Path, string Symbol, string EventTy
 
 Qualified name: <code>Meridian.Storage.Services.HealthCheckOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:835](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L835).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:837](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L837).
 
 ```csharp
 public sealed record HealthCheckOptions(bool ValidateChecksums = true, bool CheckSequenceContinuity = true, bool ValidateSchemas = true, bool CheckFilePermissions = true, bool IdentifyCorruption = true, bool CheckManifestConsistency = false, string[]? Paths = null, int ParallelChecks = 4);
@@ -468,7 +358,7 @@ public sealed record HealthCheckOptions(bool ValidateChecksums = true, bool Chec
 
 Qualified name: <code>Meridian.Storage.Services.HealthIssue</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:881](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L881).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:883](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L883).
 
 ```csharp
 public sealed record HealthIssue(IssueSeverity Severity, IssueType Type, string Path, string? ExpectedChecksum = null, string? ActualChecksum = null, string? Details = null, string RecommendedAction = "", bool AutoRepairable = false);
@@ -478,7 +368,7 @@ public sealed record HealthIssue(IssueSeverity Severity, IssueType Type, string 
 
 Qualified name: <code>Meridian.Storage.Services.HealthReport</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:846](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L846).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:848](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L848).
 
 ```csharp
 public sealed record HealthReport(string ReportId, DateTime GeneratedAt, long ScanDurationMs, HealthSummary Summary, IReadOnlyList<HealthIssue> Issues, HealthStatistics Statistics);
@@ -488,7 +378,7 @@ public sealed record HealthReport(string ReportId, DateTime GeneratedAt, long Sc
 
 Qualified name: <code>Meridian.Storage.Services.HealthStatistics</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:867](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L867).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:869](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L869).
 
 Aggregates storage file counts, sizes, corruption, compression, fragmentation, and age statistics.
 
@@ -500,22 +390,22 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:869](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L869) |  |
-| <code>public long TotalBytes { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:870](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L870) |  |
-| <code>public int HealthyFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:871](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L871) |  |
-| <code>public int WarningFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:872](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L872) |  |
-| <code>public int CorruptedFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:873](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L873) |  |
-| <code>public int OrphanedFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:874](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L874) |  |
-| <code>public double CompressionRatio { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:875](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L875) |  |
-| <code>public double FragmentationPct { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:876](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L876) |  |
-| <code>public DateTime? OldestFile { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:877](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L877) |  |
-| <code>public DateTime? NewestFile { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:878](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L878) |  |
+| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:871](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L871) |  |
+| <code>public long TotalBytes { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:872](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L872) |  |
+| <code>public int HealthyFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:873](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L873) |  |
+| <code>public int WarningFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:874](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L874) |  |
+| <code>public int CorruptedFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:875](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L875) |  |
+| <code>public int OrphanedFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:876](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L876) |  |
+| <code>public double CompressionRatio { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:877](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L877) |  |
+| <code>public double FragmentationPct { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:878](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L878) |  |
+| <code>public DateTime? OldestFile { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:879](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L879) |  |
+| <code>public DateTime? NewestFile { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:880](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L880) |  |
 
 ## HealthSummary
 
 Qualified name: <code>Meridian.Storage.Services.HealthSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:855](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L855).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:857](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L857).
 
 ```csharp
 public sealed record HealthSummary(int TotalFiles, long TotalBytes, int HealthyFiles, int WarningFiles, int CorruptedFiles, int OrphanedFiles);
@@ -614,7 +504,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.IFileMaintenanceService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:825](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L825).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:827](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L827).
 
 Interface for file maintenance service.
 
@@ -626,11 +516,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;HealthReport&gt; RunHealthCheckAsync(HealthCheckOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:827](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L827) |  |
-| <code>Task&lt;RepairResult&gt; RepairAsync(RepairOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:828](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L828) |  |
-| <code>Task&lt;FileCompressionResult&gt; CompressAsync(FileCompressionOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:829](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L829) |  |
-| <code>Task&lt;DefragResult&gt; DefragmentAsync(DefragOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:830](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L830) |  |
-| <code>Task&lt;OrphanReport&gt; FindOrphansAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:831](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L831) |  |
+| <code>Task&lt;HealthReport&gt; RunHealthCheckAsync(HealthCheckOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:829](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L829) |  |
+| <code>Task&lt;RepairResult&gt; RepairAsync(RepairOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:830](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L830) |  |
+| <code>Task&lt;FileCompressionResult&gt; CompressAsync(FileCompressionOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:831](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L831) |  |
+| <code>Task&lt;DefragResult&gt; DefragmentAsync(DefragOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:832](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L832) |  |
+| <code>Task&lt;OrphanReport&gt; FindOrphansAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:833](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L833) |  |
 
 ## ILifecyclePolicyEngine
 
@@ -843,7 +733,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.IssueSeverity</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:892](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L892).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:894](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L894).
 
 ```csharp
 public enum IssueSeverity : byte
@@ -853,15 +743,15 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Info</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:892](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L892) |  |
-| <code>Warning</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:892](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L892) |  |
-| <code>Critical</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:892](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L892) |  |
+| <code>Info</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:894](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L894) |  |
+| <code>Warning</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:894](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L894) |  |
+| <code>Critical</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:894](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L894) |  |
 
 ## IssueType
 
 Qualified name: <code>Meridian.Storage.Services.IssueType</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:894](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L894).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:896](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L896).
 
 ```csharp
 public enum IssueType : byte
@@ -871,15 +761,15 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ChecksumMismatch</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:896](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L896) |  |
-| <code>SequenceGap</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:897](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L897) |  |
-| <code>EmptyFile</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:898](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L898) |  |
-| <code>TruncatedFile</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:899](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L899) |  |
-| <code>UnreadableFile</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:900](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L900) |  |
-| <code>PermissionDenied</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:901](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L901) |  |
-| <code>OrphanedFile</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:902](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L902) |  |
-| <code>SchemaViolation</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:903](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L903) |  |
-| <code>MissingChecksum</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:904](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L904) |  |
+| <code>ChecksumMismatch</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:898](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L898) |  |
+| <code>SequenceGap</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:899](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L899) |  |
+| <code>EmptyFile</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:900](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L900) |  |
+| <code>TruncatedFile</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:901](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L901) |  |
+| <code>UnreadableFile</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:902](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L902) |  |
+| <code>PermissionDenied</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:903](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L903) |  |
+| <code>OrphanedFile</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:904](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L904) |  |
+| <code>SchemaViolation</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:905](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L905) |  |
+| <code>MissingChecksum</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:906](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L906) |  |
 
 ## IStorageSearchService
 
@@ -904,3 +794,136 @@ Declared public members:
 | <code>StorageQuery? ParseNaturalLanguageQuery(string naturalQuery);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:731](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L731) |  |
 | <code>Task UpdateIndexAsync(string filePath, IndexUpdateType updateType, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:732](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L732) |  |
 | <code>Task&lt;IndexRebuildVerification&gt; RebuildIndexAsync(string[] paths, RebuildOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:733](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L733) |  |
+
+## ITierMigrationService
+
+Qualified name: <code>Meridian.Storage.Services.ITierMigrationService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:583](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L583).
+
+Interface for tier migration service.
+
+```csharp
+public interface ITierMigrationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;MigrationResult&gt; MigrateAsync(string sourcePath, StorageTier targetTier, MigrationOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:585](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L585) |  |
+| <code>Task&lt;MigrationPlan&gt; PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:586](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L586) |  |
+| <code>StorageTier DetermineTargetTier(string filePath);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:587](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L587) |  |
+| <code>Task&lt;TierStatistics&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:588](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L588) |  |
+
+## JobExecutionStatus
+
+Qualified name: <code>Meridian.Storage.Services.JobExecutionStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1676](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1676).
+
+```csharp
+public sealed record JobExecutionStatus(string JobId, MaintenanceType Type, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, JobStatus Status, int Progress, string Message, IReadOnlyList<string> Errors)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public VerifiedOperationOutcome? Outcome { get; init; }</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1687](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1687) |  |
+| <code>public bool AdmissionRetained { get; init; }</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1688](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1688) |  |
+
+## JobPriority
+
+Qualified name: <code>Meridian.Storage.Services.JobPriority</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1627](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1627).
+
+```csharp
+public enum JobPriority : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Critical</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1629](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1629) |  |
+| <code>High</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1630](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1630) |  |
+| <code>Normal</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1631](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1631) |  |
+| <code>Low</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1632](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1632) |  |
+| <code>Deferred</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1633](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1633) |  |
+
+## JobStatus
+
+Qualified name: <code>Meridian.Storage.Services.JobStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1666](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1666).
+
+```csharp
+public enum JobStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Pending</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1668](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1668) |  |
+| <code>Running</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1669](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1669) |  |
+| <code>Completed</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1670](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1670) |  |
+| <code>Failed</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1671](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1671) |  |
+| <code>Cancelled</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1672](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1672) |  |
+| <code>Blocked</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1673](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1673) |  |
+
+## JsonlPositionSnapshotStore
+
+Qualified name: <code>Meridian.Storage.Services.JsonlPositionSnapshotStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:32](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L32).
+
+JSONL-backed implementation of IPositionSnapshotStore. Owned path convention: {StorageRoot}/portfolios/owned/{tenant}/{company}/{fund}/{book}/{entity}/{runId}/{accountId}/snapshots.jsonl. Legacy unowned snapshots retain {StorageRoot}/portfolios/{runId}/{accountId}/snapshots.jsonl and are never returned by an owned lookup. This path falls under StorageOptions.RootPath so the LifecyclePolicyEngine automatically picks it up for tiered-storage lifecycle enforcement (ADR-002). Each snapshot is a single JSON line appended atomically (ADR-007). A per-partition file lock serializes the conditional same-timestamp check and append across store instances and cooperating processes. Recovery streams the file and selects the greatest recorded AsOf timestamp rather than trusting append order, so a delayed writer cannot make an older observation authoritative.
+
+```csharp
+public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JsonlPositionSnapshotStore(StorageOptions options, ILogger&lt;JsonlPositionSnapshotStore&gt; logger);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:41](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L41) |  |
+| <code>public async Task SaveSnapshotAsync(AccountSnapshotRecord snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:51](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L51) |  |
+| <code>public async Task&lt;PositionSnapshotSaveOutcome&gt; SaveSnapshotConditionallyAsync(AccountSnapshotRecord snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:59](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L59) |  |
+| <code>public async Task&lt;AccountSnapshotRecord?&gt; GetLatestSnapshotAsync(string runId, string accountId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:106](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L106) |  |
+| <code>public async Task&lt;AccountSnapshotRecord?&gt; GetLatestSnapshotAsync(string runId, string accountId, PositionSnapshotOwnerScope ownerScope, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:126](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L126) |  |
+| <code>public async IAsyncEnumerable&lt;AccountSnapshotRecord&gt; GetSnapshotHistoryAsync(string runId, string accountId, DateTimeOffset from, DateTimeOffset to, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:149](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L149) |  |
+| <code>public async IAsyncEnumerable&lt;AccountSnapshotRecord&gt; GetSnapshotHistoryAsync(string runId, string accountId, PositionSnapshotOwnerScope ownerScope, DateTimeOffset from, DateTimeOffset to, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:180](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L180) |  |
+
+## LifecycleAction
+
+Qualified name: <code>Meridian.Storage.Services.LifecycleAction</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:453](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L453).
+
+```csharp
+public sealed record LifecycleAction(string FilePath, LifecycleActionType ActionType, StorageTier? CurrentTier, StorageTier? TargetTier, string Reason, long EstimatedSizeBytes, StoragePolicyConfig? Policy = null);
+```
+
+## LifecycleActionType
+
+Qualified name: <code>Meridian.Storage.Services.LifecycleActionType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:462](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L462).
+
+```csharp
+public enum LifecycleActionType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>TierMigration</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:464](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L464) |  |
+| <code>CompressionUpgrade</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:465](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L465) |  |
+| <code>Delete</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:466](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L466) |  |
+| <code>Archive</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:467](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L467) |  |
+| <code>FormatConversion</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:468](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L468) |  |

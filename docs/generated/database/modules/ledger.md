@@ -3,8 +3,8 @@
 # `ledger` schema
 
 - Relations: 74
-- Functions/procedures: 38
-- Triggers: 78
+- Functions/procedures: 39
+- Triggers: 83
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -1066,7 +1066,7 @@ erDiagram
 | `open_lot_backfill_receipts` | table | 12 | `receipt_id` | 3 | 3 | - |
 | `open_lot_backfill_reviews` | table | 5 | `evidence_record_id` | 1 | 1 | - |
 | `operations_continuity_audit` | table | 19 | `audit_id` | 1 | 5 | - |
-| `operations_continuity_workflows` | table | 13 | `workflow_id` | 0 | 6 | - |
+| `operations_continuity_workflows` | table | 13 | `workflow_id` | 0 | 7 | - |
 | `period_close_events` | table | 10 | `event_id` | 1 | 2 | - |
 | `period_close_snapshots` | table | 7 | `period_id`, `period_version` | 3 | 2 | - |
 | `private_capital_calls` | table | 6 | `tenant_id`, `company_id`, `fund_profile_id`, `ledger_book_id`, `call_id` | 1 | 2 | Immutable reviewed capital-call allocations bound to exact approved commitment revisions and accounting scope. |

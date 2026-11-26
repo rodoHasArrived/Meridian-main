@@ -6,10 +6,27 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-21
+
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Wpf
+
+Posted Ledger offers a complete-period journal CSV download over the shared journal-export route.
+The returned bytes are saved without local accounting conversion, and superseded book/period reads
+cannot open a save dialog. Strategy run replay evidence shows retained data-quality warnings,
+affected-fill counts and source assessments; missing assessment coverage stays explicitly unknown.
+Strategy reconciliation queues and detail preserve typed quantity and cost-basis units, tolerances,
+as-of values and unavailable reasons. Run and fund monetary totals require comparable currency
+evidence; quantities and mixed currencies remain unavailable as monetary totals. Focused view-model/service tests cover
+these projections and stale downloads; native rendering and save dialogs require Windows.
+
+`IntercompanyAgreementWorkQueueControl` exposes the shared lifecycle queue in Fund Operations:
+explicitly track findings, assign owners, retain notes/evidence and update follow-up state against
+case/source versions. It shares `IntercompanyAgreementWorkQueueWorkspace` with the host API and
+shows guarantee caps separately from unavailable measured exposure. See
+[lifecycle casework](../../docs/operators/intercompany-entity-controls.md#tracking-agreement-lifecycle-work).
 
 Provider Accounting exposes host quota settings for Twelve Data and Alpha Vantage, adapter-managed
 FRED limits, and seven UTC days of retained throttling and rotation totals. Saved and running quotas
@@ -22,6 +39,21 @@ replacement files. Reviewed migration and purge of both generations precedes ret
 development keeps its existing invalid-configuration recovery behavior. Owned provider credentials
 remain in the protected vault. Windows persistence, refusal and purge/retry fixtures live in
 `DesktopConfigurationRecoveryServiceTests`.
+
+Desktop OAuth refresh initializes retained credential metadata at startup. It holds a per-provider
+file lease through the exchange and publishes the access token, refresh token, and expiry in one
+atomic DPAPI-encrypted vault generation. Legacy token pairs and sidecar metadata remain readable.
+A response can change credentials only if the vault still contains the pair and endpoint settings
+used for that request. Cancellation applies through response parsing. A validated rotation can finish
+its local commit during shutdown because the provider may already have revoked the former token.
+If the connection is interrupted before a rotating provider's reply arrives, the operator may need to
+reauthorize.
+
+The desktop permits refresh at the exact HTTPS TradeStation token endpoint for the public-client
+PKCE grant. Requests have a 10-second deadline, a 64 KiB response limit, and redirects disabled.
+Other destinations are refused before sending the credential. The Windows `CredentialServiceTests`
+use synthetic exchanges. Live TradeStation compatibility remains unverified.
+[TradeStation refresh token documentation](https://api.tradestation.com/docs/fundamentals/authentication/refresh-tokens/).
 
 The existing agreement and entity controls expose native structured terms, date previews,
 external-review attestations, advisory obligations and reviewed legacy coverage successors.
@@ -437,6 +469,13 @@ scope fails before any provider rows are read.
 - `Shell/` and `Services/` - navigation, route, launch, and desktop service seams.
 
 ## Important workflows
+
+Time Series Alignment compares selected providers or discovers providers in the stored archive.
+Operators choose symbols, dates, frequency, archived record type, calendar, price basis, gaps and
+fields. Preview shows coverage and observed close differences. Run uses that preview's content
+hash when one is present and exports CSV, JSON Lines or Parquet locally under
+`Documents/Meridian/Alignments`. A changed result requires a fresh preview.
+
 
 Desktop diagnostic logging uses named placeholders and string tuple properties through the
 shared `LoggingServiceBase` formatter. `LogWritten.Message` remains rendered for the Activity Log,

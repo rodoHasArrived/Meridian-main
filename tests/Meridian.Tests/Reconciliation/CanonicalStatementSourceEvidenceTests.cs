@@ -5,6 +5,7 @@ using Meridian.Core.IO;
 using Meridian.DataIntegration.Reconciliation;
 using Meridian.Domain.Reconciliation;
 using Meridian.Storage.Archival;
+using Meridian.Tests.Infrastructure;
 using Meridian.Tests.Reconciliation.Connectors;
 using NSubstitute;
 
@@ -217,6 +218,31 @@ public sealed class CanonicalStatementSourceEvidenceTests : IDisposable
     {
         var failure = await Record.ExceptionAsync(read);
         Assert.True(failure is IOException or InvalidDataException, $"Expected unavailable or corrupt evidence, got {failure?.GetType().Name ?? "success"}.");
+    }
+
+    [Fact]
+    public async Task SourceEvidenceDirectorySyncFailure_DoesNotPublishImportAndRetrySucceeds()
+    {
+        var sourcePath = Path.Combine(_root, "unsynced.csv");
+        await File.WriteAllTextAsync(sourcePath,
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency\nA1,QQQ,2,20,-40,trade,2026-06-03,,USD\n");
+        var request = new BrokerStatementImportRequest("samplebroker", sourcePath, new DateOnly(2026, 6, 30))
+        {
+            ExternalAccountId = "A1"
+        };
+
+        using (DirectorySyncFaults.FailWhen(dir => dir.EndsWith("source-evidence", StringComparison.Ordinal)))
+        {
+            var import = () => new CsvBrokerStatementService(Store()).ImportAsync(request);
+            await import.Should().ThrowAsync<DirectorySyncException>();
+        }
+
+        (await Store().ListImportsAsync()).Should().BeEmpty("an import is published only after its source evidence is durable");
+
+        var imported = await new CsvBrokerStatementService(Store()).ImportAsync(request);
+        (await Store().ListImportsAsync()).Should().ContainSingle().Which.ImportId.Should().Be(imported.Import.ImportId);
+        Encoding.UTF8.GetString((await Store().ReadSourceEvidenceAsync(imported.Import.ImportId)).Source)
+            .Should().Contain("A1,QQQ,2,20,-40");
     }
 
     private JsonCanonicalStatementStore Store() => new(_root, new AtomicFileWriterAdapter());

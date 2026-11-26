@@ -80,6 +80,7 @@ internal static class RecurringJournalDocumentRules
                 || (activation.TemplateId is not null && !document.Templates.Any(item => Same(item.TemplateId, activation.TemplateId) && item.Version == activation.TemplateVersion)))
                 throw new InvalidOperationException("A recurring definition activation has lost its retained evidence.");
         }
+        var economicObligations = new HashSet<string>(StringComparer.Ordinal);
         foreach (var occurrence in document.Occurrences)
         {
             var expectedKey = RecurringJournalIdentity.OccurrenceKey(occurrence.ScheduleDefinition.ScheduleId, occurrence.EffectiveDate);
@@ -93,6 +94,14 @@ internal static class RecurringJournalDocumentRules
                 || occurrence.History.Count == 0 || occurrence.History[^1].State != occurrence.State
                 || !Enum.IsDefined(occurrence.State))
                 throw new InvalidOperationException("A retained recurring occurrence no longer matches its definition or identity.");
+            if (occurrence.EconomicObligationKeys is { } keys)
+            {
+                RecurringJournalIdentity.ValidateEconomicObligationKeys(keys);
+                if (!keys.SequenceEqual(keys.Order(StringComparer.Ordinal), StringComparer.Ordinal))
+                    throw new InvalidOperationException("Retained economic obligation identities are not in canonical order.");
+                if (keys.Any(key => !economicObligations.Add(key)))
+                    throw new InvalidOperationException("A retained economic obligation belongs to more than one recurring occurrence.");
+            }
         }
     }
 

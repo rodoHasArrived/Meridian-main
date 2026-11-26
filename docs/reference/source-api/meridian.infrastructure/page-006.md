@@ -6,6 +6,55 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RobinhoodOptionsChainProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Robinhood.RobinhoodOptionsChainProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:46](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs#L46).
+
+Robinhood options chain provider that retrieves option chain data via the unofficial Robinhood API. Important: Robinhood does not publish an official public API. This provider targets the same endpoints used by the Robinhood mobile application. Set ROBINHOOD_ACCESS_TOKEN to your personal access token. API flow: Resolve the equity instrument ID from /instruments/?symbol=… Fetch option chain metadata from /options/chains/?equity_instrument_ids=… Enumerate expiration dates and contracts from /options/instruments/?chain_id=…&amp;expiration_date=… Fetch market data from /marketdata/options/?instruments=…
+
+```csharp
+public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RobinhoodOptionsChainProvider(IHttpClientFactory httpClientFactory, ILogger&lt;RobinhoodOptionsChainProvider&gt; logger, string? accessToken = null, RateLimiter? rateLimiter = null);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:65](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs#L65) | Initializes a new instance of RobinhoodOptionsChainProvider. |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:85](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs#L85) |  |
+| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:88](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs#L88) |  |
+| <code>public string ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:91](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs#L91) |  |
+| <code>public int ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:95](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs#L95) |  |
+| <code>public ProviderCapabilities ProviderCapabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:98](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs#L98) |  |
+| <code>public OptionsChainCapabilities Capabilities { get; } = new () { SupportsGreeks = true, SupportsOpenInterest = true, SupportsImpliedVolatility = true, SupportsIndexOptions = false, SupportsHistorical = false, SupportsStreaming = false, SupportedInstrumentTypes = new[] { InstrumentType.EquityOption } };</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:104](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs#L104) |  |
+| <code>public ProviderCredentialField[] ProviderCredentialFields =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:116](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs#L116) |  |
+| <code>public string[] ProviderWarnings =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:126](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs#L126) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;DateOnly&gt;&gt; GetExpirationsAsync(string underlyingSymbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:134](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs#L134) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;decimal&gt;&gt; GetStrikesAsync(string underlyingSymbol, DateOnly expiration, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:179](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs#L179) |  |
+| <code>public async Task&lt;OptionChainSnapshot?&gt; GetChainSnapshotAsync(string underlyingSymbol, DateOnly expiration, int? strikeRange = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:209](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs#L209) |  |
+| <code>public async Task&lt;OptionQuote?&gt; GetOptionQuoteAsync(OptionContractSpec contract, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:340](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs#L340) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:432](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs#L432) |  |
+
+## RobinhoodReadOnlyBrokerageOptions
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Robinhood.RobinhoodReadOnlyBrokerageOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:9](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L9).
+
+```csharp
+public sealed record RobinhoodReadOnlyBrokerageOptions(string AccessToken, string AccountsEndpoint, string PortfolioEndpointTemplate, string ActivityEndpointTemplate, string DisplayName = "Robinhood read-only")
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Func&lt;string?&gt;? AccessTokenProvider { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:17](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L17) | When supplied, the current host-owned token is read for each request, including revocation. |
+| <code>public static RobinhoodReadOnlyBrokerageOptions FromEnvironment() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:19](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L19) |  |
+| <code>public static RobinhoodReadOnlyBrokerageOptions FromConfiguration(Func&lt;string, string?&gt; getValue);</code> | [src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs:22](../../../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodReadOnlyBrokerageSyncAdapter.cs#L22) |  |
+
 ## RobinhoodReadOnlyBrokerageSyncAdapter
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Robinhood.RobinhoodReadOnlyBrokerageSyncAdapter</code>. Kind: `class`.
@@ -863,57 +912,3 @@ Declared public members:
 | <code>public override IReadOnlyList&lt;string&gt; SupportedAssetTypes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:52](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L52) |  |
 | <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:64](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L64) |  |
 | <code>public TwelveDataSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, RateLimiterRegistry? rateLimiterRegistry = null, TwelveDataQuotaConfig? quotaConfig = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(apiKey, httpClient, log, rateLimiterRegistry?.TimeProvider, runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:79](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L79) |  |
-
-## YahooFinanceHistoricalDataProvider
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:26](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L26).
-
-Retrieves historical OHLCV data from the Yahoo Finance chart API.
-
-```csharp
-public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvider, IHistoricalAggregateBarProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:40](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L40) |  |
-| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:41](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L41) |  |
-| <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:42](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L42) |  |
-| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L44) |  |
-| <code>public override TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:45](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L45) |  |
-| <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:48](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L48) |  |
-| <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:49](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L49) |  |
-| <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly with { Intraday = true, SupportedMarkets = [&quot;US&quot;, &quot;UK&quot;, &quot;DE&quot;, &quot;JP&quot;, &quot;CA&quot;, &quot;AU&quot;, &quot;HK&quot;, &quot;SG&quot;]};</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:52](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L52) |  |
-| <code>public IReadOnlyList&lt;DataGranularity&gt; SupportedGranularities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:59](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L59) |  |
-| <code>public YahooFinanceHistoricalDataProvider(HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:61](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L61) |  |
-| <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:70](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L70) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:83](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L83) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:93](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L93) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;AggregateBar&gt;&gt; GetAggregateBarsAsync(string symbol, DataGranularity granularity, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:123](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L123) |  |
-
-## YahooFinanceProviderModule
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceProviderModule</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:13](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L13).
-
-Owns Yahoo Finance&#x27;s historical factory and capability declaration. Registration does not contact Yahoo; availability is evaluated against the final host configuration.
-
-```csharp
-public sealed class YahooFinanceProviderModule : ConfigurableProviderModuleBase, IProviderModuleCapabilityAvailability
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public override string ModuleId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:16](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L16) |  |
-| <code>public override string ModuleDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:17](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L17) |  |
-| <code>public override ProviderCapabilities[] Capabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:18](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L18) |  |
-| <code>public static ProviderCapabilityDescriptor Descriptor { get; } = new (&quot;yahoo&quot;, Historical : typeof(YahooFinanceHistoricalDataProvider), InstrumentTypes :[InstrumentType.Equity, InstrumentType.Index, InstrumentType.Forex, InstrumentType.Crypto], HistoricalFactory : static factory =&gt; CreateHistorical(factory), FactoryOwner : ProviderCapabilityFactoryOwner.Module);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:20](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L20) |  |
-| <code>public override void Register(IServiceCollection services, DataSourceRegistry registry);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:26](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L26) |  |
-| <code>public bool IsCapabilityConfigured(Type contract, IServiceProvider services) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs:33](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceProviderModule.cs#L33) |  |

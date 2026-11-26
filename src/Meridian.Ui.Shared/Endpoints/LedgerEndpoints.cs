@@ -36,6 +36,7 @@ public static partial class LedgerEndpoints
         MapIntercompanyAccountBindingEndpoints(app, jsonOptions);
         MapLegacyIntercompanyAttributionEndpoints(app, jsonOptions);
         app.MapIntercompanyObligationEndpoints(jsonOptions);
+        app.MapIntercompanyAgreementWorkQueueEndpoints(jsonOptions);
         MapEntityControlEndpoints(app, jsonOptions);
         MapAccountOversightEndpoints(app, jsonOptions);
         app.MapLedgerBondWorkflowEndpoints();

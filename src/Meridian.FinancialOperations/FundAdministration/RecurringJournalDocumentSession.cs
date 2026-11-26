@@ -257,6 +257,35 @@ internal sealed class RecurringJournalDocumentSession(IRecurringJournalDocumentL
         return Copy(record, RecurringJournalJsonContext.Default.RecurringOccurrenceRecord);
     }
 
+    public async Task<RecurringOccurrenceRecord> PinEconomicObligationsAsync(
+        string occurrenceKey, IReadOnlyList<string> keys, CancellationToken ct = default)
+    {
+        RequireUsable();
+        RecurringJournalIdentity.ValidateEconomicObligationKeys(keys);
+        var normalized = keys.Order(StringComparer.Ordinal).ToArray();
+        var existing = _document.Occurrences.SingleOrDefault(item => item.OccurrenceKey == occurrenceKey)
+            ?? throw new InvalidOperationException("The recurring occurrence has not been claimed.");
+        if (existing.EconomicObligationKeys is { } pinned)
+        {
+            if (!pinned.SequenceEqual(normalized, StringComparer.Ordinal))
+                throw new InvalidOperationException("The calculated economic obligations differ from this occurrence's independently retained ownership.");
+            return Copy(existing, RecurringJournalJsonContext.Default.RecurringOccurrenceRecord);
+        }
+        if (existing.State is RecurringOccurrenceState.DefinitionChanged or RecurringOccurrenceState.NoDraftRequired
+            || existing.DraftEvidenceDigest is not null || existing.History.Any(item => item.State == RecurringOccurrenceState.Drafted))
+            throw new InvalidOperationException("A completed recurring draft cannot acquire new economic obligation ownership; restore its trusted intake provenance.");
+        var requested = normalized.ToHashSet(StringComparer.Ordinal);
+        if (_document.Occurrences.Any(item => item.OccurrenceKey != occurrenceKey
+                && item.EconomicObligationKeys?.Any(requested.Contains) == true))
+            throw new InvalidOperationException("An economic obligation is already owned by another retained recurring occurrence; use its governed correction flow.");
+        var next = existing with { EconomicObligationKeys = normalized };
+        await CommitAsync(_document with
+        {
+            Occurrences = _document.Occurrences.Select(item => item.OccurrenceKey == occurrenceKey ? next : item).ToArray()
+        }, ct).ConfigureAwait(false);
+        return Copy(next, RecurringJournalJsonContext.Default.RecurringOccurrenceRecord);
+    }
+
     public async Task<RecurringOccurrenceRecord> PinDraftEvidenceAsync(string key, string digest, CancellationToken ct = default)
     {
         RequireUsable();

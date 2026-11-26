@@ -266,6 +266,23 @@ public sealed class ApiClientService : IDisposable
             ct, allowEmpty: true).ConfigureAwait(false);
     }
 
+    /// <summary>Downloads authoritative bytes with one captured authenticated endpoint session.</summary>
+    public async Task<ApiResponse<byte[]>> PostArtifactAsync(string endpoint, object body, CancellationToken ct = default)
+    {
+        using var lease = AcquireSession();
+        try
+        {
+            var url = BuildUrl(lease.Session.BaseUrl, endpoint);
+            using var request = CreateMutationRequest(lease.Session.BaseUrl, HttpMethod.Post, url, CreateJsonContent(body));
+            using var response = await lease.Session.ApiClient.SendAsync(request, ct).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+                return ApiResponse<byte[]>.Fail(await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false), (int)response.StatusCode);
+            return ApiResponse<byte[]>.Ok(await response.Content.ReadAsByteArrayAsync(ct).ConfigureAwait(false));
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (HttpRequestException ex) { return ApiResponse<byte[]>.Fail(ex.Message, isConnectionError: true); }
+    }
+
     /// <summary>
     /// Sends a PUT request using the current authenticated session and CSRF protection.
     /// </summary>

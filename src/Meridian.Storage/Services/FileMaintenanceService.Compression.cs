@@ -52,6 +52,7 @@ public sealed partial class FileMaintenanceService
             try
             {
                 File.Delete(sidecar);
+                // Best effort: the orphan is already deleted; nothing later depends on it.
                 await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(sidecar)!, CancellationToken.None);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -171,7 +172,9 @@ public sealed partial class FileMaintenanceService
                     File.Copy(source, backupFile, overwrite: false);
                     using (var stream = new FileStream(backupFile, FileMode.Open, FileAccess.Write, FileShare.Read))
                         stream.Flush(flushToDisk: true);
-                    await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(backupFile)!, CancellationToken.None);
+                    // Strict: the source is mutated only after every backup is confirmed durable.
+                    // A retry takes a fresh create-only backup, so it never overwrites this one.
+                    await AtomicFileWriter.SyncDirectoryOrThrowAsync(Path.GetDirectoryName(backupFile)!, CancellationToken.None);
                     recoveryCopies.Add(backupFile);
                     if (backupsBySource is not null && string.Equals(source, path, StringComparison.Ordinal))
                         backupsBySource[path] = backupFile;
@@ -298,7 +301,6 @@ public sealed partial class FileMaintenanceService
                     retained.Flush(flushToDisk: true);
                     if (File.Exists(outputSidecar))
                         await VerifyChecksumSidecarAsync(outputSidecar, retained, ct);
-                    await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(outputPath)!, CancellationToken.None);
                 }
                 catch (OperationCanceledException)
                 {
@@ -308,6 +310,8 @@ public sealed partial class FileMaintenanceService
                 {
                     throw new IOException($"Refusing to replace existing compression destination; recovery verification failed: {outputPath}", ex);
                 }
+                // Strict: the source is deleted below. A retry repeats this verified resume.
+                await AtomicFileWriter.SyncDirectoryOrThrowAsync(Path.GetDirectoryName(outputPath)!, CancellationToken.None);
                 CompressionCheckpoint?.Invoke(CompressionPublicationStage.PublicationSynced);
                 if (!File.Exists(outputSidecar))
                     await WriteChecksumSidecarAsync(outputPath, ct);
@@ -332,7 +336,9 @@ public sealed partial class FileMaintenanceService
                 RequireUnchangedSource(filePath, sourceStamp);
                 File.Move(stagedPath, outputPath, overwrite: false);
                 CompressionCheckpoint?.Invoke(CompressionPublicationStage.Published);
-                await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(outputPath)!, CancellationToken.None);
+                // Strict: the source (the only other copy) is deleted later in this call. On a
+                // throw both copies remain, and a retry takes the verified resume path above.
+                await AtomicFileWriter.SyncDirectoryOrThrowAsync(Path.GetDirectoryName(outputPath)!, CancellationToken.None);
                 CompressionCheckpoint?.Invoke(CompressionPublicationStage.PublicationSynced);
             }
             finally
@@ -348,6 +354,7 @@ public sealed partial class FileMaintenanceService
                 // Appended after verification: the archive we just published is incomplete.
                 File.Delete(outputSidecar);
                 File.Delete(outputPath);
+                // Best effort: the withdrawal has committed, and the IOException below is the one to report.
                 await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(outputPath)!, CancellationToken.None);
                 throw new IOException($"Source changed during compression; kept the source and withdrew the archive: {filePath}");
             }
@@ -389,7 +396,9 @@ public sealed partial class FileMaintenanceService
     {
         var checksum = await ComputeChecksumAsync(archivePath, ct);
         await AtomicFileWriter.WriteAsync(archivePath + ".sha256", $"{checksum}  {Path.GetFileName(archivePath)}", ct);
-        await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(archivePath)!, CancellationToken.None);
+        // Strict: the source is deleted only once its archive's integrity evidence is durable.
+        // A retry verifies the retained sidecar and resumes.
+        await AtomicFileWriter.SyncDirectoryOrThrowAsync(Path.GetDirectoryName(archivePath)!, CancellationToken.None);
     }
 
     private static async Task VerifyChecksumSidecarAsync(string sidecarPath, FileStream archive, CancellationToken ct)
@@ -409,6 +418,7 @@ public sealed partial class FileMaintenanceService
         if (File.Exists(staleSidecar))
             File.Delete(staleSidecar);
         CompressionCheckpoint?.Invoke(CompressionPublicationStage.SidecarDeleted);
+        // Best effort: the deletes have committed; a throw would report finished compression as failed.
         await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(filePath)!, CancellationToken.None);
     }
 }

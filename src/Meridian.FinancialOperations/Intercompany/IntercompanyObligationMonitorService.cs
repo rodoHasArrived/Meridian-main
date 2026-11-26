@@ -215,7 +215,8 @@ public sealed class IntercompanyObligationMonitorService(
             var detail = observation.Agreements[coverageEnd.AgreementId];
             findings.Add(new("intercompany.agreement.expiring", "Warning",
                 $"{detail.Name} legal coverage ends on {coverageEnd.Date:yyyy-MM-dd}.", AgreementId: detail.AgreementId,
-                AgreementVersion: coverageEnd.AgreementVersion, DrillThrough: AgreementRoute(detail.AgreementId)));
+                AgreementVersion: coverageEnd.AgreementVersion, DrillThrough: AgreementRoute(detail.AgreementId))
+            { DueDate = coverageEnd.Date });
         }
         foreach (var row in schedule.Rows)
         {
@@ -247,7 +248,13 @@ public sealed class IntercompanyObligationMonitorService(
                 findings.Add(new(detail.EffectiveStatus == IntercompanyAgreementStatusDto.Expired
                         ? "intercompany.agreement.expired-exposure" : "intercompany.agreement.terminated-exposure", "Warning",
                     $"{detail.Name} is {detail.EffectiveStatus.ToString().ToLowerInvariant()} with retained posted exposure.",
-                    row.EntityId, agreementId, agreementVersion, row.LedgerBookId, DrillThrough: AgreementRoute(agreementId)));
+                    row.EntityId, agreementId, agreementVersion, row.LedgerBookId, DrillThrough: AgreementRoute(agreementId))
+                {
+                    DueDate = detail.EffectiveStatus == IntercompanyAgreementStatusDto.Expired
+                        ? detail.ApplicableRevision?.Terms.EffectiveTo
+                        : detail.Revisions.Where(revision => revision.Action == IntercompanyAgreementActionDto.Terminate)
+                            .Select(revision => revision.Terms.TerminationEffectiveDate).Where(date => date.HasValue).Min()
+                });
         }
         var effectiveAt = new DateTimeOffset(request.AsOf.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
         foreach (var (entity, revision) in observation.Lifecycle)

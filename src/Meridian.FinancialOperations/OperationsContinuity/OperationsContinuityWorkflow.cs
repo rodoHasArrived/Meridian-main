@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
@@ -12,6 +13,16 @@ namespace Meridian.FinancialOperations.OperationsContinuity;
 public sealed partial class OperationsContinuityWorkflow
 {
     public Guid WorkflowId { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public OperationsWorkflowPurposeDto Purpose { get; init; } = OperationsWorkflowPurposeDto.Close;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SubjectRevisionId { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SubjectMaker { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SubjectEvidenceId { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SubjectEvidenceSha256 { get; init; }
     public Guid FundAccountId { get; init; }
     public string PeriodId { get; init; } = string.Empty;
     public Guid? LedgerBookId { get; init; }
@@ -110,15 +121,22 @@ public sealed partial class OperationsContinuityWorkflow
         Guid? securityMasterSnapshotId,
         string? brokerSource,
         DateTimeOffset now,
-        Guid? ledgerBookId = null)
+        Guid? ledgerBookId = null,
+        SecurityMasterRevisionWorkflowAuthority? revisionAuthority = null)
     {
         ArgumentOutOfRangeException.ThrowIfEqual(workflowId, Guid.Empty);
         ArgumentOutOfRangeException.ThrowIfEqual(fundAccountId, Guid.Empty);
         ArgumentException.ThrowIfNullOrWhiteSpace(periodId);
+        EnsureRevisionAuthorityMatchesStart(revisionAuthority, workflowId, fundAccountId, ledgerBookId, periodId);
 
         return new OperationsContinuityWorkflow
         {
             WorkflowId = workflowId,
+            Purpose = revisionAuthority is null ? OperationsWorkflowPurposeDto.Close : OperationsWorkflowPurposeDto.SecurityMasterRevision,
+            SubjectRevisionId = revisionAuthority?.RevisionId,
+            SubjectMaker = revisionAuthority?.Maker,
+            SubjectEvidenceId = revisionAuthority?.EvidenceId,
+            SubjectEvidenceSha256 = revisionAuthority?.EvidenceSha256,
             FundAccountId = fundAccountId,
             PeriodId = periodId.Trim(),
             LedgerBookId = ledgerBookId,
@@ -1073,6 +1091,11 @@ public sealed partial class OperationsContinuityWorkflow
                 "Assign a reviewer who differs from the submitting operator.");
         }
 
+        if (Purpose == OperationsWorkflowPurposeDto.SecurityMasterRevision)
+            return ValidateRevisionApprovalSubject(request.ReportPackId, request.Rationale, request.Reviewer);
+        if (Purpose != OperationsWorkflowPurposeDto.Close)
+            return CreateChecklistControlApprovalBlocker("WORKFLOW_PURPOSE_UNSUPPORTED", "The workflow purpose is not supported.");
+
         if (BrokerIngestGate.Status != OperationsGateStatusDto.Passed ||
             SecurityMasterGate.Status != OperationsGateStatusDto.Passed ||
             LedgerPostingGate.Status != OperationsGateStatusDto.Passed)
@@ -1215,6 +1238,11 @@ public sealed partial class OperationsContinuityWorkflow
                 "APPROVAL_INDEPENDENT_REVIEWER_REQUIRED",
                 "The assigned reviewer must make the decision and must differ from the submitting operator.");
         }
+
+        if (Purpose == OperationsWorkflowPurposeDto.SecurityMasterRevision)
+            return ValidateRevisionApprovalSubject(request.ReportPackId, submission.Rationale, request.Reviewer);
+        if (Purpose != OperationsWorkflowPurposeDto.Close)
+            return CreateChecklistControlApprovalBlocker("WORKFLOW_PURPOSE_UNSUPPORTED", "The workflow purpose is not supported.");
 
         if (!IsRequestedReportPackReady(request.ReportPackId))
         {

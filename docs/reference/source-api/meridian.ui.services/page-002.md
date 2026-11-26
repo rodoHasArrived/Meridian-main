@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Ui.Services.ApiEndpointConfiguration</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:791](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L791).
+Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:808](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L808).
 
 Immutable request-generation settings published atomically by ApiClientService.
 
@@ -40,7 +40,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.AppSettings</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:800](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L800).
+Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:817](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L817).
 
 Settings for API client configuration.
 
@@ -52,9 +52,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? ServiceUrl { get; init; }</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:802](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L802) |  |
-| <code>public int ServiceTimeoutSeconds { get; init; } = 30;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:803](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L803) |  |
-| <code>public int BackfillTimeoutMinutes { get; init; } = 60;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:804](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L804) |  |
+| <code>public string? ServiceUrl { get; init; }</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:819](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L819) |  |
+| <code>public int ServiceTimeoutSeconds { get; init; } = 30;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:820](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L820) |  |
+| <code>public int BackfillTimeoutMinutes { get; init; } = 60;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:821](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L821) |  |
 
 ## ArchiveBrowserService
 
@@ -320,7 +320,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.BackfillCompletedEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/BackfillService.cs:854](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L854).
+Source: [src/Meridian.Ui.Services/Services/BackfillService.cs:880](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L880).
 
 Backfill completed event args.
 
@@ -332,10 +332,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:856](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L856) |  |
-| <code>public BackfillProgress? Progress { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:857](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L857) |  |
-| <code>public bool WasCancelled { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:858](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L858) |  |
-| <code>public Exception? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:859](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L859) |  |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:882](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L882) |  |
+| <code>public BackfillProgress? Progress { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:883](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L883) |  |
+| <code>public bool WasCancelled { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:884](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L884) |  |
+| <code>public Exception? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:885](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L885) |  |
 
 ## BackfillPresentationService
 
@@ -360,7 +360,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.BackfillProgressEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/BackfillService.cs:846](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L846).
+Source: [src/Meridian.Ui.Services/Services/BackfillService.cs:872](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L872).
 
 Backfill progress event args.
 
@@ -372,7 +372,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BackfillProgress? Progress { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:848](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L848) |  |
+| <code>public BackfillProgress? Progress { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:874](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L874) |  |
 
 ## BackfillProviderConfigService
 
@@ -512,12 +512,12 @@ Declared public members:
 | <code>public Task&lt;BackfillResultDto?&gt; GetLastStatusAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:527](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L527) | Gets the last backfill status from the backend API. |
 | <code>public Task&lt;BackfillResultDto?&gt; RunBackfillAsync(string provider, string[] symbols, string? from, string? to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:534](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L534) | Runs a backfill operation via the backend API (convenience overload). Delegates to BackfillApiService.RunBackfillAsync with Daily granularity. |
 | <code>public async Task&lt;List&lt;HistoricalBar&gt;&gt; GetHistoricalBarsAsync(string symbol, DateOnly fromDate, DateOnly toDate, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:546](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L546) | Gets historical bars for a symbol by reading from local storage. Falls back to triggering a backfill if no stored data is found. |
-| <code>public async Task ResumeBackfillAsync(string checkpointJobId, Action&lt;BackfillProgress&gt;? progressCallback = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:743](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L743) | Resumes a previously interrupted backfill job from its checkpoint. Only processes symbols that were pending or failed. |
-| <code>public async Task&lt;BackfillResultDto?&gt; PollBackendStatusAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:774](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L774) | Polls the backend for the latest backfill status and syncs it with local progress. Call periodically from the UI to keep progress up to date with backend state. |
-| <code>public async Task&lt;IReadOnlyList&lt;BackfillCheckpoint&gt;&gt; GetResumableJobsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:816](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L816) | Gets resumable jobs from the checkpoint store. |
-| <code>public async Task&lt;IReadOnlyList&lt;BackfillCheckpoint&gt;&gt; GetCheckpointHistoryAsync(int limit = 20, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:825](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L825) | Gets job history from checkpoints. |
-| <code>public event EventHandler&lt;BackfillProgressEventArgs&gt;? ProgressUpdated;</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:835](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L835) | Event raised when progress is updated. |
-| <code>public event EventHandler&lt;BackfillCompletedEventArgs&gt;? BackfillCompleted;</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:840](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L840) | Event raised when backfill completes. |
+| <code>public async Task ResumeBackfillAsync(string checkpointJobId, Action&lt;BackfillProgress&gt;? progressCallback = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:769](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L769) | Resumes a previously interrupted backfill job from its checkpoint. Only processes symbols that were pending or failed. |
+| <code>public async Task&lt;BackfillResultDto?&gt; PollBackendStatusAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:800](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L800) | Polls the backend for the latest backfill status and syncs it with local progress. Call periodically from the UI to keep progress up to date with backend state. |
+| <code>public async Task&lt;IReadOnlyList&lt;BackfillCheckpoint&gt;&gt; GetResumableJobsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:842](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L842) | Gets resumable jobs from the checkpoint store. |
+| <code>public async Task&lt;IReadOnlyList&lt;BackfillCheckpoint&gt;&gt; GetCheckpointHistoryAsync(int limit = 20, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:851](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L851) | Gets job history from checkpoints. |
+| <code>public event EventHandler&lt;BackfillProgressEventArgs&gt;? ProgressUpdated;</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:861](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L861) | Event raised when progress is updated. |
+| <code>public event EventHandler&lt;BackfillCompletedEventArgs&gt;? BackfillCompleted;</code> | [src/Meridian.Ui.Services/Services/BackfillService.cs:866](../../../../src/Meridian.Ui.Services/Services/BackfillService.cs#L866) | Event raised when backfill completes. |
 
 ## BackfillSymbolProgressPresentation
 
@@ -884,7 +884,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.BoundedWindowMode</code>. Kind: `enum`.
 
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:150](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L150).
+Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:143](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L143).
 
 Bounded workstation shell mode for one-shell dock and float behavior.
 
@@ -896,9 +896,9 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Focused</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:152](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L152) |  |
-| <code>DockFloat</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:153](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L153) |  |
-| <code>WorkbenchPreset</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:154](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L154) |  |
+| <code>Focused</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:145](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L145) |  |
+| <code>DockFloat</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:146](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L146) |  |
+| <code>WorkbenchPreset</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:147](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L147) |  |
 
 ## BrowserArchiveFileInfo
 

@@ -117,9 +117,7 @@ once with the requesting operator and current credential generation.
 
 `IOAuthTokenVault` stores refreshable tokens in the same encrypted vault as provider credentials.
 Mutations hold the shared writer lock and update only the named provider token; readers open a stable
-published generation without requiring a writable lock. Legacy imports preserve existing tokens and
-audit every attempted provider, retaining the imported generation in both primary and backup before
-acknowledging the import. Scoped and unscoped OAuth saves mirror the replacement token to the backup before success,
+published generation without requiring a writable lock. Scoped and unscoped OAuth saves mirror the replacement token to the backup before success,
 because remote rotation can invalidate the previous refresh token immediately. Backup-write failures
 are reported; the retained replacement can be saved again without another remote rotation.
 Durable markers and sanitized recovery generations prevent deletion reversal;
@@ -151,8 +149,7 @@ structurally valid entry is moved to `provider-credentials.audit.pending.jsonl.r
 never appended; the start-up replay logs and continues on any failure rather than refusing the host. Provider-credential saves, deletes and verification records return
 success in that case; OAuth token saves throw `ProviderCredentialAuditDeferredException` (an
 `IOException` with `VaultCommitted`) because their callers reconcile a running cache. A journal write
-failure refuses the mutation before the vault is touched. Legacy imports keep their retry-by-sidecar
-contract and do not journal. The service never writes plaintext OAuth JSON.
+failure refuses the mutation before the vault is touched. The service never writes plaintext OAuth JSON.
 Scoped readers use the same stable generation path, including backup recovery, without acquiring a
 writer lock or creating storage for an absent vault. Scoped deletion sanitizes recovery generations
 while retaining other owners and unassigned records. Scoped audit appends retain tenant, connection,
@@ -184,13 +181,13 @@ coalesce only inside that same ownership scope. Malformed or absent scope metada
 Read-only migration preserves credential generation and verification evidence; the next mutation
 persists the canonical key while retaining all other owners.
 
-Legacy provider sidecars are imported as one validated, insert-only vault snapshot. Compatible module aliases are combined; conflicting fields or environments reject the whole snapshot before publication. Existing encrypted records, including rotated credentials and verification metadata, remain authoritative on retries. Import markers survive deletion so retained sidecars cannot resurrect removed secrets after an audit failure. Deletion also replaces the recovery generation with the sanitized vault. Mutations share a bounded, cancellable file lock across store instances. Readers open one immutable published generation without a writable lock, including on read-only secret volumes; primary and backup generations are both replaced atomically. Audit failure retains the sidecar for retry.
+Deletion replaces the recovery generation with the sanitized vault. Mutations share a bounded, cancellable file lock across store instances. Readers open one immutable published generation without a writable lock, including on read-only secret volumes; primary and backup generations are both replaced atomically.
 
-`LegacyCredentialFileMigration` serializes source discovery, import and cleanup across processes for
-both provider setup and OAuth callers. Successful imports retain both encrypted generations before
-the helper moves the plaintext source to `.migrated`, synchronizes the directory, then erases it.
-A restart completes cleanup without deserializing partly erased bytes. Empty migration lock files
-remain in place so every process continues to acquire the same lock identity.
+Plaintext credential files from earlier releases (`provider-credentials.json`, `.mdc/oauth_tokens.json`
+and interrupted `.migrated` snapshots) are no longer imported or erased by provider setup or OAuth
+callers. `RetainedCredentialFileAccess` only restricts their Unix permissions to the owner and refuses
+a failed or unverified permission change. Operators re-enter those credentials through the vault and
+remove the retained files manually.
 
 ## Purpose
 
@@ -377,8 +374,10 @@ rebalances across the available latency and error-rate evidence so severe histor
 failures are still routable instead of being capped below the global degradation threshold.
 `CrossProviderComparisonService` emits trade price/volume and quote bid/ask discrepancy signals
 for provider-trust consumers. Thresholds come from the user-editable `CrossProviderTolerancePolicy`,
-resolved per symbol through an optional asset-class lookup and replaceable at runtime with
-`UpdatePolicy`; informational volume discrepancies are recorded with `IsInformational` and excluded
+resolved per symbol through `CrossProviderToleranceResolver` and replaceable at runtime with
+`UpdatePolicy`. Historical previews use the same symbol registry lookup, and unresolved symbols
+use base thresholds. Each live discrepancy retains the resolved class and thresholds used to
+classify it. Informational volume discrepancies are recorded with `IsInformational` and excluded
 from alert statistics. Application pipeline, backfill remediation, Prometheus, health,
 daily-summary, and UI Shared endpoint adapters consume `Meridian.DataIntegration.Monitoring` and
 `Meridian.DataIntegration.Monitoring.DataQuality` instead of keeping provider trust primitives in
@@ -524,3 +523,9 @@ The immutable statement match artifact retains the executed tolerance policy, th
 evidence, and the exact operands of accepted match groups. The recovery checkpoint binds these
 fields through the artifact hash. Legacy artifacts preserve their original byte shape when these
 fields are absent. Recovery adopts a verified older artifact as written.
+Match artifacts, casework commit envelopes and completion markers are acknowledged only after a
+strict directory sync, which also runs when an earlier identical record is returned, so a retry
+confirms an interrupted publication. Statement source evidence is synced the same way before its
+import is published. The create-once import and recovery-checkpoint claims stay best effort: a retry
+would report them as duplicates. `FileProviderCredentialStore` strictly syncs its audit journal
+before each vault write; audit appends and post-commit journal updates stay best effort.

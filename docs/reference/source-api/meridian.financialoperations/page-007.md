@@ -6,6 +6,61 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementMappingProfileLoader
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementMappingProfileLoader</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs:7](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs#L7).
+
+Validates declarative mapping-profile documents and materializes them into the runtime StatementMappingProfile records the reconciliation engine already consumes.
+
+```csharp
+public static class StatementMappingProfileLoader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;string&gt; Validate(StatementMappingProfileDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs:19](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs#L19) |  |
+| <code>public static StatementMappingProfile ToRuntimeProfile(StatementMappingProfileDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs:125](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs#L125) | Materializes the document into the runtime profile the existing reconciliation paths consume. Aliases, culture, and CSV options are connector-level concerns and are not carried into the runtime shape. |
+| <code>public static StatementFieldMapping? FindDocumentField(StatementMappingProfileDocument document, StatementCanonicalField canonicalField);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs:151](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs#L151) |  |
+
+## StatementMappingProfileSnapshot
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementMappingProfileSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:48](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L48).
+
+Persisted snapshot shape for the file-backed profile store.
+
+```csharp
+public sealed record StatementMappingProfileSnapshot(int Version, IReadOnlyList<StatementMappingProfileDocument> Profiles);
+```
+
+## StatementParseIssue
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementParseIssue</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:48](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L48).
+
+A parse/mapping diagnostic. Severity is &quot;Error&quot;, &quot;Warning&quot;, or &quot;Info&quot;; only Error severities block a commit.
+
+```csharp
+public sealed record StatementParseIssue(string Code, string Severity, int? RowNumber, string? Field, string Message)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ErrorSeverity = &quot;Error&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:55](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L55) |  |
+| <code>public const string WarningSeverity = &quot;Warning&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:56](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L56) |  |
+| <code>public const string InfoSeverity = &quot;Info&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:57](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L57) |  |
+| <code>public static StatementParseIssue Error(string code, string message, int? rowNumber = null, string? field = null) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:59](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L59) |  |
+| <code>public static StatementParseIssue Warning(string code, string message, int? rowNumber = null, string? field = null) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:62](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L62) |  |
+| <code>public static StatementParseIssue Info(string code, string message, int? rowNumber = null, string? field = null) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:65](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L65) |  |
+
 ## StatementParseResult
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementParseResult</code>. Kind: `record`.
@@ -408,7 +463,7 @@ Declared public members:
 | <code>public FileStatementRunRecoveryRepository(string dataDirectory);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:558](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L558) |  |
 | <code>public Task&lt;StatementRunRecoveryCheckpoint?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:563](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L563) |  |
 | <code>public async Task&lt;bool&gt; TryCreateAsync(StatementRunRecoveryCheckpoint checkpoint, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:571](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L571) |  |
-| <code>public async Task SaveAsync(StatementRunRecoveryCheckpoint checkpoint, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:616](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L616) |  |
+| <code>public async Task SaveAsync(StatementRunRecoveryCheckpoint checkpoint, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:618](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L618) |  |
 
 ## FileStatementRunRepository
 
@@ -818,59 +873,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>string SourceSystem { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:28](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L28) |  |
 | <code>Task&lt;IReadOnlyList&lt;CanonicalReconciliationFeedRecord&gt;&gt; ReadAsync(string sourcePath, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:30](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L30) |  |
-
-## IReconciliationFxRateProvider
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IReconciliationFxRateProvider</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:15](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L15).
-
-Reconciliation-scoped FX seam. Returns the conversion rate from one currency to another as of a business date, or false when no rate is known. The matcher relies on the false result to fail closed: a cross-currency line with no available rate stays in its original currency and surfaces as a break rather than being silently (mis)matched against a base-currency balance.
-
-```csharp
-public interface IReconciliationFxRateProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>bool TryGetRate(string fromCurrency, string toCurrency, DateOnly asOf, out decimal rate);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:17](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L17) |  |
-| <code>bool TryResolveRate(string fromCurrency, string toCurrency, DateOnly asOf, out ReconciliationFxRateResolution resolution);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L24) | Resolves the rate together with the evidence a posting needs: the date of the quote that was used, how it was derived and where it came from. A provider that cannot state those reports no resolution, so a posting never rests on a rate of unknown age or origin. |
-
-## IReconciliationIngestionScheduler
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IReconciliationIngestionScheduler</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L18).
-
-Captures source snapshots across the requested reconciliation ingestion work.
-
-```csharp
-public interface IReconciliationIngestionScheduler
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;DataSourceSnapshot&gt;&gt; CaptureAsync(IReadOnlyList&lt;IReconciliationSourceAdapter&gt; adapters, ReconciliationIngestionRequest request, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:20](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L20) |  |
-
-## IReconciliationSourceAdapter
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IReconciliationSourceAdapter</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:8](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L8).
-
-Captures a reconciliation source snapshot for a supplied ingestion request.
-
-```csharp
-public interface IReconciliationSourceAdapter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ReconciliationSourceType SourceType { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:10](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L10) |  |
-| <code>Task&lt;DataSourceSnapshot&gt; CaptureSnapshotAsync(ReconciliationIngestionRequest request, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L12) |  |

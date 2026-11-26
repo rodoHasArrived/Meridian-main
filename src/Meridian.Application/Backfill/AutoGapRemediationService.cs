@@ -813,7 +813,10 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
 
             try
             {
-                var request = new BackfillRequest(normalizedProvider, eligibleSymbols, from, to);
+                var request = new BackfillRequest(normalizedProvider, eligibleSymbols, from, to)
+                {
+                    GapRepairReference = Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(idempotencyKey)
+                };
                 var result = await _backfillGateway.RunAsync(request, ct).ConfigureAwait(false);
 
                 execution.CompletedAt = DateTimeOffset.UtcNow;

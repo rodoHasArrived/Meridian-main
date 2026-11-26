@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ServiceRegistry
+
+Qualified name: <code>Meridian.Application.Services.ServiceRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/ServiceRegistry.cs:77](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L77).
+
+Centralized registry for application services providing discovery, categorization, and dependency resolution capabilities.
+
+```csharp
+public sealed class ServiceRegistry : IDisposable, IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ServiceRegistry(ILogger? log = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:84](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L84) |  |
+| <code>public void Register&lt;T&gt;(T instance, ServiceCategory category, string description) where T : class;</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:96](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L96) | Registers a service with metadata. |
+| <code>public T? Get&lt;T&gt;() where T : class;</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:112](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L112) | Gets a service by type. |
+| <code>public IReadOnlyList&lt;ServiceInfo&gt; GetByCategory(ServiceCategory category);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:122](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L122) | Gets all services in a category. |
+| <code>public IReadOnlyList&lt;ServiceInfo&gt; GetAll();</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:131](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L131) | Gets all registered services. |
+| <code>public IReadOnlyDictionary&lt;ServiceCategory, int&gt; GetSummary();</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:140](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L140) | Gets a summary of registered services by category. |
+| <code>public void Dispose();</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:147](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L147) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:170](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L170) |  |
+
 ## ServiceRegistryExtensions
 
 Qualified name: <code>Meridian.Application.Services.ServiceRegistryExtensions</code>. Kind: `class`.
@@ -56,7 +81,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Services.SymbolPreset</code>. Kind: `enum`.
 
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:979](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L979).
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:977](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L977).
 
 Preset symbol lists.
 
@@ -68,11 +93,11 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Custom</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:981](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L981) |  |
-| <code>USMajorIndices</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:982](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L982) |  |
-| <code>TechGiants</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:983](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L983) |  |
-| <code>SP500Top20</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:984](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L984) |  |
-| <code>Crypto</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:985](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L985) |  |
+| <code>Custom</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:979](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L979) |  |
+| <code>USMajorIndices</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:980](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L980) |  |
+| <code>TechGiants</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:981](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L981) |  |
+| <code>SP500Top20</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:982](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L982) |  |
+| <code>Crypto</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:983](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L983) |  |
 
 ## UseCase
 
@@ -92,10 +117,9 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Development</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:967](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L967) |  |
 | <code>Strategy</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:968](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L968) |  |
-| <code>[Obsolete(&quot;Use Strategy. Research is retained only as a compatibility alias.&quot;)] Research = Strategy</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:969](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L969) |  |
-| <code>RealTimeTrading</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:971](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L971) |  |
-| <code>BackfillOnly</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:972](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L972) |  |
-| <code>Production</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:973](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L973) |  |
+| <code>RealTimeTrading</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:969](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L969) |  |
+| <code>BackfillOnly</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:970](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L970) |  |
+| <code>Production</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:971](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L971) |  |
 
 ## ValidationCheck
 
@@ -918,27 +942,27 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static Func&lt;string&gt; DefaultPathResolver { get; set; } = ResolveDefaultPath;</code> | [src/Meridian.Application/Http/ConfigStore.cs:37](../../../../src/Meridian.Application/Http/ConfigStore.cs#L37) | Default path resolver that returns the nearest standard Meridian configuration path. |
-| <code>public string ConfigPath { get; }</code> | [src/Meridian.Application/Http/ConfigStore.cs:47](../../../../src/Meridian.Application/Http/ConfigStore.cs#L47) | Gets the path to the configuration file. |
-| <code>public ConfigStore() : this(null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:52](../../../../src/Meridian.Application/Http/ConfigStore.cs#L52) | Creates a new ConfigStore with the default configuration path resolution. |
-| <code>public ConfigStore(string? configPath, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:59](../../../../src/Meridian.Application/Http/ConfigStore.cs#L59) | Creates a new ConfigStore with a custom configuration path. |
-| <code>public static AppConfig LoadConfig(string path);</code> | [src/Meridian.Application/Http/ConfigStore.cs:84](../../../../src/Meridian.Application/Http/ConfigStore.cs#L84) | Static method to load configuration from a path. Used by ConfigurationService.LoadAndPrepareConfig() for consolidated config loading. |
-| <code>public AppConfig Load() =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:112](../../../../src/Meridian.Application/Http/ConfigStore.cs#L112) | Instance method to load configuration from the configured path. Delegates to the static LoadConfig method. |
-| <code>public ConfigurationChangeStatus GetChangeStatus() =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:115](../../../../src/Meridian.Application/Http/ConfigStore.cs#L115) | Saved setting impacts and host-lifetime pending activation; contains no setting values. |
-| <code>public static ConfigurationChangeImpact GetSettingImpact(string path) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:118](../../../../src/Meridian.Application/Http/ConfigStore.cs#L118) | Conservative activation requirement for a configuration field, also exposed by effective settings. |
-| <code>public AppConfig LoadRequired();</code> | [src/Meridian.Application/Http/ConfigStore.cs:121](../../../../src/Meridian.Application/Http/ConfigStore.cs#L121) | Loads existing configuration without substituting defaults when authoritative state cannot be read. |
-| <code>public Task&lt;T&gt; UpdateRequiredCheckedAsync&lt;T&gt;(Func&lt;AppConfig, CancellationToken, Task&lt;(AppConfig Config, T Result)&gt;&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:150](../../../../src/Meridian.Application/Http/ConfigStore.cs#L150) | Applies a checked update to persisted configuration. The callback may read local evidence under the same lock as the commit. It must not perform network I/O or reenter configuration writes. |
-| <code>public Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;AppConfig, (AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:168](../../../../src/Meridian.Application/Http/ConfigStore.cs#L168) | Read-modify-write of the configuration document under the cross-process configuration lock (PRD-002: concurrent configuration writes). The current document is loaded inside the lock, handed to update, and the returned document is written atomically before the lock is released, so two writers editing different sections can never lose each other&#x27;s change the way a Load() + SaveAsync pair can. |
-| <code>public Task UpdateAsync(Func&lt;AppConfig, AppConfig&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:172](../../../../src/Meridian.Application/Http/ConfigStore.cs#L172) | Result-less form of UpdateAsync{T}. |
-| <code>public async Task&lt;IDisposable&gt; AcquireWriteLeaseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:216](../../../../src/Meridian.Application/Http/ConfigStore.cs#L216) | Holds the cross-process configuration write lock (the .lock sidecar beside the file) until the returned lease is disposed. For writers that persist the document through their own serializer, such as the WPF shell&#x27;s configuration service, so the installed two-process workstation shares one lock with every UpdateAsync{T} caller. Not reentrant. |
-| <code>public async Task SaveAsync(AppConfig cfg, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:238](../../../../src/Meridian.Application/Http/ConfigStore.cs#L238) | Whole-document replacement: the caller&#x27;s snapshot becomes the configuration, last writer wins. Reserved for callers that own the entire document (the CLI &quot;save this configuration&quot; path and the setup wizard&#x27;s generated output). Section-level edits use UpdateAsync{T}, which reads the current document under the same lock and cannot drop a concurrent change. |
-| <code>public async Task SaveFeatureCapabilityOverridesAsync(IReadOnlyDictionary&lt;string, bool&gt; overrides, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:327](../../../../src/Meridian.Application/Http/ConfigStore.cs#L327) |  |
-| <code>public string? TryLoadStatusJson();</code> | [src/Meridian.Application/Http/ConfigStore.cs:408](../../../../src/Meridian.Application/Http/ConfigStore.cs#L408) |  |
-| <code>public string GetStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:425](../../../../src/Meridian.Application/Http/ConfigStore.cs#L425) |  |
-| <code>public string GetBackfillStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:432](../../../../src/Meridian.Application/Http/ConfigStore.cs#L432) |  |
-| <code>public BackfillResult? TryLoadBackfillStatus();</code> | [src/Meridian.Application/Http/ConfigStore.cs:439](../../../../src/Meridian.Application/Http/ConfigStore.cs#L439) |  |
-| <code>public string GetDataRoot(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:446](../../../../src/Meridian.Application/Http/ConfigStore.cs#L446) |  |
-| <code>public string GetProviderMetricsPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:452](../../../../src/Meridian.Application/Http/ConfigStore.cs#L452) |  |
-| <code>public ProviderMetricsStatus? TryLoadProviderMetrics();</code> | [src/Meridian.Application/Http/ConfigStore.cs:459](../../../../src/Meridian.Application/Http/ConfigStore.cs#L459) |  |
+| <code>public string ConfigPath { get; }</code> | [src/Meridian.Application/Http/ConfigStore.cs:48](../../../../src/Meridian.Application/Http/ConfigStore.cs#L48) | Gets the path to the configuration file. |
+| <code>public ConfigStore() : this(null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:53](../../../../src/Meridian.Application/Http/ConfigStore.cs#L53) | Creates a new ConfigStore with the default configuration path resolution. |
+| <code>public ConfigStore(string? configPath, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:60](../../../../src/Meridian.Application/Http/ConfigStore.cs#L60) | Creates a new ConfigStore with a custom configuration path. |
+| <code>public static AppConfig LoadConfig(string path);</code> | [src/Meridian.Application/Http/ConfigStore.cs:86](../../../../src/Meridian.Application/Http/ConfigStore.cs#L86) | Static method to load configuration from a path. Used by ConfigurationService.LoadAndPrepareConfig() for consolidated config loading. |
+| <code>public AppConfig Load() =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:114](../../../../src/Meridian.Application/Http/ConfigStore.cs#L114) | Instance method to load configuration from the configured path. Delegates to the static LoadConfig method. |
+| <code>public ConfigurationChangeStatus GetChangeStatus() =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:117](../../../../src/Meridian.Application/Http/ConfigStore.cs#L117) | Saved setting impacts and exact-revision collector evidence; contains no setting values. |
+| <code>public static ConfigurationChangeImpact GetSettingImpact(string path) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:180](../../../../src/Meridian.Application/Http/ConfigStore.cs#L180) | Conservative activation requirement for a configuration field, also exposed by effective settings. |
+| <code>public AppConfig LoadRequired() =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:183](../../../../src/Meridian.Application/Http/ConfigStore.cs#L183) | Loads existing configuration without substituting defaults when authoritative state cannot be read. |
+| <code>public async Task&lt;T&gt; UpdateRequiredCheckedAsync&lt;T&gt;(Func&lt;AppConfig, CancellationToken, Task&lt;(AppConfig Config, T Result)&gt;&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:205](../../../../src/Meridian.Application/Http/ConfigStore.cs#L205) | Applies a checked update to persisted configuration. The callback may read local evidence under the same lock as the commit. It must not perform network I/O or reenter configuration writes. |
+| <code>public async Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;AppConfig, (AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:228](../../../../src/Meridian.Application/Http/ConfigStore.cs#L228) | Read-modify-write of the configuration document under the cross-process configuration lock (PRD-002: concurrent configuration writes). The current document is loaded inside the lock, handed to update, and the returned document is written atomically before the lock is released, so two writers editing different sections can never lose each other&#x27;s change the way a Load() + SaveAsync pair can. |
+| <code>public Task UpdateAsync(Func&lt;AppConfig, AppConfig&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:237](../../../../src/Meridian.Application/Http/ConfigStore.cs#L237) | Result-less form of UpdateAsync{T}. |
+| <code>public async Task&lt;IDisposable&gt; AcquireWriteLeaseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:278](../../../../src/Meridian.Application/Http/ConfigStore.cs#L278) | Holds the cross-process configuration write lock (the .lock sidecar beside the file) until the returned lease is disposed. For writers that persist the document through their own serializer, such as the WPF shell&#x27;s configuration service, so the installed two-process workstation shares one lock with every UpdateAsync{T} caller. Not reentrant. |
+| <code>public async Task SaveAsync(AppConfig cfg, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:300](../../../../src/Meridian.Application/Http/ConfigStore.cs#L300) | Whole-document replacement: the caller&#x27;s snapshot becomes the configuration, last writer wins. Reserved for callers that own the entire document (the CLI &quot;save this configuration&quot; path and the setup wizard&#x27;s generated output). Section-level edits use UpdateAsync{T}, which reads the current document under the same lock and cannot drop a concurrent change. |
+| <code>public async Task SaveFeatureCapabilityOverridesAsync(IReadOnlyDictionary&lt;string, bool&gt; overrides, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:397](../../../../src/Meridian.Application/Http/ConfigStore.cs#L397) |  |
+| <code>public string? TryLoadStatusJson();</code> | [src/Meridian.Application/Http/ConfigStore.cs:478](../../../../src/Meridian.Application/Http/ConfigStore.cs#L478) |  |
+| <code>public string GetStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:495](../../../../src/Meridian.Application/Http/ConfigStore.cs#L495) |  |
+| <code>public string GetBackfillStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:502](../../../../src/Meridian.Application/Http/ConfigStore.cs#L502) |  |
+| <code>public BackfillResult? TryLoadBackfillStatus();</code> | [src/Meridian.Application/Http/ConfigStore.cs:509](../../../../src/Meridian.Application/Http/ConfigStore.cs#L509) |  |
+| <code>public string GetDataRoot(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:516](../../../../src/Meridian.Application/Http/ConfigStore.cs#L516) |  |
+| <code>public string GetProviderMetricsPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:522](../../../../src/Meridian.Application/Http/ConfigStore.cs#L522) |  |
+| <code>public ProviderMetricsStatus? TryLoadProviderMetrics();</code> | [src/Meridian.Application/Http/ConfigStore.cs:529](../../../../src/Meridian.Application/Http/ConfigStore.cs#L529) |  |
 
 ## ConfigurationRuntimeAppliers
 
@@ -1044,22 +1068,3 @@ Declared public members:
 | <code>public (ConnectionHealthSnapshotDto? Snapshot, string? Error) GetConnectionHealth();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:536](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L536) | Gets connection health snapshot. |
 | <code>public async Task&lt;(DetailedHealthReport? Report, string? Error)&gt; GetDetailedHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:570](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L570) | Gets detailed health report (async). |
 | <code>public static IReadOnlyList&lt;BackfillProviderInfo&gt; GetBackfillProviderInfo();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:591](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L591) | Gets the list of available backfill providers (static info). |
-
-## IWizardStep
-
-Qualified name: <code>Meridian.Application.Wizard.Core.IWizardStep</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/Wizard/Core/IWizardStep.cs:9](../../../../src/Meridian.Application/Wizard/Core/IWizardStep.cs#L9).
-
-Contract that every wizard step must implement. Steps are independent units: each one reads from and writes to WizardContext, then returns a WizardStepResult that tells the WizardCoordinator what to do next.
-
-```csharp
-public interface IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>WizardStepId StepId { get; }</code> | [src/Meridian.Application/Wizard/Core/IWizardStep.cs:12](../../../../src/Meridian.Application/Wizard/Core/IWizardStep.cs#L12) | The unique identifier of this step in the workflow graph. |
-| <code>Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Core/IWizardStep.cs:19](../../../../src/Meridian.Application/Wizard/Core/IWizardStep.cs#L19) | Executes the step. Implementations should not throw for user-facing cancellations — return WizardStepResult.Cancelled instead. |

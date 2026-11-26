@@ -719,7 +719,9 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
             await writer.FlushAsync(ct);
             stream.Flush(flushToDisk: true);
         }
-        await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(quarantinePath)!, CancellationToken.None);
+        // Strict: pass 2 drops the rejected lines from the source, so the quarantine must be durable
+        // first. On a throw the source is untouched; a retry writes a fresh quarantine file.
+        await AtomicFileWriter.SyncDirectoryOrThrowAsync(Path.GetDirectoryName(quarantinePath)!, CancellationToken.None);
         recoveryCopies.Add(quarantinePath);
 
         // Pass 2: stream the salvaged content into the atomic temp file. The source is re-read

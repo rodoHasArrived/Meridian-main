@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementReconciliationReportStartCommand
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportStartCommand</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:21](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L21).
+
+```csharp
+public sealed record StatementReconciliationReportStartCommand(StatementImportCommitRequest Import, string TenantId, string? CompanyId);
+```
+
 ## StatementReconciliationReportWorkflowExecution
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportWorkflowExecution</code>. Kind: `record`.
@@ -70,64 +80,6 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public bool SupportsReviewedRowCases =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.RowCases.cs:10](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.RowCases.cs#L10) |  |
-
-## StatementToReportArtifactDownload
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementToReportArtifactDownload</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:26](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L26).
-
-Compatibility artifact result for callers compiled against the pre-rename operation.
-
-```csharp
-public sealed record StatementToReportArtifactDownload(StatementToReportArtifactDto Descriptor, byte[] Content);
-```
-
-## StatementToReportStartCommand
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementToReportStartCommand</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:13](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L13).
-
-Compatibility command for callers compiled against the pre-rename operation.
-
-```csharp
-public sealed record StatementToReportStartCommand(StatementImportCommitRequest Import, string TenantId, string? CompanyId);
-```
-
-## StatementToReportWorkflowExecution
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementToReportWorkflowExecution</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:20](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L20).
-
-Compatibility execution result for callers compiled against the pre-rename operation.
-
-```csharp
-public sealed record StatementToReportWorkflowExecution(StatementImportCommitResultDto? ImportResult, StatementToReportWorkflowDto Workflow);
-```
-
-## StatementToReportWorkflowService
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementToReportWorkflowService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:35](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L35).
-
-Source- and binary-compatible adapter over the single statement reconciliation report workflow. It retains the old public API and wire links without owning storage, orchestration, or rendering.
-
-```csharp
-public sealed class StatementToReportWorkflowService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatementToReportWorkflowService(IStatementImportCommitService imports, IStatementImportEvidenceRetainer evidence, IStatementRunWorkflowService statementRuns, string dataRoot, ILogger&lt;StatementToReportWorkflowService&gt;? logger = null) : this(new StatementReconciliationReportWorkflowService(imports, evidence, statementRuns, dataRoot));</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:39](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L39) |  |
-| <code>public async Task&lt;StatementToReportWorkflowExecution&gt; StartAsync(StatementToReportStartCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:59](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L59) |  |
-| <code>public async Task&lt;StatementToReportWorkflowDto?&gt; GetAsync(string workflowId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:75](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L75) |  |
-| <code>public async Task&lt;StatementToReportWorkflowExecution?&gt; ResumeAsync(string workflowId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:85](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L85) |  |
-| <code>public async Task&lt;StatementToReportArtifactDownload?&gt; DownloadArtifactAsync(string workflowId, string artifactId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:99](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L99) |  |
 
 ## StrategyRunEvidenceContributor
 
@@ -551,8 +503,16 @@ Qualified name: <code>Meridian.Ui.Shared.Serialization.RunLedgerExportRequest</c
 Source: [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:15](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L15).
 
 ```csharp
-public sealed record RunLedgerExportRequest(string Format = "csv", IReadOnlyDictionary<string, string>? AccountMapping = null);
+public sealed record RunLedgerExportRequest(string Format = "csv", IReadOnlyDictionary<string, string>? AccountMapping = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateOnly? From { get; init; }</code> | [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:19](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L19) |  |
+| <code>public DateOnly? To { get; init; }</code> | [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:20](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L20) |  |
+| <code>public IReadOnlyList&lt;Guid&gt;? JournalEntryIds { get; init; }</code> | [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:21](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L21) |  |
 
 ## W4AcceptanceFilter
 
@@ -994,3 +954,57 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:17](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L17) |  |
+
+## AutomatedJournalDraftIntakeDisposition
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeDisposition</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:71](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L71).
+
+One event the intake did not turn into a new draft, with the reason it was skipped.
+
+```csharp
+public enum AutomatedJournalDraftIntakeDisposition
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ProjectionFailed = 0</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:73](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L73) |  |
+| <code>ExistingDraftReady = 1</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:74](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L74) |  |
+| <code>ExistingDraftNeedsFix = 2</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:75](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L75) |  |
+| <code>ExistingDraftRejected = 3</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:76](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L76) |  |
+| <code>ExistingDraftGoverned = 4</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:77](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L77) |  |
+| <code>ExistingDraftTerminal = 5</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:78](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L78) |  |
+| <code>ExistingDraftReassessmentRequired = 6</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:79](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L79) |  |
+
+## AutomatedJournalDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:35](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L35).
+
+Batch of automated economic events (dividends, interest, fees, withholding) to admit into the manual journal workbench queue for the named fund profile.
+
+```csharp
+public sealed record AutomatedJournalDraftIntakeRequest(string FundProfileId, string Currency, IReadOnlyList<AutomatedJournalEvent> Events, string Actor, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null, string? BatchCorrelationId = null);
+```
+
+## AutomatedJournalDraftIntakeResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:100](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L100).
+
+Outcome of an automated journal intake run. Created drafts land in the workbench queue as ManualJournalEntryStatusDto.Draft (or NeedsFix when validation flags them) awaiting human submit/approve; skips are reported, never silent.
+
+```csharp
+public sealed record AutomatedJournalDraftIntakeResult(IReadOnlyList<ManualJournalEntryDraftDto> Created, IReadOnlyList<AutomatedJournalDraftIntakeSkip> Skipped)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int NeedsFixCount =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:105](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L105) | Created drafts that need account-mapping or other fixes before submission. |

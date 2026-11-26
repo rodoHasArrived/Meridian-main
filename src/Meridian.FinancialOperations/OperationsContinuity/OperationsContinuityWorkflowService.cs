@@ -26,6 +26,10 @@ public interface IOperationsContinuityWorkflowService
         => throw new NotSupportedException("Approval reassignment is not supported by this service.");
     Task<OperationsTransitionResultDto> StartWorkflowAsync(OperationsStartWorkflowRequestDto request, CancellationToken ct = default);
 
+    Task<OperationsTransitionResultDto> StartSecurityMasterRevisionWorkflowAsync(
+        Guid workflowId, Guid revisionId, string actor, CancellationToken ct = default)
+        => throw new NotSupportedException("Subject-scoped revision approvals are unavailable.");
+
     Task<OperationsTransitionResultDto> StartPreparedWorkflowAsync(
         OperationsStartWorkflowRequestDto request,
         Guid workflowId,
@@ -142,6 +146,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
     private readonly IOperationsContinuityTransitionCommitStore? _transitionCommitStore;
     private readonly OperationsLedgerPostingService _ledgerPosting;
     private readonly IClosePublicationReadinessGuard? _closeReadinessGuard;
+    private readonly ISecurityMasterRevisionWorkflowAuthority? _revisionWorkflowAuthority;
 
     public OperationsContinuityWorkflowService(
         IOperationsContinuityRepository repository,
@@ -150,7 +155,8 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
         ILedgerJournalStore? ledgerJournalStore = null,
         IOperationsContinuityTransactionalCommitStore? transactionalCommitStore = null,
         ISecurityMasterQueryService? securityMasterQueryService = null,
-        IClosePublicationReadinessGuard? closeReadinessGuard = null)
+        IClosePublicationReadinessGuard? closeReadinessGuard = null,
+        ISecurityMasterRevisionWorkflowAuthority? revisionWorkflowAuthority = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _auditStore = auditStore ?? throw new ArgumentNullException(nameof(auditStore));
@@ -170,6 +176,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
                 : null);
         _ledgerPosting = new OperationsLedgerPostingService(ledgerJournalStore, transactionalCommitStore, securityMasterQueryService);
         _closeReadinessGuard = closeReadinessGuard;
+        _revisionWorkflowAuthority = revisionWorkflowAuthority;
     }
 
     public async Task<OperationsTransitionResultDto> ImportBrokerDataAsync(
@@ -209,6 +216,9 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
         {
             return Failure("NOT_FOUND", "Workflow was not found.", []);
         }
+
+        if (workflow.Purpose != OperationsWorkflowPurposeDto.Close)
+            return Failure("WORKFLOW_PURPOSE_MISMATCH", "A revision approval workflow cannot import broker activity.", []);
 
         if (workflow.Version != request.ExpectedVersion)
         {
@@ -448,6 +458,9 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
         {
             return Failure("NOT_FOUND", "Workflow was not found.", []);
         }
+
+        if (workflow.Purpose != OperationsWorkflowPurposeDto.Close)
+            return Failure("WORKFLOW_PURPOSE_MISMATCH", "A revision approval workflow cannot post ledger entries.", []);
 
         if (workflow.Version != request.ExpectedVersion)
         {
@@ -749,7 +762,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
             request.Actor,
             request.Rationale,
             request.CorrelationId,
-            EnsureReportPackEvidence(request.ReportPackId, request.EvidenceLinks),
+            await ApprovalEvidenceAsync(workflowId, request.ReportPackId, request.EvidenceLinks, ct).ConfigureAwait(false),
             eventType: "approval-submitted",
             gate: OperationsGateKeyDto.Approval,
             precondition: workflow => workflow.GetSubmitForApprovalTransitionBlocker(request),
@@ -779,7 +792,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
             request.Actor,
             request.Rationale,
             request.CorrelationId,
-            EnsureReportPackEvidence(request.ReportPackId, request.EvidenceLinks),
+            await ApprovalEvidenceAsync(workflowId, request.ReportPackId, request.EvidenceLinks, ct).ConfigureAwait(false),
             eventType: "approval-approved",
             gate: OperationsGateKeyDto.Approval,
             precondition: workflow => workflow.GetApproveTransitionBlocker(request),
@@ -966,7 +979,8 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
     private async Task<OperationsContinuityWorkflowDto> ToDtoAsync(OperationsContinuityWorkflow workflow, CancellationToken ct)
     {
         var timeline = await GetTimelineAsync(workflow.WorkflowId, ct).ConfigureAwait(false);
-        return _readModelBuilder.Build(workflow, timeline, EvaluateCloseReadiness(workflow));
+        var dto = _readModelBuilder.Build(workflow, timeline, EvaluateCloseReadiness(workflow));
+        return workflow.Purpose == OperationsWorkflowPurposeDto.SecurityMasterRevision ? RevisionApprovalDto(workflow, dto) : dto;
     }
 
     private static OperationsContinuityWorkflow CloneWorkflow(OperationsContinuityWorkflow workflow)

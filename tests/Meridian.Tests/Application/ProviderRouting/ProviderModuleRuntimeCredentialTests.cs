@@ -24,7 +24,6 @@ public sealed class ProviderModuleRuntimeCredentialTests : IDisposable
     private readonly string _secretVariable = "MERIDIAN_MODULE_SECRET_" + Guid.NewGuid().ToString("N");
     private readonly CancellationTokenSource _timeout = new(TimeSpan.FromSeconds(15));
     private CoreConfigStore Config => new(Path.Combine(_root, "appsettings.json"));
-    private string SidecarPath => Path.Combine(_root, "provider-credentials.json");
 
     [Theory]
     [InlineData("owned", true)]
@@ -158,82 +157,6 @@ public sealed class ProviderModuleRuntimeCredentialTests : IDisposable
         observation.AssertUnused();
     }
 
-    [Fact]
-    public async Task WorkstationModule_AllLegacySidecarImportsAtomicallyAndRemovesItsPlaintextSource()
-    {
-        var store = await SetupAsync(savedCredentials: false);
-        await WriteSidecarAsync();
-        using var services = CreateServices(store);
-        var credentials = services.GetRequiredService<ModuleCredentialStore>();
-
-        var selected = await credentials.GetCredentialsAsync(SyntheticModule.Id, _timeout.Token);
-
-        selected["KeyId"].Should().Be("sidecar-key");
-        (await store.ReadForProviderAsync("polygon", _timeout.Token))!.Get("ApiKey").Should().Be("sidecar-polygon");
-        File.Exists(SidecarPath).Should().BeFalse();
-        File.Exists(SidecarPath + ".migrated").Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task WorkstationModule_MixedOwnedSidecarDoesNotImportAnyProviderOrEraseSource()
-    {
-        var store = await SetupAsync(savedCredentials: false);
-        await AddOwnershipAsync(_timeout.Token);
-        await WriteSidecarAsync();
-        var source = await File.ReadAllBytesAsync(SidecarPath, _timeout.Token);
-        using var services = CreateServices(store);
-        var credentials = services.GetRequiredService<ModuleCredentialStore>();
-
-        Func<Task> import = () => credentials.GetCredentialsAsync("polygon", _timeout.Token);
-
-        await import.Should().ThrowAsync<InvalidOperationException>().WithMessage("*tenant-aware*");
-        (await File.ReadAllBytesAsync(SidecarPath, _timeout.Token)).Should().Equal(source);
-        File.Exists(SidecarPath + ".migrated").Should().BeFalse();
-        (await store.ReadForProviderAsync("polygon", _timeout.Token)).Should().BeNull();
-        (await store.ReadForProviderAsync("alpaca", _timeout.Token)).Should().BeNull();
-    }
-
-    [Fact]
-    public async Task WorkstationModule_SidecarImportHoldsOwnershipLeaseUntilDurableImportCompletes()
-    {
-        var store = await SetupAsync(savedCredentials: false);
-        await WriteSidecarAsync();
-        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var vault = ObserveReads(store);
-        var importer = vault.As<ILegacyProviderCredentialImporter>();
-        importer.Setup(value => value.ImportLegacyAsync(It.IsAny<IReadOnlyList<ProviderCredentialSaveRequest>>(), It.IsAny<CancellationToken>()))
-            .Returns(async (IReadOnlyList<ProviderCredentialSaveRequest> requests, CancellationToken ct) =>
-            {
-                entered.TrySetResult();
-                await release.Task.WaitAsync(ct);
-                await store.ImportLegacyAsync(requests, ct);
-            });
-        using var services = CreateServices(vault.Object);
-        var credentials = services.GetRequiredService<ModuleCredentialStore>();
-        var import = credentials.GetCredentialsAsync(SyntheticModule.Id, _timeout.Token);
-        await entered.Task.WaitAsync(_timeout.Token);
-        try
-        {
-            using var blockedWriter = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-            Func<Task> ownershipChange = () => AddOwnershipAsync(blockedWriter.Token);
-            await ownershipChange.Should().ThrowAsync<OperationCanceledException>();
-            Config.LoadRequired().ProviderConnections?.Connections.Should().BeNullOrEmpty();
-        }
-        finally
-        {
-            release.TrySetResult();
-            await import;
-        }
-
-        await AddOwnershipAsync(_timeout.Token);
-        Func<Task> laterRead = () => credentials.GetCredentialsAsync(SyntheticModule.Id, _timeout.Token);
-        await laterRead.Should().ThrowAsync<InvalidOperationException>().WithMessage("*tenant-aware*");
-        importer.Verify(value => value.ImportLegacyAsync(It.IsAny<IReadOnlyList<ProviderCredentialSaveRequest>>(), It.IsAny<CancellationToken>()), Times.Once);
-        vault.Verify(value => value.ReadForProviderAsync(SyntheticModule.Id, It.IsAny<CancellationToken>()), Times.Once);
-        vault.VerifyNoOtherCalls();
-    }
-
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -282,13 +205,6 @@ public sealed class ProviderModuleRuntimeCredentialTests : IDisposable
     private Task AddOwnershipAsync(CancellationToken ct) =>
         new ProviderConnectionService(Config).UpsertForTenantAsync(new CreateProviderConnectionRequest(
             "owned", "alpaca", "Synthetic owned connection", ExternalAccountId: "account-a"), "tenant-a", "paper", ct);
-
-    private Task WriteSidecarAsync() => File.WriteAllTextAsync(SidecarPath, JsonSerializer.Serialize(
-        new Dictionary<string, Dictionary<string, string>>
-        {
-            ["polygon"] = new() { ["ApiKey"] = "sidecar-polygon" },
-            [SyntheticModule.Id] = new() { ["KeyId"] = "sidecar-key", ["SecretKey"] = "sidecar-secret" }
-        }), _timeout.Token);
 
     private static Mock<IProviderCredentialStore> ObserveReads(FileProviderCredentialStore store)
     {

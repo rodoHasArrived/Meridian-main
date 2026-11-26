@@ -48,7 +48,7 @@ CATEGORIES: list[tuple[str, str]] = [
         r"ai-docs-drift|ai-docs-sync-report|ai-docs-map|"
         r"ai-docs-map-check|ai-plan-checklists-check)$",
     ),
-    ("AI Maintenance & Reporting", r"^(ai-maintenance-light|ai-maintenance-full|ai-docs-archive|ai-docs-archive-execute)$"),
+    ("AI Maintenance & Reporting", r"^(ai-maintenance-light|ai-maintenance-full)$"),
     (
         "Skills",
         r"^(skill-list|skill-resources|skill-scripts|skill-chains|"
