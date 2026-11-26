@@ -119,6 +119,7 @@ public static partial class ScheduleTermsWriteRules
                 continue;
             Refuse($"Retained undeclared '{field.Key}' cannot be promoted by an unrelated amendment; explicitly clear it or submit a fully validated replacement stamped at version {field.SinceTermsVersion} or later.");
         }
+        EnsureAmendmentDoesNotPromoteStrayScalars(assetClass, retained, replacement);
     }
 
     private static bool AnyPopulated(JsonElement payload, string key)
@@ -137,7 +138,8 @@ public static partial class ScheduleTermsWriteRules
         var security = new SecurityDetailDto(Guid.Empty, assetClass, SecurityStatusDto.Active, "Schedule shape", "USD",
             JsonSerializer.SerializeToElement(new { }), terms, [], [], 1, DateTimeOffset.MinValue, null);
         var resolved = StructuredCashFlowTermsResolver.Resolve(security);
-        var result = ScheduleSpecFactory.ResolveShape(security, resolved);
+        var result = ScheduleSpecFactory.ResolveWriteShape(security, resolved,
+            Math.Min(termsVersion, SecurityTermsEnvelope.ResolveAssetClassTermsVersion(payload)));
         if (result.Status == DeclaredScheduleStatus.Refused)
             Refuse(result.Refusal!.Message);
         if (result.Status != DeclaredScheduleStatus.Declared)

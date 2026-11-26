@@ -112,6 +112,19 @@ public sealed class RecurringJournalRunner(
                             await RequirePreviousOccurrenceSettledAsync(session, definition, schedule.EffectiveDateFor(index - 1), ct).ConfigureAwait(false);
                         var outcome = await CalculateAsync(calculation, claim, period,
                             index == 0 ? period.StartDate : schedule.EffectiveDateFor(index - 1).AddDays(1), ct).ConfigureAwait(false);
+                        if (outcome.EconomicObligationKeys.Count > 0)
+                        {
+                            try
+                            {
+                                claim = await session.PinEconomicObligationsAsync(key, outcome.EconomicObligationKeys, ct).ConfigureAwait(false);
+                            }
+                            catch (NotSupportedException exception)
+                            {
+                                throw new InvalidOperationException("The recurring registry cannot retain economic obligation authority; this accrual is blocked.", exception);
+                            }
+                        }
+                        else if (claim.EconomicObligationKeys is not null)
+                            throw new InvalidOperationException("The recalculated occurrence lost its independently retained economic obligations.");
                         if (outcome.Draft is null)
                         {
                             claim = await session.SetOutcomeAsync(key, RecurringOccurrenceState.NoDraftRequired,
@@ -130,6 +143,7 @@ public sealed class RecurringJournalRunner(
                         if (problem is not null)
                             throw new InvalidOperationException(problem);
                         var retained = RecurringJournalEvidenceGuard.Deserialize(existing.RecurringJournalEvidenceJson!)!;
+                        RecurringJournalEconomicObligationGuard.RequireMatch(claim, retained);
                         if (retained.ScheduleVersion != definition.Version || retained.TemplateVersion != template.Version ||
                             retained.ScheduleId != definition.ScheduleId || retained.TemplateId != template.TemplateId ||
                             retained.ScheduleDefinitionJson != RecurringJournalIdentity.SerializeSchedule(claim.ScheduleDefinition) ||
@@ -297,7 +311,11 @@ public sealed class RecurringJournalRunner(
             definition.ScheduleId, definition.Version, claim.TemplateDefinition.TemplateId, claim.TemplateDefinition.Version,
             RecurringJournalIdentity.SerializeSchedule(definition), RecurringJournalIdentity.SerializeTemplate(claim.TemplateDefinition),
             scope.FundProfileId, scope.LedgerBookId, scope.EntityId, scope.TenantId, scope.CompanyId,
-            scope.Currency, claim.EffectiveDate, period.PeriodId, period.Version, sourceEvidence);
+            scope.Currency, claim.EffectiveDate, period.PeriodId, period.Version, sourceEvidence)
+        {
+            EconomicObligationDigest = claim.EconomicObligationKeys is { } keys
+                ? RecurringJournalIdentity.EconomicObligationDigest(keys) : null
+        };
         var json = RecurringJournalEvidenceGuard.Serialize(evidence);
         var key = $"recurring|{claim.OccurrenceKey}";
         var recurringTags = new Dictionary<string, string>
