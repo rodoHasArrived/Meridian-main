@@ -57,6 +57,31 @@ it calculates no interest, fees or ledger due dates. Legacy calendar-day settlem
 converted to business days automatically. A missing calendar or an unstructured agreement remains
 unavailable for date preview.
 
+## Tracking agreement lifecycle work
+
+Open the **Obligation monitor** in Accounting's entity operations view, or the desktop
+**Lifecycle queue** tab. Select the owned book, as-of date and expiry horizon, then load the queue.
+Loading reads current observations and retained cases without changing history.
+
+1. Track a current finding explicitly, with a reason. Its first-seen time begins with that retained
+   observation. Refreshing the observation preserves the owner and earlier history.
+2. Assign or reassign an owner, add a note and evidence references, or mark follow-up as awaiting
+   review. These actions require ledger-report management permission for the agreement's parties.
+3. Resolve with a reason and evidence only after reviewing the underlying work. Resolution records
+   an operator disposition; an agreement that still needs amendment or termination uses its existing
+   legal workflow. Reopen a case when follow-up is required again.
+4. If another operator or a source changed, refresh the queue and inspect the current case before
+   retrying. The expected case version, record hash and source fingerprint protect every update.
+
+An absent finding can mean the selected date or horizon changed; it does not clear the retained
+case. Stale, partial or unavailable source evidence prevents case mutation. Case age uses the first
+retained observation, while overdue days use the due date and selected as-of date.
+
+The guarantee register shows the applicable approved terms, declared parties/roles, beneficiary,
+currency, cap and dates. **Measured exposure is unavailable** until a reviewed underlying exposure
+source exists. A cap must not be read as an outstanding balance. Queue actions and guarantee
+disclosure do not generate repayment journals, change a close decision or authorize cash movement.
+
 ## Accruing loan interest
 
 Interest on an intercompany loan can be calculated from its approved structured terms: fixed-rate,

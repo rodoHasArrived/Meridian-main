@@ -3,13 +3,14 @@ using Meridian.Application.SecurityMaster.CashFlow;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.FinancialOperations.FundAdministration;
 using Meridian.Ledger;
 using DomainLedger = Meridian.Ledger.Ledger;
 
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
-/// Coupon accrual and premium/discount amortization for one Bond or StructuredCredit position, from the Security Master
+/// Coupon accrual and supported amortization for one descriptor-admitted fixed-income position, from the Security Master
 /// cash-flow projection and the position's open lots. Each occurrence drafts the day-count share
 /// of every coupon period that falls inside its accrual window, and the premium or discount
 /// amortized over the same days. Projected principal paydowns are not drafted here: they are cash movements and
@@ -54,9 +55,16 @@ public sealed class FixedIncomeAccrualCalculation(
             throw new InvalidOperationException("Security Master is unavailable, so the bond's currency cannot be confirmed; fixed-income accruals are blocked.");
         var security = await securities.GetByIdAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security Master holds no security for {ticker}; its currency cannot be confirmed.");
-        if (!SecurityAssetClassCatalog.TryGet(security.AssetClass, out var descriptor) || !descriptor.SupportsRecurringFixedIncomeAccrual)
-            throw new InvalidOperationException(
-                $"{ticker} is classified as '{security.AssetClass}'; recurring fixed-income accrual currently supports Bond and StructuredCredit only.");
+        if (RecurringFixedIncomeAccrualEligibility.GetClassBlocker(security, ticker) is { } classBlocker)
+            throw new InvalidOperationException(classBlocker.Reason);
+        var descriptor = SecurityAssetClassCatalog.GetOrDefault(security.AssetClass);
+        var policy = descriptor.RecurringAccrualPolicy!;
+        if (policy.Profile == SecurityRecurringAccrualProfile.FixedBulletActual365
+            && StructuredCashFlowTermsResolver.Resolve(security).MaturityDate is { } terminated && terminated < windowStart)
+            return RecurringJournalCalculationResult.NothingDue($"{ticker} matured before this accrual window; no further interest accrues.");
+        if (policy.Profile == SecurityRecurringAccrualProfile.FixedBulletActual365
+            && projection.SourceKind != StructuredCashFlowSourceKind.CalculatedBullet)
+            throw new InvalidOperationException("The fixed-bullet accrual profile requires a calculated bullet source.");
         if (!string.Equals(security.Currency?.Trim(), context.Scope.Currency.Trim(), StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException(
                 $"{ticker} is denominated in {security.Currency}, not the book currency {context.Scope.Currency}; cross-currency bond accruals are not supported.");
@@ -74,7 +82,9 @@ public sealed class FixedIncomeAccrualCalculation(
             throw new InvalidOperationException("The calculated template input 'bookPositionId' must be a book position identifier.");
         if (projection.Schedule.Any(static entry => entry.InterestSegments is { Count: > 0 }))
             return await CalculateRetainedAsync(context, security, securityId, bookPositionId, ticker,
-                financialAccountId, projectionAsOf, descriptor.QuoteConvention, ct).ConfigureAwait(false);
+                financialAccountId, projectionAsOf, descriptor.QuoteConvention, policy, ct).ConfigureAwait(false);
+        if (policy.Profile == SecurityRecurringAccrualProfile.FixedBulletActual365)
+            throw new InvalidOperationException("The fixed-bullet accrual profile requires retained principal segments and a calculation receipt.");
         if (descriptor.CashFlowBehavior == SecurityCashFlowBehavior.FactorAmortizing
             || projection.TermsUsed?.CurrentFactor is { } factor && factor != 1m
             || projection.TermsUsed?.FactorSchedule.Any(static point => point.Factor != 1m) == true)
@@ -140,7 +150,8 @@ public sealed class FixedIncomeAccrualCalculation(
     private async Task<RecurringJournalCalculationResult> CalculateRetainedAsync(
         RecurringJournalCalculationContext context, SecurityDetailDto security,
         Guid securityId, Guid bookPositionId, string ticker, string? financialAccountId,
-        DateTimeOffset projectionAsOf, SecurityQuoteConvention quoteConvention, CancellationToken ct)
+        DateTimeOffset projectionAsOf, SecurityQuoteConvention quoteConvention,
+        SecurityRecurringAccrualPolicy policy, CancellationToken ct)
     {
         // Capture using the exact selected terms, then carry that immutable projection all the
         // way to the bridge. A second ordinary read could silently change the source or terms.
@@ -151,11 +162,14 @@ public sealed class FixedIncomeAccrualCalculation(
             throw new InvalidOperationException($"The retained cash-flow projection for {ticker} cannot be posted: {blocked}");
         var receiptInputs = projection.InputManifest?.Where(static input => input.Kind == "CalculationReceipt").ToArray() ?? [];
         var modelInputs = projection.InputManifest?.Where(static input => input.Kind == "CalculationModel").ToArray() ?? [];
+        var expectedModel = policy.Profile == SecurityRecurringAccrualProfile.FixedBulletActual365
+            ? SecurityMasterCashFlowService.ReviewedAccrualContextCalculationVersion
+            : SecurityMasterCashFlowService.ContextCalculationVersion;
         if (receiptInputs.Length != 1 || !Sha256Digest.IsCanonical(receiptInputs[0].Key)
-            || modelInputs.Length != 1 || modelInputs[0].Key != SecurityMasterCashFlowService.ContextCalculationVersion
+            || modelInputs.Length != 1 || modelInputs[0].Key != expectedModel
             || projection.SecurityId != securityId || projection.AsOf != projectionAsOf)
             throw new InvalidOperationException(
-                $"The cash-flow projection for {ticker} has no retained v5 calculation receipt bound to the selected security and cutoff; accrual is blocked.");
+                $"The cash-flow projection for {ticker} has no retained {(policy.Profile == SecurityRecurringAccrualProfile.FixedBulletActual365 ? "v6" : "v5")} calculation receipt bound to the selected security and cutoff; accrual is blocked.");
         var receiptHash = receiptInputs[0].Key;
         var receiptModel = modelInputs[0].Key;
         var windowStart = context.RequireWindowStart();
@@ -165,11 +179,16 @@ public sealed class FixedIncomeAccrualCalculation(
             .Where(segment => segment.End >= windowStart && segment.Start < context.EffectiveDate)
             .Select(static segment => segment.PeriodStart);
         var historyStart = starts.Append(windowStart).Min();
+        var historyThrough = policy.Profile == SecurityRecurringAccrualProfile.FixedBulletActual365
+            && projection.TermsUsed?.MaturityDate is { } maturity && maturity < context.EffectiveDate
+                ? maturity : context.EffectiveDate;
         var holdings = await inputs.ListAccrualHoldingsAsync(context.Scope, securityId, bookPositionId,
-            historyStart, context.EffectiveDate, ct).ConfigureAwait(false);
+            historyStart, historyThrough, ct).ConfigureAwait(false);
         if (holdings.Any(holding => holding.Lot.SecurityId != securityId
-                || holding.Date < historyStart || holding.Date > context.EffectiveDate))
+                || holding.Date < historyStart || holding.Date > historyThrough))
             throw new InvalidOperationException("The retained accrual holdings do not match the requested security and date scope.");
+        if (SecurityRecurringAccrualPolicies.EvaluateHoldings(policy, holdings) is { } holdingBlocker)
+            throw new InvalidOperationException(holdingBlocker.Reason);
         if (!holdings.Any(holding => holding.Date >= windowStart && holding.OpenShare > 0m))
             return RecurringJournalCalculationResult.NothingDue(
                 $"The fund book holds no lot of {ticker} between {windowStart:yyyy-MM-dd} and {context.EffectiveDate:yyyy-MM-dd}; no coupon or amortization accrues.");
@@ -192,8 +211,21 @@ public sealed class FixedIncomeAccrualCalculation(
             .Select(static holding => holding.Lot.LotId).Distinct(StringComparer.Ordinal).Count();
         var holdingChanged = holdings.GroupBy(static holding => holding.Lot.LotId)
             .Any(group => group.Select(holding => (holding.OpenShare, holding.AccrualFactor)).Distinct().Skip(1).Any());
-        return BuildResult(context, securityId, ticker, financialAccountId, windowStart, journals, lotCount, holdingChanged,
+        var result = BuildResult(context, securityId, ticker, financialAccountId, windowStart, journals, lotCount, holdingChanged,
             receiptHash, receiptModel);
+        if (policy.Profile != SecurityRecurringAccrualProfile.FixedBulletActual365)
+            return result;
+        // Prior coupon history is read only for cumulative rounding. Claim just the current
+        // recognition dates, including positive unrounded interest that rounds to zero cash.
+        var segments = projection.Schedule.SelectMany(static row => row.InterestSegments ?? []).ToArray();
+        var obligations = holdings.Where(holding => holding.Date >= windowStart && holding.Date <= context.EffectiveDate
+                && holding.Date > holding.Lot.AcquiredDate && holding.AccrualFace > 0m
+                && segments.Any(segment => segment.Start < holding.Date && holding.Date <= segment.End
+                    && segment.UnroundedInterestAmount > 0m))
+            .Select(holding => RecurringJournalIdentity.FixedIncomeInterestObligationKey(context.Scope,
+                securityId, bookPositionId, holding.Lot.LotId, holding.Date))
+            .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+        return result with { EconomicObligationKeys = obligations };
     }
 
     private static RecurringJournalCalculationResult BuildResult(

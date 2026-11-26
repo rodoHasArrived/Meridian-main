@@ -6,6 +6,62 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityValidationService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.ISecurityValidationService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:11](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L11).
+
+Validates individual security records and the Security Master universe.
+
+```csharp
+public interface ISecurityValidationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityValidationReportDto&gt; ValidateSecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:13](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L13) |  |
+| <code>Task&lt;SecurityValidationReportDto&gt; ValidateUniverseAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:14](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L14) |  |
+
+## ISecurityValidationSnapshotStore
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.ISecurityValidationSnapshotStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:14](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L14).
+
+Records retained snapshots of Security Master validation evidence.
+
+```csharp
+public interface ISecurityValidationSnapshotStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityValidationSnapshotDto&gt; RecordAsync(SecurityValidationReportDto report, SecurityValidationSnapshotRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:16](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L16) |  |
+
+## NullSecurityValidationGateService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.NullSecurityValidationGateService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:194](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs#L194).
+
+Returns blocking gate results when Security Master validation is unavailable.
+
+```csharp
+public sealed class NullSecurityValidationGateService : ISecurityValidationGateService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;SecurityValidationGateResultDto&gt; ValidateSymbolAsync(string symbol, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:196](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs#L196) |  |
+| <code>public Task&lt;SecurityValidationGateResultDto&gt; ValidateSecurityAsync(Guid securityId, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, string? symbol = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:205](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs#L205) |  |
+
 ## NullSecurityValidationService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.Validation.NullSecurityValidationService</code>. Kind: `class`.
@@ -921,64 +977,3 @@ Enum declarations:
 | <code>Data</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:32](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L32) | Data query and manipulation services. |
 | <code>Calendar</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:35](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L35) | Trading calendar services. |
 | <code>Reporting</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:38](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L38) | Reporting and progress display services. |
-
-## ServiceInfo
-
-Qualified name: <code>Meridian.Application.Services.ServiceInfo</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/ServiceRegistry.cs:49](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L49).
-
-Service metadata for discovery and documentation.
-
-```csharp
-public sealed record ServiceInfo(string Name, ServiceCategory Category, string Description, Type ServiceType, bool IsAsync = true);
-```
-
-## ServiceRegistry
-
-Qualified name: <code>Meridian.Application.Services.ServiceRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/ServiceRegistry.cs:77](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L77).
-
-Centralized registry for application services providing discovery, categorization, and dependency resolution capabilities.
-
-```csharp
-public sealed class ServiceRegistry : IDisposable, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ServiceRegistry(ILogger? log = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:84](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L84) |  |
-| <code>public void Register&lt;T&gt;(T instance, ServiceCategory category, string description) where T : class;</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:96](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L96) | Registers a service with metadata. |
-| <code>public T? Get&lt;T&gt;() where T : class;</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:112](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L112) | Gets a service by type. |
-| <code>public IReadOnlyList&lt;ServiceInfo&gt; GetByCategory(ServiceCategory category);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:122](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L122) | Gets all services in a category. |
-| <code>public IReadOnlyList&lt;ServiceInfo&gt; GetAll();</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:131](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L131) | Gets all registered services. |
-| <code>public IReadOnlyDictionary&lt;ServiceCategory, int&gt; GetSummary();</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:140](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L140) | Gets a summary of registered services by category. |
-| <code>public void Dispose();</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:147](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L147) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:170](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L170) |  |
-
-## ServiceRegistryExtensions
-
-Qualified name: <code>Meridian.Application.Services.ServiceRegistryExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/ServiceRegistry.cs:199](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L199).
-
-Extension methods for service registration with common patterns.
-
-```csharp
-public static class ServiceRegistryExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ServiceRegistry RegisterSetupServices(this ServiceRegistry registry, ConfigurationWizard? wizard = null, AutoConfigurationService? autoConfig = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:204](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L204) | Registers setup services (configuration, wizard, auto-config). |
-| <code>public static ServiceRegistry RegisterValidationServices(this ServiceRegistry registry, CredentialValidationService? credentialValidator = null, ConnectivityTestService? connectivityTest = null, PreflightChecker? preflightChecker = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:221](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L221) | Registers validation services (credentials, connectivity, preflight). |
-| <code>public static ServiceRegistry RegisterDiagnosticServices(this ServiceRegistry registry, DiagnosticBundleService? diagnosticBundle = null, ErrorTracker? errorTracker = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:242](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L242) | Registers diagnostic services (error tracking, diagnostics bundle). |
-| <code>public static ServiceRegistry RegisterLifecycleServices(this ServiceRegistry registry, GracefulShutdownService? shutdownService = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:259](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L259) | Registers lifecycle services (shutdown, startup summary). |
-| <code>public static ServiceRegistry RegisterDataServices(this ServiceRegistry registry, HistoricalDataQueryService? historicalQuery = null, SampleDataGenerator? sampleGenerator = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:272](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L272) | Registers data services (historical query, sample generator). |
-| <code>public static ServiceRegistry RegisterCalendarServices(this ServiceRegistry registry, TradingCalendar? tradingCalendar = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:289](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L289) | Registers calendar services (trading calendar). |
-| <code>public static ServiceRegistry RegisterReportingServices(this ServiceRegistry registry, ProgressDisplayService? progressDisplay = null, ApiDocumentationService? apiDocs = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:302](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L302) | Registers reporting services (progress, webhooks, documentation). |

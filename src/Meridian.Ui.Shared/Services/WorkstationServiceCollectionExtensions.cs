@@ -1099,7 +1099,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<IOperationsContinuityTransactionalCommitStore>(),
                 sp.GetService<ContractSecurityMasterQueryService>(),
-                closeReadinessGuard: sp.GetService<IClosePublicationReadinessGuard>()));
+                closeReadinessGuard: sp.GetService<IClosePublicationReadinessGuard>(),
+                revisionWorkflowAuthority: sp.GetService<ISecurityMasterRevisionWorkflowAuthority>()));
         services.TryAddSingleton<IOperationsApprovalPolicyMatrixService, OperationsApprovalPolicyMatrixService>();
         services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
         services.TryAddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();

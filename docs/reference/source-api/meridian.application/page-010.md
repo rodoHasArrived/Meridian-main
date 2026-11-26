@@ -6,6 +6,57 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterDataQualityService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterDataQualityService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs:17](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs#L17).
+
+Implements the eight-layer data quality control model for the Security Master. Covers: MinimumAttribute, TaxonomyCheck, ValueConsistency, StalenessMonitor, and ExternalComparison categories. FileMappingSufficiency, DataTypeRestriction, and RefreshControl violations are surfaced at the ingest/import boundary.
+
+```csharp
+public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualityService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterDataQualityService(ISecurityMasterStore securityStore, ISecurityMasterQualityReportStore reportStore, ILogger&lt;SecurityMasterDataQualityService&gt; logger, IEnumerable&lt;ISecurityCoverageSymbolSource&gt;? coverageSources = null, Meridian.Contracts.SecurityMaster.ISecurityResolver? securityResolver = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs:46](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs#L46) |  |
+| <code>public async Task&lt;SecurityMasterQualityReportDto&gt; RunQualityChecksAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs:60](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs#L60) |  |
+| <code>public Task&lt;SecurityMasterQualityReportDto?&gt; GetLatestReportAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs:100](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs#L100) |  |
+
+## SecurityMasterDraftProposalDto
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterDraftProposalDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:11](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L11).
+
+A machine-proposed security-master draft for an unmastered symbol. The operator reviews and submits it through the normal create workflow — this service never writes.
+
+```csharp
+public sealed record SecurityMasterDraftProposalDto(string Symbol, bool Resolved, Guid ProposedSecurityId, string AssetClass, string? DisplayName, string? Exchange, string? Currency, IReadOnlyList<SecurityIdentifierDto> Identifiers, string SourceSystem, string Provenance, string? Notes);
+```
+
+## SecurityMasterDraftProposalService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterDraftProposalService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:30](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L30).
+
+Pre-builds security-master drafts for coverage gaps flagged by the RC001 sweep, using the shared symbol-resolution spine (canonical registry first, then OpenFIGI) for identifiers and display metadata. Drafts are explicitly marked machine-proposed so downstream provenance never mistakes them for operator-entered data.
+
+```csharp
+public sealed class SecurityMasterDraftProposalService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterDraftProposalService(ILogger&lt;SecurityMasterDraftProposalService&gt; logger, ISymbolResolver? symbolResolver = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L38) |  |
+| <code>public async Task&lt;SecurityMasterDraftProposalDto&gt; BuildDraftAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:46](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L46) |  |
+
 ## SecurityMasterGovernanceHostPosture
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterGovernanceHostPosture</code>. Kind: `record`.
@@ -1021,59 +1072,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>string AssetClass { get; }</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:17](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L17) |  |
 | <code>IReadOnlyList&lt;SecurityValidationIssueDto&gt; Validate(SecurityValidationContext context);</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:18](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L18) |  |
-
-## ISecurityValidationService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Validation.ISecurityValidationService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:11](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L11).
-
-Validates individual security records and the Security Master universe.
-
-```csharp
-public interface ISecurityValidationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityValidationReportDto&gt; ValidateSecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:13](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L13) |  |
-| <code>Task&lt;SecurityValidationReportDto&gt; ValidateUniverseAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:14](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L14) |  |
-
-## ISecurityValidationSnapshotStore
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Validation.ISecurityValidationSnapshotStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:14](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L14).
-
-Records retained snapshots of Security Master validation evidence.
-
-```csharp
-public interface ISecurityValidationSnapshotStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityValidationSnapshotDto&gt; RecordAsync(SecurityValidationReportDto report, SecurityValidationSnapshotRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:16](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L16) |  |
-
-## NullSecurityValidationGateService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Validation.NullSecurityValidationGateService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:194](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs#L194).
-
-Returns blocking gate results when Security Master validation is unavailable.
-
-```csharp
-public sealed class NullSecurityValidationGateService : ISecurityValidationGateService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;SecurityValidationGateResultDto&gt; ValidateSymbolAsync(string symbol, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:196](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs#L196) |  |
-| <code>public Task&lt;SecurityValidationGateResultDto&gt; ValidateSecurityAsync(Guid securityId, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, string? symbol = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:205](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs#L205) |  |

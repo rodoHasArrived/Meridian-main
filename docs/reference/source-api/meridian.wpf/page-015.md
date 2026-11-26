@@ -531,6 +531,16 @@ Declared public members:
 | <code>public SolidColorBrush? UsageColor { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:830](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L830) |  |
 | <code>public SolidColorBrush? StatusBackground { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:831](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L831) |  |
 
+## ReplayDataQualityWarningRow
+
+Qualified name: <code>Meridian.Wpf.ViewModels.ReplayDataQualityWarningRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:540](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L540).
+
+```csharp
+public sealed record ReplayDataQualityWarningRow(string Kind, string Message, string Evidence);
+```
+
 ## ReportingWorkspaceShellViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.ReportingWorkspaceShellViewModel</code>. Kind: `class`.
@@ -1716,15 +1726,3 @@ Declared public members:
 | <code>public IAsyncRelayCommand RestartCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:196](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L196) |  |
 | <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:197](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L197) |  |
 | <code>public Task InitializeAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs:201](../../../../src/Meridian.Wpf/ViewModels/ServiceManagerViewModel.cs#L201) |  |
-
-## BondCutoverBatchPreviewRow
-
-Qualified name: <code>Meridian.Wpf.ViewModels.Settings.BondCutoverBatchPreviewRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:45](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L45).
-
-One batch preview result row; amounts are never resubmitted.
-
-```csharp
-public sealed record BondCutoverBatchPreviewRow(string DisplayName, long Version, int ChangedPayments, string Gaps, bool CanStage, string PreviewHash);
-```

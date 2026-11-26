@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataSamplingPage
+
+Qualified name: <code>Meridian.Wpf.Views.DataSamplingPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/DataSamplingPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/DataSamplingPage.xaml.cs#L10).
+
+Hosts market-data sample configuration, generation, and recent sample review.
+
+```csharp
+public partial class DataSamplingPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DataSamplingPage();</code> | [src/Meridian.Wpf/Views/DataSamplingPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/DataSamplingPage.xaml.cs#L14) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:38](../../../../src/Meridian.Wpf/Views/Pages.cs#L38).
+
+```csharp
+public partial class DataSamplingPage : Page
+```
+
 ## DataSourcesPage
 
 Qualified name: <code>Meridian.Wpf.Views.DataSourcesPage</code>. Kind: `class`.
@@ -507,6 +531,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IntercompanyAgreementsControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs#L7) |  |
 
+## IntercompanyAgreementWorkQueueControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyAgreementWorkQueueControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyAgreementWorkQueueControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyAgreementWorkQueueControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyAgreementWorkQueueControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyAgreementWorkQueueControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyAgreementWorkQueueControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyAgreementWorkQueueControl.xaml.cs#L7) |  |
+
 ## IntercompanyBalanceConfirmationControl
 
 Qualified name: <code>Meridian.Wpf.Views.IntercompanyBalanceConfirmationControl</code>. Kind: `class`.
@@ -990,45 +1030,3 @@ Source: [src/Meridian.Wpf/Views/Pages.cs:44](../../../../src/Meridian.Wpf/Views/
 ```csharp
 public partial class PackageManagerPage : Page
 ```
-
-## PageActionBarControl
-
-Qualified name: <code>Meridian.Wpf.Views.PageActionBarControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/PageActionBarControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/PageActionBarControl.xaml.cs#L7).
-
-Code-behind for PageActionBarControl. Minimal: only InitializeComponent() — no business logic.
-
-```csharp
-public partial class PageActionBarControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PageActionBarControl();</code> | [src/Meridian.Wpf/Views/PageActionBarControl.xaml.cs:9](../../../../src/Meridian.Wpf/Views/PageActionBarControl.xaml.cs#L9) |  |
-
-## PluginManagementPage
-
-Qualified name: <code>Meridian.Wpf.Views.PluginManagementPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:111](../../../../src/Meridian.Wpf/Views/Pages.cs#L111).
-
-```csharp
-public partial class PluginManagementPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs#L10).
-
-Code-behind for PluginManagementPage. Thin shell — all business logic is in PluginManagementViewModel.
-
-```csharp
-public partial class PluginManagementPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PluginManagementPage(PluginManagementViewModel viewModel);</code> | [src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs#L12) |  |

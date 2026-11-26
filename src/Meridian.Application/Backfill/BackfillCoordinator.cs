@@ -58,6 +58,7 @@ public sealed partial class BackfillCoordinator : IDisposable
     private bool _disposed;
 
     public Func<string, DateOnly, DateOnly, CancellationToken, Task<HistoricalSessionSchedule?>>? ResolveSessionsAsync { get; init; }
+    public Func<string, Meridian.Contracts.Operations.MarketDataInputEvidence?>? CaptureInputEvidence { get; init; }
 
     /// <summary>
     /// Creates a BackfillCoordinator using the unified ProviderRegistry for provider discovery.
@@ -599,6 +600,7 @@ public sealed partial class BackfillCoordinator : IDisposable
             ownedProvider: composite)
         {
             ResolveSessionsAsync = ResolveSessionsAsync,
+            CaptureInputEvidence = CaptureInputEvidence,
             DirectRoutingAdmission = routing is null ? null : _routingRuntime?.Admission,
             ResolveRoutingPriority = routing is null ? null : routing.GetPriority,
             CaptureRoutingAttempt = captureAttempt,

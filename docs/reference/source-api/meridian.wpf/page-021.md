@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingPreparerAttestationPresentation
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.AccountingPreparerAttestationPresentation</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs:6](../../../../src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs#L6).
+
+Displays native accounting decision classification without inferring review or coverage.
+
+```csharp
+public static class AccountingPreparerAttestationPresentation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;string&gt; Describe(LedgerAmountProofDto proof, out string summary, IReadOnlyList&lt;Guid&gt;? reportJournalEntryIds = null);</code> | [src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs:10](../../../../src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs#L10) |  |
+
+## AuditTimelineEntryModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.AuditTimelineEntryModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:366](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L366).
+
+```csharp
+public sealed record AuditTimelineEntryModel(string Title, string Detail, string TimeText, string Tone = WorkspaceTone.Neutral);
+```
+
 ## AuditTimelineModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.AuditTimelineModel</code>. Kind: `class`.
@@ -707,34 +735,3 @@ Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:36
 ```csharp
 public sealed record WorkstationRecoveryActionModel(string Label, string Detail, string Target = "", string Tone = WorkspaceTone.Info);
 ```
-
-## WorkstationSignoffRequirementModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationSignoffRequirementModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:42](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L42).
-
-```csharp
-public sealed record WorkstationSignoffRequirementModel(string Role, string Status, string Detail = "", string Tone = WorkspaceTone.Warning);
-```
-
-## WorkstationStateKind
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationStateKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:8](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L8).
-
-```csharp
-public enum WorkstationStateKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Ready</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:10](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L10) |  |
-| <code>Loading</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:11](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L11) |  |
-| <code>Empty</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:12](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L12) |  |
-| <code>Error</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:13](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L13) |  |
-| <code>Stale</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:14](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L14) |  |
-| <code>Blocked</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:15](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L15) |  |

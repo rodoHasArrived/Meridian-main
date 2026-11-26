@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementReconciliationReportStartCommand
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportStartCommand</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:21](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L21).
+
+```csharp
+public sealed record StatementReconciliationReportStartCommand(StatementImportCommitRequest Import, string TenantId, string? CompanyId);
+```
+
 ## StatementReconciliationReportWorkflowExecution
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportWorkflowExecution</code>. Kind: `record`.
@@ -493,8 +503,16 @@ Qualified name: <code>Meridian.Ui.Shared.Serialization.RunLedgerExportRequest</c
 Source: [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:15](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L15).
 
 ```csharp
-public sealed record RunLedgerExportRequest(string Format = "csv", IReadOnlyDictionary<string, string>? AccountMapping = null);
+public sealed record RunLedgerExportRequest(string Format = "csv", IReadOnlyDictionary<string, string>? AccountMapping = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateOnly? From { get; init; }</code> | [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:19](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L19) |  |
+| <code>public DateOnly? To { get; init; }</code> | [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:20](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L20) |  |
+| <code>public IReadOnlyList&lt;Guid&gt;? JournalEntryIds { get; init; }</code> | [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:21](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L21) |  |
 
 ## W4AcceptanceFilter
 
@@ -990,23 +1008,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public int NeedsFixCount =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:105](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L105) | Created drafts that need account-mapping or other fixes before submission. |
-
-## AutomatedJournalDraftIntakeService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:116](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L116).
-
-Admits automated journal events into the close-cockpit approval queue: projects each event through AutomatedJournalDraftProjector, maps ledger accounts onto the fund&#x27;s chart of accounts, and saves the balanced result through the manual journal workbench so it inherits validation, audit, and the human submit/approve lifecycle. Intake is idempotent per event: the draft id derives from the event idempotency key, and events whose draft already exists are skipped rather than duplicated or overwritten.
-
-```csharp
-public sealed class AutomatedJournalDraftIntakeService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AutomatedJournalDraftIntakeService(IManualJournalEntryWorkbenchService workbench, IManualJournalEntryDraftStore draftStore, IAccountingConfigurationService configurationService);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:122](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L122) |  |
-| <code>public async Task&lt;AutomatedJournalDraftIntakeResult&gt; IntakeAsync(AutomatedJournalDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:132](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L132) |  |
-| <code>public Task&lt;AutomatedJournalDraftIntakeResult&gt; IntakeDraftsAsync(AutomatedJournalPreparedDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:180](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L180) | Admits prebuilt drafts (for example period-close closing entries) into the workbench queue with the same idempotent dedup, chart mapping, and human approve lifecycle as event-projected drafts. |

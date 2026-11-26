@@ -6,6 +6,63 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerPeriodLockReader
+
+Qualified name: <code>Meridian.Application.SecurityMaster.LedgerPeriodLockReader</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs:38](../../../../src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs#L38).
+
+Default ILedgerPeriodLockReader over ILedgerJournalStore, applying the default-deny posture on any indeterminate state.
+
+```csharp
+public sealed class LedgerPeriodLockReader : ILedgerPeriodLockReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerPeriodLockReader(ILogger&lt;LedgerPeriodLockReader&gt; logger, ILedgerJournalStore? journalStore = null);</code> | [src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs:43](../../../../src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs#L43) |  |
+| <code>public async Task&lt;LedgerPeriodStatusDto&gt; GetPeriodStatusAsync(Guid ledgerBookId, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs:51](../../../../src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs#L51) |  |
+
+## NullCorporateActionCaseAccountingService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullCorporateActionCaseAccountingService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:232](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L232).
+
+Rejects corporate-action accounting mutations when the accounting service is unavailable.
+
+```csharp
+public sealed class NullCorporateActionCaseAccountingService : ICorporateActionCaseAccountingService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;CorporateActionAccountingProjectionMutationResultDto&gt; AttachProjectionAsync(AttachCorporateActionAccountingProjectionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:239](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L239) |  |
+| <code>public Task&lt;CorporateActionAccountingApprovalResultDto&gt; ApproveAsync(ApproveCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:242](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L242) |  |
+| <code>public Task&lt;CorporateActionAccountingPostingResultDto&gt; PostAsync(PostCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:245](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L245) |  |
+
+## NullCorporateActionCommandService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullCorporateActionCommandService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:144](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L144).
+
+Rejects corporate-action appends when their command service is unavailable.
+
+```csharp
+public sealed class NullCorporateActionCommandService : ICorporateActionCommandService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;CorporateActionAppendResult&gt; AppendAsync(Guid securityId, CorporateActionDto action, string? actor, string source, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:146](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L146) |  |
+
 ## NullCorporateActionOperationsService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.NullCorporateActionOperationsService</code>. Kind: `class`.
@@ -791,16 +848,17 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public const string ContextCalculationVersion = &quot;bond-cash-flow-context-v5&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L10) |  |
-| <code>public const string PreviousContextCalculationVersion = &quot;bond-cash-flow-context-v4&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:11](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L11) |  |
-| <code>public const string NegativeInterestContextCalculationVersion = &quot;bond-cash-flow-context-v3&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L12) |  |
-| <code>public const string UnifiedEconomicsContextCalculationVersion = &quot;bond-cash-flow-context-v2&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L13) |  |
-| <code>public const string LegacyContextCalculationVersion = &quot;bond-cash-flow-context-v1&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:14](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L14) |  |
-| <code>public async Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:16](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L16) |  |
-| <code>public async Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsync(SecurityDetailDto security, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:26](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L26) |  |
-| <code>public async Task&lt;SecurityCashFlowBlockerDto?&gt; GetProjectionBlockerAsync(SecurityDetailDto security, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:37](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L37) |  |
-| <code>public async Task&lt;SecurityCashFlowCalculationReceipt?&gt; CaptureProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:53](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L53) |  |
-| <code>public async Task&lt;StructuredCashFlowProjectionDto?&gt; ReplayProjectionAsync(string contentSha256, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:119](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L119) |  |
-| <code>public async Task&lt;StructuredCashFlowProjectionDto&gt; ReplayProjectionAsync(SecurityCashFlowCalculationReceipt receipt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:127](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L127) |  |
+| <code>public const string ReviewedAccrualContextCalculationVersion = SecurityRecurringAccrualPolicies.FixedBulletReceiptModelVersion;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:11](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L11) |  |
+| <code>public const string PreviousContextCalculationVersion = &quot;bond-cash-flow-context-v4&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L12) |  |
+| <code>public const string NegativeInterestContextCalculationVersion = &quot;bond-cash-flow-context-v3&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L13) |  |
+| <code>public const string UnifiedEconomicsContextCalculationVersion = &quot;bond-cash-flow-context-v2&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:14](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L14) |  |
+| <code>public const string LegacyContextCalculationVersion = &quot;bond-cash-flow-context-v1&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L15) |  |
+| <code>public async Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:17](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L17) |  |
+| <code>public async Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsync(SecurityDetailDto security, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:27](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L27) |  |
+| <code>public async Task&lt;SecurityCashFlowBlockerDto?&gt; GetProjectionBlockerAsync(SecurityDetailDto security, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L38) |  |
+| <code>public async Task&lt;SecurityCashFlowCalculationReceipt?&gt; CaptureProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:60](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L60) |  |
+| <code>public async Task&lt;StructuredCashFlowProjectionDto?&gt; ReplayProjectionAsync(string contentSha256, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:148](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L148) |  |
+| <code>public async Task&lt;StructuredCashFlowProjectionDto&gt; ReplayProjectionAsync(SecurityCashFlowCalculationReceipt receipt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs:156](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs#L156) |  |
 
 Source: [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:27](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L27).
 
@@ -992,54 +1050,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;CreateSecurityRequest&gt; Parse(string csvContent, out IReadOnlyList&lt;string&gt; errors, string actor, DateTimeOffset? ingestedAtUtc = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs:41](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs#L41) | Parses CSV content and returns a list of CreateSecurityRequest objects. Errors during parsing are collected in the out parameter. |
-
-## SecurityMasterDataQualityService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterDataQualityService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs:17](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs#L17).
-
-Implements the eight-layer data quality control model for the Security Master. Covers: MinimumAttribute, TaxonomyCheck, ValueConsistency, StalenessMonitor, and ExternalComparison categories. FileMappingSufficiency, DataTypeRestriction, and RefreshControl violations are surfaced at the ingest/import boundary.
-
-```csharp
-public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualityService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterDataQualityService(ISecurityMasterStore securityStore, ISecurityMasterQualityReportStore reportStore, ILogger&lt;SecurityMasterDataQualityService&gt; logger, IEnumerable&lt;ISecurityCoverageSymbolSource&gt;? coverageSources = null, Meridian.Contracts.SecurityMaster.ISecurityResolver? securityResolver = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs:46](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs#L46) |  |
-| <code>public async Task&lt;SecurityMasterQualityReportDto&gt; RunQualityChecksAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs:60](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs#L60) |  |
-| <code>public Task&lt;SecurityMasterQualityReportDto?&gt; GetLatestReportAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs:100](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs#L100) |  |
-
-## SecurityMasterDraftProposalDto
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterDraftProposalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:11](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L11).
-
-A machine-proposed security-master draft for an unmastered symbol. The operator reviews and submits it through the normal create workflow — this service never writes.
-
-```csharp
-public sealed record SecurityMasterDraftProposalDto(string Symbol, bool Resolved, Guid ProposedSecurityId, string AssetClass, string? DisplayName, string? Exchange, string? Currency, IReadOnlyList<SecurityIdentifierDto> Identifiers, string SourceSystem, string Provenance, string? Notes);
-```
-
-## SecurityMasterDraftProposalService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterDraftProposalService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:30](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L30).
-
-Pre-builds security-master drafts for coverage gaps flagged by the RC001 sweep, using the shared symbol-resolution spine (canonical registry first, then OpenFIGI) for identifiers and display metadata. Drafts are explicitly marked machine-proposed so downstream provenance never mistakes them for operator-entered data.
-
-```csharp
-public sealed class SecurityMasterDraftProposalService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterDraftProposalService(ILogger&lt;SecurityMasterDraftProposalService&gt; logger, ISymbolResolver? symbolResolver = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L38) |  |
-| <code>public async Task&lt;SecurityMasterDraftProposalDto&gt; BuildDraftAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:46](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L46) |  |

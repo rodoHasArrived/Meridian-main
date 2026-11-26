@@ -1136,7 +1136,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.ParameterItemViewModel</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:506](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L506).
+Source: [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:538](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L538).
 
 ```csharp
 public sealed record ParameterItemViewModel(string Name, string Value);
@@ -1321,7 +1321,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.PostedLedgerAccountPostingRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1088](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1088).
+Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1092](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1092).
 
 One posting to the selected trial-balance account with the balance after it.
 
@@ -1349,7 +1349,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.PostedLedgerBasisRow</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1022](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1022).
+Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1026](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1026).
 
 One accounting basis a period carries, for the basis picker.
 
@@ -1361,16 +1361,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PostedLedgerBasisRow(AccountingBasisKindDto basis, string label);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1026](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1026) |  |
-| <code>public AccountingBasisKindDto Basis { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1032](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1032) |  |
-| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1034](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1034) |  |
-| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1036](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1036) |  |
+| <code>public PostedLedgerBasisRow(AccountingBasisKindDto basis, string label);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1030](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1030) |  |
+| <code>public AccountingBasisKindDto Basis { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1036](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1036) |  |
+| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1038](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1038) |  |
+| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1040](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1040) |  |
 
 ## PostedLedgerBookRow
 
 Qualified name: <code>Meridian.Wpf.ViewModels.PostedLedgerBookRow</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:994](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L994).
+Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:998](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L998).
 
 One ledger book the operator can scope the posted journal to. Carries the book&#x27;s declared base currency so amounts are formatted in the book&#x27;s own currency rather than the machine&#x27;s.
 
@@ -1382,12 +1382,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PostedLedgerBookRow(Guid ledgerBookId, string label, string baseCurrency, string fundProfileId = &quot;&quot;);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:998](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L998) |  |
-| <code>public Guid LedgerBookId { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1006](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1006) |  |
-| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1008](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1008) |  |
-| <code>public string BaseCurrency { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1010](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1010) |  |
-| <code>public string FundProfileId { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1012](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1012) |  |
-| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1014](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1014) |  |
+| <code>public PostedLedgerBookRow(Guid ledgerBookId, string label, string baseCurrency, string fundProfileId = &quot;&quot;);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1002](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1002) |  |
+| <code>public Guid LedgerBookId { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1010](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1010) |  |
+| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1012](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1012) |  |
+| <code>public string BaseCurrency { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1014](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1014) |  |
+| <code>public string FundProfileId { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1016](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1016) |  |
+| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1018](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1018) |  |
 
 ## PostedLedgerJournalLineRow
 
@@ -1411,7 +1411,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.PostedLedgerMetricRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1085](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1085).
+Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1089](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1089).
 
 ```csharp
 public sealed record PostedLedgerMetricRow(string Label, string Value);
@@ -1421,7 +1421,7 @@ public sealed record PostedLedgerMetricRow(string Label, string Value);
 
 Qualified name: <code>Meridian.Wpf.ViewModels.PostedLedgerPeriodRow</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1044](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1044).
+Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1048](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1048).
 
 A selectable ledger period in the desktop posted-journal surface.
 
@@ -1433,18 +1433,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PostedLedgerPeriodRow(Guid periodId, string label, string statusLabel, string rangeLabel);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1048](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1048) |  |
-| <code>public Guid PeriodId { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1056](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1056) |  |
-| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1058](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1058) |  |
-| <code>public string StatusLabel { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1060](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1060) |  |
-| <code>public string RangeLabel { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1062](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1062) |  |
-| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1064](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1064) |  |
+| <code>public PostedLedgerPeriodRow(Guid periodId, string label, string statusLabel, string rangeLabel);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1052](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1052) |  |
+| <code>public Guid PeriodId { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1060](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1060) |  |
+| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1062](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1062) |  |
+| <code>public string StatusLabel { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1064](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1064) |  |
+| <code>public string RangeLabel { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1066](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1066) |  |
+| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1068](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1068) |  |
 
 ## PostedLedgerTrialBalanceRow
 
 Qualified name: <code>Meridian.Wpf.ViewModels.PostedLedgerTrialBalanceRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1071](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1071).
+Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1075](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1075).
 
 ```csharp
 public sealed record PostedLedgerTrialBalanceRow(string AccountName, string AccountType, string? Symbol, string BalanceLabel, int EntryCount, string? FinancialAccountId = null, string ScopeLabel = "", LedgerDimensionSetDto? Dimensions = null)
@@ -1454,7 +1454,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool HasScope =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1082](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1082) | Whether this row has a dimensional scope worth showing beside the account. |
+| <code>public bool HasScope =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:1086](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L1086) | Whether this row has a dimensional scope worth showing beside the account. |
 
 ## PostedLedgerViewModel
 
@@ -1487,48 +1487,62 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PostedLedgerViewModel(ILedgerReportsApiClient? client = null);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:60](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L60) |  |
-| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:87](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L87) |  |
-| <code>public IAsyncRelayCommand&lt;PostedLedgerPeriodRow&gt; SelectPeriodCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:89](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L89) |  |
-| <code>public IAsyncRelayCommand&lt;PostedLedgerBookRow&gt; SelectBookCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:91](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L91) |  |
-| <code>public ObservableCollection&lt;PostedLedgerBookRow&gt; Books { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:93](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L93) |  |
-| <code>public ObservableCollection&lt;PostedLedgerBasisRow&gt; Bases { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:96](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L96) | The accounting bases this period actually carries; empty until a period loads. |
-| <code>public ObservableCollection&lt;PostedLedgerPeriodRow&gt; Periods { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:98](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L98) |  |
-| <code>public ObservableCollection&lt;PostedLedgerTrialBalanceRow&gt; TrialBalance { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:100](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L100) |  |
-| <code>public ObservableCollection&lt;PostedLedgerMetricRow&gt; PnlMetrics { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:102](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L102) |  |
-| <code>public ObservableCollection&lt;PostedLedgerAccountPostingRow&gt; AccountPostings { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:105](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L105) | Postings to SelectedTrialBalanceRow with the balance after each. |
-| <code>public PostedLedgerTrialBalanceRow? SelectedTrialBalanceRow { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:111](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L111) | The trial-balance account whose postings are shown. Selecting a row loads its posting history from the governed book; clearing the selection clears the history. |
-| <code>public string AccountPostingsStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L125) |  |
-| <code>public async Task LoadAccountPostingsAsync(PostedLedgerTrialBalanceRow? row, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:132](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L132) | Loads the posting history for row; public for deterministic tests. |
-| <code>public bool IsRefreshing { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:189](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L189) |  |
-| <code>public Guid? SelectedPeriodId { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:201](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L201) |  |
-| <code>public string SelectedPeriodLabel { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:207](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L207) |  |
-| <code>public Guid? SelectedBookId { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:213](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L213) |  |
-| <code>public PostedLedgerPeriodRow? SelectedPeriodRow { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:224](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L224) | Two-way bound to the period list. WPF list selection only moves a highlight; loading the period it names is this setter&#x27;s job, and without it the picker changed nothing and every period but the default was unreachable. |
-| <code>public PostedLedgerBookRow? SelectedBookRow { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:246](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L246) | Two-way bound to the book list; see SelectedPeriodRow. |
-| <code>public string SelectedBookLabel { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:266](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L266) | Names the book on screen, so a multi-book deployment cannot mistake whose journal this is. |
-| <code>public string BaseCurrency { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:272](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L272) |  |
-| <code>public AccountingBasisKindDto SelectedBasis { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:278](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L278) |  |
-| <code>public PostedLedgerBasisRow? SelectedBasisRow { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:289](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L289) | Two-way bound to the basis picker. Stacking Primary alongside a GAAP or tax projection puts the same account on screen twice and sums both into the balance check, so exactly one basis is shown at a time. |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:314](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L314) |  |
-| <code>public string SignoffText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:320](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L320) |  |
-| <code>public string BalanceSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:326](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L326) |  |
-| <code>public bool IsOutOfBalance { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:333](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L333) | True when the posted trial balance does not tie — a blocker, not a warning. |
-| <code>public string PeriodNotice { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:343](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L343) | Explains an expected empty state (an open period with no closed-period summary). Distinct from the error properties so a period that simply has not closed never reads as an outage. |
-| <code>public bool HasPeriodNotice =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:355](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L355) |  |
-| <code>public string PeriodsErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:357](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L357) |  |
-| <code>public bool HasPeriodsError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:370](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L370) |  |
-| <code>public string TrialBalanceErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:372](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L372) |  |
-| <code>public bool HasTrialBalanceError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:385](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L385) |  |
-| <code>public string PnlErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:387](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L387) |  |
-| <code>public bool HasPnlError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:400](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L400) |  |
-| <code>public bool HasLoadError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:403](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L403) | True when any posted-ledger section failed to load; gates the page&#x27;s Retry action. |
-| <code>public void Activate();</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:406](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L406) | Loads once, when the page is first shown. |
-| <code>public void Deactivate();</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:428](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L428) | Stands the page down without ending its life: cancels whatever load is in flight and arms a fresh token so a later Activate reloads. This is what navigating away means. Disposing there instead looked equivalent but was not — the shell&#x27;s Frame can restore this same instance from navigation history, and a disposed view model comes back permanently inert: Activate returns at the _isDisposed guard and refresh, period and book commands all no-op, so Back landed the operator on a dead page with stale figures on it. |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:454](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L454) |  |
-| <code>public async Task RefreshAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:474](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L474) |  |
-| <code>public Task SelectBookAsync(Guid ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:595](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L595) |  |
-| <code>public async Task SelectPeriodAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:693](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L693) |  |
+| <code>public PostedLedgerViewModel(ILedgerReportsApiClient? client = null, Func&lt;string, byte[], CancellationToken, Task&lt;bool&gt;&gt;? saveJournalCsv = null);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:60](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L60) |  |
+| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:90](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L90) |  |
+| <code>public IAsyncRelayCommand&lt;PostedLedgerPeriodRow&gt; SelectPeriodCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:92](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L92) |  |
+| <code>public IAsyncRelayCommand&lt;PostedLedgerBookRow&gt; SelectBookCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:94](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L94) |  |
+| <code>public ObservableCollection&lt;PostedLedgerBookRow&gt; Books { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:96](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L96) |  |
+| <code>public ObservableCollection&lt;PostedLedgerBasisRow&gt; Bases { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:99](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L99) | The accounting bases this period actually carries; empty until a period loads. |
+| <code>public ObservableCollection&lt;PostedLedgerPeriodRow&gt; Periods { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:101](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L101) |  |
+| <code>public ObservableCollection&lt;PostedLedgerTrialBalanceRow&gt; TrialBalance { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:103](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L103) |  |
+| <code>public ObservableCollection&lt;PostedLedgerMetricRow&gt; PnlMetrics { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:105](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L105) |  |
+| <code>public ObservableCollection&lt;PostedLedgerAccountPostingRow&gt; AccountPostings { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:108](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L108) | Postings to SelectedTrialBalanceRow with the balance after each. |
+| <code>public PostedLedgerTrialBalanceRow? SelectedTrialBalanceRow { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:114](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L114) | The trial-balance account whose postings are shown. Selecting a row loads its posting history from the governed book; clearing the selection clears the history. |
+| <code>public string AccountPostingsStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:128](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L128) |  |
+| <code>public async Task LoadAccountPostingsAsync(PostedLedgerTrialBalanceRow? row, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L135) | Loads the posting history for row; public for deterministic tests. |
+| <code>public bool IsRefreshing { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:192](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L192) |  |
+| <code>public Guid? SelectedPeriodId { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:204](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L204) |  |
+| <code>public string SelectedPeriodLabel { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:210](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L210) |  |
+| <code>public Guid? SelectedBookId { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:216](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L216) |  |
+| <code>public PostedLedgerPeriodRow? SelectedPeriodRow { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:227](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L227) | Two-way bound to the period list. WPF list selection only moves a highlight; loading the period it names is this setter&#x27;s job, and without it the picker changed nothing and every period but the default was unreachable. |
+| <code>public PostedLedgerBookRow? SelectedBookRow { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:249](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L249) | Two-way bound to the book list; see SelectedPeriodRow. |
+| <code>public string SelectedBookLabel { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:269](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L269) | Names the book on screen, so a multi-book deployment cannot mistake whose journal this is. |
+| <code>public string BaseCurrency { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:275](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L275) |  |
+| <code>public AccountingBasisKindDto SelectedBasis { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:281](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L281) |  |
+| <code>public PostedLedgerBasisRow? SelectedBasisRow { get; set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:292](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L292) | Two-way bound to the basis picker. Stacking Primary alongside a GAAP or tax projection puts the same account on screen twice and sums both into the balance check, so exactly one basis is shown at a time. |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:317](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L317) |  |
+| <code>public string SignoffText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:323](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L323) |  |
+| <code>public string BalanceSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:329](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L329) |  |
+| <code>public bool IsOutOfBalance { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:336](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L336) | True when the posted trial balance does not tie — a blocker, not a warning. |
+| <code>public string PeriodNotice { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:346](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L346) | Explains an expected empty state (an open period with no closed-period summary). Distinct from the error properties so a period that simply has not closed never reads as an outage. |
+| <code>public bool HasPeriodNotice =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:358](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L358) |  |
+| <code>public string PeriodsErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:360](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L360) |  |
+| <code>public bool HasPeriodsError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:373](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L373) |  |
+| <code>public string TrialBalanceErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:375](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L375) |  |
+| <code>public bool HasTrialBalanceError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:388](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L388) |  |
+| <code>public string PnlErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:390](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L390) |  |
+| <code>public bool HasPnlError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:403](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L403) |  |
+| <code>public bool HasLoadError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:406](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L406) | True when any posted-ledger section failed to load; gates the page&#x27;s Retry action. |
+| <code>public void Activate();</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:409](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L409) | Loads once, when the page is first shown. |
+| <code>public void Deactivate();</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:431](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L431) | Stands the page down without ending its life: cancels whatever load is in flight and arms a fresh token so a later Activate reloads. This is what navigating away means. Disposing there instead looked equivalent but was not — the shell&#x27;s Frame can restore this same instance from navigation history, and a disposed view model comes back permanently inert: Activate returns at the _isDisposed guard and refresh, period and book commands all no-op, so Back landed the operator on a dead page with stale figures on it. |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:458](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L458) |  |
+| <code>public async Task RefreshAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:478](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L478) |  |
+| <code>public Task SelectBookAsync(Guid ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:599](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L599) |  |
+| <code>public async Task SelectPeriodAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs:697](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.cs#L697) |  |
+
+Source: [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.JournalExport.cs:5](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.JournalExport.cs#L5).
+
+```csharp
+public sealed partial class PostedLedgerViewModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IAsyncRelayCommand ExportJournalCsvCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.JournalExport.cs:11](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.JournalExport.cs#L11) |  |
+| <code>public string JournalExportStatus { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.JournalExport.cs:12](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.JournalExport.cs#L12) |  |
+| <code>public async Task ExportJournalCsvAsync();</code> | [src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.JournalExport.cs:24](../../../../src/Meridian.Wpf/ViewModels/PostedLedgerViewModel.JournalExport.cs#L24) |  |
 
 ## PriceLabelViewModel
 

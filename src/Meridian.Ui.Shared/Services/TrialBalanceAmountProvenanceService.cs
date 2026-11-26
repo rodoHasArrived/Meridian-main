@@ -27,11 +27,14 @@ public sealed class TrialBalanceAmountProvenanceService(
         if (book is null || string.IsNullOrWhiteSpace(tenantId) || string.IsNullOrWhiteSpace(companyId))
             return summary.TrialBalance;
         var scope = new LedgerAmountScopeDto(tenantId, companyId, book.FundProfileId, summary.LedgerBookId, summary.PeriodId);
-        var records = await AuthorizedPopulationAsync(scope, ct).ConfigureAwait(false);
+        var authorized = await AuthorizeScopeAsync(scope, ct).ConfigureAwait(false);
+        if (authorized is null)
+            return summary.TrialBalance;
+        var records = await QueryPopulationAsync(authorized, ct).ConfigureAwait(false);
         if (records is null || records.Count == 0)
             return summary.TrialBalance;
         var projected = PostgresLedgerBookService.ProjectTrialBalanceCheckpoint(records);
-        var hash = PopulationHash(scope, records, book.BaseCurrency);
+        var hash = PopulationHash(scope, records, authorized.Book.BaseCurrency);
         var sequence = records.Max(static record => record.GlobalSequence);
         return summary.TrialBalance.Select(row =>
         {
@@ -42,7 +45,7 @@ public sealed class TrialBalanceAmountProvenanceService(
             {
                 BalanceProofSubjectId = $"trial-balance:{sequence.ToString(CultureInfo.InvariantCulture)}:{RowIdentity(row)}:{hash}",
                 BalanceProofScope = scope,
-                BalanceProofCurrency = book.BaseCurrency,
+                BalanceProofCurrency = authorized.Book.BaseCurrency,
                 JournalEntryIds = candidates[0].JournalEntryIds,
                 LedgerEntryIds = candidates[0].LedgerEntryIds
             };
@@ -51,18 +54,22 @@ public sealed class TrialBalanceAmountProvenanceService(
 
     public async Task<EvidencePacketDto?> GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, CancellationToken ct = default)
     {
+        // Subject syntax selects evidence only after the complete accounting scope is authorized.
+        var authorized = await AuthorizeScopeAsync(scope, ct).ConfigureAwait(false);
+        if (authorized is null)
+            return null;
         var parts = subjectId.Split(':');
         if (parts.Length != 4 || parts[0] != "trial-balance"
             || !long.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out var sequence) || sequence <= 0
             || !Sha256Digest.IsCanonical(parts[2]) || !Sha256Digest.IsCanonical(parts[3]))
             return null;
-        var all = await AuthorizedPopulationAsync(scope, ct).ConfigureAwait(false);
+        var all = await QueryPopulationAsync(authorized, ct).ConfigureAwait(false);
         if (all is null)
             return null;
         var records = all.Where(record => record.GlobalSequence <= sequence).ToArray();
-        var book = await books!.GetBookAsync(scope.LedgerBookId, ct).ConfigureAwait(false);
+        var book = authorized.Book;
         if (records.Length == 0 || records.Max(static record => record.GlobalSequence) != sequence
-            || book is null || !Sha256Digest.FixedEquals(parts[3], PopulationHash(scope, records, book.BaseCurrency)))
+            || !Sha256Digest.FixedEquals(parts[3], PopulationHash(scope, records, book.BaseCurrency)))
             return null;
         var rows = PostgresLedgerBookService.ProjectTrialBalanceCheckpoint(records)
             .Where(row => RowIdentity(row) == parts[2]).ToArray();
@@ -125,7 +132,7 @@ public sealed class TrialBalanceAmountProvenanceService(
         return result with { LedgerAmount = result.LedgerAmount! with { RetainedSupportStale = staleSupport } };
     }
 
-    private async Task<IReadOnlyList<LedgerJournalEntryRecord>?> AuthorizedPopulationAsync(LedgerAmountScopeDto scope, CancellationToken ct)
+    private async Task<AuthorizedScope?> AuthorizeScopeAsync(LedgerAmountScopeDto scope, CancellationToken ct)
     {
         if (journals is null || books is null || tenancy is null || scope.LedgerBookId == Guid.Empty || scope.PeriodId == Guid.Empty
             || string.IsNullOrWhiteSpace(scope.FundProfileId) || string.IsNullOrWhiteSpace(scope.TenantId) || string.IsNullOrWhiteSpace(scope.CompanyId))
@@ -137,10 +144,18 @@ public sealed class TrialBalanceAmountProvenanceService(
             || owner.FundProfileId != scope.FundProfileId || book.FundProfileId != scope.FundProfileId
             || book.LedgerBookId != scope.LedgerBookId || period.LedgerBookId != scope.LedgerBookId || period.PeriodId != scope.PeriodId)
             return null;
-        var records = await journals.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: scope.LedgerBookId, PeriodId: scope.PeriodId), ct).ConfigureAwait(false);
+        return new AuthorizedScope(scope, book);
+    }
+
+    private async Task<IReadOnlyList<LedgerJournalEntryRecord>?> QueryPopulationAsync(AuthorizedScope authorized, CancellationToken ct)
+    {
+        var scope = authorized.Scope;
+        var records = await journals!.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: scope.LedgerBookId, PeriodId: scope.PeriodId), ct).ConfigureAwait(false);
         return records.Any(record => record.PeriodId != scope.PeriodId || record.GlobalSequence <= 0)
             || records.Select(record => record.GlobalSequence).Distinct().Count() != records.Count ? null : records;
     }
+
+    private sealed record AuthorizedScope(LedgerAmountScopeDto Scope, LedgerBookDto Book);
 
     private static string PopulationHash(LedgerAmountScopeDto scope, IReadOnlyList<LedgerJournalEntryRecord> records, string currency)
         => Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new { Scope = scope, Currency = currency, Journals = records.OrderBy(record => record.GlobalSequence).ToArray() }));

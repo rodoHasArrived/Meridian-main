@@ -106,7 +106,7 @@ public sealed record DeclaredScheduleResolution(
 /// and a negative lag. Not every member without effect is refused: a Term tenor ignores the roll.
 /// </para>
 /// </remarks>
-public static class ScheduleSpecFactory
+public static partial class ScheduleSpecFactory
 {
     /// <summary>
     /// The version of this mapping from a declared block to a schedule spec. It is
@@ -218,10 +218,20 @@ public static class ScheduleSpecFactory
     /// </summary>
     /// <exception cref="ArgumentNullException"><paramref name="security"/> or <paramref name="terms"/> is null.</exception>
     public static DeclaredScheduleResolution ResolveShape(SecurityDetailDto security, StructuredCashFlowTerms terms)
+        => ResolveShapeCore(security, terms, anchorTermsVersion: null);
+
+    // Write validation's twin exposes the selected container contract without granting newly
+    // introduced scalar anchors to a record that never declared their terms version.
+    internal static DeclaredScheduleResolution ResolveWriteShape(SecurityDetailDto security,
+        StructuredCashFlowTerms terms, int anchorTermsVersion)
+        => ResolveShapeCore(security, terms, anchorTermsVersion);
+
+    private static DeclaredScheduleResolution ResolveShapeCore(SecurityDetailDto security,
+        StructuredCashFlowTerms terms, int? anchorTermsVersion)
     {
         ArgumentNullException.ThrowIfNull(security);
         ArgumentNullException.ThrowIfNull(terms);
-        if (!TryReadShape(security, terms, out var shape, out var resolution))
+        if (!TryReadShape(security, terms, out var shape, out var resolution, anchorTermsVersion))
         {
             return resolution;
         }
@@ -239,7 +249,8 @@ public static class ScheduleSpecFactory
         SecurityDetailDto security,
         StructuredCashFlowTerms terms,
         out DeclaredShape shape,
-        [NotNullWhen(false)] out DeclaredScheduleResolution? resolution)
+        [NotNullWhen(false)] out DeclaredScheduleResolution? resolution,
+        int? anchorTermsVersion = null)
     {
         shape = default;
 
@@ -294,7 +305,9 @@ public static class ScheduleSpecFactory
         }
 
         // 3. Anchors, by schema fact, read at the root exactly as the mapping reads them.
-        if (!TryReadAnchors(assetClass, SecurityAssetClassTermsUpgrader.UpgradeForRead(assetClass, stored), terms, block, out var anchors, out resolution))
+        var anchorThrough = anchorTermsVersion ?? SecurityTermsEnvelope.ResolveAssetClassTermsVersion(stored);
+        if (!TryReadAnchors(assetClass, SecurityAssetClassTermsUpgrader.UpgradeForRead(assetClass, stored),
+                anchorThrough, terms, block, out var anchors, out resolution))
         {
             return false;
         }
@@ -374,6 +387,7 @@ public static class ScheduleSpecFactory
     private static bool TryReadAnchors(
         string assetClass,
         JsonElement root,
+        int termsVersion,
         StructuredCashFlowTerms terms,
         ScheduleConventionTerms block,
         out DeclaredAnchors anchors,
@@ -381,7 +395,7 @@ public static class ScheduleSpecFactory
     {
         anchors = default;
         resolution = null;
-        if (AnchorField(assetClass, IssueDateKey, SecurityAssetTermFieldType.Date) is not { } issueField)
+        if (AnchorField(assetClass, IssueDateKey, SecurityAssetTermFieldType.Date, termsVersion) is not { } issueField)
         {
             resolution = Refuse(
                 DeclaredScheduleRefusalCode.EffectiveDateMissing,
@@ -413,9 +427,9 @@ public static class ScheduleSpecFactory
             return false;
         }
 
-        var maturityField = AnchorField(assetClass, MaturityKey, SecurityAssetTermFieldType.Date);
+        var maturityField = AnchorField(assetClass, MaturityKey, SecurityAssetTermFieldType.Date, termsVersion);
         var maturity = maturityField is null ? null : SecurityVersionedTerms.ReadOptionalDate(root, maturityField.Key);
-        var frequencyField = AnchorField(assetClass, PaymentFrequencyKey, SecurityAssetTermFieldType.String);
+        var frequencyField = AnchorField(assetClass, PaymentFrequencyKey, SecurityAssetTermFieldType.String, termsVersion);
         var frequency = frequencyField is null ? null : SecurityVersionedTerms.ReadOptionalString(root, frequencyField.Key);
 
         string? ambiguity = null;
@@ -488,7 +502,8 @@ public static class ScheduleSpecFactory
         string assetClass,
         ScheduleConventionTerms block,
         out DeclaredSpellings spellings,
-        [NotNullWhen(false)] out DeclaredScheduleResolution? resolution)
+        [NotNullWhen(false)] out DeclaredScheduleResolution? resolution,
+        string blockPath = SecurityVersionedTerms.ScheduleConventionsKey)
     {
         spellings = default;
         resolution = null;
@@ -520,7 +535,7 @@ public static class ScheduleSpecFactory
         ScheduleDirection? direction = null;
         if (block.Direction is { } rawDirection)
         {
-            if (!AllowedByBlockSchema(assetClass, DirectionMember, rawDirection)
+            if (!AllowedByBlockSchema(assetClass, DirectionMember, rawDirection, blockPath)
                 || !Enum.TryParse<ScheduleDirection>(rawDirection, ignoreCase: false, out var parsedDirection)
                 || !Enum.IsDefined(parsedDirection))
             {
@@ -543,13 +558,13 @@ public static class ScheduleSpecFactory
             stubPolicy = parsedStub;
         }
 
-        if (block.CouponRateUnit is { } rawUnit && !AllowedByBlockSchema(assetClass, CouponRateUnitMember, rawUnit))
+        if (block.CouponRateUnit is { } rawUnit && !AllowedByBlockSchema(assetClass, CouponRateUnitMember, rawUnit, blockPath))
         {
             resolution = Unrecognized(CouponRateUnitMember, rawUnit, block);
             return false;
         }
 
-        if (block.CouponCashBasis is { } rawBasis && !AllowedByBlockSchema(assetClass, CouponCashBasisMember, rawBasis))
+        if (block.CouponCashBasis is { } rawBasis && !AllowedByBlockSchema(assetClass, CouponCashBasisMember, rawBasis, blockPath))
         {
             resolution = Unrecognized(CouponCashBasisMember, rawBasis, block);
             return false;
@@ -605,15 +620,17 @@ public static class ScheduleSpecFactory
         return null;
     }
 
-    // The top-level anchor field a class schema declares under exactly this key and type, or null.
-    private static SecurityAssetTermField? AnchorField(string assetClass, string key, SecurityAssetTermFieldType type)
+    // The exact top-level anchor declared at the record's selected terms version, or null.
+    private static SecurityAssetTermField? AnchorField(string assetClass, string key, SecurityAssetTermFieldType type, int termsVersion)
         => SecurityAssetTermsSchema.Field(assetClass, key) is { } field && field.Key == key && field.Type == type
+            && field.SinceTermsVersion <= termsVersion
             ? field
             : null;
 
     // A member of the block's closed vocabulary, checked exactly; a member the schema does not declare fails closed.
-    private static bool AllowedByBlockSchema(string assetClass, string member, string raw)
-        => SecurityAssetTermsSchema.ElementFields(assetClass, SecurityVersionedTerms.ScheduleConventionsKey)
+    private static bool AllowedByBlockSchema(string assetClass, string member, string raw,
+        string blockPath = SecurityVersionedTerms.ScheduleConventionsKey)
+        => SecurityAssetTermsSchema.ElementFields(assetClass, blockPath)
                .FirstOrDefault(field => field.Key == member) is { } field
            && field.Allows(raw);
 

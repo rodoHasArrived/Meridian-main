@@ -161,6 +161,16 @@
                               Visibility="{Binding ShowReplayEvidence, Converter={StaticResource ReplayEvidenceVisibility}}"
                               AutomationProperties.AutomationId="RunDetailReplayDataSources">
                         <StackPanel Margin="0,8,0,0">
+                            <TextBlock Text="{Binding ReplayQualityStatus}" TextWrapping="Wrap" Margin="0,0,0,8" />
+                            <ItemsControl ItemsSource="{Binding ReplayQualityWarnings}">
+                                <ItemsControl.ItemTemplate><DataTemplate>
+                                    <StackPanel Margin="0,0,0,8">
+                                        <TextBlock Text="{Binding Kind}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+                                        <Expander Header="Supporting source assessments"><TextBlock Text="{Binding Evidence}" TextWrapping="Wrap" /></Expander>
+                                    </StackPanel>
+                                </DataTemplate></ItemsControl.ItemTemplate>
+                            </ItemsControl>
                             <workstation:DenseDataGridControl Table="{Binding ReplaySourceTable}"
                                                               Height="168"
                                                               GridAutomationId="RunDetailReplaySourceGrid"

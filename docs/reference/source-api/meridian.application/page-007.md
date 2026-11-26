@@ -6,6 +6,69 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderRuntimeCredentialQuiescenceException
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialQuiescenceException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:135](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L135).
+
+A bound secret cannot change until its running instances are proven stopped and drained.
+
+```csharp
+public sealed class ProviderRuntimeCredentialQuiescenceException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderRuntimeCredentialQuiescenceException() : base(&quot;Running provider instances cannot be stopped and drained by this host. Stop the host and perform credential maintenance offline before restarting; the requested change was refused.&quot;);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs:137](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialMutationGuard.cs#L137) |  |
+
+## ProviderRuntimeCredentialService
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:12](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L12).
+
+Explicit host credential selection and ownership-checked migration commands.
+
+```csharp
+public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IProviderCredentialStore credentialStore, ILogger<ProviderRuntimeCredentialService>? logger = null, ProviderRuntimeCredentialApplicationTracker? applicationTracker = null, IProviderRuntimeCredentialApplier? applier = null, ProviderRuntimeCredentialMutationGuard? mutationGuard = null, ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ProviderCredentialStoreStatus&gt; GetMigrationPreviewAsync(string providerId, string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:24](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L24) |  |
+| <code>public async Task&lt;ProviderRuntimeCredentialBinding&gt; BindAsync(string providerId, string connectionId, string tenantId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:36](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L36) |  |
+| <code>public ProviderRuntimeCredentialApplicationStatus GetApplicationStatus(string providerId, string connectionId, string tenantId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:70](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L70) | Whether the retained binding for this connection has reached running instances of this host. |
+| <code>public async Task&lt;ProviderRuntimeCredentialApplicationStatus&gt; ApplyAsync(string providerId, string connectionId, string tenantId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:90](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L90) | Asks the host&#x27;s applier to recycle the provider&#x27;s running instances under the retained binding. The default host has no in-process recycle and reports the binding as pending a deliberate restart. |
+| <code>public async Task&lt;ProviderCredentialMigrationReceipt&gt; TransferAsync(string providerId, string connectionId, string tenantId, string migrationId, string? expectedGeneration, string actor, bool rollback, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:136](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L136) |  |
+| <code>public async Task&lt;ProviderCredentialMigrationReceipt&gt; FinalizeAsync(string providerId, string connectionId, string tenantId, string migrationId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:160](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L160) | Retires a verified migration: rollback ends and the provider-wide record is released; the receipt stays in audit. |
+| <code>public static ProviderCredentialScope? ResolveScope(AppConfig config, string providerId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:176](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L176) | Null is permitted only for an entirely legacy provider family, never a partial owner or dangling default. |
+| <code>public static ProviderCredentialScope RequireScope(AppConfig config, string providerId, string connectionId, string tenantId, bool requireEnabled = true);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:205](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L205) |  |
+
+## ProviderSetupService
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderSetupService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:14](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L14).
+
+Configures provider setup requests without persisting raw provider credentials in application config.
+
+```csharp
+public sealed class ProviderSetupService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderSetupService(UI.ConfigStore store, IProviderCredentialStore credentialStore, IProviderSetupRegistry setupRegistry, ProviderCredentialOwnershipPolicy? ownershipPolicy = null, ProviderRuntimeCredentialMutationGuard? mutationGuard = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:25](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L25) |  |
+| <code>public async Task&lt;ProviderSetupResult&gt; ConfigureForConnectionAsync(ProviderSetupRequest request, string connectionId, string tenantId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:37](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L37) | Configures credentials for an existing connection whose tenant ownership is already retained. |
+| <code>public async Task&lt;ProviderSetupResult&gt; ConfigureAsync(ProviderSetupRequest request, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:86](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L86) |  |
+
 ## ProviderTemplateCompatibilityException
 
 Qualified name: <code>Meridian.Application.ProviderRouting.ProviderTemplateCompatibilityException</code>. Kind: `class`.
@@ -744,9 +807,9 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;ContractualCashFlowResult?&gt; PreviewSecurityAsync(Guid securityId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:20](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L20) |  |
-| <code>public async Task&lt;ContractualCashFlowResult?&gt; PreviewLoanAsync(Guid loanId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:42](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L42) |  |
-| <code>public static ContractualCashFlowContract FromSecurity(SecurityDetailDto security);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:121](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L121) |  |
-| <code>public static ContractualCashFlowContract FromLoan(DirectLendingTermsDto terms, LoanServicingStateDto servicing);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:244](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L244) |  |
+| <code>public async Task&lt;ContractualCashFlowResult?&gt; PreviewLoanAsync(Guid loanId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:53](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L53) |  |
+| <code>public static ContractualCashFlowContract FromSecurity(SecurityDetailDto security);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:134](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L134) |  |
+| <code>public static ContractualCashFlowContract FromLoan(DirectLendingTermsDto terms, LoanServicingStateDto servicing);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:257](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L257) |  |
 
 ## FileBondExerciseNoticeStore
 
@@ -1061,77 +1124,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;CorporateActionProviderFetchOutcome&gt; FetchOutcomes { get; init; } = [];</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:74](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L74) |  |
-
-## CorporateActionOperationsService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionOperationsService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:17](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L17).
-
-Application boundary for durable provider observations and scoped processing cases. Source acceptance is deliberately limited to appending the canonical fact and creating a Detected case; it never approves an accounting treatment or posts a consequence.
-
-```csharp
-public sealed class CorporateActionOperationsService : ICorporateActionOperationsService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string DefaultMethodologyProfileId = &quot;clearwater-corporate-actions/v1&quot;;</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:24](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L24) | Methodology profile recorded on a case when the caller names none. The value is persisted on retained cases and equals the registered rule profile&#x27;s key (guarded by CorporateActionOperationsServiceTests); the domain does not reference the vendor type. |
-| <code>public const string SourceDecisionFanOutBlocker = &quot;Corporate-action source decisions are read-only until an authoritative service can enumerate every affected tenant/company scope and apply the decision atomically.&quot;;</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:31](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L31) | The standing reason a source decision is refused when the scope authority cannot answer. Kept in one place so the endpoint&#x27;s read-side posture and this write-side refusal state the same thing. |
-| <code>public CorporateActionOperationsService(ICorporateActionOperationsStore store, ISecurityMasterEventStore? eventStore = null, ISecurityMasterStore? securityMasterStore = null, ICorporateActionRestatementTrigger? restatementTrigger = null, ICorporateActionScopeFanOutGate? scopeFanOut = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:46](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L46) |  |
-| <code>public async Task&lt;CorporateActionSourceProposalDto&gt; RecordSourceProposalAsync(RecordCorporateActionSourceProposalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:60](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L60) |  |
-| <code>public async Task&lt;CorporateActionSourceProposalDto?&gt; GetSourceProposalAsync(Guid proposalId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:159](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L159) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionSourceProposalDto&gt;&gt; ListSourceProposalsAsync(Guid? securityId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:168](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L168) |  |
-| <code>public async Task&lt;CorporateActionDurableInboxDto&gt; GetInboxAsync(CorporateActionCaseScopeDto acceptanceScope, int take, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:187](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L187) |  |
-| <code>public async Task&lt;CorporateActionSourceProposalAcceptanceResultDto&gt; AcceptSourceProposalAsync(AcceptCorporateActionSourceProposalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:222](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L222) |  |
-| <code>public async Task&lt;CorporateActionSourceProposalDecisionResultDto&gt; RejectSourceProposalAsync(RejectCorporateActionSourceProposalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:411](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L411) |  |
-| <code>public async Task&lt;CorporateActionProcessingCaseDto?&gt; GetCaseAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:436](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L436) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionProcessingCaseDto&gt;&gt; ListCasesAsync(string tenantId, string companyId, Guid? securityId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:449](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L449) |  |
-| <code>public async Task&lt;CorporateActionConflictDto?&gt; GetConflictAsync(Guid caseId, Guid conflictId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:473](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L473) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionConflictDto&gt;&gt; ListConflictsAsync(Guid caseId, string tenantId, string companyId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:488](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L488) |  |
-| <code>public async Task&lt;CorporateActionEvidenceMutationResultDto&gt; AddEvidenceAsync(AddCorporateActionEvidenceRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:510](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L510) |  |
-| <code>public async Task&lt;CorporateActionConflictMutationResultDto&gt; RecordConflictAsync(RecordCorporateActionConflictRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:558](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L558) |  |
-| <code>public async Task&lt;CorporateActionConflictResolutionResultDto&gt; ResolveConflictAsync(ResolveCorporateActionConflictRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:591](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L591) |  |
-| <code>public async Task&lt;CorporateActionProcessingOptionMutationResultDto&gt; UpsertOptionAsync(UpsertCorporateActionProcessingOptionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:634](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L634) |  |
-| <code>public async Task&lt;CorporateActionCaseTransitionResultDto&gt; TransitionCaseAsync(TransitionCorporateActionCaseRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:674](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L674) |  |
-
-## CorporateActionProposal
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionProposal</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:27](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L27).
-
-One normalized corporate-action announcement with its cross-provider consensus evidence.
-
-```csharp
-public sealed record CorporateActionProposal(Guid SecurityId, string Ticker, string ActionType, DateOnly ExDate, DateOnly? RecordDate, DateOnly? PayableDate, decimal? Amount, string? Currency, decimal? SplitFromFactor, decimal? SplitToFactor, string WinningSource, IReadOnlyList<string> AgreeingSources, IReadOnlyList<string> DissentingSources, bool AutoApplied, Guid? ProposalId = null, long? Version = null, string? ProposalState = null, CorporateActionSourceProposalActionAvailabilityDto? ActionAvailability = null, string? ObservationSource = null, string? ObservationDescription = null, string? SourceEventId = null, string? SourceEventVersion = null, DateTimeOffset? ObservationObservedAtUtc = null, string? EvidenceHash = null, string? EvidenceReference = null, IReadOnlyList<CorporateActionDissentFieldDto>? DissentingFields = null, CorporateActionProviderReleaseStatusDto ProviderReleaseStatus = CorporateActionProviderReleaseStatusDto.ReviewOnly)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public JsonElement? Payload { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:56](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L56) |  |
-| <code>public decimal? DistributionRatio { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:58](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L58) |  |
-| <code>public decimal? ExchangeRatio { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:60](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L60) |  |
-| <code>public CorporateActionRetainedSourceEvidenceDto? SourceEvidence { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:62](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L62) |  |
-
-## CorporateActionProposalMapper
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionProposalMapper</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:15](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L15).
-
-Maps an ingest proposal onto the corporate-action event contract, mirroring the orchestrator&#x27;s auto-apply mapping so operator applies land identically.
-
-```csharp
-public static class CorporateActionProposalMapper
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static CorporateActionDto ToCorporateAction(CorporateActionProposal proposal);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:17](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs#L17) |  |

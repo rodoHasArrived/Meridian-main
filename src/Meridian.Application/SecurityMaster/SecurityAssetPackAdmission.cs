@@ -34,6 +34,19 @@ internal static class SecurityAssetPackAdmission
         // that survive a tolerant read must satisfy today's semantic write rules before it persists;
         // a rule added after they were stored judges only what this amendment introduces or changes.
         EnsureScheduleTermsAdmitted(descriptor.AssetClass, projection.AssetSpecificTerms, retainedTerms);
+        if (descriptor.CashFlowBehavior == SecurityCashFlowBehavior.SwapLegs
+            && SecurityVersionedTerms.ReadDeclaredLegScheduleConventions(descriptor.AssetClass, projection.AssetSpecificTerms).Status
+                == SecurityDeclaredConventionsStatus.Declared)
+        {
+            try
+            {
+                SecurityVanillaSwapProfile.FromSecurity(SecurityMasterMapping.ToDetail(projection));
+            }
+            catch (InvalidOperationException exception)
+            {
+                throw new SecurityMasterWriteRefusedException(exception.Message, exception);
+            }
+        }
     }
 
     private static SecurityAssetClassDescriptor RequirePackSchemas(string assetClass)

@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using FluentAssertions;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Tests.TestHelpers;
@@ -43,6 +44,7 @@ public sealed class FinnhubHistoricalDataProviderTests
         bars.Should().BeInAscendingOrder(bar => bar.SessionDate);
         bars.Select(bar => bar.Symbol).Should().OnlyContain(symbol => symbol == "MSFT");
         bars.Select(bar => bar.Source).Should().OnlyContain(source => source == "finnhub");
+        bars.Should().OnlyContain(bar => bar.PriceBasis == HistoricalPriceBasis.SplitAdjusted && bar.IsAdjusted == true);
 
         bars[0].SessionDate.Should().Be(from);
         bars[0].Open.Should().Be(189.00m);
