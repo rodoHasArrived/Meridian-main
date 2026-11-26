@@ -38,7 +38,7 @@ over ledger dependency tables while a reviewed revision finalizes. `PostgresSecu
 lets canonical event/projection reads and writes join an active mutation transaction, records the
 canonical fence held by a reviewed publication and defers derived work until the outer commit.
 
-Ledger migration `V_ledger_083__security_revision_workflow_scope.sql` replaces the open-workflow
+Ledger migration `V_ledger_084__security_revision_workflow_scope.sql` replaces the open-workflow
 unique index in one transaction: a workflow whose `purpose` is absent or `Close` keeps account/period
 uniqueness, and each `SecurityMasterRevision` subject is unique by its revision UUID. A check refuses
 unknown or explicit-null purposes and incomplete subject authority, and a trigger keeps purpose,

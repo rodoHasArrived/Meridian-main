@@ -20,7 +20,7 @@ environment rollout, hosted checks and operator acceptance remain separate evide
 - A different authenticated reviewer from both the retained maker and submitter, assigned to each
   revision workflow. Batch membership does not grant approval or extend another item's receipt.
 - Updated database participants configured against the same supported PostgreSQL authority, with
-  Security Master 069 and 070 and ledger 083 applied through the normal migration runner. Follow the
+  Security Master 069 and 070 and ledger 084 applied through the normal migration runner. Follow the
   [terms-contract rollout](security-master-terms-contract-rollout.md) for compatible node deployment.
   A host without PostgreSQL Security Master and ledger stores reports the repair service unavailable.
 
