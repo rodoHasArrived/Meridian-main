@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { describeApiError } from "@/lib/api-errors";
 import {
   listProviderIntegrationActorFlags,
@@ -8,6 +9,25 @@ import {
   type ProviderIntegrationActorFlag,
   type ProviderIntegrationActorFlagScanResult
 } from "@/lib/api/provider-integration-actor-flags.api";
+
+const actorFlagColumns: DenseDataTableColumn<ProviderIntegrationActorFlag>[] = [
+  {
+    id: "record",
+    label: "Record",
+    rowHeader: true,
+    render: (flag) => (
+      <>
+        <div>{flag.subjectId ?? flag.recordKind}</div>
+        <div className="text-xs text-muted-foreground">{flag.recordKind}</div>
+      </>
+    )
+  },
+  { id: "field", label: "Field", className: "font-mono text-xs", render: (flag) => flag.fieldPath },
+  { id: "recorded", label: "Recorded as", render: (flag) => (flag.recordedValue.trim() ? flag.recordedValue : "(blank)") },
+  { id: "reason", label: "Why", render: (flag) => flag.reason },
+  { id: "when", label: "When", render: (flag) => flag.recordedAt ?? "—" },
+  { id: "flaggedBy", label: "Flagged by", render: (flag) => flag.flaggedBy }
+];
 
 /**
  * Provider-integration records stored before the server bound actors to the signed-in operator may name a
@@ -110,35 +130,13 @@ export function ProviderIntegrationActorFlagsPanel({ load, scan }: ProviderInteg
         <p className="text-sm text-muted-foreground">No unverified actors are flagged.</p>
       ) : null}
       {state.status === "ready" && state.flags.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm" aria-label="Unverified actor flags">
-            <thead>
-              <tr className="text-left text-muted-foreground">
-                <th scope="col" className="py-1 pr-3 font-medium">Record</th>
-                <th scope="col" className="py-1 pr-3 font-medium">Field</th>
-                <th scope="col" className="py-1 pr-3 font-medium">Recorded as</th>
-                <th scope="col" className="py-1 pr-3 font-medium">Why</th>
-                <th scope="col" className="py-1 pr-3 font-medium">When</th>
-                <th scope="col" className="py-1 font-medium">Flagged by</th>
-              </tr>
-            </thead>
-            <tbody>
-              {state.flags.map((flag) => (
-                <tr key={flag.flagId} className="border-t border-border/60 align-top">
-                  <td className="py-2 pr-3">
-                    <div>{flag.subjectId ?? flag.recordKind}</div>
-                    <div className="text-xs text-muted-foreground">{flag.recordKind}</div>
-                  </td>
-                  <td className="py-2 pr-3 font-mono text-xs">{flag.fieldPath}</td>
-                  <td className="py-2 pr-3">{flag.recordedValue.trim() ? flag.recordedValue : "(blank)"}</td>
-                  <td className="py-2 pr-3">{flag.reason}</td>
-                  <td className="py-2 pr-3">{flag.recordedAt ?? "—"}</td>
-                  <td className="py-2">{flag.flaggedBy}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DenseDataTable
+          columns={actorFlagColumns}
+          rows={state.flags}
+          ariaLabel="Unverified actor flags"
+          getRowId={(flag) => flag.flagId}
+          emptyText="No unverified actors are flagged."
+        />
       ) : null}
     </section>
   );

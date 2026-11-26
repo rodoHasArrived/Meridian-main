@@ -1,5 +1,4 @@
-using System.Security.Cryptography;
-using System.Text;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Contracts.Integrations;
 
@@ -35,10 +34,7 @@ public sealed record ProviderIntegrationActorFlagDto(
     DateTimeOffset FlaggedAt)
 {
     public static string ComputeFlagId(string recordPath, string fieldPath, string recordedValue)
-    {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes($"{recordPath}\n{fieldPath}\n{recordedValue}"));
-        return Convert.ToHexString(bytes).ToLowerInvariant();
-    }
+        => Sha256Digest.ComputeUtf8($"{recordPath}\n{fieldPath}\n{recordedValue}");
 }
 
 /// <summary>One stored actor value found by a raw scan of the integration store.</summary>
