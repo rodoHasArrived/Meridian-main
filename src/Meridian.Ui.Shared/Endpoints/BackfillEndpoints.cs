@@ -374,7 +374,7 @@ public static class BackfillEndpoints
                 return ApiProblemDetails.NotFound(context, "Unknown or non-editable provider.");
             try
             {
-                var saved = await store.UpdateAsync(config =>
+                var (saved, changeImpact) = await store.UpdateWithChangeStatusAsync(config =>
                 {
                     var backfill = config.Backfill ?? new BackfillConfig();
                     var providers = BackfillProviderCatalog.Apply(backfill.Providers ?? new(), id, request);
@@ -385,7 +385,7 @@ public static class BackfillEndpoints
                 {
                     providerId = id,
                     options = saved,
-                    changeImpact = store.GetChangeStatus()
+                    changeImpact
                 }, jsonOptions);
             }
             catch (ArgumentException ex)

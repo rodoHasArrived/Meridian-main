@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.Robinhood;
 using Xunit;
@@ -93,6 +94,7 @@ public sealed class RobinhoodHistoricalDataProviderTests
         result[0].Symbol.Should().Be("AAPL");
         result[0].Open.Should().Be(185.00m);
         result[0].Close.Should().Be(186.00m);
+        result.Should().OnlyContain(bar => bar.PriceBasis == HistoricalPriceBasis.Unknown && bar.IsAdjusted == null);
     }
 
     [Fact]

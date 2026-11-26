@@ -48,8 +48,9 @@ export function caseQueueResidual(item: ReconciliationBreakQueueItem): { amount:
     return { amount: formatReconciliationValue(residual, unit, true), unit: !reconciliationValueUnavailableReason(residual) && parseExactDecimal(residual) ? reconciliationUnitLabel(unit) : null };
   }
   const measures = item.measures ?? [];
+  // Partially covered dimensions stay distinct; one available residual never stands in for the case.
+  if (measures.length > 1) return { amount: "Multiple", unit: null };
   const reported = measures.filter((measure) => retainedMeasureResidual(measure) !== null);
-  if (reported.length > 1) return { amount: "Multiple", unit: null };
   if (reported.length === 1) {
     const measure = reported[0];
     const unit = measure.unit?.trim();
@@ -89,8 +90,8 @@ export function caseMeasure(item: ReconciliationBreakQueueItem): ReconciliationB
 export function caseResidualUnit(item: ReconciliationBreakQueueItem): string | undefined {
   const retained = item.statementEvidence?.match.residuals;
   if (retained) return retained.length === 1 ? retained[0].unit?.trim() : undefined;
-  const measures = item.measures?.filter((measure) => retainedMeasureResidual(measure) !== null) ?? [];
-  return measures.length === 1 ? measures[0].unit?.trim() : undefined;
+  const measures = item.measures ?? [];
+  return measures.length === 1 && retainedMeasureResidual(measures[0]) !== null ? measures[0].unit?.trim() : undefined;
 }
 
 /** An explicit unavailable measure stays unavailable; numeric fields support older hosts only. */
@@ -107,7 +108,7 @@ export function caseResidual(item: ReconciliationBreakQueueItem): string | numbe
   }
   const measures = item.measures ?? [];
   const reported = measures.filter((measure) => retainedMeasureResidual(measure) !== null);
-  if (measures.length) return reported.length === 1 ? retainedMeasureResidual(reported[0]) : null;
+  if (measures.length) return measures.length === 1 && reported.length === 1 ? retainedMeasureResidual(reported[0]) : null;
   const value = item.varianceExact === undefined ? item.variance : item.varianceExact;
   return reconciliationValueUnavailableReason(value) ? null : value;
 }

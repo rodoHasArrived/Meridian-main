@@ -192,7 +192,7 @@ No feature work; confirm and document the rules each later phase must follow.
       workspace topics need the event-driven fan-out seam, not a 30s poll-bridge.
 - [ ] Step-2 fan-out seam (separate PR, hot-path review required) + workspace topics + per-session
       stream caps. **Design:** see
-      [`web-ui-stream-fan-out-blueprint-2026-07.md`](../../../archive/docs/plans/web-ui-stream-fan-out-blueprint-2026-07.md) —
+      [`web-ui-stream-fan-out-blueprint-2026-07.md`](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/web-ui-stream-fan-out-blueprint-2026-07.md) —
       code-ready blueprint (notifier seam + `QuoteStreamBroadcaster` + connection registry;
       companion-pane stream sharing over the `BroadcastChannel`), phased for hot-path review.
 

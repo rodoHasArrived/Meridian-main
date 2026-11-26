@@ -79,7 +79,12 @@ public sealed record ReconciliationRunRequest(
     /// entity are fetched and included as additional reconciliation checks alongside
     /// the portfolio/ledger comparison.
     /// </summary>
-    Guid? BankEntityId = null);
+    Guid? BankEntityId = null)
+{
+    /// <summary>Absolute native units; the original AmountTolerance retains relative-fraction semantics.</summary>
+    public decimal QuantityTolerance { get; init; }
+    public decimal BasisAmountTolerance { get; init; } = 0.01m;
+}
 
 /// <summary>
 /// Summary of a completed reconciliation run.
@@ -126,6 +131,8 @@ public sealed record ReconciliationMatchDto(
     DateTimeOffset? ExpectedAsOf,
     DateTimeOffset? ActualAsOf)
 {
+    public IReadOnlyList<ReconciliationBreakMeasureDto> Measures { get; init; } = [];
+
     /// <summary>Canonical identity of the logical check resolved by this match.</summary>
     public string? LogicalBreakIdentity { get; init; }
 

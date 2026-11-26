@@ -177,6 +177,7 @@ New SDK types that have no existing callers should use `Meridian.ProviderSdk` or
 
 ## Related docs
 
-- `docs/providers/`
+- `docs/development/provider-implementation.md`
+- `docs/reference/provider-capability-matrix.md`
 - `docs/architecture/module-map.md`
 - `docs/source/generated/source-module-index.md`

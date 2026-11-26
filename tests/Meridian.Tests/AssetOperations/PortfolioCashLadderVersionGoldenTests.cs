@@ -18,14 +18,14 @@ using NSubstitute;
 namespace Meridian.Tests.AssetOperations;
 
 /// <summary>
-/// Golden grid for <c>portfolio-cash-ladder-v1</c> and <c>portfolio-cash-ladder-v2</c> output. It is not
-/// a defect pin: it freezes both retained engines so that explicit v1 replay through the shared
-/// cash-ladder query stays bit-identical, and so a later v1 retirement can prove what it removes.
+/// Golden grid for <c>portfolio-cash-ladder-v2</c> output. It is not a defect pin: it freezes the
+/// retained engine so that governed ladder output stays bit-identical. The v1 engine and its cases
+/// were retired on 2026-11-25.
 /// </summary>
 /// <remarks>
-/// <para>The grid is two engines x three bond shapes (fixed bullet, European call and put, SOFR
+/// <para>The grid is three bond shapes (fixed bullet, European call and put, SOFR
 /// floater with an observed reset) x six scenarios (base, early call, holder put, rates up,
-/// redemption wave, FX adverse): 36 cases. Decimals are stored as invariant strings; generation
+/// redemption wave, FX adverse): 18 cases. Decimals are stored as invariant strings; generation
 /// timestamps are excluded.</para>
 /// <para>A missing or mismatched fixture writes <c>portfolio-cash-ladder-versions.received.json</c>
 /// beside the test binaries and fails. It never skips. Replace the committed fixture under
@@ -35,7 +35,7 @@ public sealed class PortfolioCashLadderVersionGoldenTests
 {
     private const string FixtureFileName = "portfolio-cash-ladder-versions.json";
     private const string ReceivedFileName = "portfolio-cash-ladder-versions.received.json";
-    private const int ExpectedCaseCount = 36;
+    private const int ExpectedCaseCount = 18;
     private static readonly DateTimeOffset AsOf = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
     private static readonly Guid FixedId = Guid.Parse("7a1c0d2e-0000-4000-8000-00000000b1b1");
     private static readonly Guid CallableId = Guid.Parse("7a1c0d2e-0000-4000-8000-00000000b2b2");
@@ -80,7 +80,6 @@ public sealed class PortfolioCashLadderVersionGoldenTests
             var inputs = BondConsistencyTests.Inputs(security, projection);
             foreach (var scenario in Scenarios)
             {
-                cases.Add(new($"portfolio-cash-ladder-v1|{name}|{scenario}", Render(LegacyPortfolioCashLadderEngine.Build(inputs, scenario))));
                 cases.Add(new($"portfolio-cash-ladder-v2|{name}|{scenario}", Render(PortfolioCashLadderEngine.Build(inputs, scenario))));
             }
         }
@@ -256,7 +255,7 @@ public sealed class PortfolioCashLadderVersionGoldenTests
             cases[item.Key] = item.Value;
         var root = new JsonObject
         {
-            ["description"] = "Golden portfolio-cash-ladder-v1 and portfolio-cash-ladder-v2 ladders captured when explicit v1 replay dispatch was added to the shared cash-ladder query.",
+            ["description"] = "Golden portfolio-cash-ladder-v2 ladders for the shared cash-ladder query.",
             ["caseCount"] = received.Count,
             ["cases"] = cases
         };

@@ -98,6 +98,75 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         result.Snapshots.Should().HaveCount(4, "one snapshot is taken at end of each of the 4 requested days");
     }
 
+    [Theory]
+    [InlineData(HistoricalPriceBasis.Raw, HistoricalPriceBasis.SplitAdjusted)]
+    [InlineData(HistoricalPriceBasis.SplitAdjusted, HistoricalPriceBasis.Raw)]
+    [InlineData(HistoricalPriceBasis.Unknown, HistoricalPriceBasis.Raw)]
+    [InlineData(HistoricalPriceBasis.Raw, HistoricalPriceBasis.Unknown)]
+    [InlineData(HistoricalPriceBasis.SplitAdjusted, HistoricalPriceBasis.DividendAdjusted)]
+    public async Task RunAsync_MixedHistoricalPriceBasesForOneSymbol_RejectsBeforeConsumingMixedBar(
+        HistoricalPriceBasis firstBasis, HistoricalPriceBasis secondBasis)
+    {
+        var from = new DateOnly(2024, 1, 2);
+        WritePriceBasisBarsJsonl("SPY", from, (100m, firstBasis), (50m, secondBasis));
+        var strategy = new PriceCapturingStrategy();
+        var request = new BacktestRequest(from, from.AddDays(1), Symbols: ["SPY"],
+            DataRoot: _dataRoot, AdjustForCorporateActions: false)
+        {
+            ApplyStoredCorporateActions = false
+        };
+
+        var run = () => _engine.RunAsync(request, strategy);
+
+        await run.Should().ThrowAsync<InvalidOperationException>().WithMessage("*SPY*cannot mix*price bases*");
+        strategy.ReceivedBars.Should().ContainSingle().Which.Close.Should().Be(100m);
+    }
+
+    [Theory]
+    [InlineData(HistoricalPriceBasis.Unknown)]
+    [InlineData(HistoricalPriceBasis.Raw)]
+    [InlineData(HistoricalPriceBasis.SplitAdjusted)]
+    [InlineData(HistoricalPriceBasis.DividendAdjusted)]
+    [InlineData(HistoricalPriceBasis.FullyAdjusted)]
+    public async Task RunAsync_ConsistentHistoricalPriceBasis_AllowsResearchReplay(HistoricalPriceBasis basis)
+    {
+        var from = new DateOnly(2024, 1, 2);
+        WritePriceBasisBarsJsonl("SPY", from, (100m, basis), (100m, basis));
+        var strategy = new PriceCapturingStrategy();
+        var request = new BacktestRequest(from, from.AddDays(1), Symbols: ["SPY"],
+            DataRoot: _dataRoot, AdjustForCorporateActions: false)
+        {
+            ApplyStoredCorporateActions = false
+        };
+
+        var result = await _engine.RunAsync(request, strategy);
+
+        result.TotalEventsProcessed.Should().Be(2);
+        strategy.ReceivedBars.Should().HaveCount(2).And.OnlyContain(bar => bar.PriceBasis == basis && bar.Close == 100m);
+    }
+
+    [Fact]
+    public async Task RunAsync_DifferentHistoricalPriceBasesAcrossSymbols_AllowsResearchReplay()
+    {
+        var from = new DateOnly(2024, 1, 2);
+        WritePriceBasisBarsJsonl("SPY", from, (100m, HistoricalPriceBasis.Raw), (100m, HistoricalPriceBasis.Raw));
+        WritePriceBasisBarsJsonl("QQQ", from, (50m, HistoricalPriceBasis.SplitAdjusted), (50m, HistoricalPriceBasis.SplitAdjusted));
+        var strategy = new PriceCapturingStrategy();
+        var request = new BacktestRequest(from, from.AddDays(1), Symbols: ["SPY", "QQQ"],
+            DataRoot: _dataRoot, AdjustForCorporateActions: false)
+        {
+            ApplyStoredCorporateActions = false
+        };
+
+        var result = await _engine.RunAsync(request, strategy);
+
+        result.TotalEventsProcessed.Should().Be(4);
+        strategy.ReceivedBars.Where(bar => bar.Symbol == "SPY").Should().HaveCount(2)
+            .And.OnlyContain(bar => bar.PriceBasis == HistoricalPriceBasis.Raw);
+        strategy.ReceivedBars.Where(bar => bar.Symbol == "QQQ").Should().HaveCount(2)
+            .And.OnlyContain(bar => bar.PriceBasis == HistoricalPriceBasis.SplitAdjusted);
+    }
+
     // ------------------------------------------------------------------ //
     //  Buy-and-hold order placement                                       //
     // ------------------------------------------------------------------ //
@@ -192,7 +261,7 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         var to = new DateOnly(2024, 7, 8);
         var bars = new[] { from, to }.Select(static date =>
         {
-            var bar = new HistoricalBar("SPY", date, 100m, 105m, 95m, 101m, 10_000, "fixture", IsAdjusted: false);
+            var bar = new HistoricalBar("SPY", date, 100m, 105m, 95m, 101m, 10_000, "fixture", PriceBasis: HistoricalPriceBasis.Raw);
             return MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, bar.Source);
         }).ToArray();
         var retained = BackfillBatchRevision.Create("composite", "fixture", "default", "SPY", "daily", from, to,
@@ -452,7 +521,8 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
             Close: 100m,
             Volume: 1_000L,
             Source: "test",
-            SequenceNumber: 1L);
+            SequenceNumber: 1L,
+            PriceBasis: HistoricalPriceBasis.Raw);
         var evt = MarketEvent.HistoricalBar(timestamp, "SPY", bar, "test", 1L);
         var validLine = JsonSerializer.Serialize(
             evt,
@@ -863,6 +933,24 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
     //  JSONL fixture helpers                                              //
     // ------------------------------------------------------------------ //
 
+    private void WritePriceBasisBarsJsonl(string symbol, DateOnly from,
+        params (decimal Price, HistoricalPriceBasis Basis)[] bars)
+    {
+        var symbolDir = Path.Combine(_dataRoot, symbol.ToUpperInvariant());
+        Directory.CreateDirectory(symbolDir);
+        var filePath = Path.Combine(symbolDir, $"{symbol}_bars_{from:yyyy-MM-dd}.jsonl");
+
+        using var writer = new StreamWriter(filePath);
+        for (var index = 0; index < bars.Length; index++)
+        {
+            var (price, basis) = bars[index];
+            var bar = new HistoricalBar(symbol, from.AddDays(index), price, price, price, price, 1_000L,
+                Source: "test", SequenceNumber: index + 1, PriceBasis: basis);
+            var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), symbol, bar, "test", index + 1);
+            writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
+        }
+    }
+
     /// <summary>
     /// Writes a single <see cref="HistoricalBar"/> event with the given <paramref name="timestamp"/>
     /// (preserving its UTC offset) to a JSONL file so the engine can read it back.
@@ -881,7 +969,8 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
             Open: 100m, High: 105m, Low: 95m, Close: 100m,
             Volume: 1_000_000L,
             Source: "test",
-            SequenceNumber: 1L);
+            SequenceNumber: 1L,
+            PriceBasis: HistoricalPriceBasis.Raw);
 
         var evt = MarketEvent.HistoricalBar(timestamp, symbol, bar, "test", 1);
         using var writer = new StreamWriter(filePath);
@@ -927,7 +1016,8 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
                 Close: close,
                 Volume: 1_000_000L,
                 Source: source,
-                SequenceNumber: seq++);
+                SequenceNumber: seq++,
+                PriceBasis: HistoricalPriceBasis.Raw);
 
             var ts = bar.ToTimestampUtc();
             var evt = MarketEvent.HistoricalBar(ts, symbol, bar, source, seq);
@@ -956,7 +1046,8 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
                 Close: bar.Close,
                 Volume: bar.Volume,
                 Source: "test",
-                SequenceNumber: seq++);
+                SequenceNumber: seq++,
+                PriceBasis: HistoricalPriceBasis.Raw);
 
             var ts = payload.ToTimestampUtc();
             var evt = MarketEvent.HistoricalBar(ts, symbol, payload, "test", seq);
@@ -1122,7 +1213,8 @@ file sealed class StubCorporateActionAdjustmentService(decimal factor, Action? o
                 Close: b.Close / factor,
                 Volume: (long)(b.Volume * factor),
                 Source: b.Source,
-                SequenceNumber: b.SequenceNumber))
+                SequenceNumber: b.SequenceNumber,
+                PriceBasis: HistoricalPriceBasis.SplitAdjusted))
             .ToList();
         return Task.FromResult<IReadOnlyList<HistoricalBar>>(adjusted);
     }

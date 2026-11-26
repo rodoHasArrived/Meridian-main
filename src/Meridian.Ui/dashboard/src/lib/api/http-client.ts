@@ -126,6 +126,15 @@ export async function apiGetBlob(path: string, options: ApiRequestOptions = {}):
   return response.blob();
 }
 
+/** Preserve authoritative artifact bytes using the same login and CSRF transport as JSON commands. */
+export async function apiPostBlob(path: string, body: unknown, options: ApiRequestOptions = {}): Promise<Blob> {
+  const response = await fetch(path, {
+    method: "POST", signal: options.signal, headers: buildMutationHeaders(), body: JSON.stringify(body)
+  });
+  if (!response.ok) throw await buildApiError(path, response);
+  return response.blob();
+}
+
 export function apiPostJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
   return postJson<T>(path, body, options);
 }

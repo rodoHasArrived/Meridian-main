@@ -416,7 +416,6 @@
         ],
         "escalationTriggers": [
           "cleanup uncovers a likely behavioral bug",
-          "stale material belongs in archive instead of in-place cleanup",
           "cleanup would change public contracts or architecture boundaries"
         ]
       }
@@ -532,44 +531,6 @@
           "roadmap data changes",
           "deferred lane is proposed as active",
           "source docs and roadmap registry disagree"
-        ]
-      }
-    },
-    {
-      "id": "archive-organization",
-      "description": "Route archive, stale-material, and repository hygiene classification requests to archive organizer.",
-      "matchWeighted": {
-        "archive": 3.0,
-        "stale material": 2.5,
-        "deprecated": 1.8,
-        "delete candidate": 1.8,
-        "superseded": 2.0,
-        "move stale": 2.0
-      },
-      "route": {
-        "lane": "archive",
-        "skill": "meridian-archive-organizer",
-        "mode": "Standard",
-        "modelRouteId": "implementation-balanced",
-        "rationale": "Archive prompts must classify with evidence before moving or deleting material.",
-        "validationFloor": [
-          "python .codex/skills/meridian-archive-organizer/scripts/run_evals.py --all --json",
-          "git diff --check"
-        ],
-        "validationScripts": [
-          "prompt-route-linter",
-          "archive-organizer-evals",
-          "handoff-packet-generator"
-        ],
-        "requiredTelemetry": [
-          "route_id",
-          "selected_model",
-          "handoff_path"
-        ],
-        "escalationTriggers": [
-          "archive move spans many files",
-          "delete candidate lacks evidence",
-          "generated docs or source registries need updates"
         ]
       }
     },

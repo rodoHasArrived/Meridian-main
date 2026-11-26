@@ -68,7 +68,8 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
                 routingRuntime: sp.GetRequiredService<BackfillRoutingRuntime>())
             {
                 ResolveSessionsAsync = new Meridian.Platform.Scheduling.HistoricalSessionScheduleResolver(
-                    sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityIdentityQueryService>()).ResolveAsync
+                    sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityIdentityQueryService>()).ResolveAsync,
+                CaptureInputEvidence = symbol => sp.GetService<Meridian.Infrastructure.Adapters.Core.DataQualityMonitor>()?.GetCachedInputEvidence(symbol)
             };
         });
         services.AddSingleton<IBackfillExecutionGateway, BackfillCoordinatorExecutionGateway>();

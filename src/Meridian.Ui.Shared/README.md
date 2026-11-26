@@ -11,6 +11,37 @@ last_reviewed: 2026-11-23
 
 # src/Meridian.Ui.Shared
 
+Trial-balance amount proof authorizes the retained tenant/company, fund, book and period before
+interpreting a caller-supplied proof subject. Malformed subjects never load the journal population.
+Binding and retrieval use the verified book snapshot for the population digest and currency;
+immutable journal-prefix and retained-source checks continue to govern the returned evidence.
+
+Strategy reconciliation endpoints pass trusted tenant/company scope through creation, result-ID,
+latest-result and history reads. Foreign or malformed scoped runs return not found before posted
+accounting sources are queried. Canonical run journals retain their explicit securities-role and
+chart-reference evidence for native comparisons; missing source coverage remains unavailable.
+Run-attributed postings cannot prove complete account cash or NAV: those comparisons carry scope
+coverage reasons rather than amount variances, while their supported position quantities and basis
+remain independently comparable. Account/book stock reconciliation uses the existing three-way lane.
+Run selection requires trusted execution attribution, not a caller-supplied strategy label. Retained
+legacy metrics can support audit display while their scoped reconciliation measurements stay unavailable.
+
+Guarded strategy-run evidence and vault reads require a resolvable retained run identity before
+selecting their account policy. A missing repository or unknown run fails closed. Versioned
+Designer runs retain the tenant/company and account `ViewTrades` checks; known unversioned run
+records keep their existing evidence policy, as do other evidence subject kinds.
+
+Reconciliation queues expose a monetary total only when every break supplies one comparable typed
+money measure in the same retained currency. Quantity-only, legacy, mixed-currency and unverified
+account rows retain counts and an unavailable explanation instead of a dollar total. The nullable
+`ComparableBreakAmountTotal`, `BreakAmountCurrency` and `BreakAmountUnavailableReason` fields carry
+this distinction; the legacy scalar is only a compatibility field. Ledger-impact previews are
+omitted when this comparison evidence is unavailable.
+
+Designer canonical replay requires `HistoricalPriceBasis.Raw` on every retained daily bar.
+Legacy `IsAdjusted=false` without precise basis is insufficient, so previously ambiguous stored prices
+cannot enter raw-price replay or receive a second corporate-action adjustment.
+
 ## Cancel-all incident reads
 
 `GET /api/execution/cancel-incidents?fundAccountId=...` lists recent retained incident summaries;
@@ -92,6 +123,13 @@ External-review evidence verifies accepted immutable documents, separately from 
 operator. The close-readiness companion does not become a blocker. See
 [the intercompany procedure](../../docs/operators/intercompany-entity-controls.md).
 
+`IntercompanyAgreementWorkQueueEndpoints` serves read-only `GET /api/ledger/intercompany/work-queue`
+and explicit `POST /observe` and `/update` commands under that route. The host derives actor,
+tenant/company and fund from the owned book. Commands require management grants for the legal
+parties; read grants cannot authorize updates. Conflict responses require refreshing the case,
+while unavailable history is reported without exposing storage details. See
+[agreement lifecycle casework](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#agreement-lifecycle-work-queue).
+
 `IntercompanyAccrualDraftService` backs `/api/ledger/intercompany/accruals/preview` and `/drafts`
 (ADR-028). It resolves approved `LoanInterest` profile revisions, their pinned legal revisions and
 posted `Loan`-profile principal, calls the pure calculator, and retains a source-side journal draft
@@ -168,6 +206,16 @@ live coordinator in desktop mode.
 defaults, audit; `ModifyConfig`, rate-limited, reason required when loosening, atomic audit, live
 apply reported through the change status) and `POST /api/quality/cross-provider/preview` (one
 symbol, two non-simulated historical providers, at most 30 days, about two provider calls).
+Preview resolves the symbol's exchange-session calendar from retained Security Master identity and
+the operational trading calendar. Shared missing sessions appear as coverage gaps; unavailable calendar
+evidence is explicit and cannot be presented as a clean comparison. Focused coverage:
+`CrossProviderToleranceEndpointTests`.
+
+Preview uses the monitor's symbol-to-asset-class lookup and returns `resolvedAssetClass` with
+the effective tolerances. A missing class uses the base thresholds. The optional `assetClass`
+assertion returns a validation error before provider calls when it differs from the lookup.
+Omitting the draft policy uses the monitor's current policy, or the saved policy on a host
+without the monitor.
 Whole-document saves cannot change `DataQuality.CrossProvider` or its audit.
 Rule deletion requires a JSON body with an operator-supplied `reason` and retains the removed
 provider chain and thresholds atomically. Recreating the rule cannot erase that deletion evidence.
@@ -176,9 +224,11 @@ Configuration saves validate under the shared write lease before atomic persiste
 saves refuse tenant-posture changes, plaintext credential edits and live brokerage activation;
 changes to price adjustment or Canonical resolution require an explicit archive/series confirmation.
 `GET /api/config/changes` and configuration-save responses expose field names and `Live`,
-`ReconnectProvider` or `RestartHost` impact. Pending state lasts for the host lifetime; a saved
-change is never presented as an applied provider rebuild. Browser Settings and Data use the same
-status.
+`ReconnectProvider` or `RestartHost` impact. Managed provider, Alpaca feed and failover saves
+also return their own revision and any collector status for affected streaming settings. The shared
+read route includes application evidence only for the matching revision and active collector.
+Browser Settings and Data poll the same status and can inspect revision ID, hash, collector ID,
+application time, and affected paths. The remaining local pending status lasts for the host lifetime.
 
 Provider edits that require credential ownership validate a frozen snapshot before ordinary
 settings validation. Both data-source aliases return safe HTTP 400 errors for invalid settings.
@@ -823,7 +873,7 @@ evidence-backed automatic fills, commissions, and identified fees. Only syntheti
 is supported. Actor and tenant come from the session; assistant activation is refused. Nothing
 automatically activates a grant, and historical exact replay remains available after revocation.
 
-Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced. The optional `engineVersion` query selects explicit `portfolio-cash-ladder-v1` replay; an unknown version returns a blocked ladder with no contributions that names the unsupported version rather than falling back silently.
+Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced. The optional `engineVersion` query names the engine version the caller expects; any version other than the current one, including the retired `portfolio-cash-ladder-v1`, returns a blocked ladder with no contributions that names the unsupported version rather than falling back silently.
 
 Direct-lending `POST /api/loans/{loanId}/unapplied-cash/apply` and `/unapplied-cash/refund` (PRD-115) are
 governed like the other loan mutations: `ManageDirectLending`, the direct-lending mutation rate limit,
@@ -844,8 +894,7 @@ NetSuite, Plaid, IB Flex and module compatibility runtime composition uses the l
 guard; owned families cannot activate unassigned or options credentials after rollback. Explicit selected-connection verification
 continues through the scoped lifecycle. Accounting imports and Plaid item workflows still require a
 tenant-aware runtime before owned-provider rollout. Module tests refuse before provider configuration
-or probing, and unavailable owned credential metadata does not fall back to environment values. The
-compatibility sidecar importer validates the entire provider batch before atomic vault import.
+or probing, and unavailable owned credential metadata does not fall back to environment values.
 
 Source comparison requires a completed recovery checkpoint with matching run/import IDs, artifact hashes and counts, plus executed mapping proof shared by the import and match artifact. Failed or running recovery cannot clear observations. Named SLA calendars load once per host from DataRoot/reconciliation/sla-calendars.json; see the reconciliation operating procedure.
 An unfinished recovery refuses publication so the report workflow can retry after completion.
@@ -854,8 +903,10 @@ mapped activity, symbols and currencies remain comparison evidence rather than f
 
 Provider module status and connection tests select one complete credential record, matching runtime ownership. A retained partial or empty record cannot borrow mapped environment fields; only proven absence allows the separate mapped record. The compatibility vault adapter exposes record presence without exposing additional secrets.
 
-Alignment creation and preview return HTTP 501 until an alignment execution service is available;
-no queued job or output estimate is fabricated. The legacy replay start route performs an
+Alignment creation and preview share the same bounded, source-attributed OHLCV transformation.
+Preview returns coverage and differences with sample rows. Creation returns the complete aligned
+rows. The optional preview content hash binds creation to the observed transformation.
+The legacy replay start route performs an
 explicit `event_count` scan with `playbackSupported: false`. Timed playback, pause, resume, seek
 and speed changes return HTTP 501. Start and speed requests reject nonpositive or nonfinite
 multipliers. Scan history is bounded to 64 entries, evicts finished scans at capacity, and refuses
@@ -1217,12 +1268,9 @@ fund-structure stores refuse multiple companies in migration compatibility mode.
 enforcement, shared migration wrappers refuse every unpartitioned local read and mutation with an
 explicit retained-data migration message, while leaving server-backed capabilities available.
 
-The provider setup compatibility store passes a complete legacy sidecar snapshot to the
-Data Integration vault's atomic importer. It validates all entries before publication,
-preserves existing credentials and deletion markers on retries, and removes the plaintext
-sidecar only after both encrypted generations and the import audit are retained. Data Integration's
-shared migration helper owns the cross-process source lease and restartable rename/erasure sequence,
-so simultaneous setup adapters cannot race during cleanup.
+The provider setup compatibility store no longer imports a legacy plaintext sidecar. A retained
+`provider-credentials.json` is never read or erased; its Unix permissions are restricted to the
+owner on first access, and a failed restriction refuses the credential operation.
 
 Statement intake publishes durable run-over-run break observations from retained canonical rows
 and immutable match artifacts after exact accounting/access scope validation and case publication.
@@ -1385,7 +1433,7 @@ Journal automation exposes a read-only valuation freshness preview and retains d
 
 ## Credential migration recovery
 
-The provider-module compatibility adapter requires atomic legacy-import support from the credential vault. It removes the plaintext sidecar only after the complete import and audit succeed; retries preserve credentials already retained in the vault.
+The provider-module compatibility adapter does not import or remove a retained plaintext sidecar; it only restricts the file to its owner.
 ## Credential audit identity
 
 Canonical credential save, verify and delete routes accept `connectionId` as a query parameter.
@@ -2420,7 +2468,7 @@ migration kind before the execution service can retain certified status.
 providers, uses QuickBooks Online when local OAuth client id, client secret, refresh token, and
 company realm id config are present, falls back to `quickbooks-fixture` otherwise, registers
 read-only `xero-fixture` and `netsuite-fixture` import mappings, exposes planned live Xero and
-NetSuite rows with posting disabled, retains the latest import in process by tenant/company/fund/book,
+NetSuite rows with posting disabled, persists the latest import by tenant/company/fund/book in the configured external-GL state directory,
 and compares external trial-balance evidence against Meridian-owned ledger truth when the ledger
 store is available. The reconciliation response carries provider-side refs, Meridian ledger refs,
 and package posture for external import, Meridian ledger support, and the GL tie-out. Import,
@@ -4426,3 +4474,7 @@ evidence prevents duplicates across retries and restart.
 Conflicting evidence under one ID or corrupted accepted records fails closed. Incomplete provider
 retrievals retain evidence without advancing the resume watermark. A caller can supply `Since` to
 rescan for arrivals earlier than the retained watermark; no API page-token durability is assumed.
+
+## Whole-journal downloads
+
+`POST /api/ledger/periods/{periodId}/journal-export` preserves ledger-read, `ExportData`, authenticated tenant/company and retained book-ownership checks. Its existing CSV/Parquet request optionally accepts `from`, `to` and `journalEntryIds`; defaults select every journal retained in the period, including earlier-effective late postings. Supplying either date bound explicitly filters by effective date within the period and fills the missing bound from the period boundary. A single reporting capture supplies period state and every selected journal. Changed period versions require refresh, missing selected IDs reject the entire download, and response headers retain the source snapshot and exact artifact SHA-256. These neutral downloads grant no external-posting authority.

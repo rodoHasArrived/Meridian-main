@@ -966,8 +966,6 @@ public enum UseCase : byte
 {
     Development,
     Strategy,
-    [Obsolete("Use Strategy. Research is retained only as a compatibility alias.")]
-    Research = Strategy,
     RealTimeTrading,
     BackfillOnly,
     Production

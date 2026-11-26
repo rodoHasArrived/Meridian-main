@@ -166,11 +166,11 @@ Blueprint Mode should **not** be invoked when:
 
 | Stage | Skill | GitHub Agent |
 |-------|-------|-------------|
-| Brainstorm | `.claude/skills/meridian-brainstorm/SKILL.md` | `.github/agents/meridian-brainstorm-agent.md` |
-| Blueprint | `.claude/skills/meridian-blueprint/SKILL.md` | `.github/agents/meridian-blueprint-agent.md` |
+| Brainstorm | `.claude/skills/meridian-brainstorm/SKILL.md` | `.github/agents/brainstorm-agent.md` |
+| Blueprint | `.claude/skills/meridian-blueprint/SKILL.md` | `.github/agents/blueprint-agent.md` |
 | Code Review | `.claude/skills/meridian-code-review/SKILL.md` | `.github/agents/code-review-agent.md` |
-| Provider Build | `.claude/skills/meridian-provider-builder/SKILL.md` | `.github/agents/meridian-provider-builder-agent.md` |
-| Test Writing | `.claude/skills/meridian-test-writer/SKILL.md` | `.github/agents/meridian-test-writer-agent.md` |
+| Provider Build | `.claude/skills/meridian-provider-builder/SKILL.md` | `.github/agents/provider-builder-agent.md` |
+| Test Writing | `.claude/skills/meridian-test-writer/SKILL.md` | `.github/agents/test-writer-agent.md` |
 
 ---
 

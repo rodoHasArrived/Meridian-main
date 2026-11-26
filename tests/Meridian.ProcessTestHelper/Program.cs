@@ -27,6 +27,7 @@ internal static partial class Program
                 "delayed-spawn-gated-mutation" => await DelayedSpawnGatedMutationAsync(args).ConfigureAwait(false),
                 "emit-output" => await EmitOutputAsync(args).ConfigureAwait(false),
                 "statement-store-stage" => await RunStatementStoreStageAsync(args).ConfigureAwait(false),
+                "collector-config-watch" => await WatchCollectorConfigurationAsync(args).ConfigureAwait(false),
                 "etl-crash-stage" => await RunEtlUntilKilledAsync(args).ConfigureAwait(false),
                 "audit-append-batch" => await AppendAuditBatchAsync(args).ConfigureAwait(false),
                 "wal-append-and-wait" => await AppendWalAndWaitAsync(args).ConfigureAwait(false),

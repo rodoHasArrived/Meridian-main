@@ -446,7 +446,7 @@ load_trades <- function(symbol = NULL) {
                 continue;
 
             using var doc = JsonDocument.Parse(line);
-            var dict = new Dictionary<string, object?>();
+            var dict = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var prop in doc.RootElement.EnumerateObject())
             {
@@ -461,6 +461,7 @@ load_trades <- function(symbol = NULL) {
                 };
             }
 
+            AddHistoricalPriceBasisMetadata(doc.RootElement, dict);
             yield return dict;
         }
     }
