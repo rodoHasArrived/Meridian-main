@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-25T20:44:30Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-26T06:10:14Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -224,11 +224,11 @@ Recent source-file activity from the last 14 days.
 | `src/Meridian.Mcp/Tools/ProviderTools.cs` | MCP Integration | `1ca2a0eb` (2026-11-25T19:34:30+00:00) | 2 |
 | `src/Meridian.Mcp/Tools/RepoEditTools.cs` | MCP Integration | `1ca2a0eb` (2026-11-25T19:34:30+00:00) | 2 |
 | `src/Meridian.Mcp/Tools/PythonLauncher.cs` | MCP Integration | `1ca2a0eb` (2026-11-25T19:34:30+00:00) | 1 |
-| `src/Meridian.Ui.Services/README.md` | Desktop and UI Workflows | `464f53d7` (2026-11-25T12:10:16-07:00) | 4 |
-| `src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs` | Desktop and UI Workflows | `464f53d7` (2026-11-25T12:10:16-07:00) | 3 |
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `dc55ac89` (2026-11-25T09:31:55-07:00) | 24 |
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `57f8f306` (2026-11-25T07:27:41-07:00) | 15 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `57f8f306` (2026-11-25T07:27:41-07:00) | 10 |
-| `src/Meridian.Application/Backfill/BackfillCoordinator.cs` | Host and Composition | `57f8f306` (2026-11-25T07:27:41-07:00) | 6 |
-| `src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs` | Providers and Storage | `57f8f306` (2026-11-25T07:27:41-07:00) | 6 |
+| `src/Meridian.Ui/dashboard/package-lock.json` | Desktop and UI Workflows | `cb8be679` (2026-11-25T13:36:02-07:00) | 8 |
+| `src/Meridian.Ui/dashboard/package.json` | Desktop and UI Workflows | `cb8be679` (2026-11-25T13:36:02-07:00) | 8 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx` | Desktop and UI Workflows | `cb8be679` (2026-11-25T13:36:02-07:00) | 6 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.reconciliation-workbench.test.tsx` | Desktop and UI Workflows | `cb8be679` (2026-11-25T13:36:02-07:00) | 5 |
+| `src/Meridian.Ui/dashboard/src/screens/portfolio-screen.positions-table.test.tsx` | Desktop and UI Workflows | `cb8be679` (2026-11-25T13:36:02-07:00) | 5 |
+| `src/Meridian.Ui/dashboard/src/screens/trading-screen.test.tsx` | Desktop and UI Workflows | `cb8be679` (2026-11-25T13:36:02-07:00) | 5 |
+| `src/Meridian.Ui/dashboard/src/screens/portfolio-screen.test.tsx` | Desktop and UI Workflows | `cb8be679` (2026-11-25T13:36:02-07:00) | 4 |
 

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-25T20:44:30Z",
+  "generatedAt": "2026-11-26T06:10:14Z",
   "generatorVersion": "1.1",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -3541,6 +3541,118 @@
       "touches": 1
     },
     {
+      "path": "src/Meridian.Ui/dashboard/package-lock.json",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T13:36:02-07:00",
+      "lastCommit": "cb8be679",
+      "lastSummary": "deps(dashboard): land jsdom 31.0.1 and test workbenches at the narrow layout (ci-health-017) (#3783)",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/package.json",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T13:36:02-07:00",
+      "lastCommit": "cb8be679",
+      "lastSummary": "deps(dashboard): land jsdom 31.0.1 and test workbenches at the narrow layout (ci-health-017) (#3783)",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T13:36:02-07:00",
+      "lastCommit": "cb8be679",
+      "lastSummary": "deps(dashboard): land jsdom 31.0.1 and test workbenches at the narrow layout (ci-health-017) (#3783)",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.reconciliation-workbench.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T13:36:02-07:00",
+      "lastCommit": "cb8be679",
+      "lastSummary": "deps(dashboard): land jsdom 31.0.1 and test workbenches at the narrow layout (ci-health-017) (#3783)",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/portfolio-screen.positions-table.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T13:36:02-07:00",
+      "lastCommit": "cb8be679",
+      "lastSummary": "deps(dashboard): land jsdom 31.0.1 and test workbenches at the narrow layout (ci-health-017) (#3783)",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/trading-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T13:36:02-07:00",
+      "lastCommit": "cb8be679",
+      "lastSummary": "deps(dashboard): land jsdom 31.0.1 and test workbenches at the narrow layout (ci-health-017) (#3783)",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/portfolio-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T13:36:02-07:00",
+      "lastCommit": "cb8be679",
+      "lastSummary": "deps(dashboard): land jsdom 31.0.1 and test workbenches at the narrow layout (ci-health-017) (#3783)",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T13:36:02-07:00",
+      "lastCommit": "cb8be679",
+      "lastSummary": "deps(dashboard): land jsdom 31.0.1 and test workbenches at the narrow layout (ci-health-017) (#3783)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/use-more-below.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T13:36:02-07:00",
+      "lastCommit": "cb8be679",
+      "lastSummary": "deps(dashboard): land jsdom 31.0.1 and test workbenches at the narrow layout (ci-health-017) (#3783)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/workspace-task-workbench.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T13:36:02-07:00",
+      "lastCommit": "cb8be679",
+      "lastSummary": "deps(dashboard): land jsdom 31.0.1 and test workbenches at the narrow layout (ci-health-017) (#3783)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/test/narrow-workbench.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T13:36:02-07:00",
+      "lastCommit": "cb8be679",
+      "lastSummary": "deps(dashboard): land jsdom 31.0.1 and test workbenches at the narrow layout (ci-health-017) (#3783)",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/app.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T13:24:35-07:00",
+      "lastCommit": "be2baba0",
+      "lastSummary": "ci: clear runner saturation and fix nightly CI failures (ci-health-013 to -016) (#3781)",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/accounting/AmountCell.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T13:24:35-07:00",
+      "lastCommit": "be2baba0",
+      "lastSummary": "ci: clear runner saturation and fix nightly CI failures (ci-health-013 to -016) (#3781)",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-25T12:49:54-07:00",
+      "lastCommit": "9293ac60",
+      "lastSummary": "Store reviewed source hashes one file per module (#3778)",
+      "touches": 25
+    },
+    {
       "path": "src/Meridian.Ui.Services/README.md",
       "subsystem": "Desktop and UI Workflows",
       "lastModified": "2026-11-25T12:10:16-07:00",
@@ -3555,14 +3667,6 @@
       "lastCommit": "464f53d7",
       "lastSummary": "ci(windows-desktop): revert the #3759 speed-up attempts; keep the navigation sweep timing output (#3772)",
       "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T09:31:55-07:00",
-      "lastCommit": "dc55ac89",
-      "lastSummary": "ci: cut runner queue hops across Meridian CI, Golden Path and CodeQL (#3761)",
-      "touches": 24
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
@@ -3691,110 +3795,6 @@
       "lastCommit": "57f8f306",
       "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
       "touches": 2
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/NYSE/NyseHistoricalDataProvider.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-25T07:27:41-07:00",
-      "lastCommit": "57f8f306",
-      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/NYSE/NyseHttpResponseGuard.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-25T07:27:41-07:00",
-      "lastCommit": "57f8f306",
-      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-25T07:27:41-07:00",
-      "lastCommit": "57f8f306",
-      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-25T07:27:41-07:00",
-      "lastCommit": "57f8f306",
-      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Services/Services/ProviderHealthService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T07:27:41-07:00",
-      "lastCommit": "57f8f306",
-      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataProviders.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T07:27:41-07:00",
-      "lastCommit": "57f8f306",
-      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ProviderMetricsLookup.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T07:27:41-07:00",
-      "lastCommit": "57f8f306",
-      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T07:27:41-07:00",
-      "lastCommit": "57f8f306",
-      "lastSummary": "Isolate provider readiness failures and report measured health (#3687)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/scripts/run-vitest-stable.mjs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T05:29:58-07:00",
-      "lastCommit": "adc8f97c",
-      "lastSummary": "ci: shorten the quality-gate critical path (#3742)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/scripts/merge-vitest-shards.mjs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T05:29:58-07:00",
-      "lastCommit": "adc8f97c",
-      "lastSummary": "ci: shorten the quality-gate critical path (#3742)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/scripts/merge-vitest-shards.test.mjs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T05:29:58-07:00",
-      "lastCommit": "adc8f97c",
-      "lastSummary": "ci: shorten the quality-gate critical path (#3742)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/scripts/vitest-files.mjs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T05:29:58-07:00",
-      "lastCommit": "adc8f97c",
-      "lastSummary": "ci: shorten the quality-gate critical path (#3742)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 11
     }
   ],
   "recentChangesWindowDays": 14,

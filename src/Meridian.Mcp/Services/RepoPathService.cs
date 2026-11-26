@@ -12,7 +12,7 @@ public sealed class RepoPathService
     public string Root { get; }
     public string DocsPath => Path.Combine(Root, "docs");
     public string AdrPath => Path.Combine(Root, "docs", "adr");
-    public string ArchivedAdrPath => Path.Combine(Root, "archive", "docs", "adr");
+    public string ArchivedAdrPath => Path.Combine(Root, "docs", "adr", "historical");
     public string AiDocsPath => Path.Combine(Root, "docs", "ai");
     public string GithubPath => Path.Combine(Root, ".github");
     public string InstructionsPath => Path.Combine(Root, ".github", "instructions");

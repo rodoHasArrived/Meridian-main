@@ -64,7 +64,6 @@ in user-level Codex config.
 | `dense-data-grid-inspector-panel.toml` | Build scalable dense grids, stable selection, and inspector panels |
 | `desktop-test-generation.toml` | Generate focused WPF desktop workflow tests |
 | `diagnostics-audit-timeline.toml` | Build diagnostics panels, audit timelines, evidence trails, and recovery surfaces |
-| `meridian-archive-organizer.toml` | Archive stale files and preserve repository structure evidence |
 | `meridian-blueprint.toml` | Create implementation-ready technical designs |
 | `meridian-brainstorm.toml` | Generate Meridian-native product and architecture ideas |
 | `meridian-browser-workstation.toml` | Route and implement browser workstation TypeScript/React tasks |
@@ -189,7 +188,6 @@ the former `meridian-navigation` and `meridian-user-panel` aliases were pruned h
 | Agent | Purpose |
 | ------ | --------- |
 | [`meridian-accounting.md`](../../../.claude/agents/meridian-accounting.md) | Event-based accounting design, posting-control and projection/replay review, and read-only ledger data questions through the ledger MCP tools |
-| [`meridian-archive-organizer.md`](../../../.claude/agents/meridian-archive-organizer.md) | Archive stale files and keep repository structure tidy |
 | [`meridian-blueprint.md`](../../../.claude/agents/meridian-blueprint.md) | Blueprint and design specialist |
 | [`meridian-brainstorm.md`](../../../.claude/agents/meridian-brainstorm.md) | Generate Meridian-native product and architecture ideas |
 | [`meridian-browser-workstation.md`](../../../.claude/agents/meridian-browser-workstation.md) | Route and implement browser workstation TypeScript/React tasks |
@@ -202,19 +200,6 @@ the former `meridian-navigation` and `meridian-user-panel` aliases were pruned h
 | [`meridian-roadmap-strategist.md`](../../../.claude/agents/meridian-roadmap-strategist.md) | Roadmap, delivery-plan, and target-state specialist |
 | [`meridian-simulated-user-panel.md`](../../../.claude/agents/meridian-simulated-user-panel.md) | Evidence-led Persona Matrix specialist for design-partner, usability-lab, and fail-closed release-gate reviews. Independent persona voices need the **parent session** to launch the workers — a subagent may not be able to nest, and the panel must say so rather than collapse to one voice |
 | [`meridian-test-writer.md`](../../../.claude/agents/meridian-test-writer.md) | Write scenario-first Meridian tests |
-
----
-
-## Claude Plugin Agents (`.claude/plugins/*/agents/`)
-
-Checked-in Claude plugin agents are provider-specific helpers and must still follow the shared
-Meridian workflow contract when used in this repository.
-
-| Plugin | Agent | Purpose |
-| ------ | ----- | ------- |
-| `csharp-dotnet-development` | [`.claude/plugins/csharp-dotnet-development/agents/expert-dotnet-software-engineer.md`](../../../.claude/plugins/csharp-dotnet-development/agents/expert-dotnet-software-engineer.md) | General .NET software engineering guidance from the plugin package |
-| `frontend-web-dev` | [`.claude/plugins/frontend-web-dev/agents/electron-angular-native.md`](../../../.claude/plugins/frontend-web-dev/agents/electron-angular-native.md) | General Electron/Angular/native integration review guidance from the plugin package |
-| `frontend-web-dev` | [`.claude/plugins/frontend-web-dev/agents/expert-react-frontend-engineer.md`](../../../.claude/plugins/frontend-web-dev/agents/expert-react-frontend-engineer.md) | General React/TypeScript frontend guidance from the plugin package |
 
 ---
 

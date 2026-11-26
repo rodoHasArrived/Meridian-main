@@ -11,7 +11,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 ## Overall Health Score
 
 ```text
-  [##########################----] 85/100
+  [##########################----] 86/100
   Rating: Good
 ```
 
@@ -19,12 +19,12 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 1307 |
-| Orphaned files | 398 |
+| Total documentation files | 1293 |
+| Orphaned files | 383 |
 | Files without headings | 231 |
 | Stale files (>90 days) | 0 |
 | TODO/FIXME markers | 303 |
-| **Health score** | **85/100** |
+| **Health score** | **86/100** |
 
 Line counts (total, average and per file) change on every Markdown edit, so they are not
 tracked here; they still feed the score. Pass `--volatile-json-output` to the generator to
@@ -71,7 +71,6 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-accounting/references/event-accounting-patterns.md`
 - `.agents/skills/meridian-accounting/references/posting-control-checklist.md`
 - `.agents/skills/meridian-accounting/references/projection-replay-checklist.md`
-- `.agents/skills/meridian-archive-organizer/SKILL.md`
 - `.agents/skills/meridian-blueprint/SKILL.md`
 - `.agents/skills/meridian-brainstorm/SKILL.md`
 - `.agents/skills/meridian-browser-workstation/SKILL.md`
@@ -87,7 +86,8 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-simulated-user-panel/agents/grader.md`
 - `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-01-welcome-onboarding-design-partner.md`
 - `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-02-provider-onboarding-release-gate.md`
-- ... and 378 more
+- `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-03-fund-ledger-controls-review.md`
+- ... and 363 more
 
 ## Trend
 
@@ -95,7 +95,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 85 | 1307 | 398 | 0 |
+| 1970-01-01 | 86 | 1293 | 383 | 0 |
 
 ---
 

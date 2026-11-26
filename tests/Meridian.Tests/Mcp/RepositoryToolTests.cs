@@ -41,9 +41,9 @@ public sealed class RepositoryToolTests : IDisposable
     public void AdrTools_ListAndRead_IncludeArchivedRecordsAndPreferActiveOnes()
     {
         Write("docs/adr/017-monolith.md", "# Modular monolith\n\n**Status**: Accepted\nActive body.");
-        Write("archive/docs/adr/001-provider.md", "# Provider abstraction\n\n**Status**: Accepted\nArchived body.");
-        Write("archive/docs/adr/017-old-monolith.md", "# Superseded copy\nArchived duplicate.");
-        Write("archive/docs/adr/README.md", "# Historical index");
+        Write("docs/adr/historical/001-provider.md", "# Provider abstraction\n\n**Status**: Accepted\nArchived body.");
+        Write("docs/adr/historical/017-old-monolith.md", "# Superseded copy\nArchived duplicate.");
+        Write("docs/adr/historical/README.md", "# Historical index");
         var tools = new AdrTools(_repo);
 
         var list = tools.ListAdrs();
@@ -58,7 +58,7 @@ public sealed class RepositoryToolTests : IDisposable
     public void AdrResource_IndexAndRead_IncludeArchivedRecords()
     {
         Write("docs/adr/017-monolith.md", "# Modular monolith");
-        Write("archive/docs/adr/007-wal.md", "# Write-ahead log");
+        Write("docs/adr/historical/007-wal.md", "# Write-ahead log");
         var resource = new AdrResources(_repo);
 
         resource.GetAdrIndex().Should().Contain("| [ADR-007](mdc://adrs/007) | Write-ahead log | Archived |")

@@ -381,7 +381,6 @@ and choose the narrowest lane that matches the user's request:
 | Review | `meridian-code-review` | Report bugs, regressions, missing tests, and architecture drift before summaries. |
 | Test | `meridian-test-writer` | Add scenario-first tests in the right project and validation lane. |
 | Provider | `meridian-provider-builder` | Build or extend provider adapters and hand off to assurance for rollout proof. |
-| Archive | `meridian-archive-organizer` | Classify and move stale material with reference evidence. |
 | Roadmap | `meridian-roadmap-strategist` | Reconcile product direction, waves, and target-state docs from repo evidence. |
 | Cleanup | `meridian-cleanup` | Preserve behavior while removing dead code, duplication, or stale guidance. |
 | Simulated user review | `meridian-simulated-user-panel` | Critique concrete artifacts with canonical roles, label simulation, and separate verified evidence, inference, and missing proof. |

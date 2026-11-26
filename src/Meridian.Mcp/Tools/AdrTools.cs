@@ -28,7 +28,7 @@ public sealed class AdrTools(RepoPathService repo)
         }
 
         sb.AppendLine();
-        sb.AppendLine("Archived records live in `archive/docs/adr/` and are kept for historical `ImplementsAdr` references.");
+        sb.AppendLine("Archived records live in `docs/adr/historical/` and are kept for historical `ImplementsAdr` references.");
         sb.AppendLine("Use `get_adr` with an ID (e.g. `\"007\"`) to read the full content of any ADR.");
         return sb.ToString();
     }

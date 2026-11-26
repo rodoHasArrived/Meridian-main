@@ -13,7 +13,6 @@ Last verified against `README.md`, `docs/roadmap/data/*.yml`,
 
 | Skill | Entry Point | Purpose |
 |-------|-------------|---------|
-| `meridian-archive-organizer` | [`SKILL.md`](meridian-archive-organizer/SKILL.md) | Archive stale code/docs and keep the repo structure tidy |
 | `meridian-blueprint` | [`SKILL.md`](meridian-blueprint/SKILL.md) | Create implementation-ready Meridian technical blueprints |
 | `meridian-brainstorm` | [`SKILL.md`](meridian-brainstorm/SKILL.md) | Generate Meridian-native product and architecture ideas |
 | `meridian-browser-workstation` | [`SKILL.md`](meridian-browser-workstation/SKILL.md) | Implement and review browser workstation TypeScript/React changes |
@@ -65,7 +64,6 @@ different work:
 | Browser workstation | `meridian-browser-workstation` | Implement or review TypeScript/React dashboard changes in `src/Meridian.Ui/dashboard/`. |
 | Test | `meridian-test-writer` | Add scenario-first tests in the right project. |
 | Provider | `meridian-provider-builder` | Build provider adapters, then use assurance for rollout proof. |
-| Archive | `meridian-archive-organizer` | Classify stale material and preserve useful history. |
 | Roadmap | `meridian-roadmap-strategist` | Reconcile plans, delivery waves, and target state. |
 | Cleanup | `meridian-cleanup` | Preserve behavior while improving maintainability. |
 | Simulated user review | `meridian-simulated-user-panel` | Run evidence-led multi-persona critique; label simulation and hold release gates when proof is insufficient. |

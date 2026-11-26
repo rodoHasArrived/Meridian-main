@@ -6,98 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## SecurityMasterReportingResolutionMode
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterReportingResolutionMode</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs#L19).
-
-How a reporting reference was resolved.
-
-```csharp
-public enum SecurityMasterReportingResolutionMode
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>HistoricalEvent</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs#L22) | The detail and economic definition were rebuilt from a historical event. |
-| <code>CurrentProjectionFallback</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs#L28) | The security has no event history, so the current projection was used for compatibility. This mode is useful for draft output but is not certifiable. |
-| <code>LegacyQueryFallback</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs#L34) | The query implementation does not expose a point-in-time reporting contract. Detail was resolved as-of where supported, but economic terms may be current. This is not certifiable. |
-
-## SecurityMasterSchemaVersions
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterSchemaVersions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:75](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L75).
-
-Back-compatibility facade over the per-family schema-version types. Historically all Security Master payload families shared this one constants class, which let an economic-terms version leak into asset-specific-terms acceptance checks; the authoritative definitions now live on AssetSpecificTermsSchema and EconomicTermsSchema. Prefer those in new code.
-
-```csharp
-public static class SecurityMasterSchemaVersions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int LegacyAssetSpecificTerms = AssetSpecificTermsSchema.Legacy;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L77) |  |
-| <code>public const int EconomicTerms = EconomicTermsSchema.Current;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L78) |  |
-| <code>public const int CustomAssetProfileTerms = AssetSpecificTermsSchema.CustomAssetProfile;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L79) |  |
-| <code>public const int DefaultAssetSpecificTerms = AssetSpecificTermsSchema.Default;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:82](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L82) |  |
-| <code>public static bool IsAcceptedAssetSpecificTermsVersion(int schemaVersion, bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:85](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L85) |  |
-| <code>public static IReadOnlyList&lt;int&gt; AcceptedAssetSpecificTermsVersions(bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:89](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L89) |  |
-| <code>public static string DescribeAcceptedAssetSpecificTermsVersions(bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L93) |  |
-
-## SecurityOptionRight
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityOptionRight</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L25).
-
-The right an option grants.
-
-```csharp
-public enum SecurityOptionRight
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Call</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L27) |  |
-| <code>Put</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L28) |  |
-
-## SecurityOverrideApprovalStatusDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityOverrideApprovalStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L7).
-
-```csharp
-public enum SecurityOverrideApprovalStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotRequested = 0</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L9) |  |
-| <code>Pending = 1</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L10) |  |
-| <code>Approved = 2</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L11) |  |
-| <code>Rejected = 3</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L12) |  |
-
-## SecurityOverrideAuditEntryDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityOverrideAuditEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L15).
-
-```csharp
-public sealed record SecurityOverrideAuditEntryDto(string EventType, string Actor, DateTimeOffset OccurredAt, SecurityOverrideApprovalStatusDto ApprovalStatus, string? ReasonCode = null, string? Comment = null, string? Reviewer = null, DateTimeOffset? ReviewedAt = null);
-```
-
 ## SecurityPaymentFrequency
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPaymentFrequency</code>. Kind: `enum`.
@@ -385,9 +293,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlyList&lt;SecurityRateFieldDeclaration&gt; All { get; } = [Ratio(&quot;Equity&quot;, &quot;preferredTerms.dividendRate&quot;, &quot;Annual preferred dividend rate&quot;, AnnualRateMax), Coupon(&quot;Bond&quot;, &quot;couponRate&quot;, &quot;Annual fixed coupon rate&quot;), SignedRate(&quot;Bond&quot;, &quot;capRate&quot;, &quot;Floating coupon cap&quot;, consumedBy : LegacyCashFlow + &quot;, &quot; + Preview), SignedRate(&quot;Bond&quot;, &quot;floorRate&quot;, &quot;Floating coupon floor&quot;, consumedBy : LegacyCashFlow + &quot;, &quot; + Preview), Coupon(&quot;Bond&quot;, &quot;stepSchedule.rate&quot;, &quot;Step-coupon rate from its effective date&quot;, Preview), SignedRate(&quot;Bond&quot;, &quot;currentIndexRate&quot;, &quot;Observed floating index fixing&quot;, consumedBy : LegacyCashFlow), SignedRate(&quot;Bond&quot;, &quot;resetSchedule.fixingRate&quot;, &quot;Observed floating index fixing on a reset date&quot;, consumedBy : LegacyCashFlow + &quot;, &quot; + Preview), Bps(&quot;Bond&quot;, &quot;spreadBps&quot;, &quot;Floating coupon spread over the index&quot;, allowsNegative : true, LegacyCashFlow + &quot;, &quot; + Preview), Bps(&quot;Bond&quot;, &quot;callSchedule.makeWholeSpreadBps&quot;, &quot;Make-whole call spread over the benchmark&quot;, allowsNegative : false), SignedRate(&quot;Deposit&quot;, &quot;interestRate&quot;, &quot;Annual deposit interest rate&quot;, RateUnit.Fraction, CouponReaders + &quot;, &quot; + Obligations), Coupon(&quot;CertificateOfDeposit&quot;, &quot;couponRate&quot;, &quot;Annual CD coupon rate&quot;), Coupon(&quot;CommercialPaper&quot;, &quot;discountRate&quot;, &quot;Discount yield (not a coupon; accretion only)&quot;, &quot;&quot;), Coupon(&quot;TreasuryBill&quot;, &quot;discountRate&quot;, &quot;Discount yield (not a coupon; accretion only)&quot;, &quot;&quot;), SignedRate(&quot;Repo&quot;, &quot;repoRate&quot;, &quot;Annual repo financing rate&quot;, consumedBy : CouponReaders), Ratio(&quot;Repo&quot;, &quot;haircut&quot;, &quot;Collateral haircut&quot;, 1m), SignedRate(&quot;CashSweep&quot;, &quot;yieldRate&quot;, &quot;Sweep vehicle yield&quot;, RateUnit.Fraction), SignedRate(&quot;Swap&quot;, &quot;legs.fixedRate&quot;, &quot;Fixed-leg annual rate&quot;, consumedBy : LegacyCashFlow + &quot;, &quot; + Preview), SignedRate(&quot;Swap&quot;, &quot;legs.currentIndexRate&quot;, &quot;Observed floating index fixing&quot;, consumedBy : LegacyCashFlow), SignedRate(&quot;Swap&quot;, &quot;legs.resetSchedule.fixingRate&quot;, &quot;Observed floating index fixing on a reset date&quot;, consumedBy : LegacyCashFlow + &quot;, &quot; + Preview), Bps(&quot;Swap&quot;, &quot;legs.spreadBps&quot;, &quot;Floating-leg spread over the index&quot;, allowsNegative : true, LegacyCashFlow + &quot;, &quot; + Preview), Bps(&quot;DirectLoan&quot;, &quot;spreadBps&quot;, &quot;Loan spread over the reference index&quot;, allowsNegative : true), Coupon(&quot;DirectLoan&quot;, &quot;currentCouponRate&quot;, &quot;Current all-in loan coupon&quot;), Coupon(&quot;StructuredCredit&quot;, &quot;couponOrIndex&quot;, &quot;Numeric tranche coupon (an index name is not a rate)&quot;), Coupon(&quot;StructuredCredit&quot;, &quot;weightedAverageCoupon&quot;, &quot;Collateral weighted-average coupon&quot;, Accounting), Ratio(&quot;StructuredCredit&quot;, &quot;attachmentPoint&quot;, &quot;Loss attachment point&quot;, 1m), Ratio(&quot;StructuredCredit&quot;, &quot;detachmentPoint&quot;, &quot;Loss detachment point&quot;, 1m), Ratio(&quot;CommitmentGuarantee&quot;, &quot;feeRate&quot;, &quot;Commitment or guarantee fee rate&quot;, AnnualRateMax), Bps(&quot;CreditDefaultSwap&quot;, &quot;fixedCouponBps&quot;, &quot;CDS running coupon&quot;, allowsNegative : false), Ratio(&quot;CreditDefaultSwap&quot;, &quot;recoveryRateAssumption&quot;, &quot;Assumed recovery rate&quot;, 1m), SignedRate(&quot;Swaption&quot;, &quot;strikeRate&quot;, &quot;Underlying swap fixed-rate strike&quot;), SignedRate(&quot;CapFloor&quot;, &quot;capStrike&quot;, &quot;Cap strike rate&quot;), SignedRate(&quot;CapFloor&quot;, &quot;floorStrike&quot;, &quot;Floor strike rate&quot;), Ratio(&quot;StructuredNote&quot;, &quot;principalProtectionPct&quot;, &quot;Protected share of principal&quot;, null), Ratio(&quot;StructuredNote&quot;, &quot;participationRate&quot;, &quot;Participation in the underlying&#x27;s return&quot;, null), Ratio(&quot;StructuredNote&quot;, &quot;returnCap&quot;, &quot;Cap on the participating return&quot;, null), Coupon(&quot;StructuredNote&quot;, &quot;couponRate&quot;, &quot;Annual note coupon rate&quot;, &quot;&quot;)];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs:82](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs#L82) | Every declared rate field, in catalog order. |
-| <code>public static SecurityRateFieldDeclaration? Find(string? assetClass, string fieldKey);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs:144](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs#L144) | The declaration of fieldKey on assetClass (canonical name or registered alias), or null when the field is not a catalogued rate field. |
-| <code>public static string CouponFieldKey(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs:155](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs#L155) | The flat key that carries the scalar annual coupon for assetClass, matching the class-specific coupon key StructuredCashFlowTermsResolver reads first. |
+| <code>public static IReadOnlyList&lt;SecurityRateFieldDeclaration&gt; All { get; } = SecurityAssetClassModules.All.SelectMany(static module =&gt; module.RateFields).ToArray();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs#L58) | Every declared rate field, in catalog order. |
+| <code>public static SecurityRateFieldDeclaration? Find(string? assetClass, string fieldKey);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs#L68) | The declaration of fieldKey on assetClass (canonical name or registered alias), or null when the field is not a catalogued rate field. |
+| <code>public static string CouponFieldKey(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs#L79) | The flat key that carries the scalar annual coupon for assetClass, matching the class-specific coupon key StructuredCashFlowTermsResolver reads first. |
 
 ## SecurityRateIngestionPointDto
 
@@ -962,3 +870,71 @@ Declared public members:
 | <code>public static string Classify(JsonElement payload);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:83](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L83) | The family of retained terms from event history: the declared SecurityTermsEnvelope.FormatKey when present (a tagged document never depends on its shape), otherwise the frozen shape rule. A non-object is SecurityTermsFormats.Flat. |
 | <code>public static string? GetStampableFormat(JsonElement payload);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:105](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L105) | The family replay declares on untagged retained terms: Classify&#x27;s verdict when it is SecurityTermsFormats.Flat or SecurityTermsFormats.CustomProfile. null for a payload that already declares a family, a non-object, or an untagged economic-shaped document (the asset-specific-terms slot never declares SecurityTermsFormats.Economic). |
 | <code>public static JsonElement StampDeclaredFormat(JsonElement payload) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L123) | Declares SecurityTermsEnvelope.FormatKey on untagged retained terms decoded from an event or snapshot, in memory, as GetStampableFormat classifies them. Only the key is added (after schemaVersion, or last); every other member is copied byte for byte. A payload that already declares a family, a non-object and an untagged economic-shaped document are returned unchanged, so the stamp is idempotent. |
+
+## SecurityTermsProjectionChildRowsDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsProjectionChildRowsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs#L27).
+
+The rows one child projection table holds for a security, in ordinal order.
+
+```csharp
+public sealed record SecurityTermsProjectionChildRowsDto(string TableName, IReadOnlyList<IReadOnlyDictionary<string, JsonElement>> Rows);
+```
+
+## SecurityTermsProjectionKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsProjectionKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L64).
+
+How an asset class&#x27;s terms reach a relational projection.
+
+```csharp
+public enum SecurityTermsProjectionKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>TermsJsonOnly</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L67) | The class has no typed projection table; its terms live only in the terms JSON. |
+| <code>Declarative</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L70) | A declarative SecurityTermsProjectionRegistry descriptor writes the table. |
+| <code>Specialized</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L73) | A specialized writer projects derived columns the declarative registry cannot express. |
+
+## SecurityTermsProjectionReadDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsProjectionReadDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs#L18).
+
+One security&#x27;s relational terms projection, read generically from the projection registry rather than through a per-class typed row. Served for any registry-projected asset class, including the classes that have no typed reader. Column names are the SQL column names; the column set and order are the registry descriptor&#x27;s, so the shape follows the table.
+
+```csharp
+public sealed record SecurityTermsProjectionReadDto(Guid SecurityId, string AssetClass, string TableName, IReadOnlyDictionary<string, JsonElement> Columns, IReadOnlyList<SecurityTermsProjectionChildRowsDto> ChildTables, IReadOnlyList<SecurityTermsProjectionSatelliteRowDto> SatelliteTables);
+```
+
+## SecurityTermsProjectionReadJsonContext
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsProjectionReadJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs#L39).
+
+Provides source-generated JSON metadata for the generic registry projection read.
+
+```csharp
+public sealed partial class SecurityTermsProjectionReadJsonContext : JsonSerializerContext;
+```
+
+## SecurityTermsProjectionSatelliteRowDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsProjectionSatelliteRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs#L32).
+
+The row one satellite projection table holds for a security, or null when it holds none.
+
+```csharp
+public sealed record SecurityTermsProjectionSatelliteRowDto(string TableName, IReadOnlyDictionary<string, JsonElement>? Row);
+```

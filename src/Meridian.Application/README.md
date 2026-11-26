@@ -6,10 +6,23 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.Application
+
+Security Master validation composes one built-in contribution for each of the 32 asset classes
+through `SecurityAssetValidationModules` (`SecurityMaster/Validation/Modules/`). Each class-owned
+factory keeps the rules the class had in `AssetClassValidatorRegistry`; the registry keeps shared
+schema validation, the shared rule types and its public custom-registry constructor. Composition
+refuses a duplicate, missing or mismatched class. `SecurityAssetValidationModuleTests` covers it.
+
+`SecurityMasterMapping.AssetPackCodecs` composes the decode contributions generated from the
+Contracts binding rows, with the handwritten CustomAsset profile decode and Bond's existing
+diagnostic-order hook. It checks exact catalog coverage before dispatch, so a catalog class
+without exactly one decoder fails at type initialization. The mapping keeps its guards, its
+write refusal and read fallback for an unrecognized class, and the generated-code check in
+`SecurityFlatCodecGenerationTests`. The F# writer and replay behavior are unchanged.
 
 Corporate-action ingest forwards specialized source terms and the provider's original JSON
 record into durable source proposals. Exact raw-text digests are checked before recording; source
@@ -359,8 +372,7 @@ tenant/connection identity: every vault read and mutation requires readable conf
 entirely legacy provider family under the configuration lease. Production and distributed workstations
 refuse these unowned execution paths even before a family has retained an owner. Owned families remain unavailable to
 these runtimes until tenant-aware selection is implemented; the guard does not choose another owner.
-Atomic legacy sidecar import validates the complete batch under one configuration lease before vault
-mutation. The shared legacy-runtime DI key makes IB Flex remote retrieval opt in to this guard;
+The shared legacy-runtime DI key makes IB Flex remote retrieval opt in to this guard;
 hosts without an authoritative configuration or credential-store service retain file import only.
 
 `SecurityMasterOperationalReadinessService` consumes the asset-pack registry for all class-specific
@@ -427,12 +439,10 @@ compatibility bridges. Its former interface/result type identities are forwarded
 which retains their legacy namespaces for compiled consumers. Storage composition exposes one aggregate query through the narrow identity,
 trading-parameter and corporate-action interfaces and preserves host-supplied registrations.
 Hosts composing these services directly can call `AddSecurityMasterContractAdapters()` after
-registering their query, resolver and position adjuster to expose the compatibility aliases.
+registering their query service to expose its narrow query contracts.
 Aliases retain the last unkeyed host registration's singleton, scoped or transient lifetime; scoped
-host services are never captured by a singleton compatibility bridge.
-`LivePositionCorporateActionAdjusterAdapter` lets legacy hosts use a canonical adjuster, retaining
-its exact total carrying basis. Existing Application-contract implementers also satisfy the canonical
-adjuster contract. The retained-basis overload avoids rebuilding basis from rounded unit quotes;
+host services are never captured by a singleton alias.
+The retained-basis adjuster overload avoids rebuilding basis from rounded unit quotes;
 a null `AdjustedTotalCostBasis` identifies a legacy result and remains absent from serialized output.
 
 Security Master governed edits now validate and stage the overlay and draft in one PostgreSQL
@@ -700,10 +710,10 @@ mutation route is restricted to unowned provider families. An owned family witho
 binding blocks; supplying the scoped constructor alone does not create ownership or authorize a caller.
 
 `OAuthTokenRefreshService` also accepts trusted `ownershipScope`. Scoped instances load and persist
-only that owner's OAuth tokens, including refresh responses and cache recovery after audit failure,
-and leave unassigned legacy sidecar and interrupted `.migrated` contents alone while restricting
-their Unix permissions to the owner. Scoped initialization refuses a failed or unverified permission
-change rather than continuing with exposed credentials. Initialization is asynchronous in both ownership modes;
+only that owner's OAuth tokens, including refresh responses and cache recovery after audit failure.
+Both ownership modes leave legacy plaintext token and interrupted `.migrated` contents alone (they
+are no longer imported) while restricting their Unix permissions to the owner. Initialization refuses
+a failed or unverified permission change rather than continuing with exposed credentials. Initialization is asynchronous in both ownership modes;
 completed remote rotations commit independently of lifecycle cancellation while preserving scope.
 Default host registration still needs connection ownership propagation before scoped services replace
 the provider-wide OAuth runtime.
