@@ -555,6 +555,14 @@ Declared public members:
 | <code>public async Task&lt;AtomicTaxLotJournalResult?&gt; GetAtomicTaxLotPostingAsync(Guid mutationBatchId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs:14](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs#L14) |  |
 | <code>public async Task&lt;AtomicTaxLotJournalResult&gt; AppendAssetPostingAsync(AtomicTaxLotJournalCommand command, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs:48](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs#L48) |  |
 
+Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLotScope.cs:9](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLotScope.cs#L9).
+
+Resolves the Security Master, book-position and functional-currency scope an atomic tax-lot journal posts under.
+
+```csharp
+public sealed partial class PostgresLedgerJournalStore
+```
+
 Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Audit.cs:12](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Audit.cs#L12).
 
 ```csharp

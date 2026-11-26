@@ -315,6 +315,14 @@ Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateServi
 public sealed partial class AccountingPostingCandidateService
 ```
 
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.Comparison.cs:10](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.Comparison.cs#L10).
+
+Text, event and chart comparison helpers plus candidate-issue construction.
+
+```csharp
+public sealed partial class AccountingPostingCandidateService
+```
+
 Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:70](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L70).
 
 Builds reviewable journal candidates and candidate writes from accounting-event evidence.
