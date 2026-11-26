@@ -2,14 +2,14 @@
   "acl": [
     {
       "grantable": false,
-      "grantee": "postgres",
-      "grantor": "postgres",
+      "grantee": "meridian",
+      "grantor": "meridian",
       "privilege": "create"
     },
     {
       "grantable": false,
-      "grantee": "postgres",
-      "grantor": "postgres",
+      "grantee": "meridian",
+      "grantor": "meridian",
       "privilege": "usage"
     }
   ],
@@ -21,7 +21,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "a32cb7f4dfc5260d50f0127a9e696ab80e3d461852441f24040f295f57a6f9cc",
+  "fingerprint": "48b74e6e5f438d535ad957bc2fcfa516eddf2970bc461afaa95f6e540d7335c8",
   "foreign_tables": [],
   "functions": [],
   "logical_modules": [
@@ -29,7 +29,7 @@
   ],
   "materialized_views": [],
   "name": "operator_triage",
-  "owner": "postgres",
+  "owner": "meridian",
   "partitions": [],
   "policies": [],
   "procedures": [],
@@ -38,44 +38,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "update"
         }
       ],
@@ -172,7 +172,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "274a30c7397d2bd0e969493bf4b0566235e787c9dd2b839e2fb3cc93acb0bf53",
+      "fingerprint": "d6d9d84fad6c8a62dd19b87132bff6963bc99f6ba75b9727743d6e6d7c50f5fc",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -180,7 +180,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX item_metadata_pkey ON operator_triage.item_metadata USING btree (tenant_id, company_id, work_item_id)",
           "expression": null,
-          "fingerprint": "09f97d77ea8b0e84c5c3455f7d13a8ff2b70fc48bf5793f33ba2ff412ae9bac2",
+          "fingerprint": "b3fd9185461dbc707bfba4494dbe06b5d63f16431074f632db37692d56bbc5aa",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -192,7 +192,7 @@
           "method": "btree",
           "name": "item_metadata_pkey",
           "options": [],
-          "owner": "postgres",
+          "owner": "meridian",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -205,7 +205,7 @@
       "kind": "table",
       "name": "item_metadata",
       "options": [],
-      "owner": "postgres",
+      "owner": "meridian",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -220,44 +220,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "update"
         }
       ],
@@ -336,7 +336,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "b0bbdc61b907050246bdfa18761dd2f820bfcd71cc776387bd85fe1d7e092b74",
+      "fingerprint": "29e06f390d8a02f9163123142832d92ae3293b2b20f8051d26cf7178043bc009",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -344,7 +344,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX operator_triage_schema_migrations_pkey ON operator_triage.operator_triage_schema_migrations USING btree (filename)",
           "expression": null,
-          "fingerprint": "1220ea79cb3eeec492ab17fcd9e5c25ae672c1e48b30d64bea2f009513278e55",
+          "fingerprint": "66499493967e9daff72002a283d2ed6eee29a969d5530a28bff4b05b2b3bf7d9",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -354,7 +354,7 @@
           "method": "btree",
           "name": "operator_triage_schema_migrations_pkey",
           "options": [],
-          "owner": "postgres",
+          "owner": "meridian",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -367,7 +367,7 @@
       "kind": "table",
       "name": "operator_triage_schema_migrations",
       "options": [],
-      "owner": "postgres",
+      "owner": "meridian",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -404,44 +404,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "update"
         }
       ],
@@ -538,7 +538,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "274a30c7397d2bd0e969493bf4b0566235e787c9dd2b839e2fb3cc93acb0bf53",
+      "fingerprint": "d6d9d84fad6c8a62dd19b87132bff6963bc99f6ba75b9727743d6e6d7c50f5fc",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -546,7 +546,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX item_metadata_pkey ON operator_triage.item_metadata USING btree (tenant_id, company_id, work_item_id)",
           "expression": null,
-          "fingerprint": "09f97d77ea8b0e84c5c3455f7d13a8ff2b70fc48bf5793f33ba2ff412ae9bac2",
+          "fingerprint": "b3fd9185461dbc707bfba4494dbe06b5d63f16431074f632db37692d56bbc5aa",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -558,7 +558,7 @@
           "method": "btree",
           "name": "item_metadata_pkey",
           "options": [],
-          "owner": "postgres",
+          "owner": "meridian",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -571,7 +571,7 @@
       "kind": "table",
       "name": "item_metadata",
       "options": [],
-      "owner": "postgres",
+      "owner": "meridian",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -586,44 +586,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "update"
         }
       ],
@@ -702,7 +702,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "b0bbdc61b907050246bdfa18761dd2f820bfcd71cc776387bd85fe1d7e092b74",
+      "fingerprint": "29e06f390d8a02f9163123142832d92ae3293b2b20f8051d26cf7178043bc009",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -710,7 +710,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX operator_triage_schema_migrations_pkey ON operator_triage.operator_triage_schema_migrations USING btree (filename)",
           "expression": null,
-          "fingerprint": "1220ea79cb3eeec492ab17fcd9e5c25ae672c1e48b30d64bea2f009513278e55",
+          "fingerprint": "66499493967e9daff72002a283d2ed6eee29a969d5530a28bff4b05b2b3bf7d9",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -720,7 +720,7 @@
           "method": "btree",
           "name": "operator_triage_schema_migrations_pkey",
           "options": [],
-          "owner": "postgres",
+          "owner": "meridian",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -733,7 +733,7 @@
       "kind": "table",
       "name": "operator_triage_schema_migrations",
       "options": [],
-      "owner": "postgres",
+      "owner": "meridian",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",

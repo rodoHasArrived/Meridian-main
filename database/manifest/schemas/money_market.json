@@ -2,14 +2,14 @@
   "acl": [
     {
       "grantable": false,
-      "grantee": "postgres",
-      "grantor": "postgres",
+      "grantee": "meridian",
+      "grantor": "meridian",
       "privilege": "create"
     },
     {
       "grantable": false,
-      "grantee": "postgres",
-      "grantor": "postgres",
+      "grantee": "meridian",
+      "grantor": "meridian",
       "privilege": "usage"
     }
   ],
@@ -21,7 +21,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "f99f87613588cf12c94ba913abb13e0fac950e954cf0733e030efc326fb5ce03",
+  "fingerprint": "4c336b5362a4019a14aafa69a48e98ab382d27eebd20da0ab1591f6b6eccf31b",
   "foreign_tables": [],
   "functions": [],
   "logical_modules": [
@@ -29,7 +29,7 @@
   ],
   "materialized_views": [],
   "name": "money_market",
-  "owner": "postgres",
+  "owner": "meridian",
   "partitions": [],
   "policies": [],
   "procedures": [],
@@ -38,44 +38,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "update"
         }
       ],
@@ -282,7 +282,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "b777642bbf29a10cda6171542357f8202b4af76e25e0bc8af0303e85990d8752",
+      "fingerprint": "ac0a2a827493220a567773a751cdb00c55efa3a5d35646d1cab0f8e923a899a0",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -290,7 +290,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_mmf_funds_fund_family ON money_market.mmf_funds USING btree (fund_family) WHERE (fund_family IS NOT NULL)",
           "expression": null,
-          "fingerprint": "1efdd9a9a030d168998f84adbb982375c726ee8ba97695fe2240e31f57baee34",
+          "fingerprint": "ce98b5800a89008e64cf7b6f29a0b8da6585cdfbb8c258206650e61a8a7cdc54",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -300,7 +300,7 @@
           "method": "btree",
           "name": "ix_mmf_funds_fund_family",
           "options": [],
-          "owner": "postgres",
+          "owner": "meridian",
           "predicate": "fund_family IS NOT NULL",
           "primary": false,
           "ready": true,
@@ -312,7 +312,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_mmf_funds_is_active ON money_market.mmf_funds USING btree (is_active)",
           "expression": null,
-          "fingerprint": "9257ab6122bde0322176a3c26c37eb5086c9491573317e8907d59fb7981e7524",
+          "fingerprint": "ea71721d96babda5b6138b52a8d3c04519102688a1453690cad894e53b2ac6be",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -322,7 +322,7 @@
           "method": "btree",
           "name": "ix_mmf_funds_is_active",
           "options": [],
-          "owner": "postgres",
+          "owner": "meridian",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -334,7 +334,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX mmf_funds_pkey ON money_market.mmf_funds USING btree (security_id)",
           "expression": null,
-          "fingerprint": "0f773fac9778bb8e12ae103d5bdc4f73920a3959ba9f69422f2e5512c8e11145",
+          "fingerprint": "facfac25a5908b1950613c6e3721db94b6d59fe2a80b4520e0a7695d77778397",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -344,7 +344,7 @@
           "method": "btree",
           "name": "mmf_funds_pkey",
           "options": [],
-          "owner": "postgres",
+          "owner": "meridian",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -357,7 +357,7 @@
       "kind": "table",
       "name": "mmf_funds",
       "options": [],
-      "owner": "postgres",
+      "owner": "meridian",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -372,44 +372,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "update"
         }
       ],
@@ -488,7 +488,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "7a3e6b3a3f4a1dd205677a134c80d557fbc6712eafe4ba8ee0fc07f89ed7c35a",
+      "fingerprint": "335d74fdee7cb18345f9b42b259259d01787912c9c41776d3f84c4611d900328",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -496,7 +496,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX mmf_liquidity_overrides_pkey ON money_market.mmf_liquidity_overrides USING btree (security_id)",
           "expression": null,
-          "fingerprint": "f2df66ae999f7c21d4575bb662c846d12026afb2a40b02deb385758c4d722a49",
+          "fingerprint": "3bd09be145b39426ea282e36dafbda280c2d0d414723de7a24b6af8f7de038a3",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -506,7 +506,7 @@
           "method": "btree",
           "name": "mmf_liquidity_overrides_pkey",
           "options": [],
-          "owner": "postgres",
+          "owner": "meridian",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -519,7 +519,7 @@
       "kind": "table",
       "name": "mmf_liquidity_overrides",
       "options": [],
-      "owner": "postgres",
+      "owner": "meridian",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -534,44 +534,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "update"
         }
       ],
@@ -666,7 +666,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "621f7d032dba6434a4af7806c8759443a3fd95999cb37cccc5226eb5796bdad3",
+      "fingerprint": "2f2c95573a57024c0f450d4d96be8485cee386511c6d2e14b0d399bb763e1e66",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -674,7 +674,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX mmf_rebuild_checkpoints_pkey ON money_market.mmf_rebuild_checkpoints USING btree (security_id)",
           "expression": null,
-          "fingerprint": "4c9241dcef5ec9da2e4614707a1c356dd0183e8effbfd48afdf7dfe1d9952aed",
+          "fingerprint": "55a5bf0572eb105cc1cfad6d8c8f5edd9683b54c082e0b8a0345dcd165fcfac9",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -684,7 +684,7 @@
           "method": "btree",
           "name": "mmf_rebuild_checkpoints_pkey",
           "options": [],
-          "owner": "postgres",
+          "owner": "meridian",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -697,7 +697,7 @@
       "kind": "table",
       "name": "mmf_rebuild_checkpoints",
       "options": [],
-      "owner": "postgres",
+      "owner": "meridian",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -712,44 +712,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "update"
         }
       ],
@@ -828,7 +828,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "bdfb5f04cceb5fe8be387de756c1bb95270b3b3e3db3930c49d0057640f6c02a",
+      "fingerprint": "6a4357c5c692173a5cc545a4f4dc95d1db5a3ef3f76dbd1a78f8a1598809a68b",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -836,7 +836,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX schema_migrations_pkey ON money_market.schema_migrations USING btree (filename)",
           "expression": null,
-          "fingerprint": "cb5625dd3a08935759de72c03c2a29e6efba3ad19f782addfaace9140ae4673c",
+          "fingerprint": "80d8c42285e79c5c6df20b2c25cd9d123dac12f27d30aaf4af2387da628a36d0",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -846,7 +846,7 @@
           "method": "btree",
           "name": "schema_migrations_pkey",
           "options": [],
-          "owner": "postgres",
+          "owner": "meridian",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -859,7 +859,7 @@
       "kind": "table",
       "name": "schema_migrations",
       "options": [],
-      "owner": "postgres",
+      "owner": "meridian",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -912,44 +912,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "update"
         }
       ],
@@ -1156,7 +1156,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "b777642bbf29a10cda6171542357f8202b4af76e25e0bc8af0303e85990d8752",
+      "fingerprint": "ac0a2a827493220a567773a751cdb00c55efa3a5d35646d1cab0f8e923a899a0",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -1164,7 +1164,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_mmf_funds_fund_family ON money_market.mmf_funds USING btree (fund_family) WHERE (fund_family IS NOT NULL)",
           "expression": null,
-          "fingerprint": "1efdd9a9a030d168998f84adbb982375c726ee8ba97695fe2240e31f57baee34",
+          "fingerprint": "ce98b5800a89008e64cf7b6f29a0b8da6585cdfbb8c258206650e61a8a7cdc54",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1174,7 +1174,7 @@
           "method": "btree",
           "name": "ix_mmf_funds_fund_family",
           "options": [],
-          "owner": "postgres",
+          "owner": "meridian",
           "predicate": "fund_family IS NOT NULL",
           "primary": false,
           "ready": true,
@@ -1186,7 +1186,7 @@
           "comment": null,
           "definition": "CREATE INDEX ix_mmf_funds_is_active ON money_market.mmf_funds USING btree (is_active)",
           "expression": null,
-          "fingerprint": "9257ab6122bde0322176a3c26c37eb5086c9491573317e8907d59fb7981e7524",
+          "fingerprint": "ea71721d96babda5b6138b52a8d3c04519102688a1453690cad894e53b2ac6be",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1196,7 +1196,7 @@
           "method": "btree",
           "name": "ix_mmf_funds_is_active",
           "options": [],
-          "owner": "postgres",
+          "owner": "meridian",
           "predicate": null,
           "primary": false,
           "ready": true,
@@ -1208,7 +1208,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX mmf_funds_pkey ON money_market.mmf_funds USING btree (security_id)",
           "expression": null,
-          "fingerprint": "0f773fac9778bb8e12ae103d5bdc4f73920a3959ba9f69422f2e5512c8e11145",
+          "fingerprint": "facfac25a5908b1950613c6e3721db94b6d59fe2a80b4520e0a7695d77778397",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1218,7 +1218,7 @@
           "method": "btree",
           "name": "mmf_funds_pkey",
           "options": [],
-          "owner": "postgres",
+          "owner": "meridian",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -1231,7 +1231,7 @@
       "kind": "table",
       "name": "mmf_funds",
       "options": [],
-      "owner": "postgres",
+      "owner": "meridian",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -1246,44 +1246,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "update"
         }
       ],
@@ -1362,7 +1362,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "7a3e6b3a3f4a1dd205677a134c80d557fbc6712eafe4ba8ee0fc07f89ed7c35a",
+      "fingerprint": "335d74fdee7cb18345f9b42b259259d01787912c9c41776d3f84c4611d900328",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -1370,7 +1370,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX mmf_liquidity_overrides_pkey ON money_market.mmf_liquidity_overrides USING btree (security_id)",
           "expression": null,
-          "fingerprint": "f2df66ae999f7c21d4575bb662c846d12026afb2a40b02deb385758c4d722a49",
+          "fingerprint": "3bd09be145b39426ea282e36dafbda280c2d0d414723de7a24b6af8f7de038a3",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1380,7 +1380,7 @@
           "method": "btree",
           "name": "mmf_liquidity_overrides_pkey",
           "options": [],
-          "owner": "postgres",
+          "owner": "meridian",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -1393,7 +1393,7 @@
       "kind": "table",
       "name": "mmf_liquidity_overrides",
       "options": [],
-      "owner": "postgres",
+      "owner": "meridian",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -1408,44 +1408,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "update"
         }
       ],
@@ -1540,7 +1540,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "621f7d032dba6434a4af7806c8759443a3fd95999cb37cccc5226eb5796bdad3",
+      "fingerprint": "2f2c95573a57024c0f450d4d96be8485cee386511c6d2e14b0d399bb763e1e66",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -1548,7 +1548,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX mmf_rebuild_checkpoints_pkey ON money_market.mmf_rebuild_checkpoints USING btree (security_id)",
           "expression": null,
-          "fingerprint": "4c9241dcef5ec9da2e4614707a1c356dd0183e8effbfd48afdf7dfe1d9952aed",
+          "fingerprint": "55a5bf0572eb105cc1cfad6d8c8f5edd9683b54c082e0b8a0345dcd165fcfac9",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1558,7 +1558,7 @@
           "method": "btree",
           "name": "mmf_rebuild_checkpoints_pkey",
           "options": [],
-          "owner": "postgres",
+          "owner": "meridian",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -1571,7 +1571,7 @@
       "kind": "table",
       "name": "mmf_rebuild_checkpoints",
       "options": [],
-      "owner": "postgres",
+      "owner": "meridian",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
@@ -1586,44 +1586,44 @@
       "acl": [
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "delete"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "insert"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "references"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "select"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "trigger"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "truncate"
         },
         {
           "grantable": false,
-          "grantee": "postgres",
-          "grantor": "postgres",
+          "grantee": "meridian",
+          "grantor": "meridian",
           "privilege": "update"
         }
       ],
@@ -1702,7 +1702,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "bdfb5f04cceb5fe8be387de756c1bb95270b3b3e3db3930c49d0057640f6c02a",
+      "fingerprint": "6a4357c5c692173a5cc545a4f4dc95d1db5a3ef3f76dbd1a78f8a1598809a68b",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -1710,7 +1710,7 @@
           "comment": null,
           "definition": "CREATE UNIQUE INDEX schema_migrations_pkey ON money_market.schema_migrations USING btree (filename)",
           "expression": null,
-          "fingerprint": "cb5625dd3a08935759de72c03c2a29e6efba3ad19f782addfaace9140ae4673c",
+          "fingerprint": "80d8c42285e79c5c6df20b2c25cd9d123dac12f27d30aaf4af2387da628a36d0",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
@@ -1720,7 +1720,7 @@
           "method": "btree",
           "name": "schema_migrations_pkey",
           "options": [],
-          "owner": "postgres",
+          "owner": "meridian",
           "predicate": null,
           "primary": true,
           "ready": true,
@@ -1733,7 +1733,7 @@
       "kind": "table",
       "name": "schema_migrations",
       "options": [],
-      "owner": "postgres",
+      "owner": "meridian",
       "persistence": "permanent",
       "policies": [],
       "replica_identity": "default",
