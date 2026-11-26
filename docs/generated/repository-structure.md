@@ -1847,6 +1847,7 @@ Meridian-main
 │   │   │   ├── carta-inspired-capital-lifecycle.md
 │   │   │   ├── desktop-workstation-screen-blueprint.checklist.json
 │   │   │   ├── desktop-workstation-screen-blueprint.md
+│   │   │   ├── entity-master-adoption-plan.md
 │   │   │   ├── god-file-burn-down-plan.md
 │   │   │   ├── intercompany-entity-controls.md
 │   │   │   ├── README.md
@@ -5566,6 +5567,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCashFlowService.DeclaredBondLeg.cs
 │   │   │   ├── SecurityMasterCashFlowService.DeclaredConventions.cs
 │   │   │   ├── SecurityMasterCashFlowService.FactorAccrual.cs
+│   │   │   ├── SecurityMasterCashFlowService.ValidTime.cs
 │   │   │   ├── SecurityMasterClassificationDriftReportService.cs
 │   │   │   ├── SecurityMasterConcurrencyException.cs
 │   │   │   ├── SecurityMasterConflictAuthorityPolicy.cs
@@ -6354,6 +6356,7 @@ Meridian-main
 │   │   │   ├── SecurityTermsEnvelope.cs
 │   │   │   ├── SecurityTermsLegacyEventClassifier.cs
 │   │   │   ├── SecurityTermsProjectionReadDtos.cs
+│   │   │   ├── SecurityTermsValidTime.cs
 │   │   │   ├── SecurityUnderlyingGraph.cs
 │   │   │   ├── SecurityValidationDtos.cs
 │   │   │   ├── SecurityValuation.cs
@@ -10685,6 +10688,7 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.workbench-context.tsx
 │   │   │   │   │   ├── reporting-screen.workflow-continuity.ts
 │   │   │   │   │   ├── security-master-authoritative-detail.ts
+│   │   │   │   │   ├── security-master-change-history.test.tsx
 │   │   │   │   │   ├── security-master-policy-evidence.test.tsx
 │   │   │   │   │   ├── security-master-policy-evidence.ts
 │   │   │   │   │   ├── settings-change-impact.test.tsx
@@ -11695,6 +11699,7 @@ Meridian-main
 │   │   │   ├── IntercompanyProposalDeliveryService.cs
 │   │   │   ├── InvestmentAccountingTransactionLabService.cs
 │   │   │   ├── IProviderModuleSetupService.cs
+│   │   │   ├── IssuerConcentrationService.cs
 │   │   │   ├── LedgerAccountingCompletenessReadService.cs
 │   │   │   ├── LedgerAmountProvenanceService.cs
 │   │   │   ├── LedgerBookOrdering.cs
@@ -12158,6 +12163,7 @@ Meridian-main
 │   │   │   ├── ProviderHealthModels.cs
 │   │   │   ├── QuantScriptExecutionHistoryModels.cs
 │   │   │   ├── QuantScriptModels.cs
+│   │   │   ├── SecurityMasterChangeHistoryRow.cs
 │   │   │   ├── SecurityMasterPresentationModels.cs
 │   │   │   ├── SettingsModels.cs
 │   │   │   ├── ShellNavigationCatalog.Accounting.cs
@@ -14615,6 +14621,11 @@ Meridian-main
 │   │   │   │   ├── ScheduleParityGrids.cs
 │   │   │   │   ├── SchedulePeriodIdTests.cs
 │   │   │   │   └── ScheduleSpecFactoryTests.cs
+│   │   │   ├── ValidTime
+│   │   │   │   ├── IssuerConcentrationServiceTests.cs
+│   │   │   │   ├── SecurityTermsValidTimeTests.cs
+│   │   │   │   ├── ValidTimeRestatementRoutingTests.cs
+│   │   │   │   └── ValidTimeTestData.cs
 │   │   │   ├── Workbench
 │   │   │   │   ├── AheadOfWriteWorkbenchFixtures.cs
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.AheadOfWrite.cs
@@ -14812,6 +14823,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedFallbackTests.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedReconciliationTests.cs
+│   │   │   ├── SecurityMasterCashFlowValidTimeTests.cs
 │   │   │   ├── SecurityMasterChangeOutboxPostgresTests.cs
 │   │   │   ├── SecurityMasterClassificationDriftReportServiceTests.cs
 │   │   │   ├── SecurityMasterClassificationTextGuardTests.cs
@@ -15243,6 +15255,7 @@ Meridian-main
 │   │   │   ├── SecurityEconomicDispositionCoverageTests.cs
 │   │   │   ├── SecurityMasterAccountingEventServiceTests.cs
 │   │   │   ├── SecurityMasterAccountingEventSourceRateUnitTests.cs
+│   │   │   ├── SecurityMasterAccountingValidTimeTests.cs
 │   │   │   ├── ShadowBookValuationServiceTests.cs
 │   │   │   ├── StoppedRunPromotionTests.cs
 │   │   │   ├── StrategyArtifactAndLiveAuthorizationTests.cs
@@ -15976,6 +15989,7 @@ Meridian-main
 │   │   │   ├── DataConfidenceIndicatorModelTests.cs
 │   │   │   ├── OperationsContinuityClosePresentationApprovalTests.cs
 │   │   │   ├── PaneLayoutTests.cs
+│   │   │   ├── SecurityMasterChangeHistoryRowTests.cs
 │   │   │   ├── ShellNavigationCatalogTests.cs
 │   │   │   └── WorkspaceShellChromeContributionTests.cs
 │   │   ├── Services
