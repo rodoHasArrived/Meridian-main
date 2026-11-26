@@ -1,3 +1,4 @@
+using Meridian.Contracts.Configuration;
 // Thin wrapper around the core ConfigStore that provides the web dashboard default path.
 // New code should reference Meridian.Application.UI.ConfigStore directly when possible.
 using CoreConfigStore = Meridian.Application.UI.ConfigStore;
@@ -54,12 +55,28 @@ public sealed class ConfigStore
         CancellationToken ct = default)
         => UpdateWithConfirmationAsync(update, confirmDataSemantics: false, ct);
 
+    internal Task<(T Result, ConfigurationChangeStatus Status)> UpdateWithChangeStatusAsync<T>(
+        Func<Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)> update,
+        CancellationToken ct = default)
+        => UpdateCoreAsync(update, confirmDataSemantics: false, ct);
+
+    internal async Task<ConfigurationChangeStatus> UpdateWithChangeStatusAsync(
+        Func<Meridian.Core.Config.AppConfig, Meridian.Core.Config.AppConfig> update, CancellationToken ct)
+        => (await UpdateCoreAsync<object?>(current => (update(current), null),
+            confirmDataSemantics: false, ct).ConfigureAwait(false)).Status;
+
     /// <summary>Explicit confirmation is required for edits changing the meaning of newly stored data.</summary>
-    public System.Threading.Tasks.Task<T> UpdateWithConfirmationAsync<T>(
+    public async System.Threading.Tasks.Task<T> UpdateWithConfirmationAsync<T>(
         Func<Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)> update,
         bool confirmDataSemantics,
         CancellationToken ct = default)
-        => _core.UpdateAsync(current =>
+        => (await UpdateCoreAsync(update, confirmDataSemantics, ct).ConfigureAwait(false)).Result;
+
+    private Task<(T Result, ConfigurationChangeStatus Status)> UpdateCoreAsync<T>(
+        Func<Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)> update,
+        bool confirmDataSemantics,
+        CancellationToken ct)
+        => _core.UpdateWithChangeStatusAsync(current =>
         {
             var (next, result) = update(current);
             if (!ReferenceEquals(current, next))

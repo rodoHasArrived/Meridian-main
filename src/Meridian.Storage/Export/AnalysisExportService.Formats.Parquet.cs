@@ -91,13 +91,18 @@ public sealed partial class AnalysisExportService
 
         // Build schema from the first record's keys
         var firstRecord = records[0];
-        var columns = firstRecord.Keys.ToList();
+        var columns = PreserveHistoricalBasisColumns(firstRecord.Keys, records);
+        foreach (var record in records)
+            RequireHistoricalBasisColumns(record, columns);
         var dataFields = new List<DataField>();
 
         // Infer schema from first record's values
         foreach (var column in columns)
         {
-            var value = firstRecord[column];
+            var value = firstRecord.GetValueOrDefault(column);
+            if (column.Equals("IsAdjusted", StringComparison.OrdinalIgnoreCase) &&
+                columns.Contains("PriceBasis", StringComparer.OrdinalIgnoreCase))
+                value = false; // A missing legacy flag remains a nullable Boolean column.
             var dataField = InferDataField(column, value);
             dataFields.Add(dataField);
         }

@@ -46,6 +46,23 @@ internal static class SecurityFlatCodecGenerator
         }
 
         source.Append("    ];\n");
+        source.Append("\n    /// <summary>Executable contributions generated from the same per-class bindings.</summary>\n");
+        source.Append("    private static IReadOnlyList<AssetPackDecoderContribution> CreateGeneratedAssetPackDecoders() =>\n    [\n");
+        foreach (var binding in SecurityAssetTermsCodecBindings.Classes)
+        {
+            source.Append("        new(\"").Append(binding.AssetClass).Append("\", context => DecodeGenerated")
+                .Append(binding.AssetClass).Append("(context.")
+                .Append(binding.ReadsResolvedTerms ? "Resolved" : "Root")
+                .Append(", context.Mode, context.AssetClass, context.Json");
+            if (DecodesVersionedTerms(binding))
+                source.Append(", context.VersionedTerms");
+            if (binding.Inputs.HasFlag(SecurityCodecInputs.EconomicSchedules))
+                source.Append(", context.EconomicSchedules!");
+            if (binding.Inputs.HasFlag(SecurityCodecInputs.ResolvedTermsDocument))
+                source.Append(", context.Terms");
+            source.Append(")),\n");
+        }
+        source.Append("    ];\n");
         foreach (var binding in SecurityAssetTermsCodecBindings.Classes)
         {
             var shape = Shape(binding);

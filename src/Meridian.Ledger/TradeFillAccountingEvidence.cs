@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Ledger;
 
@@ -18,6 +19,13 @@ public sealed record TradeFillAccountingEvidence(
     decimal VariationMarginPnl = 0m,
     string? FinancialAccountId = null)
 {
+    /// <summary>Native quantity convention captured by the lot book; absent on older evidence.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public SecurityLotUnitKind? QuantityUnit { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? LotMultiplier { get; init; }
+
     /// <summary>
     /// Bond accrued interest that changed hands on this fill, always nonnegative: paid on a
     /// purchase, received on a sale. Zero for fills without an accrual (and on every historical

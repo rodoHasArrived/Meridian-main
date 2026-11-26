@@ -254,7 +254,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.AggregationMethod</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:515](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L515).
+Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:502](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L502).
 
 Describes a selectable aggregation method, its explanation, and the fields it produces.
 
@@ -266,16 +266,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public AggregationType Value { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:517](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L517) |  |
-| <code>public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:518](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L518) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:519](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L519) |  |
-| <code>public string[]? Fields { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:520](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L520) |  |
+| <code>public AggregationType Value { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:504](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L504) |  |
+| <code>public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:505](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L505) |  |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:506](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L506) |  |
+| <code>public string[]? Fields { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:507](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L507) |  |
 
 ## AggregationType
 
 Qualified name: <code>Meridian.Ui.Services.AggregationType</code>. Kind: `enum`.
 
-Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:422](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L422).
+Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:403](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L403).
 
 ```csharp
 public enum AggregationType : byte
@@ -285,14 +285,14 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>OHLCV</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:424](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L424) |  |
-| <code>Last</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:425](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L425) |  |
-| <code>First</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:426](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L426) |  |
-| <code>Mean</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:427](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L427) |  |
-| <code>VWAP</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:428](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L428) |  |
-| <code>TWAP</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:429](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L429) |  |
-| <code>Sum</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:430](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L430) |  |
-| <code>Count</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:431](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L431) |  |
+| <code>OHLCV</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:405](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L405) |  |
+| <code>Last</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:406](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L406) |  |
+| <code>First</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:407](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L407) |  |
+| <code>Mean</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:408](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L408) |  |
+| <code>VWAP</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:409](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L409) |  |
+| <code>TWAP</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:410](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L410) |  |
+| <code>Sum</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:411](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L411) |  |
+| <code>Count</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:412](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L412) |  |
 
 ## Alert
 
@@ -555,7 +555,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.AlignmentInterval</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:505](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L505).
+Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:492](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L492).
 
 Describes a selectable alignment interval with its display label and length in seconds.
 
@@ -567,15 +567,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public TimeSeriesInterval Value { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:507](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L507) |  |
-| <code>public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:508](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L508) |  |
-| <code>public int Seconds { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:509](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L509) |  |
+| <code>public TimeSeriesInterval Value { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:494](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L494) |  |
+| <code>public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:495](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L495) |  |
+| <code>public int Seconds { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:496](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L496) |  |
 
 ## AlignmentMetadata
 
 Qualified name: <code>Meridian.Ui.Services.AlignmentMetadata</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:492](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L492).
+Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:479](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L479).
 
 Summarizes aligned records and gaps by symbol with time coverage and interval totals.
 
@@ -587,18 +587,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Dictionary&lt;string, long&gt;? RecordsBySymbol { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:494](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L494) |  |
-| <code>public Dictionary&lt;string, int&gt;? GapsBySymbol { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:495](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L495) |  |
-| <code>public DateTimeOffset? FirstTimestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:496](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L496) |  |
-| <code>public DateTimeOffset? LastTimestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:497](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L497) |  |
-| <code>public int TotalIntervals { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:498](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L498) |  |
-| <code>public double CoveragePercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:499](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L499) |  |
+| <code>public Dictionary&lt;string, long&gt;? RecordsBySymbol { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:481](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L481) |  |
+| <code>public Dictionary&lt;string, int&gt;? GapsBySymbol { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:482](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L482) |  |
+| <code>public DateTimeOffset? FirstTimestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:483](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L483) |  |
+| <code>public DateTimeOffset? LastTimestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:484](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L484) |  |
+| <code>public int TotalIntervals { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:485](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L485) |  |
+| <code>public double CoveragePercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:486](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L486) |  |
 
 ## AlignmentOptions
 
 Qualified name: <code>Meridian.Ui.Services.AlignmentOptions</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:449](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L449).
+Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:430](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L430).
 
 Configures time-series scope, interval, aggregation, gap handling, calendar settings, and output artifact.
 
@@ -610,25 +610,30 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public List&lt;string&gt;? Symbols { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:451](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L451) |  |
-| <code>public DateOnly? FromDate { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:452](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L452) |  |
-| <code>public DateOnly? ToDate { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:453](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L453) |  |
-| <code>public TimeSeriesInterval Interval { get; set; } = TimeSeriesInterval.Minute1;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:454](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L454) |  |
-| <code>public AggregationType Aggregation { get; set; } = AggregationType.OHLCV;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:455](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L455) |  |
-| <code>public GapStrategy GapStrategy { get; set; } = GapStrategy.Skip;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:456](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L456) |  |
-| <code>public int MaxGapIntervals { get; set; } = 5;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:457](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L457) |  |
-| <code>public bool MarkFilledValues { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:458](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L458) |  |
-| <code>public string Timezone { get; set; } = &quot;America/New_York&quot;;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:459](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L459) |  |
-| <code>public bool MarketHoursOnly { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:460](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L460) |  |
-| <code>public string? OutputPath { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:461](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L461) |  |
-| <code>public ExportFormat OutputFormat { get; set; } = ExportFormat.Parquet;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:462](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L462) |  |
-| <code>public bool IncludeMetadata { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:463](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L463) |  |
+| <code>public List&lt;string&gt;? Symbols { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:432](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L432) |  |
+| <code>public List&lt;string&gt;? Providers { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:433](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L433) |  |
+| <code>public string InputKind { get; set; } = &quot;Auto&quot;;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:434](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L434) |  |
+| <code>public string AdjustmentPolicy { get; set; } = &quot;AsStored&quot;;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:435](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L435) |  |
+| <code>public string[]? Fields { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:436](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L436) |  |
+| <code>public string? ExpectedContentHash { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:437](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L437) |  |
+| <code>public DateOnly? FromDate { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:438](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L438) |  |
+| <code>public DateOnly? ToDate { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:439](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L439) |  |
+| <code>public TimeSeriesInterval Interval { get; set; } = TimeSeriesInterval.Minute1;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:440](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L440) |  |
+| <code>public AggregationType Aggregation { get; set; } = AggregationType.OHLCV;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:441](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L441) |  |
+| <code>public GapStrategy GapStrategy { get; set; } = GapStrategy.Skip;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:442](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L442) |  |
+| <code>public int MaxGapIntervals { get; set; } = 5;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:443](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L443) |  |
+| <code>public bool MarkFilledValues { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:444](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L444) |  |
+| <code>public string Timezone { get; set; } = &quot;America/New_York&quot;;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:445](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L445) |  |
+| <code>public bool MarketHoursOnly { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:446](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L446) |  |
+| <code>public string? OutputPath { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:447](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L447) |  |
+| <code>public ExportFormat OutputFormat { get; set; } = ExportFormat.Parquet;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:448](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L448) |  |
+| <code>public bool IncludeMetadata { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:449](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L449) |  |
 
 ## AlignmentPreset
 
 Qualified name: <code>Meridian.Ui.Services.AlignmentPreset</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:537](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L537).
+Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:524](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L524).
 
 Provides a reusable interval, aggregation, gap-handling, and market-hours configuration.
 
@@ -640,20 +645,20 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:539](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L539) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:540](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L540) |  |
-| <code>public TimeSeriesInterval Interval { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:541](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L541) |  |
-| <code>public AggregationType Aggregation { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:542](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L542) |  |
-| <code>public GapStrategy GapStrategy { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:543](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L543) |  |
-| <code>public int MaxGapIntervals { get; set; } = 5;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:544](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L544) |  |
-| <code>public bool MarkFilledValues { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:545](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L545) |  |
-| <code>public bool MarketHoursOnly { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:546](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L546) |  |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:526](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L526) |  |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:527](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L527) |  |
+| <code>public TimeSeriesInterval Interval { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:528](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L528) |  |
+| <code>public AggregationType Aggregation { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:529](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L529) |  |
+| <code>public GapStrategy GapStrategy { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:530](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L530) |  |
+| <code>public int MaxGapIntervals { get; set; } = 5;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:531](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L531) |  |
+| <code>public bool MarkFilledValues { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:532](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L532) |  |
+| <code>public bool MarketHoursOnly { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:533](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L533) |  |
 
 ## AlignmentPreview
 
 Qualified name: <code>Meridian.Ui.Services.AlignmentPreview</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:552](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L552).
+Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:539](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L539).
 
 Reports expected alignment output, gap counts, artifact size, and source records or a preview error.
 
@@ -665,20 +670,22 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:554](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L554) |  |
-| <code>public bool IsServiceUnavailable { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:560](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L560) | True when the host reported that alignment is not implemented (HTTP 501), so retrying with different options cannot succeed. |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:562](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L562) |  |
-| <code>public long TotalSourceRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:563](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L563) |  |
-| <code>public long ExpectedOutputRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:564](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L564) |  |
-| <code>public int ExpectedGaps { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:565](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L565) |  |
-| <code>public long EstimatedFileSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:566](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L566) |  |
-| <code>public int IntervalCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:567](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L567) |  |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:541](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L541) |  |
+| <code>public bool IsServiceUnavailable { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:547](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L547) | True when the host reported that alignment is not implemented (HTTP 501), so retrying with different options cannot succeed. |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:549](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L549) |  |
+| <code>public long TotalSourceRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:550](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L550) |  |
+| <code>public long ExpectedOutputRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:551](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L551) |  |
+| <code>public int ExpectedGaps { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:552](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L552) |  |
+| <code>public long? EstimatedFileSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:553](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L553) |  |
+| <code>public int IntervalCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:554](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L554) |  |
+| <code>public TimeSeriesAlignmentSummary? Summary { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:555](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L555) |  |
+| <code>public TimeSeriesAlignmentRow[] SampleRows { get; set; } = [];</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:556](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L556) |  |
 
 ## AlignmentPreviewResponse
 
 Qualified name: <code>Meridian.Ui.Services.AlignmentPreviewResponse</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:600](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L600).
+Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:589](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L589).
 
 Carries API estimates for alignment records, gaps, artifact bytes, and intervals.
 
@@ -690,17 +697,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public long TotalSourceRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:602](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L602) |  |
-| <code>public long ExpectedOutputRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:603](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L603) |  |
-| <code>public int ExpectedGaps { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:604](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L604) |  |
-| <code>public long EstimatedFileSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:605](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L605) |  |
-| <code>public int IntervalCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:606](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L606) |  |
+| <code>public long TotalSourceRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:591](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L591) |  |
+| <code>public long ExpectedOutputRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:592](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L592) |  |
+| <code>public int ExpectedGaps { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:593](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L593) |  |
+| <code>public long EstimatedFileSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:594](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L594) |  |
+| <code>public int IntervalCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:595](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L595) |  |
 
 ## AlignmentProgressEventArgs
 
 Qualified name: <code>Meridian.Ui.Services.AlignmentProgressEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:398](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L398).
+Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:379](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L379).
 
 Supplies time-series alignment progress, current symbol, and processed record count.
 
@@ -712,15 +719,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public double Progress { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:400](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L400) |  |
-| <code>public string? CurrentSymbol { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:401](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L401) |  |
-| <code>public long RecordsProcessed { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:402](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L402) |  |
+| <code>public double Progress { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:381](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L381) |  |
+| <code>public string? CurrentSymbol { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:382](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L382) |  |
+| <code>public long RecordsProcessed { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:383](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L383) |  |
 
 ## AlignmentResponse
 
 Qualified name: <code>Meridian.Ui.Services.AlignmentResponse</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:585](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L585).
+Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:574](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L574).
 
 Carries API alignment artifact details, record and gap totals, duration, and metadata.
 
@@ -732,20 +739,20 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:587](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L587) |  |
-| <code>public string? OutputPath { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:588](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L588) |  |
-| <code>public long TotalSourceRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:589](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L589) |  |
-| <code>public long AlignedRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:590](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L590) |  |
-| <code>public int GapsDetected { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:591](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L591) |  |
-| <code>public int GapsFilled { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:592](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L592) |  |
-| <code>public double DurationSeconds { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:593](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L593) |  |
-| <code>public AlignmentMetadata? Metadata { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:594](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L594) |  |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:576](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L576) |  |
+| <code>public string? OutputPath { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:577](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L577) |  |
+| <code>public long TotalSourceRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:578](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L578) |  |
+| <code>public long AlignedRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:579](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L579) |  |
+| <code>public int GapsDetected { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:580](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L580) |  |
+| <code>public int GapsFilled { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:581](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L581) |  |
+| <code>public double DurationSeconds { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:582](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L582) |  |
+| <code>public AlignmentMetadata? Metadata { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:583](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L583) |  |
 
 ## AlignmentResult
 
 Qualified name: <code>Meridian.Ui.Services.AlignmentResult</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:469](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L469).
+Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:455](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L455).
 
 Reports alignment success, output location, record and gap counts, duration, and metadata.
 
@@ -757,22 +764,23 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:471](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L471) |  |
-| <code>public bool IsServiceUnavailable { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:477](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L477) | True when the host reported that alignment is not implemented (HTTP 501), so retrying with different options cannot succeed. |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:479](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L479) |  |
-| <code>public string? OutputPath { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:480](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L480) |  |
-| <code>public long TotalSourceRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:481](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L481) |  |
-| <code>public long AlignedRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:482](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L482) |  |
-| <code>public int GapsDetected { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:483](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L483) |  |
-| <code>public int GapsFilled { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:484](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L484) |  |
-| <code>public TimeSpan Duration { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:485](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L485) |  |
-| <code>public AlignmentMetadata? Metadata { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:486](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L486) |  |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:457](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L457) |  |
+| <code>public bool IsServiceUnavailable { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:463](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L463) | True when the host reported that alignment is not implemented (HTTP 501), so retrying with different options cannot succeed. |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:465](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L465) |  |
+| <code>public string? OutputPath { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:466](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L466) |  |
+| <code>public long TotalSourceRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:467](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L467) |  |
+| <code>public long AlignedRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:468](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L468) |  |
+| <code>public int GapsDetected { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:469](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L469) |  |
+| <code>public int GapsFilled { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:470](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L470) |  |
+| <code>public TimeSpan Duration { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:471](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L471) |  |
+| <code>public AlignmentMetadata? Metadata { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:472](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L472) |  |
+| <code>public TimeSeriesAlignmentSummary? Summary { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:473](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L473) |  |
 
 ## AlignmentValidationResult
 
 Qualified name: <code>Meridian.Ui.Services.AlignmentValidationResult</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:573](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L573).
+Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:562](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L562).
 
 Collects errors and warnings from validating time-series alignment options.
 
@@ -784,9 +792,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool IsValid { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:575](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L575) |  |
-| <code>public List&lt;string&gt; Errors { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:576](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L576) |  |
-| <code>public List&lt;string&gt; Warnings { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:577](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L577) |  |
+| <code>public bool IsValid { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:564](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L564) |  |
+| <code>public List&lt;string&gt; Errors { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:565](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L565) |  |
+| <code>public List&lt;string&gt; Warnings { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:566](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L566) |  |
 
 ## AllProvidersStatusResponse
 
@@ -1195,13 +1203,14 @@ Declared public members:
 | <code>public async Task&lt;ApiResponse&lt;string&gt;&gt; GetTextWithResponseAsync(string endpoint, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:221](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L221) | Downloads a text response through the current authenticated session. |
 | <code>public async Task&lt;T?&gt; PostAsync&lt;T&gt;(string endpoint, object? body = null, CancellationToken ct = default) where T : class;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:235](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L235) | Performs a POST request with JSON body. Returns null ONLY for 404 (not found) and — for legacy compatibility — on other failures, which are now logged. New callers must use PostWithResponseAsync{T} so failures stay distinguishable from absent data; the CI caller ratchet (check-apiclient-callers.py) blocks new call sites. |
 | <code>public async Task&lt;ApiResponse&lt;T&gt;&gt; PostWithResponseAsync&lt;T&gt;(string endpoint, object? body = null, CancellationToken ct = default, HttpClient? customClient = null) where T : class;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:251](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L251) | Performs a POST request and returns the full response. |
-| <code>public async Task&lt;ApiResponse&lt;T&gt;&gt; PutWithResponseAsync&lt;T&gt;(string endpoint, object? body = null, CancellationToken ct = default) where T : class;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:272](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L272) | Sends a PUT request using the current authenticated session and CSRF protection. |
-| <code>public async Task&lt;ApiResponse&lt;T&gt;&gt; PostMultipartWithResponseAsync&lt;T&gt;(string endpoint, MultipartFormDataContent form, CancellationToken ct = default) where T : class;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:281](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L281) | Uploads a multipart form using the current authenticated session and CSRF protection. |
-| <code>public async Task&lt;ApiResponse&lt;T&gt;&gt; DeleteWithResponseAsync&lt;T&gt;(string endpoint, CancellationToken ct = default) where T : class;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:294](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L294) | Sends a DELETE request and returns the API response. |
-| <code>public async Task&lt;bool&gt; AuthenticateAsync(string username, string password, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:341](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L341) | Establishes the server login session shared by every &quot;api-client&quot; consumer (audit finding P8). On success the server&#x27;s Set-Cookie responses (mdc-session + mdc-csrf) land in ApiClientSession.Cookies, so subsequent API calls are authenticated — letting endpoints stamp the session actor over client-supplied values — and mutations carry the CSRF header. Mirrors LifecycleControlClient.AuthenticateAsync, which manages its own separate session. |
-| <code>public async Task SignOutAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:377](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L377) | Ends the server login session (best effort) and expires the locally held session cookies so no further request can ride the old session. |
-| <code>public async Task&lt;ServiceHealthResult&gt; CheckHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:520](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L520) | Checks if the service is reachable. |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:584](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L584) |  |
+| <code>public async Task&lt;ApiResponse&lt;byte[]&gt;&gt; PostArtifactAsync(string endpoint, object body, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:270](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L270) | Downloads authoritative bytes with one captured authenticated endpoint session. |
+| <code>public async Task&lt;ApiResponse&lt;T&gt;&gt; PutWithResponseAsync&lt;T&gt;(string endpoint, object? body = null, CancellationToken ct = default) where T : class;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:289](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L289) | Sends a PUT request using the current authenticated session and CSRF protection. |
+| <code>public async Task&lt;ApiResponse&lt;T&gt;&gt; PostMultipartWithResponseAsync&lt;T&gt;(string endpoint, MultipartFormDataContent form, CancellationToken ct = default) where T : class;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:298](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L298) | Uploads a multipart form using the current authenticated session and CSRF protection. |
+| <code>public async Task&lt;ApiResponse&lt;T&gt;&gt; DeleteWithResponseAsync&lt;T&gt;(string endpoint, CancellationToken ct = default) where T : class;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:311](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L311) | Sends a DELETE request and returns the API response. |
+| <code>public async Task&lt;bool&gt; AuthenticateAsync(string username, string password, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:358](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L358) | Establishes the server login session shared by every &quot;api-client&quot; consumer (audit finding P8). On success the server&#x27;s Set-Cookie responses (mdc-session + mdc-csrf) land in ApiClientSession.Cookies, so subsequent API calls are authenticated — letting endpoints stamp the session actor over client-supplied values — and mutations carry the CSRF header. Mirrors LifecycleControlClient.AuthenticateAsync, which manages its own separate session. |
+| <code>public async Task SignOutAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:394](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L394) | Ends the server login session (best effort) and expires the locally held session cookies so no further request can ride the old session. |
+| <code>public async Task&lt;ServiceHealthResult&gt; CheckHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:537](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L537) | Checks if the service is reachable. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:601](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L601) |  |
 
 ## ApiClientSession
 

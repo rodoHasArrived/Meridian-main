@@ -8,6 +8,7 @@ using Meridian.Core.Serialization;
 using Meridian.Contracts.Catalog;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
+using Meridian.Storage.Policies;
 using Serilog;
 
 namespace Meridian.Storage.Services;
@@ -762,6 +763,22 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
                     entry.Date = date;
                 }
                 break;
+        }
+
+        // Historical Parquet v2 keeps the sink's symbol/type/date filename in every directory
+        // convention. The schema marker is not part of either the logical event type or date.
+        if (filePath.EndsWith(".parquet", StringComparison.OrdinalIgnoreCase))
+        {
+            var barParts = fileName.Split('_');
+            if (barParts.Length == 4 &&
+                barParts[1].Equals("historicalbar", StringComparison.OrdinalIgnoreCase) &&
+                barParts[2].Equals("v2", StringComparison.OrdinalIgnoreCase) &&
+                TryParseDate(barParts[3], out var barDate))
+            {
+                entry.Symbol = StoragePathSegmentCodec.Decode(barParts[0]);
+                entry.EventType = "historicalbar";
+                entry.Date = barDate;
+            }
         }
     }
 

@@ -24,6 +24,27 @@ export function StrategyReplayProvenance({ evidence, receipt, loading }: {
 }) {
   return <section aria-label="Replay data sources" className="mt-4 rounded-md border border-border/70 bg-secondary/20 px-4 py-3">
     <h3 className="text-sm font-semibold text-foreground">Replay data sources</h3>
+    <section aria-label="Replay data-quality assessment" className="mt-3 text-sm">
+      {loading ? <p role="status">Loading retained data-quality assessment…</p> : evidence?.dataQualityWarnings == null ? (
+        <p role="status" className="text-muted-foreground">Data-quality coverage was not retained for this run. Repair, gap-fill and quality assessment status remain unknown.</p>
+      ) : evidence.dataQualityWarnings.length === 0 ? (
+        <p>No source-quality warnings were reported for the retained inputs.</p>
+      ) : <ul className="space-y-3">
+        {evidence.dataQualityWarnings.map((warning) => <li key={warning.kind} className="rounded border border-warning/30 bg-warning/10 p-3">
+          <p className="font-semibold">{({ Repaired: "Repaired data", GapFilled: "Gap-filled data", LowQuality: "Low-quality data", Unknown: "Unknown source quality" } as Record<string, string>)[warning.kind] ?? warning.kind}</p>
+          <p>{warning.message} Affected fills: {formatCount(warning.affectedFillCount)}.</p>
+          {warning.evidence.length > 0 ? <TechnicalDetails label="Supporting source assessments" className="mt-2">
+            <ul className="space-y-3">{warning.evidence.map((source, index) => <li key={index} className="break-all text-xs">
+              <p>Provider: {source.providerId ?? "Unknown"} · Observed: {source.observedAt ?? "Unknown"}</p>
+              <p>Event: {source.eventReference ?? "Unknown"} · Dataset: {source.datasetId ?? "Unknown"} · Revision: {source.backfillRevisionId ?? "Unknown"}</p>
+              <p>Content hash: {source.contentHash ?? "Unknown"} · Repair receipt: {source.repairReceiptId ?? "Unknown"}</p>
+              <p>Repaired: {source.repaired == null ? "Unknown" : source.repaired ? "Yes" : "No"} · Gap-filled: {source.gapFilled == null ? "Unknown" : source.gapFilled ? "Yes" : "No"}</p>
+              <p>Quality score: {source.qualityScore ?? "Unassessed"} · Retained threshold: {source.qualityThreshold ?? "Unknown"} · Assessed: {source.qualityAssessedAt ?? "Unknown"} · Assessment range: {source.assessmentFrom ?? "Unknown"} to {source.assessmentTo ?? "Unknown"}</p>
+            </li>)}</ul>
+          </TechnicalDetails> : null}
+        </li>)}
+      </ul>}
+    </section>
     {evidence?.sourceMix.length ? (
       <div className="mt-2">
         <DenseDataTable columns={sourceColumns} rows={evidence.sourceMix}

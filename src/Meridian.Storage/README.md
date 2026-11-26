@@ -6,10 +6,29 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-20
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.Storage
+
+Backfill batch receipts optionally retain market-data input evidence. The existing content address
+binds repair purpose, repair operation identity and quality snapshot before rows receive that
+revision ID. Tampering with those facts invalidates the receipt. Older receipts omit the optional
+member and keep their existing content addresses; absent quality or repair status remains unknown.
+
+Historical bar evidence retains the precise OHLC price basis through JSON, batch row digests and
+Parquet. Known basis declarations change row identity even when numeric prices coincide; Unknown
+keeps the legacy row digest. Parquet historical-bar v2 files retain readable `PriceBasis` plus the
+legacy flag, while existing v1 files remain unchanged and discoverable. Catalog date parsing accepts
+both filename generations. Structured research exports retain basis companions with exported OHLC;
+legacy data is explicitly Unknown. See the [migration notes](../../docs/development/provider-implementation.md#historical-price-bases).
+Security Master projection storage composes one `SecurityTermsStorageContribution` for each of
+the 32 asset classes through `SecurityTermsStorageModules` (`SecurityMaster/AssetPacks/`). A
+declarative class contributes its `SecurityTermsProjectionDescriptor`; Option and CustomAsset
+contribute their existing hand-written writers with a stated reason. `SecurityTermsProjectionRegistry` keeps its public members and fan-out
+order over these contributions. Composition refuses a catalog class without a contribution, a
+duplicate, or a disposition that differs from the catalog's `ProjectionKind`. Tables, columns and
+migrations are unchanged. `SecurityTermsStorageModuleTests` covers the composition.
 
 The backfill status store exposes a legacy summary only for a raw snapshot written without a
 provenance receipt. Reads of retained results continue to enforce tenant visibility.
@@ -825,10 +844,7 @@ protected; collisions refuse before persistence.
 The live registry selects one deterministic representative for each normalized alias/provider/source
 identity, preferring the supplied active state so expired or disabled windows cannot hide a renewed
 alias. Complete temporal history remains in Security Master's append-only alias revisions.
-Unknown legacy identifier ownership is never inferred from matching text:
-`ISecurityMasterLegacyIdentifierCleanupWriter` validates an
-explicit evidence-bound manifest against a registry fingerprint before atomically applying it and
-retaining an idempotent receipt. Resolver rebuilds serialize their read/build/publication step so an
+Resolver rebuilds serialize their read/build/publication step so an
 older rebuild cannot restore a superseded alias after a newer reconciliation.
 
 New WAL segments use `MDCWAL02|2` with BLAKE3-256 over length-framed, canonically
@@ -1186,7 +1202,7 @@ Strict PostgreSQL account operations require caller authority for account creati
 ownership for updates, balance and statement ingestion, reconciliation, sync, and margin records.
 Child reads check the same account owner. Write transactions retain the owner lock and reject
 forged batch, reconciliation, and sync identities. Ordinary writes cannot claim unattributed legacy
-accounts; transactional legacy import preserves them for reviewed backfill.
+accounts; they stay available for reviewed backfill.
 
 `PostgresFundStructureTenantBackfillStore` locks retained ledger ownership evidence, the fund
 graph, ledger books and periods, close workflows, and configured fund accounts in a stable order.
@@ -1419,7 +1435,7 @@ same connection. Separate page requests do not share a database snapshot when pr
 
 Portfolio Records creates accounts with `IFundAccountStore.TryCreateAccountAsync`, an atomic
 insert-only operation. A duplicate account ID returns false and retains the existing record;
-account updates and reviewed legacy imports continue to use the separate upsert operation.
+account updates continue to use the separate upsert operation.
 Both paths retain the store's tenant ownership checks.
 Ordinary account lookups and queries reject unresolved tenant scope before opening a database
 connection; the explicitly authorized query across tenants retains its separate admission path.
@@ -1462,6 +1478,12 @@ requeue an unpublished occurrence with the same execution identity, and an expir
 marked running is retained as an interrupted/ambiguous failure instead of being replayed blindly.
 
 ### Market data and evidence
+
+The alignment archive read opens closed JSONL captures, including compressed partitions. It
+refuses corrupt data and limits file count, decoded text, candidate events and read time. Its
+record IDs identify the logical relative archive path, line number and SHA-256 digest of the
+line text so equivalent plain and gzip copies carry the same lineage.
+
 
 Market data and evidence records enter through storage sinks. File-backed writes use the
 write-ahead log or atomic file helpers so a crash is less likely to leave a half-written record.
@@ -1532,16 +1554,11 @@ off to the side, persists that candidate through `AtomicFileWriter`, and publish
 the durable replacement succeeds. Conflict, cancellation, or write failure leaves both the live
 registry and migration marker unchanged.
 
-Fund-account and fund-structure legacy JSON imports are bounded and replay-safe. Startup submits a
-typed snapshot to the PostgreSQL store, which takes a schema-scoped advisory lock and writes all
-rows plus a domain-specific source SHA-256 receipt in one serializable transaction. Fund-account
-imports include statement batches and lines, and fund-structure emptiness covers every imported
-entity table. Fund structure also persists the legacy linked-account identity set independently
-from active links and assignments, so disconnected account nodes keep their type and uniqueness
-semantics after restart. After `Imported` or receipt-backed `AlreadyImported`, startup atomically
-claims and re-hashes the exact source bytes before archival; a pending claim is recoverable after
-process failure. Cancellation, rollback, a hash mismatch, or a non-empty store retains the source
-for operator recovery.
+Startup no longer imports or archives legacy fund-account or fund-structure JSON snapshots; it only
+runs the schema migrations and marks the store ready. The `legacy_import_receipt` tables remain in
+the schema through their migrations but are no longer read or written. Fund structure still
+persists the linked-account identity set independently from active links and assignments, so
+disconnected account nodes keep their type and uniqueness semantics after restart.
 
 ### Accounting and Security Master evidence
 

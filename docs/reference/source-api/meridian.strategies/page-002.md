@@ -105,7 +105,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.BankInternalCashReconciliationSourceAdapter</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:128](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L128).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:153](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L153).
 
 Maps available bank transactions into internal cash movements for reconciliation.
 
@@ -117,8 +117,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BankInternalCashReconciliationSourceAdapter(IBankTransactionSource? bankTransactionSource = null);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:132](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L132) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationCashMovementInput&gt;&gt; GetCashMovementsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:137](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L137) |  |
+| <code>public BankInternalCashReconciliationSourceAdapter(IBankTransactionSource? bankTransactionSource = null);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:157](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L157) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationCashMovementInput&gt;&gt; GetCashMovementsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:162](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L162) |  |
 
 ## BookReceiptReversalCommand
 
@@ -167,7 +167,7 @@ public sealed record CrossStrategyExposureReport(decimal GrossExposure, decimal 
 
 Qualified name: <code>Meridian.Strategies.Services.ExternalStatementReconciliationSourceAdapter</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:165](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L165).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:190](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L190).
 
 Delegates reconciliation statement retrieval to the configured external statement source.
 
@@ -179,8 +179,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ExternalStatementReconciliationSourceAdapter(IExternalStatementSource externalStatementSource);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:169](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L169) |  |
-| <code>public Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:174](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L174) |  |
+| <code>public ExternalStatementReconciliationSourceAdapter(IExternalStatementSource externalStatementSource);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:194](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L194) |  |
+| <code>public Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:199](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L199) |  |
 
 ## FileReconciliationBreakQueueRepository
 
@@ -443,7 +443,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.IExternalStatementReconciliationSourceAdapter</code>. Kind: `interface`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:73](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L73).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:84](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L84).
 
 Provides normalized external statement rows to a reconciliation run.
 
@@ -455,13 +455,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:75](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L75) |  |
+| <code>Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:86](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L86) |  |
 
 ## IExternalStatementSource
 
 Qualified name: <code>Meridian.Strategies.Services.IExternalStatementSource</code>. Kind: `interface`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:65](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L65).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:76](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L76).
 
 Retrieves external statement rows for a requested reconciliation scope.
 
@@ -473,13 +473,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:67](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L67) |  |
+| <code>Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:78](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L78) |  |
 
 ## IInternalCashReconciliationSourceAdapter
 
 Qualified name: <code>Meridian.Strategies.Services.IInternalCashReconciliationSourceAdapter</code>. Kind: `interface`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:57](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L57).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:68](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L68).
 
 Retrieves internal cash movements for a requested reconciliation scope.
 
@@ -491,7 +491,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;ReconciliationCashMovementInput&gt;&gt; GetCashMovementsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:59](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L59) |  |
+| <code>Task&lt;IReadOnlyList&lt;ReconciliationCashMovementInput&gt;&gt; GetCashMovementsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:70](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L70) |  |
 
 ## InMemoryReconciliationRunRepository
 
@@ -697,9 +697,13 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;ReconciliationRunDetail?&gt; RunAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:8](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L8) |  |
-| <code>Task&lt;ReconciliationRunDetail?&gt; GetByIdAsync(string reconciliationRunId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:10](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L10) |  |
-| <code>Task&lt;ReconciliationRunDetail?&gt; GetLatestForRunAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:12](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L12) |  |
-| <code>Task&lt;IReadOnlyList&lt;ReconciliationRunSummary&gt;&gt; GetHistoryForRunAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:14](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L14) |  |
+| <code>Task&lt;ReconciliationRunDetail?&gt; RunAsync(ReconciliationRunRequest request, StrategyRunReadScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:11](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L11) | Runs within trusted request scope. Legacy implementations without scoped reads fail closed. |
+| <code>Task&lt;ReconciliationRunDetail?&gt; GetByIdAsync(string reconciliationRunId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:14](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L14) |  |
+| <code>Task&lt;ReconciliationRunDetail?&gt; GetByIdAsync(string reconciliationRunId, StrategyRunReadScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:16](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L16) |  |
+| <code>Task&lt;ReconciliationRunDetail?&gt; GetLatestForRunAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:19](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L19) |  |
+| <code>Task&lt;ReconciliationRunDetail?&gt; GetLatestForRunAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:21](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L21) |  |
+| <code>Task&lt;IReadOnlyList&lt;ReconciliationRunSummary&gt;&gt; GetHistoryForRunAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:24](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L24) |  |
+| <code>Task&lt;IReadOnlyList&lt;ReconciliationRunSummary&gt;&gt; GetHistoryForRunAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:26](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L26) |  |
 
 ## IReconciliationSlaCalendar
 
@@ -755,7 +759,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.ISecurityActualCashActivitySource</code>. Kind: `interface`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:159](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L159).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:167](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L167).
 
 Indicates that no Security Master accounting-event request is available from the configured source.
 
@@ -767,7 +771,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;SecurityActualCashActivity&gt;&gt; GetActualActivityAsync(IReadOnlyList&lt;SecurityMasterAccountingPosition&gt; positions, DateOnly periodStart, DateOnly periodEnd, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:166](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L166) | Returns income and principal cash reported for positions with a pay date inside periodStart..periodEnd (inclusive). Rows the source cannot attribute to a held security and account are omitted, never guessed. |
+| <code>Task&lt;IReadOnlyList&lt;SecurityActualCashActivity&gt;&gt; GetActualActivityAsync(IReadOnlyList&lt;SecurityMasterAccountingPosition&gt; positions, DateOnly periodStart, DateOnly periodEnd, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:174](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L174) | Returns income and principal cash reported for positions with a pay date inside periodStart..periodEnd (inclusive). Rows the source cannot attribute to a held security and account are omitted, never guessed. |
 
 ## ISecurityMasterAccountingEventService
 
@@ -846,7 +850,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.IStrategyLedgerReconciliationSourceAdapter</code>. Kind: `interface`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:45](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L45).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:56](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L56).
 
 Projects a strategy run&#x27;s ledger snapshot into normalized reconciliation input.
 
@@ -858,13 +862,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ReconciliationLedgerInput? Adapt(StrategyRunDetail detail);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:47](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L47) |  |
+| <code>ReconciliationLedgerInput? Adapt(StrategyRunDetail detail);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:58](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L58) |  |
 
 ## IStrategyPortfolioReconciliationSourceAdapter
 
 Qualified name: <code>Meridian.Strategies.Services.IStrategyPortfolioReconciliationSourceAdapter</code>. Kind: `interface`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:51](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L51).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:62](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L62).
 
 Projects a strategy run&#x27;s portfolio snapshot into normalized reconciliation input.
 
@@ -876,7 +880,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ReconciliationPortfolioInput? Adapt(StrategyRunDetail detail);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:53](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L53) |  |
+| <code>ReconciliationPortfolioInput? Adapt(StrategyRunDetail detail);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:64](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L64) |  |
 
 ## IStrategyRunLedgerSource
 
@@ -895,6 +899,8 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;IReadOnlyLedger?&gt; ReadAsync(StrategyRunEntry run, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/IStrategyRunLedgerSource.cs:10](../../../../src/Meridian.Strategies/Services/IStrategyRunLedgerSource.cs#L10) |  |
+| <code>IChartOfAccounts? GetPostingChart(IReadOnlyLedger ledger, DateTimeOffset? asOf = null) =&gt; …;</code> | [src/Meridian.Strategies/Services/IStrategyRunLedgerSource.cs:14](../../../../src/Meridian.Strategies/Services/IStrategyRunLedgerSource.cs#L14) | Explicit retained posting-role registrations for this selected ledger population. |
+| <code>string? GetBalanceComparisonUnavailableReason(IReadOnlyLedger ledger) =&gt; …;</code> | [src/Meridian.Strategies/Services/IStrategyRunLedgerSource.cs:17](../../../../src/Meridian.Strategies/Services/IStrategyRunLedgerSource.cs#L17) | Override with null only when this source proves a complete whole-account population. |
 
 ## JsonlReconciliationGovernanceAuditStore
 
@@ -937,9 +943,9 @@ Declared public members:
 | <code>public LedgerSummary? BuildSummary(StrategyRunEntry entry) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:26](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L26) |  |
 | <code>public LedgerSummary? BuildSummary(StrategyRunEntry entry, DateTimeOffset asOf) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:29](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L29) |  |
 | <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:32](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L32) |  |
-| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct, IReadOnlyLedger? postedLedger) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:35](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L35) |  |
+| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct, IReadOnlyLedger? postedLedger, IChartOfAccounts? postingChart = null) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:35](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L35) |  |
 | <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:39](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L39) |  |
-| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf, CancellationToken ct, IReadOnlyLedger? postedLedger) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:42](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L42) |  |
+| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf, CancellationToken ct, IReadOnlyLedger? postedLedger, IChartOfAccounts? postingChart = null) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:42](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L42) |  |
 | <code>public IReadOnlyList&lt;StrategyRunContinuityWarning&gt; BuildContinuityWarnings(string runId, LedgerSummary? summary);</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:78](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L78) |  |
 
 ## NetSymbolPosition
@@ -958,7 +964,7 @@ public sealed record NetSymbolPosition(string Symbol, decimal NetQuantity, decim
 
 Qualified name: <code>Meridian.Strategies.Services.NullExternalStatementSource</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:189](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L189).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:214](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L214).
 
 Supplies an empty external statement population when no statement provider is configured.
 
@@ -970,13 +976,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:191](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L191) |  |
+| <code>public Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:216](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L216) |  |
 
 ## NullSecurityMasterAccountingEventSourceAdapter
 
 Qualified name: <code>Meridian.Strategies.Services.NullSecurityMasterAccountingEventSourceAdapter</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:173](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L173).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:181](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L181).
 
 ```csharp
 public sealed class NullSecurityMasterAccountingEventSourceAdapter : ISecurityMasterAccountingEventSourceAdapter
@@ -986,13 +992,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Task&lt;SecurityMasterAccountingEventRequest?&gt; BuildRequestAsync(StrategyRunDetail detail, ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:175](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L175) |  |
+| <code>public Task&lt;SecurityMasterAccountingEventRequest?&gt; BuildRequestAsync(StrategyRunDetail detail, ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:183](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L183) |  |
 
 ## PortfolioReadService
 
 Qualified name: <code>Meridian.Strategies.Services.PortfolioReadService</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Services/PortfolioReadService.cs:10](../../../../src/Meridian.Strategies/Services/PortfolioReadService.cs#L10).
+Source: [src/Meridian.Strategies/Services/PortfolioReadService.cs:11](../../../../src/Meridian.Strategies/Services/PortfolioReadService.cs#L11).
 
 Builds workstation-facing portfolio read models from recorded run results.
 
@@ -1004,9 +1010,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string PortfolioSeam = &quot;portfolio&quot;;</code> | [src/Meridian.Strategies/Services/PortfolioReadService.cs:12](../../../../src/Meridian.Strategies/Services/PortfolioReadService.cs#L12) |  |
-| <code>public PortfolioReadService();</code> | [src/Meridian.Strategies/Services/PortfolioReadService.cs:15](../../../../src/Meridian.Strategies/Services/PortfolioReadService.cs#L15) |  |
-| <code>public PortfolioReadService(ISecurityReferenceLookup securityReferenceLookup);</code> | [src/Meridian.Strategies/Services/PortfolioReadService.cs:19](../../../../src/Meridian.Strategies/Services/PortfolioReadService.cs#L19) |  |
-| <code>public PortfolioSummary? BuildSummary(StrategyRunEntry entry) =&gt; …;</code> | [src/Meridian.Strategies/Services/PortfolioReadService.cs:24](../../../../src/Meridian.Strategies/Services/PortfolioReadService.cs#L24) |  |
-| <code>public async Task&lt;PortfolioSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/PortfolioReadService.cs:27](../../../../src/Meridian.Strategies/Services/PortfolioReadService.cs#L27) |  |
-| <code>public IReadOnlyList&lt;StrategyRunContinuityWarning&gt; BuildContinuityWarnings(string runId, PortfolioSummary? summary);</code> | [src/Meridian.Strategies/Services/PortfolioReadService.cs:56](../../../../src/Meridian.Strategies/Services/PortfolioReadService.cs#L56) |  |
+| <code>public const string PortfolioSeam = &quot;portfolio&quot;;</code> | [src/Meridian.Strategies/Services/PortfolioReadService.cs:13](../../../../src/Meridian.Strategies/Services/PortfolioReadService.cs#L13) |  |
+| <code>public PortfolioReadService();</code> | [src/Meridian.Strategies/Services/PortfolioReadService.cs:16](../../../../src/Meridian.Strategies/Services/PortfolioReadService.cs#L16) |  |
+| <code>public PortfolioReadService(ISecurityReferenceLookup securityReferenceLookup);</code> | [src/Meridian.Strategies/Services/PortfolioReadService.cs:20](../../../../src/Meridian.Strategies/Services/PortfolioReadService.cs#L20) |  |
+| <code>public PortfolioSummary? BuildSummary(StrategyRunEntry entry) =&gt; …;</code> | [src/Meridian.Strategies/Services/PortfolioReadService.cs:25](../../../../src/Meridian.Strategies/Services/PortfolioReadService.cs#L25) |  |
+| <code>public async Task&lt;PortfolioSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/PortfolioReadService.cs:28](../../../../src/Meridian.Strategies/Services/PortfolioReadService.cs#L28) |  |
+| <code>public IReadOnlyList&lt;StrategyRunContinuityWarning&gt; BuildContinuityWarnings(string runId, PortfolioSummary? summary);</code> | [src/Meridian.Strategies/Services/PortfolioReadService.cs:57](../../../../src/Meridian.Strategies/Services/PortfolioReadService.cs#L57) |  |

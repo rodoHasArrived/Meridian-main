@@ -244,7 +244,9 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
                         AdjustedHigh: (decimal)bar.High,
                         AdjustedLow: (decimal)bar.Low,
                         AdjustedClose: (decimal)bar.Close,
-                        AdjustedVolume: ConvertVolume(bar.Volume)
+                        AdjustedVolume: ConvertVolume(bar.Volume),
+                        PriceBasis: HistoricalPriceBasis.FullyAdjusted,
+                        AdjustedPriceBasis: HistoricalPriceBasis.FullyAdjusted
                     ));
                 }
 

@@ -504,12 +504,6 @@ public sealed class ReportingRunStreamEndpointTests
             CancellationToken cancellationToken) =>
             throw new NotSupportedException();
 
-        public Task<IReadOnlyList<ReportingOutputManifest>> ExecuteDueSchedulesAsync(
-            IEnumerable<ReportingScheduleContract> schedules,
-            DateTimeOffset nowUtc,
-            CancellationToken cancellationToken) =>
-            throw new NotSupportedException();
-
         public ReportingOutputManifest? GetManifest(string runId) => null;
 
         public ReportingOutputManifest? GetManifest(

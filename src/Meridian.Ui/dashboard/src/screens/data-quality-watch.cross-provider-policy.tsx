@@ -75,7 +75,7 @@ export function CrossProviderTolerancePanel({
   const [applied, setApplied] = useState<ConfigurationApplyMessage | null>(null);
   const [newAssetClass, setNewAssetClass] = useState("");
   const [preview, setPreview] = useState<CrossProviderTolerancePreviewResponse | null>(null);
-  const [previewInput, setPreviewInput] = useState({ symbol: "SPY", baseline: "", comparison: "", assetClass: "" });
+  const [previewInput, setPreviewInput] = useState({ symbol: "SPY", baseline: "", comparison: "" });
   const operation = useRef(0);
   const activeRequest = useRef<AbortController | null>(null);
 
@@ -146,8 +146,7 @@ export function CrossProviderTolerancePanel({
         baselineProvider: previewInput.baseline,
         comparisonProvider: previewInput.comparison,
         days: bounds?.maxPreviewDays ?? 30,
-        policy: draft,
-        assetClass: previewInput.assetClass.trim() || null
+        policy: draft
       }, { signal: controller.signal });
       if (version === operation.current) setPreview(result);
     } catch (failure) {
@@ -209,16 +208,22 @@ export function CrossProviderTolerancePanel({
           <fieldset disabled={busy} className="space-y-2 rounded border p-3" aria-label="Preview draft tolerances">
             <legend className="text-sm font-medium">Preview: what would this draft have flagged?</legend>
             {snapshot.previewProviders.length < 2 ? <p className="text-sm text-muted-foreground">Preview needs two configured historical providers.</p> : <>
-              <div className="grid gap-2 md:grid-cols-4">
+              <div className="grid gap-2 md:grid-cols-3">
                 <label className="text-sm">Preview symbol<Input required maxLength={32} value={previewInput.symbol} onChange={event => setPreviewInput({ ...previewInput, symbol: event.target.value })} /></label>
                 <label className="text-sm">Baseline provider<Select value={previewInput.baseline} onChange={event => setPreviewInput({ ...previewInput, baseline: event.target.value })}>{snapshot.previewProviders.map(name => <option key={name} value={name}>{name}</option>)}</Select></label>
                 <label className="text-sm">Comparison provider<Select value={previewInput.comparison} onChange={event => setPreviewInput({ ...previewInput, comparison: event.target.value })}>{snapshot.previewProviders.map(name => <option key={name} value={name}>{name}</option>)}</Select></label>
-                <label className="text-sm">Asset class (optional)<Input value={previewInput.assetClass} placeholder="equity" onChange={event => setPreviewInput({ ...previewInput, assetClass: event.target.value })} /></label>
               </div>
               <p className="text-xs text-muted-foreground">Fetches the last {bounds?.maxPreviewDays ?? 30} days of daily bars from both providers: about {snapshot.providerCallsPerPreview} rate-limited provider calls per preview.</p>
               <Button type="button" variant="outline" disabled={busy || !previewInput.symbol.trim() || !previewInput.baseline || previewInput.baseline === previewInput.comparison} onClick={() => void runPreview()}>Preview last {bounds?.maxPreviewDays ?? 30} days</Button>
               {preview ? <div role="status" className="space-y-1 text-sm">
                 <p className="font-medium">Would have flagged {preview.flaggedDays} of the last {bounds?.maxPreviewDays ?? 30} days for {preview.symbol} ({preview.baselineProvider} vs {preview.comparisonProvider}).</p>
+                <p className="text-muted-foreground">{preview.resolvedAssetClass ? `Registry asset class ${preview.resolvedAssetClass}` : "Unknown asset class uses base tolerances"}</p>
+                <p className="text-muted-foreground">
+                  Daily close tolerance {formatPercent(preview.tolerances.backfillCloseTolerancePercent, { maximumFractionDigits: 3 })}
+                  {" · "}{preview.tolerances.volumeMode === "Off"
+                    ? "Volume comparison off"
+                    : `Volume tolerance ${formatPercent(preview.tolerances.volumeTolerancePercent, { maximumFractionDigits: 3 })}${preview.tolerances.volumeMode === "Informational" ? " (informational)" : ""}`}
+                </p>
                 {preview.informationalDays > 0 ? <p className="text-muted-foreground">{preview.informationalDays} more day(s) differ only in volume and would be informational.</p> : null}
                 {preview.missingSessions > 0 ? <p className="text-muted-foreground">{preview.missingSessions} session(s) were missing from one provider and were not compared.</p> : null}
                 {preview.providerErrors.length > 0 ? <p className="text-warning">Provider errors: {preview.providerErrors.join("; ")}</p> : null}

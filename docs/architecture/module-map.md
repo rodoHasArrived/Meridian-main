@@ -106,9 +106,7 @@ writes and grants no posting, approval, publication, or close authority.
 - A namespace does not always name its owning project. `src/Meridian.ProviderSdk` declares thirty
   files in `Meridian.Infrastructure.*` namespaces, kept because plugin discovery and compiled
   provider plugins bind to those full type names; see the change rules in
-  `src/Meridian.ProviderSdk/README.md`. `src/Meridian.Contracts/SecurityMaster/Compatibility/`
-  holds two files of `[Obsolete]` bridge types in `Meridian.Application.SecurityMaster*` so existing
-  implementations keep their type identity. Find a type's owner by its file path, not its namespace.
+  `src/Meridian.ProviderSdk/README.md`. Find a type's owner by its file path, not its namespace.
 
 ## OMS Runtime Ownership and Lifecycle
 

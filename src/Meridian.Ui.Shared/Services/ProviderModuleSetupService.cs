@@ -194,7 +194,8 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
 
-        var result = await MutateConfigAsync(cfg =>
+        // Startup rebuilds the provider graph. This response reports the saved revision and its pending changes.
+        return await MutateConfigAsync(cfg =>
         {
             var modules = cfg.ProviderModules?.Modules is not null
                 ? new Dictionary<string, ProviderModuleSettings>(cfg.ProviderModules.Modules, StringComparer.OrdinalIgnoreCase)
@@ -205,11 +206,7 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
             modules[moduleId] = existing with { Enabled = enabled };
 
             return cfg with { ProviderModules = new ProviderModulesConfig(modules) };
-        }, ct).ConfigureAwait(false);
-
-        // Configuration rebuilds the provider graph at startup. The UI registry alone cannot
-        // confirm that independently composed or already connected consumers applied the edit.
-        return result.Success ? result with { ChangeStatus = _configStore.GetChangeStatus() } : result;
+        }, ct, includeChangeStatus: true).ConfigureAwait(false);
     }
 
     public async Task<ProviderModuleSetupResult> RemoveModuleAsync(string moduleId, CancellationToken ct = default)
@@ -382,12 +379,14 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
 
     private async Task<ProviderModuleSetupResult> MutateConfigAsync(
         Func<AppConfig, AppConfig> mutate,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool includeChangeStatus = false)
     {
         try
         {
-            await _configStore.UpdateAsync(mutate, ct).ConfigureAwait(false);
-            return ProviderModuleSetupResult.Ok();
+            var status = await _configStore.UpdateWithChangeStatusAsync(mutate, ct).ConfigureAwait(false);
+            var result = ProviderModuleSetupResult.Ok();
+            return includeChangeStatus ? result with { ChangeStatus = status } : result;
         }
         catch (OperationCanceledException)
         {

@@ -210,7 +210,9 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
                 Close: close,
                 Volume: item.Volume,
                 Source: Name,
-                SequenceNumber: sessionDate.DayNumber
+                SequenceNumber: sessionDate.DayNumber,
+                // This unofficial endpoint supplies no verified price-basis contract.
+                PriceBasis: HistoricalPriceBasis.Unknown
             ));
         }
 

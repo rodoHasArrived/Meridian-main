@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountCashProvenanceDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashProvenanceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:13](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L13).
+
+Source bytes and accepted retained review used for one forecast input.
+
+```csharp
+public sealed record AccountCashProvenanceDto(string SourceDomain, string SourceEntityId, string SourceContentHash, AccountCashEvidenceRole Role, RetainedEvidenceIdentityDto Evidence);
+```
+
+## AccountCashReceiptRevisionDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashReceiptRevisionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:92](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L92).
+
+An evidenced revised date never changes the retained original expectation.
+
+```csharp
+public sealed record AccountCashReceiptRevisionDto(string ExpectedFlowId, DateOnly ReceiptDate, AccountCashProvenanceDto Evidence);
+```
+
+## AccountCashResidualDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashResidualDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:94](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L94).
+
+```csharp
+public sealed record AccountCashResidualDto(string ExpectedFlowId, decimal ExpectedAmount, decimal ReceivedGrossAmount, decimal RemainingAmount, string Currency, DateOnly? OriginalReceiptDate, DateOnly? RevisedReceiptDate, bool IncludedInForecast, string Status);
+```
+
+## AccountSettledCashObservationDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AccountSettledCashObservationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:21](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L21).
+
+Opening means start-of-day settled cash; closing means end-of-day settled cash.
+
+```csharp
+public sealed record AccountSettledCashObservationDto(string AccountId, string BookId, DateOnly AsOfDate, decimal Amount, string Currency, bool IsSettled, AccountCashProvenanceDto Provenance);
+```
+
 ## AppendAssetAccountingLifecycleStageRequestDto
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto</code>. Kind: `record`.
@@ -769,50 +815,4 @@ Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:69](../../../
 
 ```csharp
 public sealed record BookReceiptCoverageDto(string Area, bool IsComplete, string? Reason = null);
-```
-
-## BookReceiptDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:35](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L35).
-
-Canonical retained cash evidence, distinct from posted accounting evidence.
-
-```csharp
-public sealed record BookReceiptDto(string ReceiptId, Guid SecurityId, DateOnly EffectiveDate, string Currency, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Amount, string SourceSystem, string SourceReference, IReadOnlyList<BookReceiptAllocationDto> Allocations, string? ReversesReceiptId, IReadOnlyList<string> EvidenceLinks, string? FlowType = null);
-```
-
-## BookReceiptExpectationDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptExpectationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:11](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L11).
-
-An accepted holding-sized expectation. ObligationKey is independent of terms and run revisions.
-
-```csharp
-public sealed record BookReceiptExpectationDto(string ObligationKey, Guid PositionId, Guid SecurityId, string DisplayName, string FlowType, DateOnly DueDate, string Currency, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Quantity, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal ExpectedAmount, Guid TermsVersionId, string TermsHash, Guid ProjectionRunId, Guid ProjectedCashFlowId, IReadOnlyList<string> EvidenceLinks, IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence);
-```
-
-## BookReceiptExpectationVersionDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptExpectationVersionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:82](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L82).
-
-```csharp
-public sealed record BookReceiptExpectationVersionDto(string VersionId, DateOnly FirstObservedDate, BookReceiptExpectationDto Expectation);
-```
-
-## BookReceiptPostingDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptPostingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:54](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L54).
-
-Posted journal evidence linked to a receipt allocation. Drafts are never postings. An inferred observation may leave ObligationKey empty when current projections no longer resolve a split; only a retained journal/receipt allocation can supply those historical legs.
-
-```csharp
-public sealed record BookReceiptPostingDto(string PostingId, string ReceiptId, string ObligationKey, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Amount, string Currency, string JournalEntryId, DateOnly EffectiveDate, bool IsReversed, IReadOnlyList<string> EvidenceLinks, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? JournalCashAmount = null, bool IsInferredAllocation = false);
 ```

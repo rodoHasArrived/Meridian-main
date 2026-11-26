@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterTermsCapabilityServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Application.Composition.SecurityMasterTermsCapabilityServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Composition/SecurityMasterTermsCapabilityHostedService.cs:85](../../../../src/Meridian.Application/Composition/SecurityMasterTermsCapabilityHostedService.cs#L85).
+
+```csharp
+public static class SecurityMasterTermsCapabilityServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddSecurityMasterTermsCapability(this IServiceCollection services, Func&lt;IServiceProvider, string&gt; dataRoot);</code> | [src/Meridian.Application/Composition/SecurityMasterTermsCapabilityHostedService.cs:98](../../../../src/Meridian.Application/Composition/SecurityMasterTermsCapabilityHostedService.cs#L98) | Registers the business-day calendar source for declared schedule conventions (ADR-025), read from files under &lt;dataRoot&gt;/calendars once at host start, and the hosted service that checks the persisted minimum capability for configured writers and logs the Security Master terms capability line. An unknown calendar id never falls back to weekends only. Idempotent; StorageFeatureRegistration calls this for every host composed through AddMarketDataServices, and the WPF desktop, which composes its own graph and still writes Security Master terms in-process, calls it directly. |
+
 ## ServiceCompositionRoot
 
 Qualified name: <code>Meridian.Application.Composition.ServiceCompositionRoot</code>. Kind: `class`.
@@ -424,12 +440,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderConfigReconciler(StreamingFailoverService failover, IEnumerable&lt;string&gt; liveProviderIds, AppConfig startupConfig, ILogger log, TimeSpan? handOffTimeout = null);</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:39](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L39) |  |
-| <code>public string Name =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:56](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L56) |  |
-| <code>public bool Handles(string path) =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:59](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L59) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ConfigurationApplyEntry&gt;&gt; ApplyAsync(AppConfig next, CancellationToken ct);</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:63](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L63) | Applies a configuration document observed by the file watcher. |
-| <code>public async Task&lt;IReadOnlyList&lt;ConfigurationApplyEntry&gt;&gt; ApplyAsync(AppConfig previous, AppConfig next, IReadOnlyList&lt;string&gt; changedPaths, CancellationToken ct);</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:79](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L79) |  |
-| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:319](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L319) |  |
+| <code>public ProviderConfigReconciler(StreamingFailoverService failover, IEnumerable&lt;string&gt; liveProviderIds, AppConfig startupConfig, ILogger log, TimeSpan? handOffTimeout = null);</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:41](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L41) |  |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:59](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L59) |  |
+| <code>public bool Handles(string path) =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:62](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L62) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ConfigurationApplyEntry&gt;&gt; ApplyAsync(AppConfig next, CancellationToken ct);</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:66](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L66) | Applies a configuration document observed by the file watcher. |
+| <code>public async Task&lt;IReadOnlyList&lt;ConfigurationApplyEntry&gt;&gt; ApplyAsync(AppConfig previous, AppConfig next, IReadOnlyList&lt;string&gt; changedPaths, CancellationToken ct);</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:82](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L82) |  |
+| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs:329](../../../../src/Meridian.Application/Composition/Startup/ProviderConfigReconciler.cs#L329) |  |
 
 ## RuntimeReadinessCheckResult
 
@@ -777,7 +793,7 @@ Qualified name: <code>Meridian.Application.Composition.TenantCutoverStartupPrere
 
 Source: [src/Meridian.Application/Composition/TenantCutoverStartupPrerequisites.cs:19](../../../../src/Meridian.Application/Composition/TenantCutoverStartupPrerequisites.cs#L19).
 
-Allows independently composed hosts to run the relevant schema migrations and legacy imports before tenant inspection without starting unrelated background services.
+Allows independently composed hosts to run the relevant schema migrations before tenant inspection without starting unrelated background services.
 
 ```csharp
 public sealed class TenantCutoverStartupPrerequisites(IServiceProvider services, ILogger<TenantCutoverStartupPrerequisites> logger) : ITenantCutoverStartupPrerequisites
@@ -928,13 +944,13 @@ Declared public members:
 | <code>public IReadOnlyDictionary&lt;string, (OAuthToken Token, TokenStatus Status)&gt; GetAllTokens();</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:208](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L208) | Gets all stored OAuth tokens with their status. |
 | <code>public async Task&lt;OAuthRefreshResult&gt; RefreshTokenAsync(string providerName, CancellationToken ct = default);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:220](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L220) | Manually triggers a token refresh for a provider. |
 | <code>public async Task RemoveTokenAsync(string providerName, CancellationToken ct = default);</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:239](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L239) | Removes stored token for a provider. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:561](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L561) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:549](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L549) |  |
 
 ## TokenStatus
 
 Qualified name: <code>Meridian.Application.Config.Credentials.OAuthTokenRefreshService.TokenStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:580](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L580).
+Source: [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:568](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L568).
 
 Token status enumeration for display purposes.
 
@@ -946,10 +962,10 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Valid</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:582](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L582) |  |
-| <code>ExpiringSoon</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:583](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L583) |  |
-| <code>Expired</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:584](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L584) |  |
-| <code>Refreshing</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:585](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L585) |  |
+| <code>Valid</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:570](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L570) |  |
+| <code>ExpiringSoon</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:571](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L571) |  |
+| <code>Expired</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:572](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L572) |  |
+| <code>Refreshing</code> | [src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:573](../../../../src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs#L573) |  |
 
 ## ProviderCredentialAuditReplayHostedService
 
@@ -1014,26 +1030,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static bool IsAvailable();</code> | [src/Meridian.Application/Config/IBGatewayProbe.cs:24](../../../../src/Meridian.Application/Config/IBGatewayProbe.cs#L24) | Returns true when any default IB API port accepts a TCP connection on loopback. |
-
-## PipelineOptions
-
-Qualified name: <code>Meridian.Application.Config.PipelineOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Config/ConfigurationPipeline.cs:472](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L472).
-
-Options for controlling the configuration pipeline behavior.
-
-```csharp
-public sealed record PipelineOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool ApplySelfHealing { get; init; } = true;</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:477](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L477) | Whether to apply self-healing fixes to the configuration. |
-| <code>public bool ValidateConfig { get; init; } = true;</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:482](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L482) | Whether to validate the configuration. |
-| <code>public SelfHealingStrictness HealingStrictness { get; init; } = SelfHealingStrictness.Development;</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:492](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L492) | Controls how aggressively self-healing behaviours are applied. SelfHealingStrictness.Development (default) applies all fixes and logs significant ones as warnings. SelfHealingStrictness.Production applies only cosmetic SelfHealingSeverity.AutoFix changes and refuses SelfHealingSeverity.Warn-level fixes with a startup error so that operators must correct the configuration manually. |
-| <code>public static PipelineOptions Default { get; } = new () { HealingStrictness = ParseStrictness(Environment.GetEnvironmentVariable(&quot;MDC_CONFIG_STRICTNESS&quot;)) };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:498](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L498) | Default options — self-healing and validation enabled, strictness from MDC_CONFIG_STRICTNESS environment variable (defaults to Development). |
-| <code>public static PipelineOptions Strict { get; } = new () { ApplySelfHealing = false, ValidateConfig = true };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:506](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L506) | Options for strict validation without self-healing. |
-| <code>public static PipelineOptions Lenient { get; } = new () { ApplySelfHealing = false, ValidateConfig = false };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:515](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L515) | Options for lenient loading (no validation, no self-healing). |

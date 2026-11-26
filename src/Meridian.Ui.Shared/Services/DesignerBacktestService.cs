@@ -210,7 +210,7 @@ public sealed class DesignerBacktestService(
         {
             if (item.Payload is not HistoricalBar bar || bar.SessionDate < from || bar.SessionDate > to)
                 continue;
-            if (bar.IsAdjusted is not false || !calendar.IsTradingDay(bar.SessionDate) ||
+            if (bar.PriceBasis != HistoricalPriceBasis.Raw || !calendar.IsTradingDay(bar.SessionDate) ||
                 !bars.TryAdd(bar.SessionDate, item))
                 throw new DesignerBacktestBlockedException("The replay needs one unadjusted daily bar per trading session.");
         }
