@@ -1,5 +1,5 @@
 import { type DragEvent, type ReactNode, useEffect, useId, useMemo, useRef, useState } from "react";
-import { BarChart2, ChevronLeft, ChevronRight, Eye, Filter, GripVertical, Palette, PencilLine, Plus, RotateCcw, Trash2, XCircle } from "lucide-react";
+import { BarChart2, Eye, Filter, Palette, PencilLine, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,13 +9,26 @@ import { Select } from "@/components/ui/select";
 import { TextArea } from "@/components/ui/text-area";
 import { PrincipalIdInput } from "@/components/meridian/principal-id-input";
 import { ReportWriterExtraFilters } from "@/screens/reporting-screen.report-writer-filters";
+import { ReportWriterDropZoneView, ReportWriterTokenChip } from "@/screens/reporting-screen.report-writer-tokens";
+import {
+  normalizeReportWriterDraftText,
+  normalizeReportWriterIdentifierToken,
+  buildReportAccessPolicySummary,
+  normalizeReportWriterGridKind,
+  normalizeReportWriterTopNText,
+  buildReportWriterDraftTopNLabel,
+  buildReportWriterDraftLayoutSummary,
+  normalizeReportWriterFilterOperator,
+  formatReportWriterFilterOperator,
+  isBlankFilterOperator
+} from "@/screens/reporting-screen.report-writer-normalize";
 import { buildReportWriterDatasetFieldCatalog, parseReportWriterCustomDatasetRows } from "@/screens/reporting-screen.report-writer-dataset";
+import { createReportTemplateDraft, renderReportTemplate } from "@/lib/api";
+import { describeApiError } from "@/lib/api-errors";
 import { ReportWriterChartPreview } from "@/components/meridian/report-writer-chart-preview";
 import { ReportWriterGridDiffView } from "@/components/meridian/report-writer-grid-diff-view";
 import { buildReportWriterGridDiff } from "@/lib/report-writer-grid-diff";
 import { cellStyleClassName, resolveCellStyle } from "@/lib/report-writer-grid-format";
-import { createReportTemplateDraft, renderReportTemplate } from "@/lib/api";
-import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import { buildReportWriterCatalogTokens, presentReportingIdentifier } from "@/screens/reporting-screen.view-model";
 import { reportWriterSamples, type ReportWriterSampleDataset } from "@/screens/reporting-screen.report-writer-samples";
@@ -49,7 +62,7 @@ export type ReportWriterTokenDragOrigin = { gridId: string; zone: ReportWriterDr
 export type ReportWriterTokenDragPayload = { token: ReportingWriterToken; origin?: ReportWriterTokenDragOrigin | null };
 export type ReportWriterPreviewDatasetProfile = "" | ReportWriterSampleDataset | "customRows" | `source:${string}`;
 
-interface ReportWriterPreview {
+export interface ReportWriterPreview {
   grid: ReportWriterGridRender;
   sourceDetail: string;
   source: ReportWriterDatasetSource | null;
@@ -257,6 +270,19 @@ export function useReportingReportWriter({
   function retryWriterAutoPreview(grid: ReportingWriterGridRow) {
     writerGridsByIdRef.current.set(grid.id, grid);
     writerAutoPreview.runNow(grid.id);
+  }
+
+  /** Everything the designer grid needs to render auto-preview controls for one grid. */
+  function getWriterAutoPreviewView(grid: ReportingWriterGridRow): ReportWriterAutoPreviewView {
+    return {
+      phase: getWriterPreviewPhase(grid),
+      enabled: isWriterAutoPreviewEnabled(grid),
+      pausedForSize: isWriterAutoPreviewPausedForSize(grid),
+      quietError: getWriterQuietPreviewError(grid),
+      onToggle: (enabled) => setWriterAutoPreviewEnabled(grid, enabled),
+      onRetry: () => retryWriterAutoPreview(grid),
+      onEditSessionChange: (editing) => setWriterEditSession(editing ? grid.id : null)
+    };
   }
 
   function resolveWriterPreviewDataset(grid: ReportingWriterGridRow) {
@@ -790,7 +816,8 @@ export function useReportingReportWriter({
     isWriterAutoPreviewPausedForSize,
     getWriterQuietPreviewError,
     setWriterEditSession,
-    retryWriterAutoPreview
+    retryWriterAutoPreview,
+    getWriterAutoPreviewView
   };
 }
 
@@ -1928,329 +1955,11 @@ function reportWriterValidationCheckVariant(status: string): "outline" | "succes
   return "outline";
 }
 
-interface ReportWriterDropZoneViewProps {
-  grid: ReportingWriterGridRow;
-  zone: ReportWriterDropZone;
-  label: string;
-  tokens: ReportingWriterToken[];
-  sourceFields?: ReportingWriterToken[];
-  onFieldAdd?: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone, token: ReportingWriterToken) => void;
-  onTokenDragStart: (event: DragEvent<HTMLElement>, token: ReportingWriterToken, origin?: ReportWriterTokenDragOrigin | null) => void;
-  onZoneDrop: (event: DragEvent<HTMLElement>, grid: ReportingWriterGridRow, zone: ReportWriterDropZone) => void;
-  onTokenRemove: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone, tokenId: string) => void;
-  onTokenMove: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone, tokenId: string, direction: -1 | 1) => void;
-}
-
-function ReportWriterDropZoneView({
-  grid,
-  zone,
-  label,
-  tokens,
-  sourceFields,
-  onFieldAdd,
-  onTokenDragStart,
-  onZoneDrop,
-  onTokenRemove,
-  onTokenMove
-}: ReportWriterDropZoneViewProps) {
-  const fields = sourceFields?.filter((field) => zone !== "metrics" || field.kind !== "formula") ?? [];
-  return (
-    // The zone is a labelled drop target; its tokens form a list only when there are tokens, so
-    // an empty zone is not announced as a list with no items (axe aria-required-children).
-    <div
-      role="group"
-      aria-label={`${grid.title} ${label} drop zone`}
-      className="min-h-24 rounded-md border border-dashed border-border/70 bg-background/25 px-2.5 py-2"
-      onDragOver={(event) => event.preventDefault()}
-      onDrop={(event) => onZoneDrop(event, grid, zone)}
-    >
-      <div className={cn("mb-2 text-xs text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</div>
-      <div
-        role={tokens.length > 0 ? "list" : undefined}
-        aria-label={tokens.length > 0 ? `${grid.title} ${label}` : undefined}
-        className="flex flex-wrap gap-1.5"
-      >
-        {tokens.length > 0 ? tokens.map((token, tokenIndex) => (
-          <ReportWriterTokenChip
-            key={token.id}
-            token={token}
-            draggable
-            onDragStart={onTokenDragStart}
-            dragOrigin={{ gridId: grid.id, zone }}
-            canMovePrevious={tokenIndex > 0}
-            canMoveNext={tokenIndex < tokens.length - 1}
-            onMove={(direction) => onTokenMove(grid, zone, token.id, direction)}
-            onRemove={() => onTokenRemove(grid, zone, token.id)}
-          />
-        )) : (
-          <span className="text-xs text-muted-foreground">No fields</span>
-        )}
-      </div>
-      {fields.length > 0 && onFieldAdd ? (
-        <Select
-          className="mt-2"
-          aria-label={`Add field to ${grid.title} ${label}`}
-          value=""
-          onChange={(event) => {
-            const field = fields.find((item) => item.id === event.target.value);
-            if (field) onFieldAdd(grid, zone, field);
-          }}
-        >
-          <option value="">Add field</option>
-          {fields.map((field) => (
-            <option key={field.id} value={field.id}
-              disabled={tokens.some((token) => token.fieldName?.toLowerCase() === field.fieldName?.toLowerCase())}>
-              {field.label}
-            </option>
-          ))}
-        </Select>
-      ) : null}
-    </div>
-  );
-}
-
-function ReportWriterTokenChip({
-  token,
-  draggable,
-  onDragStart,
-  dragOrigin,
-  canMovePrevious,
-  canMoveNext,
-  onMove,
-  onRemove
-}: {
-  token: ReportingWriterToken;
-  draggable?: boolean;
-  onDragStart: (event: DragEvent<HTMLElement>, token: ReportingWriterToken, origin?: ReportWriterTokenDragOrigin | null) => void;
-  dragOrigin?: ReportWriterTokenDragOrigin | null;
-  canMovePrevious?: boolean;
-  canMoveNext?: boolean;
-  onMove?: (direction: -1 | 1) => void;
-  onRemove?: () => void;
-}) {
-  return (
-    <span
-      role="listitem"
-      draggable={draggable}
-      onDragStart={(event) => onDragStart(event, token, dragOrigin ?? null)}
-      className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-1.5 rounded-sm border border-border/70 bg-secondary/35 px-2 py-1 text-xs text-foreground"
-      title={token.detail}
-    >
-      <span className={cn("inline-flex min-w-0 flex-wrap items-center gap-1.5", (onMove || onRemove) && "w-full")}>
-        <GripVertical className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-        <Badge variant={token.kind === "formula" ? "warning" : token.kind === "metric" ? "success" : "outline"}>{token.kind}</Badge>
-        <span className="max-w-full break-all font-mono">{token.label}</span>
-      </span>
-      {(onMove || onRemove) ? (
-        <span className="inline-flex shrink-0 items-center gap-0.5">
-          {onMove ? (
-            <>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="shrink-0"
-                style={{ width: 24, height: 24 }}
-                aria-label={`Move ${token.label} left`}
-                disabled={!canMovePrevious}
-                disabledReason="This token is already first in the list."
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  onMove(-1);
-                }}
-              >
-                <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="shrink-0"
-                style={{ width: 24, height: 24 }}
-                aria-label={`Move ${token.label} right`}
-                disabled={!canMoveNext}
-                disabledReason="This token is already last in the list."
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  onMove(1);
-                }}
-              >
-                <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-              </Button>
-            </>
-          ) : null}
-          {onRemove ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="shrink-0"
-              style={{ width: 24, height: 24 }}
-              aria-label={`Remove ${token.label}`}
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                onRemove();
-              }}
-            >
-              <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
-            </Button>
-          ) : null}
-        </span>
-      ) : null}
-    </span>
-  );
-}
-
-function normalizeReportWriterDraftText(value: string | null | undefined, fallback: string): string {
-  const normalized = value?.trim();
-  return normalized || fallback;
-}
-
-function normalizeReportWriterIdentifierToken(value: string | null | undefined, fallback: string): string {
-  const normalized = normalizeReportWriterDraftText(value, fallback)
-    .replace(/[^A-Za-z0-9_.-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return normalized || fallback;
-}
-
-function buildReportAccessPolicySummary(settings: ReportWriterDraftSettings): string {
-  if (settings.accessMode === "CompanyWide") {
-    return "Access policy: company-wide report with owner access retained.";
-  }
-
-  const principalId = normalizeReportWriterDraftText(settings.principalId, "browser-workstation");
-  if (settings.accessMode === "Private") {
-    return `Access policy: user-locked to ${principalId}.`;
-  }
-
-  return `Access policy: ${settings.principalKind.toLowerCase()} ${principalId}.`;
-}
-
-export function normalizeReportWriterGridKind(kind: string): ReportWriterGridKind {
-  switch (kind.toLowerCase()) {
-    case "detail":
-      return "Detail";
-    case "topn":
-    case "top-n":
-      return "TopN";
-    case "contribution":
-      return "Contribution";
-    default:
-      return "Pivot";
-  }
-}
-
-export function parseReportWriterTopN(value: string | number | null | undefined): number {
-  const parsed = Number.parseInt(value?.toString() ?? "", 10);
-  if (!Number.isFinite(parsed)) {
-    return 10;
-  }
-
-  return Math.min(100, Math.max(1, parsed));
-}
-
-export function normalizeReportWriterTopNText(value: string | null | undefined): string {
-  return parseReportWriterTopN(value).toString();
-}
-
-function buildReportWriterDraftTopNLabel(settings: ReportWriterDraftSettings): string {
-  return settings.gridKind === "TopN" ? `Top ${parseReportWriterTopN(settings.topN)}` : settings.gridKind;
-}
-
-function buildReportWriterDraftLayoutSummary(
-  settings: ReportWriterDraftSettings,
-  rowTokens: ReportingWriterToken[],
-  columnTokens: ReportingWriterToken[],
-  metricTokens: ReportingWriterToken[],
-  formulaTokens: ReportingWriterToken[],
-  savedFilterCount: number
-): string {
-  const dimensionCount = rowTokens.length + columnTokens.length;
-  // The draft carries every saved filter, so the draft rows are the whole filter set.
-  const draftFilterCount = (settings.filterField ? 1 : 0)
-    + settings.extraFilters.filter((filter) => filter.field).length;
-  const filterSummary = draftFilterCount > 0
-    ? `${draftFilterCount} filter${draftFilterCount === 1 ? "" : "s"} in draft`
-    : savedFilterCount > 0
-      ? `No filters in draft (${savedFilterCount} saved filter${savedFilterCount === 1 ? "" : "s"} removed)`
-      : "No filters";
-  return [
-    `${settings.gridKind} draft`,
-    `${dimensionCount} dimension${dimensionCount === 1 ? "" : "s"}`,
-    `${metricTokens.length} metric${metricTokens.length === 1 ? "" : "s"}`,
-    `${formulaTokens.length} formula${formulaTokens.length === 1 ? "" : "s"}`,
-    filterSummary,
-    settings.gridKind === "TopN" ? `Top ${parseReportWriterTopN(settings.topN)}` : null
-  ].filter((part): part is string => Boolean(part)).join(" · ");
-}
-
-export function normalizeReportWriterFilterOperator(value: ReportWriterFilterOperator | string | null | undefined): ReportWriterFilterOperator {
-  switch ((value ?? "").toString().toLowerCase()) {
-    case "notequals":
-    case "not-equals":
-      return "NotEquals";
-    case "contains":
-      return "Contains";
-    case "startswith":
-    case "starts-with":
-      return "StartsWith";
-    case "endswith":
-    case "ends-with":
-      return "EndsWith";
-    case "greaterthan":
-    case "greater-than":
-      return "GreaterThan";
-    case "greaterthanorequal":
-    case "greater-than-or-equal":
-      return "GreaterThanOrEqual";
-    case "lessthan":
-    case "less-than":
-      return "LessThan";
-    case "lessthanorequal":
-    case "less-than-or-equal":
-      return "LessThanOrEqual";
-    case "isblank":
-    case "is-blank":
-      return "IsBlank";
-    case "isnotblank":
-    case "is-not-blank":
-      return "IsNotBlank";
-    default:
-      return "Equals";
-  }
-}
-
-export function formatReportWriterFilterOperator(operator: ReportWriterFilterOperator): string {
-  switch (operator) {
-    case "NotEquals":
-      return "!=";
-    case "Contains":
-      return "contains";
-    case "StartsWith":
-      return "starts with";
-    case "EndsWith":
-      return "ends with";
-    case "GreaterThan":
-      return ">";
-    case "GreaterThanOrEqual":
-      return ">=";
-    case "LessThan":
-      return "<";
-    case "LessThanOrEqual":
-      return "<=";
-    case "IsBlank":
-      return "is blank";
-    case "IsNotBlank":
-      return "is not blank";
-    default:
-      return "=";
-  }
-}
-
-export function isBlankFilterOperator(operator: ReportWriterFilterOperator | string): boolean {
-  const normalized = normalizeReportWriterFilterOperator(operator);
-  return normalized === "IsBlank" || normalized === "IsNotBlank";
-}
+export {
+  normalizeReportWriterGridKind,
+  parseReportWriterTopN,
+  normalizeReportWriterTopNText,
+  normalizeReportWriterFilterOperator,
+  formatReportWriterFilterOperator,
+  isBlankFilterOperator
+} from "@/screens/reporting-screen.report-writer-normalize";

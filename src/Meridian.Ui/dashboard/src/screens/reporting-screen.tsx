@@ -324,13 +324,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     resetWriterGrid,
     saveWriterGridDraft,
     previewWriterGrid,
-    getWriterPreviewPhase,
-    isWriterAutoPreviewEnabled,
-    setWriterAutoPreviewEnabled,
-    isWriterAutoPreviewPausedForSize,
-    getWriterQuietPreviewError,
-    setWriterEditSession,
-    retryWriterAutoPreview
+    getWriterAutoPreviewView
   } = useReportingReportWriter({
     datasetSources: reportWriterDatasetSources,
     buildDraftRequest: buildReportTemplateDraftRequest,
@@ -1575,15 +1569,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
               onFormatRuleChange={updateWriterFormatRule}
               onPreview={previewWriterGrid}
               onSave={saveWriterGridDraft}
-              autoPreview={{
-                phase: getWriterPreviewPhase(grid),
-                enabled: isWriterAutoPreviewEnabled(grid),
-                pausedForSize: isWriterAutoPreviewPausedForSize(grid),
-                quietError: getWriterQuietPreviewError(grid),
-                onToggle: (enabled) => setWriterAutoPreviewEnabled(grid, enabled),
-                onRetry: () => retryWriterAutoPreview(grid),
-                onEditSessionChange: (editing) => setWriterEditSession(editing ? grid.id : null)
-              }}
+              autoPreview={getWriterAutoPreviewView(grid)}
             />
           ))}
           {writerPreviewStatus ? (

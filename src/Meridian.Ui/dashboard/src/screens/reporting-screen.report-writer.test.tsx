@@ -84,15 +84,7 @@ function Harness({
         onFormatRuleChange={writer.updateWriterFormatRule}
         onPreview={writer.previewWriterGrid}
         onSave={writer.saveWriterGridDraft}
-        autoPreview={{
-          phase: writer.getWriterPreviewPhase(grid),
-          enabled: writer.isWriterAutoPreviewEnabled(grid),
-          pausedForSize: writer.isWriterAutoPreviewPausedForSize(grid),
-          quietError: writer.getWriterQuietPreviewError(grid),
-          onToggle: (enabled) => writer.setWriterAutoPreviewEnabled(grid, enabled),
-          onRetry: () => writer.retryWriterAutoPreview(grid),
-          onEditSessionChange: (editing) => writer.setWriterEditSession(editing ? grid.id : null)
-        }}
+        autoPreview={writer.getWriterAutoPreviewView(grid)}
       />
       {writer.writerPreviewStatus ? <p data-testid="manual-preview-status">{writer.writerPreviewStatus.message}</p> : null}
     </>
