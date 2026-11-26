@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderConnectionSupervisorSnapshot
+
+Qualified name: <code>Meridian.Infrastructure.Resilience.ProviderConnectionSupervisorSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Resilience/ProviderConnectionSupervisor.cs:886](../../../../src/Meridian.Infrastructure/Resilience/ProviderConnectionSupervisor.cs#L886).
+
+Immutable, transport-neutral provider connection lifecycle diagnostics.
+
+```csharp
+public sealed record ProviderConnectionSupervisorSnapshot(ProviderConnectionLifecycleState LifecycleState, bool IsConnected, bool IsReconnecting, int ReconnectAttempts, DateTimeOffset? LastConnectedAt, DateTimeOffset? LastDisconnectedAt, DateTimeOffset? LastReconnectAttemptAt, string? LastError, ProviderFailureKind? LastFailureKind, TimeSpan? ConnectionAge);
+```
+
+## ProviderFailureClassifier
+
+Qualified name: <code>Meridian.Infrastructure.Resilience.ProviderFailureClassifier</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:1029](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L1029).
+
+Classifies provider failures so reconnection loops can distinguish transient errors from credential/configuration failures that need operator action.
+
+```csharp
+public static class ProviderFailureClassifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ProviderFailureKind Classify(Exception exception);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:1031](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L1031) |  |
+| <code>public static bool IsRetryable(ProviderFailureKind failureKind) =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:1054](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L1054) |  |
+
 ## RateLimitEventArgs
 
 Qualified name: <code>Meridian.Infrastructure.Resilience.RateLimitEventArgs</code>. Kind: `record`.

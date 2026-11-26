@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyJournalFamily
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyJournalFamily</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:7](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L7).
+
+Indexes actual same-book correction lineage; shared transaction labels never merge unrelated settlements.
+
+```csharp
+public sealed class IntercompanyJournalFamily
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyJournalFamily(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, DateOnly asOf);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:12](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L12) |  |
+| <code>public bool Contains(Guid id) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:20](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L20) |  |
+| <code>public IReadOnlyList&lt;LedgerJournalEntryRecord&gt; Resolve(Guid anchor);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:22](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L22) |  |
+| <code>public static DateOnly EffectiveDate(LedgerJournalEntryRecord record) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:50](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L50) |  |
+
 ## IntercompanyLedgerPostingAuthority
 
 Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyLedgerPostingAuthority</code>. Kind: `class`.
@@ -949,22 +970,3 @@ Declared public members:
 | <code>public static void RequireReversal(ShortCorrectionReceipt receipt, JournalEntry original, JournalEntry reversal);</code> | [src/Meridian.FinancialOperations/Ledger/ShortCorrectionGuard.cs:14](../../../../src/Meridian.FinancialOperations/Ledger/ShortCorrectionGuard.cs#L14) |  |
 | <code>public static void RequireRebook(ShortCorrectionReceipt receipt, ShortCorrectionReceipt reversal, IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; projected, JournalEntry rebook);</code> | [src/Meridian.FinancialOperations/Ledger/ShortCorrectionGuard.cs:93](../../../../src/Meridian.FinancialOperations/Ledger/ShortCorrectionGuard.cs#L93) |  |
 | <code>public static ShortSaleCharacterAttestation RequireCharacter(ShortSaleCharacterAttestation? attestation);</code> | [src/Meridian.FinancialOperations/Ledger/ShortCorrectionGuard.cs:116](../../../../src/Meridian.FinancialOperations/Ledger/ShortCorrectionGuard.cs#L116) | Reporting a covered short needs the explicit attestation; absence keeps the existing refusal. |
-
-## ShortCoverPostingGuard
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.ShortCoverPostingGuard</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/ShortCoverPostingGuard.cs:12](../../../../src/Meridian.FinancialOperations/Ledger/ShortCoverPostingGuard.cs#L12).
-
-Proves a transaction-currency short cover journal against its reviewed terms and the relieved lots: the terms must come from the lots&#x27; retained acquisition currency and FX, the relieved proceeds must equal the lots&#x27; relieved functional basis, and the journal must carry exactly the projected currency-aware lines. Storage admits the journal; these are Ledger rules.
-
-```csharp
-public static class ShortCoverPostingGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void RequireLots(ShortCoverTerms terms, IReadOnlyList&lt;OpenLotDto&gt; lots, decimal relievedQuantity, decimal relievedFunctionalBasis);</code> | [src/Meridian.FinancialOperations/Ledger/ShortCoverPostingGuard.cs:14](../../../../src/Meridian.FinancialOperations/Ledger/ShortCoverPostingGuard.cs#L14) |  |
-| <code>public static void RequireJournal(ShortCoverTerms terms, LedgerAccount carryingAccount, JournalEntry entry);</code> | [src/Meridian.FinancialOperations/Ledger/ShortCoverPostingGuard.cs:38](../../../../src/Meridian.FinancialOperations/Ledger/ShortCoverPostingGuard.cs#L38) |  |

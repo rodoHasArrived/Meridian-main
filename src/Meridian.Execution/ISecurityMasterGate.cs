@@ -11,6 +11,7 @@ public sealed record SecurityMasterGateResult(bool IsApproved, string? Reason = 
     /// Canonical Security Master identity of the approved symbol, when the gate resolved one. Carry it
     /// on the order (<c>OrderRequest.SecurityId</c>) so fills post to SecurityId-keyed ledger accounts.
     /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public Guid? SecurityId { get; init; }
 }
 

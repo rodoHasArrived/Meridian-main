@@ -39,7 +39,8 @@ public sealed partial class WorkstationEndpointsTests
         UserPermission.ViewReporting |
         UserPermission.ViewStrategies;
 
-    private static readonly Guid FinancialRecordExplorerAaplSecurityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    // The explorer lookup and its accounting evidence must identify the security retained by BuildActivePaperRun.
+    private static Guid FinancialRecordExplorerAaplSecurityId => ReconciliationAaplSecurityId;
     private static readonly Guid FinancialRecordExplorerLedgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111112");
     private static readonly Guid FinancialRecordExplorerPositionId = Guid.Parse("11111111-1111-1111-1111-111111111113");
     private static readonly Guid FinancialRecordExplorerEventId = Guid.Parse("11111111-1111-1111-1111-111111111114");

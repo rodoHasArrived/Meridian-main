@@ -737,6 +737,34 @@ Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:306](../../../../src
 public sealed record LedgerJournalEntryWrite(JournalEntry Entry, Guid AggregateId, Guid PeriodId, Guid? CommandId = null, Guid? CorrelationId = null, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, Guid? SourceEventId = null, Guid? SourceJournalEntryId = null, LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null, AccountingPostingCommandDto? PostingCommand = null, Guid? LedgerBookId = null);
 ```
 
+## LedgerJournalExportCapture
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerJournalExportCapture</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerJournalExportSelection.cs:8](../../../../src/Meridian.Storage/Ledger/LedgerJournalExportSelection.cs#L8).
+
+```csharp
+public sealed record LedgerJournalExportCapture(IReadOnlyList<LedgerJournalEntryRecord> Journals, string SnapshotSha256);
+```
+
+## LedgerJournalExportSelection
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerJournalExportSelection</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerJournalExportSelection.cs:11](../../../../src/Meridian.Storage/Ledger/LedgerJournalExportSelection.cs#L11).
+
+Selects complete journals from one authorized, immutable period capture.
+
+```csharp
+public static class LedgerJournalExportSelection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LedgerJournalExportCapture Select(LedgerReportingSnapshot snapshot, Guid bookId, Guid periodId, DateOnly? from = null, DateOnly? to = null, IReadOnlyList&lt;Guid&gt;? journalEntryIds = null);</code> | [src/Meridian.Storage/Ledger/LedgerJournalExportSelection.cs:13](../../../../src/Meridian.Storage/Ledger/LedgerJournalExportSelection.cs#L13) |  |
+
 ## LedgerJournalStoreHydrationExtensions
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerJournalStoreHydrationExtensions</code>. Kind: `class`.
@@ -867,31 +895,3 @@ Source: [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:123](../../../
 ```csharp
 public sealed partial class LedgerPeriodCloseSnapshotJsonContext : JsonSerializerContext;
 ```
-
-## LedgerPeriodCloseSnapshotPayload
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodCloseSnapshotPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:114](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L114).
-
-```csharp
-public sealed record LedgerPeriodCloseSnapshotPayload(int SchemaVersion, LedgerAccountingPeriod Period, PeriodCloseEventRecord CloseEvent, IReadOnlyList<LedgerJournalEntryRecord> Entries);
-```
-
-## LedgerPeriodPostingGuard
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodPostingGuard</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs:10](../../../../src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs#L10).
-
-Rejects journal postings that violate the selected accounting period&#x27;s scope, dates, or state.
-
-```csharp
-public static class LedgerPeriodPostingGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void Validate(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period) =&gt; …;</code> | [src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs:12](../../../../src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs#L12) |  |

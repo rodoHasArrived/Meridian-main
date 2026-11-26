@@ -326,7 +326,7 @@ export function CaseInspector({ caseId, initialCase, onChanged, services = defau
         <dl className="mt-3 grid gap-2 sm:grid-cols-2"><Fact label="Owner" value={item.assigneeDisplayName ?? item.assignedTo ?? "Unassigned"} />
           <Fact label="Due" value={item.slaDueAt ?? "Not recorded"} /><Fact label="Version" value={String(item.version ?? "Not recorded")} /></dl></header>
       <TechnicalDetails label="Case identifiers">
-        <dl className="grid gap-2 sm:grid-cols-2"><Fact label="Case ID" value={item.breakId} />
+        <dl className="grid gap-2 sm:grid-cols-2"><Fact label="Case ID" value={item.breakId} /><Fact label="Run" value={item.runId} />
           <Fact label="Fund account" value={item.fundAccountId ?? "Not recorded"} /><Fact label="Accounting period" value={item.accountingPeriodId ?? "Not recorded"} /></dl>
       </TechnicalDetails>
       <section aria-label="Comparison" className="rounded border border-border p-3">

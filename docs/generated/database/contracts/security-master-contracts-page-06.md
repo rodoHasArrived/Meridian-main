@@ -2,11 +2,27 @@
 
 # `security-master-contracts` data objects - page 6 of 8
 
-Objects 401-480 of 611. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 619. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityCashFlowBehaviorExtensions["SecurityCashFlowBehaviorExtensions"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityCashFlowBlockerDto["SecurityCashFlowBlockerDto"] {
+        +string Code
+        +string Reason
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt["SecurityCashFlowCalculationReceipt"] {
+        +string ContentSha256
+        +BondCalculationContext Context
+        +IReadOnlyList~SecurityForwardCurve~ ForwardCurves
+        +string ModelVersion
+        +StructuredCashFlowProjectionDto Projection
+        +StructuredCashFlowScenario Scenario
+        +SecurityDetailDto Security
+        +SecurityCashFlowSourceDto Source
+    }
     class Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto["SecurityCashFlowSourceDto"] {
         +DateTimeOffset? ClientConfirmedAt
         +string? ClientConfirmedBy
@@ -30,6 +46,7 @@ classDiagram
         +SecurityCodecInputs Inputs
         +IReadOnlyList~SecurityTermBinding~ Members
         +bool ReadsResolvedTerms
+        +IReadOnlyList~string~ VersionedOptionalScalarKeys
         +bool VersionedSchedules
         +bool WritesConventionsFlag
     }
@@ -419,22 +436,9 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityMasterConflictFieldCategory["SecurityMasterConflictFieldCategory"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterConflictKinds["SecurityMasterConflictKinds"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterConflictRouting["SecurityMasterConflictRouting"] {
-        +IReadOnlySet~string~ ProviderEvidenceSegments
-        +IReadOnlySet~string~ TermContainers
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendRequestDto["SecurityMasterCorporateActionAppendRequestDto"] {
-        +string Actor
-        +CorporateActionDto CorporateAction
-        +string? CorrelationId
-        +string? FundProfileId
-        +string? Reason
-        +Guid SecurityId
-        +string? SourceRecordId
-        +string SourceSystem
-    }
+    Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto
+    Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityDetailDto
+    Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityForwardCurve
     Meridian_Contracts_SecurityMaster_SecurityCashFlowTermBinding --> Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRole
     Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRoles --> Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRole
     Meridian_Contracts_SecurityMaster_SecurityClassCodecBinding --> Meridian_Contracts_SecurityMaster_SecurityCodecInputs
@@ -469,5 +473,6 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityInstrumentTermsDto --> Meridian_Contracts_SecurityMaster_SecurityInstrumentTermsSourceDto
     Meridian_Contracts_SecurityMaster_SecurityInstrumentTermsDto --> Meridian_Contracts_SecurityMaster_SecurityInstrumentTermsStatus
     Meridian_Contracts_SecurityMaster_SecurityInstrumentTermsSourceDto --> Meridian_Contracts_SecurityMaster_SecurityInstrumentTermsSourceStatus
+    Meridian_Contracts_SecurityMaster_SecurityInterestSupport --> Meridian_Contracts_SecurityMaster_SecurityCashFlowBlockerDto
     Meridian_Contracts_SecurityMaster_SecurityLotUnitDescriptor --> Meridian_Contracts_SecurityMaster_SecurityLotUnitKind
 ```

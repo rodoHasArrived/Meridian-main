@@ -725,7 +725,7 @@ Implemented together, so no holding is split between a ticker key and a Security
   (browser `securityId`; omitted when null). A SecurityId-keyed holding is one row across ticker
   renames and never merges with a legacy ticker row; period-close projection and row-identity
   hashes key SecurityId rows by SecurityId while legacy rows keep their identity.
-- Postgres migration `V_ledger_083` and SecurityId-aware account predicates.
+- Postgres migration `V_ledger_085` and SecurityId-aware account predicates.
 - Retained journals keep their keys. `LedgerSecurityKeyMigration` reports old ticker keys mapped
   to SecurityId and proposes a governed reclass.
 - Backtest ledgers stay run-local and ticker-keyed (`SimulatedPortfolio.SimulationKey`).
@@ -753,7 +753,7 @@ Tax-lot re-key (follow-through, 2026-11-25):
   The re-key never invents an identity for a lot.
 - An approved proposal posts one atomic `AccountRekey` batch: the reclass journal plus an in-place
   re-key of every open lot. It also copies the relief-policy history to the target key.
-- Migration `V_ledger_084` adds the batch instruction column, widens the mutation-kind checks and
+- Migration `V_ledger_086` adds the batch instruction column, widens the mutation-kind checks and
   adds the `protect_tax_lot_account_key` trigger.
 - History, successor-ancestry and posted-ledger reconciliation readers accept the re-key.
 

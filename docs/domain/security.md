@@ -2,7 +2,7 @@
 
 **Status:** active guidance  
 **Owner:** core-team  
-**Reviewed:** 2026-10-30
+**Reviewed:** 2026-11-25
 
 ## Definition
 
@@ -231,3 +231,18 @@ lifecycle remain authoritative. The draft retains its template version and treat
 use the same mark fingerprint and corrected marks produce a new reviewable draft. Missing or
 stale marks cannot produce a draft. StructuredNote remains outside the coupon/accrual accounting
 event slice, so its FixedIncome taxonomy cannot authorize bond accruals or amortization.
+
+## CertificateOfDeposit reviewed accrual anchors and retained terms
+
+CertificateOfDeposit terms version 6 adds optional `issueDate`, `principal` and `paymentFrequency`.
+They are versioned scalars: a record stamped below 6 neither decodes nor writes them, an unrelated
+amendment cannot activate older-stamp residue, and a reviewed replacement stamped at 6 (or an
+explicit clear) is the only activation path. The class's module registers the
+`fixed-bullet-actual365-v1` recurring accrual policy; Bond and StructuredCredit keep their existing
+policy and version-5 calculation evidence. See
+[recurring journals](recurring-journal.md#declared-certificateofdeposit-accrual-profile).
+
+Calculation replay uses an explicit frozen retained-terms reader for historical packets that predate
+format declarations. It classifies only the verified retained view and preserves original receipt
+bytes and hashes. Current-state reads and new captures require the declared format; malformed or
+unsupported declarations remain refusals, retained as blocked receipts with no cash events.

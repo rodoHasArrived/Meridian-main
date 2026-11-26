@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Infrastructure.Adapters.YahooFinance;
 using Xunit;
 
@@ -9,6 +10,32 @@ namespace Meridian.Tests.Infrastructure.Providers;
 
 public sealed class YahooFinanceHistoricalDataProviderTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SplitAdjustedQuote_IsNeverRepresentedAsRaw(bool includesDividendAdjustment)
+    {
+        var session = new DateOnly(2024, 1, 2);
+        using var http = CreateHttpClient(_ => CreateJsonResponse(BuildDailyResponse(
+            symbol: "AAPL",
+            timestamps: [new DateTimeOffset(2024, 1, 2, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds()],
+            opens: [50m], highs: [55m], lows: [45m], closes: [50m], volumes: [2000L],
+            adjustedCloses: includesDividendAdjustment ? [49m] : [])));
+        using var provider = new YahooFinanceHistoricalDataProvider(http);
+
+        var bar = (await provider.GetAdjustedDailyBarsAsync("AAPL", session, session)).Should().ContainSingle().Subject;
+
+        bar.PriceBasis.Should().Be(HistoricalPriceBasis.SplitAdjusted);
+        var splitAdjusted = bar.ToHistoricalBar(HistoricalPriceBasis.SplitAdjusted);
+        (splitAdjusted.Open, splitAdjusted.High, splitAdjusted.Low, splitAdjusted.Close).Should().Be((50m, 55m, 45m, 50m));
+        var projected = bar.ToHistoricalBar();
+        projected.PriceBasis.Should().Be(includesDividendAdjustment
+            ? HistoricalPriceBasis.FullyAdjusted : HistoricalPriceBasis.SplitAdjusted);
+        projected.Close.Should().Be(includesDividendAdjustment ? 49m : 50m);
+        var raw = () => bar.ToHistoricalBar(preferAdjusted: false);
+        raw.Should().Throw<InvalidOperationException>();
+    }
+
     [Fact]
     public async Task GetDailyBarsAsync_PrefersAdjustedValuesAndFiltersRequestedRange()
     {

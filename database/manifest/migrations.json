@@ -721,6 +721,15 @@
       "sha256": "a6c0e3895e65dfaa480f5bd5ac360a926f73b8499d9a1e6144f4f767e1b3002c"
     },
     {
+      "filename": "012_direct_lending_reconciliation_evidence.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/012_direct_lending_reconciliation_evidence.sql",
+      "schema": "security_master",
+      "sha256": "3d65860ddb7c6afa7a8235685fd386aa99ca0c29baf451ef6eaf599a5b5b8151"
+    },
+    {
       "filename": "001_asset_operations.sql",
       "immutable": true,
       "migration_set_id": "asset-operations",
@@ -1432,22 +1441,40 @@
       "sha256": "507b6512c2c48c05793fdae97ebcaf6c4ab46d705e33d7ea06c29a70d5d118a1"
     },
     {
-      "filename": "V_ledger_083__security_id_account_keys.sql",
+      "filename": "V_ledger_083__external_gl_evidence_truncate_guards.sql",
       "immutable": true,
       "migration_set_id": "ledger",
       "ordinal": null,
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_083__security_id_account_keys.sql",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_083__external_gl_evidence_truncate_guards.sql",
+      "schema": "ledger",
+      "sha256": "0ef40a4b577ae19b1c5c32e4eff5cf73d7e4a6fa11fa8412e9d6ef4b13fa0022"
+    },
+    {
+      "filename": "V_ledger_084__security_revision_workflow_scope.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_084__security_revision_workflow_scope.sql",
+      "schema": "ledger",
+      "sha256": "e8837484c7ea4a52d39f8d6967aadf1deac7baa7fb5075ef0ff3450e116cc358"
+    },
+    {
+      "filename": "V_ledger_085__security_id_account_keys.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_085__security_id_account_keys.sql",
       "schema": "ledger",
       "sha256": "c466e6203ca4bceeeb1a2f74c3b88c701d69be18d7c7859d8a3e673f27189dc7"
     },
     {
-      "filename": "V_ledger_084__tax_lot_account_rekey.sql",
+      "filename": "V_ledger_086__tax_lot_account_rekey.sql",
       "immutable": true,
       "migration_set_id": "ledger",
       "ordinal": null,
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_084__tax_lot_account_rekey.sql",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_086__tax_lot_account_rekey.sql",
       "schema": "ledger",
-      "sha256": "d2d317b353bcadd3cca7a86d2337ee2c034c285b4b467b46c148a04737988b5d"
+      "sha256": "5f7aabf163d44d18b85ff4cf6a0e875d81ab4073ed7191edf7dfac7789f0e863"
     },
     {
       "filename": "001_fund_structure.sql",
@@ -1793,7 +1820,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "120ec8bf2d3445de4ea927890d45071be35579a9cdbbd33a33022c0f0850969a",
+  "fingerprint": "bfabedc1cfc09c96c66bc311e54a0d4557b9eefbe5acd16343f605a55e6981e6",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -2055,9 +2082,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 199,
+    "files": 202,
     "migration_sets": 11,
-    "waivers": 58,
+    "waivers": 61,
     "warnings": 0
   },
   "waivers": [
@@ -2343,14 +2370,35 @@
     },
     {
       "category": "destructive_changes",
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_083__security_id_account_keys.sql",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_083__external_gl_evidence_truncate_guards.sql",
+      "reason": "Each DROP TRIGGER IF EXISTS immediately recreates the same named BEFORE TRUNCATE protection trigger on the same table. The migration runner applies this DDL under its transaction and advisory migration lock, so a failed recreation restores the preceding protections. No table, column, row, mapping revision, package, decision or receipt is removed. This exact path/rule exception follows V_ledger_030/V_ledger_031 and permits only the documented replacement guards, not omission of a replacement trigger.",
+      "review_after": "2027-05-21",
+      "rule_id": "migration-drop-object"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_083__external_gl_evidence_truncate_guards.sql",
+      "reason": "The lexical TRUNCATE matches are BEFORE TRUNCATE rejection-trigger declarations on immutable external-GL mapping revisions, posting packages, decisions and provider receipts. They call the existing mutation-refusal function and execute no data truncation. PostgreSQL regression coverage requires direct and cascading truncation to refuse while retaining the original approvals and permitting ordinary appended revisions. This exact path/rule exception preserves all UPDATE/DELETE protections and authorizes no data removal.",
+      "review_after": "2027-05-21",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_084__security_revision_workflow_scope.sql",
+      "reason": "Row-preserving replacement of only ux_operations_continuity_open_workflow: the same transaction recreates close-lane uniqueness for workflows whose purpose is absent or Close and adds canonical-UUID uniqueness for each Security Master revision subject. New checks reject unknown or explicit-null purposes and malformed subject authority; subject and owning scope are immutable. No table, column, workflow or audit row is deleted or rewritten. This SQL was authored as ordinal 073 in the unmerged security-pack change (#3603) and is renumbered unchanged to 084 because main later took 073 and then 083. On 2026-11-26 the renumbered file was applied through the migration runner on a disposable local PostgreSQL 16 database carrying ledger migrations 001-083, and the three SecurityRevisionWorkflowPostgresTests passed against it: missing purpose retains Close uniqueness while distinct revision subjects coexist; null, unknown and incomplete purposes are refused at the database boundary; a retained subject and its accounting scope cannot be rewritten. Apply through the existing transactional/advisory-lock runner with purpose-aware consumers; do not delete retained revision workflows to restore the former all-purpose index. This exact path/rule exception is technical review, not a claim of independent human approval or live rollout.",
+      "review_after": "2027-05-26",
+      "rule_id": "migration-drop-object"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_085__security_id_account_keys.sql",
       "reason": "Authorized by the repository owner on 2026-11-25 (Security Master review F2: key ledger security accounts by SecurityId). Replaces only ux_tax_lots_book_account_lot, ix_tax_lots_book_account_open and ux_tax_lot_policies_book_account_effective with equivalents keyed on coalesce(account_security_id::text, symbol, '') so a SecurityId-keyed account is one identity across ticker renames. The replacement indexes are created in the same migration transaction; no rows, columns, constraints or triggers are removed, and legacy ticker-keyed rows keep the same uniqueness they had. Failure rolls back the original indexes.",
       "review_after": "2027-02-25",
       "rule_id": "migration-drop-object"
     },
     {
       "category": "destructive_changes",
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_084__tax_lot_account_rekey.sql",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_086__tax_lot_account_rekey.sql",
       "reason": "Authorized by the repository owner on 2026-11-25 (Security Master review F2 tax-lot re-key). Replaces ck_atomic_tax_lot_batch_kind, ck_tax_lot_mutations_kind, ck_tax_lot_mutations_quantities and ck_tax_lot_mutations_cost with strict supersets that admit the AccountRekey kind, and adds ck_atomic_tax_lot_account_rekey_instruction (drop-if-exists for idempotent reapply). Every existing kind keeps its exact prior predicate. The migration runner performs drop and replacement within one transaction; no rows, columns or immutability triggers are removed. Never narrow these checks while AccountRekey batches exist.",
       "review_after": "2027-02-25",
       "rule_id": "migration-drop-table-member"

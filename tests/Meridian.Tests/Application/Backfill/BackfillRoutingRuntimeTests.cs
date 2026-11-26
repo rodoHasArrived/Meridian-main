@@ -210,7 +210,8 @@ public sealed class BackfillRoutingRuntimeTests : IDisposable
     [Fact]
     public async Task QueuedJobKeepsItsCapturedRouteAndRetainsTheCanonicalSymbol()
     {
-        var provider = new RecordingProvider("first", symbol => [new HistoricalBar(symbol, Date, 100, 101, 99, 100, 1_000, "first")]);
+        var provider = new RecordingProvider("first", symbol => [new HistoricalBar(symbol, Date, 100, 101, 99, 100, 1_000, "first",
+            PriceBasis: HistoricalPriceBasis.FullyAdjusted)]);
         var other = new RecordingProvider("other", _ => throw new InvalidOperationException("Unexpected provider."));
         var config = new BackfillConfig(Jobs: new BackfillJobsConfig(MaxConcurrentRequests: 1));
         using var admission = new BackfillRoutingAdmission([provider, other], perProvider: 1);
@@ -235,6 +236,8 @@ public sealed class BackfillRoutingRuntimeTests : IDisposable
         var result = await complete.Task.WaitAsync(TimeSpan.FromSeconds(10));
 
         writer.Bars.Should().ContainSingle(bar => bar.Symbol == "SPY" && bar.Source == "first");
+        writer.Bars.Single().PriceBasis.Should().Be(HistoricalPriceBasis.FullyAdjusted,
+            "queued backfill canonicalization must preserve the serving provider's price basis");
         result.SymbolProgress["SPY"].ServedBy["first"].Should().Be(1L);
         result.SymbolProgress["SPY"].FilledDates.Should().ContainSingle().Which.Should().Be(Date);
         result.ProviderProvenance!.FallbackChain.Should().Equal(ProviderProvenanceLabels.ProviderId(provider.Name),

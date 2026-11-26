@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageSinkRegistry
+
+Qualified name: <code>Meridian.Storage.StorageSinkRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/StorageSinkRegistry.cs:20](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L20).
+
+Registry for discovering and registering IStorageSink plugins that are decorated with StorageSinkAttribute.
+
+```csharp
+public sealed class StorageSinkRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;StorageSinkMetadata&gt; Sinks =&gt; …;</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:27](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L27) | Gets the discovered storage sink metadata entries, in the order they were found. |
+| <code>public void DiscoverFromAssemblies(params Assembly[] assemblies);</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:40](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L40) | Scans the provided assemblies for concrete types decorated with StorageSinkAttribute that implement IStorageSink, and adds their metadata to the registry. |
+| <code>public void RegisterServices(IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton);</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:77](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L77) | Registers all discovered sink implementation types into the service collection so that they can be resolved by IServiceProvider during composition. |
+| <code>public bool TryGetSink(string id, out StorageSinkMetadata? metadata);</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:103](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L103) | Attempts to find a registered sink by its identifier (case-insensitive). |
+
+## StorageTier
+
+Qualified name: <code>Meridian.Storage.StorageTier</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:242](../../../../src/Meridian.Storage/StorageOptions.cs#L242).
+
+Storage tier designation.
+
+```csharp
+public enum StorageTier : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Hot</code> | [src/Meridian.Storage/StorageOptions.cs:245](../../../../src/Meridian.Storage/StorageOptions.cs#L245) | Hot tier - real-time access, NVMe SSD. |
+| <code>Warm</code> | [src/Meridian.Storage/StorageOptions.cs:247](../../../../src/Meridian.Storage/StorageOptions.cs#L247) | Warm tier - daily batch access, SSD/HDD. |
+| <code>Cold</code> | [src/Meridian.Storage/StorageOptions.cs:249](../../../../src/Meridian.Storage/StorageOptions.cs#L249) | Cold tier - weekly/monthly access, HDD/NAS. |
+| <code>Archive</code> | [src/Meridian.Storage/StorageOptions.cs:251](../../../../src/Meridian.Storage/StorageOptions.cs#L251) | Archive tier - rare bulk access, object storage. |
+| <code>Glacier</code> | [src/Meridian.Storage/StorageOptions.cs:253](../../../../src/Meridian.Storage/StorageOptions.cs#L253) | Glacier tier - emergency only, tape/deep archive. |
+
 ## CompositeMarketDataStore
 
 Qualified name: <code>Meridian.Storage.Store.CompositeMarketDataStore</code>. Kind: `class`.
@@ -78,12 +121,24 @@ public abstract class JsonFileSnapshotStore<TSnapshot> where TSnapshot : class
 
 Qualified name: <code>Meridian.Storage.Store.JsonlMarketDataStore</code>. Kind: `class`.
 
+Source: [src/Meridian.Storage/Store/JsonlMarketDataStore.Alignment.cs:17](../../../../src/Meridian.Storage/Store/JsonlMarketDataStore.Alignment.cs#L17).
+
+```csharp
+public sealed partial class JsonlMarketDataStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async IAsyncEnumerable&lt;RetainedMarketEvent&gt; ReadAlignmentEventsAsync(IReadOnlySet&lt;string&gt; symbols, IReadOnlySet&lt;MarketEventType&gt; eventTypes, StorageOptions storageOptions, DateTimeOffset from, DateTimeOffset toExclusive, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Store/JsonlMarketDataStore.Alignment.cs:29](../../../../src/Meridian.Storage/Store/JsonlMarketDataStore.Alignment.cs#L29) | Strict, bounded archive read for deterministic transforms. An incomplete read fails the transformation rather than substituting gaps for unreadable records. |
+
 Source: [src/Meridian.Storage/Store/JsonlMarketDataStore.cs:27](../../../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs#L27).
 
 IMarketDataStore implementation backed by JSONL (optionally compressed) files. Enumerates all *.jsonl files under the configured root — including any compression suffix the storage policy can emit (.gz/.gzip/.zst/.lz4/.br) — deserialises each line, and applies the MarketDataQuery predicate in-process. Concurrency posture: read-only. This type never writes, appends, or deletes — it opens each file with FileAccess.Read and shares write and delete so a concurrent writer or an archival replace does not fault the read. Writes to this JSONL tree are owned by the storage sink, so there is no mutation posture to declare here (#2697).
 
 ```csharp
-public sealed class JsonlMarketDataStore : IMarketDataStore
+public sealed partial class JsonlMarketDataStore : IMarketDataStore
 ```
 
 Declared public members:
@@ -94,6 +149,18 @@ Declared public members:
 | <code>public long MalformedLinesSkipped =&gt; …;</code> | [src/Meridian.Storage/Store/JsonlMarketDataStore.cs:58](../../../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs#L58) | Number of malformed JSONL lines this store instance has skipped while reading. A non-zero value means query results are incomplete relative to the bytes on disk. |
 | <code>public long TruncatedTailsDetected =&gt; …;</code> | [src/Meridian.Storage/Store/JsonlMarketDataStore.cs:65](../../../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs#L65) | Number of truncated compressed file tails this store instance has stopped at while reading. Each one means a file&#x27;s final block was torn (e.g. by a crash mid-append) and events past the tear were unrecoverable. |
 | <code>public async IAsyncEnumerable&lt;MarketEvent&gt; QueryAsync(MarketDataQuery query, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Store/JsonlMarketDataStore.cs:68](../../../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs#L68) |  |
+
+## RetainedMarketEvent
+
+Qualified name: <code>Meridian.Storage.Store.RetainedMarketEvent</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Store/JsonlMarketDataStore.Alignment.cs:15](../../../../src/Meridian.Storage/Store/JsonlMarketDataStore.Alignment.cs#L15).
+
+A market event with the logical archive path, line and line digest encoded in its ID.
+
+```csharp
+public sealed record RetainedMarketEvent(MarketEvent Event, string SourceId);
+```
 
 ## PostgresTenantCutoverInspector
 

@@ -6,6 +6,51 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReopenedAccountingPeriod
+
+Qualified name: <code>Meridian.Ledger.ReopenedAccountingPeriod</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/PeriodReopenEvidence.cs:53](../../../../src/Meridian.Ledger/PeriodReopenEvidence.cs#L53).
+
+Immutable audit record of a locked accounting period being reopened, capturing the period that was unlocked, who reopened it and when, and the supporting PeriodReopenEvidence.
+
+```csharp
+public sealed record ReopenedAccountingPeriod(LockedAccountingPeriod Period, DateTimeOffset ReopenedAtUtc, string ReopenedBy, PeriodReopenEvidence Evidence);
+```
+
+## SecurityTradePositionEffect
+
+Qualified name: <code>Meridian.Ledger.SecurityTradePositionEffect</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:7](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L7).
+
+Native-unit changes and exact monetary basis changes from the existing trade projector.
+
+```csharp
+public sealed record SecurityTradePositionEffect(decimal LongQuantityChange, decimal ShortQuantityChange, decimal LongBasisChange, decimal ShortBasisChange, SecurityLotUnitKind QuantityUnit, decimal Multiplier);
+```
+
+## SecurityTradePositionEvidence
+
+Qualified name: <code>Meridian.Ledger.SecurityTradePositionEvidence</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:11](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L11).
+
+Retains position facts alongside trade journals; fees and financing do not invent units.
+
+```csharp
+public static class SecurityTradePositionEvidence
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string VersionTag = &quot;positionEvidence.version&quot;;</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:13](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L13) |  |
+| <code>public const string ReversalSignTag = &quot;positionEvidence.reversalSign&quot;;</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:14](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L14) |  |
+| <code>public static JournalEntryMetadata WithPostings(JournalEntryMetadata metadata, IReadOnlyList&lt;SecurityTradePosting&gt; postings, SecurityLotUnitKind unit, decimal multiplier);</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:17](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L17) |  |
+| <code>public static bool TryRead(JournalEntry journal, out SecurityTradePositionEffect? effect, out string? failure, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:67](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L67) |  |
+
 ## SecurityTradePosting
 
 Qualified name: <code>Meridian.Ledger.SecurityTradePosting</code>. Kind: `record`.
@@ -452,7 +497,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ledger.TradeFillAccountingEvidence</code>. Kind: `record`.
 
-Source: [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:10](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L10).
+Source: [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:11](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L11).
 
 Immutable per-fill accounting facts captured under the portfolio&#x27;s lot-book lock. A fill crossing zero retains both its closing and opening leg. No monetary basis is reconstructed from an average quote, order side, or realized result.
 
@@ -464,9 +509,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal AccruedInterest { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:27](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L27) | Bond accrued interest that changed hands on this fill, always nonnegative: paid on a purchase, received on a sale. Zero for fills without an accrual (and on every historical record, which omits it). |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal AccruedInterestRelieved { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:35](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L35) | On a sale, the purchased accrued interest receivable relieved for the face sold; the rest of AccruedInterest is coupon income earned while held (negative if the receivable exceeds what was received). Zero on purchases. |
-| <code>[JsonIgnore] public decimal RealizedPnl =&gt; …;</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:38](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L38) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityLotUnitKind? QuantityUnit { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:24](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L24) | Native quantity convention captured by the lot book; absent on older evidence. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? LotMultiplier { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:27](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L27) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal AccruedInterest { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:35](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L35) | Bond accrued interest that changed hands on this fill, always nonnegative: paid on a purchase, received on a sale. Zero for fills without an accrual (and on every historical record, which omits it). |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal AccruedInterestRelieved { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:43](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L43) | On a sale, the purchased accrued interest receivable relieved for the face sold; the rest of AccruedInterest is coupon income earned while held (negative if the receivable exceeds what was received). Zero on purchases. |
+| <code>[JsonIgnore] public decimal RealizedPnl =&gt; …;</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:46](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L46) |  |
 
 ## UnitTransaction
 

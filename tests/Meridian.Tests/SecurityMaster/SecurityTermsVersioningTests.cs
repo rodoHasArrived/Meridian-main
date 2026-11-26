@@ -229,7 +229,7 @@ public sealed class SecurityTermsVersioningTests
 
     [Theory]
     [InlineData("Bond", 5, 5)]
-    [InlineData("CertificateOfDeposit", 5, 5)]
+    [InlineData("CertificateOfDeposit", 6, 6)]
     [InlineData("Swap", 4, 4)]
     [InlineData("StructuredCredit", 6, 6)]
     [InlineData("Equity", 1, 1)]
@@ -522,30 +522,14 @@ public sealed class SecurityTermsVersioningTests
     {
         var payload = Json(payloadText);
 
-        // These historical fixtures cover conventions/call/put containers: the contract step
-        // enabled them for Bond/CD/StructuredCredit, while Swap conventions remain read-only.
-        // A later companion read ceiling must not change their existing write authority.
-        var stillReadOnly = assetClass == "Swap" && payload.EnumerateObject().Any(property =>
-            property.Value.ValueKind == JsonValueKind.Array && property.Value.EnumerateArray().Any(leg =>
-                leg.ValueKind == JsonValueKind.Object && leg.EnumerateObject().Any(member =>
-                    member.Name.Equals("scheduleConventions", StringComparison.OrdinalIgnoreCase)
-                    && SecurityAssetTermsSchema.IsPopulatedTermValue(member.Value))));
-        SecurityTermsEnvelope.TryGetWriteRefusal(assetClass, payload, out var reason).Should().Be(stillReadOnly);
+        // Every container in these fixtures now has write authority. Shape and bounded-profile
+        // validation remain separate from this envelope-level version check.
+        SecurityTermsEnvelope.TryGetWriteRefusal(assetClass, payload, out var reason).Should().BeFalse();
+        reason.Should().BeNull();
         var read = () => SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms(assetClass, payload);
         read.Should().NotThrow();
         var write = () => SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms(assetClass, payload);
-        if (stillReadOnly)
-        {
-            var path = expected.Split("'")[1];
-            var disabled = $"'{path}' is readable but authoring is not enabled on this node; a rate-unit declaration does not activate calculation-only terms.";
-            reason.Should().Be(disabled);
-            write.Should().Throw<InvalidOperationException>().Which.Message.Should().Be(disabled);
-        }
-        else
-        {
-            reason.Should().BeNull();
-            write.Should().NotThrow("the contract step raised the version gate; schema and semantic write rules validate the contents separately");
-        }
+        write.Should().NotThrow("semantic validation separately judges the declared container contents");
     }
 
     public static TheoryData<string, string> AcceptedWrites() => new()

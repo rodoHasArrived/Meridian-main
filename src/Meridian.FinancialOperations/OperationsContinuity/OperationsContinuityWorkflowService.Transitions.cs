@@ -46,6 +46,12 @@ public sealed partial class OperationsContinuityWorkflowService
             return Failure("NOT_FOUND", "Workflow was not found.", []);
         }
 
+        if (workflow.Purpose != OperationsWorkflowPurposeDto.Close
+            && (workflow.Purpose != OperationsWorkflowPurposeDto.SecurityMasterRevision
+                || eventType is not ("approval-submitted" or "approval-approved" or "approval-rejected"
+                    or "approval-comment-added" or "approval-reviewer-reassigned")))
+            return Failure("WORKFLOW_PURPOSE_MISMATCH", "A revision approval workflow cannot perform close or ledger transitions.", []);
+
         var evidence = OperationsContinuityWorkflowText.NormalizeEvidence(evidenceLinks);
 
         if (workflow.Version != expectedVersion)

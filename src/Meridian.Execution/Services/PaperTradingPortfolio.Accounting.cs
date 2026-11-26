@@ -6,6 +6,14 @@ namespace Meridian.Execution.Services;
 
 public sealed partial class PaperTradingPortfolio
 {
+    /// <summary>
+    /// Security Master identity that keys a fill's per-security ledger accounts (Security Master
+    /// review F2): the report's own SecurityId, else the identity retained from order admission.
+    /// </summary>
+    private static Guid? LedgerSecurityId(Meridian.Execution.Sdk.ExecutionReport report)
+        => report.SecurityId is { } id && id != Guid.Empty ? id
+            : report.AccountingSecurityId is { } admitted && admitted != Guid.Empty ? admitted : null;
+
     private LedgerAccount Scoped(AccountState account, LedgerAccount ledgerAccount) =>
         _scopeLedgerAccounts ? ledgerAccount with { FinancialAccountId = account.AccountId } : ledgerAccount;
 
@@ -138,7 +146,7 @@ public sealed partial class PaperTradingPortfolio
         var cashAccount = _chartOfAccounts.Resolve(LedgerAccountRole.Cash, scope);
         account.Positions.TryGetValue(report.Symbol, out var position);
         var receivable = LedgerAccounts.AccruedInterestReceivable(
-            position?.LedgerKey ?? LedgerSecurityKey.From(report.SecurityId, report.Symbol), scope);
+            position?.LedgerKey ?? LedgerSecurityKey.From(LedgerSecurityId(report), report.Symbol), scope);
 
         if (buysOntoLong)
         {

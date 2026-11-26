@@ -1,4 +1,5 @@
 using Meridian.Backtesting.Engine;
+using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Backtesting.Portfolio;
 
@@ -55,7 +56,13 @@ internal sealed partial class SimulatedPortfolio
                 At(item.Action.ExDate), 0m, item.Symbol, AssetEventType.Dividend,
                 shares, item.Action.DividendPerShare.Value,
                 Description: $"Canonical dividend entitlement {item.Action.CorpActId:D}")
-            { AccountId = accountId });
+            {
+                AccountId = accountId,
+                PositionEvidenceVersion = 1,
+                QuantityUnit = _lotConventions.TryGetValue(item.Symbol, out var unit) ? unit.UnitKind : SecurityLotUnitKind.Shares,
+                LotMultiplier = _lotConventions.TryGetValue(item.Symbol, out var multiplier) ? multiplier.Multiplier : 1m,
+                FunctionalCurrency = _ledger?.Policy?.FunctionalCurrency
+            });
         }
     }
 

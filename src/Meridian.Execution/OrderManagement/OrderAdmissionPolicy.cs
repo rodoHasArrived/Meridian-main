@@ -199,6 +199,7 @@ internal sealed class OrderAdmissionPolicy
                 ControlRefusal(controlDecision, "operator controls"));
         }
 
+        Guid? accountingSecurityId = null;
         if (_securityMasterGate is not null)
         {
             var securityDecision = await _securityMasterGate.CheckAsync(safeRequest.Symbol, ct).ConfigureAwait(false);
@@ -224,9 +225,18 @@ internal sealed class OrderAdmissionPolicy
 
                 resolved = resolved.WithSecurityId(admittedSecurityId);
             }
+
+            accountingSecurityId = securityDecision.SecurityId is { } id && id != Guid.Empty ? id : null;
         }
 
-        return new OrderAdmissionDecision(riskRequest, usesFaceValue, controlDecision, readiness, null, resolved);
+        return new OrderAdmissionDecision(riskRequest, usesFaceValue, controlDecision, readiness, null, resolved)
+        {
+            AccountingSecurityId = accountingSecurityId,
+            // Only this successful typed admission can mint accounting ownership. A legacy
+            // runId label, a preview, or an older retained Origin/RunId pair is not proof.
+            AccountingRunId = !observationOnly && rootAuthority.Origin == OrderCommandOrigin.StrategyRun
+                ? rootAuthority.RunId : null
+        };
     }
 
     /// <summary>
@@ -442,6 +452,8 @@ internal sealed record OrderAdmissionDecision(
     GatewayResolvedOrder? ResolvedOrder = null)
 {
     public bool IsApproved => Refusal is null;
+    public Guid? AccountingSecurityId { get; init; }
+    public string? AccountingRunId { get; init; }
 }
 
 internal sealed record OrderAdmissionRefusal(

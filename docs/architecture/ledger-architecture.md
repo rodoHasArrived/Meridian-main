@@ -110,7 +110,7 @@ therefore keeps one account history.
   proposal per lot-carrying legacy account. Accounts without lots (for example a dividend
   receivable) are listed as balance-only, and accounts it cannot move are listed with a reason.
   `ExecuteAsync` takes an approved adjustment and posts one atomic `AccountRekey` batch
-  (`V_ledger_084__tax_lot_account_rekey`). The batch appends the reclass and re-keys every open lot
+  (`V_ledger_086__tax_lot_account_rekey`). The batch appends the reclass and re-keys every open lot
   of the legacy account in place. The reclass has one debit and one credit per book position, each
   dimensioned by the SecurityId and position and moving that position's lot basis, so a holding
   spread over several positions moves in one batch.
@@ -137,7 +137,7 @@ therefore keeps one account history.
   - The `protect_tax_lot_account_key` trigger allows a lot's account key, and label, to change only
     as the batch's instruction lists that lot.
 - **Persistence.** Postgres stores the key in `account_security_id`
-  (`V_ledger_083__security_id_account_keys`) on journal legs, tax lots, tax-lot policies, balance
+  (`V_ledger_085__security_id_account_keys`) on journal legs, tax lots, tax-lot policies, balance
   checkpoint rows and wash-sale deferrals. Account-identity predicates and indexes use
   `coalesce(account_security_id::text, symbol, '')`.
 - **Manual journal corrections.** Reversal, rebook and correction-inverse drafts keep each posted

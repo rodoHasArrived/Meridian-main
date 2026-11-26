@@ -75,6 +75,24 @@ A titled, tabular section of a financial report, shared by every renderer.
 public sealed record LedgerReportTable(string Title, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyList<string>> Rows);
 ```
 
+## LedgerRunAttribution
+
+Qualified name: <code>Meridian.Ledger.LedgerRunAttribution</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/LedgerRunAttribution.cs:4](../../../../src/Meridian.Ledger/LedgerRunAttribution.cs#L4).
+
+Reads retained execution run ownership; an ordinary strategy label is insufficient.
+
+```csharp
+public static class LedgerRunAttribution
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool TryGetTrustedRunId(JournalEntryMetadata metadata, out string? runId);</code> | [src/Meridian.Ledger/LedgerRunAttribution.cs:6](../../../../src/Meridian.Ledger/LedgerRunAttribution.cs#L6) |  |
+
 ## LedgerScheduledReportExportPackageBuilder
 
 Qualified name: <code>Meridian.Ledger.LedgerScheduledReportExportPackageBuilder</code>. Kind: `class`.
@@ -930,21 +948,3 @@ Enum declarations:
 | <code>GeneralPartner</code> | [src/Meridian.Ledger/PartnersCapitalStatementLayout.cs:18](../../../../src/Meridian.Ledger/PartnersCapitalStatementLayout.cs#L18) | General-partner economics, e.g. Carried Interest Allocation accounts. |
 | <code>UndistributedResult</code> | [src/Meridian.Ledger/PartnersCapitalStatementLayout.cs:21](../../../../src/Meridian.Ledger/PartnersCapitalStatementLayout.cs#L21) | Period result not yet closed to a named partner (the undistributed net income line). |
 | <code>GeneralCapital</code> | [src/Meridian.Ledger/PartnersCapitalStatementLayout.cs:24](../../../../src/Meridian.Ledger/PartnersCapitalStatementLayout.cs#L24) | Undesignated fund capital (a generic capital account or retained earnings). |
-
-## PartnersCapitalStatementLayout
-
-Qualified name: <code>Meridian.Ledger.PartnersCapitalStatementLayout</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/PartnersCapitalStatementLayout.cs:55](../../../../src/Meridian.Ledger/PartnersCapitalStatementLayout.cs#L55).
-
-A bespoke, client-grade layout of the statement of changes in partners&#x27; capital. Unlike the generic LedgerReportTable projection, this model keeps money typed, classifies each account by partner role, computes each partner&#x27;s ownership percentage of ending capital, and anchors the statement to the fund&#x27;s ledger-backed net asset value (the unitized NAV base) with an explicit reconciliation flag. It is a pure projection over a LedgerPartnersCapitalStatement — it introduces no new ledger fact.
-
-```csharp
-public sealed record PartnersCapitalStatementLayout(string FundId, string PeriodId, string BaseCurrency, DateTimeOffset PeriodStart, DateTimeOffset AsOf, decimal NetAssetValue, bool TiesToNetAssets, IReadOnlyList<PartnersCapitalStatementLine> Lines, PartnersCapitalStatementLine Total)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal NetAssetVariance =&gt; …;</code> | [src/Meridian.Ledger/PartnersCapitalStatementLayout.cs:67](../../../../src/Meridian.Ledger/PartnersCapitalStatementLayout.cs#L67) | Reconciliation gap between ending partners&#x27; capital and the fund&#x27;s net asset value. |

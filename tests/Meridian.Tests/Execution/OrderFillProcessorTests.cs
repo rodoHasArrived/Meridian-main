@@ -376,10 +376,10 @@ public sealed partial class OrderFillProcessorTests
             Assert.Equal(1, persistence.GetSession(session.SessionId)!.FillCount);
             Assert.Empty(processor.GetIncompleteOrderIds());
             Assert.True(subscriber.Reports.TryRead(out var delivery));
-            Assert.Same(report, delivery);
+            Assert.Equal(report with { AccountingFillId = publisher.Events.Single().FillId }, delivery);
             Assert.False(subscriber.Reports.TryRead(out _));
             Assert.True(hub.Observer.TryRead(out var observation));
-            Assert.Same(report, observation);
+            Assert.Same(delivery, observation);
             Assert.False(hub.Observer.TryRead(out _));
         }
         finally

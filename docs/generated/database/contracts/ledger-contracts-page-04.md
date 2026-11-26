@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 4 of 7
 
-Objects 241-320 of 542. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 554. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -277,8 +277,8 @@ classDiagram
         +IReadOnlyList~ExternalGlExportLineDto~ GeneratedLines
         +IReadOnlyList~Guid~ JournalEntryIds
         +Guid? LedgerBookId
+        +string? MappingContentHash
         +string? MappingProfileId
-        +DateOnly PeriodEnd
     }
     class Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto["ExternalGlExportPackageManifestDto"] {
         +AccountingCertificationStateDto CertificationState
@@ -437,6 +437,8 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_IIntercompanyAccrualScheduleStore["IIntercompanyAccrualScheduleStore"] {
     }
+    class Meridian_Contracts_Ledger_IIntercompanyAgreementWorkQueueService["IIntercompanyAgreementWorkQueueService"] {
+    }
     class Meridian_Contracts_Ledger_IIntercompanyBalanceConfirmationStore["IIntercompanyBalanceConfirmationStore"] {
     }
     class Meridian_Contracts_Ledger_IIntercompanyConfirmationClosePolicyStore["IIntercompanyConfirmationClosePolicyStore"] {
@@ -525,19 +527,11 @@ classDiagram
         +IntercompanyAccrualEvidenceDto? Evidence
         +string? EvidenceDigest
     }
-    class Meridian_Contracts_Ledger_IntercompanyAccrualRequestDto["IntercompanyAccrualRequestDto"] {
-        +DateOnly AccrualFrom
-        +DateOnly AccrualTo
-        +Guid InterestArrangementId
-        +Guid PrincipalArrangementId
-        +Guid SourceBookId
-    }
     Meridian_Contracts_Ledger_ConsolidationMatchDto --> Meridian_Contracts_Ledger_ConsolidationSourceDto
     Meridian_Contracts_Ledger_ConsolidationTransitionPreviewDto --> Meridian_Contracts_Ledger_ConsolidationTransitionRequestDto
     Meridian_Contracts_Ledger_ConsolidationTransitionReceiptDto --> Meridian_Contracts_Ledger_ConsolidationTransitionRequestDto
     Meridian_Contracts_Ledger_ConsolidationViewDto --> Meridian_Contracts_Ledger_ConsolidationMatchDto
     Meridian_Contracts_Ledger_ConsolidationViewDto --> Meridian_Contracts_Ledger_ConsolidationRequestDto
-    Meridian_Contracts_Ledger_CreateIntercompanyAccrualDraftRequest --> Meridian_Contracts_Ledger_IntercompanyAccrualRequestDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportCertificationDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportLineDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportReconciliationSafeguardStateDto

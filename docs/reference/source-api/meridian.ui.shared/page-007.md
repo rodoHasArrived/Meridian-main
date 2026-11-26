@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountCashForecastSourceAuthorityException
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastSourceAuthorityException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:34](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L34).
+
+Indicates that cash-forecast source evidence could not satisfy its authority requirements.
+
+```csharp
+public sealed class AccountCashForecastSourceAuthorityException(string message) : MeridianException(message);
+```
+
 ## AccountCashForecastSourceDocument
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastSourceDocument</code>. Kind: `record`.
@@ -972,13 +984,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public Task&lt;StatementAccountingScope&gt; AuthorizeAsync(StatementFetchAuthorizationCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs:19](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs#L19) |  |
 | <code>public async Task&lt;StatementImportCommitResultDto&gt; IngestAsync(StatementFetchIngestionCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportFetchIngestionAuthority.cs#L37) |  |
-
-## StatementReconciliationReportStartCommand
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportStartCommand</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:21](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L21).
-
-```csharp
-public sealed record StatementReconciliationReportStartCommand(StatementImportCommitRequest Import, string TenantId, string? CompanyId);
-```
