@@ -924,7 +924,7 @@ source recovery in the shared status control.
 Use `SectionDescription` only for instructional copy, with a stable `descriptionKey` and an
 accessible label. `ScreenLayout` and `WorkspaceSection` opt in using `descriptionKey`; dynamic
 financial state, warnings, source evidence, and scope must never use remembered help. The shell
-scopes browser-local reading preferences to the session environment, operator name and role.
+scopes browser-local reading preferences to the session environment, signed-in username and role.
 Descriptions show as a line of text on every visit. One operator setting, "Page descriptions"
 under Settings > Preferences (`useSectionDescriptionsHidden`), moves all of them behind an
 information icon instead; there is no per-section "Hide" link and a description no longer
@@ -3818,6 +3818,16 @@ break inspector. Assignment, resolve and dismiss controls belong to the selected
 its supporting facts. Existing service permission checks, operator identity, rationale validation,
 casework outcomes and financial calculations remain authoritative. Exceptions reuses the queue
 pattern without constraining its cross-run casework to one run.
+
+Operator identity in the browser is the signed-in username from `GET /api/auth/me`
+(`lib/api/auth.api.ts`, `hooks/use-signed-in-username.ts`), never the session `displayName`, which
+the host fills with a desk label shared by every operator on the desk. The username keys
+per-operator recovery state: reconciliation decision and batch recovery, retained asset-accounting
+commands, the journal workbench session identity and the keys that remount per-operator panels.
+Request bodies carry no actor; the reconciliation review/resolve, Plaid, Settings governance
+(ledger mapping, role profiles, scoped access, approval policy, close calendar, asset profiles,
+Security Master create) and provider-integration routes take it from the authenticated session.
+`settings-screen.test.tsx` fails any Settings call that puts an actor field in its request.
 
 `accounting-screen.reconciliation-workbench.tsx` owns the work surface.
 `accounting-screen.reconciliation-resolve-dialog.ts` owns rationale and confirmation state;

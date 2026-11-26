@@ -460,7 +460,6 @@ export interface LedgerMappingWorkbench {
 export interface LedgerMappingAssignmentRequest {
   accountId: string;
   ledgerGroupId: string;
-  requestedBy: string;
   rationale: string;
   effectiveFrom?: string | null;
   correlationId?: string | null;
@@ -522,7 +521,6 @@ export interface RolePermissionProfileUpsertRequest {
   description?: string | null;
   baseRole: string;
   permissionNames: string[];
-  requestedBy: string;
   rationale: string;
   correlationId?: string | null;
 }
@@ -690,7 +688,6 @@ export interface UserAccessAssignmentCreateRequest {
   permissionNames: string[];
   effectiveFrom?: string | null;
   effectiveTo?: string | null;
-  requestedBy: string;
   rationale: string;
   approvalLimitAmount?: number | null;
   approvalLimitCurrency?: string | null;
@@ -701,7 +698,6 @@ export interface UserAccessAssignmentCreateRequest {
 export interface UserAccessAssignmentRevokeRequest {
   assignmentId: string;
   expectedVersion: number;
-  requestedBy: string;
   rationale: string;
   correlationId?: string | null;
 }

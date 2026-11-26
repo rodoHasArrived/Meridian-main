@@ -138,6 +138,7 @@ import { apiGetJson } from "@/lib/api";
 import { closeWorkspaceRedirect } from "@/lib/workstation-close-routing";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+import { useSignedInUsername } from "@/hooks/use-signed-in-username";
 
 // Lazy route modules and data-backed panels often mount hash targets after the
 // shell route change. Wait briefly before falling back to the workbench landmark,
@@ -513,7 +514,12 @@ function AppShell({
   // Presentation preferences follow the operator: once the session is known, load them from the
   // host (host values win; values it lacks are taken from this browser and saved back), then save
   // each later change. Fixture sessions have no host to read from, so they stay browser-only.
-  const preferenceOperatorKey = session ? `${session.environment}:${session.displayName}:${session.role}` : null;
+  // Keyed by the signed-in username, not the session's displayName: that is a desk label
+  // ("Meridian Operator", "<strategy> Desk") shared by every operator on the desk. With no signed-in
+  // operator there is nothing to sync (the host preference routes need a session) and the
+  // descriptions choice holds for the visit only.
+  const signedInUsername = useSignedInUsername();
+  const preferenceOperatorKey = session && signedInUsername ? `${session.environment}:${signedInUsername}:${session.role}` : null;
   useEffect(() => {
     if (!preferenceOperatorKey || usingDevelopmentFixtures) return undefined;
     return startOperatorPreferenceSync({ operatorKey: preferenceOperatorKey });

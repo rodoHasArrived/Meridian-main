@@ -6,12 +6,14 @@ import { ApiError } from "@/lib/api-errors";
 import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { CapitalCallIssuanceScreen } from "@/screens/capital-call-issuance-screen";
 import { CAPITAL_BOOK_ID, CAPITAL_ENTITY_ID, CAPITAL_PERIOD_ID, CAPITAL_BANK_LINE_ID, CAPITAL_EVIDENCE, capitalBankObservationImport, capitalBook, capitalCall, capitalCommitment, capitalWorkbench } from "@/screens/private-capital.test-fixtures";
+import type { SessionInfo } from "@/types";
 import type { PrivateCapitalCallPreview, PrivateCapitalNoticeGenerationResult } from "@/types/private-capital";
 import { noticeOperationStorageKey, noticeOperationTarget } from "@/lib/private-capital-notice-intent";
 
 vi.mock("@/lib/api/private-capital.api", async () => ({ ...await vi.importActual<typeof api>("@/lib/api/private-capital.api"), getPrivateCapitalBooks: vi.fn(), getPrivateCapitalWorkbench: vi.fn(),
   createPrivateCapitalCommitment: vi.fn(), approvePrivateCapitalCommitment: vi.fn(), previewPrivateCapitalCall: vi.fn(),
   retainPrivateCapitalCall: vi.fn(), intakePrivateCapitalCall: vi.fn(), intakePrivateCapitalFunding: vi.fn(), generatePrivateCapitalNotice: vi.fn(), importPrivateCapitalBankObservation: vi.fn() }));
+vi.mock("@/lib/api/auth.api", () => ({ getSignedInUsername: vi.fn(async () => "a.chen") }));
 const mocks = vi.mocked(api);
 function mount() { return render(<MemoryRouter initialEntries={[`/accounting/capital-calls?ledgerBookId=${CAPITAL_BOOK_ID}`]}><CapitalCallIssuanceScreen /></MemoryRouter>); }
 const enter = (label: string, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } });
@@ -30,6 +32,17 @@ function fillCall() {
 describe("Native commitment-to-cash workbench", () => {
   beforeEach(() => { vi.resetAllMocks(); sessionStorage.clear(); mocks.getPrivateCapitalBooks.mockResolvedValue([capitalBook]); mocks.getPrivateCapitalWorkbench.mockResolvedValue(capitalWorkbench()); });
   afterEach(() => vi.restoreAllMocks());
+  it("keeps scope selection when only the session desk label changes", async () => {
+    const session = (displayName: string): SessionInfo => ({ displayName, role: "Fund operations", environment: "paper", activeWorkspace: "accounting", commandCount: 0 });
+    const view = render(<MemoryRouter initialEntries={[`/accounting/capital-calls?ledgerBookId=${CAPITAL_BOOK_ID}`]}><CapitalCallIssuanceScreen session={session("Meridian Operator")} /></MemoryRouter>);
+    await ready();
+    // Settle the one remount when the signed-in username arrives, then count book reads (one per mount).
+    await act(async () => { await Promise.resolve(); });
+    const reads = mocks.getPrivateCapitalBooks.mock.calls.length;
+    view.rerender(<MemoryRouter initialEntries={[`/accounting/capital-calls?ledgerBookId=${CAPITAL_BOOK_ID}`]}><CapitalCallIssuanceScreen session={session("Alpha Desk")} /></MemoryRouter>);
+    await act(async () => { await Promise.resolve(); });
+    expect(mocks.getPrivateCapitalBooks).toHaveBeenCalledTimes(reads);
+  });
   it("requires retained authority and never exposes fake commitments when it is unavailable", async () => {
     mocks.getPrivateCapitalWorkbench.mockRejectedValue(new Error("Authoritative persistence is not configured")); mount();
     await screen.findByText("Authoritative persistence is not configured");

@@ -11,7 +11,7 @@ import { formatNumber as formatNumberAmount, formatUtcDate } from "@/lib/format"
 import { cn } from "@/lib/utils";
 import { type SettingsMutationConfirmation } from "@/screens/settings-mutation-confirm-dialog";
 import { humanizeSettingsIdentifier } from "@/screens/settings-screen.operations-form-options";
-import type { AccessPrincipalKind, AccessScopeKind, RolePermissionCatalog, SessionInfo, UserAccessAssignment } from "@/types";
+import type { AccessPrincipalKind, AccessScopeKind, RolePermissionCatalog, UserAccessAssignment } from "@/types";
 import { Save, ShieldCheck, Trash2 } from "lucide-react";
 import { type FormEvent } from "react";
 import { diagnosticToneClass, FilterSelect, SettingsFieldRow } from "./settings-provider-integration";
@@ -99,13 +99,12 @@ interface UseSettingsScopedAccessSectionStateParams {
   rolePermissionCatalog: RolePermissionCatalog | null;
   scopedAccess: ScopedAccessAssignmentState;
   scopedAccessAssignments: UserAccessAssignment[];
-  session: SessionInfo | null;
   setMutationConfirmation: React.Dispatch<React.SetStateAction<SettingsMutationConfirmation | null>>;
   setScopedAccess: React.Dispatch<React.SetStateAction<ScopedAccessAssignmentState>>;
   setScopedAccessAssignments: React.Dispatch<React.SetStateAction<UserAccessAssignment[]>>;
 }
 
-export function useSettingsScopedAccessSectionState({ onRefresh, rolePermissionCatalog, scopedAccess, scopedAccessAssignments, session, setMutationConfirmation, setScopedAccess, setScopedAccessAssignments }: UseSettingsScopedAccessSectionStateParams) {
+export function useSettingsScopedAccessSectionState({ onRefresh, rolePermissionCatalog, scopedAccess, scopedAccessAssignments, setMutationConfirmation, setScopedAccess, setScopedAccessAssignments }: UseSettingsScopedAccessSectionStateParams) {
   const scopedAccessActiveCount = scopedAccessAssignments.filter((assignment) => !assignment.revokedAtUtc).length;
   const scopedAccessRevokedCount = scopedAccessAssignments.length - scopedAccessActiveCount;
   const selectScopedAccessRole = (role: string) => {
@@ -198,7 +197,6 @@ export function useSettingsScopedAccessSectionState({ onRefresh, rolePermissionC
         permissionNames: scopedAccess.permissionNames,
         effectiveFrom: toScopedAccessDateTime(scopedAccess.effectiveFrom),
         effectiveTo: toScopedAccessDateTime(scopedAccess.effectiveTo),
-        requestedBy: session?.displayName ?? "settings-screen",
         rationale,
         approvalLimitAmount,
         approvalLimitCurrency: approvalLimitAmount === null ? null : approvalLimitCurrency,
@@ -253,7 +251,6 @@ export function useSettingsScopedAccessSectionState({ onRefresh, rolePermissionC
       const result = await revokeScopedAccessAssignment({
         assignmentId: assignment.assignmentId,
         expectedVersion: assignment.version,
-        requestedBy: session?.displayName ?? "settings-screen",
         rationale: `Revoke scoped authority for ${assignment.principalId}.`,
         correlationId: `settings-scoped-access-revoke-${Date.now()}`
       });

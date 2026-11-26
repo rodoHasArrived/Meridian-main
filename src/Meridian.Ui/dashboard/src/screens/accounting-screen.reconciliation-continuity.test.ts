@@ -41,9 +41,28 @@ function services(): AccountingReconciliationServices {
 }
 
 describe("reconciliation selection continuity", () => {
+  it("sends assign and resolve commands without a client-supplied actor", async () => {
+    // The review and resolve routes overwrite assignedTo/reviewedBy/resolvedBy with the session
+    // actor; the browser no longer sends the session desk label in their place.
+    const api = services();
+    api.reviewBreak = vi.fn().mockResolvedValue(successfulCaseworkOperation({ ...item, status: "InReview" }));
+    api.resolveBreak = vi.fn().mockResolvedValue(successfulCaseworkOperation({ ...item, status: "Resolved" }));
+    const { result } = renderHook(() => useAccountingReconciliationViewModel(data, "reconciliation", api, null, selection("scope-a")));
+    await waitFor(() => expect(result.current.rows).toHaveLength(1));
+    await act(async () => { await result.current.assignBreak("break-a"); });
+    await act(async () => { await result.current.resolveBreak("break-a", "Resolved", "Source evidence reviewed."); });
+    const review = vi.mocked(api.reviewBreak).mock.calls[0]?.[0];
+    const resolve = vi.mocked(api.resolveBreak).mock.calls[0]?.[0];
+    expect(review).toMatchObject({ breakId: "break-a" });
+    expect(review).not.toHaveProperty("assignedTo");
+    expect(review).not.toHaveProperty("reviewedBy");
+    expect(resolve).toMatchObject({ breakId: "break-a", status: "Resolved", operatorRationale: "Source evidence reviewed." });
+    expect(resolve).not.toHaveProperty("resolvedBy");
+  });
+
   it("ignores inspector or bulk outcomes retained from a prior operating scope", async () => {
     const api = services();
-    const { result, rerender } = renderHook(({ scope }) => useAccountingReconciliationViewModel(data, "reconciliation", api, null, null,
+    const { result, rerender } = renderHook(({ scope }) => useAccountingReconciliationViewModel(data, "reconciliation", api, null,
       selection(scope)), { initialProps: { scope: "scope-a" } });
     await waitFor(() => expect(result.current.rows).toHaveLength(1));
     const applyOldScopeOutcome = result.current.applyCaseUpdate;
@@ -60,7 +79,7 @@ describe("reconciliation selection continuity", () => {
     const operation = new Promise<ReconciliationCaseworkOperationResult>((resolve) => { completeAction = resolve; });
     if (command === "assign") api.reviewBreak = vi.fn().mockReturnValue(operation);
     else api.resolveBreak = vi.fn().mockReturnValue(operation);
-    const { result, rerender } = renderHook(({ runId }) => useAccountingReconciliationViewModel(data, "reconciliation", api, null, null,
+    const { result, rerender } = renderHook(({ runId }) => useAccountingReconciliationViewModel(data, "reconciliation", api, null,
       { ...selection("scope-a"), selectedRunId: runId }), { initialProps: { runId: "run-a" } });
     await waitFor(() => expect(result.current.rows).toHaveLength(1));
     let pending!: Promise<void>;
@@ -88,7 +107,7 @@ describe("reconciliation selection continuity", () => {
     const { result } = renderHook(() => {
       const [runId, setRunId] = useState<string | null>(initialRun);
       const [breakId, setBreakId] = useState<string | null>(null);
-      return useAccountingReconciliationViewModel(data, "exceptions", api, null, null, {
+      return useAccountingReconciliationViewModel(data, "exceptions", api, null, {
         scopeKey: "scope-a", selectedRunId: runId, selectedBreakId: breakId, selectRun: setRunId,
         selectBreak: (selectedBreak, selectedRun) => { setBreakId(selectedBreak); if (selectedRun) setRunId(selectedRun); }
       });
@@ -112,7 +131,7 @@ describe("reconciliation selection continuity", () => {
     const api = services();
     let rejectAction!: (error: Error) => void;
     api.reviewBreak = vi.fn().mockReturnValue(new Promise<ReconciliationCaseworkOperationResult>((_resolve, reject) => { rejectAction = reject; }));
-    const { result, rerender } = renderHook(({ runId }) => useAccountingReconciliationViewModel(data, "reconciliation", api, null, null,
+    const { result, rerender } = renderHook(({ runId }) => useAccountingReconciliationViewModel(data, "reconciliation", api, null,
       { ...selection("scope-a"), selectedRunId: runId }), { initialProps: { runId: "run-a" } });
     await waitFor(() => expect(result.current.rows).toHaveLength(1));
     let pending!: Promise<void>;
@@ -134,7 +153,7 @@ describe("reconciliation selection continuity", () => {
     const bootstrap = { ...data, reconciliationQueue: [{ runId: "run-a", strategyName: "Strategy A", mode: "paper", status: "Running", lastUpdated: "2026-10-28T00:00:00Z", breakCount: 1, openBreakCount: 1, reconciliationStatus: "BreaksOpen" }] } as AccountingWorkspaceResponse;
     const replaceSelection = vi.fn();
     const state = { ...selection("scope-a"), selectedRunId: null, selectedBreakId: null, replaceSelection };
-    renderHook(() => useAccountingReconciliationViewModel(bootstrap, "reconciliation", api, null, null, state));
+    renderHook(() => useAccountingReconciliationViewModel(bootstrap, "reconciliation", api, null, state));
     await waitFor(() => expect(replaceSelection).toHaveBeenCalledWith("run-a", "break-a"));
     expect(replaceSelection).not.toHaveBeenCalledWith("stmt-run-a", null);
   });
@@ -146,7 +165,7 @@ describe("reconciliation selection continuity", () => {
     api.reviewBreak = vi.fn().mockReturnValue(new Promise<ReconciliationCaseworkOperationResult>((resolve) => { completeAction = resolve; }));
     api.getBreakQueue = vi.fn().mockResolvedValueOnce([item]).mockResolvedValueOnce([item])
       .mockReturnValueOnce(new Promise<ReconciliationBreakQueueItem[]>((resolve) => { completeQueue = resolve; }));
-    const { result, rerender } = renderHook(({ scope }) => useAccountingReconciliationViewModel(data, "reconciliation", api, null, null, selection(scope)), { initialProps: { scope: "scope-a" } });
+    const { result, rerender } = renderHook(({ scope }) => useAccountingReconciliationViewModel(data, "reconciliation", api, null, selection(scope)), { initialProps: { scope: "scope-a" } });
     await waitFor(() => expect(result.current.rows).toHaveLength(1));
     let pending!: Promise<void>;
     act(() => { pending = result.current.assignBreak("break-a"); });
@@ -167,7 +186,7 @@ describe("reconciliation selection continuity", () => {
     const api = services();
     const otherItem = { ...item, breakId: "break-b", runId: "run-b" } as ReconciliationBreakQueueItem;
     api.getBreakQueue = vi.fn().mockResolvedValueOnce([item]).mockResolvedValueOnce([otherItem]);
-    const { result, rerender } = renderHook(({ scope }) => useAccountingReconciliationViewModel(data, "exceptions", api, null, null, selection(scope)), { initialProps: { scope: "scope-a" } });
+    const { result, rerender } = renderHook(({ scope }) => useAccountingReconciliationViewModel(data, "exceptions", api, null, selection(scope)), { initialProps: { scope: "scope-a" } });
     await waitFor(() => expect(result.current.rows.map((row) => row.breakId)).toEqual(["break-a"]));
 
     const applyBulk = result.current.beginBreakQueueUpdate();
@@ -185,7 +204,7 @@ describe("reconciliation selection continuity", () => {
     const api = services();
     api.getBreakQueue = vi.fn().mockResolvedValueOnce([item]).mockRejectedValueOnce(new Error("unavailable"));
     const state = selection("scope-a");
-    const { result, rerender } = renderHook(({ bootstrap }) => useAccountingReconciliationViewModel(bootstrap, "reconciliation", api, null, null, state), { initialProps: { bootstrap: data } });
+    const { result, rerender } = renderHook(({ bootstrap }) => useAccountingReconciliationViewModel(bootstrap, "reconciliation", api, null, state), { initialProps: { bootstrap: data } });
     await waitFor(() => expect(result.current.rows[0]?.canAssign).toBe(true));
     rerender({ bootstrap: { ...data, breakQueue: [item] } });
     await waitFor(() => expect(result.current.errorText).toContain("unavailable"));
@@ -196,7 +215,7 @@ describe("reconciliation selection continuity", () => {
   it("hides prior-scope rows and refuses actions until the new scope queue loads", async () => {
     const api = services();
     api.getBreakQueue = vi.fn().mockResolvedValueOnce([item]).mockReturnValueOnce(new Promise(() => {}));
-    const { result, rerender } = renderHook(({ scope }) => useAccountingReconciliationViewModel(data, "reconciliation", api, null, null, selection(scope)), { initialProps: { scope: "scope-a" } });
+    const { result, rerender } = renderHook(({ scope }) => useAccountingReconciliationViewModel(data, "reconciliation", api, null, selection(scope)), { initialProps: { scope: "scope-a" } });
     await waitFor(() => expect(result.current.rows).toHaveLength(1));
     rerender({ scope: "scope-b" });
     expect(result.current.rows).toEqual([]);
@@ -211,14 +230,14 @@ describe("reconciliation selection continuity", () => {
     api.getStatementRuns = vi.fn().mockResolvedValue([{ runId: "run-a", importId: "import-a", positionMatches: 0, cashMatches: 0, transactionMatches: 0, openExceptionCount: 1, startedAtUtc: "2026-10-28T00:00:00Z" }]);
     const replaceSelection = vi.fn();
     const state = { ...selection("scope-a"), selectedRunId: null, selectedBreakId: null, replaceSelection };
-    renderHook(() => useAccountingReconciliationViewModel(data, "reconciliation", api, null, null, state));
+    renderHook(() => useAccountingReconciliationViewModel(data, "reconciliation", api, null, state));
     await waitFor(() => expect(replaceSelection).toHaveBeenCalledWith("run-a", "break-a"));
   });
 
   it("does not select a break from a different explicitly selected run", async () => {
     const api = services();
     const state = { ...selection("scope-a"), selectedRunId: "other-run", selectedBreakId: null };
-    const { result } = renderHook(() => useAccountingReconciliationViewModel(data, "reconciliation", api, null, null, state));
+    const { result } = renderHook(() => useAccountingReconciliationViewModel(data, "reconciliation", api, null, state));
     await waitFor(() => expect(api.getBreakQueue).toHaveBeenCalled());
     expect(result.current.rows).toEqual([]);
     expect(result.current.selectedDetail).toBeNull();
@@ -227,7 +246,7 @@ describe("reconciliation selection continuity", () => {
   it("leaves a disappeared explicit break unselected and explains its absence", async () => {
     const api = services();
     api.getBreakQueue = vi.fn().mockResolvedValue([]);
-    const { result } = renderHook(() => useAccountingReconciliationViewModel(data, "reconciliation", api, null, null, selection("scope-a")));
+    const { result } = renderHook(() => useAccountingReconciliationViewModel(data, "reconciliation", api, null, selection("scope-a")));
     await waitFor(() => expect(result.current.selectionNotice).toContain("selected break is no longer available"));
     expect(result.current.selectedDetail).toBeNull();
     expect(result.current.selectedBreakId).toBeNull();
@@ -237,7 +256,7 @@ describe("reconciliation selection continuity", () => {
     const api = services();
     let complete!: (value: ReconciliationCaseworkOperationResult) => void;
     api.reviewBreak = vi.fn().mockReturnValue(new Promise<ReconciliationCaseworkOperationResult>((resolve) => { complete = resolve; }));
-    const { result, rerender } = renderHook(({ scope }) => useAccountingReconciliationViewModel(data, "reconciliation", api, null, null, selection(scope)), { initialProps: { scope: "scope-a" } });
+    const { result, rerender } = renderHook(({ scope }) => useAccountingReconciliationViewModel(data, "reconciliation", api, null, selection(scope)), { initialProps: { scope: "scope-a" } });
     await waitFor(() => expect(result.current.loadingText).toBeNull());
     let pending!: Promise<void>;
     act(() => { pending = result.current.assignBreak("break-a"); });
