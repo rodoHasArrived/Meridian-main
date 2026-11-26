@@ -57,6 +57,29 @@ public sealed class BackfillProviderProvenanceTests : TempDirectoryTestBase
     }
 
     [Fact]
+    public async Task ReceiptDirectorySyncFailure_DoesNotRecordTheRunAndRetrySucceeds()
+    {
+        var (config, _, _, registry) = await CreateProvidersAsync();
+        using var coordinator = new Coordinator(config, registry);
+        var result = await coordinator.RunAsync(new Request("composite", ["SPY"], Session, Session), Tenant, default);
+        var otherRoot = Path.Combine(TestDataRoot, "receipt-sync");
+        var store = new BackfillStatusStore(otherRoot);
+        var statusPath = Path.Combine(otherRoot, "_status", "backfill.json");
+
+        using (DirectorySyncFaults.FailIn(Path.Combine(otherRoot, "_status", "backfill-receipts")))
+        {
+            var write = () => store.WriteAsync(result);
+            await write.Should().ThrowAsync<IOException>();
+        }
+
+        File.Exists(statusPath).Should().BeFalse("the run is recorded only after its receipt is durable");
+
+        await store.WriteAsync(result);
+        store.TryReadRetainedResult(result.ProviderProvenance!.ReceiptId).Should().NotBeNull();
+        File.Exists(statusPath).Should().BeTrue();
+    }
+
+    [Fact]
     public async Task CloneRechecksHealthAndBlocksLostConfigurationWithoutChangingOriginalReceipt()
     {
         var (config, primary, fallback, registry) = await CreateProvidersAsync();

@@ -275,6 +275,7 @@ public sealed partial class EvidenceStorageQuotaCoordinator
     private async Task DeleteRecordAsync(string id)
     {
         File.Delete(RecordPath(id));
+        // Best effort: the release has committed; a reappearing record only over-reserves until recovery.
         await AtomicFileWriter.SyncDirectoryAsync(_journalDirectory, CancellationToken.None).ConfigureAwait(false);
     }
 

@@ -375,23 +375,24 @@ Declared public members:
 | <code>public static CompositionOptions WebDashboard =&gt; …;</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:172](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L172) | Options optimized for web dashboard hosting. |
 | <code>public static CompositionOptions Streaming =&gt; …;</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:190](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L190) | Options for streaming data collection (CLI headless mode). |
 | <code>public static CompositionOptions BackfillOnly =&gt; …;</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:208](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L208) | Options for backfill-only operation. |
-| <code>public string? ConfigPath { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:228](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L228) | Path to the configuration file. If null, ConfigStore will use default resolution. |
-| <code>public IConfiguration? Configuration { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:234](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L234) | Host-owned runtime settings. When supplied, missing keys never fall back to the process environment. Omit this for the existing environment-driven production startup contract. |
-| <code>public string? DataRoot { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:239](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L239) | Data root directory override. If null, uses value from configuration. |
-| <code>public bool EnableSymbolManagement { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:241](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L241) |  |
-| <code>public bool EnableBackfillServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:242](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L242) |  |
-| <code>public bool EnableEtlServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:243](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L243) |  |
-| <code>public bool EnableMaintenanceServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:244](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L244) |  |
-| <code>public bool EnableDiagnosticServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:245](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L245) |  |
-| <code>public bool EnableCredentialServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:246](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L246) |  |
-| <code>public bool EnableProviderServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:247](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L247) |  |
-| <code>public bool EnablePipelineServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:248](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L248) |  |
-| <code>public bool EnableCollectorServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:249](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L249) |  |
-| <code>public bool EnableHttpClientFactory { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:250](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L250) |  |
-| <code>public bool EnableCanonicalizationServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:251](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L251) |  |
-| <code>public bool EnableProcessWideHostedServices { get; init; } = true;</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:257](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L257) | Whether this graph owns process-wide hosted loops and workers. Desktop child graphs disable this while retaining guards, migrations, and child-local storage/symbol initialization. |
-| <code>public bool EnableOpenTelemetry { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:263](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L263) | Explicit programmatic opt-in to tracing and the existing metrics decorator. Operators normally opt in through AppConfig.Tracing.Enabled. |
-| <code>public bool OwnsTracingProvider { get; init; } = true;</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:269](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L269) | Whether this graph owns a tracing provider. Desktop child graphs reuse their parent&#x27;s listener; independent utility and ETL hosts still own telemetry even without workers. |
+| <code>public string? ConfigPath { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:229](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L229) | Path to the configuration file. If null, ConfigStore will use default resolution. |
+| <code>public IConfiguration? Configuration { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:235](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L235) | Host-owned runtime settings. When supplied, missing keys never fall back to the process environment. Omit this for the existing environment-driven production startup contract. |
+| <code>public string? DataRoot { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:240](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L240) | Data root directory override. If null, uses value from configuration. |
+| <code>public bool EnableSymbolManagement { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:242](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L242) |  |
+| <code>public bool EnableBackfillServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:243](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L243) |  |
+| <code>public bool EnableEtlServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:244](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L244) |  |
+| <code>public bool EnableMaintenanceServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:245](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L245) |  |
+| <code>public bool EnableDiagnosticServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:246](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L246) |  |
+| <code>public bool EnableCredentialServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:247](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L247) |  |
+| <code>public bool EnableProviderServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:248](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L248) |  |
+| <code>public bool EnablePipelineServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:249](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L249) |  |
+| <code>public bool EnableCollectorServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:250](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L250) |  |
+| <code>public bool EnableHttpClientFactory { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:251](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L251) |  |
+| <code>public bool EnableCanonicalizationServices { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:252](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L252) |  |
+| <code>public bool EnableProcessWideHostedServices { get; init; } = true;</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:258](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L258) | Whether this graph owns process-wide hosted loops and workers. Desktop child graphs disable this while retaining guards, migrations, and child-local storage/symbol initialization. |
+| <code>public bool EnableOpenTelemetry { get; init; }</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:264](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L264) | Explicit programmatic opt-in to tracing and the existing metrics decorator. Operators normally opt in through AppConfig.Tracing.Enabled. |
+| <code>public bool OwnsTracingProvider { get; init; } = true;</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:270](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L270) | Whether this graph owns a tracing provider. Desktop child graphs reuse their parent&#x27;s listener; independent utility and ETL hosts still own telemetry even without workers. |
+| <code>public PipelineWorkload PipelineWorkload { get; init; } = PipelineWorkload.Collector;</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:277](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L277) | The workload whose WAL and dedup ledger directories this graph&#x27;s pipeline uses. Separate workloads can run against one data root at the same time; two hosts of the same workload cannot, because the WAL refuses a directory another live instance owns. |
 
 ## ConsoleHostAdapter
 
@@ -847,6 +848,33 @@ Declared public members:
 | <code>public const string Partial = &quot;partial&quot;;</code> | [src/Meridian.Application/Composition/PersistenceConfigurationStatus.cs:17](../../../../src/Meridian.Application/Composition/PersistenceConfigurationStatus.cs#L17) |  |
 | <code>public const string Configured = &quot;configured&quot;;</code> | [src/Meridian.Application/Composition/PersistenceConfigurationStatus.cs:18](../../../../src/Meridian.Application/Composition/PersistenceConfigurationStatus.cs#L18) |  |
 
+## PipelineDurabilityPaths
+
+Qualified name: <code>Meridian.Application.Composition.PipelineDurabilityPaths</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Composition/PipelineWorkload.cs:18](../../../../src/Meridian.Application/Composition/PipelineWorkload.cs#L18).
+
+Resolves the per-workload durability directories under a data root.
+
+```csharp
+public static class PipelineDurabilityPaths
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string WalRootName = &quot;_wal&quot;;</code> | [src/Meridian.Application/Composition/PipelineWorkload.cs:21](../../../../src/Meridian.Application/Composition/PipelineWorkload.cs#L21) | Root of every workload&#x27;s WAL directory; also the pre-workload shared WAL directory. |
+| <code>public const string DedupRootName = &quot;_dedup&quot;;</code> | [src/Meridian.Application/Composition/PipelineWorkload.cs:24](../../../../src/Meridian.Application/Composition/PipelineWorkload.cs#L24) | Root of every workload&#x27;s dedup ledger directory; also the pre-workload shared ledger directory. |
+| <code>public static IReadOnlyList&lt;PipelineWorkload&gt; AllWorkloads { get; } = [PipelineWorkload.Collector, PipelineWorkload.Backfill];</code> | [src/Meridian.Application/Composition/PipelineWorkload.cs:27](../../../../src/Meridian.Application/Composition/PipelineWorkload.cs#L27) | Every workload, in the order tools should visit them. |
+| <code>public static string DirectoryName(PipelineWorkload workload) =&gt; …;</code> | [src/Meridian.Application/Composition/PipelineWorkload.cs:30](../../../../src/Meridian.Application/Composition/PipelineWorkload.cs#L30) | Directory name used for workload under the WAL and dedup roots. |
+| <code>public static bool TryParse(string? value, out PipelineWorkload workload);</code> | [src/Meridian.Application/Composition/PipelineWorkload.cs:38](../../../../src/Meridian.Application/Composition/PipelineWorkload.cs#L38) | Parses a workload name as written on the command line (case-insensitive). |
+| <code>public static string LegacyWalDirectory(string dataRoot) =&gt; …;</code> | [src/Meridian.Application/Composition/PipelineWorkload.cs:54](../../../../src/Meridian.Application/Composition/PipelineWorkload.cs#L54) | The pre-workload shared WAL directory, {dataRoot}/_wal. |
+| <code>public static string LegacyDedupDirectory(string dataRoot) =&gt; …;</code> | [src/Meridian.Application/Composition/PipelineWorkload.cs:57](../../../../src/Meridian.Application/Composition/PipelineWorkload.cs#L57) | The pre-workload shared dedup directory, {dataRoot}/_dedup. |
+| <code>public static string WalDirectory(string dataRoot, PipelineWorkload workload) =&gt; …;</code> | [src/Meridian.Application/Composition/PipelineWorkload.cs:60](../../../../src/Meridian.Application/Composition/PipelineWorkload.cs#L60) | The WAL directory owned by workload. |
+| <code>public static string DedupDirectory(string dataRoot, PipelineWorkload workload) =&gt; …;</code> | [src/Meridian.Application/Composition/PipelineWorkload.cs:64](../../../../src/Meridian.Application/Composition/PipelineWorkload.cs#L64) | The dedup ledger directory owned by workload. |
+| <code>public static bool AdoptsLegacyState(PipelineWorkload workload) =&gt; …;</code> | [src/Meridian.Application/Composition/PipelineWorkload.cs:71](../../../../src/Meridian.Application/Composition/PipelineWorkload.cs#L71) | Whether workload adopts state left in the shared pre-workload directories. Only the collector does, so exactly one owner replays legacy segments. |
+
 ## PipelinePublisher
 
 Qualified name: <code>Meridian.Application.Composition.PipelinePublisher</code>. Kind: `class`.
@@ -865,6 +893,25 @@ Declared public members:
 | --- | --- | --- |
 | <code>public PipelinePublisher(IMarketEventPublisher publisher, IEventMetrics? metrics = null);</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:112](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L112) |  |
 | <code>public bool TryPublish(in MarketEvent evt);</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:118](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L118) |  |
+
+## PipelineWorkload
+
+Qualified name: <code>Meridian.Application.Composition.PipelineWorkload</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Composition/PipelineWorkload.cs:8](../../../../src/Meridian.Application/Composition/PipelineWorkload.cs#L8).
+
+The kind of pipeline a host runs. Each workload owns its own write-ahead log and dedup ledger directory, so a collector and a backfill sharing one data root never write, recover, truncate or compact each other&#x27;s durability state.
+
+```csharp
+public enum PipelineWorkload : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Collector</code> | [src/Meridian.Application/Composition/PipelineWorkload.cs:11](../../../../src/Meridian.Application/Composition/PipelineWorkload.cs#L11) | Live streaming collection (headless collector, desktop and workstation hosts). |
+| <code>Backfill</code> | [src/Meridian.Application/Composition/PipelineWorkload.cs:14](../../../../src/Meridian.Application/Composition/PipelineWorkload.cs#L14) | Historical backfill. |
 
 ## ProductionRegistrationGuardService
 
@@ -962,41 +1009,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public string? ResolveCallerTenant() =&gt; …;</code> | [src/Meridian.Application/Composition/TenantScopeServiceRegistration.cs:87](../../../../src/Meridian.Application/Composition/TenantScopeServiceRegistration.cs#L87) |  |
-
-## SecurityMasterGovernanceProfileGuard
-
-Qualified name: <code>Meridian.Application.Composition.SecurityMasterGovernanceProfileGuard</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs:22](../../../../src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs#L22).
-
-Refuses to start a host whose configuration contradicts its Security Master governance profile: an Institutional profile with one of the three requirements explicitly set to false, a production composition with SecurityMasterWorkbench:GovernanceProfile explicitly set to Standard, or a profile key that stopped declaring Institutional after this process had already run it. The refusal names each contradicted key.
-
-```csharp
-public sealed class SecurityMasterGovernanceProfileGuard : IStartupRefusalGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterGovernanceProfileGuard(ISecurityMasterGovernanceRequirements requirements);</code> | [src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs:26](../../../../src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs#L26) |  |
-| <code>public Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs:31](../../../../src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs#L31) |  |
-| <code>public Task StopAsync(CancellationToken cancellationToken) =&gt; …;</code> | [src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs:59](../../../../src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs#L59) |  |
-
-## SecurityMasterGovernanceServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Application.Composition.SecurityMasterGovernanceServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs:93](../../../../src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs#L93).
-
-Registers the Security Master governance requirements seam.
-
-```csharp
-public static class SecurityMasterGovernanceServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddSecurityMasterGovernanceRequirements(this IServiceCollection services);</code> | [src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs:111](../../../../src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs#L111) | Registers ISecurityMasterGovernanceRequirements, the IGovernedTermAmendmentPolicy that reads it, and the startup guard that refuses a configuration contradicting the governance profile. Idempotent; every host that enforces a Security Master governance requirement calls it (StorageFeatureRegistration, the workstation shared services and the WPF desktop). |

@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CustomAssetProfileFieldProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.CustomAssetProfileFieldProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs:43](../../../../src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs#L43).
+
+```csharp
+public sealed record CustomAssetProfileFieldProjectionRow(Guid SecurityId, string CustomProfileId, int ProfileVersion, string FieldKey, string ValueKind, string? TextValue, decimal? NumericValue, bool? BooleanValue, string RawValueJson, long Version);
+```
+
+## DepositProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.DepositProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs#L15).
+
+```csharp
+public sealed record DepositProjectionRow(Guid SecurityId, string DisplayName, string Currency, string DepositType, string InstitutionName, DateOnly? Maturity, decimal? InterestRate, string? DayCount, bool IsCallable, string PrimaryIdentifierValue, long Version);
+```
+
 ## DirectLoanCovenantRow
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.DirectLoanCovenantRow</code>. Kind: `record`.
@@ -940,25 +960,3 @@ Declared public members:
 | <code>public OperatorOverrideSelfApprovalException(Guid securityId, string reviewer) : base($&quot;Operator overrides for security &#x27;{securityId:D}&#x27; were staged by &#x27;{reviewer}&#x27;, who cannot also approve them; an independent reviewer must decide.&quot;);</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:85](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L85) |  |
 | <code>public Guid SecurityId { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:92](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L92) |  |
 | <code>public string Reviewer { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:94](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L94) |  |
-
-## OperatorOverridesPatchedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverridesPatchedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:51](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L51).
-
-OperatorOverrides / Patched: staged overlay values awaiting review.
-
-```csharp
-public sealed record OperatorOverridesPatchedPayload(IReadOnlyList<string> SetKeys, IReadOnlyList<string> RemovedKeys, IReadOnlyDictionary<string, string> PreviousValues, IReadOnlyDictionary<string, string> Values, string? ReasonCode, string ApprovalStatus, long? ExpectedCanonicalVersion) : ISecurityGovernancePayload;
-```
-
-## OptionContractProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OptionContractProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IOptionReferenceProjectionStore.cs:17](../../../../src/Meridian.Storage/SecurityMaster/IOptionReferenceProjectionStore.cs#L17).
-
-```csharp
-public sealed record OptionContractProjectionRow(string ContractSymbol, Guid? SecurityId, string OptionChainId, string UnderlyingSymbol, Guid? UnderlyingSecurityId, string PutCall, decimal Strike, DateOnly ExpiryDate, decimal Multiplier, bool IsAdjusted, DateOnly? LastTradingDate, string LifecycleStat, DateTimeOffset LastUpdatedUtc, long Version);
-```

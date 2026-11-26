@@ -78,6 +78,12 @@ The actual WAL API includes `InitializeAsync`, `AppendAsync<T>(data, recordType,
 owned by the pipeline's `RecoverAsync`; there is no basis for copying the former standalone
 `WriteAheadLog.RecoverAsync` recipe.
 
+A WAL directory has one live owner: `InitializeAsync`/`RepairAsync` take `.owner.lock` and throw
+`WalDirectoryInUseException` for a second instance, including one in the same process. Pipeline
+WAL and dedup state are split per `PipelineWorkload` (`_wal/{collector|backfill}`,
+`_dedup/{collector|backfill}`; see `PipelineDurabilityPaths`). In tests that model a restart,
+dispose the first WAL owner (or its pipeline or host) before initializing the next one.
+
 Initialization scans and validates records; it does not prove that they have been replayed and
 flushed to the final sink. Use the real WAL implementation and caller when designing recovery,
 not a shortened disposal method that commits the last seen sequence unconditionally.
