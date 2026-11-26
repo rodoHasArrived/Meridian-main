@@ -47,7 +47,7 @@ import { CorporateActionsPanel } from "@/screens/accounting-screen.corporate-act
 import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, CloseCommandCenterPanel } from "@/screens/accounting-screen.close-cockpit-panels";
 import { SecuritySchedulesPanel } from "@/screens/accounting-screen.security-master-panels";
 import { CalibrationSummaryPanel } from "@/screens/accounting-screen.calibration-panel";
-import { InstrumentPassportPanel, ReferenceDataWorkbenchPanel, SecurityOpenLotReadModelPanel } from "@/screens/accounting-screen.security-master-detail-panels";
+import { InstrumentPassportPanel, ReferenceDataWorkbenchPanel, SecurityChangeHistoryPanel, SecurityOpenLotReadModelPanel } from "@/screens/accounting-screen.security-master-detail-panels";
 import { AccountingChip, AccountingHighlight, AccountingWorkbenchContext } from "@/screens/accounting-screen.workbench-context";
 import { OperationalExceptionWorkbenchPanel, ReconciliationQueueSummaryCard, TradingParametersPanel, reconciliationQueueColumns } from "@/screens/accounting-screen.operations-panels";
 import { BankingPaymentApprovalsPanel } from "@/screens/accounting-screen.payment-approvals";
@@ -1867,6 +1867,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                       view={securityMaster.corporateActionsView}
                       onSelect={securityMaster.selectCorporateAction}
                     />
+                    <SecurityChangeHistoryPanel view={securityMaster.changeHistoryView} />
                   </div>
                 </TabPanel>
                 <TabPanel>

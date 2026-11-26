@@ -49,14 +49,37 @@ entity master.
 | Registration | `database/schema-control.json`, `database/migration-reservations.json`, `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Schema control and DI |
 | Routes | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.EntityMaster.cs` | `/api/entity-master/...` |
 | Tests | `tests/Meridian.Tests/SecurityMaster/EntityMasterPostgresTests.cs` | Identity rules, valid-dated hierarchy and issuer links on both stores |
+| EDGAR issuer linking | `src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs` | Issuers found or registered by CIK and linked; CIK no longer chooses between share classes |
+| Issuer concentration | `src/Meridian.Ui.Shared/Services/IssuerConcentrationService.cs`, `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.PortfolioAggregation.cs` | Gross exposure by issuer on `GET /api/portfolio/exposure` |
+| Consumer tests | `tests/Meridian.Tests/Application/SecurityMaster/EdgarIngestOrchestratorTests.cs`, `tests/Meridian.Tests/SecurityMaster/ValidTime/IssuerConcentrationServiceTests.cs` | Share-class safety, issuer linking, concentration grouping |
+| Adoption plan | `docs/engineering/plans/entity-master-adoption-plan.md` | Counterparty and fund-structure adoption against fund-structure entity lifecycles |
 
 **Implemented on 2026-11-25:** the context, the stores, the routes, and valid-dated hierarchy and issuer links.
 
+**Consumers adopted on 2026-11-25:**
+
+1. **EDGAR ingest links issuers by CIK.**
+   - A security is matched by ticker: the EDGAR-sourced ticker first, then a ticker from any provider.
+   - A CIK identifies an issuer, not a share class. It matches only a legacy record keyed by CIK alone,
+     with no ticker of its own and a single claimant when the canonical resolver is composed. This
+     replaces the first-match CIK lookup that could attach a share-class ticker to a sibling class.
+   - After each non-dry-run write, the issuer is found or registered in the entity master by CIK, and the
+     security gets an issuer link valid from the run date. Re-linking to the same issuer is a no-op.
+   - A link that started the same day to a different issuer is reported, not overwritten.
+   - Entity-master failures are reported in the run's errors and never undo the security write.
+   - `EdgarIngestResult.IssuersLinked` counts the new links.
+2. **Issuer-level concentration in risk reporting.** The portfolio exposure report (`GET /api/portfolio/exposure`)
+   carries `issuerConcentration` when the host composes the entity master and a canonical security resolver.
+   - Positions are resolved canonically by ticker, so an ambiguous ticker counts as unlinked.
+   - Each position's issuer is read from the issuer link as of the report date.
+   - Each issuer row has its gross exposure, its share of gross, its ultimate parent and its symbols.
+   - Unlinked exposure is reported separately, never dropped.
+
 **Still proposed:**
 
-- EDGAR ingest linking issuers by CIK.
-- Issuer-level concentration in risk and reporting.
-- Counterparty and fund-structure adoption.
+- Counterparty and fund-structure adoption. The staged plan, including how the entity master reconciles
+  with fund-structure entity lifecycles, is in the
+  [Entity Master Adoption plan](../engineering/plans/entity-master-adoption-plan.md).
 - Workstation surfaces.
 
 ## Rationale
@@ -111,4 +134,4 @@ dotnet run --project build/dotnet/DocGenerator/DocGenerator.csproj -- verify-adr
 
 ---
 
-*Last Updated: 2026-11-25*
+*Last Updated: 2026-11-25 (EDGAR linking, issuer concentration)*

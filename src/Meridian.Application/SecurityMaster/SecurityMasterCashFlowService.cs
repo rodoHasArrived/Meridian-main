@@ -35,6 +35,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
     private readonly IBondCalculationPolicy? _bondPolicy;
     private readonly ISecurityCashFlowReceiptStore? _receiptStore;
     private readonly TimeProvider _clock;
+    private readonly ISecurityTermsValidTimeReader? _validTime;
 
     private static readonly TimeSpan StalenessThreshold = TimeSpan.FromDays(7);
 
@@ -60,9 +61,13 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         ISecurityForwardCurveProvider? forwardCurves = null,
         IBondCalculationPolicy? bondPolicy = null,
         ISecurityCashFlowReceiptStore? receiptStore = null,
-        TimeProvider? clock = null)
+        TimeProvider? clock = null,
+        ISecurityTermsValidTimeReader? validTime = null)
     {
         _clock = clock ?? TimeProvider.System;
+        // ADR-034: with a valid-time reader the calculated schedule is period-correct; without one
+        // (hosts without the PostgreSQL event store) it projects from the latest recorded terms.
+        _validTime = validTime;
         _store = store;
         _providers = providers?.ToList() ?? [];
         _queryService = queryService;
@@ -157,8 +162,13 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
             // Curves are read as of the projection date, not the wall clock, so a valuation as of
             // another date projects floating legs from the curve in force on that date.
             var forwardCurves = await LoadForwardCurvesAsync(security, DateOnly.FromDateTime(asOf.UtcDateTime.Date), ct).ConfigureAwait(false);
-            var projection = SecurityCashFlowScheduleRowCodec.Current(BuildCalculatedProjectionCore(
-                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, asOf, _calendars, forwardCurves));
+            StructuredCashFlowProjectionDto Project(SecurityDetailDto terms)
+                => SecurityCashFlowScheduleRowCodec.Current(BuildCalculatedProjectionCore(
+                    terms, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, asOf, _calendars, forwardCurves));
+            var projection = await ComposeValidTimeProjectionAsync(security, Project(security), asOf, Project, ct)
+                .ConfigureAwait(false);
+            if (projection.BlockedReason is not null && projection.TermsUsed is null)
+                return projection;
             if (projection.ScheduleEvidence is { CoverageGaps.Count: > 0 } evidence)
             {
                 // Coverage gaps are informational (ADR-025 decision 2): the schedule still projects.

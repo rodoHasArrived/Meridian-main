@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PrivateCapitalBankObservationService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalBankObservationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs#L14).
+
+Imports reviewed settled bank observations without creating a payment or posting cash.
+
+```csharp
+public sealed class PrivateCapitalBankObservationService(IEvidenceArtifactStore vault, IBankingStore store, TimeProvider? clock = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PrivateCapitalBankObservationImportResultDto&gt; ImportAsync(PrivateCapitalScopeDto scope, ImportPrivateCapitalBankObservationRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs#L28) |  |
+
 ## PrivateCapitalFundEventCommandCenterService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalFundEventCommandCenterService</code>. Kind: `class`.
@@ -865,22 +883,3 @@ Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:1
 ```csharp
 public sealed record ReportingAuthoritativeSourceCapture(ReportingAuthoritativeSourceCheckpoint Checkpoint, ImmutableArray<IReadOnlyDictionary<string, string>> DatasetRows, ReportingCertifiedLedgerPresentationInput? CertifiedLedgerPresentation = null);
 ```
-
-## ReportingAuthoritativeSourceCaptureIntent
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceCaptureIntent</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:25](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L25).
-
-Template identity supplied by the governed certification/revalidation path when an authoritative source capture may require template-specific presentation evidence.
-
-```csharp
-public sealed record ReportingAuthoritativeSourceCaptureIntent(string TemplateId)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool RequiresCertifiedLedgerPresentation { get; init; }</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:28](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L28) |  |
-| <code>public static ReportingAuthoritativeSourceCaptureIntent FromTemplate(ReportingTemplateMetadata template);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:30](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L30) |  |

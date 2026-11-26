@@ -6,6 +6,80 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationKernelCriticalSeverityRatePayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelCriticalSeverityRatePayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:916](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L916).
+
+```csharp
+public sealed record WorkstationKernelCriticalSeverityRatePayload(double ShortWindow, double LongWindow, int ShortWindowSamples, int LongWindowSamples, bool JumpAlertActive, int JumpAlertCount, WorkstationKernelAlertThresholdsPayload AlertThresholds);
+```
+
+## WorkstationKernelDomainPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelDomainPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:925](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L925).
+
+```csharp
+public sealed record WorkstationKernelDomainPayload(string Domain, long Evaluations, double ThroughputPerMinute, WorkstationKernelLatencyPayload LatencyMs, double ReasonCoveragePercent, WorkstationKernelDriftPayload Drift, WorkstationKernelCriticalSeverityRatePayload CriticalSeverityRate, long DeterminismMismatches, DateTimeOffset LastUpdatedUtc);
+```
+
+## WorkstationKernelDriftPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelDriftPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:904](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L904).
+
+```csharp
+public sealed record WorkstationKernelDriftPayload(double Score, double Severity, string Methodology);
+```
+
+## WorkstationKernelLatencyPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelLatencyPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:899](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L899).
+
+```csharp
+public sealed record WorkstationKernelLatencyPayload(double P50, double P95, double P99);
+```
+
+## WorkstationKernelObservabilityPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelObservabilityPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:936](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L936).
+
+```csharp
+public sealed record WorkstationKernelObservabilityPayload(DateTimeOffset? UpdatedAtUtc, bool DeterminismChecksEnabled, int ActiveAlerts, int TotalAlerts, int Alerts, IReadOnlyList<WorkstationKernelDomainPayload> Domains);
+```
+
+## WorkstationKpiDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKpiDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/KpiDefinitionDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/KpiDefinitionDtos.cs#L12).
+
+One headline figure&#x27;s identity. ComparisonBasis is null when the figure carries no change.
+
+```csharp
+public sealed record WorkstationKpiDefinitionDto(string Id, string Label, string Population, string? ComparisonBasis);
+```
+
+## WorkstationKpiDefinitionsDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKpiDefinitionsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/KpiDefinitionDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/KpiDefinitionDtos.cs#L9).
+
+The fixed definition of every workstation headline figure: the label it is shown under, the population it counts and what a change in it is measured against. The browser workstation&#x27;s lib/kpi-registry.ts and the WPF desktop read the same catalog, so a figure with the same name always covers the same group on every screen.
+
+```csharp
+public sealed record WorkstationKpiDefinitionsDto(IReadOnlyList<WorkstationKpiDefinitionDto> Definitions);
+```
+
 ## WorkstationManualOrderEntry
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationManualOrderEntry</code>. Kind: `record`.
@@ -478,86 +552,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:508](../
 
 ```csharp
 public sealed record WorkstationReportWriterFormulaPayload(string Name, string Expression, string? Label = null);
-```
-
-## WorkstationReportWriterGridPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterGridPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:548](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L548).
-
-```csharp
-public sealed record WorkstationReportWriterGridPayload(string GridId, string Title, string Kind, int DimensionCount, int MetricCount, int FormulaCount, IReadOnlyList<string>? RowFields = null, IReadOnlyList<string>? ColumnFields = null, IReadOnlyList<WorkstationReportWriterMetricPayload>? Metrics = null, IReadOnlyList<WorkstationReportWriterFormulaPayload>? Formulas = null, int? TopN = null, string? SortBy = null, bool SortDescending = true, IReadOnlyList<WorkstationReportWriterFilterPayload>? Filters = null, IReadOnlyList<WorkstationReportWriterFieldPayload>? SourceFields = null);
-```
-
-## WorkstationReportWriterMetricPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterMetricPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:502](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L502).
-
-Template metadata exposed to browser and desktop Reporting operator surfaces.
-
-```csharp
-public sealed record WorkstationReportWriterMetricPayload(string Name, string SourceField, string Function, string? Label = null);
-```
-
-## WorkstationRiskGuardrail
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRiskGuardrail</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:417](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L417).
-
-One live guardrail from the enforced risk-rule registry, rendered as a utilization bar: how much of the rule&#x27;s configured headroom the current portfolio consumes.
-
-```csharp
-public sealed record WorkstationRiskGuardrail(string RuleName, string State, string CurrentValue, string Threshold, decimal? UtilizationPercent, string Severity);
-```
-
-## WorkstationRunDigest
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRunDigest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:128](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L128).
-
-Minimal run digest attached to session and strategy payloads. Fields match BuildRunDigest in WorkstationEndpoints.
-
-```csharp
-public sealed record WorkstationRunDigest(string RunId, string StrategyName, string Mode, string Status, string LastUpdated, bool HasLedger, bool HasPortfolio, WorkstationSecurityCoveragePayload SecurityCoverage);
-```
-
-## WorkstationRunDrillInLinks
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRunDrillInLinks</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:47](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L47).
-
-Shared drill-in links attached to strategy, trading, and accounting run records.
-
-```csharp
-public sealed record WorkstationRunDrillInLinks(string EquityCurve, string Fills, string Attribution, string? Ledger, string CashFlows, string Continuity, string Comparison);
-```
-
-## WorkstationScopeAccountOptionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationScopeAccountOptionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L56).
-
-A fund account the caller may scope to. FundId and EntityId are null when the account has no such relationship or when it points at a fund or entity the caller may not see; FundWithheld and EntityWithheld tell the two apart.
-
-```csharp
-public sealed record WorkstationScopeAccountOptionDto(Guid AccountId, string DisplayName, Guid? FundId, Guid? EntityId, bool FundWithheld = false, bool EntityWithheld = false);
-```
-
-## WorkstationScopeEntityOptionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationScopeEntityOptionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L23).
-
-A legal entity the caller may scope to.
-
-```csharp
-public sealed record WorkstationScopeEntityOptionDto(Guid EntityId, string Name);
 ```

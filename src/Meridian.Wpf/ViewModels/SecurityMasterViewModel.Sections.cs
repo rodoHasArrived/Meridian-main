@@ -41,7 +41,7 @@ internal sealed class SecurityMasterConflictSectionViewModel
 internal sealed class SecurityMasterScheduleAndOpenLotSectionViewModel
 {
     public ObservableCollection<SecurityValidationIssueDto> ValidationIssues { get; } = new();
-    public ObservableCollection<SecurityMasterChangeHistoryItemDto> ChangeHistoryItems { get; } = new();
+    public ObservableCollection<SecurityMasterChangeHistoryRow> ChangeHistoryItems { get; } = new();
     public ObservableCollection<SecurityMasterPresentationField> ScheduleBookFields { get; } = new();
     public ObservableCollection<SecurityMasterScheduleEventDto> ScheduleBookEvents { get; } = new();
     public ObservableCollection<SecurityMasterFactorPointDto> ScheduleBookFactorHistory { get; } = new();

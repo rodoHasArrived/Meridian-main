@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PendingOperation
+
+Qualified name: <code>Meridian.Wpf.Services.PendingOperation</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:18](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L18).
+
+Represents a pending operation in the queue.
+
+```csharp
+public sealed class PendingOperation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; set; } = Guid.NewGuid().ToString();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:23](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L23) | Gets or sets the unique identifier for the operation. |
+| <code>public string OperationType { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:28](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L28) | Gets or sets the operation type. |
+| <code>public object? Payload { get; set; }</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:35](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L35) | Gets or sets the operation payload. Payloads must be JSON-serializable — the queue is persisted across restarts, and a payload restored from disk is surfaced to its handler as a JsonElement. |
+| <code>public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:40](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L40) | Gets or sets when the operation was created. |
+| <code>public int RetryCount { get; set; }</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:45](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L45) | Gets or sets the number of retry attempts. |
+| <code>public int MaxRetries { get; set; } = 3;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:50](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L50) | Gets or sets the maximum number of retries before discarding. |
+
 ## PendingOperationQuarantineRecord
 
 Qualified name: <code>Meridian.Wpf.Services.PendingOperationQuarantineRecord</code>. Kind: `record`.
@@ -1026,23 +1049,3 @@ Declared public members:
 | <code>public AppTheme PreviousTheme { get; }</code> | [src/Meridian.Wpf/Services/ThemeService.cs:168](../../../../src/Meridian.Wpf/Services/ThemeService.cs#L168) | Gets the previous theme. |
 | <code>public AppTheme NewTheme { get; }</code> | [src/Meridian.Wpf/Services/ThemeService.cs:171](../../../../src/Meridian.Wpf/Services/ThemeService.cs#L171) | Gets the new theme. |
 | <code>public ThemeChangedEventArgs(AppTheme previousTheme, AppTheme newTheme);</code> | [src/Meridian.Wpf/Services/ThemeService.cs:176](../../../../src/Meridian.Wpf/Services/ThemeService.cs#L176) | Initializes a new instance of the ThemeChangedEventArgs class. |
-
-## ThemeService
-
-Qualified name: <code>Meridian.Wpf.Services.ThemeService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/ThemeService.cs:14](../../../../src/Meridian.Wpf/Services/ThemeService.cs#L14).
-
-WPF-specific theme service that extends ThemeServiceBase with ResourceDictionary management and window chrome updates. Implements singleton pattern for application-wide theme management. Phase 6C.2: Shared base class extracts state management and toggle logic.
-
-```csharp
-public sealed class ThemeService : ThemeServiceBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ThemeService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/ThemeService.cs:27](../../../../src/Meridian.Wpf/Services/ThemeService.cs#L27) | Gets the singleton instance of the ThemeService. |
-| <code>public event EventHandler&lt;ThemeChangedEventArgs&gt;? ThemeChanged;</code> | [src/Meridian.Wpf/Services/ThemeService.cs:32](../../../../src/Meridian.Wpf/Services/ThemeService.cs#L32) | Occurs when the theme is changed. Provides detailed event args with previous/new theme. |
-| <code>public void Initialize(Window window);</code> | [src/Meridian.Wpf/Services/ThemeService.cs:43](../../../../src/Meridian.Wpf/Services/ThemeService.cs#L43) | Initializes the theme service with the main application window. |

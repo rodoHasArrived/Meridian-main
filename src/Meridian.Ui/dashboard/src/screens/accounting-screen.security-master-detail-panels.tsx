@@ -1,4 +1,4 @@
-import { Briefcase, Network, ShieldCheck } from "lucide-react";
+import { Briefcase, History, Network, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,10 @@ import type {
   SecurityOpenLotReadModelViewState,
   SecurityOpenLotRowViewModel,
 } from "./accounting-screen.view-model";
+import type {
+  SecurityChangeHistoryRowViewModel,
+  SecurityChangeHistoryViewState,
+} from "./accounting-screen.security-master-presenters";
 
 const securityOpenLotColumns: DenseDataTableColumn<SecurityOpenLotRowViewModel>[] = [
   {
@@ -41,6 +45,34 @@ const securityOpenLotColumns: DenseDataTableColumn<SecurityOpenLotRowViewModel>[
     )
   },
   { id: "status", label: "Status", render: (row) => <Badge variant={row.statusTone}>{row.statusLabel}</Badge> }
+];
+
+const securityChangeHistoryColumns: DenseDataTableColumn<SecurityChangeHistoryRowViewModel>[] = [
+  { id: "changed", label: "Changed", render: (row) => <span className="font-mono text-xs text-muted-foreground">{row.changedAtLabel}</span> },
+  {
+    id: "event",
+    label: "Event",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.eventLabel}</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{row.summary}</span>
+      </span>
+    )
+  },
+  { id: "version", label: "Version", align: "right", render: (row) => <span className="font-mono tabular-nums text-muted-foreground">{row.versionLabel}</span> },
+  { id: "validFrom", label: "Valid from", render: (row) => <span className="font-mono text-xs text-muted-foreground">{row.validFromLabel}</span> },
+  {
+    id: "validTo",
+    label: "Valid to",
+    render: (row) =>
+      row.validity === "superseded" ? (
+        <Badge variant="warning">{row.validToLabel}</Badge>
+      ) : (
+        <span className="font-mono text-xs text-muted-foreground">{row.validToLabel}</span>
+      )
+  },
+  { id: "actor", label: "Actor", render: (row) => <span className="text-muted-foreground">{row.actorLabel}</span> },
+  { id: "fields", label: "Changed fields", render: (row) => <span className="text-xs text-foreground">{row.changedFieldsLabel}</span> }
 ];
 
 const referenceDataEndpointColumns: DenseDataTableColumn<ReferenceDataEndpointRowViewModel>[] = [
@@ -277,6 +309,47 @@ export function SecurityOpenLotReadModelPanel({
               </div>
             </div>
           </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function SecurityChangeHistoryPanel({ view }: { view: SecurityChangeHistoryViewState }) {
+  return (
+    <Card className="panel-surface">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <History className="h-4 w-4 text-primary" aria-hidden="true" />
+          {view.title}
+        </CardTitle>
+        <CardDescription className="mt-2">{view.description}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
+        {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
+        {view.errorText && (
+          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+            <div>{view.errorText}</div>
+            {view.errorDetails.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                {view.errorDetails.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        )}
+        {!view.loadingText && !view.errorText && (
+          <DenseDataTable
+            columns={securityChangeHistoryColumns}
+            rows={view.rows}
+            getRowId={(row) => row.rowId}
+            getRowAriaLabel={(row) => row.ariaLabel}
+            emptyText={view.emptyText}
+            ariaLabel={view.tableLabel}
+            caption={view.tableCaption}
+          />
         )}
       </CardContent>
     </Card>

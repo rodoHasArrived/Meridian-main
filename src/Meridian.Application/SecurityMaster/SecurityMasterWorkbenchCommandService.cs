@@ -566,6 +566,12 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 writer.WriteStartObject();
                 writer.WriteString("revisionId", request.RevisionId);
                 writer.WriteBoolean("restatementRequired", restatement.RestatementRequired);
+                // ADR-034: the valid-time window the routing used, so the persisted decision says which
+                // periods it covered.
+                if (restatement.GovernedFrom is { } governedFrom)
+                    writer.WriteString("governedFrom", governedFrom.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+                if (restatement.GovernedUntil is { } governedUntil)
+                    writer.WriteString("governedUntil", governedUntil.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
                 writer.WriteStartArray("candidateReportIds");
                 foreach (var candidate in restatement.Candidates)
                     writer.WriteStringValue(candidate.ReportId);

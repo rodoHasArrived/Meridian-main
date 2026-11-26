@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.EntityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Serialization;
 using Meridian.Infrastructure.Adapters.Edgar;
@@ -28,6 +29,9 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
     private readonly ISecurityMasterAmender? _systemAmender;
     private readonly ISecurityMasterConflictService? _conflictService;
     private readonly ILogger<EdgarIngestOrchestrator> _logger;
+    private readonly IEntityMasterStore? _entityMaster;
+    private readonly Meridian.Contracts.SecurityMaster.ISecurityResolver? _resolver;
+    private readonly TimeProvider _clock;
 
     public EdgarIngestOrchestrator(
         IEdgarReferenceDataProvider provider,
@@ -36,8 +40,16 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
         ISecurityMasterService securityMasterService,
         ILogger<EdgarIngestOrchestrator> logger,
         ISecurityMasterConflictService? conflictService = null,
-        ISecurityMasterAmender? systemAmender = null)
+        ISecurityMasterAmender? systemAmender = null,
+        IEntityMasterStore? entityMaster = null,
+        Meridian.Contracts.SecurityMaster.ISecurityResolver? resolver = null,
+        TimeProvider? clock = null)
     {
+        // ADR-033: the issuer is linked through the entity master by CIK. A CIK identifies the issuer,
+        // not a share class, so it is never used on its own to choose which security a ticker belongs to.
+        _entityMaster = entityMaster;
+        _resolver = resolver;
+        _clock = clock ?? TimeProvider.System;
         // Provider ingest amends through the system-ingest path, which the governed-amendment setting
         // does not block. Without an injected amender, the service's own system path is used when it
         // exposes one.
@@ -59,6 +71,7 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
         var securitiesSkipped = 0;
         var factsStored = 0;
         var securityDataStored = 0;
+        var issuersLinked = 0;
         IReadOnlyDictionary<string, IssuerFactSnapshot> factSnapshots = new Dictionary<string, IssuerFactSnapshot>(StringComparer.Ordinal);
 
         var conflictsBefore = await CountOpenConflictsAsync(ct).ConfigureAwait(false);
@@ -102,13 +115,20 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
 
             try
             {
-                var result = await CreateOrAmendSecurityAsync(
+                var (result, securityId) = await CreateOrAmendSecurityAsync(
                         association,
                         filersByCik,
                         factSnapshots,
                         normalizedRequest.DryRun,
                         ct)
                     .ConfigureAwait(false);
+
+                if (!normalizedRequest.DryRun
+                    && securityId is { } writtenSecurityId
+                    && await LinkIssuerAsync(writtenSecurityId, association, filersByCik.GetValueOrDefault(association.Cik), errors, ct).ConfigureAwait(false))
+                {
+                    issuersLinked++;
+                }
 
                 switch (result)
                 {
@@ -159,7 +179,10 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
             SecuritiesSkipped: securitiesSkipped,
             ConflictsDetected: conflictsDetected,
             DryRun: normalizedRequest.DryRun,
-            Errors: errors);
+            Errors: errors)
+        {
+            IssuersLinked = issuersLinked
+        };
     }
 
     private async Task<IReadOnlyList<EdgarFilerRecord>> FetchFilersAsync(
@@ -310,7 +333,7 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
         return request.DryRun ? 0 : storedPartitions;
     }
 
-    private async Task<SecurityWriteResult> CreateOrAmendSecurityAsync(
+    private async Task<(SecurityWriteResult Result, Guid? SecurityId)> CreateOrAmendSecurityAsync(
         EdgarTickerAssociation association,
         IReadOnlyDictionary<string, EdgarFilerRecord> filersByCik,
         IReadOnlyDictionary<string, IssuerFactSnapshot> factSnapshots,
@@ -326,11 +349,11 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
         if (existing is null)
         {
             if (dryRun)
-                return SecurityWriteResult.Created;
+                return (SecurityWriteResult.Created, null);
 
             var request = BuildCreateRequest(association, filer, snapshot, identifiers, now);
             await _securityMasterService.CreateAsync(request, ct).ConfigureAwait(false);
-            return SecurityWriteResult.Created;
+            return (SecurityWriteResult.Created, request.SecurityId);
         }
 
         var identifiersToAdd = identifiers
@@ -339,10 +362,10 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
 
         var commonTerms = BuildCommonTerms(association, filer, snapshot, existing);
         if (dryRun)
-            return identifiersToAdd.Length > 0 ? SecurityWriteResult.Amended : SecurityWriteResult.Skipped;
+            return (identifiersToAdd.Length > 0 ? SecurityWriteResult.Amended : SecurityWriteResult.Skipped, null);
 
         if (identifiersToAdd.Length == 0 && !ShouldAmendCommonTerms(existing, commonTerms))
-            return SecurityWriteResult.Skipped;
+            return (SecurityWriteResult.Skipped, existing.SecurityId);
 
         var amendRequest = new AmendSecurityTermsRequest(
             SecurityId: existing.SecurityId,
@@ -361,31 +384,20 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
                 : _securityMasterService.AmendTermsAsync(amendRequest, ct))
             .ConfigureAwait(false);
 
-        return SecurityWriteResult.Amended;
+        return (SecurityWriteResult.Amended, existing.SecurityId);
     }
 
+    /// <summary>
+    /// Finds the security a ticker association updates. The ticker (EDGAR-sourced first) is the
+    /// security-level key. A CIK names the issuer, which can have several share classes, so a CIK match
+    /// is used only for a record keyed by CIK alone: exactly one claimant (when the canonical resolver is
+    /// composed) and no ticker of its own. Otherwise a new share-class ticker would be attached to a
+    /// sibling class (ADR-033; this replaces the first-match CIK lookup).
+    /// </summary>
     private async Task<SecurityDetailDto?> ResolveExistingSecurityAsync(
         EdgarTickerAssociation association,
         CancellationToken ct)
     {
-        var byCik = await _queryService.GetByIdentifierAsync(
-                SecurityIdentifierKind.Cik,
-                association.Cik,
-                CikProvider,
-                ct)
-            .ConfigureAwait(false);
-        if (byCik is not null)
-            return byCik;
-
-        var byLegacyCik = await _queryService.GetByIdentifierAsync(
-                SecurityIdentifierKind.ProviderSymbol,
-                association.Cik,
-                LegacyCikProvider,
-                ct)
-            .ConfigureAwait(false);
-        if (byLegacyCik is not null)
-            return byLegacyCik;
-
         var byEdgarTicker = await _queryService.GetByIdentifierAsync(
                 SecurityIdentifierKind.Ticker,
                 association.Ticker,
@@ -395,12 +407,117 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
         if (byEdgarTicker is not null)
             return byEdgarTicker;
 
-        return await _queryService.GetByIdentifierAsync(
+        var byTicker = await _queryService.GetByIdentifierAsync(
                 SecurityIdentifierKind.Ticker,
                 association.Ticker,
                 provider: null,
                 ct)
             .ConfigureAwait(false);
+        if (byTicker is not null)
+            return byTicker;
+
+        var byCik = await ResolveCikOnlyRecordAsync(SecurityIdentifierKind.Cik, association.Cik, CikProvider, ct).ConfigureAwait(false);
+        if (byCik is not null)
+            return byCik;
+
+        return await ResolveCikOnlyRecordAsync(SecurityIdentifierKind.ProviderSymbol, association.Cik, LegacyCikProvider, ct)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<SecurityDetailDto?> ResolveCikOnlyRecordAsync(
+        SecurityIdentifierKind kind,
+        string cik,
+        string provider,
+        CancellationToken ct)
+    {
+        if (_resolver is not null)
+        {
+            var resolution = await _resolver
+                .ResolveCanonicalAsync(new ResolveSecurityRequest(kind, cik, provider, AsOfUtc: null), ct)
+                .ConfigureAwait(false);
+            if (resolution.Status != SecurityResolutionStatus.Resolved)
+            {
+                if (resolution.Status == SecurityResolutionStatus.Ambiguous)
+                {
+                    _logger.LogDebug(
+                        "EDGAR CIK {Cik} is claimed by {ClaimantCount} securities; it does not choose between share classes",
+                        cik,
+                        resolution.CandidateSecurityIds.Count);
+                }
+
+                return null;
+            }
+        }
+
+        var candidate = await _queryService.GetByIdentifierAsync(kind, cik, provider, ct).ConfigureAwait(false);
+        if (candidate is null)
+            return null;
+
+        // A record that already has a ticker is a specific share class; a different ticker of the same
+        // issuer is a different security.
+        return candidate.Identifiers.Any(static identifier => identifier.Kind == SecurityIdentifierKind.Ticker)
+            ? null
+            : candidate;
+    }
+
+    /// <summary>
+    /// ADR-033: links the security to its issuer in the entity master, found or registered by CIK.
+    /// Best-effort: an entity-master failure is reported in the run's errors and never undoes the
+    /// security write. Returns true when a new issuer link was recorded.
+    /// </summary>
+    private async Task<bool> LinkIssuerAsync(
+        Guid securityId,
+        EdgarTickerAssociation association,
+        EdgarFilerRecord? filer,
+        List<string> errors,
+        CancellationToken ct)
+    {
+        if (_entityMaster is null || string.IsNullOrWhiteSpace(association.Cik))
+            return false;
+
+        try
+        {
+            var cik = EntityMasterRules.NormalizeCik(association.Cik)!;
+            var issuer = await _entityMaster.FindByCikAsync(cik, ct).ConfigureAwait(false);
+            if (issuer is null)
+            {
+                var legalName = filer?.Name ?? association.Name ?? cik;
+                try
+                {
+                    issuer = await _entityMaster
+                        .CreateEntityAsync(new CreateLegalEntityRequest(legalName, Lei: null, Cik: cik, Jurisdiction: null), nameof(EdgarIngestOrchestrator), ct)
+                        .ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    // Another writer may have registered the CIK first; the CIK is unique, so read it back.
+                    issuer = await _entityMaster.FindByCikAsync(cik, ct).ConfigureAwait(false);
+                    if (issuer is null)
+                        throw;
+                }
+            }
+
+            var today = DateOnly.FromDateTime(_clock.GetUtcNow().UtcDateTime);
+            var current = await _entityMaster.GetIssuerAsync(securityId, today, ct).ConfigureAwait(false);
+            if (current?.IssuerEntityId == issuer.EntityId)
+                return false;
+
+            if (current is not null && current.ValidFrom >= today)
+            {
+                // A link that started today cannot be superseded today; report it rather than guess.
+                errors.Add($"{association.Cik}/{association.Ticker}: security '{securityId:D}' is already linked to issuer '{current.IssuerEntityId:D}' from {current.ValidFrom:yyyy-MM-dd}; EDGAR names issuer '{issuer.EntityId:D}'.");
+                return false;
+            }
+
+            await _entityMaster.LinkIssuerAsync(securityId, issuer.EntityId, today, nameof(EdgarIngestOrchestrator), ct).ConfigureAwait(false);
+            return true;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            errors.Add($"{association.Cik}/{association.Ticker}/issuer-link: {ex.Message}");
+            _logger.LogWarning(ex, "EDGAR issuer link failed for {Cik}/{Ticker}", association.Cik, association.Ticker);
+            return false;
+        }
     }
 
     private static CreateSecurityRequest BuildCreateRequest(

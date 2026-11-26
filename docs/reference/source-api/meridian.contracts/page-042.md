@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RefreshIntercompanyProposalRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.RefreshIntercompanyProposalRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:65](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L65).
+
+```csharp
+public sealed record RefreshIntercompanyProposalRequest(Guid RequestId, int ExpectedDraftVersion, string PreviewFingerprint, string Reason);
+```
+
+## RejectedIntercompanyDraftEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.RejectedIntercompanyDraftEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:43](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L43).
+
+Server-captured rejection checked while holding the journal mutation authority lease.
+
+```csharp
+public sealed record RejectedIntercompanyDraftEvidenceDto(Guid LedgerBookId, Guid JournalEntryId, int Version, Guid ProposalId, string SourceDigest);
+```
+
 ## ReopenClosePeriodRequestDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.ReopenClosePeriodRequestDto</code>. Kind: `record`.
@@ -807,56 +829,3 @@ Declared public members:
 | <code>public RuntimeLifecycleSnapshotDto? HostLifecycle { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:46](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L46) |  |
 | <code>public LifecycleSessionReceiptDto? LatestSessionReceipt { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:47](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L47) |  |
 | <code>public string? Message { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:48](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L48) |  |
-
-## RuntimeLifecycleCheckDto
-
-Qualified name: <code>Meridian.Contracts.Lifecycle.RuntimeLifecycleCheckDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:3](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L3).
-
-```csharp
-public sealed record RuntimeLifecycleCheckDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required string Id { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:5](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L5) |  |
-| <code>public required string DisplayName { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:6](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L6) |  |
-| <code>public required LifecycleCheckRequirement Requirement { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:7](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L7) |  |
-| <code>public required LifecycleCheckStatus Status { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:8](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L8) |  |
-| <code>public required string Message { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:9](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L9) |  |
-| <code>public DateTimeOffset CheckedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:10](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L10) |  |
-| <code>public double DurationMilliseconds { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:11](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L11) |  |
-
-## RuntimeLifecycleSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Lifecycle.RuntimeLifecycleSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:14](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L14).
-
-```csharp
-public sealed record RuntimeLifecycleSnapshotDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required string SessionId { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:16](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L16) |  |
-| <code>public required RuntimeLifecycleState State { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:17](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L17) |  |
-| <code>public required RuntimeReadinessStatus Readiness { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:18](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L18) |  |
-| <code>public required DateTimeOffset StartedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:19](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L19) |  |
-| <code>public required DateTimeOffset StateChangedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:20](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L20) |  |
-| <code>public required string ActivePhase { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:21](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L21) |  |
-| <code>public required bool AcceptingWork { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:22](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L22) |  |
-| <code>public required bool ShutdownRequested { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:23](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L23) |  |
-| <code>public string? ShutdownReason { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:24](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L24) |  |
-| <code>public string? ActiveShutdownOperationId { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:25](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L25) |  |
-| <code>public int? ProcessId { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:26](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L26) |  |
-| <code>public string? ProcessName { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:27](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L27) |  |
-| <code>public int? Port { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:28](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L28) |  |
-| <code>public string? ConfigPath { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:29](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L29) |  |
-| <code>public double UptimeSeconds { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:30](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L30) |  |
-| <code>public IReadOnlyList&lt;RuntimeLifecycleCheckDto&gt; Checks { get; init; } = [];</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:31](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L31) |  |

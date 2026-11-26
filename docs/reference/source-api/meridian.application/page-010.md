@@ -109,12 +109,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SecurityMasterCashFlowService(ISecurityMasterCashFlowStore store, IEnumerable&lt;IStructuredCashFlowProvider&gt; providers, ISecurityMasterQueryService queryService, ILogger&lt;SecurityMasterCashFlowService&gt; logger, ISecurityForwardCurveProvider? forwardCurves = null, IBondCalculationPolicy? bondPolicy = null, ISecurityCashFlowReceiptStore? receiptStore = null) : this(null, store, providers, queryService, logger, forwardCurves, bondPolicy, receiptStore);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:41](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L41) |  |
-| <code>public SecurityMasterCashFlowService(IBusinessDayCalendarSource? calendars, ISecurityMasterCashFlowStore store, IEnumerable&lt;IStructuredCashFlowProvider&gt; providers, ISecurityMasterQueryService queryService, ILogger&lt;SecurityMasterCashFlowService&gt; logger, ISecurityForwardCurveProvider? forwardCurves = null, IBondCalculationPolicy? bondPolicy = null, ISecurityCashFlowReceiptStore? receiptStore = null, TimeProvider? clock = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:54](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L54) | Composes declared schedules with the host&#x27;s explicit calendar source. |
-| <code>public Task&lt;SecurityCashFlowSourceDto?&gt; GetCashFlowSourceAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:82](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L82) |  |
-| <code>public async Task UpsertCashFlowSourceAsync(UpsertCashFlowSourceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:85](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L85) |  |
-| <code>public Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:111](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L111) |  |
-| <code>public async Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsOfAsync(Guid securityId, StructuredCashFlowScenario scenario, DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:115](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L115) |  |
+| <code>public SecurityMasterCashFlowService(ISecurityMasterCashFlowStore store, IEnumerable&lt;IStructuredCashFlowProvider&gt; providers, ISecurityMasterQueryService queryService, ILogger&lt;SecurityMasterCashFlowService&gt; logger, ISecurityForwardCurveProvider? forwardCurves = null, IBondCalculationPolicy? bondPolicy = null, ISecurityCashFlowReceiptStore? receiptStore = null) : this(null, store, providers, queryService, logger, forwardCurves, bondPolicy, receiptStore);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:42](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L42) |  |
+| <code>public SecurityMasterCashFlowService(IBusinessDayCalendarSource? calendars, ISecurityMasterCashFlowStore store, IEnumerable&lt;IStructuredCashFlowProvider&gt; providers, ISecurityMasterQueryService queryService, ILogger&lt;SecurityMasterCashFlowService&gt; logger, ISecurityForwardCurveProvider? forwardCurves = null, IBondCalculationPolicy? bondPolicy = null, ISecurityCashFlowReceiptStore? receiptStore = null, TimeProvider? clock = null, ISecurityTermsValidTimeReader? validTime = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:55](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L55) | Composes declared schedules with the host&#x27;s explicit calendar source. |
+| <code>public Task&lt;SecurityCashFlowSourceDto?&gt; GetCashFlowSourceAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:87](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L87) |  |
+| <code>public async Task UpsertCashFlowSourceAsync(UpsertCashFlowSourceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:90](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L90) |  |
+| <code>public Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:116](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L116) |  |
+| <code>public async Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsOfAsync(Guid securityId, StructuredCashFlowScenario scenario, DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs:120](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs#L120) |  |
 
 Source: [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.DeclaredBondLeg.cs:8](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.DeclaredBondLeg.cs#L8).
 
@@ -135,6 +135,20 @@ Source: [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.F
 ```csharp
 public sealed partial class SecurityMasterCashFlowService
 ```
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.ValidTime.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.ValidTime.cs#L10).
+
+ADR-034 consumer migration: period-correct cash-flow generation. A schedule row takes the terms that were valid at its accrual start (as known now), so a back-dated coupon correction changes the rows it covers and leaves earlier rows on the terms that applied to them.
+
+```csharp
+public sealed partial class SecurityMasterCashFlowService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ValidTimeCompositionUnsupportedCode = &quot;ValidTimeCompositionUnsupported&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.ValidTime.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.ValidTime.cs#L13) | Refusal code when a term change cannot be composed into one period-correct schedule. |
 
 ## SecurityMasterClassificationDriftReportService
 
@@ -953,13 +967,20 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRestatementDecision</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:34](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L34).
+Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:35](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L35).
 
 The restatement outcome a publish reports to the operator: whether a closed-period edit requires restatement, and the report packs proposed for it (the operator approves each via the existing governed report-pack restatement path; the workbench only proposes).
 
 ```csharp
-public sealed record SecurityMasterRestatementDecision(bool RestatementRequired, IReadOnlyList<RestatementCandidateDto> Candidates);
+public sealed record SecurityMasterRestatementDecision(bool RestatementRequired, IReadOnlyList<RestatementCandidateDto> Candidates)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateOnly? GovernedFrom { get; init; }</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:40](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L40) | The first day the routed change governs (the period-lock routing date). |
+| <code>public DateOnly? GovernedUntil { get; init; }</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:47](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L47) | ADR-034: the first day the change no longer governs, because a later valid-from recorded in the security&#x27;s terms takes over. Null when the change governs from GovernedFrom onwards, or when it was not recorded as an economic event (corporate actions, overlay-only edits). |
 
 ## SecurityMasterRevisionFieldBase
 

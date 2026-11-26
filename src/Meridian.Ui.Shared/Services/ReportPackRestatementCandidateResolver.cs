@@ -70,6 +70,17 @@ public sealed class ReportPackRestatementCandidateResolver : IRestatementCandida
         IReadOnlyList<string> changedFields,
         string? fundProfileId,
         CancellationToken ct = default)
+        => ResolveAsync(securityId, ledgerBookId, effectiveDate, governedUntil: null, changedFields, fundProfileId, ct);
+
+    /// <inheritdoc />
+    public Task<RestatementCandidateResult> ResolveAsync(
+        Guid securityId,
+        Guid ledgerBookId,
+        DateOnly effectiveDate,
+        DateOnly? governedUntil,
+        IReadOnlyList<string> changedFields,
+        string? fundProfileId,
+        CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -112,6 +123,14 @@ public sealed class ReportPackRestatementCandidateResolver : IRestatementCandida
                 continue;
             }
 
+            // ADR-034 valid-time window (fail-open, like the narrowing above): a term change stops
+            // governing at the next later valid-from, so a pack whose period lies entirely on or after
+            // that date reports terms the change never applied to.
+            if (governedUntil is { } until && ReportPeriodRange.IsEntirelyOnOrAfter(record.Period, until))
+            {
+                continue;
+            }
+
             var matchedLines = MatchSecurityLines(record, securityId);
             if (matchedLines.Count == 0)
             {
@@ -141,7 +160,7 @@ public sealed class ReportPackRestatementCandidateResolver : IRestatementCandida
                 Summary:
                     $"Published report pack {record.ReportId:D} for period {record.Period} has " +
                     $"{matchedLines.Count} line(s) sourced from security {securityId:D}; the governed edit to " +
-                    $"{changedFieldSummary} (effective {effectiveDate:yyyy-MM-dd}) may require a restatement.",
+                    $"{changedFieldSummary} (effective {effectiveDate:yyyy-MM-dd}{(governedUntil is { } end ? $" until {end:yyyy-MM-dd}" : string.Empty)}) may require a restatement.",
                 ChangedLines: matchedLines));
         }
 

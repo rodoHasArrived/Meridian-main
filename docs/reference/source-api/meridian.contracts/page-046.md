@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingGovernanceRestatementRequestDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRestatementRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:22](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L22).
+
+Human rationale for opening a governed restatement. Changed-line evidence and replacement certification are computed from server-owned records rather than accepted from the caller.
+
+```csharp
+public sealed record ReportingGovernanceRestatementRequestDto(long ExpectedVersion, string Reason);
+```
+
+## ReportingGovernanceRetainedArtifactDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRetainedArtifactDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:107](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L107).
+
+Discoverable immutable artifact retained for a successfully executed governed run. Preview access is available before release; final distribution remains release-gated.
+
+```csharp
+public sealed record ReportingGovernanceRetainedArtifactDto(string ArtifactId, string FileName, string ContentType, long ByteLength, string ContentHashSha256, string Kind, bool IsPreview, string DownloadRoute);
+```
+
 ## ReportingGovernanceSeriesHistoryDto
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceSeriesHistoryDto</code>. Kind: `record`.
@@ -669,34 +693,3 @@ Source: [src/Meridian.Contracts/SecurityMaster/CashDividendReconciliationSupport
 ```csharp
 public sealed record CashDividendReconciliationAccountDto(string FinancialAccountId, decimal ExpectedLongQuantity);
 ```
-
-## CashDividendReconciliationSupportDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDividendReconciliationSupportDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CashDividendReconciliationSupport.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendReconciliationSupport.cs#L6).
-
-Frozen external reconciliation evidence for every account in the complete book inventory.
-
-```csharp
-public sealed record CashDividendReconciliationSupportDto(string EvidenceHash, string EvidenceJson);
-```
-
-## CashFlowLegDirection
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CashFlowLegDirection</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:204](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L204).
-
-Which side of a multi-leg structure a leg sits on, from the holder&#x27;s perspective.
-
-```csharp
-public enum CashFlowLegDirection
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Receive</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:206](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L206) |  |
-| <code>Pay</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:207](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L207) |  |

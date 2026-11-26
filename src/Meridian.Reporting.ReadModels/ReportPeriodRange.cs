@@ -69,4 +69,13 @@ public static class ReportPeriodRange
     /// </summary>
     public static bool IsEntirelyBefore(string? period, DateOnly effectiveDate)
         => TryParse(period) is { End: var end } && end < effectiveDate;
+
+    /// <summary>
+    /// True only when <paramref name="period"/> parses to a confident range that starts on or after
+    /// <paramref name="exclusiveEnd"/> — i.e. the period lies entirely after a change that stopped
+    /// governing on that date (ADR-034 valid-time window) and so cannot be affected by it. Unparseable
+    /// labels return <c>false</c> (fail open).
+    /// </summary>
+    public static bool IsEntirelyOnOrAfter(string? period, DateOnly exclusiveEnd)
+        => TryParse(period) is { Start: var start } && start >= exclusiveEnd;
 }

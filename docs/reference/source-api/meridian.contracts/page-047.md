@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CashDividendReconciliationSupportDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDividendReconciliationSupportDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CashDividendReconciliationSupport.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendReconciliationSupport.cs#L6).
+
+Frozen external reconciliation evidence for every account in the complete book inventory.
+
+```csharp
+public sealed record CashDividendReconciliationSupportDto(string EvidenceHash, string EvidenceJson);
+```
+
+## CashFlowLegDirection
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CashFlowLegDirection</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:204](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L204).
+
+Which side of a multi-leg structure a leg sits on, from the holder&#x27;s perspective.
+
+```csharp
+public enum CashFlowLegDirection
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Receive</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:206](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L206) |  |
+| <code>Pay</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:207](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L207) |  |
+
 ## CashFlowLegRateKind
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CashFlowLegRateKind</code>. Kind: `enum`.
@@ -698,24 +729,4 @@ Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.
 
 ```csharp
 public sealed record CorporateActionDeadlineHistoryDto(Guid EvidenceId, CorporateActionElectionDeadlineDto Deadline, string EvidenceReference, string? EvidenceHash, string? Rationale, long CaseVersion, string RecordedBy, DateTimeOffset RecordedAtUtc, bool IsCurrent, string EvidenceAssurance = "OperatorRecorded");
-```
-
-## CorporateActionDeadlineImportPreviewDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L93).
-
-```csharp
-public sealed record CorporateActionDeadlineImportPreviewDto(string PreviewHash, long ExpectedVersion, IReadOnlyList<CorporateActionDeadlineImportRowDto> Rows, IReadOnlyList<string> Errors);
-```
-
-## CorporateActionDeadlineImportRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L81).
-
-```csharp
-public sealed record CorporateActionDeadlineImportRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, string Csv, string? PreviewHash = null, CorporateActionCaseScopeDto? ScopeAssertion = null);
 ```

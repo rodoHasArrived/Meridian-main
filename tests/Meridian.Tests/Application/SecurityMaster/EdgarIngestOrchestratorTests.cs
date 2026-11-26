@@ -173,18 +173,114 @@ public sealed class EdgarIngestOrchestratorTests
         service.AmendRequests[0].IdentifiersToAdd.Should().Contain(id => id.Kind == SecurityIdentifierKind.Cik);
     }
 
+    [Fact]
+    public async Task IngestAsync_SiblingShareClassSharingTheCik_CreatesItsOwnSecurity()
+    {
+        // ADR-033: the CIK names the issuer. A security of the same issuer that already has its own
+        // ticker is a different share class, so the new ticker must not be attached to it.
+        var provider = FakeEdgarProvider.WithTickerBackedCompany();
+        var sibling = CreateSecurityDetail(
+            Guid.NewGuid(),
+            [
+                new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "MSFTB", true, DateTimeOffset.UtcNow.AddDays(-1), Provider: "edgar"),
+                new SecurityIdentifierDto(SecurityIdentifierKind.Cik, "0000789019", false, DateTimeOffset.UtcNow.AddDays(-1), Provider: "edgar")
+            ]);
+        var query = new FakeSecurityMasterQueryService();
+        query.AddIdentifier(sibling, SecurityIdentifierKind.Cik, "0000789019", "edgar");
+        var service = new FakeSecurityMasterService();
+        var orchestrator = CreateOrchestrator(provider, new FakeEdgarStore(), query, service);
+
+        var result = await orchestrator.IngestAsync(new EdgarIngestRequest(MaxFilers: 1), CancellationToken.None);
+
+        result.SecuritiesCreated.Should().Be(1);
+        result.SecuritiesAmended.Should().Be(0);
+        service.AmendRequests.Should().BeEmpty();
+        service.CreatedRequests.Single().SecurityId.Should().NotBe(sibling.SecurityId);
+    }
+
+    [Fact]
+    public async Task IngestAsync_CikClaimedByMoreThanOneSecurity_DoesNotPickOne()
+    {
+        var provider = FakeEdgarProvider.WithTickerBackedCompany();
+        var cikOnly = CreateSecurityDetail(
+            Guid.NewGuid(),
+            [new SecurityIdentifierDto(SecurityIdentifierKind.Cik, "0000789019", false, DateTimeOffset.UtcNow.AddDays(-1), Provider: "edgar")]);
+        var query = new FakeSecurityMasterQueryService();
+        query.AddIdentifier(cikOnly, SecurityIdentifierKind.Cik, "0000789019", "edgar");
+        var resolver = new FakeSecurityResolver(new SecurityCanonicalResolution(
+            SecurityResolutionStatus.Ambiguous, null, [cikOnly.SecurityId, Guid.NewGuid()]));
+        var service = new FakeSecurityMasterService();
+        var orchestrator = CreateOrchestrator(provider, new FakeEdgarStore(), query, service, resolver: resolver);
+
+        var result = await orchestrator.IngestAsync(new EdgarIngestRequest(MaxFilers: 1), CancellationToken.None);
+
+        result.SecuritiesCreated.Should().Be(1);
+        service.AmendRequests.Should().BeEmpty("an ambiguous CIK never chooses a security");
+    }
+
+    [Fact]
+    public async Task IngestAsync_LinksTheIssuerByCik_AndDoesNotRelinkOnTheNextRun()
+    {
+        var provider = FakeEdgarProvider.WithTickerBackedCompany();
+        var entityMaster = new Meridian.Storage.EntityMaster.InMemoryEntityMasterStore();
+        var service = new FakeSecurityMasterService();
+        var orchestrator = CreateOrchestrator(provider, new FakeEdgarStore(), new FakeSecurityMasterQueryService(), service, entityMaster);
+
+        var first = await orchestrator.IngestAsync(new EdgarIngestRequest(MaxFilers: 1), CancellationToken.None);
+        var second = await orchestrator.IngestAsync(new EdgarIngestRequest(MaxFilers: 1), CancellationToken.None);
+
+        first.IssuersLinked.Should().Be(1);
+        second.IssuersLinked.Should().Be(0, "the security is already linked to the same issuer");
+        var issuer = await entityMaster.FindByCikAsync("789019");
+        issuer.Should().NotBeNull();
+        issuer!.Cik.Should().Be("0000789019");
+        var link = await entityMaster.GetIssuerAsync(service.CreatedRequests[0].SecurityId, DateOnly.FromDateTime(DateTime.UtcNow));
+        link.Should().NotBeNull();
+        link!.IssuerEntityId.Should().Be(issuer.EntityId);
+    }
+
+    [Fact]
+    public async Task IngestAsync_DryRun_LinksNoIssuer()
+    {
+        var entityMaster = new Meridian.Storage.EntityMaster.InMemoryEntityMasterStore();
+        var orchestrator = CreateOrchestrator(
+            FakeEdgarProvider.WithTickerBackedCompany(), new FakeEdgarStore(), new FakeSecurityMasterQueryService(), new FakeSecurityMasterService(), entityMaster);
+
+        var result = await orchestrator.IngestAsync(new EdgarIngestRequest(MaxFilers: 1, DryRun: true), CancellationToken.None);
+
+        result.IssuersLinked.Should().Be(0);
+        (await entityMaster.FindByCikAsync("0000789019")).Should().BeNull();
+    }
+
     private static EdgarIngestOrchestrator CreateOrchestrator(
         IEdgarReferenceDataProvider provider,
         IEdgarReferenceDataStore store,
         ContractSecurityMasterQueryService query,
-        ISecurityMasterService service)
+        ISecurityMasterService service,
+        Meridian.Contracts.EntityMaster.IEntityMasterStore? entityMaster = null,
+        Meridian.Contracts.SecurityMaster.ISecurityResolver? resolver = null)
         => new(
             provider,
             store,
             query,
             service,
             NullLogger<EdgarIngestOrchestrator>.Instance,
-            conflictService: null);
+            conflictService: null,
+            entityMaster: entityMaster,
+            resolver: resolver);
+
+    private sealed class FakeSecurityResolver : Meridian.Contracts.SecurityMaster.ISecurityResolver
+    {
+        private readonly SecurityCanonicalResolution _resolution;
+
+        public FakeSecurityResolver(SecurityCanonicalResolution resolution) => _resolution = resolution;
+
+        public Task<Guid?> ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default)
+            => Task.FromResult(_resolution.SecurityId);
+
+        public Task<SecurityCanonicalResolution> ResolveCanonicalAsync(ResolveSecurityRequest request, CancellationToken ct = default)
+            => Task.FromResult(_resolution);
+    }
 
     private static SecurityDetailDto CreateSecurityDetail(
         Guid securityId,

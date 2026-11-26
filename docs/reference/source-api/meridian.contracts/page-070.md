@@ -6,6 +6,121 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PilotEvidenceGraphEdgeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PilotEvidenceGraphEdgeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:86](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L86).
+
+```csharp
+public sealed record PilotEvidenceGraphEdgeDto(string FromEvidenceId, string ToEvidenceId, string Relationship);
+```
+
+## PilotReadinessArtifactDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PilotReadinessArtifactDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:91](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L91).
+
+```csharp
+public sealed record PilotReadinessArtifactDto(DateTimeOffset GeneratedAtUtc, string ProviderEvidenceId, string DatasetEvidenceId, string ResearchRunId, IReadOnlyList<string> ComparedRunIds, string? PromotionAuditId, string PaperSessionId, string? ReplayVerificationAuditId, string ReconciliationRunId, string ContinuityRunId, string? PortfolioEvidenceId, string? LedgerEvidenceId, string ReportPackId, IReadOnlyList<string> ReportPackRelatedRunIds, IReadOnlyList<PilotReadinessStageGateDto> StageGates, IReadOnlyList<PilotEvidenceGraphEdgeDto> EvidenceGraph)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;EvidenceArtifactRefDto&gt; LedgerArtifactRefs { get; init; }</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:112](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L112) |  |
+| <code>public IReadOnlyList&lt;PilotAcceptanceEvidenceDto&gt; W4Evidence { get; init; }</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:118](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L118) |  |
+| <code>public PilotW4AcceptanceEvaluationDto? W4Acceptance { get; init; }</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:124](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L124) |  |
+| <code>public int ReadyStageCount =&gt; …;</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:126](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L126) |  |
+| <code>public int TotalStageCount =&gt; …;</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:129](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L129) |  |
+| <code>public bool AllStagesReady =&gt; …;</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:131](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L131) |  |
+
+## PilotReadinessStageDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PilotReadinessStageDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L6).
+
+```csharp
+public enum PilotReadinessStageDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>TrustedData = 0</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L8) |  |
+| <code>ResearchRun = 1</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L9) |  |
+| <code>RunComparison = 2</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L10) |  |
+| <code>PaperPromotion = 3</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L11) |  |
+| <code>PaperSession = 4</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L12) |  |
+| <code>PortfolioLedgerReview = 5</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L13) |  |
+| <code>Reconciliation = 6</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L14) |  |
+| <code>GovernedReportPack = 7</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L15) |  |
+
+## PilotReadinessStageGateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PilotReadinessStageGateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:26](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L26).
+
+```csharp
+public sealed record PilotReadinessStageGateDto(PilotReadinessStageDto Stage, string Label, PilotReadinessStageStatusDto Status, IReadOnlyList<string> EvidenceIds, IReadOnlyList<string> Blockers, string Validation)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; WaveClaims { get; init; }</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L37) |  |
+| <code>public IReadOnlyList&lt;string&gt; SupportEvidenceIds { get; init; }</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L43) |  |
+
+## PilotReadinessStageStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PilotReadinessStageStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L19).
+
+```csharp
+public enum PilotReadinessStageStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Ready = 0</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L21) |  |
+| <code>ReviewRequired = 1</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L22) |  |
+| <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L23) |  |
+
+## PilotW4AcceptanceEvaluationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PilotW4AcceptanceEvaluationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:75](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L75).
+
+```csharp
+public sealed record PilotW4AcceptanceEvaluationDto(PilotReadinessStageStatusDto Status, IReadOnlyList<PilotAcceptanceEvidenceCategoryDto> MissingAcceptanceCategories, IReadOnlyList<PilotAcceptanceEvidenceCategoryDto> MissingSupportCategories, IReadOnlyList<PilotAcceptanceEvidenceDto> AcceptanceEvidence, IReadOnlyList<PilotAcceptanceEvidenceDto> SupportEvidence, string Detail)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsDone =&gt; …;</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:83](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L83) |  |
+
+## PortfolioLedgerDriftDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PortfolioLedgerDriftDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L49).
+
+```csharp
+public sealed record PortfolioLedgerDriftDto(string DriftType, string Detail, string RemediationHint);
+```
+
 ## PortfolioLedgerWorkflowStatusDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.PortfolioLedgerWorkflowStatusDto</code>. Kind: `enum`.
@@ -577,85 +692,4 @@ Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:390](../../../.
 
 ```csharp
 public sealed record ProviderLedgerReconciliationSummaryDto(Guid ReconciliationRunId, Guid AccountId, DateTimeOffset CreatedAt, ProviderLedgerReconciliationStatusDto Status, int TotalChecks, int MatchedChecks, int BreakCount, int SecurityIssueCount, decimal AmountTolerance, int ProviderStaleAfterMinutes, string? ProviderId, string? ExternalAccountId, DateTimeOffset? ProviderSyncedAt, DateOnly? InternalAsOfDate, string? DetailPath = null, int OpenBreakCount = 0, int SignedOffBreakCount = 0, int OldestBreakAgeMinutes = 0);
-```
-
-## ProviderPromotionChecklistDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderPromotionChecklistDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:336](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L336).
-
-```csharp
-public sealed record ProviderPromotionChecklistDto(bool ContractCompatibilityValidated, bool FocusedAdapterTestsValidated, bool ReplayEvidenceGenerated, bool DegradationCalibrationOutputValidated, bool ReadyForPaperEnablement, bool ReadyForLiveEnablement, IReadOnlyList<string> Blockers, string? EvidenceBundlePath, DateTimeOffset EvaluatedAt);
-```
-
-## ProviderSecurityMasterPassportDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderSecurityMasterPassportDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:410](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L410).
-
-```csharp
-public sealed record ProviderSecurityMasterPassportDto(string Symbol, string ProviderId, string ExternalAccountId, DateTimeOffset ProviderSyncedAt, bool ProviderIsStale, string AssetClass, string? Currency, string? PositionId, Guid? SecurityId, string? SecurityDisplayName, SecurityStatusDto? SecurityStatus, ProviderSecurityMasterPassportStatusDto Status, decimal ConfidenceScore, string ResolutionSource, IReadOnlyList<string> IdentifierConflicts, IReadOnlyList<string> ValidationIssueCodes, IReadOnlyList<string> OverrideHistory, DateTimeOffset ObservedAt, int FreshnessMinutes, string Reason, string? ResolvedAssetClass = null);
-```
-
-## ProviderSecurityMasterPassportStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderSecurityMasterPassportStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:336](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L336).
-
-```csharp
-public enum ProviderSecurityMasterPassportStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Resolved = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:338](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L338) |  |
-| <code>Inferred = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:339](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L339) |  |
-| <code>Unresolved = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:340](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L340) |  |
-| <code>Blocked = 3</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:341](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L341) |  |
-
-## ProviderSecurityMasterScheduleFeedDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderSecurityMasterScheduleFeedDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:498](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L498).
-
-```csharp
-public sealed record ProviderSecurityMasterScheduleFeedDto(string FeedId, string CandidateId, string CandidateType, string FeedKind, string RequiredFeed, string EvidenceSource, string ProviderId, string ExternalAccountId, string? ProviderEventId, string? Symbol, Guid? SecurityId, DateOnly? EffectiveDate, decimal? Factor, decimal? CashAmount, decimal? PrincipalAmount, decimal? IncomeAmount, string? Currency, string LedgerEffectKind, ProviderLedgerReconciliationCheckStatusDto Status, bool CanUpdateSecurityMaster, bool CanSupportLedgerValuation, string Reason);
-```
-
-## ProviderShadowBookComparisonDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderShadowBookComparisonDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:444](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L444).
-
-```csharp
-public sealed record ProviderShadowBookComparisonDto(Guid AccountId, DateTimeOffset CreatedAt, string Currency, int ComparableLineCount, int MatchedLineCount, int BreakLineCount, int UnavailableLineCount, IReadOnlyList<ProviderShadowBookComparisonLineDto> Lines);
-```
-
-## ProviderShadowBookComparisonLineDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderShadowBookComparisonLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:433](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L433).
-
-```csharp
-public sealed record ProviderShadowBookComparisonLineDto(string Dimension, string Label, string InternalSource, string ProviderSource, decimal? InternalAmount, decimal? ProviderAmount, decimal? Variance, ProviderLedgerReconciliationCheckStatusDto Status, string Reason);
-```
-
-## PublishSecurityMasterRevisionRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.PublishSecurityMasterRevisionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:116](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L116).
-
-Publishes an approved revision (durable append + downstream propagation). The downstream restatement impact is scoped to the fund captured on the draft revision (the fund the edit was made under, if any). Publish deliberately carries no caller-supplied fund scope, so a publisher cannot resolve impact for a fund the operator did not edit under. Publish-time re-scoping and cross-fund (multi-held) expansion are a separate slice gated on tenant-scoped holdings discovery.
-
-```csharp
-public sealed record PublishSecurityMasterRevisionRequest(Guid SecurityId, Guid RevisionId, string Actor, string ApproverActor, string? CorrelationId = null);
 ```

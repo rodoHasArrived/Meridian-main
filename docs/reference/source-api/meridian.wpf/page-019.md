@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PortfolioImportPage
+
+Qualified name: <code>Meridian.Wpf.Views.PortfolioImportPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:21](../../../../src/Meridian.Wpf/Views/Pages.cs#L21).
+
+```csharp
+public partial class PortfolioImportPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/PortfolioImportPage.xaml.cs:9](../../../../src/Meridian.Wpf/Views/PortfolioImportPage.xaml.cs#L9).
+
+Provides the desktop page to import external portfolio snapshots for reconciliation.
+
+```csharp
+public partial class PortfolioImportPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PortfolioImportPage();</code> | [src/Meridian.Wpf/Views/PortfolioImportPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/PortfolioImportPage.xaml.cs#L13) |  |
+
 ## PortfolioWorkspaceShellPageBase
 
 Qualified name: <code>Meridian.Wpf.Views.PortfolioWorkspaceShellPageBase</code>. Kind: `class`.
@@ -1058,27 +1082,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public WatchlistPage(WatchlistViewModel viewModel);</code> | [src/Meridian.Wpf/Views/WatchlistPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/WatchlistPage.xaml.cs#L15) |  |
-
-## WelcomePage
-
-Qualified name: <code>Meridian.Wpf.Views.WelcomePage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:100](../../../../src/Meridian.Wpf/Views/Pages.cs#L100).
-
-```csharp
-public partial class WelcomePage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/WelcomePage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/WelcomePage.xaml.cs#L14).
-
-Welcome page — thin code-behind. All state management, data loading, and commands live in WelcomePageViewModel.
-
-```csharp
-public partial class WelcomePage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WelcomePage(WpfServices.NavigationService navigationService, WpfServices.NotificationService notificationService, WpfServices.StatusService statusService, WpfServices.ConnectionService connectionService, WpfServices.ConfigService configService, ILogger&lt;WelcomePageViewModel&gt; logger);</code> | [src/Meridian.Wpf/Views/WelcomePage.xaml.cs:18](../../../../src/Meridian.Wpf/Views/WelcomePage.xaml.cs#L18) |  |

@@ -6,6 +6,80 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementProfileSuggestionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementProfileSuggestionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:161](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L161).
+
+A catalog profile ranked against the detected columns of an uploaded statement.
+
+```csharp
+public sealed record StatementProfileSuggestionDto(string ProfileId, string DisplayName, decimal Score);
+```
+
+## StatementReconciliationAccountingScopeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationAccountingScopeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:279](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L279).
+
+Exact accounting authority bound to a statement import before it can enter close casework.
+
+```csharp
+public sealed record StatementReconciliationAccountingScopeDto(string FundProfileId, Guid LedgerBookId, Guid AccountingPeriodId, DateOnly AsOfDate);
+```
+
+## StatementReconciliationBreakExplanationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationBreakExplanationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:251](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L251).
+
+```csharp
+public sealed record StatementReconciliationBreakExplanationDto(string? Summary, IReadOnlyList<string>? SourceSystems, string? ProbableCause, string? LedgerImpact, string? SuggestedNextAction, string? RequiredSignoffRole, IReadOnlyList<string>? EvidenceLinks);
+```
+
+## StatementReconciliationCaseAttachmentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationCaseAttachmentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:242](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L242).
+
+```csharp
+public sealed record StatementReconciliationCaseAttachmentDto(string? AttachmentId, string? EvidenceKind, string? SourceSystem, string? SourceReference, string? ContentHash, string? Route, DateTimeOffset? AttachedAtUtc);
+```
+
+## StatementReconciliationCaseAuditEventDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationCaseAuditEventDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:260](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L260).
+
+```csharp
+public sealed record StatementReconciliationCaseAuditEventDto(string? EventId, string? EventType, DateTimeOffset? OccurredAtUtc, string? Actor, string? Detail);
+```
+
+## StatementReconciliationCaseCommentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationCaseCommentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:235](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L235).
+
+```csharp
+public sealed record StatementReconciliationCaseCommentDto(string? CommentId, string? Body, string? Actor, DateTimeOffset? CreatedAtUtc, string? ParentCommentId = null);
+```
+
+## StatementReconciliationCaseCommentThreadDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationCaseCommentThreadDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:230](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L230).
+
+```csharp
+public sealed record StatementReconciliationCaseCommentThreadDto(string? ThreadId, string? Subject, IReadOnlyList<StatementReconciliationCaseCommentDto>? Comments);
+```
+
 ## StatementReconciliationCaseDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationCaseDto</code>. Kind: `record`.
@@ -571,101 +645,3 @@ Workstation-facing strategy design document persisted by the Strategy Builder. T
 ```csharp
 public sealed record StrategyDesignDocument(string DocumentId, string Name, string Description, string Version, string DatasetReference, IReadOnlyList<string> Universe, IReadOnlyList<StrategyDesignCell> Cells, IReadOnlyList<StrategyDesignTransition> Transitions, IReadOnlyDictionary<string, string>? Metadata, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string? Revision = null);
 ```
-
-## StrategyDesignDraftSaveRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignDraftSaveRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:149](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L149).
-
-Request body for saving a strategy design draft.
-
-```csharp
-public sealed record StrategyDesignDraftSaveRequest(StrategyDesignDocument Document, string? ExpectedRevision = null);
-```
-
-## StrategyDesignDraftSaveResponse
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignDraftSaveResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:154](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L154).
-
-Response returned after saving a strategy design draft.
-
-```csharp
-public sealed record StrategyDesignDraftSaveResponse(StrategyDesignDocument Document, StrategyDesignDraftSummary Summary, StrategyDesignValidationResult Validation, IReadOnlyList<StrategyDesignRunTraceEntry> Trace);
-```
-
-## StrategyDesignDraftSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignDraftSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:135](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L135).
-
-Summary row for a durable design draft.
-
-```csharp
-public sealed record StrategyDesignDraftSummary(string DocumentId, string Name, string Version, string DatasetReference, int CellCount, int TransitionCount, DateTimeOffset UpdatedAt, string ValidationSummary, string? Revision = null);
-```
-
-## StrategyDesignFieldCatalogItem
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignFieldCatalogItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:51](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L51).
-
-AMX-style field vocabulary item mapped to a Meridian canonical source.
-
-```csharp
-public sealed record StrategyDesignFieldCatalogItem(string FieldId, string Label, string Source, string DataSet, string TypeName, string Description, bool IsEnabled, string? DisabledReason, IReadOnlyList<string> Synonyms);
-```
-
-## StrategyDesignPreviewResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignPreviewResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:115](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L115).
-
-Preview result returned before execution.
-
-```csharp
-public sealed record StrategyDesignPreviewResult(StrategyDesignValidationResult Validation, StrategyDesignCompiledScript Compiled, IReadOnlyList<StrategyDesignPreviewRow> Rows, IReadOnlyList<StrategyDesignRunTraceEntry> Trace);
-```
-
-## StrategyDesignPreviewRow
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignPreviewRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:94](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L94).
-
-Preview row explaining how a cell will be compiled.
-
-```csharp
-public sealed record StrategyDesignPreviewRow(string RowId, string CellId, string Label, string Purpose, string Status, IReadOnlyList<string> FieldRefs, string Detail);
-```
-
-## StrategyDesignRunBacktestRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignRunBacktestRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:163](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L163).
-
-Request body for a Strategy Builder backtest run.
-
-```csharp
-public sealed record StrategyDesignRunBacktestRequest(StrategyDesignDocument Document, IReadOnlyDictionary<string, string>? Parameters = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Guid? FundAccountId { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:167](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L167) |  |
-| <code>public DateOnly? From { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:168](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L168) |  |
-| <code>public DateOnly? To { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:169](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L169) |  |
-| <code>public IReadOnlyList&lt;string&gt; OperatorAcceptanceCriteria { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:178](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L178) |  |
-| <code>public IReadOnlyList&lt;string&gt; RetainedEvidenceReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:184](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L184) |  |
-| <code>public IReadOnlyList&lt;string&gt; AccountingRecordReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:190](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L190) |  |
-| <code>public IReadOnlyList&lt;string&gt; ApprovalReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:196](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L196) |  |
-| <code>public IReadOnlyList&lt;string&gt; PaperValidationReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:202](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L202) |  |
-| <code>public IReadOnlyList&lt;string&gt; GovernedReportReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:208](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L208) |  |

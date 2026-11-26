@@ -160,8 +160,14 @@ Source: [src/Meridian.Strategies/Services/IAggregatePortfolioService.cs:49](../.
 Cross-strategy gross/net exposure summary.
 
 ```csharp
-public sealed record CrossStrategyExposureReport(decimal GrossExposure, decimal NetExposure, IReadOnlyList<string> Top5Concentrations, DateTimeOffset AsOf);
+public sealed record CrossStrategyExposureReport(decimal GrossExposure, decimal NetExposure, IReadOnlyList<string> Top5Concentrations, DateTimeOffset AsOf)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.EntityMaster.IssuerConcentrationReport? IssuerConcentration { get; init; }</code> | [src/Meridian.Strategies/Services/IAggregatePortfolioService.cs:60](../../../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs#L60) | ADR-033 issuer-level concentration, when the host composes the entity master and a canonical security resolver; null otherwise. |
 
 ## ExternalStatementReconciliationSourceAdapter
 
@@ -423,7 +429,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Strategies.Services.IAggregatePortfolioService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Strategies/Services/IAggregatePortfolioService.cs:68](../../../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs#L68).
+Source: [src/Meridian.Strategies/Services/IAggregatePortfolioService.cs:76](../../../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs#L76).
 
 Aggregates position data across all currently running strategies registered in PortfolioRegistry.
 
@@ -435,9 +441,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>IReadOnlyList&lt;AggregatedPosition&gt; GetAggregatedPositions(IReadOnlyList&lt;string&gt;? runIds = null);</code> | [src/Meridian.Strategies/Services/IAggregatePortfolioService.cs:74](../../../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs#L74) | Returns netted positions across all active strategy runs, or only the runs specified in runIds when non-null. |
-| <code>CrossStrategyExposureReport GetCrossStrategyExposure();</code> | [src/Meridian.Strategies/Services/IAggregatePortfolioService.cs:79](../../../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs#L79) | Returns gross/net exposure across all active strategies. |
-| <code>NetSymbolPosition GetNetPositionForSymbol(string symbol);</code> | [src/Meridian.Strategies/Services/IAggregatePortfolioService.cs:85](../../../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs#L85) | Returns the net and gross position for a single symbol across all active strategies. |
+| <code>IReadOnlyList&lt;AggregatedPosition&gt; GetAggregatedPositions(IReadOnlyList&lt;string&gt;? runIds = null);</code> | [src/Meridian.Strategies/Services/IAggregatePortfolioService.cs:82](../../../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs#L82) | Returns netted positions across all active strategy runs, or only the runs specified in runIds when non-null. |
+| <code>CrossStrategyExposureReport GetCrossStrategyExposure();</code> | [src/Meridian.Strategies/Services/IAggregatePortfolioService.cs:87](../../../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs#L87) | Returns gross/net exposure across all active strategies. |
+| <code>NetSymbolPosition GetNetPositionForSymbol(string symbol);</code> | [src/Meridian.Strategies/Services/IAggregatePortfolioService.cs:93](../../../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs#L93) | Returns the net and gross position for a single symbol across all active strategies. |
 
 ## IExternalStatementReconciliationSourceAdapter
 
@@ -755,7 +761,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.ISecurityActualCashActivitySource</code>. Kind: `interface`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:159](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L159).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:177](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L177).
 
 Indicates that no Security Master accounting-event request is available from the configured source.
 
@@ -767,7 +773,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;SecurityActualCashActivity&gt;&gt; GetActualActivityAsync(IReadOnlyList&lt;SecurityMasterAccountingPosition&gt; positions, DateOnly periodStart, DateOnly periodEnd, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:166](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L166) | Returns income and principal cash reported for positions with a pay date inside periodStart..periodEnd (inclusive). Rows the source cannot attribute to a held security and account are omitted, never guessed. |
+| <code>Task&lt;IReadOnlyList&lt;SecurityActualCashActivity&gt;&gt; GetActualActivityAsync(IReadOnlyList&lt;SecurityMasterAccountingPosition&gt; positions, DateOnly periodStart, DateOnly periodEnd, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:184](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L184) | Returns income and principal cash reported for positions with a pay date inside periodStart..periodEnd (inclusive). Rows the source cannot attribute to a held security and account are omitted, never guessed. |
 
 ## ISecurityMasterAccountingEventService
 
@@ -946,7 +952,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.NetSymbolPosition</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/IAggregatePortfolioService.cs:59](../../../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs#L59).
+Source: [src/Meridian.Strategies/Services/IAggregatePortfolioService.cs:67](../../../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs#L67).
 
 Net position for a single symbol across all active runs.
 
@@ -976,7 +982,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.NullSecurityMasterAccountingEventSourceAdapter</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:173](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L173).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:191](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L191).
 
 ```csharp
 public sealed class NullSecurityMasterAccountingEventSourceAdapter : ISecurityMasterAccountingEventSourceAdapter
@@ -986,7 +992,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Task&lt;SecurityMasterAccountingEventRequest?&gt; BuildRequestAsync(StrategyRunDetail detail, ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:175](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L175) |  |
+| <code>public Task&lt;SecurityMasterAccountingEventRequest?&gt; BuildRequestAsync(StrategyRunDetail detail, ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:193](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L193) |  |
 
 ## PortfolioReadService
 

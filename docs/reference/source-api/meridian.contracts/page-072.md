@@ -6,6 +6,92 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationObservedMatchSubject
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationObservedMatchSubject</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs#L41).
+
+```csharp
+public sealed record ReconciliationObservedMatchSubject(string EvidenceReference, string SourceSubjectId);
+```
+
+## ReconciliationPayloadEnvelope (generic arity 1)
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationPayloadEnvelope</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1126](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1126).
+
+Canonical envelope for inbound/outbound reconciliation payloads.
+
+```csharp
+public sealed record ReconciliationPayloadEnvelope<TPayload>(string PayloadId, ReconciliationSchemaVersion Schema, ReconciliationCorrelationContext Correlation, DateTimeOffset CreatedAt, string Producer, string Direction, string? IdempotencyKey, TPayload Payload);
+```
+
+## ReconciliationPermittedCommandDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationPermittedCommandDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:609](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L609).
+
+```csharp
+public sealed record ReconciliationPermittedCommandDto(string Action, bool Enabled, string? DisabledReason);
+```
+
+## ReconciliationProcessingTelemetry
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationProcessingTelemetry</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1154](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1154).
+
+Processing telemetry summary for SLA and throughput observability.
+
+```csharp
+public sealed record ReconciliationProcessingTelemetry(double MatchRate, double BreakRate, int SlaMissCount, double P50LatencyMs, double P95LatencyMs, double P99LatencyMs);
+```
+
+## ReconciliationRolloutFlags
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationRolloutFlags</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1165](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1165).
+
+Scoped rollout flags for phased reconciliation releases.
+
+```csharp
+public sealed record ReconciliationRolloutFlags(bool Enabled, IReadOnlyList<string> ClientIds, IReadOnlyList<string> TeamIds, IReadOnlyList<string> CounterpartyIds, bool AllowReplay, bool AllowBackfill);
+```
+
+## ReconciliationRunDetail
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationRunDetail</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:346](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L346).
+
+Full detail payload for a single reconciliation run.
+
+```csharp
+public sealed record ReconciliationRunDetail(ReconciliationRunSummary Summary, IReadOnlyList<ReconciliationMatchDto> Matches, IReadOnlyList<ReconciliationBreakDto> Breaks, IReadOnlyList<ReconciliationSecurityCoverageIssueDto>? SecurityCoverageIssues = null, IReadOnlyDictionary<string, SecurityClassificationSummaryDto>? SecurityClassifications = null, IReadOnlyList<ExpectedAccountingEventDto>? ExpectedAccountingEvents = null, IReadOnlyList<AccrualCalculationResultDto>? AccrualCalculations = null, IReadOnlyList<ExpectedJournalPreviewDto>? ExpectedJournalPreviews = null, IReadOnlyList<SecurityMasterAccountingIssueDto>? SecurityMasterAccountingIssues = null);
+```
+
+## ReconciliationRunObservationScope
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationRunObservationScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs#L49).
+
+Exact authority and source population covered by a completed comparison.
+
+```csharp
+public sealed record ReconciliationRunObservationScope(string TenantId, string CompanyId, string FundProfileId, string FundAccountId, Guid LedgerBookId, string AccountingPeriodId, string SourceSystem, string ExternalAccountId)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? LineageSourceIdentity { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:60](../../../../src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs#L60) |  |
+
 ## ReconciliationRunRequest
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationRunRequest</code>. Kind: `record`.
@@ -564,93 +650,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1313]
 
 ```csharp
 public sealed record ReportingRunScopeDto(string FundProfileId, ReportingEntityScopeKindDto EntityScopeKind = ReportingEntityScopeKindDto.AllEntities, string? EntityId = null, string? PortfolioId = null, string? InvestorId = null, LedgerDimensionSetDto? Dimensions = null);
-```
-
-## ReportingScheduleDeliveryPlanDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduleDeliveryPlanDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1080](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1080).
-
-```csharp
-public sealed record ReportingScheduleDeliveryPlanDto(string PlanId, string ScheduleId, string TemplateId, string DistributionId, string Recipient, string RecipientRole, string Channel, ReportPackDeliveryModeDto DeliveryMode, IReadOnlyList<GovernanceReportArtifactFormatDto> Formats, bool IsReady, string ReadinessSummary, string Route, DateTimeOffset DueAtUtc, DateOnly NextAsOfDate, string Owner, string? Note = null, Guid? LastDeliveryAttemptId = null, ReportPackDeliveryStateDto? LastDeliveryState = null, DateTimeOffset? LastDeliveryAtUtc = null, string? LastDeliveryPackageRoute = null, string? LastDeliverySecureLink = null, IReadOnlyList<ReportPackDeliveryAccessLinkDto>? LastDeliveryAccessLinks = null, DateTimeOffset? LastDeliveryAccessExpiresAtUtc = null, string? LastDeliveryAccessSummary = null, string? LastDeliveryChannelSummary = null, string? LastDeliveryDownloadSummary = null, int LastDeliveryNotificationCount = 0, string? LastDeliveryNotificationSummary = null, int LastDeliveryGeneratedReportWriterGridCount = 0, int LastDeliveryRenderedReportWriterGridCount = 0, string? LastDeliveryReportWriterDatasetSummary = null, string? LastDeliveryReportWriterGridSummary = null, string? VersionStamp = null, int LastDeliveryArtifactCount = 0, string? LastDeliveryIntegritySummary = null, IReadOnlyList<string>? ReadinessBlockers = null, string? BrandingThemeId = null, ReportBrandingThemeDto? BrandingTheme = null, string? LastDeliveryEntitlementScope = null);
-```
-
-## ReportingScheduleDeliveryTargetDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduleDeliveryTargetDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1034](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1034).
-
-```csharp
-public sealed record ReportingScheduleDeliveryTargetDto(string DistributionId, IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null, ReportPackDeliveryModeDto? DeliveryMode = null, string? Note = null, string? RecipientPrincipalId = null, ReportAccessPrincipalKindDto? RecipientPrincipalKind = null);
-```
-
-## ReportingScheduledReleaseHandoffDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduledReleaseHandoffDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1054](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1054).
-
-Durable, token-free handoff from scheduled generation to the canonical post-release secure distribution queue. Package identities and bearer grants are intentionally derived only after governance release and are never retained here.
-
-```csharp
-public sealed record ReportingScheduledReleaseHandoffDto(string HandoffId, string TenantId, string CompanyId, string ScheduleId, string RunId, string TemplateId, string DistributionId, string TargetDistributionId, string TransportId, string? RecipientPrincipalId, string Destination, string Subject, string Body, IReadOnlyList<GovernanceReportArtifactFormatDto>? RequestedFormats, IReadOnlyList<string>? ArtifactIds, int? GrantLifetimeSeconds, int? GrantMaxUses, int MaxAttempts, DateTimeOffset CreatedAtUtc, ReportingScheduledReleaseHandoffStateDto State = ReportingScheduledReleaseHandoffStateDto.PendingRelease, string? EnqueuedDeliveryJobId = null, DateTimeOffset? EnqueuedAtUtc = null, string? RecipientPrincipalKind = null, string? DeliveryTargetsSnapshotHash = null);
-```
-
-## ReportingScheduledReleaseHandoffStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduledReleaseHandoffStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1043](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1043).
-
-```csharp
-public enum ReportingScheduledReleaseHandoffStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>PendingRelease = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1045](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1045) |  |
-| <code>Enqueued = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1046](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1046) |  |
-
-## ReportingSchedulePeriodCadenceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingSchedulePeriodCadenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1221](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1221).
-
-Period-close cadence for a reporting schedule: one run per monthly, quarterly, or annual period, as of the period end and due DueDaysAfterPeriodEnd days later.
-
-```csharp
-public sealed record ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto Frequency, int DueDaysAfterPeriodEnd = 0);
-```
-
-## ReportingSchedulePeriodFrequencyDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingSchedulePeriodFrequencyDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1210](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1210).
-
-```csharp
-public enum ReportingSchedulePeriodFrequencyDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Monthly = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1212](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1212) |  |
-| <code>Quarterly = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1213](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1213) |  |
-| <code>Annually = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1214](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1214) |  |
-
-## ReportingScheduleRecordDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduleRecordDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1166](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1166).
-
-```csharp
-public sealed record ReportingScheduleRecordDto(string ScheduleId, string TemplateId, string CronExpression, DateOnly NextAsOfDate, DateTimeOffset DueAtUtc, int MaxRetries, string RequestedBy, ReportingScheduleStateDto State, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, DateTimeOffset? LastRunAtUtc = null, string? LastRunId = null, int RunCount = 0, string? Description = null, IReadOnlyList<ReportingScheduleDeliveryTargetDto>? DeliveryTargets = null, IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null, string? DatasetSourceId = null, string? BrandingThemeId = null, ReportBrandingThemeDto? BrandingThemeOverride = null, VersionedReportTemplateIdDto? Template = null, ReportingRunParametersDto? RunParameters = null, string? TenantId = null, string? CompanyId = null, ReportAccessPolicyDto? AccessPolicySnapshot = null, ReportingRunReadinessDto? LastReadiness = null, IReadOnlyList<ReportingScheduledReleaseHandoffDto>? ReleaseDeliveryHandoffs = null, string? AccessPolicySnapshotHash = null, string? DeliveryTargetsSnapshotHash = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? TimeZoneId = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ReportingSchedulePeriodCadenceDto? PeriodCadence = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateOnly? UnresolvedPeriodCloseAfter = null);
 ```

@@ -510,17 +510,29 @@ public sealed record RunPositionContribution(string RunId, string AccountId, dec
 
 Qualified name: <code>Meridian.Strategies.Services.SecurityAccountingRule</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:71](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L71).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:89](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L89).
 
 ```csharp
 public sealed record SecurityAccountingRule(string AccountingClassification, string ReportingBasis, string AccruedInterestReceivableAccount = "Accrued Interest Receivable", string CouponIncomeAccount = "Coupon Income", string CashAccount = "Cash", string PrincipalAccount = "Securities");
+```
+
+## SecurityAccountingTermsValidity
+
+Qualified name: <code>Meridian.Strategies.Services.SecurityAccountingTermsValidity</code>. Kind: `record`.
+
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:54](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L54).
+
+Which valid-time terms an accrual used (ADR-034). The accrual reads the terms valid on the last day of the period (PeriodEnd is exclusive); ChangedWithinPeriodAt is set when different economics applied earlier in the same period, which the single-terms accrual does not split.
+
+```csharp
+public sealed record SecurityAccountingTermsValidity(long StreamVersion, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, DateTimeOffset? ChangedWithinPeriodAt);
 ```
 
 ## SecurityActualCashActivity
 
 Qualified name: <code>Meridian.Strategies.Services.SecurityActualCashActivity</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:134](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L134).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:152](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L152).
 
 ```csharp
 public sealed record SecurityActualCashActivity(string SourceName, string? ExternalTransactionId, string AccountId, Guid? SecurityId, string? Symbol, decimal CashAmount, decimal PrincipalAmount, decimal IncomeAmount, DateOnly PayDate, string Classification, string? EvidenceLink = null);
@@ -530,7 +542,7 @@ public sealed record SecurityActualCashActivity(string SourceName, string? Exter
 
 Qualified name: <code>Meridian.Strategies.Services.SecurityFactorObservation</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:114](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L114).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:132](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L132).
 
 One reconciliation-period factor OBSERVATION for a factor-based security: the prior→current factor pair with its source and evidence lineage, as expected paydown generation consumes it. This is deliberately NOT a factor-schedule term shape — the canonical dated factor schedule is Meridian.FSharp.Domain.FactorScheduleEntry on StructuredCreditTerms (declared as factorScheduleEntries and read by StructuredCashFlowTermsResolver); the source adapter derives these observations FROM that canonical schedule, pairing each factor with its ordered predecessor and attaching provenance/evidence. Formerly named SecurityFactorScheduleEntry, which misread as a third, incompatible schedule shape.
 
@@ -542,7 +554,7 @@ public sealed record SecurityFactorObservation(Guid SecurityId, DateOnly AsOfDat
 
 Qualified name: <code>Meridian.Strategies.Services.SecurityFixedIncomeTerms</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:42](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L42).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:60](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L60).
 
 ```csharp
 public sealed record SecurityFixedIncomeTerms(decimal? CouponRate, string? CouponType, string? DayCountConvention, int? PaymentFrequencyPerYear, DateOnly? IssueDate = null, DateOnly? DatedDate = null, DateOnly? FirstCouponDate = null, DateOnly? NextCouponDate = null, DateOnly? MaturityDate = null, DateOnly? AccrualStartDate = null, decimal? CurrentFactor = null, decimal? OriginalFace = null, decimal? CurrentFace = null, bool RequiresFactorSchedule = false)
@@ -552,8 +564,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public RateUnit? CouponRateUnit { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:62](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L62) | The unit the record itself declares for CouponRate (its scheduleConventions.couponRateUnit), or null when it declares none. |
-| <code>public string? TermsAssetClass { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:68](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L68) | The catalog asset class whose rate-field defaults (SecurityRateFieldUnits) apply to CouponRate; null reads the security&#x27;s accounting asset class. |
+| <code>public RateUnit? CouponRateUnit { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:80](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L80) | The unit the record itself declares for CouponRate (its scheduleConventions.couponRateUnit), or null when it declares none. |
+| <code>public string? TermsAssetClass { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:86](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L86) | The catalog asset class whose rate-field defaults (SecurityRateFieldUnits) apply to CouponRate; null reads the security&#x27;s accounting asset class. |
 
 ## SecurityMasterAccountingEventRequest
 
@@ -569,7 +581,7 @@ public sealed record SecurityMasterAccountingEventRequest(string RunId, DateOnly
 
 Qualified name: <code>Meridian.Strategies.Services.SecurityMasterAccountingEventResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:147](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L147).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:165](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L165).
 
 ```csharp
 public sealed record SecurityMasterAccountingEventResult(IReadOnlyList<ExpectedAccountingEventDto> ExpectedEvents, IReadOnlyList<AccrualCalculationResultDto> AccrualCalculations, IReadOnlyList<ExpectedJournalPreviewDto> JournalPreviews, IReadOnlyList<SecurityMasterAccountingIssueDto> Issues);
@@ -579,7 +591,7 @@ public sealed record SecurityMasterAccountingEventResult(IReadOnlyList<ExpectedA
 
 Qualified name: <code>Meridian.Strategies.Services.SecurityMasterAccountingEventService</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:187](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L187).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:205](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L205).
 
 Generates Security Master accounting projections and related validation issues for a reporting period.
 
@@ -591,9 +603,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SecurityMasterAccountingEventService(IFactorPaydownProjectionService? factorPaydownProjector = null);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:191](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L191) |  |
-| <code>public SecurityMasterAccountingEventResult Generate(SecurityMasterAccountingEventRequest request);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:196](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L196) |  |
-| <code>public const string CouponStructureUnsupported = SecurityEconomicDispositions.CouponStructureUnsupported;</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:482](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L482) | Issue code for a declared coupon structure that expected-accrual generation cannot handle. |
+| <code>public const string SecurityTermsChangedInPeriodCode = &quot;SM_TERMS_CHANGED_IN_PERIOD&quot;;</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:208](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L208) | Issue code when a security&#x27;s economics changed in valid time inside the accrual period. |
+| <code>public SecurityMasterAccountingEventService(IFactorPaydownProjectionService? factorPaydownProjector = null);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:212](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L212) |  |
+| <code>public SecurityMasterAccountingEventResult Generate(SecurityMasterAccountingEventRequest request);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:217](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L217) |  |
+| <code>public const string CouponStructureUnsupported = SecurityEconomicDispositions.CouponStructureUnsupported;</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:516](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L516) | Issue code for a declared coupon structure that expected-accrual generation cannot handle. |
 
 ## SecurityMasterAccountingEventSourceAdapter
 
@@ -611,14 +624,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SecurityMasterAccountingEventSourceAdapter(ISecurityMasterQueryService? securityMasterQueryService = null, IAssetOperationsQueryService? assetOperationsQueryService = null, ISecurityActualCashActivitySource? actualCashActivitySource = null);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventSourceAdapter.cs:17](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventSourceAdapter.cs#L17) |  |
-| <code>public async Task&lt;SecurityMasterAccountingEventRequest?&gt; BuildRequestAsync(StrategyRunDetail detail, ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventSourceAdapter.cs:27](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventSourceAdapter.cs#L27) |  |
+| <code>public SecurityMasterAccountingEventSourceAdapter(ISecurityMasterQueryService? securityMasterQueryService = null, IAssetOperationsQueryService? assetOperationsQueryService = null, ISecurityActualCashActivitySource? actualCashActivitySource = null, ISecurityTermsValidTimeReader? validTime = null);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventSourceAdapter.cs:18](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventSourceAdapter.cs#L18) |  |
+| <code>public async Task&lt;SecurityMasterAccountingEventRequest?&gt; BuildRequestAsync(StrategyRunDetail detail, ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventSourceAdapter.cs:32](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventSourceAdapter.cs#L32) |  |
 
 ## SecurityMasterAccountingPosition
 
 Qualified name: <code>Meridian.Strategies.Services.SecurityMasterAccountingPosition</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:79](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L79).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:97](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L97).
 
 ```csharp
 public sealed record SecurityMasterAccountingPosition(string Symbol, Guid? SecurityId, string AccountId, decimal ParAmount, decimal? CarryingPrice = null, Guid? PositionId = null, long PositionVersion = 1)
@@ -628,8 +641,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal? OriginalFaceAmount { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:94](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L94) | The durable book position&#x27;s ORIGINAL face, when it differs from the current outstanding balance. Factor paydowns are computed against original face (factors are relative to it), while coupon accruals bill the current balance in ParAmount — folding the original face into ParAmount would overstate expected interest by the paid-down portion. |
-| <code>public bool IsShort { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:101](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L101) | True when the source position is a SHORT exposure. ParAmount always carries the absolute magnitude, so without this flag a short would be indistinguishable from a long holding and would generate long-side income and receivable events for a liability. |
+| <code>public decimal? OriginalFaceAmount { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:112](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L112) | The durable book position&#x27;s ORIGINAL face, when it differs from the current outstanding balance. Factor paydowns are computed against original face (factors are relative to it), while coupon accruals bill the current balance in ParAmount — folding the original face into ParAmount would overstate expected interest by the paid-down portion. |
+| <code>public bool IsShort { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:119](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L119) | True when the source position is a SHORT exposure. ParAmount always carries the absolute magnitude, so without this flag a short would be indistinguishable from a long holding and would generate long-side income and receivable events for a liability. |
 
 ## SecurityMasterAccountingSecurity
 
@@ -638,8 +651,14 @@ Qualified name: <code>Meridian.Strategies.Services.SecurityMasterAccountingSecur
 Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:34](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L34).
 
 ```csharp
-public sealed record SecurityMasterAccountingSecurity(Guid SecurityId, string Symbol, string AssetClass, string Currency, SecurityFixedIncomeTerms? FixedIncomeTerms = null, SecurityAccountingRule? AccountingRule = null);
+public sealed record SecurityMasterAccountingSecurity(Guid SecurityId, string Symbol, string AssetClass, string Currency, SecurityFixedIncomeTerms? FixedIncomeTerms = null, SecurityAccountingRule? AccountingRule = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityAccountingTermsValidity? TermsValidity { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:46](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L46) | ADR-034: the valid-time period of the terms this record was read from, when the source adapter read period-correct terms. Null when the terms are the latest recorded ones. |
 
 ## SecurityReferenceLookupRequest
 
@@ -721,29 +740,3 @@ Source: [src/Meridian.Strategies/Services/ShadowBookValuationService.cs:32](../.
 ```csharp
 public sealed record ShadowBookVarianceThresholds(decimal AbsoluteMateriality, decimal BpsMateriality);
 ```
-
-## StatementCaseworkHandoffObligation
-
-Qualified name: <code>Meridian.Strategies.Services.StatementCaseworkHandoffObligation</code>. Kind: `class`.
-
-Source: [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:19](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L19).
-
-Durable queue-owned obligation proving that statement casework still needs to be synchronized to the source statement stores and retained on the matching Operations Continuity workflow. Completion is represented by an append-only paired marker so a crash cannot erase the pending fact without retaining the governed completion audit that cleared it.
-
-```csharp
-public static class StatementCaseworkHandoffObligation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string CompletionSource = &quot;statement-casework-handoff&quot;;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:21](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L21) |  |
-| <code>public static string CreatePendingMarker(string commandId) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:26](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L26) |  |
-| <code>public static string CreateCompletedMarker(string commandId) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:29](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L29) |  |
-| <code>public static string CreateCompletionCommandId(string commandId) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:32](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L32) |  |
-| <code>public static bool HasPending(ReconciliationBreakQueueItem item);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:35](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L35) |  |
-| <code>public static bool HasPending(ReconciliationBreakQueueItem item, string commandId);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:49](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L49) |  |
-| <code>public static bool HasCompleted(ReconciliationBreakQueueItem item, string commandId);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:59](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L59) |  |
-| <code>public static bool HasCompleted(ReconciliationBreakQueueItem item);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:68](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L68) |  |
-| <code>public static bool IsControlMarker(string? value) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:74](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L74) |  |

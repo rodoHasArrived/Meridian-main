@@ -1,5 +1,8 @@
 import type { ReferenceDataEndpointProbeResult } from "@/lib/api";
-import { toDomId } from "./accounting-screen.formatting";
+import type { ApiErrorDisplay } from "@/lib/api-errors";
+import type { SecurityMasterChangeHistoryItem } from "@/lib/api/security-master-workbench.api";
+import { formatDateTimeLabel, toDomId } from "./accounting-screen.formatting";
+import { normalizeApiErrorDisplay } from "./accounting-screen.view-model.shared";
 import type {
   SecurityConflictActionViewModel,
   SecurityConflictResolution,
@@ -266,4 +269,134 @@ export function formatSecuritySchedulePostingStatus(status: SecuritySchedulePost
   };
 
   return labels[status] ?? status;
+}
+
+/** How a change-history entry relates to valid time (ADR-034). */
+export type SecurityChangeHistoryValidity = "bounded" | "open" | "superseded" | "none";
+
+export interface SecurityChangeHistoryRowViewModel {
+  rowId: string;
+  changeId: string;
+  streamVersion: number;
+  changedAtLabel: string;
+  eventLabel: string;
+  versionLabel: string;
+  validFromLabel: string;
+  validToLabel: string;
+  validity: SecurityChangeHistoryValidity;
+  actorLabel: string;
+  changedFieldsLabel: string;
+  summary: string;
+  ariaLabel: string;
+}
+
+export interface SecurityChangeHistoryViewState {
+  securityId: string;
+  title: string;
+  description: string;
+  tableLabel: string;
+  tableCaption: string;
+  rows: SecurityChangeHistoryRowViewModel[];
+  emptyText: string;
+  loadingText: string | null;
+  errorText: string | null;
+  errorDetails: string[];
+  hasRows: boolean;
+  statusAnnouncement: string;
+}
+
+/**
+ * Valid-to text for one change-history entry: "superseded by vN" when a later same-valid-from
+ * recording replaced it (it governs no period), the exclusive end as known now, "open" while it
+ * still governs, or a dash for entries without valid time (staged edits, lifecycle actions).
+ */
+export function describeSecurityChangeValidTo(
+  item: Pick<SecurityMasterChangeHistoryItem, "validFromUtc" | "validToUtc" | "supersededByStreamVersion">
+): { label: string; validity: SecurityChangeHistoryValidity } {
+  if (item.supersededByStreamVersion !== null && item.supersededByStreamVersion !== undefined) {
+    return { label: `superseded by v${item.supersededByStreamVersion}`, validity: "superseded" };
+  }
+
+  if (item.validToUtc) {
+    return { label: formatDateTimeLabel(item.validToUtc), validity: "bounded" };
+  }
+
+  return item.validFromUtc ? { label: "open", validity: "open" } : { label: "—", validity: "none" };
+}
+
+export function buildSecurityChangeHistoryRow(item: SecurityMasterChangeHistoryItem): SecurityChangeHistoryRowViewModel {
+  const validTo = describeSecurityChangeValidTo(item);
+  const validFromLabel = item.validFromUtc ? formatDateTimeLabel(item.validFromUtc) : "—";
+  const changedAtLabel = formatDateTimeLabel(item.changedAtUtc);
+  const changedFieldsLabel = item.changedFieldsSummary?.trim()
+    || (item.changedFields?.length ? item.changedFields.join(", ") : "—");
+  const actorLabel = item.actor?.trim() || "—";
+  const versionLabel = `v${item.streamVersion}`;
+
+  return {
+    rowId: `change-${toDomId(`${item.streamVersion}-${item.changeId}`)}`,
+    changeId: item.changeId,
+    streamVersion: item.streamVersion,
+    changedAtLabel,
+    eventLabel: item.eventType,
+    versionLabel,
+    validFromLabel,
+    validToLabel: validTo.label,
+    validity: validTo.validity,
+    actorLabel,
+    changedFieldsLabel,
+    summary: item.summary,
+    ariaLabel: `${item.eventType} ${versionLabel} recorded ${changedAtLabel} by ${actorLabel}; valid from ${validFromLabel} to ${validTo.label}; changed ${changedFieldsLabel}`
+  };
+}
+
+/** Newest recording first, matching the WPF History tab ordering. */
+export function buildSecurityChangeHistoryRows(
+  changeHistory: SecurityMasterChangeHistoryItem[] | null | undefined
+): SecurityChangeHistoryRowViewModel[] {
+  return [...(changeHistory ?? [])]
+    .sort((left, right) => {
+      const byTime = Date.parse(right.changedAtUtc) - Date.parse(left.changedAtUtc);
+      return Number.isNaN(byTime) || byTime === 0 ? right.streamVersion - left.streamVersion : byTime;
+    })
+    .map(buildSecurityChangeHistoryRow);
+}
+
+export function buildSecurityChangeHistoryViewState({
+  securityId,
+  changeHistory,
+  loading = false,
+  error = null
+}: {
+  securityId: string | null;
+  changeHistory: SecurityMasterChangeHistoryItem[] | null | undefined;
+  loading?: boolean;
+  error?: string | ApiErrorDisplay | null;
+}): SecurityChangeHistoryViewState {
+  const normalizedError = normalizeApiErrorDisplay(error);
+  const errorText = normalizedError?.summary ?? null;
+  const displaySecurityId = securityId ?? "selected security";
+  const rows = buildSecurityChangeHistoryRows(changeHistory);
+  const count = rows.length;
+
+  return {
+    securityId: displaySecurityId,
+    title: "Change history",
+    description: `Recorded changes for ${displaySecurityId}, with the valid-time period each economic event governs.`,
+    tableLabel: `Change history for ${displaySecurityId}`,
+    tableCaption: `Change history for ${displaySecurityId}, newest recording first; valid to is the period end as known now.`,
+    rows,
+    emptyText: `No change history is recorded for ${displaySecurityId}.`,
+    loadingText: loading ? "Loading change history..." : null,
+    errorText,
+    errorDetails: normalizedError?.details ?? [],
+    hasRows: count > 0,
+    statusAnnouncement: errorText
+      ? `Change history error: ${errorText}`
+      : loading
+        ? `Loading change history for ${displaySecurityId}.`
+        : count > 0
+          ? `${count} change ${count === 1 ? "entry" : "entries"} loaded for ${displaySecurityId}.`
+          : ""
+  };
 }

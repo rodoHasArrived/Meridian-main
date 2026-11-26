@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FaceValueLotFactorPaydown
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.FaceValueLotFactorPaydown</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:783](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L783).
+
+The outcome of applying a factor decline to a FaceValueLot.
+
+```csharp
+public sealed record FaceValueLotFactorPaydown(FaceValueLot Lot, decimal PrincipalPaydown);
+```
+
+## FundUnitLot
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.FundUnitLot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L9).
+
+Canonical open lot for unit-denominated fund holdings (investment funds, money market funds, unitized private vehicles), whose SecurityAssetClassDescriptor.LotUnit is SecurityLotUnitKind.Units. The lot is a count of units and the NAV per unit they were acquired at; cost basis is owned here so every consumer derives it identically.
+
+```csharp
+public sealed record FundUnitLot : IUnitizedLot
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FundUnitLot(string lotId, Guid securityId, DateOnly acquiredDate, decimal units, decimal navPerUnit);</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L11) |  |
+| <code>public string LotId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L34) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L44) | Security Master identity the lot&#x27;s reference data (fund family, pricing cadence) resolves from. |
+| <code>public DateOnly AcquiredDate { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L46) |  |
+| <code>public decimal Units { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L49) | Units held; fractional units are ordinary for funds. |
+| <code>public decimal NavPerUnit { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L52) | NAV per unit the lot was acquired at, in the fund&#x27;s currency. |
+| <code>public decimal CostBasis =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L54) |  |
+| <code>public decimal ValueAt(decimal navPerUnit);</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L57) | Value of the lot at navPerUnit. |
+| <code>public FundUnitLot WithReducedUnits(decimal redeemedUnits);</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L66) | The lot remaining after redeeming redeemedUnits; cost basis scales with the units. |
+
 ## ICorporateActionCaseAccountingService
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService</code>. Kind: `interface`.
@@ -741,6 +779,25 @@ Declared public members:
 | <code>Task&lt;Guid?&gt; ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L14) | Resolves an identifier to one security id, or null. When ResolveSecurityRequest.Provider is null, implementations resolve canonically: provider is identity only for provider-scoped kinds (SecurityIdentifierNormalizer.IsProviderScoped), and an identifier claimed by more than one security resolves to null rather than to an arbitrary one of them. |
 | <code>async Task&lt;SecurityCanonicalResolution&gt; ResolveCanonicalAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L23) | Resolves an identifier and reports why it did or did not resolve. Callers that must refuse with a reason (order admission, backtest corporate-action adjustment) use this instead of ResolveAsync. The default implementation wraps ResolveAsync and can therefore only report SecurityResolutionStatus.Resolved or SecurityResolutionStatus.NotFound. |
 
+## ISecurityTermsValidTimeReader
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityTermsValidTimeReader</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermsValidTime.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsValidTime.cs#L43).
+
+ADR-034 bitemporal term reads for consumers outside the application layer. &quot;Terms valid at V as known at T&quot; is the event recorded by T with the latest valid-from not after V; equal valid-froms resolve to the later recording.
+
+```csharp
+public interface ISecurityTermsValidTimeReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityTermsValidTimeSegment?&gt; GetValidAtAsync(Guid securityId, DateTimeOffset validAt, DateTimeOffset? knownAt = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsValidTime.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsValidTime.cs#L46) | The terms that applied at validAt, as known at knownAt (default now); null before the first valid-from. |
+| <code>Task&lt;IReadOnlyList&lt;SecurityTermsValidTimeSegment&gt;&gt; GetTimelineAsync(Guid securityId, DateTimeOffset? knownAt = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsValidTime.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsValidTime.cs#L53) | Every governing period of the security&#x27;s terms, ordered by valid-from, as known at knownAt (default now). |
+
 ## ISecurityTradingParametersQueryService
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityTradingParametersQueryService</code>. Kind: `interface`.
@@ -835,7 +892,7 @@ public sealed record IssueOtcMarginCallRequest(Guid SnapshotId, OtcMovementKind 
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.IssuerFactSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:189](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L189).
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:193](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L193).
 
 Common issuer-level facts selected from the full XBRL fact history for fast lookup.
 
@@ -916,58 +973,4 @@ Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readine
 
 ```csharp
 public sealed record MultiAssetCoverageSpecification(string AssetClass, string DisplayName, string Summary, IReadOnlyList<string> RequiredIdentifiers, IReadOnlyList<string> EconomicTerms, IReadOnlyList<string> ProviderFeeds, string LedgerClassification, IReadOnlyList<string> ReconciliationSignals, bool HardBlocker, bool RequiresOperationalProfileReview = false);
-```
-
-## NotionalLot
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.NotionalLot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L11).
-
-Canonical open lot for notional-denominated OTC derivatives (interest rate swaps, credit default swaps, swaptions, caps and floors), whose SecurityAssetClassDescriptor.LotUnit is SecurityLotUnitKind.Notional. The lot&#x27;s size is the notional the contract&#x27;s payments are computed on, not a count of anything owned, so it has no shares, face or units and amortizes by replacing the notional rather than by relieving quantity. Any upfront payment exchanged at inception is the only cost the lot carries.
-
-```csharp
-public sealed record NotionalLot : IUnitizedLot
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public NotionalLot(string lotId, Guid securityId, DateOnly effectiveDate, decimal originalNotional, decimal? currentNotional = null, decimal upfrontPayment = 0m);</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L13) |  |
-| <code>public string LotId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L42) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L52) | Security Master identity the contract&#x27;s terms (legs, index, fixed rate, maturity) resolve from. |
-| <code>public DateOnly EffectiveDate { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L55) | Date the contract became effective and the notional started accruing. |
-| <code>public decimal OriginalNotional { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L58) | Notional at inception, in the contract currency. |
-| <code>public decimal CurrentNotional { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L61) | Notional outstanding after any amortization, in the contract currency. |
-| <code>public decimal UpfrontPayment { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L64) | Upfront payment made at inception, in the contract currency; zero for a par swap. |
-| <code>public decimal AmortizationFactor =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L67) | The share of the original notional still outstanding, the notional analogue of a pool factor. |
-| <code>public decimal AmortizedNotional =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L70) | Notional the lot has amortized away since inception. |
-| <code>public decimal CostBasis =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L73) | The lot&#x27;s cost basis: a notional lot&#x27;s only cost is the upfront payment. |
-| <code>public bool IsFullyAmortized =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L76) | True once the notional has fully amortized and the contract no longer accrues. |
-| <code>public NotionalLot WithNotional(decimal currentNotional) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L79) | The same lot with its notional replaced by currentNotional, the way an amortization schedule steps it. |
-| <code>public NotionalLot Amortize(decimal amount);</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:86](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L86) | Reduces the notional outstanding by amount. A reduction larger than the notional outstanding is refused rather than silently floored. |
-
-## OfferCorporateActionTerms
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OfferCorporateActionTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:209](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L209).
-
-An offer the holder may accept (tender offer).
-
-```csharp
-public sealed record OfferCorporateActionTerms(string EventType, decimal? OfferPricePerUnit, DateOnly? ExpiryDate, bool? IsPartial, bool? IsVoluntary) : CorporateActionTerms(EventType);
-```
-
-## OperatorOverrideDecisionRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OperatorOverrideDecisionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L73).
-
-Public API request for a reviewer&#x27;s decision on a pending operator-override overlay. Decision must be SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected, with an optional comment recorded on the durable audit trail. The reviewer identity is intentionally absent: the API layer derives it from the authenticated principal and maps this request onto the internal store command, so a caller cannot attribute a decision to someone else.
-
-```csharp
-public sealed record OperatorOverrideDecisionRequest(SecurityOverrideApprovalStatusDto Decision, string? Comment = null);
 ```

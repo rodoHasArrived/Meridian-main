@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Microsoft.Extensions.Logging;
@@ -33,7 +34,18 @@ public interface IPeriodAwareRestatementResolver
 /// </summary>
 public sealed record SecurityMasterRestatementDecision(
     bool RestatementRequired,
-    IReadOnlyList<RestatementCandidateDto> Candidates);
+    IReadOnlyList<RestatementCandidateDto> Candidates)
+{
+    /// <summary>The first day the routed change governs (the period-lock routing date).</summary>
+    public DateOnly? GovernedFrom { get; init; }
+
+    /// <summary>
+    /// ADR-034: the first day the change no longer governs, because a later valid-from recorded in the
+    /// security's terms takes over. Null when the change governs from <see cref="GovernedFrom"/> onwards,
+    /// or when it was not recorded as an economic event (corporate actions, overlay-only edits).
+    /// </summary>
+    public DateOnly? GovernedUntil { get; init; }
+}
 
 /// <summary>
 /// The outcome of locating report packs that consumed a changed line in a locked period: the actionable
@@ -69,6 +81,22 @@ public interface IRestatementCandidateResolver
         IReadOnlyList<string> changedFields,
         string? fundProfileId,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Resolves candidates for a change that governs <c>[effectiveDate, governedUntil)</c> (ADR-034): a
+    /// pack whose period lies entirely on or after <paramref name="governedUntil"/> reports terms the
+    /// change never applied to. A resolver that cannot narrow by the window keeps every candidate the
+    /// open-ended overload returns, so the default never introduces a silent miss.
+    /// </summary>
+    Task<RestatementCandidateResult> ResolveAsync(
+        Guid securityId,
+        Guid ledgerBookId,
+        DateOnly effectiveDate,
+        DateOnly? governedUntil,
+        IReadOnlyList<string> changedFields,
+        string? fundProfileId,
+        CancellationToken ct = default)
+        => ResolveAsync(securityId, ledgerBookId, effectiveDate, changedFields, fundProfileId, ct);
 }
 
 /// <summary>
@@ -122,15 +150,20 @@ public sealed class PeriodAwareRestatementResolver : IPeriodAwareRestatementReso
     private readonly ILedgerPeriodLockReader _lockReader;
     private readonly IRestatementCandidateResolver _candidateResolver;
     private readonly ILogger<PeriodAwareRestatementResolver> _logger;
+    private readonly ISecurityTermsValidTimeReader? _validTime;
 
     public PeriodAwareRestatementResolver(
         ILedgerPeriodLockReader lockReader,
         IRestatementCandidateResolver candidateResolver,
-        ILogger<PeriodAwareRestatementResolver> logger)
+        ILogger<PeriodAwareRestatementResolver> logger,
+        ISecurityTermsValidTimeReader? validTime = null)
     {
         _lockReader = lockReader ?? throw new ArgumentNullException(nameof(lockReader));
         _candidateResolver = candidateResolver ?? throw new ArgumentNullException(nameof(candidateResolver));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        // ADR-034: with a valid-time reader a term change is routed over the window it governs; without
+        // one it is routed open-ended from its effective date, as before.
+        _validTime = validTime;
     }
 
     public async Task<SecurityMasterRestatementDecision> ResolveAsync(
@@ -138,12 +171,13 @@ public sealed class PeriodAwareRestatementResolver : IPeriodAwareRestatementReso
     {
         ArgumentNullException.ThrowIfNull(publishedEvent);
 
+        var effectiveDate = DateOnly.FromDateTime(publishedEvent.EffectiveFrom.UtcDateTime);
         if (publishedEvent.AffectedLedgerBookIds.Count == 0)
         {
-            return new SecurityMasterRestatementDecision(RestatementRequired: false, Candidates: []);
+            return new SecurityMasterRestatementDecision(RestatementRequired: false, Candidates: []) { GovernedFrom = effectiveDate };
         }
 
-        var effectiveDate = DateOnly.FromDateTime(publishedEvent.EffectiveFrom.UtcDateTime);
+        var governedUntil = await ResolveGovernedUntilAsync(publishedEvent, ct).ConfigureAwait(false);
         var candidates = new List<RestatementCandidateDto>();
         var restatementRequired = false;
 
@@ -162,7 +196,7 @@ public sealed class PeriodAwareRestatementResolver : IPeriodAwareRestatementReso
                     // an actionable candidate (e.g. already Restated, which the workflow cannot re-restate)
                     // still needs manual follow-up; unlike a hard-closed book the soft-closed arm does not
                     // default-deny, so without this the decision would be silently empty for a real match.
-                    var softClosed = await ResolveCandidatesAsync(publishedEvent, ledgerBookId, effectiveDate, ct).ConfigureAwait(false);
+                    var softClosed = await ResolveCandidatesAsync(publishedEvent, ledgerBookId, effectiveDate, governedUntil, ct).ConfigureAwait(false);
                     candidates.AddRange(softClosed.Candidates);
                     if (softClosed.HasNonActionableMatches || !softClosed.IsAuthoritative)
                     {
@@ -179,7 +213,7 @@ public sealed class PeriodAwareRestatementResolver : IPeriodAwareRestatementReso
                 default:
                     // Hard-closed or any indeterminate/default-deny state: no posting, mandatory proposal.
                     restatementRequired = true;
-                    var hardClosed = await ResolveCandidatesAsync(publishedEvent, ledgerBookId, effectiveDate, ct).ConfigureAwait(false);
+                    var hardClosed = await ResolveCandidatesAsync(publishedEvent, ledgerBookId, effectiveDate, governedUntil, ct).ConfigureAwait(false);
                     candidates.AddRange(hardClosed.Candidates);
                     _logger.LogInformation(
                         "Security Master revision {RevisionId} affects hard-closed ledger book {LedgerBookId} at {EffectiveDate}; proposing restatement (no posting).",
@@ -198,12 +232,41 @@ public sealed class PeriodAwareRestatementResolver : IPeriodAwareRestatementReso
             .ToArray();
 
         return new SecurityMasterRestatementDecision(
-            restatementRequired || distinctCandidates.Length > 0, distinctCandidates);
+            restatementRequired || distinctCandidates.Length > 0, distinctCandidates)
+        {
+            GovernedFrom = effectiveDate,
+            GovernedUntil = governedUntil
+        };
+    }
+
+    /// <summary>
+    /// ADR-034: a term change recorded as an economic event asserts its full state from its valid-from
+    /// until the next later valid-from. The window is bounded only when the published change exists in
+    /// the security's valid-time timeline at exactly its effective instant (the publish's canonical
+    /// merge); corporate actions and overlay-only edits are not term events and stay open-ended.
+    /// </summary>
+    private async Task<DateOnly?> ResolveGovernedUntilAsync(SecurityMasterRevisionPublishedEvent publishedEvent, CancellationToken ct)
+    {
+        if (_validTime is null || publishedEvent.Version <= 0)
+            return null;
+
+        var timeline = await _validTime.GetTimelineAsync(publishedEvent.SecurityId, knownAt: null, ct).ConfigureAwait(false);
+        var governing = timeline.FirstOrDefault(segment => segment.ValidFrom == publishedEvent.EffectiveFrom);
+        if (governing?.ValidTo is not { } validTo)
+            return null;
+
+        // The window is [ValidFrom, ValidTo); a day the change governs for any part of stays inside it.
+        var untilDate = DateOnly.FromDateTime(validTo.UtcDateTime);
+        return validTo.UtcDateTime.TimeOfDay == TimeSpan.Zero ? untilDate : untilDate.AddDays(1);
     }
 
     private Task<RestatementCandidateResult> ResolveCandidatesAsync(
-        SecurityMasterRevisionPublishedEvent publishedEvent, Guid ledgerBookId, DateOnly effectiveDate, CancellationToken ct)
-        => _candidateResolver.ResolveAsync(
-            publishedEvent.SecurityId, ledgerBookId, effectiveDate, publishedEvent.ChangedFields,
-            publishedEvent.DownstreamImpact.FundProfileId, ct);
+        SecurityMasterRevisionPublishedEvent publishedEvent, Guid ledgerBookId, DateOnly effectiveDate, DateOnly? governedUntil, CancellationToken ct)
+        => governedUntil is null
+            ? _candidateResolver.ResolveAsync(
+                publishedEvent.SecurityId, ledgerBookId, effectiveDate, publishedEvent.ChangedFields,
+                publishedEvent.DownstreamImpact.FundProfileId, ct)
+            : _candidateResolver.ResolveAsync(
+                publishedEvent.SecurityId, ledgerBookId, effectiveDate, governedUntil, publishedEvent.ChangedFields,
+                publishedEvent.DownstreamImpact.FundProfileId, ct);
 }

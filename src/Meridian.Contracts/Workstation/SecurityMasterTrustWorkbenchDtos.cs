@@ -219,7 +219,31 @@ public sealed record SecurityMasterChangeHistoryItemDto(
     string? Reason,
     string Summary,
     IReadOnlyList<string> ChangedFields,
-    string ChangedFieldsSummary);
+    string ChangedFieldsSummary)
+{
+    /// <summary>
+    /// ADR-034 valid time: the instant from which this economic event's full state applies. Read from
+    /// the event's <c>validFrom</c> metadata, or the state's own effective-from on events written before
+    /// ADR-034. Null for entries that are not economic events (staged edits, lifecycle actions).
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DateTimeOffset? ValidFromUtc { get; init; }
+
+    /// <summary>
+    /// ADR-034 valid time: the exclusive end of the period this event governs, as known now: the next
+    /// later valid-from in the stream. Null when the event still governs from its valid-from onwards,
+    /// or when it never governs (see <see cref="SupersededByStreamVersion"/>).
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DateTimeOffset? ValidToUtc { get; init; }
+
+    /// <summary>
+    /// The stream version of a later recording with the same valid-from, which replaced this event's
+    /// state for its whole period (a correction). Null when no later recording replaced it.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public long? SupersededByStreamVersion { get; init; }
+}
 
 /// <summary>Whether a record's declared call and put schedule resolved to dated rows or is blocked.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<SecurityMasterDeclaredExerciseStatus>))]

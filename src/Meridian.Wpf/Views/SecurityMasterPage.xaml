@@ -1040,6 +1040,8 @@
                                                 <DataGridTextColumn Header="Changed" Binding="{Binding ChangedAtUtc, StringFormat='{}{0:g}'}" Width="130" />
                                                 <DataGridTextColumn Header="Event" Binding="{Binding EventType}" Width="150" />
                                                 <DataGridTextColumn Header="Version" Binding="{Binding StreamVersion}" Width="80" />
+                                                <DataGridTextColumn Header="Valid from" Binding="{Binding ValidFromText}" Width="130" />
+                                                <DataGridTextColumn Header="Valid to" Binding="{Binding ValidToText}" Width="140" />
                                                 <DataGridTextColumn Header="Origin" Binding="{Binding Origin}" Width="90" />
                                                 <DataGridTextColumn Header="Actor" Binding="{Binding Actor}" Width="140" />
                                                 <DataGridTextColumn Header="Source" Binding="{Binding SourceSystem}" Width="140" />

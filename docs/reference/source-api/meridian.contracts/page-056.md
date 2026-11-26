@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterEnumReads
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterEnumReads</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterEnumReads.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterEnumReads.cs#L10).
+
+Read-tolerant enum parsing for Security Master persistence and interop reads. A value written by a newer node (a new identifier kind, status, scope, or state) must degrade to the enum&#x27;s designated fallback member instead of throwing — a hard Enum.Parse on a row read turns one unrecognized value into a total read outage for that row on every older node, which makes mixed-version rollout unsafe. Write paths stay strict: this helper is for reads only.
+
+```csharp
+public static class SecurityMasterEnumReads
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static TEnum ParseOrFallback&lt;TEnum&gt;(string? raw, TEnum fallback) where TEnum : struct, Enum =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterEnumReads.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterEnumReads.cs#L18) | Parses raw case-insensitively into TEnum, returning fallback for null, unrecognized, or numerically-undefined input. Numeric strings that do not name a defined member also degrade (bare Enum.TryParse would happily produce an undefined value for them). |
+
+## SecurityMasterEventEnvelope
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L14).
+
+```csharp
+public sealed record SecurityMasterEventEnvelope(long? GlobalSequence, Guid SecurityId, long StreamVersion, string EventType, DateTimeOffset EventTimestamp, string Actor, Guid? CorrelationId, Guid? CausationId, JsonElement Payload, JsonElement Metadata, string? PayloadType = null, int? PayloadVersion = null);
+```
+
+## SecurityMasterEventPayloadDescriptor
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterEventPayloadDescriptor</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L29).
+
+A resolved event payload family and version.
+
+```csharp
+public readonly record struct SecurityMasterEventPayloadDescriptor(string PayloadType, int PayloadVersion);
+```
+
 ## SecurityMasterEventPayloads
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterEventPayloads</code>. Kind: `class`.
@@ -831,49 +871,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public SecurityScheduleValidationException(IReadOnlyList&lt;SecurityScheduleDiagnostic&gt; diagnostics) : base(&quot;Invalid economic schedule: &quot; + string.Join(&quot;; &quot;, diagnostics.Select(static diagnostic =&gt; $&quot;{diagnostic.Path}: {diagnostic.Message} ({diagnostic.Code})&quot;)));</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs:72](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs#L72) |  |
 | <code>public IReadOnlyList&lt;SecurityScheduleDiagnostic&gt; Diagnostics { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs#L79) |  |
-
-## SecuritySearchRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySearchRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs#L10).
-
-```csharp
-public sealed record SecuritySearchRequest(string Query, int Take = 50, int Skip = 0, bool ActiveOnly = false, string? CustomProfileId = null, int? ProfileVersion = null, string? ProfileFieldKey = null, string? ProfileFieldValue = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool PrefixOnly { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs#L20) |  |
-
-## SecuritySettlementMethod
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySettlementMethod</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L11).
-
-How a derivative settles at expiry or exercise.
-
-```csharp
-public enum SecuritySettlementMethod
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Cash</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L14) | Settled by a cash payment of the intrinsic value or final variation. |
-| <code>Physical</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L17) | Settled by delivery of the underlying. |
-| <code>Elective</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L20) | The holder elects cash or physical settlement. |
-
-## SecuritySnapshotRecord
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:143](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L143).
-
-```csharp
-public sealed record SecuritySnapshotRecord(Guid SecurityId, long Version, DateTimeOffset SnapshotTimestamp, JsonElement Payload);
-```

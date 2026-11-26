@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondPerformanceJsonContext
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:86](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L86).
+
+```csharp
+public partial class BondPerformanceJsonContext : JsonSerializerContext;
+```
+
+## BondPerformanceRequest
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:7](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L7).
+
+Identifiers and cutoffs only; marks, cash, rates and accounting amounts are resolved from retained authorities.
+
+```csharp
+public sealed record BondPerformanceRequest(AccountCashForecastScopeDto Scope, DateOnly PeriodStart, DateOnly PeriodEnd, DateTimeOffset KnownAt)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;Guid&gt; TaxLotRecordIds { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L10) |  |
+
 ## BondPerformanceResult
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceResult</code>. Kind: `record`.
@@ -659,24 +687,4 @@ Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:9](../../.
 
 ```csharp
 public sealed record BondWorkflowInflationConvention(string IndexName, decimal BaseIndex, int LagMonths, bool InterpolateMonthly, decimal? CouponFloorRatio = null, decimal? RedemptionFloorRatio = null);
-```
-
-## BondWorkflowIssue
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowIssue</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:27](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L27).
-
-```csharp
-public sealed record BondWorkflowIssue(string Operation, string Code, string Reason, bool BlocksCalculation = false);
-```
-
-## BondWorkflowMetric
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowMetric</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:28](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L28).
-
-```csharp
-public sealed record BondWorkflowMetric(string Name, bool Available, string? Reason = null);
 ```

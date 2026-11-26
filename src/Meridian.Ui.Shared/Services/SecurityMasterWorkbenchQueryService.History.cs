@@ -98,7 +98,7 @@ public sealed partial class SecurityMasterWorkbenchQueryService
             Summary: summary);
     }
 
-    private static IReadOnlyList<SecurityMasterChangeHistoryItemDto> BuildChangeHistory(
+    internal static IReadOnlyList<SecurityMasterChangeHistoryItemDto> BuildChangeHistory(
         IReadOnlyList<SecurityMasterEventEnvelope> history)
     {
         if (history.Count == 0)
@@ -113,9 +113,29 @@ public sealed partial class SecurityMasterWorkbenchQueryService
         var items = new List<SecurityMasterChangeHistoryItemDto>(ordered.Length);
         SecurityEconomicDefinitionRecord? previousRecord = null;
 
+        // ADR-034: each economic event asserts its full state from its valid-from (recorded metadata, or
+        // the state's own effective-from on events written before ADR-034) until the next later
+        // valid-from; an equal valid-from recorded later supersedes it. Events whose payload does not
+        // decode carry no valid time rather than a guessed one.
+        var validTimeInputs = new List<(long StreamVersion, DateTimeOffset RecordedAt, DateTimeOffset ValidFrom)>();
+        var parsedRecords = new Dictionary<long, SecurityEconomicDefinitionRecord?>();
         foreach (var envelope in ordered)
         {
-            var currentRecord = TryParseHistoryRecord(envelope.Payload);
+            var parsed = TryParseHistoryRecord(envelope.Payload);
+            parsedRecords[envelope.StreamVersion] = parsed;
+            var validFrom = SecurityTermsValidTime.ReadValidFrom(envelope.Metadata) ?? parsed?.EffectiveFrom;
+            if (validFrom is { } assertedFrom)
+            {
+                validTimeInputs.Add((envelope.StreamVersion, envelope.EventTimestamp, assertedFrom));
+            }
+        }
+
+        var validTime = SecurityTermsValidTime.Assign(validTimeInputs)
+            .ToDictionary(static item => item.StreamVersion);
+
+        foreach (var envelope in ordered)
+        {
+            var currentRecord = parsedRecords[envelope.StreamVersion];
             var payloadProvenance = currentRecord?.Provenance;
             var sourceSystem =
                 CoalesceNonEmpty(
@@ -139,6 +159,7 @@ public sealed partial class SecurityMasterWorkbenchQueryService
                 ? "No structured field diff available."
                 : string.Join(", ", changedFields);
 
+            var assertion = validTime.GetValueOrDefault(envelope.StreamVersion);
             items.Add(new SecurityMasterChangeHistoryItemDto(
                 ChangeId: $"{envelope.StreamVersion}:{envelope.EventType}",
                 StreamVersion: envelope.StreamVersion,
@@ -152,7 +173,12 @@ public sealed partial class SecurityMasterWorkbenchQueryService
                 Reason: reason,
                 Summary: BuildChangeSummary(envelope, currentRecord, changedFields, sourceSystem),
                 ChangedFields: changedFields,
-                ChangedFieldsSummary: changedFieldsSummary));
+                ChangedFieldsSummary: changedFieldsSummary)
+            {
+                ValidFromUtc = assertion?.ValidFrom,
+                ValidToUtc = assertion?.ValidTo,
+                SupersededByStreamVersion = assertion?.SupersededByStreamVersion
+            });
 
             if (currentRecord is not null)
             {

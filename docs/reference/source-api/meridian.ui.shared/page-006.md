@@ -1014,7 +1014,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.PlotTool.cs:6](..
 public static partial class WorkstationEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.PortfolioAggregation.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.PortfolioAggregation.cs#L12).
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.PortfolioAggregation.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.PortfolioAggregation.cs#L13).
 
 ```csharp
 public static partial class WorkstationEndpoints

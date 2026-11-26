@@ -6,6 +6,51 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LegalEntityLifecycleStatusDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LegalEntityLifecycleStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:67](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L67).
+
+```csharp
+public enum LegalEntityLifecycleStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Draft</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:69](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L69) |  |
+| <code>Forming</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:70](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L70) |  |
+| <code>Active</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:71](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L71) |  |
+| <code>AmendmentPending</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:72](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L72) |  |
+| <code>Restructuring</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:73](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L73) |  |
+| <code>WindingDown</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:74](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L74) |  |
+| <code>Dissolved</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:75](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L75) |  |
+| <code>Merged</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:76](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L76) |  |
+
+## LegalEntityReadAuthorityProof
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LegalEntityReadAuthorityProof</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:5](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L5).
+
+Invocation-bound proof of a live PostgreSQL legal-entity read fence.
+
+```csharp
+public sealed class LegalEntityReadAuthorityProof
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Host { get; }</code> | [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:16](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L16) |  |
+| <code>public int Port { get; }</code> | [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:17](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L17) |  |
+| <code>public string Database { get; }</code> | [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:18](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L18) |  |
+| <code>public string Schema { get; }</code> | [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:19](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L19) |  |
+| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:20](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L20) |  |
+
 ## LegalEntitySummaryDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.LegalEntitySummaryDto</code>. Kind: `record`.
@@ -669,23 +714,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>IProviderIntegrationManifestStore ForTenant(string tenantId);</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:881](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L881) |  |
-
-## ManualCsvProviderIntegrationDryRunRequestDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ManualCsvProviderIntegrationDryRunRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:678](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L678).
-
-```csharp
-public sealed record ManualCsvProviderIntegrationDryRunRequestDto(string SyncRunId, string ManifestId, string ConnectionId, ProviderCapabilityKindDto Capability, string FileName, string CsvContent, string RequestedBy, DateTimeOffset RequestedAt);
-```
-
-## ProviderCapabilityDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderCapabilityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:165](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L165).
-
-```csharp
-public sealed record ProviderCapabilityDto(ProviderCapabilityKindDto Capability, bool Enabled, bool RequiresCertifiedAdapter, IReadOnlyList<string> RequiredCanonicalFields);
-```

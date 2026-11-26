@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderIntegrationSchemaDriftCheckResultDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationSchemaDriftCheckResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:746](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L746).
+
+```csharp
+public sealed record ProviderIntegrationSchemaDriftCheckResultDto(string ManifestId, string ConnectionId, ProviderCapabilityKindDto Capability, string EndpointKey, string SyncRunId, string RawPayloadId, bool DriftDetected, bool ShouldPauseCapability, int RecordsInspected, IReadOnlyList<ProviderIntegrationSchemaDriftIssueDto> Issues);
+```
+
+## ProviderIntegrationSchemaDriftIssueDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationSchemaDriftIssueDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:727](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L727).
+
+```csharp
+public sealed record ProviderIntegrationSchemaDriftIssueDto(string Code, ProviderIntegrationIssueSeverityDto Severity, ProviderCapabilityKindDto Capability, string EndpointKey, string JsonPath, string Message, string SuggestedFix);
+```
+
 ## ProviderIntegrationSetupSaveRequestDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationSetupSaveRequestDto</code>. Kind: `record`.
@@ -737,29 +757,3 @@ Enum declarations:
 | <code>Info = 0</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:20](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L20) |  |
 | <code>Warning = 1</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:21](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L21) |  |
 | <code>Critical = 2</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:22](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L22) |  |
-
-## AccountingConfigurationWorkspaceDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingConfigurationWorkspaceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:636](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L636).
-
-```csharp
-public sealed record AccountingConfigurationWorkspaceDto(string FundProfileId, Guid? LedgerBookId, AccountingConfigurationStatusDto Status, string ConfigurationVersion, DateTimeOffset UpdatedAtUtc, IReadOnlyList<LedgerBookDto> LedgerBooks, IReadOnlyList<ChartOfAccountsNodeDto> ChartOfAccounts, IReadOnlyList<JournalEntryTemplateDto> JournalTemplates, IReadOnlyList<PostingRuleDto> PostingRules, IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues, IReadOnlyList<AccountingActionAuditEventDto> AuditTrail, IReadOnlyList<AccountingRuleTestCaseDto>? RuleTestCases = null, AccountingRulesStudioDto? RulesStudio = null, LedgerBookSetupCandidateDto? LedgerBookSetupCandidate = null, string? TenantId = null, string? CompanyId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;AccountingRuleTestCaseDto&gt; RuleTestCases { get; init; } = RuleTestCases??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:654](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L654) |  |
-
-## AccountingJournalPreviewLineDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingJournalPreviewLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:732](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L732).
-
-```csharp
-public sealed record AccountingJournalPreviewLineDto(string AccountPath, string AccountName, AccountingTemplateLineSideDto Side, decimal Amount, string Currency, string? Description = null);
-```

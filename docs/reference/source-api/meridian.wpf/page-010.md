@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ThemeService
+
+Qualified name: <code>Meridian.Wpf.Services.ThemeService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/ThemeService.cs:14](../../../../src/Meridian.Wpf/Services/ThemeService.cs#L14).
+
+WPF-specific theme service that extends ThemeServiceBase with ResourceDictionary management and window chrome updates. Implements singleton pattern for application-wide theme management. Phase 6C.2: Shared base class extracts state management and toggle logic.
+
+```csharp
+public sealed class ThemeService : ThemeServiceBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ThemeService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/ThemeService.cs:27](../../../../src/Meridian.Wpf/Services/ThemeService.cs#L27) | Gets the singleton instance of the ThemeService. |
+| <code>public event EventHandler&lt;ThemeChangedEventArgs&gt;? ThemeChanged;</code> | [src/Meridian.Wpf/Services/ThemeService.cs:32](../../../../src/Meridian.Wpf/Services/ThemeService.cs#L32) | Occurs when the theme is changed. Provides detailed event args with previous/new theme. |
+| <code>public void Initialize(Window window);</code> | [src/Meridian.Wpf/Services/ThemeService.cs:43](../../../../src/Meridian.Wpf/Services/ThemeService.cs#L43) | Initializes the theme service with the main application window. |
+
 ## TickerStripService
 
 Qualified name: <code>Meridian.Wpf.Services.TickerStripService</code>. Kind: `class`.
@@ -1135,28 +1155,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>FrameworkElement CreateContent(string pageTag, object? parameter = null, WorkspaceChromePresentationMode presentationMode = WorkspaceChromePresentationMode.Docked);</code> | [src/Meridian.Wpf/Shell/Services/IPageContentFactory.cs:11](../../../../src/Meridian.Wpf/Shell/Services/IPageContentFactory.cs#L11) |  |
-
-## IShellNavigationCoordinator
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.IShellNavigationCoordinator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:12](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L12).
-
-Coordinates canonical routes, navigation-frame initialization, and pane content and drop operations.
-
-```csharp
-public interface IShellNavigationCoordinator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IShellRouteRegistry RouteRegistry { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:14](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L14) |  |
-| <code>ShellRoute? ResolveRoute(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:16](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L16) |  |
-| <code>bool IsRouteRegistered(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:18](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L18) |  |
-| <code>bool NavigateToRoute(string pageTag, object? parameter = null);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:20](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L20) |  |
-| <code>PaneDropResult ApplyPaneDrop(PaneHostViewModel paneHost, string? pageTag, int targetPaneIndex, PaneDropAction action = PaneDropAction.Replace);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:22](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L22) |  |
-| <code>IReadOnlyList&lt;PaneContentState&gt; GetVisiblePaneContentStates(PaneHostViewModel paneHost);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:28](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L28) |  |
-| <code>FrameworkElement CreatePaneContent(PaneContentState state);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:30](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L30) |  |
-| <code>void InitializeNavigationFrame(Frame frame);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:32](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L32) |  |

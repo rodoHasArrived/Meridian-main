@@ -6,6 +6,41 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAgreementReviewIntegrity
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementReviewIntegrity</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs:19](../../../../src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs#L19).
+
+Retained legal review authority is either an independent actor or an explicit external attestation.
+
+```csharp
+public static class IntercompanyAgreementReviewIntegrity
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void Validate(IntercompanyAgreementRevisionDto revision);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs:21](../../../../src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs#L21) |  |
+
+## IntercompanyAgreementReviewPayloadDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementReviewPayloadDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:113](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L113).
+
+```csharp
+public sealed record IntercompanyAgreementReviewPayloadDto(IntercompanyAgreementDraftDto Draft, int? BaseAgreementVersion, int? PredecessorAgreementVersion, string? Rationale)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Guid AgreementId { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:116](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L116) |  |
+| <code>public Guid ProposalId { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:117](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L117) |  |
+
 ## IntercompanyAgreementRevisionDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementRevisionDto</code>. Kind: `record`.
@@ -680,48 +715,3 @@ Enum declarations:
 | <code>Dissolution</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:90](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L90) |  |
 | <code>Reactivation</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:91](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L91) |  |
 | <code>Other</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:92](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L92) |  |
-
-## LegalEntityLifecycleStatusDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.LegalEntityLifecycleStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:67](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L67).
-
-```csharp
-public enum LegalEntityLifecycleStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Draft</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:69](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L69) |  |
-| <code>Forming</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:70](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L70) |  |
-| <code>Active</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:71](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L71) |  |
-| <code>AmendmentPending</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:72](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L72) |  |
-| <code>Restructuring</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:73](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L73) |  |
-| <code>WindingDown</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:74](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L74) |  |
-| <code>Dissolved</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:75](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L75) |  |
-| <code>Merged</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:76](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L76) |  |
-
-## LegalEntityReadAuthorityProof
-
-Qualified name: <code>Meridian.Contracts.FundStructure.LegalEntityReadAuthorityProof</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:5](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L5).
-
-Invocation-bound proof of a live PostgreSQL legal-entity read fence.
-
-```csharp
-public sealed class LegalEntityReadAuthorityProof
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Host { get; }</code> | [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:16](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L16) |  |
-| <code>public int Port { get; }</code> | [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:17](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L17) |  |
-| <code>public string Database { get; }</code> | [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:18](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L18) |  |
-| <code>public string Schema { get; }</code> | [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:19](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L19) |  |
-| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:20](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L20) |  |

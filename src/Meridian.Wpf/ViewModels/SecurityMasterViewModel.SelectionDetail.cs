@@ -640,6 +640,7 @@ public sealed partial class SecurityMasterViewModel
                 ? changeHistory
                     .OrderByDescending(static item => item.ChangedAtUtc)
                     .ThenByDescending(static item => item.StreamVersion)
+                    .Select(static item => SecurityMasterChangeHistoryRow.From(item))
                 : []);
         RaiseScheduleAndOpenLotStateChanged();
     }

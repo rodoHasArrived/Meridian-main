@@ -399,7 +399,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.EdgarIngestOrchestrator</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs:16](../../../../src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs#L16).
+Source: [src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs:17](../../../../src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs#L17).
 
 Coordinates EDGAR reference-data persistence and ticker-backed Security Master writes.
 
@@ -411,8 +411,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public EdgarIngestOrchestrator(IEdgarReferenceDataProvider provider, IEdgarReferenceDataStore store, ContractSecurityMasterQueryService queryService, ISecurityMasterService securityMasterService, ILogger&lt;EdgarIngestOrchestrator&gt; logger, ISecurityMasterConflictService? conflictService = null, ISecurityMasterAmender? systemAmender = null);</code> | [src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs:32](../../../../src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs#L32) |  |
-| <code>public async Task&lt;EdgarIngestResult&gt; IngestAsync(EdgarIngestRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs:53](../../../../src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs#L53) |  |
+| <code>public EdgarIngestOrchestrator(IEdgarReferenceDataProvider provider, IEdgarReferenceDataStore store, ContractSecurityMasterQueryService queryService, ISecurityMasterService securityMasterService, ILogger&lt;EdgarIngestOrchestrator&gt; logger, ISecurityMasterConflictService? conflictService = null, ISecurityMasterAmender? systemAmender = null, IEntityMasterStore? entityMaster = null, Meridian.Contracts.SecurityMaster.ISecurityResolver? resolver = null, TimeProvider? clock = null);</code> | [src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs:36](../../../../src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs#L36) |  |
+| <code>public async Task&lt;EdgarIngestResult&gt; IngestAsync(EdgarIngestRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs:65](../../../../src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs#L65) |  |
 
 ## FaceValueLotExtensions
 
@@ -438,7 +438,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.FieldAlreadyStagedException</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1922](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1922).
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1928](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1928).
 
 A field edit was refused because another open revision already stages the same field (review P5/D1). Mapped to HTTP 409 with the first stager&#x27;s identity.
 
@@ -450,12 +450,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FieldAlreadyStagedException(Guid securityId, string fieldPath, Guid revisionId, string stagedBy, SecurityMasterRevisionStateDto state) : base($&quot;Field &#x27;{fieldPath}&#x27; of security &#x27;{securityId:D}&#x27; is already staged by {stagedBy} in revision &#x27;{revisionId:D}&#x27; ({state}). &quot; + &quot;Publish or discard that revision before staging the field again.&quot;);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1924](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1924) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1935](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1935) |  |
-| <code>public string FieldPath { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1937](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1937) |  |
-| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1939](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1939) |  |
-| <code>public string StagedBy { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1941](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1941) |  |
-| <code>public SecurityMasterRevisionStateDto State { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1943](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1943) |  |
+| <code>public FieldAlreadyStagedException(Guid securityId, string fieldPath, Guid revisionId, string stagedBy, SecurityMasterRevisionStateDto state) : base($&quot;Field &#x27;{fieldPath}&#x27; of security &#x27;{securityId:D}&#x27; is already staged by {stagedBy} in revision &#x27;{revisionId:D}&#x27; ({state}). &quot; + &quot;Publish or discard that revision before staging the field again.&quot;);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1930](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1930) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1941](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1941) |  |
+| <code>public string FieldPath { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1943](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1943) |  |
+| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1945](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1945) |  |
+| <code>public string StagedBy { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1947](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1947) |  |
+| <code>public SecurityMasterRevisionStateDto State { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:1949](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L1949) |  |
 
 ## FileSecurityCashFlowReceiptStore
 
@@ -629,7 +629,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.IndeterminateRestatementCandidateResolver</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:98](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L98).
+Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:126](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L126).
 
 Fail-closed bridge for hosts whose canonical reporting authority cannot yet answer the security-to-released-run candidate query. It never fabricates a legacy report-pack candidate; instead it marks the lookup indeterminate so soft-closed and hard-closed edits require explicit manual restatement review.
 
@@ -641,7 +641,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:100](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L100) |  |
+| <code>public Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:128](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L128) |  |
 
 ## InMemorySecurityMasterHeldAmendmentStore
 
@@ -692,7 +692,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.IPeriodAwareRestatementResolver</code>. Kind: `interface`.
 
-Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:23](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L23).
+Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:24](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L24).
 
 Phase 3 period-aware propagation: decides, for a published Security Master revision, whether any affected ledger book is in a closed period and therefore requires a governed restatement proposal rather than silent mutation. The authoritative lock state is the ledger accounting-period status (ILedgerPeriodLockReader) — the same authority LedgerPeriodPostingGuard enforces. Routing per book (D3 matrix): Open → no restatement. Note that &quot;open&quot; does not mean downstream results were recomputed: lower-order publish handlers merge field edits and refresh caches only, and nothing re-derives cash-flow receipts, drafts, lots or journals built on the superseded version. SoftClosed → the downstream effect posts as a governed adjustment (a later slice), and only already-published report packs become restatement candidates; HardClosed or any indeterminate/default-deny state → no posting and a mandatory restatement proposal. When a hard-closed book has exposure but no candidate can be located, the decision still reports SecurityMasterRestatementDecision.RestatementRequired (a manual &quot;locate affected packs&quot; task) — a closed period is never silently completed.
 
@@ -704,13 +704,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;SecurityMasterRestatementDecision&gt; ResolveAsync(SecurityMasterRevisionPublishedEvent publishedEvent, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:25](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L25) |  |
+| <code>Task&lt;SecurityMasterRestatementDecision&gt; ResolveAsync(SecurityMasterRevisionPublishedEvent publishedEvent, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:26](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L26) |  |
 
 ## IRestatementCandidateResolver
 
 Qualified name: <code>Meridian.Application.SecurityMaster.IRestatementCandidateResolver</code>. Kind: `interface`.
 
-Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:63](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L63).
+Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:75](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L75).
 
 Resolves the report packs that consumed a changed line in a locked period covering an upstream edit, as restatement candidates. fundProfileId scopes the search to the impacted fund&#x27;s published packs. An empty result for a hard-closed book is treated by the caller as a manual locate-affected-packs task rather than &quot;no restatement needed&quot;, so a precise resolver that cannot tie a published pack to the security never silently completes a closed period.
 
@@ -722,7 +722,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:65](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L65) |  |
+| <code>Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:77](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L77) |  |
+| <code>Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, DateOnly? governedUntil, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:91](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L91) | Resolves candidates for a change that governs &#91;effectiveDate, governedUntil) (ADR-034): a pack whose period lies entirely on or after governedUntil reports terms the change never applied to. A resolver that cannot narrow by the window keeps every candidate the open-ended overload returns, so the default never introduces a silent miss. |
 
 ## ISecurityAssetProfileGovernanceService
 
