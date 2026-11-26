@@ -200,6 +200,25 @@ groups:
           probable_causes: "Provider under load, network congestion, DNS resolution delays, WebSocket reconnection overhead"
           immediate_mitigation: "1. Check provider latency trends at /api/providers/latency. 2. Consider switching to backup provider. 3. Verify network path quality."
 
+      # Slow API responses, per route template. The 2 s threshold matches the default
+      # ApiHost:SlowRequestThresholdMs slow-request log line, so the alert and the log agree; it is
+      # a starting value to tune against observed p95s. The rate guard keeps a rarely called route
+      # (a few hits an hour) from paging on a quantile computed from a handful of samples.
+      - alert: MeridianSlowRequests
+        expr: |
+          histogram_quantile(0.95, sum by (route, le) (rate(mdc_http_request_duration_seconds_bucket[10m]))) > 2
+          and on (route) sum by (route) (rate(mdc_http_request_duration_seconds_count[10m])) >= 0.1
+        for: 10m
+        labels:
+          severity: warning
+          incident_priority: P3
+        annotations:
+          summary: "Slow responses on {{ $labels.route }} (p95 {{ $value | humanizeDuration }})"
+          description: "The 95th-percentile response time for {{ $labels.route }} has been above 2 s for 10 minutes."
+          runbook_url: "docs/operators/operator-runbook.md#slow-requests"
+          probable_causes: "Expensive report or read-model query, storage latency, lock contention, a slow downstream dependency, host CPU or memory pressure"
+          immediate_mitigation: "1. Find the route's Slow request lines in <data-root>/_logs for status and trace ids. 2. Check host CPU and memory and mdc_pipeline_queue_utilization_ratio. 3. Check storage latency and mdc_disk_free_bytes. 4. Correlate trace ids when tracing is enabled."
+
   - name: mdc_storage
     rules:
       # Write-ahead log integrity failures. Committed data was not durably retained.
