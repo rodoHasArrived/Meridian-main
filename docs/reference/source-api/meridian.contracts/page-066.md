@@ -6,6 +6,60 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerAmountStrategyRunLinkDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountStrategyRunLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:699](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L699).
+
+```csharp
+public sealed record LedgerAmountStrategyRunLinkDto(string RunId, string? DisplayLabel = null, string? Route = null, string? SourceSystem = null, DateTimeOffset? CapturedAt = null, bool IsLineScoped = false);
+```
+
+## LedgerImpactPreviewDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerImpactPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:292](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L292).
+
+Preview of accounting impact if current breaks are submitted/closed with draft ledger entries.
+
+```csharp
+public sealed record LedgerImpactPreviewDto(int DraftEntryCount, decimal NetDebitEffect, decimal NetCreditEffect, decimal NetBalanceDelta, bool HasValidationWarnings, IReadOnlyList<string> ValidationFlags);
+```
+
+## LedgerJournalLine
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerJournalLine</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:675](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L675).
+
+Shared journal row for workstation audit surfaces.
+
+```csharp
+public sealed record LedgerJournalLine(Guid JournalEntryId, DateTimeOffset Timestamp, string Description, decimal TotalDebits, decimal TotalCredits, int LineCount, [property : JsonPropertyName("accountScopeId")] string? AccountScopeId = null, [property : JsonPropertyName("accountScopeDisplayName")] string? AccountScopeDisplayName = null, [property : JsonPropertyName("entityScopeId")] string? EntityScopeId = null, [property : JsonPropertyName("entityScopeDisplayName")] string? EntityScopeDisplayName = null, [property : JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null, [property : JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null, [property : JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null, [property : JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null, LedgerDimensionSetDto? Dimensions = null);
+```
+
+## LedgerReconciliationContractCompatibility
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerReconciliationContractCompatibility</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs:6](../../../../src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs#L6).
+
+Rejects ledger reconciliation and continuity payloads missing required contract fields.
+
+```csharp
+public static class LedgerReconciliationContractCompatibility
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void EnsureFundLedgerSummaryRequiredFields(FundLedgerSummary summary);</code> | [src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs:8](../../../../src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs#L8) |  |
+| <code>public static void EnsureReconciliationSummaryRequiredFields(ReconciliationRunSummary summary);</code> | [src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs:25](../../../../src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs#L25) |  |
+| <code>public static void EnsureContinuityRequiredFields(StrategyRunContinuityDto continuity);</code> | [src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs:38](../../../../src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs#L38) |  |
+
 ## LedgerSummary
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerSummary</code>. Kind: `record`.
@@ -563,57 +617,3 @@ Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:92](../../../../sr
 ```csharp
 public sealed record OnboardingReviewDto(string ReviewId, int DataRevision, string ReviewerId, string Decision, string Notes, IReadOnlyList<string> EvidenceIds, DateTimeOffset RecordedAtUtc);
 ```
-
-## OnboardingScopeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingScopeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L6).
-
-Fixed scope of a bounded, read-only accounting onboarding exercise.
-
-```csharp
-public sealed record OnboardingScopeDto(string TenantId, string CompanyId, string EntityId, string FundProfileId, Guid LedgerBookId, IReadOnlyList<string> AccountIds, DateOnly StartDate, DateOnly EndDate);
-```
-
-## OnboardingShadowAuditEntryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingShadowAuditEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:135](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L135).
-
-Append-only, hash-chained record of every shadow-mode authority event on a workspace.
-
-```csharp
-public sealed record OnboardingShadowAuditEntryDto(int Sequence, string Action, string ActorId, DateTimeOffset OccurredAtUtc, string SubjectId, string Detail, string? PreviousHash, string EntryHash);
-```
-
-## OnboardingShadowDesignationDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingShadowDesignationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L46).
-
-```csharp
-public sealed record OnboardingShadowDesignationDto(string State, Guid LedgerBookId, string DesignatedBy, DateTimeOffset DesignatedAtUtc, string Rationale, string? ResolvedBy = null, DateTimeOffset? ResolvedAtUtc = null, string? PromotionDecisionId = null, string? WithdrawalReason = null);
-```
-
-## OnboardingShadowStates
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingShadowStates</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L10).
-
-Shadow-mode onboarding (W11-SHADOW-001). A shadow book runs in parallel with the incumbent administrator or GL; it is reconciled every period and cannot publish, release, or close as the book of record until an operator promotes it with a parallel-run certificate attached.
-
-```csharp
-public static class OnboardingShadowStates
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Shadow = &quot;Shadow&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L12) |  |
-| <code>public const string Promoted = &quot;Promoted&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L13) |  |
-| <code>public const string Withdrawn = &quot;Withdrawn&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L14) |  |

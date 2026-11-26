@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PositionDiffEntry
+
+Qualified name: <code>Meridian.Contracts.Workstation.PositionDiffEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:892](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L892).
+
+A single position change between two runs.
+
+```csharp
+public sealed record PositionDiffEntry(string Symbol, long BaseQuantity, long TargetQuantity, decimal BasePnl, decimal TargetPnl, string ChangeType);
+```
+
+## PostLedgerEntries
+
+Qualified name: <code>Meridian.Contracts.Workstation.PostLedgerEntries</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:25](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L25).
+
+```csharp
+public sealed record PostLedgerEntries(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
+```
+
+## PreparerAttestationEvidenceProjectionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PreparerAttestationEvidenceProjectionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/PreparerAttestationEvidenceDtos.cs:7](../../../../src/Meridian.Contracts/Workstation/PreparerAttestationEvidenceDtos.cs#L7).
+
+Classification of preparer evidence tasks attached to exact visible source documents. These counts are not financial assertion counts, independent review or Verified Coverage.
+
+```csharp
+public sealed record PreparerAttestationEvidenceProjectionDto(SinglePrincipalAttestationScopeDto Scope, int SchemaVersion, string Availability, DateTimeOffset AssessedAt, string Disclosure, string Boundary, int? RecordedReceiptCount, int? UnrevokedReceiptCount, int? RevokedReceiptCount, int? SyntheticReceiptCount, int? UnclassifiedReceiptCount, IReadOnlyList<PreparerEvidenceAcknowledgmentDto> Acknowledgments, IReadOnlyList<string> Warnings);
+```
+
+## PreparerAttestationProofExportDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PreparerAttestationProofExportDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/PreparerAttestationProofExportDto.cs:9](../../../../src/Meridian.Contracts/Workstation/PreparerAttestationProofExportDto.cs#L9).
+
+Frozen evidence of a preparer assertion. The original command results remain JSON so future DTO additions cannot rewrite a previously exported receipt or declaration.
+
+```csharp
+public sealed record PreparerAttestationProofExportDto(int SchemaVersion, string Kind, string Disclosure, DateTimeOffset RecordedAt, string ReceiptReference, JsonElement Receipt, JsonElement Declaration, string AuthorityBoundary);
+```
+
 ## PreparerAttestationReceiptDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.PreparerAttestationReceiptDto</code>. Kind: `record`.
@@ -648,67 +694,3 @@ Enum declarations:
 | <code>Resolved = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:370](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L370) |  |
 | <code>Dismissed = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:371](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L371) |  |
 | <code>SignedOff = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:372](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L372) |  |
-
-## ReconciliationBreakScore
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakScore</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:978](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L978).
-
-```csharp
-public sealed record ReconciliationBreakScore(int SeverityScore, int PriorityScore, decimal MaterialityComponent, double AgeHours, int CounterpartyCriticalityComponent, int RecurringPatternComponent, bool IsHighPriority, DateTimeOffset? SlaDueAt = null, DateTimeOffset? SlaBreachAt = null);
-```
-
-## ReconciliationBreakSeverity
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L42).
-
-Materiality level for a reconciliation break.
-
-```csharp
-public enum ReconciliationBreakSeverity : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L44) |  |
-| <code>Low = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:45](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L45) |  |
-| <code>Medium = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L46) |  |
-| <code>High = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:47](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L47) |  |
-| <code>Critical = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:48](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L48) |  |
-
-## ReconciliationBreakStatus
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L29).
-
-Current workflow state for a reconciliation break.
-
-```csharp
-public enum ReconciliationBreakStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Open = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L31) |  |
-| <code>Matched = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L32) |  |
-| <code>Investigating = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L33) |  |
-| <code>Resolved = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:34](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L34) |  |
-| <code>PartialMatch = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L35) |  |
-
-## ReconciliationBulkCaseworkCaseResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBulkCaseworkCaseResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:800](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L800).
-
-```csharp
-public sealed record ReconciliationBulkCaseworkCaseResult(string BreakId, bool Succeeded, bool WouldSucceed, string? Error, ReconciliationBreakQueueItem? Item);
-```

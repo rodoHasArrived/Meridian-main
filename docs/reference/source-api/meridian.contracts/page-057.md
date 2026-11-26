@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityTermsProjectionReadDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsProjectionReadDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs#L18).
+
+One security&#x27;s relational terms projection, read generically from the projection registry rather than through a per-class typed row. Served for any registry-projected asset class, including the classes that have no typed reader. Column names are the SQL column names; the column set and order are the registry descriptor&#x27;s, so the shape follows the table.
+
+```csharp
+public sealed record SecurityTermsProjectionReadDto(Guid SecurityId, string AssetClass, string TableName, IReadOnlyDictionary<string, JsonElement> Columns, IReadOnlyList<SecurityTermsProjectionChildRowsDto> ChildTables, IReadOnlyList<SecurityTermsProjectionSatelliteRowDto> SatelliteTables);
+```
+
+## SecurityTermsProjectionReadJsonContext
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsProjectionReadJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs#L39).
+
+Provides source-generated JSON metadata for the generic registry projection read.
+
+```csharp
+public sealed partial class SecurityTermsProjectionReadJsonContext : JsonSerializerContext;
+```
+
+## SecurityTermsProjectionSatelliteRowDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsProjectionSatelliteRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs#L32).
+
+The row one satellite projection table holds for a security, or null when it holds none.
+
+```csharp
+public sealed record SecurityTermsProjectionSatelliteRowDto(string TableName, IReadOnlyDictionary<string, JsonElement>? Row);
+```
+
 ## SecurityTermsUpgradeKind
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsUpgradeKind</code>. Kind: `enum`.
@@ -212,7 +248,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:764](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L764).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:771](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L771).
 
 The declared mark-based accounting treatment for an asset class.
 
@@ -224,8 +260,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:766](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L766) |  |
-| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:767](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L767) |  |
+| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:773](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L773) |  |
+| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:774](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L774) |  |
 
 ## SecurityValuationBlockerDto
 
@@ -332,6 +368,25 @@ Declared public members:
 | --- | --- | --- |
 | <code>public bool IsBlocked =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L93) |  |
 | <code>public static SecurityValuationResult Blocked(SecurityValuationRequest request, SecurityDetailDto security, SecurityValuationModelKind model, string modelKey, string modelVersion, DateTimeOffset knowledgeAsOf, IReadOnlyList&lt;SecurityValuationBlockerDto&gt; blockers, IReadOnlyList&lt;SecurityValuationInputDto&gt;? inputs = null, IReadOnlyList&lt;string&gt;? diagnostics = null);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L96) | A blocked result for model: no price, value or market value, and the blockers given. |
+
+## SecurityVersionedScalarTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityVersionedScalarTerms</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityVersionedScalarTerms.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedScalarTerms.cs#L7).
+
+Compatibility boundaries for optional scalar terms introduced after a class&#x27;s original codec.
+
+```csharp
+public static class SecurityVersionedScalarTerms
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool CanDecode(string assetClass, JsonElement terms, string key, bool writeMode);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedScalarTerms.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedScalarTerms.cs#L10) | A retained scalar cannot activate above its document stamp; writes use the node&#x27;s write ceiling. |
+| <code>public static string OmitAbsent(string json, string[] introducedKeys);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedScalarTerms.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedScalarTerms.cs#L23) | Removes only absent optional additions from generated output. Original members retain their ordering and JSON values, so reading an older record does not acquire new null fields. |
 
 ## SecurityVersionedTermDecoding
 
@@ -762,62 +817,4 @@ One dated coupon-rate step resolved from a bond&#x27;s stepSchedule: the annual 
 
 ```csharp
 public sealed record StructuredStepCouponEntry(DateOnly EffectiveDate, decimal Rate);
-```
-
-## SubscriptionCorporateActionTerms
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SubscriptionCorporateActionTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:185](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L185).
-
-Holder pays to receive units (rights issue, rights exercise).
-
-```csharp
-public sealed record SubscriptionCorporateActionTerms(string EventType, decimal? PricePerUnit, decimal? RightsPerHeldUnit, Guid? RightsSecurityId, Guid? SuccessorSecurityId, decimal? UnitsPerRight) : CorporateActionTerms(EventType);
-```
-
-## TradingParametersDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.TradingParametersDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:130](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L130).
-
-Trading parameters for an instrument, used for order validation and fill-price rounding.
-
-```csharp
-public sealed record TradingParametersDto(Guid SecurityId, decimal? LotSize, decimal? TickSize, decimal? ContractMultiplier, decimal? MarginRequirementPct, string? TradingHoursUtc, decimal? CircuitBreakerThresholdPct, DateTimeOffset AsOf)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool? IsMarginable { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:140](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L140) |  |
-| <code>public bool? IsShortable { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:141](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L141) |  |
-| <code>public bool? IsEasyToBorrow { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:142](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L142) |  |
-| <code>public bool? IsFractionable { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:143](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L143) |  |
-| <code>public decimal? MinimumOrderSize { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:144](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L144) |  |
-| <code>public decimal? MinimumTradeIncrement { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:145](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L145) |  |
-| <code>public decimal? PriceIncrement { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:146](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L146) |  |
-
-## TransitionCorporateActionCaseRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.TransitionCorporateActionCaseRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:688](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L688).
-
-```csharp
-public sealed record TransitionCorporateActionCaseRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, string ToState, string Actor, string Reason, string? BlockedReason = null, string? AssignedTo = null, string? CorrelationId = null, bool PolicyOverride = false, CorporateActionCaseTransitionAuthorityDto? Authority = null, CorporateActionCaseScopeDto? ScopeAssertion = null);
-```
-
-## TransitionOtcMarginCallRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.TransitionOtcMarginCallRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:141](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L141).
-
-Moves a call through its life. Amount is the agreed or settled amount; Reason explains a dispute or a cancellation.
-
-```csharp
-public sealed record TransitionOtcMarginCallRequest(Guid CallId, OtcMarginCallAction Action, decimal? Amount = null, string? Reason = null, DateOnly? SettledOn = null, string? Notes = null, string? UpdatedBy = null);
 ```

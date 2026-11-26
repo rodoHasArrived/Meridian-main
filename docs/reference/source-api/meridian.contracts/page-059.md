@@ -6,6 +6,59 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyEngineRunEvidence
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineRunEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:193](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L193).
+
+```csharp
+public sealed record StrategyEngineRunEvidence(string EvidenceId, string StrategyId, string StrategyVersion, string InputHash, string? OutputHash, string DataSource, DateTimeOffset CapturedAt, IReadOnlyList<string> DataSourceReferences, IReadOnlyList<string> Warnings, string ReviewRoute, string EvidenceRoute, string? ReportPackRoute = null);
+```
+
+## StrategyEngineRunMode
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineRunMode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:30](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L30).
+
+Execution mode requested for a strategy run.
+
+```csharp
+public enum StrategyEngineRunMode : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Backtest</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:32](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L32) |  |
+| <code>Replay</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:33](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L33) |  |
+| <code>Simulation</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:34](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L34) |  |
+| <code>PaperValidation</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:35](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L35) |  |
+| <code>ReviewOnly</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:36](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L36) |  |
+| <code>LiveDisabled</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:37](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L37) |  |
+
+## StrategyEngineRunRequest
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineRunRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:156](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L156).
+
+```csharp
+public sealed record StrategyEngineRunRequest(string StrategyId, string StrategyVersion, IReadOnlyDictionary<string, string> Parameters, IReadOnlyList<string> Universe, DateTimeOffset From, DateTimeOffset To, string DataSource, StrategyEngineRunMode Mode, string? CostModel = null, string? SlippageModel = null, IReadOnlyDictionary<string, string>? RiskConstraints = null, string? RunReason = null, string? OperatorId = null);
+```
+
+## StrategyEngineSignal
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineSignal</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:181](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L181).
+
+```csharp
+public sealed record StrategyEngineSignal(string Symbol, string SignalType, string Direction, decimal? Strength, decimal? Confidence, DateTimeOffset Timestamp, string Horizon, string Rationale, string SourceRunId, string? RequiredFollowUpAction = null);
+```
+
 ## StrategyEngineStrategyType
 
 Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineStrategyType</code>. Kind: `enum`.
@@ -715,46 +768,4 @@ Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:23](../../../.
 
 ```csharp
 public sealed record ApprovalPolicy(decimal? MinimumAmount, decimal? HighValueThreshold, IReadOnlySet<string>? AllowedCurrencies, IReadOnlySet<Guid>? RoutedAccountIds, IReadOnlySet<string>? RoutedRiskBuckets, bool RequireDualControl);
-```
-
-## ApprovalStep
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApprovalStep</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L21).
-
-```csharp
-public sealed record ApprovalStep(int Sequence, string RoleOrQueue, bool DualControlRequired, decimal? AmountThreshold, string? Currency, Guid? AccountId, string? RiskBucket);
-```
-
-## ApproveSecurityMasterOverrides
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApproveSecurityMasterOverrides</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:22](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L22).
-
-```csharp
-public sealed record ApproveSecurityMasterOverrides(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```
-
-## ApproveSecurityMasterRevisionRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApproveSecurityMasterRevisionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:98](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L98).
-
-Approves a submitted revision through the operations-continuity approval gate.
-
-```csharp
-public sealed record ApproveSecurityMasterRevisionRequest(Guid SecurityId, Guid RevisionId, Guid WorkflowId, long ExpectedWorkflowVersion, string Actor, string Reviewer, string Rationale, string ReportPackId, string? CorrelationId = null);
-```
-
-## ApproveWorkflow
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApproveWorkflow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:29](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L29).
-
-```csharp
-public sealed record ApproveWorkflow(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
 ```

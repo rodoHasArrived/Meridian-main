@@ -61,8 +61,14 @@ Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.c
 The bindings of one asset class.
 
 ```csharp
-public sealed record SecurityClassCodecBinding(string AssetClass, bool ReadsResolvedTerms, IReadOnlyList<SecurityTermBinding> Members, bool VersionedSchedules = false, SecurityCodecInputs Inputs = SecurityCodecInputs.None, bool WritesConventionsFlag = false);
+public sealed record SecurityClassCodecBinding(string AssetClass, bool ReadsResolvedTerms, IReadOnlyList<SecurityTermBinding> Members, bool VersionedSchedules = false, SecurityCodecInputs Inputs = SecurityCodecInputs.None, bool WritesConventionsFlag = false)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; VersionedOptionalScalarKeys { get; init; } = [];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:111](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L111) | Optional additions whose read activation and absent written shape are version-gated. Existing scalar codecs retain their historical behavior unless their module opts in. |
 
 ## SecurityClassificationDriftEntryDto
 
