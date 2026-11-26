@@ -12,7 +12,94 @@ from unittest import mock
 from tests.scripts.test_generated_repair import BASE, HEAD, REPOSITORY, pull, repair, request, source_run
 
 
+def labelled(**updates):
+    return pull(labels=[{"name": repair.REPAIR_LABEL}], **updates)
+
+
+def ci_api(responses, stale_heads=()):
+    """A mock API: queued responses, plus Meridian CI lookups that flag only stale_heads."""
+    queue = list(responses)
+    api = mock.Mock(repository=REPOSITORY)
+    looked_up = []
+
+    def get(path):
+        if path.startswith(f"/actions/workflows/{repair.CI_WORKFLOW}/runs?"):
+            head = path.split("head_sha=", 1)[1].split("&", 1)[0]
+            looked_up.append(head)
+            return {"workflow_runs": [{"id": 500, "run_number": 3, "run_attempt": 1,
+                                       "head_sha": head, "status": "completed"}]}
+        if path.startswith("/actions/runs/500/attempts/1/jobs"):
+            conclusion = "failure" if looked_up[-1] in stale_heads else "skipped"
+            return {"jobs": [{"name": repair.CI_DOCS_JOB,
+                              "steps": [{"name": repair.STALE_STEP, "conclusion": conclusion}]}]}
+        return queue.pop(0)
+
+    api.get.side_effect = get
+    return api
+
+
 class RepairOutcomeTests(unittest.TestCase):
+    def test_unlabelled_or_draft_target_events_never_request_generation(self):
+        for pr in (pull(), labelled(draft=True)):
+            api = mock.Mock(repository=REPOSITORY)
+            api.get.side_effect = [source_run(event="pull_request_target", head_sha=HEAD), pr]
+            with self.subTest(pr=pr), mock.patch.object(repair, "fetch_pr") as fetch, \
+                 mock.patch.object(repair, "git") as git:
+                result = repair.inspect(Path("."), api, 99, 1, "main")
+            self.assertEqual(result["status"], "noop")
+            self.assertIn("ready for review" if pr.get("draft") else repair.REPAIR_LABEL, result["reason"])
+            fetch.assert_not_called()
+            git.assert_not_called()
+            api.request.assert_not_called()
+
+    def test_ci_signal_requests_generation_only_when_verify_docs_flagged_stale_outputs(self):
+        for stale, expected in ((True, "retry"), (False, "noop")):
+            api = ci_api([source_run(event="workflow_run", head_sha=BASE), pull()],
+                         stale_heads={HEAD} if stale else ())
+            with self.subTest(stale=stale), mock.patch.object(repair, "fetch_pr"), \
+                 mock.patch.object(repair, "loop_suppressed", return_value=False):
+                result = repair.inspect(Path("."), api, 99, 1, "main")
+            self.assertEqual(result["status"], expected)
+            api.request.assert_not_called()
+
+    def test_ci_signal_defers_to_the_label_and_skips_drafts(self):
+        for pr in (labelled(), pull(draft=True)):
+            api = ci_api([source_run(event="workflow_run", head_sha=BASE), pr], stale_heads={HEAD})
+            with self.subTest(pr=pr):
+                result = repair.inspect(Path("."), api, 99, 1, "main")
+            self.assertEqual(result["status"], "noop")
+
+    def test_ci_signal_prepare_rebinds_base_and_ignores_superseded_heads(self):
+        moved = pull()
+        moved["base"]["sha"] = "4" * 40
+        superseded = pull()
+        superseded["head"]["sha"] = "5" * 40
+        for pr, expected in ((moved, "request"), (superseded, "noop")):
+            api = ci_api([source_run(event="workflow_run", head_sha=BASE), pr], stale_heads={HEAD})
+            with self.subTest(expected=expected), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp, \
+                 mock.patch.dict(os.environ, {"TRUSTED_DISPATCH_CONFIGURED": "true"}), \
+                 mock.patch.object(repair, "fetch_pr") as fetch, \
+                 mock.patch.object(repair, "loop_suppressed", return_value=False):
+                result = repair.prepare_generation(Path("."), api, 99, "main", Path(temp) / "result.json")
+            self.assertEqual(result["status"], expected)
+            if expected == "request":
+                fetch.assert_called_once_with(Path("."), 7, HEAD, "4" * 40)
+            else:
+                fetch.assert_not_called()
+
+    def test_ci_stale_lookup_reads_only_the_latest_completed_run_for_the_head(self):
+        api = mock.Mock(repository=REPOSITORY)
+        runs = [{"id": 1, "run_number": 4, "run_attempt": 1, "head_sha": HEAD, "status": "completed"},
+                {"id": 2, "run_number": 4, "run_attempt": 2, "head_sha": HEAD, "status": "completed"},
+                {"id": 3, "run_number": 9, "run_attempt": 1, "head_sha": BASE, "status": "completed"}]
+        api.get.side_effect = [{"workflow_runs": runs}, {"jobs": [
+            {"name": "verify-dotnet", "steps": [{"name": repair.STALE_STEP, "conclusion": "failure"}]},
+            {"name": repair.CI_DOCS_JOB, "steps": [{"name": repair.STALE_STEP, "conclusion": "failure"}]}]}]
+        self.assertTrue(repair.ci_reports_stale(api, HEAD))
+        self.assertEqual(api.get.call_args_list[1].args[0], "/actions/runs/2/attempts/2/jobs?per_page=100")
+        api.get.side_effect = [{"workflow_runs": []}]
+        self.assertFalse(repair.ci_reports_stale(api, HEAD))
+
     def test_feature_base_is_ineligible_before_candidate_or_git_access(self):
         pr = pull()
         pr["base"]["ref"] = "feature-base"
@@ -40,7 +127,7 @@ class RepairOutcomeTests(unittest.TestCase):
 
     def test_target_event_only_requests_trusted_generation_and_never_opens_candidate(self):
         api = mock.Mock(repository=REPOSITORY)
-        api.get.side_effect = [source_run(event="pull_request_target", head_sha=HEAD, head_branch="topic"), pull()]
+        api.get.side_effect = [source_run(event="pull_request_target", head_sha=HEAD, head_branch="topic"), labelled()]
         with mock.patch.object(repair, "fetch_pr") as fetch, \
              mock.patch.object(repair, "loop_suppressed", return_value=False), \
              mock.patch.object(repair, "git") as git:
@@ -55,7 +142,7 @@ class RepairOutcomeTests(unittest.TestCase):
 
     def test_configured_target_avoids_duplicate_generation_and_preserves_artifact_fallback(self):
         for fork, configured in ((False, True), (False, False), (True, True), (True, False)):
-            pr = pull()
+            pr = labelled()
             if fork:
                 pr["head"]["repo"]["full_name"] = "contributor/fork"
             api = mock.Mock(repository=REPOSITORY)

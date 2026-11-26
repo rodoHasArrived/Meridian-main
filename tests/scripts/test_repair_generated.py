@@ -196,6 +196,42 @@ class RepairGeneratedTests(unittest.TestCase):
         self.assertFalse(self.calls)
         self.assertFalse((self.output / "repair.patch").exists())
 
+    def test_pre_split_branch_with_legacy_review_merges_and_generates(self):
+        # A branch created before #3778 refreshed module A's review in the single-file
+        # manifest; main has since split it into one file per module. The modify/delete
+        # conflict on the legacy file is a reviewed-hash conflict, not a manual one.
+        refresh = self.register_reviewed_module()
+        merger = repair.load_resolver().load_hash_merger()
+        legacy = self.repo / merger.LEGACY_MANIFEST
+
+        def write_legacy():
+            legacy.write_text(json.dumps(merger.actual_manifest(self.repo), indent=2) + "\n")
+
+        for child in (self.repo / merger.MANIFEST).iterdir():
+            child.unlink()
+        (self.repo / merger.MANIFEST).rmdir()
+        write_legacy()
+        self.commit("pre-split reviewed manifest")
+        common = self.git("rev-parse", "HEAD").decode().strip()
+        self.write(self.repo, "src/A/first.cs", b"// reviewed feature change\n")
+        write_legacy()
+        self.commit("review in the legacy file")
+        self.head = self.git("rev-parse", "HEAD").decode().strip()
+        self.git("switch", "-C", "main", common)
+        self.write(self.repo, "incoming.txt", b"main handwritten source\n")
+        legacy.unlink()
+        refresh()
+        self.commit("split reviewed hashes")
+        self.base = self.git("rev-parse", "HEAD").decode().strip()
+        self.git("switch", "feature")
+        report = self.run_repair()
+        self.assertEqual(report["status"], "ready", report)
+        self.assertEqual(report["conflicts"], [])
+        self.assertTrue(self.calls)
+        final = report["final_tree_sha"]
+        self.assertFalse(self.git("ls-tree", final, "--", merger.LEGACY_MANIFEST))
+        self.assertTrue(self.git("ls-tree", final, "--", f"{merger.MANIFEST}/A.json"))
+
     def test_generation_cannot_invent_review_after_readme_content_changes(self):
         self.register_reviewed_module()
         self.head = self.git("rev-parse", "HEAD").decode().strip()

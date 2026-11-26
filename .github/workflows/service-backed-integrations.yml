@@ -31,10 +31,29 @@ on:
           documentation-only change. Callers without this input always run the suite.
         type: boolean
         default: false
+      caller-verifies-evidence:
+        description: >-
+          Skip the evidence-gate job because the caller's own gate job verifies the fresh
+          job's result and evidence outputs below. Every job is a separate wait for a hosted
+          runner; a caller that already gates the result saves one by verifying in place.
+          Only valid for fresh runs: reuse inputs still need evidence-gate.
+        type: boolean
+        default: false
     outputs:
       dotnet-required:
         description: The integration job's own .NET change decision (true or false).
         value: ${{ jobs.deterministic-integrations.outputs.dotnet-required }}
+      fresh-succeeded:
+        description: >-
+          "true" only when every step of the fresh integration job succeeded, for callers that
+          verify evidence themselves (workflow_call outputs cannot expose a job's result).
+        value: ${{ jobs.deterministic-integrations.outputs.succeeded }}
+      fresh-artifact-id:
+        value: ${{ jobs.deterministic-integrations.outputs.artifact-id }}
+      fresh-artifact-name:
+        value: ${{ jobs.deterministic-integrations.outputs.artifact-name }}
+      fresh-receipt-sha256:
+        value: ${{ jobs.deterministic-integrations.outputs.receipt-sha256 }}
       artifact-id:
         value: ${{ jobs.evidence-gate.outputs.artifact-id }}
       artifact-name:
@@ -64,6 +83,7 @@ jobs:
     timeout-minutes: 90
     outputs:
       dotnet-required: ${{ steps.changes.outputs.dotnet }}
+      succeeded: ${{ steps.completed.outputs.succeeded }}
       artifact-id: ${{ steps.upload.outputs.artifact-id }}
       artifact-name: ${{ steps.receipt.outputs.artifact-name }}
       receipt-sha256: ${{ steps.receipt.outputs.receipt-sha256 }}
@@ -313,6 +333,12 @@ jobs:
           if-no-files-found: error
           retention-days: ${{ inputs.retention-days }}
 
+      # No status function means GitHub's implicit success(): this runs, and the output is set,
+      # only when every earlier step succeeded (including a docs-only run whose steps skipped).
+      - name: Record successful completion
+        id: completed
+        run: echo "succeeded=true" >> "$GITHUB_OUTPUT"
+
   reuse-integrations:
     name: verify coordinated integration evidence
     if: ${{ inputs.reuse-artifact-id != '' || inputs.reuse-artifact-name != '' || inputs.reuse-receipt-sha256 != '' || inputs.reuse-result != '' }}
@@ -380,7 +406,11 @@ jobs:
   evidence-gate:
     name: require verified integration evidence
     needs: [deterministic-integrations, reuse-integrations]
-    if: always()
+    # A caller that opted into caller-verifies-evidence applies these same checks in its own
+    # gate job (Meridian CI integration-gate). Reuse runs always keep this gate.
+    if: >-
+      always() && (!inputs.caller-verifies-evidence || inputs.reuse-artifact-id != ''
+      || inputs.reuse-artifact-name != '' || inputs.reuse-receipt-sha256 != '' || inputs.reuse-result != '')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
