@@ -572,7 +572,10 @@ public sealed class PaperTradingGateway :
         var costs = _costModel.Compute(request.Quantity, fillPrice, observation.MidPrice, costMultiplier);
 
         var report = BuildReport(request, orderId, gatewayOrderId, ExecutionReportType.Fill,
-            OrderStatus.Filled, filledQuantity: request.Quantity, fillPrice, costs, rejectReason: null);
+            OrderStatus.Filled, filledQuantity: request.Quantity, fillPrice, costs, rejectReason: null) with
+        {
+            MarketDataEvidence = Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Freeze(observation.MarketDataEvidence)
+        };
         if (lotConvention is { } convention)
         {
             report = report with

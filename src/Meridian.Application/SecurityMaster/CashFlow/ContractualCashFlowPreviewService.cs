@@ -31,10 +31,21 @@ public sealed class ContractualCashFlowPreviewService(
             return Blocked(request, "AuthoritativeProviderAssigned", "The assigned provider/client schedule cannot be replaced or prepaid again by the calculated preview.");
         ContractualCashFlowContract contract;
         try
-        { contract = request.ContractOverride ?? FromSecurity(security); }
+        {
+            if (request.CalculationProfile == SecurityVanillaSwapProfile.Id)
+            {
+                if (request.ContractOverride is not null)
+                    return Blocked(request, "ProfileOverrideUnsupported", "The vanilla IRS profile requires authoritative security terms; hypothetical overrides use the generic analytical route.");
+                contract = SecurityVanillaSwapProfile.FromSecurity(security);
+            }
+            else
+                contract = request.ContractOverride ?? FromSecurity(security);
+        }
         catch (ContractInputUnavailable ex) { return Blocked(request, "ContractInputsUnavailable", ex.Message); }
         catch (RateUnitUnavailable ex) { return Blocked(request, ex.Code, ex.Message); }
         catch (SecurityScheduleValidationException ex) { return Blocked(request, "ContractInputsUnavailable", ex.Message); }
+        catch (InvalidOperationException ex) when (request.CalculationProfile == SecurityVanillaSwapProfile.Id)
+        { return Blocked(request, "VanillaIrsProfileUnsupported", ex.Message); }
         return await CalculateAsync(contract, request, $"security:{securityId}:version:{security.Version}",
             ContractualCashFlowEngine.Hash(new SecurityTermsDigest(security.CommonTerms, security.AssetSpecificTerms)), ct, securityId).ConfigureAwait(false);
     }
@@ -43,6 +54,8 @@ public sealed class ContractualCashFlowPreviewService(
     {
         ArgumentNullException.ThrowIfNull(request);
         ContractualCashFlowEngine.ValidateRequest(request);
+        if (request.CalculationProfile is not null)
+            return Blocked(request, "CalculationProfileUnsupported", "The vanilla IRS profile applies to securities; loan projections use their existing contract route.");
         if (loans is null)
             return Blocked(request, "LoanServiceUnavailable", "Direct-lending service is unavailable.");
         var loan = await loans.GetLoanAsync(loanId, ct).ConfigureAwait(false);

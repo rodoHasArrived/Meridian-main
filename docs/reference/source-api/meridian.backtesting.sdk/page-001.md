@@ -42,11 +42,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal BasisReturned { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:77](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L77) | Basis returned as capital, excluded from income. |
-| <code>public decimal FractionalUnits { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:80](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L80) | Exact non-whole successor quantity settled as cash in lieu. |
-| <code>public decimal BasisDisposed { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:83](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L83) | Tax-lot basis relieved for the cash-in-lieu disposal. |
-| <code>public decimal RealizedPnl { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:86](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L86) | Realized gain (positive) or loss (negative) on the cash-in-lieu disposal. |
-| <code>public decimal EntryCommissionDisposed { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:89](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L89) | Acquisition commission allocated to the cash-in-lieu disposal. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] public int PositionEvidenceVersion { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:77](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L77) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.SecurityMaster.SecurityLotUnitKind? QuantityUnit { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:79](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L79) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? LotMultiplier { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:81](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L81) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? FunctionalCurrency { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:83](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L83) |  |
+| <code>public decimal BasisReturned { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:86](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L86) | Basis returned as capital, excluded from income. |
+| <code>public decimal FractionalUnits { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:89](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L89) | Exact non-whole successor quantity settled as cash in lieu. |
+| <code>public decimal BasisDisposed { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:92](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L92) | Tax-lot basis relieved for the cash-in-lieu disposal. |
+| <code>public decimal RealizedPnl { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:95](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L95) | Realized gain (positive) or loss (negative) on the cash-in-lieu disposal. |
+| <code>public decimal EntryCommissionDisposed { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:98](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L98) | Acquisition commission allocated to the cash-in-lieu disposal. |
 
 ## AssetEventType
 
@@ -798,7 +802,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal DividendReceivable { get; init; }</code> | [src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs:25](../../../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs#L25) | Earned dividends included in equity but not yet available as cash. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? FunctionalCurrency { get; init; }</code> | [src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs:25](../../../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs#L25) | Accounting currency declared by the bound simulation ledger; legacy absence stays unknown. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal DividendReceivable { get; init; }</code> | [src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs:29](../../../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs#L29) | Earned dividends included in equity but not yet available as cash. |
 
 ## IBacktestContext
 

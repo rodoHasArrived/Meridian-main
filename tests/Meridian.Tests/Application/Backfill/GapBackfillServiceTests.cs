@@ -142,6 +142,7 @@ public sealed class GapBackfillServiceTests
         var request = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         request.Symbols.Should().BeEquivalentTo(["AAPL", "MSFT"]);
+        Meridian.Contracts.Integrity.Sha256Digest.IsCanonical(request.GapRepairReference).Should().BeTrue();
     }
 
     [Fact]

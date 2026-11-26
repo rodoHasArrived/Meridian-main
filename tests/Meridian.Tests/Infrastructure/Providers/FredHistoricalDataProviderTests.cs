@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using FluentAssertions;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Exceptions;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Fred;
@@ -87,6 +88,7 @@ public sealed class FredHistoricalDataProviderTests
         var to = new DateOnly(2024, 1, 3);
 
         var bars = await provider.GetDailyBarsAsync("unrate", from, to, cts.Token);
+        bars.Should().OnlyContain(bar => bar.PriceBasis == HistoricalPriceBasis.Unknown && bar.IsAdjusted == null);
 
         bars.Should().HaveCount(2);
         bars.Should().BeInAscendingOrder(b => b.SessionDate);

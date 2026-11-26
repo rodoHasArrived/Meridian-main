@@ -721,6 +721,15 @@
       "sha256": "a6c0e3895e65dfaa480f5bd5ac360a926f73b8499d9a1e6144f4f767e1b3002c"
     },
     {
+      "filename": "012_direct_lending_reconciliation_evidence.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/012_direct_lending_reconciliation_evidence.sql",
+      "schema": "security_master",
+      "sha256": "3d65860ddb7c6afa7a8235685fd386aa99ca0c29baf451ef6eaf599a5b5b8151"
+    },
+    {
       "filename": "001_asset_operations.sql",
       "immutable": true,
       "migration_set_id": "asset-operations",
@@ -1432,6 +1441,24 @@
       "sha256": "507b6512c2c48c05793fdae97ebcaf6c4ab46d705e33d7ea06c29a70d5d118a1"
     },
     {
+      "filename": "V_ledger_083__external_gl_evidence_truncate_guards.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_083__external_gl_evidence_truncate_guards.sql",
+      "schema": "ledger",
+      "sha256": "0ef40a4b577ae19b1c5c32e4eff5cf73d7e4a6fa11fa8412e9d6ef4b13fa0022"
+    },
+    {
+      "filename": "V_ledger_084__security_revision_workflow_scope.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_084__security_revision_workflow_scope.sql",
+      "schema": "ledger",
+      "sha256": "e8837484c7ea4a52d39f8d6967aadf1deac7baa7fb5075ef0ff3450e116cc358"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1775,7 +1802,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "fab6dd537c7c9708c422f73806e34b41db37e1843e9618efe216cf2966548a9a",
+  "fingerprint": "9e08c582e11edda1036a5ec6247e5bfca28c750a53d97751c00cc24ec6f42c47",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -2037,9 +2064,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 197,
+    "files": 200,
     "migration_sets": 11,
-    "waivers": 56,
+    "waivers": 59,
     "warnings": 0
   },
   "waivers": [
@@ -2322,6 +2349,27 @@
       "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new intercompany confirmation close-policy version history. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
       "review_after": "2027-05-18",
       "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_083__external_gl_evidence_truncate_guards.sql",
+      "reason": "Each DROP TRIGGER IF EXISTS immediately recreates the same named BEFORE TRUNCATE protection trigger on the same table. The migration runner applies this DDL under its transaction and advisory migration lock, so a failed recreation restores the preceding protections. No table, column, row, mapping revision, package, decision or receipt is removed. This exact path/rule exception follows V_ledger_030/V_ledger_031 and permits only the documented replacement guards, not omission of a replacement trigger.",
+      "review_after": "2027-05-21",
+      "rule_id": "migration-drop-object"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_083__external_gl_evidence_truncate_guards.sql",
+      "reason": "The lexical TRUNCATE matches are BEFORE TRUNCATE rejection-trigger declarations on immutable external-GL mapping revisions, posting packages, decisions and provider receipts. They call the existing mutation-refusal function and execute no data truncation. PostgreSQL regression coverage requires direct and cascading truncation to refuse while retaining the original approvals and permitting ordinary appended revisions. This exact path/rule exception preserves all UPDATE/DELETE protections and authorizes no data removal.",
+      "review_after": "2027-05-21",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_084__security_revision_workflow_scope.sql",
+      "reason": "Row-preserving replacement of only ux_operations_continuity_open_workflow: the same transaction recreates close-lane uniqueness for workflows whose purpose is absent or Close and adds canonical-UUID uniqueness for each Security Master revision subject. New checks reject unknown or explicit-null purposes and malformed subject authority; subject and owning scope are immutable. No table, column, workflow or audit row is deleted or rewritten. This SQL was authored as ordinal 073 in the unmerged security-pack change (#3603) and is renumbered unchanged to 084 because main later took 073 and then 083. On 2026-11-26 the renumbered file was applied through the migration runner on a disposable local PostgreSQL 16 database carrying ledger migrations 001-083, and the three SecurityRevisionWorkflowPostgresTests passed against it: missing purpose retains Close uniqueness while distinct revision subjects coexist; null, unknown and incomplete purposes are refused at the database boundary; a retained subject and its accounting scope cannot be rewritten. Apply through the existing transactional/advisory-lock runner with purpose-aware consumers; do not delete retained revision workflows to restore the former all-purpose index. This exact path/rule exception is technical review, not a claim of independent human approval or live rollout.",
+      "review_after": "2027-05-26",
+      "rule_id": "migration-drop-object"
     },
     {
       "category": "destructive_changes",

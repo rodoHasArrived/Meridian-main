@@ -176,7 +176,11 @@ public sealed class SyntheticHistoricalDataProvider : IHistoricalDataProvider, I
                 AdjustedClose: adjustedClose,
                 AdjustedVolume: adjustedVolume,
                 SplitFactor: splitMap.TryGetValue(sessionDate, out var splitRatio) ? splitRatio : null,
-                DividendAmount: dividendAmount > 0 ? dividendAmount : null));
+                DividendAmount: dividendAmount > 0 ? dividendAmount : null,
+                // These simulation formulas do not establish exchange-price or cumulative
+                // corporate-action adjustment semantics for accounting admission.
+                PriceBasis: HistoricalPriceBasis.Unknown,
+                AdjustedPriceBasis: HistoricalPriceBasis.Unknown));
         }
 
         return bars.ToArray();

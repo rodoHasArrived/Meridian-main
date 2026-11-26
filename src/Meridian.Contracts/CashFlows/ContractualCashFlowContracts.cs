@@ -114,7 +114,12 @@ public sealed record ContractualCashFlowRequest(
     IReadOnlyList<CashFlowPrepaymentAssumption>? Prepayments = null,
     IReadOnlyList<CashFlowCurvePin>? CurvePins = null,
     ContractualCashFlowContract? ContractOverride = null,
-    string EngineVersion = ContractualCashFlowVersions.Engine);
+    string EngineVersion = ContractualCashFlowVersions.Engine)
+{
+    /// <summary>An explicitly selected supported product profile; absent preserves generic analytical behavior.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? CalculationProfile { get; init; }
+}
 
 public static class ContractualCashFlowVersions
 {

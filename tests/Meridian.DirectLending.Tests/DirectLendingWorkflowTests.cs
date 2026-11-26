@@ -48,6 +48,57 @@ public sealed class DirectLendingWorkflowTests
         servicing.Balances.UnappliedCash.Should().Be(expectedUnapplied);
     }
 
+    [Theory]
+    [InlineData(100, false)]
+    [InlineData(150, false)]
+    [InlineData(150, true)]
+    public async Task Reconciliation_AfterApplyingHeldCash_UsesRetainedFundingOnce(int received, bool splitApplication)
+    {
+        var service = new InMemoryDirectLendingService();
+        var request = BuildCreateRequest();
+        var maturity = new DateOnly(2026, 3, 25);
+        var loan = await service.CreateLoanAsync(request with
+        { Terms = request.Terms with { MaturityDate = maturity, FixedAnnualRate = 0m, CommitmentFeeRate = 0m } });
+        await service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 23)));
+        await service.ApplyMixedPaymentAsync(loan.LoanId,
+            new ApplyMixedPaymentRequest(received, new DateOnly(2026, 3, 23), new(0m, 0m, 0m, 0m, 0m), "held-funding"));
+        await service.BookDrawdownAsync(loan.LoanId,
+            new BookDrawdownRequest(100m, new DateOnly(2026, 3, 24), new DateOnly(2026, 3, 24), "draw-after-funding"));
+        var projection = await service.RequestProjectionAsync(loan.LoanId, maturity);
+        var principal = (await service.GetProjectedCashFlowsAsync(projection.ProjectionRunId)).Single(flow => flow.FlowType == "Principal");
+        var cash = (await service.GetCashTransactionsAsync(loan.LoanId)).Single();
+        var allocation = (await service.GetPaymentAllocationsAsync(loan.LoanId)).Single();
+
+        var before = await service.ReconcileAsync(loan.LoanId);
+        (await service.GetReconciliationResultsAsync(before!.ReconciliationRunId))
+            .Single(row => row.ProjectedCashFlowId == principal.ProjectedCashFlowId).MatchStatus.Should().Be("MissingCash");
+        decimal[] applicationAmounts = splitApplication ? [40m, 60m] : [100m];
+        foreach (var amount in applicationAmounts)
+        {
+            var metadata = new DirectLendingCommandMetadataDto(Guid.NewGuid(), null, null, "synthetic-held-cash", false);
+            var application = new ApplyUnappliedCashRequest(amount, maturity, new(0m, 0m, 0m, 0m, amount), "apply-held");
+            await service.ApplyUnappliedCashAsync(loan.LoanId, application, metadata);
+            await service.ApplyUnappliedCashAsync(loan.LoanId, application, metadata);
+        }
+        var applicationEvents = (await service.GetHistoryAsync(loan.LoanId)).Where(item => item.EventType == "loan.unapplied-cash-applied").ToArray();
+        applicationEvents.Should().HaveCount(applicationAmounts.Length);
+        var run = await service.ReconcileAsync(loan.LoanId);
+        var results = await service.GetReconciliationResultsAsync(run!.ReconciliationRunId);
+
+        var matched = results.Single(row => row.ProjectedCashFlowId == principal.ProjectedCashFlowId);
+        matched.MatchStatus.Should().Be("Matched");
+        matched.ActualAmount.Should().Be(100m);
+        matched.ActualDate.Should().Be(maturity);
+        matched.CashTransactionId.Should().Be(cash.CashTransactionId);
+        matched.PaymentAllocationId.Should().Be(allocation.AllocationId);
+        foreach (var applicationEvent in applicationEvents)
+            matched.Notes.Should().Contain(note => note.Contains(applicationEvent.EventId.ToString("D")));
+        results.Where(row => row.MeasurementKind == "cash-disposition").Sum(row => row.ActualAmount).Should().Be(received - 100m);
+        (await service.GetCashTransactionsAsync(loan.LoanId)).Should().ContainSingle().Which.Should().Be(cash);
+        (await service.GetPaymentAllocationsAsync(loan.LoanId)).Should().ContainSingle().Which.Should().Be(allocation);
+        (await service.GetServicingStateAsync(loan.LoanId))!.Balances.UnappliedCash.Should().Be(received - 100m);
+    }
+
     [Fact]
     public async Task ProjectionAndReconciliation_ShouldCreateDerivedArtifacts()
     {

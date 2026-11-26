@@ -7,6 +7,7 @@ namespace Meridian.Backtesting;
 public sealed class CorporateActionAdjustmentPlan
 {
     private readonly AdjustmentStep[] _steps;
+    private readonly HistoricalPriceBasis _outputPriceBasis;
     private readonly IReadOnlyDictionary<BarKey, HistoricalBar>? _legacyAdjustedBars;
 
     internal CorporateActionAdjustmentPlan(
@@ -24,6 +25,15 @@ public sealed class CorporateActionAdjustmentPlan
             .Select(static step => new AdjustmentStep(step.ExDate, step.SplitDivisor, step.DividendFactor))
             .OrderBy(static step => step.ExDate)
             .ToArray();
+        var hasSplits = _steps.Any(static step => step.SplitDivisor != 1m);
+        var hasDividends = _steps.Any(static step => step.DividendFactor != 1m);
+        _outputPriceBasis = (hasSplits, hasDividends) switch
+        {
+            (true, true) => HistoricalPriceBasis.FullyAdjusted,
+            (true, false) => HistoricalPriceBasis.SplitAdjusted,
+            (false, true) => HistoricalPriceBasis.DividendAdjusted,
+            _ => HistoricalPriceBasis.Raw
+        };
     }
 
     private CorporateActionAdjustmentPlan(
@@ -57,8 +67,13 @@ public sealed class CorporateActionAdjustmentPlan
         {
             return _legacyAdjustedBars.TryGetValue(BarKey.From(bar), out var adjusted)
                 ? adjusted
-                : bar;
+                : throw new InvalidOperationException("The historical bar, including its price basis, does not belong to the captured adjustment plan.");
         }
+
+        if (_steps.Length == 0)
+            return bar;
+
+        RequireRawPriceBasis(bar);
 
         var splitDivisor = 1m;
         var dividendFactor = 1m;
@@ -71,9 +86,8 @@ public sealed class CorporateActionAdjustmentPlan
             dividendFactor *= step.DividendFactor;
         }
 
-        if (splitDivisor == 1m && dividendFactor == 1m)
-            return bar;
-
+        // Every row belongs to the same declared adjustment regime, including rows whose
+        // factor is one on/after the last action and histories whose split ratios net to one.
         return new HistoricalBar(
             Symbol: bar.Symbol,
             SessionDate: bar.SessionDate,
@@ -84,7 +98,7 @@ public sealed class CorporateActionAdjustmentPlan
             Volume: (long)Math.Round(bar.Volume * splitDivisor, MidpointRounding.AwayFromZero),
             Source: bar.Source,
             SequenceNumber: bar.SequenceNumber,
-            IsAdjusted: true);
+            PriceBasis: _outputPriceBasis);
     }
 
     /// <summary>
@@ -114,6 +128,13 @@ public sealed class CorporateActionAdjustmentPlan
             effectiveThroughUtc.ToUniversalTime().Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture));
         for (var index = 0; index < originalBars.Count; index++)
         {
+            if (originalBars[index] != adjustedBars[index])
+            {
+                RequireRawPriceBasis(originalBars[index]);
+                if (adjustedBars[index].PriceBasis is not (HistoricalPriceBasis.SplitAdjusted or
+                    HistoricalPriceBasis.DividendAdjusted or HistoricalPriceBasis.FullyAdjusted))
+                    throw new InvalidOperationException("A changed corporate-action bar requires an explicit adjusted price basis.");
+            }
             CorporateActionContentHasher.AppendBar(hash, originalBars[index]);
             CorporateActionContentHasher.AppendBar(hash, adjustedBars[index]);
         }
@@ -124,6 +145,12 @@ public sealed class CorporateActionAdjustmentPlan
             CorporateActionContentHasher.Complete(hash),
             originalBars,
             adjustedBars);
+    }
+
+    internal static void RequireRawPriceBasis(HistoricalBar bar)
+    {
+        if (bar.PriceBasis != HistoricalPriceBasis.Raw)
+            throw new InvalidOperationException($"Corporate-action price adjustment requires explicitly raw historical bars with PriceBasis.Raw; {bar.Symbol} on {bar.SessionDate:yyyy-MM-dd} has {bar.PriceBasis} prices.");
     }
 
     private readonly record struct AdjustmentStep(
@@ -141,7 +168,8 @@ public sealed class CorporateActionAdjustmentPlan
         long Volume,
         string? Source,
         long SequenceNumber,
-        bool? IsAdjusted)
+        bool? IsAdjusted,
+        HistoricalPriceBasis PriceBasis)
     {
         public static BarKey From(HistoricalBar bar) => new(
             bar.Symbol,
@@ -153,7 +181,8 @@ public sealed class CorporateActionAdjustmentPlan
             bar.Volume,
             bar.Source,
             bar.SequenceNumber,
-            bar.IsAdjusted);
+            bar.IsAdjusted,
+            bar.PriceBasis);
     }
 }
 
@@ -184,6 +213,13 @@ internal static class CorporateActionContentHasher
             false => "false",
             null => null
         });
+        // Legacy Unknown rows keep their original bytes. A precise declaration is new
+        // evidence even when its prices equal the legacy values or its adjustment factor is one.
+        if (bar.PriceBasis != HistoricalPriceBasis.Unknown)
+        {
+            AppendValue(hash, "price-basis-v1");
+            AppendValue(hash, ((int)bar.PriceBasis).ToString(invariant));
+        }
     }
 
     public static void AppendValue(

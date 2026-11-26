@@ -164,6 +164,138 @@ internal static class DirectLendingServiceSupport
                 : CommittedCommandMatch.Conflict;
     }
 
+    /// <summary>
+    /// Recognises a restructuring retry before comparing its haircut with the already reduced
+    /// principal. The command identity belongs to the complete request, including replacement terms.
+    /// </summary>
+    public static CommittedCommandMatch FindCommittedRestructuringCommand(
+        IEnumerable<LoanEventLineageDto> history,
+        Guid? commandId,
+        RestructureLoanRequest request)
+    {
+        if (commandId is not Guid id || id == Guid.Empty)
+        {
+            return CommittedCommandMatch.None;
+        }
+
+        var committed = history.FirstOrDefault(entry => entry.CommandId == id);
+        if (committed is null)
+        {
+            return CommittedCommandMatch.None;
+        }
+
+        if (committed.EventType is not ("loan.restructured" or "LoanRestructured"))
+        {
+            return CommittedCommandMatch.Conflict;
+        }
+
+        try
+        {
+            using var payload = JsonDocument.Parse(committed.PayloadJson);
+            if (payload.RootElement.ValueKind != JsonValueKind.Object)
+            {
+                return CommittedCommandMatch.Conflict;
+            }
+
+            // Historical events retain HaircutAmount; newer events also carry explicit applied
+            // aliases for journals and replay. Contradictory retained amounts are not a receipt.
+            var amountFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var property in payload.RootElement.EnumerateObject())
+            {
+                var isRequestAmount = string.Equals(property.Name, "haircutAmount", StringComparison.OrdinalIgnoreCase);
+                if (!isRequestAmount
+                    && !string.Equals(property.Name, "principalHaircut", StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(property.Name, "appliedPrincipalHaircut", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (!amountFields.Add(property.Name))
+                {
+                    return CommittedCommandMatch.Conflict;
+                }
+
+                var isOmittedHaircut = isRequestAmount && property.Value.ValueKind == JsonValueKind.Null;
+                if (isOmittedHaircut ? (request.HaircutAmount ?? 0m) != 0m
+                    : property.Value.ValueKind != JsonValueKind.Number
+                        || !property.Value.TryGetDecimal(out var retainedAmount)
+                        || retainedAmount != (request.HaircutAmount ?? 0m))
+                {
+                    return CommittedCommandMatch.Conflict;
+                }
+            }
+
+            var recorded = payload.RootElement.Deserialize<RestructureLoanRequest>(EventJsonOptions);
+            return recorded is not null
+                && recorded.RestructuringType == request.RestructuringType
+                && string.Equals(recorded.Reason, request.Reason, StringComparison.Ordinal)
+                && recorded.EffectiveDate == request.EffectiveDate
+                && (!committed.EffectiveDate.HasValue || committed.EffectiveDate.Value == request.EffectiveDate)
+                && (recorded.HaircutAmount ?? 0m) == (request.HaircutAmount ?? 0m)
+                && JsonElement.DeepEquals(
+                    JsonSerializer.SerializeToElement(recorded.NewTerms, EventJsonOptions),
+                    JsonSerializer.SerializeToElement(request.NewTerms, EventJsonOptions))
+                    ? CommittedCommandMatch.Replay
+                    : CommittedCommandMatch.Conflict;
+        }
+        catch (JsonException)
+        {
+            return CommittedCommandMatch.Conflict;
+        }
+    }
+
+    /// <summary>Validates a new restructuring before either service changes retained state.</summary>
+    public static DirectLendingCommandError? ValidateRestructuringRequest(RestructureLoanRequest request, decimal principalOutstanding)
+        => request.Reason is null
+            ? new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Restructuring reason must be supplied.")
+            : ValidateRestructuringHaircut(request.HaircutAmount, principalOutstanding)
+                ?? (request.NewTerms is not null ? ValidateTerms(request.NewTerms) : null);
+
+    /// <summary>A restructuring cannot increase principal or write off more than is outstanding.</summary>
+    public static DirectLendingCommandError? ValidateRestructuringHaircut(decimal? haircutAmount, decimal principalOutstanding)
+    {
+        var amount = haircutAmount ?? 0m;
+        if (amount < 0m)
+        {
+            return new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Restructuring haircut must not be negative.");
+        }
+
+        if (amount > principalOutstanding)
+        {
+            return new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Restructuring haircut must not exceed outstanding principal.");
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Applies the admitted amount to principal and drawdown lots using the same earliest-drawdown
+    /// policy as principal payments. It preserves commitment, draw history and all other balances.
+    /// </summary>
+    public static LoanServicingStateDto ApplyRestructuringHaircut(LoanServicingStateDto servicing, decimal appliedHaircut)
+    {
+        var error = ValidateRestructuringHaircut(appliedHaircut, servicing.Balances.PrincipalOutstanding);
+        if (error is not null)
+        {
+            throw new DirectLendingCommandException(error);
+        }
+
+        var lots = servicing.DrawdownLots.OrderBy(static lot => lot.DrawdownDate).ToArray();
+        var remaining = appliedHaircut;
+        for (var index = 0; index < lots.Length && remaining > 0m; index++)
+        {
+            var appliedToLot = Math.Min(remaining, Math.Max(0m, lots[index].RemainingPrincipal));
+            lots[index] = lots[index] with { RemainingPrincipal = lots[index].RemainingPrincipal - appliedToLot };
+            remaining -= appliedToLot;
+        }
+
+        return servicing with
+        {
+            Balances = servicing.Balances with { PrincipalOutstanding = servicing.Balances.PrincipalOutstanding - appliedHaircut },
+            DrawdownLots = lots
+        };
+    }
+
     private static bool RecordedRequestMatches(string payloadJson, decimal amount, DateOnly effectiveDate, string? externalRef)
     {
         try
@@ -399,7 +531,11 @@ internal static class DirectLendingServiceSupport
         DirectLendingOutboxMessageWrite CreateOutboxMessage(string topic)
             => new(
                 topic,
-                loanId.ToString("D"),
+                // Each committed restructuring needs its own handoff. A loan-wide key collides
+                // with loan.created under the retained (topic, message_key) unique constraint.
+                eventType is "loan.restructured" or "LoanRestructured"
+                    ? $"{loanId:D}/{sourceEventId:D}"
+                    : loanId.ToString("D"),
                 JsonSerializer.Serialize(new
                 {
                     loanId,

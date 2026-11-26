@@ -805,7 +805,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.GapHandlingStrategy</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:526](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L526).
+Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:513](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L513).
 
 Describes a selectable missing-interval policy with its display label, explanation, and icon.
 
@@ -817,10 +817,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public GapStrategy Value { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:528](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L528) |  |
-| <code>public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:529](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L529) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:530](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L530) |  |
-| <code>public string Icon { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:531](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L531) |  |
+| <code>public GapStrategy Value { get; set; }</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:515](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L515) |  |
+| <code>public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:516](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L516) |  |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:517](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L517) |  |
+| <code>public string Icon { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:518](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L518) |  |
 
 ## GapInfo
 
@@ -961,7 +961,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.GapStrategy</code>. Kind: `enum`.
 
-Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:434](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L434).
+Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:415](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L415).
 
 ```csharp
 public enum GapStrategy : byte
@@ -971,12 +971,12 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ForwardFill</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:436](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L436) |  |
-| <code>BackwardFill</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:437](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L437) |  |
-| <code>LinearInterpolate</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:438](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L438) |  |
-| <code>Null</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:439](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L439) |  |
-| <code>Zero</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:440](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L440) |  |
-| <code>Skip</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:441](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L441) |  |
+| <code>ForwardFill</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:417](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L417) |  |
+| <code>BackwardFill</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:418](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L418) |  |
+| <code>LinearInterpolate</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:419](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L419) |  |
+| <code>Null</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:420](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L420) |  |
+| <code>Zero</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:421](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L421) |  |
+| <code>Skip</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:422](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L422) |  |
 
 ## GapSummaryData
 

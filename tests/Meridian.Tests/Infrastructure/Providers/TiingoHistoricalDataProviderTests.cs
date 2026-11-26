@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using FluentAssertions;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.Tiingo;
 using Meridian.Tests.TestHelpers;
@@ -15,6 +16,53 @@ namespace Meridian.Tests.Infrastructure.Providers;
 public sealed class TiingoHistoricalDataProviderTests
 {
     private const string ApiToken = "test-tiingo-token";
+
+    [Fact]
+    public async Task CashDividendHistory_PreservesSeparateRawAndAdjustedCandles()
+    {
+        const string response = """
+            [
+              {"date":"2024-01-02T00:00:00Z","open":100,"high":110,"low":90,"close":100,"volume":1000,
+               "adjOpen":99,"adjHigh":108.9,"adjLow":89.1,"adjClose":99,"adjVolume":1000,"splitFactor":1,"divCash":0},
+              {"date":"2024-01-03T00:00:00Z","open":99,"high":100,"low":98,"close":99,"volume":1000,
+               "adjOpen":99,"adjHigh":100,"adjLow":98,"adjClose":99,"adjVolume":1000,"splitFactor":1,"divCash":1}
+            ]
+            """;
+        using var handler = new StubHttpMessageHandler(_ => JsonResponse(response));
+        using var http = new HttpClient(handler);
+        using var provider = new TiingoHistoricalDataProvider(ApiToken, http);
+
+        var bars = await provider.GetAdjustedDailyBarsAsync("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 3));
+
+        bars.Should().HaveCount(2);
+        var raw = bars[0].ToHistoricalBar(preferAdjusted: false);
+        raw.PriceBasis.Should().Be(HistoricalPriceBasis.Raw);
+        (raw.Open, raw.High, raw.Low, raw.Close).Should().Be((100m, 110m, 90m, 100m));
+        var adjusted = bars[0].ToHistoricalBar(HistoricalPriceBasis.FullyAdjusted);
+        adjusted.PriceBasis.Should().Be(HistoricalPriceBasis.FullyAdjusted);
+        (adjusted.Open, adjusted.High, adjusted.Low, adjusted.Close).Should().Be((99m, 108.9m, 89.1m, 99m));
+        var splitOnly = () => bars[0].ToHistoricalBar(HistoricalPriceBasis.SplitAdjusted);
+        splitOnly.Should().Throw<InvalidOperationException>();
+        // Equal prices after the ex-date do not erase the distinction between declared bases.
+        bars[1].ToHistoricalBar(false).PriceBasis.Should().Be(HistoricalPriceBasis.Raw);
+        bars[1].ToHistoricalBar().PriceBasis.Should().Be(HistoricalPriceBasis.FullyAdjusted);
+    }
+
+    [Fact]
+    public async Task IncompleteAdjustedCandle_RefusesToBorrowRawHigh()
+    {
+        const string response = """
+            [{"date":"2024-01-02T00:00:00Z","open":100,"high":110,"low":90,"close":100,"volume":1000,
+              "adjOpen":50,"adjLow":45,"adjClose":50,"adjVolume":2000}]
+            """;
+        using var handler = new StubHttpMessageHandler(_ => JsonResponse(response));
+        using var http = new HttpClient(handler);
+        using var provider = new TiingoHistoricalDataProvider(ApiToken, http);
+
+        var fetch = () => provider.GetDailyBarsAsync("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 2));
+
+        await fetch.Should().ThrowAsync<InvalidOperationException>().WithMessage("*incomplete adjusted OHLC*");
+    }
 
     private static readonly string TiingoEodResponse = """
         [

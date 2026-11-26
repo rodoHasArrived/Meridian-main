@@ -662,9 +662,12 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
         var amend = () => SecurityMasterMapping.ToAmendCommand(AmendRequest(terms), CurrentProjection(assetClass));
         if (assetClass == "Swap")
         {
-            const string disabled = "'legs[0].scheduleConventions' is readable but authoring is not enabled on this node; a rate-unit declaration does not activate calculation-only terms.";
-            create.Should().Throw<InvalidOperationException>().WithMessage(disabled);
-            amend.Should().Throw<InvalidOperationException>().WithMessage(disabled);
+            // These frozen historical legs omit stable IDs. They remain readable, but cannot
+            // assert the complete vanilla profile. Valid authoring is covered independently by
+            // SecurityVanillaSwapProfileTests.GovernedLegDeclarations_RoundTripCalculateAndRetainTheExistingReplayPacket.
+            const string incomplete = "Each leg requires an explicit stable legId and currency.";
+            create.Should().Throw<InvalidOperationException>().WithMessage(incomplete);
+            amend.Should().Throw<InvalidOperationException>().WithMessage(incomplete);
             return;
         }
         if (SecurityAssetClassCatalog.GetTermsVersion(assetClass) < HistoricalScheduleReadCeiling(assetClass))
