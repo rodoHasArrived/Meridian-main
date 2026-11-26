@@ -10,7 +10,7 @@ fi
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 hooks_dir="${repo_root}/.githooks"
 
-for hook in pre-commit post-merge; do
+for hook in pre-commit pre-push post-merge; do
   if [[ ! -f "${hooks_dir}/${hook}" ]]; then
     echo "Error: tracked ${hook} hook is missing from '${hooks_dir}'." >&2
     exit 1
@@ -27,4 +27,5 @@ fi
 echo "Configured Git hooks path to '${repo_root}/.githooks'."
 echo "Pre-commit will check staged C#/VB whitespace without changing files or the index."
 echo "Commits without staged C#/VB files skip .NET formatting; CI checks the full solution."
+echo "Pre-push will check whitespace in C#/VB files changed by the pushed commits."
 echo "Post-merge runs buildctl.py regen --fix without staging or committing files."

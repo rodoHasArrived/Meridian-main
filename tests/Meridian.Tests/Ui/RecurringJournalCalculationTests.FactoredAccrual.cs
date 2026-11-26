@@ -56,6 +56,7 @@ public sealed partial class RecurringJournalCalculationTests
             endsOn: JanuaryEnd);
         var terms = JsonSerializer.SerializeToElement(new
         {
+            termsFormat = "flat",
             assetClassTermsVersion = 6,
             issueDate = "2025-12-31",
             maturity = "2026-12-31",

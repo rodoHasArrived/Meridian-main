@@ -70,6 +70,10 @@ public sealed partial class StructuredCashFlowScheduleRowVersionTests
             var rows = JsonSerializer.Deserialize<List<StructuredCashFlowScheduleEntry>>(
                 model == "bond-cash-flow-context-v4" ? versionOneRows : legacyRows)!;
             var security = Security();
+            // This literal historical packet predates family tags; only current captures use
+            // the tagged fixture. Replay must preserve these original terms and hash bytes.
+            security = security with
+            { AssetSpecificTerms = SecurityTermsEnvelope.WithoutRedundantDeclaredFormat(security.AssetSpecificTerms) };
             var source = new SecurityCashFlowSourceDto(security.SecurityId, StructuredCashFlowSourceKind.CalculatedBullet,
                 AsOf, false, null, null);
             var terms = StructuredCashFlowTermsResolver.Resolve(security);
@@ -190,6 +194,7 @@ public sealed partial class StructuredCashFlowScheduleRowVersionTests
         Guid.Parse("172d94fe-0000-4000-8000-000000000099"), "Deposit", SecurityStatusDto.Active, "Row version deposit", "USD",
         JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(new
         {
+            termsFormat = SecurityTermsFormats.Flat,
             assetClassTermsVersion = 2,
             issueDate = "2026-01-01",
             maturity = "2028-01-01",

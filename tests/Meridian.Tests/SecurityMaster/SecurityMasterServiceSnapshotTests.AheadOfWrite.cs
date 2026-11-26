@@ -222,9 +222,14 @@ public sealed partial class SecurityMasterServiceSnapshotTests
 
         if (operation == AmendWithoutTermsPatch && assetClass == "Swap")
         {
+            // The historical two-leg row declares conventions only on its floating leg. Reading
+            // and deactivation preserve those bytes; current authoring requires both declarations.
+            var legs = JsonSerializer.Deserialize<JsonElement>(terms).GetProperty("legs");
+            legs.GetArrayLength().Should().Be(2);
+            legs[0].GetProperty("scheduleConventions").ValueKind.Should().Be(JsonValueKind.Null);
             await FluentActions.Invoking(() => RunAsync(harness, securityId, operation))
                 .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
-                .WithMessage("*Declared leg schedule conventions require a later per-leg contract step*");
+                .WithMessage("Each leg requires its own declared schedule conventions and rate unit.");
             harness.Appended.Should().BeEmpty();
             harness.Upserted.Should().BeEmpty();
             return;

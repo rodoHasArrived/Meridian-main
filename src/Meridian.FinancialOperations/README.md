@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-23
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.FinancialOperations
@@ -31,6 +31,15 @@ operational case history. Explicit observation, assignment, notes and state chan
 seen, actor, evidence and source fingerprint under case-sequence/hash concurrency checks. A missing
 finding never resolves a case. Approved guarantee caps remain separate from unavailable measured
 exposure. See [agreement lifecycle casework](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#agreement-lifecycle-work-queue).
+
+Operations Continuity workflows carry a `purpose`. A workflow without one remains a legacy `Close`
+workflow; `SecurityMasterRevision` names one immutable Security Master revision subject with its
+retained maker, source evidence and account/book/period authority, resolved on the server through
+`ISecurityMasterRevisionWorkflowAuthority`. Revision workflows stay out of close listings and do not
+consume the account/period close lane. They accept only the approval transitions: broker import,
+ledger posting and other close transitions refuse with `WORKFLOW_PURPOSE_MISMATCH`. Approval must name
+the exact `security-master-revision:{id}` subject, and the retained maker cannot be the reviewer. A
+host that registers no revision authority cannot start one. An unknown purpose is never executable.
 
 External-GL reconciliation projects each row's external trial-balance currency and resolved ledger
 book currency separately. Unknown or absent source currencies remain null rather than inheriting
@@ -1388,6 +1397,16 @@ evidence deletion.
 ## Diagrams
 
 `DIA-ASSURANCE-LOOP`
+
+## Recurring accrual economic-obligation claims (2026-11-25)
+
+The recurring document session shared by the file and PostgreSQL stores pins optional daily-lot
+economic-obligation keys write-once under its exclusive lease before CD intake, and the shared
+document rules refuse a retained obligation owned by more than one occurrence. Keys exclude
+schedule/template/model versions, so overlapping schedules or cadences cannot draft the same daily
+holding accrual twice. Exact retries and process restart retain ownership; claims survive failure and
+corrections use audited reversal/rebook. Optional claim fields are omitted for legacy occurrences.
+See [recurring journal](../../docs/domain/recurring-journal.md#declared-certificateofdeposit-accrual-profile).
 
 ## Roadmap traceability
 

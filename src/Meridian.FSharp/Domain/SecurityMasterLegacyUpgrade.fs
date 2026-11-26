@@ -310,6 +310,7 @@ module SecurityMasterLegacyUpgrade =
                 SecurityTermModules.empty with
                     DeclaredSchedule = Some terms.DeclaredSchedule
                     Maturity = Some terms.Dates
+                    Notional = if terms.Notional.Notional.IsSome then Some terms.Notional else None
                     Coupon = Some terms.CouponTerms
                     Accrual = accrualFromConventions terms.ScheduleConventions
                     Call = Some (callFromSchedules terms.CallableDate.IsSome terms.CallableDate terms.CallPutSchedules)

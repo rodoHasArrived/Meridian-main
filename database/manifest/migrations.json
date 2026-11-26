@@ -1450,6 +1450,15 @@
       "sha256": "0ef40a4b577ae19b1c5c32e4eff5cf73d7e4a6fa11fa8412e9d6ef4b13fa0022"
     },
     {
+      "filename": "V_ledger_084__security_revision_workflow_scope.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_084__security_revision_workflow_scope.sql",
+      "schema": "ledger",
+      "sha256": "e8837484c7ea4a52d39f8d6967aadf1deac7baa7fb5075ef0ff3450e116cc358"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1793,7 +1802,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "fc7b9980e48acb19447d97c85b08e20b133789dd2df0bddc2e22c9c2f40cfce2",
+  "fingerprint": "9e08c582e11edda1036a5ec6247e5bfca28c750a53d97751c00cc24ec6f42c47",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -2055,9 +2064,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 199,
+    "files": 200,
     "migration_sets": 11,
-    "waivers": 58,
+    "waivers": 59,
     "warnings": 0
   },
   "waivers": [
@@ -2354,6 +2363,13 @@
       "reason": "The lexical TRUNCATE matches are BEFORE TRUNCATE rejection-trigger declarations on immutable external-GL mapping revisions, posting packages, decisions and provider receipts. They call the existing mutation-refusal function and execute no data truncation. PostgreSQL regression coverage requires direct and cascading truncation to refuse while retaining the original approvals and permitting ordinary appended revisions. This exact path/rule exception preserves all UPDATE/DELETE protections and authorizes no data removal.",
       "review_after": "2027-05-21",
       "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_084__security_revision_workflow_scope.sql",
+      "reason": "Row-preserving replacement of only ux_operations_continuity_open_workflow: the same transaction recreates close-lane uniqueness for workflows whose purpose is absent or Close and adds canonical-UUID uniqueness for each Security Master revision subject. New checks reject unknown or explicit-null purposes and malformed subject authority; subject and owning scope are immutable. No table, column, workflow or audit row is deleted or rewritten. This SQL was authored as ordinal 073 in the unmerged security-pack change (#3603) and is renumbered unchanged to 084 because main later took 073 and then 083. On 2026-11-26 the renumbered file was applied through the migration runner on a disposable local PostgreSQL 16 database carrying ledger migrations 001-083, and the three SecurityRevisionWorkflowPostgresTests passed against it: missing purpose retains Close uniqueness while distinct revision subjects coexist; null, unknown and incomplete purposes are refused at the database boundary; a retained subject and its accounting scope cannot be rewritten. Apply through the existing transactional/advisory-lock runner with purpose-aware consumers; do not delete retained revision workflows to restore the former all-purpose index. This exact path/rule exception is technical review, not a claim of independent human approval or live rollout.",
+      "review_after": "2027-05-26",
+      "rule_id": "migration-drop-object"
     },
     {
       "category": "destructive_changes",
