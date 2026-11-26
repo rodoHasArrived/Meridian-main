@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { apiGetBlob, apiGetJson, apiPostJson } from "@/lib/api";
 import { getAttestationSubject, getAttestationWorkspace, getPreparerAttestationProof,

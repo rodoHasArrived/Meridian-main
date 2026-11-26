@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildShownExport, shownExportCsvRows, shownExportXlsxSheets, type ShownExportColumn } from "./table-export";
 

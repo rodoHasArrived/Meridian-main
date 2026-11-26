@@ -67,3 +67,20 @@ class CommitSecretScanTests(unittest.TestCase):
         self.assertIn("github.event_name == 'merge_group'", scan['if'])
         self.assertIn("startsWith(github.ref, 'refs/tags/')", scan['if'])
         self.assertIn('sha256sum -c -', scan['run'])
+
+    def test_nightly_scans_only_history_reachable_from_main(self):
+        # ci-health-014: the action's schedule mode runs git log --all, so an unmerged branch
+        # turned main's nightly red. The commit scanner limits history to the scanned commit.
+        import yaml
+        workflow = yaml.load((ROOT / '.github/workflows/ci.yml').read_text(encoding='utf-8'), Loader=yaml.BaseLoader)
+        self.assertIn('schedule', workflow['on'])
+        steps = workflow['jobs']['secret-scan']['steps']
+        action = next(step for step in steps if step.get('uses', '').startswith('gitleaks/gitleaks-action@'))
+        scan = next(step for step in steps if 'scan-commit-secrets.py' in step.get('run', ''))
+        evidence = next(step for step in steps if step.get('uses', '').startswith('actions/upload-artifact@'))
+        self.assertIn("github.event_name != 'schedule'", action['if'])
+        self.assertIn("github.event_name == 'schedule'", scan['if'])
+        self.assertIn("github.event_name == 'schedule'", evidence['if'])
+        source = (ROOT / 'build/scripts/ci/scan-commit-secrets.py').read_text(encoding='utf-8')
+        self.assertIn("f'--log-opts=--full-history -m {commit}'", source)
+        self.assertNotIn('--all', source)

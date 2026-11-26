@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { containsPascalCaseIdentifier, executionEventLabel, formatEnumLabel, humanizeIdentifiersInText } from "@/lib/display-labels";
 

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildWorkspaceHeaderViewModel } from "@/components/meridian/workspace-header.view-model";
 import { workspaceForKey } from "@/lib/workspace";

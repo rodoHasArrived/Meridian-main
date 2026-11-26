@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildChartViz, cellStyleClassName, resolveCellStyle } from "@/lib/report-writer-grid-format";
 import type { ReportWriterChartRender } from "@/types";

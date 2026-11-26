@@ -188,6 +188,14 @@ updates:
     ignore:
       - dependency-name: "Microsoft.EntityFrameworkCore*"
         update-types: ["version-update:semver-major"]
+      # The Microsoft.Extensions / AspNetCore family is deliberately pinned to one .NET 10 patch
+      # (tests/scripts/test_central_package_versions.py). Majors arrive one package at a time,
+      # always conflict with that pin, and only spend runners; the family moves together in the
+      # planned .NET 11 upgrade (ci-health-020).
+      - dependency-name: "Microsoft.Extensions.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.AspNetCore.*"
+        update-types: ["version-update:semver-major"]
 
   # GitHub Actions: workflows plus the local composite actions, so one grouped update moves
   # every pin of an action together (workflow hygiene rejects mixed pins).
@@ -268,6 +276,15 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      # The Microsoft.Extensions / AspNetCore family is deliberately pinned to one .NET 10 patch
+      # (tests/scripts/test_central_package_versions.py). Majors arrive one package at a time,
+      # always conflict with that pin, and only spend runners; the family moves together in the
+      # planned .NET 11 upgrade (ci-health-020).
+      - dependency-name: "Microsoft.Extensions.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.AspNetCore.*"
+        update-types: ["version-update:semver-major"]
 
   # Tools
   - package-ecosystem: "nuget"
@@ -288,3 +305,12 @@ updates:
       - "tools"
     reviewers:
       - "rodoHasArrived"
+    ignore:
+      # The Microsoft.Extensions / AspNetCore family is deliberately pinned to one .NET 10 patch
+      # (tests/scripts/test_central_package_versions.py). Majors arrive one package at a time,
+      # always conflict with that pin, and only spend runners; the family moves together in the
+      # planned .NET 11 upgrade (ci-health-020).
+      - dependency-name: "Microsoft.Extensions.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.AspNetCore.*"
+        update-types: ["version-update:semver-major"]
