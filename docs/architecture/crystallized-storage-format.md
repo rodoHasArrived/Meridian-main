@@ -30,8 +30,16 @@ data/
 │   └── schemas/                              # Schema definitions per version
 │       ├── v1.json
 │       └── v2.json
-├── _wal/                                      # Write-Ahead Log files (crash recovery)
-│   └── *.wal
+├── _wal/                                      # Write-Ahead Logs (crash recovery), one per workload
+│   ├── collector/                             # Live collection (collector, desktop, workstation hosts)
+│   │   ├── .owner.lock                        # Held by the one live WAL owner
+│   │   └── *.wal
+│   └── backfill/                              # Historical backfill
+│       ├── .owner.lock
+│       └── *.wal
+├── _dedup/                                    # Persistent dedup ledgers, one per workload
+│   ├── collector/dedup_ledger.jsonl
+│   └── backfill/dedup_ledger.jsonl
 ├── {provider}/                                # Data source (alpaca, polygon, yahoo, etc.)
 │   └── {symbol}/                              # Trading symbol (AAPL, SPY, etc.)
 │       ├── _manifest.json                     # Symbol metadata and data summary
@@ -509,7 +517,26 @@ MarketDataClient → EventPipeline → WAL (fsync) → StorageSink → Commit
 ```
 
 ### WAL Directory
-WAL files are stored under `_wal/` (within the root data path) and rotated at 100 MB. Committed WAL files are cleaned up automatically.
+WAL files are stored under `_wal/{workload}/` (within the root data path), where the workload is
+`collector` or `backfill`, and rotated at 100 MB. Committed WAL files are cleaned up automatically.
+The dedup ledger follows the same split under `_dedup/{workload}/`.
+
+**Ownership.** Each WAL directory has exactly one live owner. `InitializeAsync` and `RepairAsync`
+take an exclusive lock on `.owner.lock` in the directory and throw `WalDirectoryInUseException` if
+another process (or another WAL instance in the same process) holds it. A crashed owner releases
+the lock when the OS closes its handles. This lets a collector and a backfill run against the same
+data root at the same time, while a second collector, or a `--wal-repair` against a running
+workload, is refused instead of archiving the live segment and losing its records.
+
+**Upgrade from the shared layout.** Older builds wrote every WAL segment to `_wal/` and the ledger to
+`_dedup/dedup_ledger.jsonl`. On first start, the collector moves any `_wal/*.wal` segments into
+`_wal/collector/` (holding `_wal/.owner.lock` while it does) and the legacy ledger into
+`_dedup/collector/`, then recovers them as usual. Stop every older-version process before upgrading;
+they do not take the owner lock.
+
+**Repair.** `--wal-repair` visits every workload directory (and any unadopted legacy segments);
+`--workload collector|backfill` limits it to one. A directory owned by a running process is
+skipped with an error and no files are changed.
 
 ### Key Properties
 - **SHA-256 checksum** per record for corruption detection

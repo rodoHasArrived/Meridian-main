@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationDataBackfillRecord
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataBackfillRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1159](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1159).
+
+Backfill row returned by the Data workspace bootstrap payload.
+
+```csharp
+public sealed record WorkstationDataBackfillRecord(string JobId, string Scope, string Provider, string Status, string Progress, string UpdatedAt)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; init; }</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1167](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1167) |  |
+
 ## WorkstationDataExportRecord
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataExportRecord</code>. Kind: `record`.
@@ -556,14 +574,4 @@ Lightweight reporting run status with lineage and approval posture for operator 
 
 ```csharp
 public sealed record WorkstationReportingRunLinkPayload(string Id, string Kind, string Label, string Href, string Method, bool IsBrowserNavigable, string Source);
-```
-
-## WorkstationReportingRunNextActionPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingRunNextActionPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:609](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L609).
-
-```csharp
-public sealed record WorkstationReportingRunNextActionPayload(string Id, string Kind, string Label, string Href, string Method, bool IsEnabled, string? DisabledReason, bool IsBrowserNavigable);
 ```

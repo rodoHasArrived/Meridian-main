@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationCaseworkAction
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseworkAction</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:427](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L427).
+
+```csharp
+public enum ReconciliationCaseworkAction : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Assign = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:429](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L429) |  |
+| <code>ChangePriority = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:430](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L430) |  |
+| <code>TransitionStatus = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:431](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L431) |  |
+| <code>AddComment = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:432](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L432) |  |
+| <code>EditComment = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:433](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L433) |  |
+| <code>DeleteComment = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:434](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L434) |  |
+| <code>SetRootCause = 6</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:435](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L435) |  |
+| <code>SetResolution = 7</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:436](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L436) |  |
+| <code>LinkEvidence = 8</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:437](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L437) |  |
+| <code>SignOff = 9</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:438](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L438) |  |
+| <code>Reopen = 10</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:439](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L439) |  |
+| <code>Resolve = 11</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:440](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L440) |  |
+| <code>Waive = 12</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:441](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L441) |  |
+| <code>Supersede = 13</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:442](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L442) |  |
+
 ## ReconciliationCaseworkCloseScopeDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseworkCloseScopeDto</code>. Kind: `record`.
@@ -675,13 +704,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Draft = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1300](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1300) |  |
 | <code>Final = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1301](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1301) |  |
-
-## ReportingLedgerBookSelectionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingLedgerBookSelectionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1321](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1321).
-
-```csharp
-public sealed record ReportingLedgerBookSelectionDto(Guid? LedgerBookId = null, string? LedgerBookCode = null);
-```

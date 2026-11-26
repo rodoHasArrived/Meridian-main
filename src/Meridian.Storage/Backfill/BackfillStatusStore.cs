@@ -66,7 +66,9 @@ public sealed class BackfillStatusStore
                 if (!string.Equals(json, await File.ReadAllTextAsync(destination, ct).ConfigureAwait(false), StringComparison.Ordinal))
                     throw;
             }
-            await AtomicFileWriter.SyncDirectoryAsync(_receiptDirectory, CancellationToken.None).ConfigureAwait(false);
+            // Strict: returning publishes the receipt (and lets WriteAsync record the run). The
+            // identical-content check above makes a retry after this throw idempotent.
+            await AtomicFileWriter.SyncDirectoryOrThrowAsync(_receiptDirectory, CancellationToken.None).ConfigureAwait(false);
         }
         finally
         {

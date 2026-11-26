@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyBriefingAlert
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyBriefingAlert</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:59](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L59).
+
+Actionable alert shown on the strategy briefing surface.
+
+```csharp
+public sealed record StrategyBriefingAlert(string AlertId, string Title, string Summary, string Tone, string? RunId = null, string? ActionLabel = null);
+```
+
 ## StrategyBriefingDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyBriefingDto</code>. Kind: `record`.
@@ -699,15 +711,3 @@ Enum declarations:
 | <code>Backtest</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:13](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L13) |  |
 | <code>Paper</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:14](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L14) |  |
 | <code>Live</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:15](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L15) |  |
-
-## StrategyRunPaperStatus
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunPaperStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:93](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L93).
-
-Paper-execution status fields attached to a running or recently completed paper run. Surfaced on StrategyRunSummary and StrategyRunDetail when StrategyRunMode is Paper.
-
-```csharp
-public sealed record StrategyRunPaperStatus(string SimulationFeedId, bool IsActive, int FillCount, int OpenOrderCount, decimal? RealizedPnl, decimal? UnrealizedPnl, DateTimeOffset? LastMarketEventAt, bool HasLedgerCoverage = false);
-```

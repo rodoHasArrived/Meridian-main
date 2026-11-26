@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerPeriodPostingGuard
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodPostingGuard</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs:10](../../../../src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs#L10).
+
+Rejects journal postings that violate the selected accounting period&#x27;s scope, dates, or state.
+
+```csharp
+public static class LedgerPeriodPostingGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void Validate(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period) =&gt; …;</code> | [src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs:12](../../../../src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs#L12) |  |
+
+## LedgerPeriodTransitionException
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodTransitionException</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerBookServiceException.cs:51](../../../../src/Meridian.Storage/Ledger/LedgerBookServiceException.cs#L51).
+
+Signals an invalid transition between accounting period states.
+
+```csharp
+public sealed class LedgerPeriodTransitionException : LedgerBookServiceException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerPeriodTransitionException(string message) : base(message);</code> | [src/Meridian.Storage/Ledger/LedgerBookServiceException.cs:53](../../../../src/Meridian.Storage/Ledger/LedgerBookServiceException.cs#L53) |  |
+
 ## LedgerPostingAuthorityContext
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerPostingAuthorityContext</code>. Kind: `record`.
@@ -1539,37 +1575,3 @@ Declared public members:
 | <code>public int IssuesResolved { get; init; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:464](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L464) |  |
 | <code>public List&lt;MaintenanceIssue&gt; Issues { get; init; } = new ();</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:465](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L465) |  |
 | <code>public Dictionary&lt;string, object&gt; Metrics { get; init; } = new ();</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:466](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L466) |  |
-
-## MaintenanceSchedulePresets
-
-Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceSchedulePresets</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:484](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L484).
-
-Preset schedule templates for common maintenance scenarios.
-
-```csharp
-public static class MaintenanceSchedulePresets
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ArchiveMaintenanceSchedule DailyHealthCheck(string name) =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:494](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L494) | Daily health check at 3 AM UTC. |
-| <code>public static ArchiveMaintenanceSchedule WeeklyFullMaintenance(string name) =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:512](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L512) | Weekly full maintenance on Sunday at 2 AM UTC. |
-| <code>public static ArchiveMaintenanceSchedule DailyTierMigration(string name) =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:532](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L532) | Daily tier migration during US market-closed hours. |
-| <code>public static ArchiveMaintenanceSchedule MonthlyCompression(string name) =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:555](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L555) | Monthly compression optimization on the first Sunday at 1 AM UTC. |
-| <code>public static ArchiveMaintenanceSchedule DailyRetentionEnforcement(string name) =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:607](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L607) | Daily retention enforcement at 5 AM UTC. |
-
-## MaintenanceScheduleSummary
-
-Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceScheduleSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs:92](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs#L92).
-
-Summary of maintenance schedules.
-
-```csharp
-public sealed record MaintenanceScheduleSummary(int TotalSchedules, int EnabledSchedules, int DisabledSchedules, Dictionary<MaintenanceTaskType, int> ByTaskType, DateTimeOffset? NextDueSchedule, string? NextDueScheduleName);
-```

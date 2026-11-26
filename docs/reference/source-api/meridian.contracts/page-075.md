@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RetainedLedgerAmountDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.RetainedLedgerAmountDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:581](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L581).
+
+```csharp
+public sealed record RetainedLedgerAmountDto(Guid AmountId, LedgerAmountScopeDto Scope, string AccountName, string? Symbol, decimal Amount, string SourceSnapshotHash);
+```
+
 ## ReviewOnboardingWorkspaceRequestDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReviewOnboardingWorkspaceRequestDto</code>. Kind: `record`.
@@ -606,14 +616,4 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:
 
 ```csharp
 public sealed record SecurityMasterOperatingModelDto(Guid SecurityId, string? ClientId, string? AccountId, string? FundProfileId, string Status, string Summary, IReadOnlyList<SecurityMasterOperatingModelStageDto> Stages, IReadOnlyList<SecurityMasterEntitlementApplicabilityDto> EntitlementApplicability, IReadOnlyList<SecurityMasterOperatorMetadataDto> OperatorMetadata, SecurityMasterManualChangeApprovalPostureDto ManualChangeApproval, IReadOnlyList<InstrumentPassportReferenceDataWorkbenchSectionDto> Controls, DateTimeOffset RetrievedAtUtc);
-```
-
-## SecurityMasterOperatingModelStageDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOperatingModelStageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:533](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L533).
-
-```csharp
-public sealed record SecurityMasterOperatingModelStageDto(string StageId, string Title, string Status, string Summary, int EvidenceCount, int BlockingIssueCount);
 ```

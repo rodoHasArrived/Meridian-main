@@ -548,3 +548,61 @@ decisions:
       - W13-STRAT-001
       - W13-OMS-001
       - W10-CONSOL-001
+  - id: DEC-PACK-SPLIT-001
+    title: Split W11-PACK-001 into generated class plumbing and runtime governance for profile-backed packs
+    status: accepted
+    decided_on: 2026-11-25
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Item E2 of the 2026-11-24 Security Master architecture review challenged W11-PACK-001. Adding a
+      compiled Security Master class takes about 18 to 20 hand-edited files, and two classification
+      tables (the F# AssetClassRegistry and the C# SecurityAssetClassCatalog) are kept equal only by
+      tests. The repository owner directed the split on 2026-11-25. W11-PACK-002 (new, wave W11
+      sequence 7) generates the mechanical class plumbing from one declaration built on
+      SecurityAssetTermsCodecBindings and the catalog. W11-PACK-001 keeps its rank and narrows to
+      runtime pack governance for profile-backed (CustomAsset-style) classes only. The owner chose
+      prototype only for W11-PACK-002. The generator and its equivalence test live in the test
+      project, the hand-written source remains the source of truth, and switching to generated code
+      needs a later recorded decision. No existing rank changes. No acceptance or release is claimed.
+    related_roadmap_items:
+      - W11-PACK-001
+      - W11-PACK-002
+  - id: DEC-PACK-CODEGEN-001
+    title: Switch W11-PACK-002 class plumbing to generated code
+    status: accepted
+    decided_on: 2026-11-25
+    owner_lane: Accounting and Ledger
+    summary: >-
+      The repository owner directed on 2026-11-25 that W11-PACK-002 switch from the prototype to
+      generated code, superseding the prototype-only scope recorded in DEC-PACK-SPLIT-001. The class
+      declaration moves to src/Meridian.Contracts/SecurityMaster/SecurityAssetClassDeclarations.cs and
+      generates six marked regions in committed source - the SecurityKind cases, the AssetClassRegistry
+      key arms and classification rows, the flat-writer dispatch, the ToSecurityKind decode dispatch,
+      and the SecurityAssetClassNames constants. SecurityClassPlumbingGenerationTests fails when a
+      region drifts from the declaration, and MERIDIAN_ACCEPT_GENERATED_CODEC=1 rewrites them, as for
+      the flat codec. The declaration follows the F# union order, so the generated decode switch now
+      lists CustomAsset last (behaviour-neutral: the arms match distinct constants). The catalog's
+      public row order is unchanged and is not generated. Per-class semantic sites stay hand-written
+      and are listed in the plan. No acceptance or release is claimed.
+    related_roadmap_items:
+      - W11-PACK-002
+  - id: DEC-PACK-ACCEPT-001
+    title: Accept W11-PACK-002 generated Security Master class plumbing
+    status: accepted
+    decided_on: 2026-11-26
+    owner_lane: Accounting and Ledger
+    summary: >-
+      The repository owner directed on 2026-11-25 that W11-PACK-002 be accepted once CI was green,
+      and that PR 3760 then be merged. Meridian CI / quality-gate and its four lanes, the
+      PostgreSQL integration evidence, scope-gate, CodeQL and the schema checks passed on the PR head
+      fba1fdbb on 2026-11-26, so the row moves from ready_for_acceptance to accepted with complete
+      evidence. The generated-repair job reports review_required on reviewed source hashes. Thirteen
+      of those modules are already stale on main; this PR adds SRC-FSHARP. Recording those reviews is
+      left to the owner and is not part of this acceptance. No release is certified. Before merging,
+      main landed #3744, which composes the 32 classes from per-class modules and replaced the
+      ToSecurityKind decode switch with a codec registry. The owner chose to adapt minimally on
+      2026-11-26: the decode-dispatch region and the declaration's decode fields were dropped, the
+      remaining five regions are unchanged, and the declaration is checked against
+      SecurityAssetClassModules.
+    related_roadmap_items:
+      - W11-PACK-002

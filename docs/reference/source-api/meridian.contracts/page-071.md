@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderCorporateActionReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderCorporateActionReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:522](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L522).
+
+```csharp
+public sealed record ProviderCorporateActionReadinessDto(bool ProviderCorporateActionsRoutable, ProviderLedgerReconciliationCheckStatusDto Status, int PositionCount, int SecurityResolvedCount, int EquityPositionCount, int FixedIncomeOrStructuredPositionCount, int FactorScheduleCandidateCount, int IncomeCashTransactionCount, int DividendCashTransactionCount, int InterestCashTransactionCount, IReadOnlyList<string> RequiredFeeds, IReadOnlyList<string> MissingFeeds, IReadOnlyList<string> Warnings, IReadOnlyList<string> EvidenceLinks, IReadOnlyList<ProviderCorporateActionReadinessLineDto> Lines, int ProviderCorporateActionEventCount = 0, int FactorScheduleEventCount = 0, bool FactorScheduleRoutable = false, int LoanScheduleEventCount = 0)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;ProviderCorporateActionEvidenceCandidateDto&gt; EvidenceCandidates { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:543](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L543) |  |
+| <code>public IReadOnlyList&lt;ProviderCorporateActionLedgerEffectDto&gt; LedgerEffects { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:545](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L545) |  |
+| <code>public IReadOnlyList&lt;ProviderSecurityMasterScheduleFeedDto&gt; SecurityMasterScheduleFeeds { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:547](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L547) |  |
+| <code>public int PrincipalCashTransactionCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:549](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L549) |  |
+| <code>public int AmortizationScheduleEventCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:551](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L551) |  |
+
 ## ProviderCorporateActionReadinessLineDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ProviderCorporateActionReadinessLineDto</code>. Kind: `record`.
@@ -763,32 +783,3 @@ Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1017](../../..
 ```csharp
 public sealed record ReconciliationCaseTransitionCommand(string BreakId, ReconciliationCaseTransitionAction Action, string Actor, string Reason, IReadOnlyList<string> EvidenceReferences, string? Role = null, string? SupersedingBreakId = null);
 ```
-
-## ReconciliationCaseworkAction
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseworkAction</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:427](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L427).
-
-```csharp
-public enum ReconciliationCaseworkAction : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Assign = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:429](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L429) |  |
-| <code>ChangePriority = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:430](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L430) |  |
-| <code>TransitionStatus = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:431](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L431) |  |
-| <code>AddComment = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:432](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L432) |  |
-| <code>EditComment = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:433](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L433) |  |
-| <code>DeleteComment = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:434](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L434) |  |
-| <code>SetRootCause = 6</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:435](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L435) |  |
-| <code>SetResolution = 7</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:436](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L436) |  |
-| <code>LinkEvidence = 8</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:437](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L437) |  |
-| <code>SignOff = 9</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:438](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L438) |  |
-| <code>Reopen = 10</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:439](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L439) |  |
-| <code>Resolve = 11</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:440](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L440) |  |
-| <code>Waive = 12</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:441](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L441) |  |
-| <code>Supersede = 13</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:442](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L442) |  |

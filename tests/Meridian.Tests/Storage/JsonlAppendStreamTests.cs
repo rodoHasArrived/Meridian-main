@@ -25,6 +25,34 @@ namespace Meridian.Tests.Storage;
 public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
 {
     [Fact]
+    public async Task Flush_NewDayFileDirectoryCannotBeSynced_FailsAndSucceedsOnRetry()
+    {
+        // The flush is the sink's durability acknowledgement: a new day file whose directory
+        // entry is unconfirmed must fail it (the batch stays retryable), not pass silently.
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var policy = new TestStoragePolicy(TestDataRoot);
+        var batchOptions = new JsonlBatchOptions { BatchSize = 1000, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        await using var sink = new JsonlStorageSink(options, policy, batchOptions);
+
+        AtomicFileWriter.DirectorySyncFaultInjector.Value = _ => ("fsync", 5);
+        try
+        {
+            await sink.AppendAsync(CreateTestEvent("AAPL", 1));
+            var flush = () => sink.FlushAsync();
+            await flush.Should().ThrowAsync<Exception>();
+        }
+        finally
+        {
+            AtomicFileWriter.DirectorySyncFaultInjector.Value = null;
+        }
+
+        await sink.FlushAsync();
+        var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl", SearchOption.AllDirectories).Should().ContainSingle().Subject;
+        (await File.ReadAllLinesAsync(dayFile)).Should().ContainSingle(line => line.Length > 0,
+            "the retried flush persists the event exactly once");
+    }
+
+    [Fact]
     public async Task AppendStream_LaterFlushesNeverRewriteEarlierBytes()
     {
         var options = new StorageOptions { RootPath = TestDataRoot };

@@ -503,7 +503,8 @@ public sealed class TierMigrationService : ITierMigrationService
             // The migrated file's data blocks were already fsynced by CopyFileAsync. Persist the
             // target directory metadata (the newly created file entry) so it survives a crash.
             targetGuard.EnsurePath(targetPath);
-            await AtomicFileWriter.SyncDirectoryAsync(DirectoryOfOrCurrent(targetPath), ct);
+            // Strict: the source is deleted next, so the copy's entry must be confirmed durable.
+            await AtomicFileWriter.SyncDirectoryOrThrowAsync(DirectoryOfOrCurrent(targetPath), ct);
 
             // Validate the migrated file actually landed on disk before removing the source of
             // truth. A missing or empty target (for a non-empty source) means the copy did not

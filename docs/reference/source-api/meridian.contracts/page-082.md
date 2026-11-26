@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationReportingRunNextActionPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingRunNextActionPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:609](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L609).
+
+```csharp
+public sealed record WorkstationReportingRunNextActionPayload(string Id, string Kind, string Label, string Href, string Method, bool IsEnabled, string? DisabledReason, bool IsBrowserNavigable);
+```
+
 ## WorkstationReportingRunPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingRunPayload</code>. Kind: `record`.

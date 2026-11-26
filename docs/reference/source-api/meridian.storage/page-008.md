@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MaintenanceSchedulePresets
+
+Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceSchedulePresets</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:484](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L484).
+
+Preset schedule templates for common maintenance scenarios.
+
+```csharp
+public static class MaintenanceSchedulePresets
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ArchiveMaintenanceSchedule DailyHealthCheck(string name) =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:494](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L494) | Daily health check at 3 AM UTC. |
+| <code>public static ArchiveMaintenanceSchedule WeeklyFullMaintenance(string name) =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:512](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L512) | Weekly full maintenance on Sunday at 2 AM UTC. |
+| <code>public static ArchiveMaintenanceSchedule DailyTierMigration(string name) =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:532](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L532) | Daily tier migration during US market-closed hours. |
+| <code>public static ArchiveMaintenanceSchedule MonthlyCompression(string name) =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:555](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L555) | Monthly compression optimization on the first Sunday at 1 AM UTC. |
+| <code>public static ArchiveMaintenanceSchedule DailyRetentionEnforcement(string name) =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:607](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L607) | Daily retention enforcement at 5 AM UTC. |
+
+## MaintenanceScheduleSummary
+
+Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceScheduleSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs:92](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs#L92).
+
+Summary of maintenance schedules.
+
+```csharp
+public sealed record MaintenanceScheduleSummary(int TotalSchedules, int EnabledSchedules, int DisabledSchedules, Dictionary<MaintenanceTaskType, int> ByTaskType, DateTimeOffset? NextDueSchedule, string? NextDueScheduleName);
+```
+
 ## MaintenanceServiceStatus
 
 Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceServiceStatus</code>. Kind: `record`.
@@ -1168,37 +1202,3 @@ Declared public members:
 | <code>public string QueryableRoot =&gt; …;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:28](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L28) |  |
 | <code>public async Task&lt;DataQueryResult&gt; ExecuteAsync(string? sql, DataQueryOptions options, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:34](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L34) | Executes sql and returns a bounded, string-projected result set. Guard violations and execution errors are returned as a failed result, not thrown, so the endpoint can map them to a 400 with the message intact. |
 | <code>public async Task&lt;DataQueryResult&gt; ExecuteRetainedAsync(string? sql, DataQueryOptions options, IDataQueryResultSink sink, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:41](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L41) | Executes once, retaining every result row while MaxRows remains the browser preview limit. |
-
-## IDataQueryResultSink
-
-Qualified name: <code>Meridian.Storage.Query.IDataQueryResultSink</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:13](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L13).
-
-```csharp
-public interface IDataQueryResultSink : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task BeginAsync(string sql, string[] columns, string[] columnTypes, CancellationToken ct);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:15](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L15) |  |
-| <code>Task WriteRowAsync(string?[] row, CancellationToken ct);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:16](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L16) |  |
-| <code>Task&lt;DataQueryRetentionReceipt&gt; CompleteAsync(long rowCount, CancellationToken ct);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:17](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L17) |  |
-
-## RetainedDataQueryException
-
-Qualified name: <code>Meridian.Storage.Query.RetainedDataQueryException</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:20](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L20).
-
-```csharp
-public sealed class RetainedDataQueryException(string code, string message) : InvalidOperationException(message)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Code { get; } = code;</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:22](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L22) |  |
