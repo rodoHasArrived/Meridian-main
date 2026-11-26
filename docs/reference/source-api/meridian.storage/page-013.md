@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DiscoveryQuery
+
+Qualified name: <code>Meridian.Storage.Services.DiscoveryQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:779](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L779).
+
+```csharp
+public sealed record DiscoveryQuery;
+```
+
+## EventBuffer (generic arity 1)
+
+Qualified name: <code>Meridian.Storage.Services.EventBuffer</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/EventBuffer.cs:17](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L17).
+
+Thread-safe generic event buffer using a swap-buffer drain strategy to eliminate per-drain allocations. Maintains two List{T} instances: _active (receives new events) and _standby (returned to callers from DrainAll so they can process events without holding the lock). Eliminates the duplicate lock-based buffer implementations that existed in JsonlStorageSink and ParquetStorageSink.
+
+```csharp
+public class EventBuffer<T>: IDisposable where T : class
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public EventBuffer(int initialCapacity = 1000, int maxCapacity = int.MaxValue);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:48](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L48) | Creates a new event buffer. |
+| <code>public int Count =&gt; …;</code> | [src/Meridian.Storage/Services/EventBuffer.cs:62](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L62) | Gets the approximate current count of buffered events. This is a lock-free volatile read; callers should tolerate minor staleness. |
+| <code>public bool IsEmpty =&gt; …;</code> | [src/Meridian.Storage/Services/EventBuffer.cs:65](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L65) | Gets whether the buffer is empty (lock-free). |
+| <code>public bool ShouldFlush(int threshold) =&gt; …;</code> | [src/Meridian.Storage/Services/EventBuffer.cs:71](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L71) | Returns true when the buffered event count meets or exceeds threshold. Lock-free — safe to call on every incoming event. |
+| <code>public void Add(T evt);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:77](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L77) | Add a single event to the buffer. When the buffer is at maxCapacity the oldest buffered event is dropped to make room (drop-oldest policy). |
+| <code>public void AddRange(IEnumerable&lt;T&gt; events);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:95](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L95) | Add multiple events to the buffer, applying the drop-oldest policy as needed. |
+| <code>public IReadOnlyList&lt;T&gt; DrainAll();</code> | [src/Meridian.Storage/Services/EventBuffer.cs:124](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L124) | Atomically drains all buffered events via a buffer swap — no copy allocation. The returned IReadOnlyList{T} is the buffer&#x27;s internal backing store and will be cleared and reused on the next call to DrainAll. Callers must complete all processing of the returned list before the next drain cycle begins on the same buffer instance. |
+| <code>public IReadOnlyList&lt;T&gt; Drain(int maxCount);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:170](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L170) | Drain up to maxCount events from the front of the buffer. |
+| <code>public IReadOnlyList&lt;T&gt; PeekAll();</code> | [src/Meridian.Storage/Services/EventBuffer.cs:192](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L192) | Returns a snapshot of all buffered events without removing them. Allocates a new list on every call; intended for diagnostics/monitoring only. |
+| <code>public void Clear();</code> | [src/Meridian.Storage/Services/EventBuffer.cs:203](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L203) | Clear all events from the buffer. |
+| <code>public void Dispose();</code> | [src/Meridian.Storage/Services/EventBuffer.cs:212](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L212) |  |
+
 ## EventSearchQuery
 
 Qualified name: <code>Meridian.Storage.Services.EventSearchQuery</code>. Kind: `record`.
@@ -889,35 +927,3 @@ Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:447](../../../..
 ```csharp
 public sealed record LifecycleEvaluationResult(DateTime EvaluatedAtUtc, int FilesEvaluated, IReadOnlyList<LifecycleAction> Actions, IReadOnlyList<string> Errors);
 ```
-
-## LifecycleExecutionResult
-
-Qualified name: <code>Meridian.Storage.Services.LifecycleExecutionResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:471](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L471).
-
-```csharp
-public sealed record LifecycleExecutionResult(DateTime ExecutedAtUtc, int ActionsExecuted, int ActionsFailed, long BytesMigrated, long BytesDeleted, bool DryRun, IReadOnlyList<string> Errors);
-```
-
-## LifecyclePolicyEngine
-
-Qualified name: <code>Meridian.Storage.Services.LifecyclePolicyEngine</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:13](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L13).
-
-Engine that enforces tier-based lifecycle policies on stored data. Evaluates files against their configured StoragePolicyConfig and orchestrates tier migrations, compression upgrades, and retention enforcement.
-
-```csharp
-public sealed class LifecyclePolicyEngine : ILifecyclePolicyEngine
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LifecyclePolicyEngine(StorageOptions options, ITierMigrationService tierMigration, IFileMaintenanceService maintenanceService, ILogger&lt;LifecyclePolicyEngine&gt; logger);</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:23](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L23) |  |
-| <code>public Task&lt;LifecycleEvaluationResult&gt; EvaluateAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:36](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L36) |  |
-| <code>public async Task&lt;LifecycleExecutionResult&gt; ExecuteAsync(IReadOnlyList&lt;LifecycleAction&gt; actions, bool dryRun = false, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:129](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L129) |  |
-| <code>public StoragePolicyConfig ResolvePolicy(string filePath);</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:270](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L270) |  |
-| <code>public IReadOnlyDictionary&lt;StorageTier, LifecycleTierInfo&gt; GetTierStatistics();</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:295](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L295) |  |

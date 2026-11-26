@@ -437,7 +437,7 @@ public sealed class DiscountedCashFlowValuationModelTests
     {
         var conventions = block is null ? string.Empty : ",\"scheduleConventions\":" + block;
         var terms = JsonDocument.Parse(
-            "{\"assetClassTermsVersion\":2,\"issueDate\":\"2026-01-01\",\"maturity\":\"2028-01-01\",\"couponType\":\"Fixed\",\"couponRate\":5," +
+            "{\"termsFormat\":\"flat\",\"assetClassTermsVersion\":2,\"issueDate\":\"2026-01-01\",\"maturity\":\"2028-01-01\",\"couponType\":\"Fixed\",\"couponRate\":5," +
             "\"dayCount\":\"30/360\",\"isCallable\":false,\"issuerName\":\"ACME Corp\",\"subclass\":\"Corporate\",\"par\":1000000," +
             "\"paymentFrequency\":\"Annual\"" + conventions + "}").RootElement.Clone();
         return new SecurityDetailDto(

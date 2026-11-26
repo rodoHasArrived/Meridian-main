@@ -1008,6 +1008,65 @@ public sealed class UiServer : IAsyncDisposable
         return MeridianPathDefaults.ResolveDataRoot(configPath, null);
     }
 
+    /// <summary>
+    /// Free space below which the data-root readiness check reports Degraded. Matches the
+    /// critical disk threshold <c>SystemHealthConfig</c> uses (2 GiB): below it WAL and sink
+    /// writes are close to failing.
+    /// </summary>
+    internal const long DataRootCriticalFreeBytes = 2L * 1024 * 1024 * 1024;
+
+    /// <summary>
+    /// The data-root readiness result. A missing data root is Failing, which makes the host
+    /// NotReady. Low free space is Degraded rather than Failing: the host keeps accepting work
+    /// (reads, recovery and freeing space all still need it), while <c>/readyz</c> and the
+    /// lifecycle state show the condition before writes start failing. When free space cannot
+    /// be measured the check passes on the directory alone, as before.
+    /// </summary>
+    internal static RuntimeReadinessCheckResult EvaluateDataRootReadiness(
+        string dataRoot,
+        Func<string, bool> directoryExists,
+        Func<string, long?> availableFreeBytes,
+        long criticalFreeBytes)
+    {
+        if (!directoryExists(dataRoot))
+            return new RuntimeReadinessCheckResult(LifecycleCheckStatus.Failing, "Data root is unavailable.");
+
+        var freeBytes = availableFreeBytes(dataRoot);
+        if (freeBytes is null)
+            return new RuntimeReadinessCheckResult(LifecycleCheckStatus.Passing, "Data root is available.");
+
+        var freeGb = freeBytes.Value / (1024d * 1024d * 1024d);
+        return freeBytes.Value < criticalFreeBytes
+            ? new RuntimeReadinessCheckResult(
+                LifecycleCheckStatus.Degraded,
+                string.Create(System.Globalization.CultureInfo.InvariantCulture,
+                    $"Data root is available but its volume has only {freeGb:F1} GB free; writes will fail when it fills."))
+            : new RuntimeReadinessCheckResult(
+                LifecycleCheckStatus.Passing,
+                string.Create(System.Globalization.CultureInfo.InvariantCulture, $"Data root is available ({freeGb:F1} GB free)."));
+    }
+
+    private static long? AvailableFreeBytes(string path)
+    {
+        try
+        {
+            // On Unix DriveInfo measures the filesystem containing any path, so passing the data
+            // root itself reports the volume it is mounted on (often not "/"). Windows needs the
+            // drive root.
+            var fullPath = Path.GetFullPath(path);
+            var target = OperatingSystem.IsWindows() ? Path.GetPathRoot(fullPath) : fullPath;
+            if (string.IsNullOrEmpty(target))
+                return null;
+
+            var drive = new DriveInfo(target);
+            return drive.IsReady ? drive.AvailableFreeSpace : null;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            return null;
+        }
+    }
+
     private void AddLifecycleReadinessChecks(
         IServiceCollection services,
         string contentRootPath,
@@ -1028,9 +1087,11 @@ public sealed class UiServer : IAsyncDisposable
             "data-root",
             "Data root",
             LifecycleCheckRequirement.Required,
-            _ => ValueTask.FromResult(Directory.Exists(resolvedDataRoot)
-                ? new RuntimeReadinessCheckResult(LifecycleCheckStatus.Passing, "Data root is available.")
-                : new RuntimeReadinessCheckResult(LifecycleCheckStatus.Failing, "Data root is unavailable."))));
+            _ => ValueTask.FromResult(EvaluateDataRootReadiness(
+                resolvedDataRoot,
+                Directory.Exists,
+                AvailableFreeBytes,
+                DataRootCriticalFreeBytes))));
 
         services.AddSingleton<IRuntimeReadinessCheck>(new DelegateRuntimeReadinessCheck(
             "authentication",

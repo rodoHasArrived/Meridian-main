@@ -20,6 +20,9 @@ public sealed partial class FundLedgerViewModel
     /// <summary>Opt-in, reviewed accrual schedules over the same shared schedule API as the browser workstation.</summary>
     public IntercompanyAccrualScheduleWorkspace? AccrualSchedules { get; private set; }
 
+    /// <summary>Durable agreement follow-up and read-only guarantee disclosures over the shared API.</summary>
+    public IntercompanyAgreementWorkQueueWorkspace? AgreementWorkQueue { get; private set; }
+
     private void InitializeIntercompanyOperations(IWorkstationIntercompanyAgreementApiClient? client)
     {
         if (client is null)
@@ -28,6 +31,24 @@ public sealed partial class FundLedgerViewModel
         RateFixings = new IntercompanyRateFixingWorkspace(client);
         BalanceConfirmation = new IntercompanyBalanceConfirmationWorkspace(client);
         AccrualSchedules = new IntercompanyAccrualScheduleWorkspace(client);
+        AgreementWorkQueue = new IntercompanyAgreementWorkQueueWorkspace(client, async (item, asOf, token) =>
+        {
+            if (Agreements is null || Agreements.IsDirty || Agreements.IsBusy)
+                throw new InvalidOperationException("Finish or discard the open agreement edit before opening another agreement.");
+            var response = await client.GetAsync(item.AgreementId, asOf, token);
+            token.ThrowIfCancellationRequested();
+            if (!response.Success || response.Data is null)
+                throw new InvalidOperationException(response.ErrorMessage ?? "The agreement is unavailable in this scope.");
+            if (Agreements.IsDirty || Agreements.IsBusy)
+                throw new InvalidOperationException("An agreement edit started while the case was loading. Finish it before continuing.");
+            Agreements.AsOf = asOf.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+            Agreements.LedgerBook = item.LedgerBookId.ToString("D");
+            Agreements.SelectedRow = response.Data;
+            await Agreements.OpenCommand.ExecuteAsync(null);
+            token.ThrowIfCancellationRequested();
+            // The existing Agreements tab follows the ten stable fund-operation tabs.
+            SelectedTabIndex = 10;
+        });
     }
 
     private void DisposeIntercompanyOperations()
@@ -36,6 +57,7 @@ public sealed partial class FundLedgerViewModel
         RateFixings?.Dispose();
         BalanceConfirmation?.Dispose();
         AccrualSchedules?.Dispose();
+        AgreementWorkQueue?.Dispose();
     }
 
     private void ResetIntercompanyOperationsSession()
@@ -44,5 +66,6 @@ public sealed partial class FundLedgerViewModel
         RateFixings?.ResetSession();
         BalanceConfirmation?.ResetSession();
         AccrualSchedules?.ResetSession();
+        AgreementWorkQueue?.ResetSession();
     }
 }

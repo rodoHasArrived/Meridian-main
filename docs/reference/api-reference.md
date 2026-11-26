@@ -163,7 +163,8 @@ convention applied to a path prefix. These routes carry one today:
 | --- | --- | --- |
 | `POST /api/workstation/data/query` | `SqlStatementGuard` admits one `SELECT`-family statement with no embedded semicolon and a blocked-keyword list. | `ViewHistoricalData` |
 | `POST /api/workstation/evidence/vault/search` | Evidence-vault lookup by linkage criteria; the handler only reads, through `IEvidenceArtifactStore.FindByLinkageAsync`. | `ViewReporting`, plus workstation tenant scope |
-| `POST /api/alignment/preview` | Computes and returns an alignment preview from the request body; the sibling `POST /api/alignment/create` route is what persists one. | `ViewHistoricalData` |
+| `POST /api/alignment/preview` | Computes an alignment summary and up to 20 sample rows from stored provider data. | `ViewHistoricalData` |
+| `POST /api/alignment/create` | Returns the complete bounded result for client-side export. | `ViewHistoricalData` |
 | `POST /api/workstation/runs/compare` | Compares retained strategy runs through `StrategyRunComparisonService`, which holds only the run read service. | `ViewStrategies` or `ManageStrategies` |
 | `POST /api/workstation/runs/diff` | Diffs two retained runs by the same read path. | `ViewStrategies` or `ManageStrategies` |
 | `POST /api/security-master/resolve` | Resolves one record through `ISecurityMasterQueryService.GetByIdentifierAsync`; the body carries the identifier kind, value, provider and as-of. | `ViewSecurityMaster` or `ModifySecurityMaster` |
@@ -728,6 +729,37 @@ and denying or withdrawing an entry also retires any approvals linked through it
 | GET | `/api/historical/symbols` | List symbols that have stored historical data |
 | GET | `/api/historical/{symbol}/daterange` | Date range of available data for a symbol |
 
+
+### Time-Series Alignment (`/api/alignment/*`)
+
+Send the same JSON request to `POST /api/alignment/preview` and `POST /api/alignment/create`.
+Pass one to 12 `symbols`, an inclusive `fromDate` and `toDate`, and two to eight `providers` or
+omit providers to discover them. Set `interval` to `Daily` or a supported intraday interval
+such as `Minute5`. By default, daily requests read daily bars and intraday requests read
+aggregate bars. `inputKind` can select `DailyBars`, `AggregateBars`, or `Trades` directly.
+If a provider session includes both live and historical prints, select `LiveTrades` or
+`HistoricalTrades` to determine which population to use. A stored bar must fit wholly in one
+target interval. Alignment never splits a bar.
+
+Set `marketHoursOnly` to use US equity regular sessions, including exchange holidays and
+half-days. Clear it for a continuous calendar in the selected `timezone`. Daily bars use
+retained session dates and keep their recorded OHLCV values. Intraday buckets use half-open
+windows anchored to session open or local midnight. `gapStrategy` can leave nulls, skip missing
+series rows, zero-fill, carry, or interpolate within a bounded gap. Carry and interpolation apply
+within an intraday session, and synthetic rows carry zero volume and an explicit status.
+`adjustmentPolicy` selects `AsStored`, `Raw`, or `Adjusted`. The service refuses a series that
+mixes bases, makes no corporate-action adjustments, and labels differences from adjusted or
+unclassified data as as-stored comparisons. Equal observations with the same provider identity
+collapse in the derived rows, conflicting observations fail, and the source archive stays intact.
+
+The response summary includes per-provider coverage, observed close differences, and a
+deterministic content hash. Each observed row retains IDs containing the logical archive-relative
+path, line, and SHA-256 digest of its UTF-8 record text. A carried or interpolated row retains the
+IDs of its observed inputs. Set `expectedContentHash` on create to require the revision shown by
+preview. A changed result returns HTTP 409. Invalid options or a grid over the request limits
+return HTTP 400. Unusable source data returns HTTP 422. WPF saves CSV, JSON Lines or Parquet to
+the operator's workstation after it receives the complete response.
+
 ### Ingestion Jobs (`/api/ingestion/*`)
 
 | Method | Route | Description |
@@ -953,7 +985,7 @@ This source reference records literal `MapGet`, `MapPost`, `MapPut`, `MapDelete`
 
 Handler parameters retain C# binding types, including injected services and infrastructure parameters; they are not all request-body fields. Body-read operations list explicitly decoded types. Response entries quote declared `.Produces*` metadata and observed `Results`/`TypedResults` factories, not an exhaustive response schema or status guarantee. A dash means the declaration supplies no extractable metadata; follow the source and detailed contracts above.
 
-**496 declarations** from **62 source files**.
+**499 declarations** from **63 source files**.
 
 
 ### HostAdapters
@@ -1048,7 +1080,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs](../../src/Meridian
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/api/config/changes` | GET | `(ConfigStore store) => …` | `Produces<ConfigurationChangeStatus>(200)`; `Results.Json` | `WithName("GetConfigurationChangeStatus")`; `WithDescription("Saved setting impacts and changes awaiting provider reconnect or host restart; no setting values are returned.")` | [L47](../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L47) |
+| `/api/config/changes` | GET | `(ConfigStore store) => …` | `Produces<ConfigurationChangeStatus>(200)`; `Results.Json` | `WithName("GetConfigurationChangeStatus")`; `WithDescription("Saved setting impacts, the current revision and collector application evidence; no setting values are returned.")` | [L47](../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L47) |
 
 ### DirectLendingEndpoints
 
@@ -1109,17 +1141,17 @@ Source: [src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs](../../src/M
 | `/api/projections/{projectionRunId}/flows` | GET | `async (Guid projectionRunId, HttpContext context) => …` | `Results.Json` | — | [L1156](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1156) |
 | `/api/loans/{loanId}/journals` | GET | `async (Guid loanId, HttpContext context) => …` | `Results.Json` | — | [L1165](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1165) |
 | `/api/journals/{journalEntryId}/post` | POST | `async (Guid journalEntryId, HttpContext context) => …` | `Results.NotFound`; `Results.Json` | — | [L1173](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1173) |
-| `/api/loans/{loanId}/reconcile` | POST | `async (Guid loanId, HttpContext context) => …` | `Results.Problem`; `Results.NotFound`; `Results.Json` | — | [L1196](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1196) |
-| `/api/loans/{loanId}/reconciliation-runs` | GET | `async (Guid loanId, HttpContext context) => …` | `Results.Json` | — | [L1222](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1222) |
-| `/api/reconciliation/{runId}/results` | GET | `async (Guid runId, HttpContext context) => …` | `Results.Json` | — | [L1230](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1230) |
-| `/api/reconciliation/exceptions` | GET | `async (HttpContext context) => …` | `Results.Json` | — | [L1239](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1239) |
-| `/api/reconciliation/exceptions/{exceptionId}/resolve` | POST | `async (Guid exceptionId, JsonElement body, HttpContext context) => …`<br>Body reads: `Deserialize` | `Results.Problem`; `Results.NotFound`; `Results.Json` | — | [L1248](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1248) |
-| `/api/servicer-reports` | POST | `async (JsonElement body, HttpContext context) => …` | `Results.Problem`; `Results.Json` | — | [L1271](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1271) |
-| `/api/servicer-reports/{batchId}` | GET | `async (Guid batchId, HttpContext context) => …` | `Results.NotFound`; `Results.Json` | — | [L1299](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1299) |
-| `/api/servicer-reports/{batchId}/position-lines` | GET | `async (Guid batchId, HttpContext context) => …` | `Results.Json` | — | [L1307](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1307) |
-| `/api/servicer-reports/{batchId}/transaction-lines` | GET | `async (Guid batchId, HttpContext context) => …` | `Results.Json` | — | [L1316](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1316) |
-| `/api/loans/rebuild-checkpoints` | GET | `async (HttpContext context) => …` | `Results.Json` | — | [L1325](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1325) |
-| `/api/loans/rebuild-all` | POST | `async (HttpContext context) => …` | `Results.Json` | — | [L1345](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1345) |
+| `/api/loans/{loanId}/reconcile` | POST | `async (Guid loanId, ReconcileLoanRequest? request, HttpContext context) => …` | `Results.Problem`; `Results.NotFound`; `Results.Json` | — | [L1196](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1196) |
+| `/api/loans/{loanId}/reconciliation-runs` | GET | `async (Guid loanId, HttpContext context) => …` | `Results.Json` | — | [L1224](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1224) |
+| `/api/reconciliation/{runId}/results` | GET | `async (Guid runId, HttpContext context) => …` | `Results.Json` | — | [L1232](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1232) |
+| `/api/reconciliation/exceptions` | GET | `async (HttpContext context) => …` | `Results.Json` | — | [L1241](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1241) |
+| `/api/reconciliation/exceptions/{exceptionId}/resolve` | POST | `async (Guid exceptionId, JsonElement body, HttpContext context) => …`<br>Body reads: `Deserialize` | `Results.Problem`; `Results.NotFound`; `Results.Json` | — | [L1250](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1250) |
+| `/api/servicer-reports` | POST | `async (JsonElement body, HttpContext context) => …` | `Results.Problem`; `Results.Json` | — | [L1273](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1273) |
+| `/api/servicer-reports/{batchId}` | GET | `async (Guid batchId, HttpContext context) => …` | `Results.NotFound`; `Results.Json` | — | [L1301](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1301) |
+| `/api/servicer-reports/{batchId}/position-lines` | GET | `async (Guid batchId, HttpContext context) => …` | `Results.Json` | — | [L1309](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1309) |
+| `/api/servicer-reports/{batchId}/transaction-lines` | GET | `async (Guid batchId, HttpContext context) => …` | `Results.Json` | — | [L1318](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1318) |
+| `/api/loans/rebuild-checkpoints` | GET | `async (HttpContext context) => …` | `Results.Json` | — | [L1327](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1327) |
+| `/api/loans/rebuild-all` | POST | `async (HttpContext context) => …` | `Results.Json` | — | [L1347](../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs#L1347) |
 
 ### EnvironmentDesignerEndpoints
 
@@ -1472,10 +1504,10 @@ Source: [src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs](../../src/Meri
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/api/historical` | GET | `async (HttpContext context, HistoricalDataQueryService queryService, string symbol, DateOnly? from = null, DateOnly? to = null, string? dataType = null, int? skip = null, int? limit = null) => …` | `Produces(200)`; `Produces(400)`; `Produces(499)`; `Results.BadRequest`; `Results.Json`; `Results.StatusCode` | `WithName("QueryHistoricalData")` | [L24](../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L24) |
-| `/api/historical/symbols` | GET | `(HistoricalDataQueryService queryService) => …` | `Produces(200)`; `Produces(400)`; `Results.Json`; `Results.BadRequest` | `WithName("GetAvailableSymbols")` | [L67](../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L67) |
-| `/api/historical/{symbol}/daterange` | GET | `(HistoricalDataQueryService queryService, string symbol) => …` | `Produces(200)`; `Produces(400)`; `Results.BadRequest`; `Results.Json` | `WithName("GetSymbolDateRange")` | [L84](../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L84) |
-| `/api/historical/{symbol}/bars` | GET | `async (HttpContext context, HistoricalDataQueryService queryService, string symbol, int? intervalMinutes = null, DateOnly? from = null, DateOnly? to = null, int? maxBars = null) => …` | `Produces(200)`; `Produces(400)`; `Produces(499)`; `Results.BadRequest`; `Results.Json`; `Results.StatusCode` | `WithName("GetSymbolBars")` | [L106](../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L106) |
+| `/api/historical` | GET | `async (HttpContext context, HistoricalDataQueryService queryService, string symbol, DateOnly? from = null, DateOnly? to = null, string? dataType = null, int? skip = null, int? limit = null) => …` | `Produces(200)`; `Produces(400)`; `Produces(499)`; `Results.BadRequest`; `Results.Json`; `Results.StatusCode` | `WithName("QueryHistoricalData")` | [L27](../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L27) |
+| `/api/historical/symbols` | GET | `(HistoricalDataQueryService queryService) => …` | `Produces(200)`; `Produces(400)`; `Results.Json`; `Results.BadRequest` | `WithName("GetAvailableSymbols")` | [L70](../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L70) |
+| `/api/historical/{symbol}/daterange` | GET | `(HistoricalDataQueryService queryService, string symbol) => …` | `Produces(200)`; `Produces(400)`; `Results.BadRequest`; `Results.Json` | `WithName("GetSymbolDateRange")` | [L87](../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L87) |
+| `/api/historical/{symbol}/bars` | GET | `async (HttpContext context, HistoricalDataQueryService queryService, string symbol, int? intervalMinutes = null, DateOnly? from = null, DateOnly? to = null, int? maxBars = null) => …` | `Produces(200)`; `Produces(400)`; `Produces(499)`; `Results.BadRequest`; `Results.Json`; `Results.StatusCode` | `WithName("GetSymbolBars")` | [L109](../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L109) |
 
 ### IngestionJobEndpoints
 
@@ -1523,6 +1555,16 @@ Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs](../
 | `/api/fund-structure/intercompany-agreements` | POST | `async (IntercompanyAgreementCommandDto command, HttpContext http) => …` | `Results.Json` | `WithName("CreateIntercompanyAgreement")` | [L132](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs#L132) |
 | `/api/fund-structure/intercompany-agreements/{id}/proposals` | POST | `async (Guid id, IntercompanyAgreementCommandDto command, HttpContext http) => …` | `Results.Json` | `WithName("CreateIntercompanyAgreementProposal")` | [L136](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs#L136) |
 | `/api/fund-structure/intercompany-agreements/{id}/proposals/{proposalId}` | PUT | `async (Guid id, Guid proposalId, IntercompanyAgreementCommandDto command, HttpContext http) => …` | `Results.Json` | `WithName("SaveIntercompanyAgreementDraft")` | [L140](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs#L140) |
+
+### IntercompanyAgreementWorkQueueEndpoints
+
+Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementWorkQueueEndpoints.cs](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementWorkQueueEndpoints.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/ledger/intercompany/work-queue` | GET | `(string? fundProfileId, Guid? ledgerBookId, DateOnly asOf, int? expiryHorizonDays, Guid? entityId, HttpContext http) => …` | — | — | [L23](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementWorkQueueEndpoints.cs#L23) |
+| `/api/ledger/intercompany/work-queue/observe` | POST | `(string? fundProfileId, Guid? ledgerBookId, DateOnly asOf, int? expiryHorizonDays, Guid? entityId, HttpContext http) => …` | — | — | [L29](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementWorkQueueEndpoints.cs#L29) |
+| `/api/ledger/intercompany/work-queue/update` | POST | `(string? fundProfileId, Guid? ledgerBookId, DateOnly asOf, int? expiryHorizonDays, Guid? entityId, HttpContext http) => …` | — | — | [L35](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementWorkQueueEndpoints.cs#L35) |
 
 ### IntercompanyObligationEndpoints
 

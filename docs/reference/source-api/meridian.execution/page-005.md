@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SessionTcaCostSummary
+
+Qualified name: <code>Meridian.Execution.Services.SessionTcaCostSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:398](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L398).
+
+Aggregate session-level cost summary.
+
+```csharp
+public sealed record SessionTcaCostSummary(decimal TotalCommissions, decimal TotalBuyNotional, decimal TotalSellNotional, decimal TotalNotional, double CommissionRateBps, int TotalFills, int BuyFills, int SellFills);
+```
+
+## SessionTcaExecutionQuality
+
+Qualified name: <code>Meridian.Execution.Services.SessionTcaExecutionQuality</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:433](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L433).
+
+Execution-quality statistics derived by joining fills to their originating orders. AvgLimitPriceImprovementBps is notional-weighted; positive values mean fills executed better than their limit price.
+
+```csharp
+public sealed record SessionTcaExecutionQuality(int OrdersWithLimitPrice, double AvgLimitPriceImprovementBps, double MedianTimeToFillSeconds, int TimedFillCount)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SessionTcaExecutionQuality Empty { get; } = new (0, 0.0, 0.0, 0);</code> | [src/Meridian.Execution/Services/SessionTcaReporter.cs:439](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L439) |  |
+
 ## SessionTcaFillOutlier
 
 Qualified name: <code>Meridian.Execution.Services.SessionTcaFillOutlier</code>. Kind: `record`.
@@ -62,7 +92,7 @@ public sealed record SimulatedFillHandoff(TradeExecutedEvent Fill, string Receip
 
 Qualified name: <code>Meridian.Execution.Services.VariationMarginPositionSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1383](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1383).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1419](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1419).
 
 An open position that settles daily variation margin, as an end-of-day settlement job sees it.
 

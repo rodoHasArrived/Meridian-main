@@ -148,6 +148,39 @@ round-trip in retained PostgreSQL JSONB payloads without replacing tables or mig
 payload hashes. It adds no new consolidation rule version: existing `w10-v1` through `w10-v4`
 evidence, reporting transitions and roadmap statuses retain their established meanings.
 
+## Agreement lifecycle work queue
+
+The shared agreement work queue projects actionable legal findings from the obligation monitor and
+retains operator casework in the existing append-only operational case history. Reading the queue
+does not create or update cases. An explicit observation command tracks one finding or refreshes
+its retained source snapshot. Case identity includes tenant, company, selected book, agreement,
+finding kind and the typed obligation boundary; amounts, observation dates and horizon changes do
+not reset an existing case's first-seen time. A changed boundary creates a separate case.
+
+Cases retain owner, first and latest observation times, source fingerprints and the complete action
+history. Age is calendar days since the first retained observation; overdue days compare the typed
+due date with the selected as-of date. Open, awaiting-review, resolved and reopened remain distinct.
+A finding absent from the current view is still a retained case. A shorter horizon, a different
+as-of date or a failed observation cannot silently resolve it. Resolution records an explicit
+reason and evidence references; it does not certify that the underlying legal obligation ended.
+
+Observation and update commands carry a unique command identity, expected case sequence and record
+hash, and the current source fingerprint. Identical retries preserve the prior result; competing
+updates and changed sources require refresh. Tenant/company/book ownership and legal-party access
+are rechecked before history is disclosed. Case mutations require scoped ledger-report management
+permission, so a read grant on one party cannot supplement a management grant on another.
+
+The guarantee register uses the approved legal revision applicable at the selected date and retains
+its identity, declared parties and roles, beneficiary, currency, cap and effective dates. A cap is
+not exposure. Current terms contain no reviewed underlying exposure source, so measured exposure
+remains unavailable and nullable. The register never infers the guarantor from party order, totals
+unrelated guarantees, or supplies posting authority.
+
+Queue actions are operational follow-up. They do not approve an amendment, accept a roadmap item,
+change close eligibility or create a repayment journal. Maturity repayment remains a separate
+financial increment requiring actual payment evidence, current legal/profile authority, posted
+principal, an explicit settlement account and freshness checks through review and posting.
+
 ## Reciprocal balance confirmation
 
 Each side of an intercompany pair confirms, per period, the due-to/due-from balance the other side

@@ -11,6 +11,25 @@ public sealed class ExecutionReportHubTests
 {
     private static readonly TimeSpan TestTimeout = TimeSpan.FromSeconds(5);
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanonicalAccountingFillIdentityComesFromTheHandoffAndDoesNotChangeReportFingerprints(bool hasCanonicalFill)
+    {
+        var hub = CreateHub(out _);
+        await using var subscriber = hub.Subscribe(1, "authoritative", null);
+        var original = Report("identity");
+        var spoofed = original with { AccountingFillId = Guid.NewGuid() };
+        Guid? accepted = hasCanonicalFill ? Guid.NewGuid() : null;
+
+        await hub.PublishAsync(spoofed, new ExecutionReportHub.DeliveryCheckpoint(), accepted);
+
+        subscriber.Reports.TryRead(out var delivered).Should().BeTrue();
+        delivered!.AccountingFillId.Should().Be(accepted);
+        System.Text.Json.JsonSerializer.Serialize(delivered).Should().Be(System.Text.Json.JsonSerializer.Serialize(original),
+            "the derived subscriber identity must never enter a persisted broker report or its canonical hash");
+    }
+
     [Fact]
     public async Task PartialDelivery_RetryKeepsOriginalTargetsAndSkipsAlreadyDeliveredSubscribers()
     {

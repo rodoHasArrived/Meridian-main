@@ -54,6 +54,55 @@ public sealed class DirectLendingPostgresIntegrationTests
         (await ReloadSummaryAsync()).CurrencyTotals!.Should().OnlyContain(item => item.TotalCollateralValue == 0m);
     }
 
+    [DirectLendingDatabaseFact]
+    public async Task Reconciliation_AppliedHeldCash_RetainsOriginalSourcesAndApplicationEvidenceAfterRestart()
+    {
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+            return;
+        var request = BuildCreateRequest();
+        var maturity = new DateOnly(2026, 3, 25);
+        var loan = await db.Service.CreateLoanAsync(request with
+        { Terms = request.Terms with { MaturityDate = maturity, FixedAnnualRate = 0m, CommitmentFeeRate = 0m } });
+        await db.Service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 23)));
+        await db.Service.ApplyMixedPaymentAsync(loan.LoanId,
+            new ApplyMixedPaymentRequest(150m, new DateOnly(2026, 3, 23), new(0m, 0m, 0m, 0m, 0m), "held-funding"));
+        await db.Service.BookDrawdownAsync(loan.LoanId,
+            new BookDrawdownRequest(100m, new DateOnly(2026, 3, 24), new DateOnly(2026, 3, 24), "draw-after-funding"));
+        var projection = await db.Service.RequestProjectionAsync(loan.LoanId, maturity);
+        var principal = (await db.Store.GetProjectedCashFlowsAsync(projection.ProjectionRunId)).Single(flow => flow.FlowType == "Principal");
+        var cash = (await db.Store.GetCashTransactionsAsync(loan.LoanId)).Single();
+        var allocation = (await db.Store.GetPaymentAllocationsAsync(loan.LoanId)).Single();
+        var before = await db.Service.ReconcileAsync(loan.LoanId);
+        (await db.Store.GetReconciliationResultsAsync(before!.ReconciliationRunId))
+            .Single(row => row.ProjectedCashFlowId == principal.ProjectedCashFlowId).MatchStatus.Should().Be("MissingCash");
+        foreach (var amount in new[] { 40m, 60m })
+        {
+            var metadata = new DirectLendingCommandMetadataDto(Guid.NewGuid(), null, null, "synthetic-held-cash", false);
+            var application = new ApplyUnappliedCashRequest(amount, maturity, new(0m, 0m, 0m, 0m, amount), "apply-held");
+            await db.Service.ApplyUnappliedCashAsync(loan.LoanId, application, metadata);
+            await db.Service.ApplyUnappliedCashAsync(loan.LoanId, application, metadata);
+        }
+        var applicationEvents = (await db.QueryService.GetHistoryAsync(loan.LoanId)).Where(item => item.EventType == "loan.unapplied-cash-applied").ToArray();
+        applicationEvents.Should().HaveCount(2);
+        var reconciliation = await db.Service.ReconcileAsync(loan.LoanId);
+
+        var restarted = new PostgresDirectLendingStateStore(db.Options);
+        var results = await restarted.GetReconciliationResultsAsync(reconciliation!.ReconciliationRunId);
+        var matched = results.Single(row => row.ProjectedCashFlowId == principal.ProjectedCashFlowId);
+        matched.MatchStatus.Should().Be("Matched");
+        matched.ActualAmount.Should().Be(100m);
+        matched.ActualDate.Should().Be(maturity);
+        matched.CashTransactionId.Should().Be(cash.CashTransactionId);
+        matched.PaymentAllocationId.Should().Be(allocation.AllocationId);
+        foreach (var applicationEvent in applicationEvents)
+            matched.Notes.Should().Contain(note => note.Contains(applicationEvent.EventId.ToString("D")));
+        results.Should().ContainSingle(row => row.MeasurementKind == "cash-disposition" && row.ActualAmount == 50m);
+        (await restarted.GetCashTransactionsAsync(loan.LoanId)).Should().ContainSingle().Which.Should().Be(cash);
+        (await restarted.GetPaymentAllocationsAsync(loan.LoanId)).Should().ContainSingle().Which.Should().Be(allocation);
+        (await db.QueryService.GetServicingStateAsync(loan.LoanId))!.Balances.UnappliedCash.Should().Be(50m);
+    }
+
     private const string WorkflowIdPrefix = "wf-";
 
     private static async Task AssertPendingPublicationAsync(DirectLendingPostgresTestDatabase db,

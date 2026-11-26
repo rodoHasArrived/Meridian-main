@@ -115,4 +115,3 @@ export const closeCockpitLaneColumns: DenseDataTableColumn<OperationsContinuityC
     render: (row) => <span className="text-xs leading-5 text-muted-foreground">{row.requiredActionsLabel}</span>
   }
 ];
-

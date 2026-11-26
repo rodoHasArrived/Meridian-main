@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IBookReceiptRunStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IBookReceiptRunStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:10](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L10).
+
+```csharp
+public interface IBookReceiptRunStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;IAsyncDisposable&gt; AcquireAsync(BookReceiptScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:12](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L12) |  |
+| <code>Task&lt;IReadOnlyList&lt;BookReceiptRunDto&gt;&gt; ReadAsync(BookReceiptScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:13](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L13) |  |
+| <code>Task SaveAsync(BookReceiptRunDto run, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:14](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L14) |  |
+
 ## IBResultQueryService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IBResultQueryService</code>. Kind: `class`.
@@ -807,7 +825,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IRecurringJournalCalculation</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:77](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L77).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:80](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L80).
 
 A posting calculation the recurring-journal runner can run for a calculated template. An implementation reads authoritative inputs, returns one balanced draft (or nothing due), and throws InvalidOperationException to block the occurrence when an input is missing. It never submits, approves or posts.
 
@@ -819,17 +837,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>string Kind { get; }</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:79](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L79) |  |
-| <code>bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:87](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L87) | True when the amount depends on what earlier occurrences posted (a balance, net assets or a carrying value). The runner then calculates an occurrence only after the previous one is posted, rejected or needed no draft, so two periods that come due together cannot both be measured against a ledger that holds neither. |
-| <code>bool ReadsClosingState =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:94](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L94) | True when the amount is measured from balances or holdings at the close of the effective date. Such an occurrence is calculated only after that day has ended, so journals posted later the same day are not left out of an amount that is then never recalculated. |
-| <code>IReadOnlyList&lt;string&gt; RequiredInputs =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:97](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L97) | Template inputs this calculation cannot run without; checked when a schedule is registered. |
-| <code>Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:99](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L99) |  |
+| <code>string Kind { get; }</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:82](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L82) |  |
+| <code>bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:90](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L90) | True when the amount depends on what earlier occurrences posted (a balance, net assets or a carrying value). The runner then calculates an occurrence only after the previous one is posted, rejected or needed no draft, so two periods that come due together cannot both be measured against a ledger that holds neither. |
+| <code>bool ReadsClosingState =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:97](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L97) | True when the amount is measured from balances or holdings at the close of the effective date. Such an occurrence is calculated only after that day has ended, so journals posted later the same day are not left out of an amount that is then never recalculated. |
+| <code>IReadOnlyList&lt;string&gt; RequiredInputs =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:100](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L100) | Template inputs this calculation cannot run without; checked when a schedule is registered. |
+| <code>Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:102](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L102) |  |
 
 ## IRecurringJournalCalculationInputs
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IRecurringJournalCalculationInputs</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:103](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L103).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:106](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L106).
 
 Authoritative ledger reads for posting calculations.
 
@@ -841,9 +859,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyLedger&gt; HydrateLedgerAsOfAsync(RecurringJournalScope scope, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:106](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L106) | The scope&#x27;s ledger book including everything recorded through the end of asOf. |
-| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLot&gt;&gt; ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, Guid securityId, Guid? bookPositionId, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:113](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L113) | Face-value lots of securityId open at the end of asOf. With a book position the quantities are reconstructed for that date; without one only today&#x27;s lot state is known, so a date in the past is refused. |
-| <code>Task&lt;IReadOnlyList&lt;FaceValueAccrualHolding&gt;&gt; ListAccrualHoldingsAsync(RecurringJournalScope scope, Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:120](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L120) | Retained daily face and factor evidence, including interest earned through a full paydown. The caller reads from the coupon start so cumulative rounding is stable across windows. |
+| <code>Task&lt;IReadOnlyLedger&gt; HydrateLedgerAsOfAsync(RecurringJournalScope scope, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:109](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L109) | The scope&#x27;s ledger book including everything recorded through the end of asOf. |
+| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLot&gt;&gt; ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, Guid securityId, Guid? bookPositionId, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:116](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L116) | Face-value lots of securityId open at the end of asOf. With a book position the quantities are reconstructed for that date; without one only today&#x27;s lot state is known, so a date in the past is refused. |
+| <code>Task&lt;IReadOnlyList&lt;FaceValueAccrualHolding&gt;&gt; ListAccrualHoldingsAsync(RecurringJournalScope scope, Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:123](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L123) | Retained daily face and factor evidence, including interest earned through a full paydown. The caller reads from the coupon start so cumulative rounding is stable across windows. |
 
 ## IRecurringJournalPeriodAuthority
 
@@ -953,21 +971,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>ValueTask&lt;ReportingCertifiedLedgerPresentationInput?&gt; ResolveExactAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L100) |  |
-
-## IReportingDeliveryGrantCredentialDeriver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IReportingDeliveryGrantCredentialDeriver</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:26](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L26).
-
-Derives a stable, opaque delivery credential without persisting its plaintext bearer. The binding key must be the durable delivery idempotency identity plus its committed attempt.
-
-```csharp
-public interface IReportingDeliveryGrantCredentialDeriver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ReportingDerivedAccessGrantCredential Derive(string bindingKey);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L28) |  |

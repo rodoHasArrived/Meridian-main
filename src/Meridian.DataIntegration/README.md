@@ -374,8 +374,10 @@ rebalances across the available latency and error-rate evidence so severe histor
 failures are still routable instead of being capped below the global degradation threshold.
 `CrossProviderComparisonService` emits trade price/volume and quote bid/ask discrepancy signals
 for provider-trust consumers. Thresholds come from the user-editable `CrossProviderTolerancePolicy`,
-resolved per symbol through an optional asset-class lookup and replaceable at runtime with
-`UpdatePolicy`; informational volume discrepancies are recorded with `IsInformational` and excluded
+resolved per symbol through `CrossProviderToleranceResolver` and replaceable at runtime with
+`UpdatePolicy`. Historical previews use the same symbol registry lookup, and unresolved symbols
+use base thresholds. Each live discrepancy retains the resolved class and thresholds used to
+classify it. Informational volume discrepancies are recorded with `IsInformational` and excluded
 from alert statistics. Application pipeline, backfill remediation, Prometheus, health,
 daily-summary, and UI Shared endpoint adapters consume `Meridian.DataIntegration.Monitoring` and
 `Meridian.DataIntegration.Monitoring.DataQuality` instead of keeping provider trust primitives in

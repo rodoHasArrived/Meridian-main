@@ -1470,6 +1470,9 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
 
         var ledger = new Meridian.Ledger.Ledger();
         var portfolio = new PaperTradingPortfolio(session.InitialCash, ledger, session.CreatedAt);
+        if (session.JournalCurrency is { } currency)
+            portfolio.BindPositionAccountingEvidenceScope(
+                session.FinancialAccountId ?? PaperTradingPortfolio.DefaultAccountId, currency, session.CreatedAt);
         ReplayInto(portfolio, fills, settlements, provenance, financingCharges);
         return portfolio;
     }
@@ -1571,7 +1574,8 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         {
             OptionContract = leg.OptionContract is null ? null : leg.OptionContract with { }
         }).ToArray(),
-        Diagnostics = fill.Diagnostics is null ? null : fill.Diagnostics with { }
+        Diagnostics = fill.Diagnostics is null ? null : fill.Diagnostics with { },
+        MarketDataEvidence = Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Freeze(fill.MarketDataEvidence)
     };
 
     private static OrderState CloneOrderState(OrderState order) => order with

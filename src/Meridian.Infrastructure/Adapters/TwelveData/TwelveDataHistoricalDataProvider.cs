@@ -124,7 +124,7 @@ public sealed partial class TwelveDataHistoricalDataProvider : BaseHistoricalDat
             var url = $"{BaseUrl}?symbol={Uri.EscapeDataString(symbol)}&interval=1day" +
                       $"&start_date={windowStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}" +
                       $"&end_date={Uri.EscapeDataString(windowEnd.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " 23:59:59")}" +
-                      $"&outputsize={MaximumDataPoints}&format=JSON&apikey={Uri.EscapeDataString(_apiKey)}";
+                      $"&outputsize={MaximumDataPoints}&adjust=splits&format=JSON&apikey={Uri.EscapeDataString(_apiKey)}";
 
             Log.Information("Requesting bounded Twelve Data historical window");
             var json = await ExecuteGetAndReadAsync(url, symbol, "daily bars", ct).ConfigureAwait(false);
@@ -268,7 +268,8 @@ public sealed partial class TwelveDataHistoricalDataProvider : BaseHistoricalDat
                 Close: close,
                 Volume: volume,
                 Source: Name,
-                SequenceNumber: sessionDate.DayNumber));
+                SequenceNumber: sessionDate.DayNumber,
+                PriceBasis: HistoricalPriceBasis.SplitAdjusted));
         }
 
         if (response.Values.Count > 0 && bars.Count == 0)

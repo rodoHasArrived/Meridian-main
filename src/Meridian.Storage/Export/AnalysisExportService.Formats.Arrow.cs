@@ -97,7 +97,9 @@ public sealed partial class AnalysisExportService
             return;
 
         var firstRecord = records[0];
-        var columns = firstRecord.Keys.ToList();
+        var columns = PreserveHistoricalBasisColumns(firstRecord.Keys, records);
+        foreach (var record in records)
+            RequireHistoricalBasisColumns(record, columns);
 
         // Build Arrow schema
         var schemaBuilder = new Apache.Arrow.Schema.Builder();
@@ -107,6 +109,9 @@ public sealed partial class AnalysisExportService
             var sampleValue = records
                 .Select(record => record.TryGetValue(column, out var value) ? value : null)
                 .FirstOrDefault(static value => value is not null);
+            if (column.Equals("IsAdjusted", StringComparison.OrdinalIgnoreCase) &&
+                columns.Contains("PriceBasis", StringComparer.OrdinalIgnoreCase))
+                sampleValue = false; // Keep absent legacy flags nullable, even when every row is unknown.
             var field = InferArrowField(column, sampleValue, timestampSettings);
             arrowFields.Add(field);
             schemaBuilder.Field(field);

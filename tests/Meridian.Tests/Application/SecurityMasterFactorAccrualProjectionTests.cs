@@ -227,6 +227,7 @@ public sealed class SecurityMasterFactorAccrualProjectionTests
 
     private static Dictionary<string, object?> Terms() => new()
     {
+        ["termsFormat"] = "flat",
         ["assetClassTermsVersion"] = 6,
         ["issueDate"] = "2026-01-01",
         ["maturity"] = "2027-01-01",

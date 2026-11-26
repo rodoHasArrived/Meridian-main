@@ -217,7 +217,13 @@ public sealed record ReconciliationRunDto(
     Guid? ProjectionRunId,
     DateTimeOffset RequestedAt,
     DateTimeOffset? CompletedAt,
-    string Status);
+    string Status)
+{
+    public string? RequestHash { get; init; }
+    public DateOnly? AsOfDate { get; init; }
+    public decimal? AmountTolerance { get; init; }
+    public int? DateToleranceDays { get; init; }
+}
 
 public sealed record ReconciliationResultDto(
     Guid ReconciliationResultId,
@@ -234,7 +240,16 @@ public sealed record ReconciliationResultDto(
     string? MatchRule,
     string? ToleranceJson,
     IReadOnlyList<string> Notes,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt)
+{
+    public string? MeasurementKind { get; init; }
+    public string? Currency { get; init; }
+    public DateOnly? AsOfDate { get; init; }
+    public Guid? LedgerBookId { get; init; }
+    public long? ServicingRevision { get; init; }
+    public Guid? PaymentAllocationId { get; init; }
+    public IReadOnlyList<Guid> JournalEntryIds { get; init; } = [];
+}
 
 public sealed record ReconciliationExceptionDto(
     Guid ExceptionId,

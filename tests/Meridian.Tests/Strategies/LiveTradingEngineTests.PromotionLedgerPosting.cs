@@ -155,6 +155,9 @@ public sealed partial class LiveTradingEngineTests
                 .GetRunByIdAsync(promotedRunId))!;
             retainedRun.RunType.Should().Be(RunType.Paper);
             retainedRun.ParentRunId.Should().Be(source.RunId);
+            retainedRun.Metrics!.Fills.Should().ContainSingle().Which.FillId.Should().Be(tradeJournal.Metadata.FillId!.Value,
+                "the persisted strategy fill must join the exact canonical OMS fill, including its source-quality postings");
+            (await strategy.FillReceived.Task).FillId.Should().Be(tradeJournal.Metadata.FillId!.Value);
         }
         finally
         {

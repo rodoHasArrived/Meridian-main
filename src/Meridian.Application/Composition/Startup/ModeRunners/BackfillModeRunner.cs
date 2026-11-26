@@ -141,7 +141,8 @@ public sealed class BackfillModeRunner
                 ResolveSessionsAsync = new Meridian.Platform.Scheduling.HistoricalSessionScheduleResolver(
                     backfillHost.GetService<Meridian.Contracts.SecurityMaster.ISecurityIdentityQueryService>()).ResolveAsync,
                 DirectRoutingAdmission = runtime?.Admission,
-                CaptureRoutingAttempt = attempts.Enqueue
+                CaptureRoutingAttempt = attempts.Enqueue,
+                CaptureInputEvidence = symbol => backfillHost.GetService<Meridian.Infrastructure.Adapters.Core.DataQualityMonitor>()?.GetCachedInputEvidence(symbol)
             };
             var result = await backfill.RunAsync(backfillRequest, pipeline, ct).ConfigureAwait(false);
             if (!attempts.IsEmpty)
