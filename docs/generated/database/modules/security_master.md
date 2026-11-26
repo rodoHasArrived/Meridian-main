@@ -2,9 +2,9 @@
 
 # `security_master` schema
 
-- Relations: 143
-- Functions/procedures: 17
-- Triggers: 40
+- Relations: 138
+- Functions/procedures: 15
+- Triggers: 37
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -1407,16 +1407,6 @@ erDiagram
     security_master_security_events_global_sequence_seq {
         text catalogued_object
     }
-    security_master_security_factor_observations {
-        uuid observation_id PK
-        uuid security_id
-        date effective_date
-        numeric_20_12_ factor
-        text source
-        text evidence_ref
-        timestamp_with_time_zone recorded_at
-        text recorded_by
-    }
     security_master_security_field_provenance {
         uuid security_id PK
         text field_path PK
@@ -1475,18 +1465,6 @@ erDiagram
         text normalized_identifier_value
         text normalized_provider
     }
-    security_master_security_master_change_outbox {
-        uuid change_id PK
-        uuid security_id
-        bigint stream_version
-        text event_type
-        text actor
-        timestamp_with_time_zone recorded_at
-        jsonb restatement_decision
-        text claimed_by
-        timestamp_with_time_zone claimed_at
-        timestamp_with_time_zone processed_at
-    }
     security_master_security_master_conflicts {
         uuid conflict_id PK
         uuid security_id
@@ -1502,39 +1480,6 @@ erDiagram
         text resolved_by
         text resolved_reason
         timestamp_with_time_zone resolved_at
-        text policy_winner_source
-        text policy_rule
-        boolean is_policy_deviation
-    }
-    security_master_security_master_exception_cases {
-        uuid case_id PK
-        text case_key
-        text category
-        text rule_code
-        uuid security_id
-        text severity
-        text title
-        text detail
-        text status
-        text assignee
-        timestamp_with_time_zone opened_at
-        timestamp_with_time_zone last_seen_at
-        timestamp_with_time_zone sla_due_at
-        timestamp_with_time_zone closed_at
-        text closed_reason
-    }
-    security_master_security_master_held_amendments {
-        uuid held_amendment_id PK
-        uuid security_id
-        text source_system
-        jsonb request_json
-        text[] dominated_field_paths
-        uuid[] conflict_ids
-        bigint held_at_version
-        timestamp_with_time_zone held_at
-        text status
-        text closed_by
-        timestamp_with_time_zone closed_at
     }
     security_master_security_master_quality_reports {
         bigint id PK
@@ -1543,13 +1488,6 @@ erDiagram
     }
     security_master_security_master_quality_reports_id_seq {
         text catalogued_object
-    }
-    security_master_security_master_redirects {
-        uuid retired_security_id PK
-        uuid survivor_security_id
-        timestamp_with_time_zone merged_at
-        text merged_by
-        text reason
     }
     security_master_security_master_revisions {
         uuid revision_id PK
@@ -2116,19 +2054,14 @@ erDiagram
 | `security_curves` | table | 13 | `curve_id` | 0 | 3 | Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, tenor, day count, interpolation and source. |
 | `security_events` | table | 12 | `global_sequence` | 0 | 4 | - |
 | `security_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
-| `security_factor_observations` | table | 8 | `observation_id` | 0 | 2 | Review C3: append-only pool-factor observations; a restatement is a later row for the same effective date. |
 | `security_field_provenance` | table | 10 | `security_id`, `field_path`, `origin` | 0 | 2 | - |
 | `security_governance_events` | table | 8 | `global_sequence` | 0 | 3 | Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links, stored curves, OTC exposure snapshots, collateral balances and margin calls), written in the same transaction as the state change. |
 | `security_governance_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_identifier_revisions` | table | 17 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from`, `revision` | 1 | 2 | Append-only recorded history of security_identifiers rows. Each projection replacement appends Added/Amended/Expired/Removed revisions in the same transaction; recorded-as-of reads select the latest revision per row identity at or before the cutoff. Pre-migration rows are Baseline revisions available only from history_available_from. |
 | `security_identifiers` | table | 12 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from` | 1 | 3 | - |
-| `security_master_change_outbox` | table | 10 | `change_id` | 0 | 3 | - |
-| `security_master_conflicts` | table | 17 | `conflict_id` | 0 | 3 | - |
-| `security_master_exception_cases` | table | 15 | `case_id` | 0 | 3 | Review D2: deployment-global Security Master exception cases, one open case per rule and subject. |
-| `security_master_held_amendments` | table | 11 | `held_amendment_id` | 0 | 2 | - |
+| `security_master_conflicts` | table | 14 | `conflict_id` | 0 | 2 | - |
 | `security_master_quality_reports` | table | 3 | `id` | 0 | 2 | - |
 | `security_master_quality_reports_id_seq` | sequence | 0 | - | 0 | 0 | - |
-| `security_master_redirects` | table | 5 | `retired_security_id` | 0 | 2 | - |
 | `security_master_revisions` | table | 16 | `revision_id` | 0 | 2 | - |
 | `security_master_terms_capability_floor` | table | 6 | `singleton` | 0 | 1 | One reviewed minimum declared-mapping/kernel capability floor for configured Security Master writers. Empty during 5b-1; activated only after the fleet inventory and data gates, before 5b-2. Server and WPF writer startup refuse unknown/newer active floors. Does not enable declared terms or authorize deployment. |
 | `security_operator_overrides` | table | 9 | `security_id` | 1 | 1 | - |

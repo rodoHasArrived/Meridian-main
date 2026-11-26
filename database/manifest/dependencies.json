@@ -6136,6 +6136,42 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.CreateLegalEntityRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.EntityMasterRules"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.EntityParentLinkDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.IEntityMasterStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.LegalEntityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.SecurityIssuerLinkDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest"
     },
     {
@@ -9256,6 +9292,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Integrations.IProviderIntegrationActorFlagStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Integrations.IProviderIntegrationIdentityDecisionStore"
     },
     {
@@ -9341,6 +9383,30 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActivationStateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActorFlagDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActorFlagScanRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActorFlagScanResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActorLabelClassifier"
     },
     {
       "kind": "contract-set-member",
@@ -9629,6 +9695,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationStagingReviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationStoredActorValue"
     },
     {
       "kind": "contract-set-member",
@@ -16042,6 +16114,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCanonicalResolution"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBehavior"
     },
     {
@@ -16258,6 +16336,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDisposition"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDispositionKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDispositions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleKind"
     },
     {
@@ -16373,6 +16469,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentityClaim"
     },
     {
       "kind": "contract-set-member",
@@ -16841,6 +16943,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualProfile"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityResolutionStatus"
     },
     {
       "kind": "contract-set-member",
@@ -17909,6 +18017,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.AssignOnboardingDifferenceRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.AssignSecurityMasterExceptionCaseRequest"
     },
     {
       "kind": "contract-set-member",
@@ -22438,6 +22552,30 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionCaseDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionCaseQueueItemDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionCaseStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionSyncResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterFactorPointDto"
     },
     {
@@ -22445,6 +22583,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterGovernanceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterHeldAmendmentDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterHeldAmendmentStatusDto"
     },
     {
       "kind": "contract-set-member",
@@ -22511,6 +22661,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterOperatorMetadataDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterPendingRevisionDto"
     },
     {
       "kind": "contract-set-member",
@@ -33916,6 +34072,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCanonicalResolution"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBehavior"
     },
     {
@@ -34132,6 +34294,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDisposition"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDispositionKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDispositions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleKind"
     },
     {
@@ -34247,6 +34427,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentityClaim"
     },
     {
       "kind": "contract-set-member",
@@ -34715,6 +34901,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualProfile"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityResolutionStatus"
     },
     {
       "kind": "contract-set-member",
@@ -44301,6 +44493,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActorFlagScanResultDto",
+      "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActorFlagDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Integrations.ProviderIntegrationAuthConfigDto",
       "target": "contract:Meridian.Contracts.Integrations.ProviderIntegrationAuthTypeDto"
     },
@@ -51561,6 +51759,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityCanonicalResolution",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityResolutionStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowCalculationReceipt",
       "target": "contract:Meridian.Contracts.FixedIncome.BondCalculationContext"
     },
@@ -51779,6 +51983,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDisposition",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDispositionKind"
     },
     {
       "kind": "contract-reference",
@@ -59127,6 +59337,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionCaseQueueItemDto",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionCaseDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityMasterIdentifierSummaryDto",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterProviderSymbolMappingDto"
     },
@@ -59189,6 +59405,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityMasterOperatorMetadataDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.DataVendorDataType"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SecurityMasterPendingRevisionDto",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterRevisionStateDto"
     },
     {
       "kind": "contract-reference",
@@ -70824,6 +71046,12 @@
       "target": "migration-module:banking"
     },
     {
+      "kind": "hosts-migration-module",
+      "label": "",
+      "source": "schema:entity_master",
+      "target": "migration-module:entity-master"
+    },
+    {
       "kind": "module-contract-map",
       "label": "explicit module mapping",
       "source": "schema:fund_accounts",
@@ -72610,7 +72838,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "bf89ed06bc8c6cd517d94be7256eecd7aec321f5701261c6d73300c65ff430b5",
+  "fingerprint": "fc664980393f009f2704aca086e93be6e5b8bbc3aad89bc13f4fa7f36ab9eb78",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -78797,6 +79025,42 @@
     },
     {
       "classification": "request",
+      "id": "contract:Meridian.Contracts.EntityMaster.CreateLegalEntityRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.CreateLegalEntityRequest"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.EntityMaster.EntityMasterRules",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.EntityMasterRules"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.EntityMaster.EntityParentLinkDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.EntityParentLinkDto"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.EntityMaster.IEntityMasterStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.IEntityMasterStore"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.EntityMaster.LegalEntityDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.LegalEntityDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.EntityMaster.SecurityIssuerLinkDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.SecurityIssuerLinkDto"
+    },
+    {
+      "classification": "request",
       "id": "contract:Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest"
@@ -81917,6 +82181,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Integrations.IProviderIntegrationActorFlagStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Integrations.IProviderIntegrationActorFlagStore"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Integrations.IProviderIntegrationIdentityDecisionStore",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Integrations.IProviderIntegrationIdentityDecisionStore"
@@ -82004,6 +82274,30 @@
       "id": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActivationStateDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Integrations.ProviderIntegrationActivationStateDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActorFlagDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Integrations.ProviderIntegrationActorFlagDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActorFlagScanRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Integrations.ProviderIntegrationActorFlagScanRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActorFlagScanResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Integrations.ProviderIntegrationActorFlagScanResultDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Integrations.ProviderIntegrationActorLabelClassifier",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Integrations.ProviderIntegrationActorLabelClassifier"
     },
     {
       "classification": "dto",
@@ -82292,6 +82586,12 @@
       "id": "contract:Meridian.Contracts.Integrations.ProviderIntegrationStagingReviewDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Integrations.ProviderIntegrationStagingReviewDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Integrations.ProviderIntegrationStoredActorValue",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Integrations.ProviderIntegrationStoredActorValue"
     },
     {
       "classification": "dto",
@@ -88702,6 +89002,12 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCanonicalResolution",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityCanonicalResolution"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBehavior",
       "kind": "contract-type",
@@ -88918,6 +89224,24 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDisposition",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityEconomicDisposition"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDispositionKind",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityEconomicDispositionKind"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDispositions",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityEconomicDispositions"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicScheduleKind",
       "kind": "contract-type",
@@ -89036,6 +89360,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentityClaim",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityIdentityClaim"
     },
     {
       "classification": "record",
@@ -89504,6 +89834,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualProfile",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualProfile"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityResolutionStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityResolutionStatus"
     },
     {
       "classification": "class",
@@ -90572,6 +90908,12 @@
       "id": "contract:Meridian.Contracts.Workstation.AssignOnboardingDifferenceRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.AssignOnboardingDifferenceRequestDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Workstation.AssignSecurityMasterExceptionCaseRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.AssignSecurityMasterExceptionCaseRequest"
     },
     {
       "classification": "dto",
@@ -95099,6 +95441,30 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionCaseDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterExceptionCaseDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionCaseQueueItemDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterExceptionCaseQueueItemDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionCaseStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterExceptionCaseStatusDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterExceptionSyncResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterExceptionSyncResultDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.SecurityMasterFactorPointDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.SecurityMasterFactorPointDto"
@@ -95108,6 +95474,18 @@
       "id": "contract:Meridian.Contracts.Workstation.SecurityMasterGovernanceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.SecurityMasterGovernanceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterHeldAmendmentDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterHeldAmendmentDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterHeldAmendmentStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterHeldAmendmentStatusDto"
     },
     {
       "classification": "dto",
@@ -95174,6 +95552,12 @@
       "id": "contract:Meridian.Contracts.Workstation.SecurityMasterOperatorMetadataDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.SecurityMasterOperatorMetadataDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterPendingRevisionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterPendingRevisionDto"
     },
     {
       "classification": "dto",
@@ -106557,6 +106941,11 @@
       "label": "direct-lending"
     },
     {
+      "id": "migration-module:entity-master",
+      "kind": "migration-module",
+      "label": "entity-master"
+    },
+    {
       "id": "migration-module:fund-accounts",
       "kind": "migration-module",
       "label": "fund-accounts"
@@ -106607,6 +106996,11 @@
       "label": "banking"
     },
     {
+      "id": "schema:entity_master",
+      "kind": "database-schema",
+      "label": "entity_master"
+    },
+    {
       "id": "schema:fund_accounts",
       "kind": "database-schema",
       "label": "fund_accounts"
@@ -106653,11 +107047,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4446,
-    "contract_set_memberships": 5872,
-    "edges": 12062,
+    "contract_references": 4451,
+    "contract_set_memberships": 5904,
+    "edges": 12100,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5919
+    "nodes": 5947
   }
 }

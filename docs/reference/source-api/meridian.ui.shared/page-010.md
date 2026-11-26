@@ -6,6 +6,111 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CapitalAccountWorkbenchService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CapitalAccountWorkbenchService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/CapitalAccountWorkbenchService.cs:10](../../../../src/Meridian.Ui.Shared/Services/CapitalAccountWorkbenchService.cs#L10).
+
+Builds capital-account workbench projections from subledgers, allocation rules, and statement lineage.
+
+```csharp
+public sealed class CapitalAccountWorkbenchService : ICapitalAccountWorkbenchService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CapitalAccountWorkbenchService(IManualJournalEntryWorkbenchService manualJournalEntryWorkbenchService, ReportPackWorkflowService? reportPackWorkflowService = null);</code> | [src/Meridian.Ui.Shared/Services/CapitalAccountWorkbenchService.cs:31](../../../../src/Meridian.Ui.Shared/Services/CapitalAccountWorkbenchService.cs#L31) |  |
+| <code>public async Task&lt;CapitalAccountWorkbenchDto&gt; GetWorkbenchAsync(string? fundProfileId = null, Guid? ledgerBookId = null, string? fundEventId = null, string? capitalAccountId = null, string? investorId = null, string? currency = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalAccountWorkbenchService.cs:39](../../../../src/Meridian.Ui.Shared/Services/CapitalAccountWorkbenchService.cs#L39) |  |
+
+## CapitalCallCommitmentInput
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallCommitmentInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs:13](../../../../src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs#L13).
+
+Compatibility projection of one commitment-register line backing a capital call. Native intake resolves its terms from the approved durable commitment revision; caller totals are consistency checks. Each line carries retained register evidence; called-to-date is never taken from the caller — it is recomputed server-side from commitment-scoped posting receipts before any native draft is produced.
+
+```csharp
+public sealed record CapitalCallCommitmentInput(string CommitmentId, string CapitalAccountId, string InvestorId, decimal TotalCommitment, DateOnly CommitmentDate, CommitmentStatus Status = CommitmentStatus.Active, DateOnly? InvestmentPeriodEndDate = null, IReadOnlyList<string>? EvidenceLinks = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs:23](../../../../src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs#L23) |  |
+
+## CapitalCallDefaultTermsInput
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallDefaultTermsInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:14](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L14).
+
+The default terms of one commitment on a capital call. The ledger holds the call and its receipts but not the due date, default rate, day-count convention or grace period, so the operator attests them here with retained evidence (the fund agreement or call notice).
+
+```csharp
+public sealed record CapitalCallDefaultTermsInput(string CommitmentId, string CapitalAccountId, string InvestorId, DateOnly DueDate, decimal DefaultInterestRateAnnual, DefaultInterestConvention Convention, int GraceDays, IReadOnlyList<string>? EvidenceLinks = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:24](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L24) |  |
+
+## CapitalCallFundingInput
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallFundingInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs:12](../../../../src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs#L12).
+
+One operator-attested cash receipt against an issued capital call. The amount is what the LP remitted (full or partial); the fundable ceiling is never taken from the caller — it is recomputed server-side as posted issuance minus posted funding for the capital account before any draft is produced. Each line must carry retained remittance/bank evidence.
+
+```csharp
+public sealed record CapitalCallFundingInput(string CommitmentId, string CapitalAccountId, string InvestorId, decimal FundedAmount, IReadOnlyList<string>? EvidenceLinks = null, string? FundingReceiptId = null, string? BankLineId = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs:21](../../../../src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs#L21) |  |
+
+## CapitalCallNoticeRecipientBinding
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallNoticeRecipientBinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:15](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L15).
+
+Deployment-owned investor-to-recipient mapping; investor IDs are never assumed to be user IDs.
+
+```csharp
+public sealed record CapitalCallNoticeRecipientBinding(string TenantId, string CompanyId, string FundProfileId, string InvestorId, string RecipientPrincipalId, string? ReviewGroupPrincipalId = null);
+```
+
+## CapitalCallNoticeReportingService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallNoticeReportingService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:136](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L136).
+
+Creates a governed Draft notice; approval, release, grants, and delivery use existing Reporting controls.
+
+```csharp
+public sealed class CapitalCallNoticeReportingService(CapitalCallNoticeSourceValidator source, ILedgerJournalStore journals, ReportingRunCommandService reporting, IReportingRunStore? runStore = null, IReportingGovernanceRepository? governance = null, IReportingDeliveryStore? deliveries = null, IReportingAuthoritativeSource? authoritativeSource = null, IReportingReconciliationEvidenceRetentionStore? reconciliationRetention = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string TemplateId = &quot;capital-call-notice&quot;;</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:146](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L146) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;PrivateCapitalNoticeSummaryDto&gt;&gt; ReadNoticeSummariesAsync(PrivateCapitalScopeDto scope, ReportAccessQueryContext access, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:150](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L150) | Projects retained notice associations; callers cannot attach an arbitrary reporting run to a call. |
+| <code>public async Task&lt;ReportingRunResultDto&gt; GenerateAsync(PrivateCapitalScopeDto scope, string callId, string investorId, Guid operationId, string actor, ReportAccessQueryContext access, ReportingGovernanceCallerContext caller, string? commitmentId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:206](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L206) |  |
+
 ## CapitalCallNoticeSourceValidator
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallNoticeSourceValidator</code>. Kind: `class`.
@@ -808,120 +913,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;string&gt; Blockers { get; init; } = Blockers??[];</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:64](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L64) |  |
 | <code>public IReadOnlyList&lt;DailyValuationPositionSnapshotScope&gt; PositionSnapshotScopes { get; init; } = PositionSnapshotScopes??[];</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:66](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L66) |  |
 | <code>public IReadOnlyList&lt;Guid&gt; JournalEntryIds { get; init; } = JournalEntryIds??[];</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:69](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L69) |  |
-
-## DemoTenantBlueprint
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantBlueprint</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:17](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L17).
-
-Deterministic definition of the Meridian sample demo tenant. This is the single source of truth consumed both by DemoTenantProvisioner (which writes it into the real, desk-read stores so the workstation is genuinely populated) and by FirstRunExperienceService (which surfaces it in onboarding so the &quot;Ready&quot; step shows a populated workspace, not a badge).
-
-```csharp
-public static class DemoTenantBlueprint
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SeededSourceType = &quot;seeded&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:24](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L24) | Blueprint-1 provenance stamp shared by every durable record the demo seeds. Carrying an explicit &quot;seeded&quot; source (rather than a generic &quot;sample&quot; tag) lets desk surfaces render the SeededProvenanceLabel and lets teardown and audit reason about demo data. |
-| <code>public const string SeededSourceSystem = &quot;Meridian Seeded Demo&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:27](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L27) | Human-facing source system stamped on seeded records and rendered on desk surfaces. |
-| <code>public const string SeededProvenanceLabel = &quot;Seeded&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:30](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L30) | The provenance label onboarding renders for the seeded workspace. |
-| <code>public const string TenantId = &quot;meridian-seeded-demo&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:33](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L33) | Fixed tenant/company authority for the isolated seeded demo workspace. |
-| <code>public const string CompanyId = &quot;meridian-seeded-demo&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:34](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L34) |  |
-| <code>public const string PortfolioName = &quot;Northstar Sample Portfolio&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:36](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L36) |  |
-| <code>public const decimal Cash = 125_000m;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:37](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L37) |  |
-| <code>public const string StrategyId = &quot;sample-covered-call&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:39](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L39) |  |
-| <code>public const string StrategyName = &quot;Sample Covered Call&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:40](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L40) |  |
-| <code>public const string StrategyRunId = &quot;SAMPLE-RUN-COVERED-CALL&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:41](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L41) |  |
-| <code>public const string PortfolioRoute = &quot;/portfolio&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:43](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L43) |  |
-| <code>public const string ReconciliationRoute = &quot;/accounting/reconciliation/match&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:44](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L44) |  |
-| <code>public const string ReportingRunRoute = &quot;/reporting/run&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:45](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L45) |  |
-| <code>public const string StrategyRoute = &quot;/strategy&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:46](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L46) |  |
-| <code>public const string DataRoute = &quot;/data&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:47](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L47) |  |
-| <code>public static IReadOnlyList&lt;string&gt; MarketHistorySymbolList =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:63](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L63) | Symbols the demo seeds durable market history for. |
-| <code>public static int MarketHistorySessionCount =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:66](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L66) | Trading sessions of durable market history the demo seeds per symbol. |
-| <code>public const string MarketHistorySource = MarketDataSources.Sample;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:73](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L73) | Source identity stamped on every seeded market event. The repository&#x27;s existing sample-data identity is used rather than a vendor name, so nothing the Data desk attributes to a provider can be seeded history (W9-TRUTH-001). |
-| <code>public const string MarketHistoryVenue = &quot;SIMULATED&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:76](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L76) | Venue stamped on seeded trade prints; names the simulation, not an exchange. |
-| <code>public static readonly Guid FundAccountId = Guid.Parse(&quot;5eeded00-de30-4a7d-9b1c-000000000001&quot;);</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:79](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L79) | Fixed identity of the seeded demo fund account. |
-| <code>public const string FundAccountCode = &quot;SAMPLE-001&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:80](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L80) |  |
-| <code>public const string FundAccountDisplayName = &quot;Northstar Sample Fund Account&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:81](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L81) |  |
-| <code>public const string BaseCurrency = &quot;USD&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:82](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L82) |  |
-| <code>public const string FundProfileId = &quot;meridian-seeded-demo&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:85](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L85) | Fund profile the seeded accounting records (journal drafts) belong to. |
-| <code>public static readonly Guid ReportPackId = Guid.Parse(&quot;5eeded00-de30-4a7d-9b1c-000000000002&quot;);</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:88](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L88) | Fixed identity of the seeded governed report pack. |
-| <code>public const string ReportPackDisplayName = &quot;Sample portfolio review&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:89](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L89) |  |
-| <code>public static readonly Guid AccruedFeeDraftId = Guid.Parse(&quot;5eeded00-de30-4a7d-9b1c-000000000003&quot;);</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:92](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L92) | Fixed identities of the seeded manual journal drafts (ledger-desk records). |
-| <code>public static readonly Guid DividendDraftId = Guid.Parse(&quot;5eeded00-de30-4a7d-9b1c-000000000004&quot;);</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:93](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L93) |  |
-| <code>public static IReadOnlyList&lt;SampleTradePrint&gt; BuildMarketHistory(string symbol, DateOnly lastSessionUtc);</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:105](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L105) | Builds the deterministic market-history trade prints for one symbol: one print per trading session (weekdays only), walking back MarketHistorySessionCount sessions from lastSessionUtc. Prices derive from a fixed per-symbol anchor and a stable per-date hash, so re-seeding the same day is idempotent and two installs seeded on the same day agree exactly. |
-| <code>public static IReadOnlyList&lt;SampleBreakDefinition&gt; BreakDefinitions { get; } = [new SampleBreakDefinition(&quot;SAMPLE-BRK-001&quot;, &quot;Cash variance&quot;, ReconciliationBreakCategory.CashMismatch, ReconciliationBreakSeverity.High, 1_250.00m, &quot;Custodian cash balance is $1,250.00 above the internal ledger for the sample account.&quot;), new SampleBreakDefinition(&quot;SAMPLE-BRK-002&quot;, &quot;Unmatched fee&quot;, ReconciliationBreakCategory.AmountMismatch, ReconciliationBreakSeverity.Medium, 42.50m, &quot;A $42.50 custodian fee has no matching ledger entry in the sample statement.&quot;)];</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:164](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L164) | Sample reconciliation breaks. These are seeded into the reconciliation break queue and shown in onboarding. Identifiers are prefixed SAMPLE- so they are unmistakably demo casework. |
-| <code>public static IReadOnlyList&lt;SampleHoldingDto&gt; Holdings =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:182](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L182) |  |
-| <code>public static decimal PortfolioValue =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:184](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L184) |  |
-| <code>public static decimal UnrealizedPnl =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:186](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L186) |  |
-| <code>public static SampleWorkspaceDto BuildSampleWorkspace(bool reconciliationLoaded = true, bool strategyLoaded = true);</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:193](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L193) | Builds the populated snapshot surfaced to onboarding clients. Desk highlights (with links) are included only for surfaces that actually loaded, so a click-through never contradicts what onboarding claimed; the illustrative sample portfolio is always shown as a preview. |
-
-## SampleBreakDefinition
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantBlueprint.SampleBreakDefinition</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:279](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L279).
-
-Fixed definition of a sample reconciliation break, before it is stamped with timestamps.
-
-```csharp
-public sealed record SampleBreakDefinition(string Id, string Title, ReconciliationBreakCategory Category, ReconciliationBreakSeverity Severity, decimal Variance, string Summary);
-```
-
-## SampleTradePrint
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantBlueprint.SampleTradePrint</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:96](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L96).
-
-One deterministic seeded trade print for durable market history.
-
-```csharp
-public sealed record SampleTradePrint(DateTimeOffset Timestamp, decimal Price, long Size);
-```
-
-## DemoTenantProvisioner
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantProvisioner</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs:28](../../../../src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs#L28).
-
-Loads the DemoTenantBlueprint into the real, desk-read workstation stores so a user who chooses &quot;Use sample data&quot; lands in a genuinely populated workspace rather than an empty one behind a badge. Seeding is best-effort and idempotent: a re-run never duplicates casework or runs, and a store that is unavailable in a lightweight host is skipped without failing onboarding.
-
-```csharp
-public sealed class DemoTenantProvisioner(IReconciliationBreakQueueRepository? reconciliationBreaks = null, IStrategyRepository? strategyRuns = null, ILogger<DemoTenantProvisioner>? logger = null, IFundAccountService? fundAccounts = null, IPositionSnapshotStore? positionSnapshots = null, IManualJournalEntryDraftStore? journalDrafts = null, IGovernanceReportPackRepository? reportPacks = null, IManualJournalMutationRecoveryStore? mutationRecovery = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;DemoTenantProvisioningReport&gt; ProvisionAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs:38](../../../../src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs#L38) |  |
-
-## DemoTenantProvisioningReport
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantProvisioningReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs:463](../../../../src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs#L463).
-
-Summary of what the demo-tenant provisioning step wrote. The Loaded flags report whether each surface is present in its desk store after provisioning (freshly seeded or already there), which is what onboarding advertises — distinct from ReconciliationBreaksSeeded, which counts only the breaks created on this run.
-
-```csharp
-public sealed record DemoTenantProvisioningReport(int ReconciliationBreaksSeeded, bool ReconciliationLoaded, bool StrategyRunLoaded, IReadOnlyList<string> Warnings, bool FundAccountLoaded = false, bool PortfolioPositionsLoaded = false, int JournalDraftsSeeded = 0, bool ReportPackLoaded = false);
-```
-
-## DemoWorkspaceResetReport
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DemoWorkspaceResetReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:425](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L425).
-
-Outcome of tearing down the demo workspace.
-
-```csharp
-public sealed record DemoWorkspaceResetReport(string DemoRoot, bool Deleted);
-```

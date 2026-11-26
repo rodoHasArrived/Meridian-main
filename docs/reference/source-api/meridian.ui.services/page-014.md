@@ -303,6 +303,109 @@ Source: [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionSe
 public sealed record ReportingTemplateProjection(string TemplateId, string Family, string Name, string Version, IReadOnlyList<string> Sections);
 ```
 
+## ISecurityMasterReviewQueueApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.SecurityMaster.ISecurityMasterReviewQueueApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:13](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L13).
+
+Desktop transport for the Security Master review queues: the cross-security review inbox of pending revisions (review P5/D1), ingest amendments held by source ranking (review A2) and the global exception queue (review D2). It uses the same routes and shared contracts as the browser workstation; the server derives tenant and actor from the session and re-checks every permission.
+
+```csharp
+public interface ISecurityMasterReviewQueueApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;IReadOnlyList&lt;SecurityMasterPendingRevisionDto&gt;&gt;&gt; ListPendingRevisionsAsync(IReadOnlyCollection&lt;SecurityMasterRevisionStateDto&gt; states, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:16](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L16) | Revisions awaiting action across every security, oldest first. |
+| <code>Task&lt;ApiResponse&lt;SecurityMasterEditResultDto&gt;&gt; DiscardRevisionAsync(Guid securityId, Guid revisionId, string? reason, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:20](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L20) | Discards a Draft or Submitted revision so its staged value no longer blocks the field. |
+| <code>Task&lt;ApiResponse&lt;IReadOnlyList&lt;SecurityMasterHeldAmendmentDto&gt;&gt;&gt; ListHeldAmendmentsAsync(Guid? securityId = null, string? status = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:23](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L23) |  |
+| <code>Task&lt;ApiResponse&lt;SecurityMasterQueueAck&gt;&gt; DiscardHeldAmendmentAsync(Guid heldAmendmentId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:27](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L27) | Closes a held amendment as Discarded. 204 on success; 409 when it is no longer held. |
+| <code>Task&lt;ApiResponse&lt;IReadOnlyList&lt;SecurityMasterExceptionCaseQueueItemDto&gt;&gt;&gt; ListExceptionCasesAsync(string? status = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:29](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L29) |  |
+| <code>Task&lt;ApiResponse&lt;SecurityMasterExceptionSyncResultDto&gt;&gt; SyncExceptionCasesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:33](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L33) | Reconciles open cases with the current conflicts, ambiguities and violations. |
+| <code>Task&lt;ApiResponse&lt;SecurityMasterQueueAck&gt;&gt; AssignExceptionCaseAsync(Guid caseId, string assignee, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:36](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L36) | Assigns an open case. 204 on success; 409 when the case is no longer open. |
+
+## SecurityMasterQueueAck
+
+Qualified name: <code>Meridian.Ui.Services.Services.SecurityMaster.SecurityMasterQueueAck</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:40](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L40).
+
+Acknowledgement of a queue write that answers with no body (HTTP 204).
+
+```csharp
+public sealed record SecurityMasterQueueAck(int StatusCode);
+```
+
+## SecurityMasterReviewQueueApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.SecurityMaster.SecurityMasterReviewQueueApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:42](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L42).
+
+```csharp
+public sealed class SecurityMasterReviewQueueApiClient(ApiClientService apiClient) : ISecurityMasterReviewQueueApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ApiResponse&lt;IReadOnlyList&lt;SecurityMasterPendingRevisionDto&gt;&gt;&gt; ListPendingRevisionsAsync(IReadOnlyCollection&lt;SecurityMasterRevisionStateDto&gt; states, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:46](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L46) |  |
+| <code>public async Task&lt;ApiResponse&lt;SecurityMasterEditResultDto&gt;&gt; DiscardRevisionAsync(Guid securityId, Guid revisionId, string? reason, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:59](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L59) |  |
+| <code>public async Task&lt;ApiResponse&lt;IReadOnlyList&lt;SecurityMasterHeldAmendmentDto&gt;&gt;&gt; ListHeldAmendmentsAsync(Guid? securityId = null, string? status = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:78](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L78) |  |
+| <code>public async Task&lt;ApiResponse&lt;SecurityMasterQueueAck&gt;&gt; DiscardHeldAmendmentAsync(Guid heldAmendmentId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:96](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L96) |  |
+| <code>public async Task&lt;ApiResponse&lt;IReadOnlyList&lt;SecurityMasterExceptionCaseQueueItemDto&gt;&gt;&gt; ListExceptionCasesAsync(string? status = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:101](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L101) |  |
+| <code>public async Task&lt;ApiResponse&lt;SecurityMasterExceptionSyncResultDto&gt;&gt; SyncExceptionCasesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:109](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L109) |  |
+| <code>public async Task&lt;ApiResponse&lt;SecurityMasterQueueAck&gt;&gt; AssignExceptionCaseAsync(Guid caseId, string assignee, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:118](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L118) |  |
+
+## SecurityMasterReviewQueuePresentation
+
+Qualified name: <code>Meridian.Ui.Services.Services.SecurityMaster.SecurityMasterReviewQueuePresentation</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:144](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L144).
+
+Presentation rules shared by the desktop review queues, mirroring the browser inbox so both lanes show the same ages, the same discard eligibility and the server&#x27;s own SLA verdict.
+
+```csharp
+public static class SecurityMasterReviewQueuePresentation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;SecurityMasterRevisionStateDto&gt; InboxStates { get; } = [SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved];</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:147](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L147) | The browser inbox&#x27;s default filter: everything an operator can still act on. |
+| <code>public static string FormatAge(double ageHours);</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:151](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L151) | Mirrors the browser formatRevisionAge: under 1h, whole hours below 48h, then days. |
+| <code>public static bool CanDiscard(SecurityMasterRevisionStateDto state) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:167](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L167) | Only abandoned Draft and gate-rejected Submitted revisions are discardable from the inbox; an Approved revision is published or withdrawn through its workflow. |
+| <code>public static string DescribeSla(SecurityMasterExceptionCaseQueueItemDto item);</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs:171](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterReviewQueueApiClient.cs#L171) | The SLA cell: the server&#x27;s breach verdict first, otherwise the UTC due time. |
+
+## SecurityMasterWorkbenchFailure
+
+Qualified name: <code>Meridian.Ui.Services.Services.SecurityMaster.SecurityMasterWorkbenchFailure</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterWorkbenchFailure.cs:12](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterWorkbenchFailure.cs#L12).
+
+A parsed Security Master workbench or review-queue failure. The server answers governed-write refusals with a JSON body whose error is a stable code (version-conflict, field-already-staged, revision-state-conflict, workflow-required, ...) and, for the queue routes, a plain sentence. This mirrors the browser classifyWorkbenchWriteError so both workstations name the same recovery.
+
+```csharp
+public sealed record SecurityMasterWorkbenchFailure(int StatusCode, string? Code, string? Message, long? CurrentVersion, string? StagedBy, Guid? StagedRevisionId, string? FieldPath)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string FieldAlreadyStaged = &quot;field-already-staged&quot;;</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterWorkbenchFailure.cs:21](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterWorkbenchFailure.cs#L21) |  |
+| <code>public const string VersionConflict = &quot;version-conflict&quot;;</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterWorkbenchFailure.cs:22](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterWorkbenchFailure.cs#L22) |  |
+| <code>public const string WorkflowRequired = &quot;workflow-required&quot;;</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterWorkbenchFailure.cs:23](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterWorkbenchFailure.cs#L23) |  |
+| <code>public bool IsFieldAlreadyStaged =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterWorkbenchFailure.cs:25](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterWorkbenchFailure.cs#L25) |  |
+| <code>public static SecurityMasterWorkbenchFailure Parse(int statusCode, string? body);</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterWorkbenchFailure.cs:27](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterWorkbenchFailure.cs#L27) |  |
+| <code>public string DescribeWorkbenchWrite() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterWorkbenchFailure.cs:70](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterWorkbenchFailure.cs#L70) | The operator-facing sentence for a passport governed write. |
+| <code>public string DescribeQueueAction(string action) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterWorkbenchFailure.cs:86](../../../../src/Meridian.Ui.Services/Services/SecurityMaster/SecurityMasterWorkbenchFailure.cs#L86) | The operator-facing sentence for a review-queue read or action. |
+
 ## SettingsConfigurationService
 
 Qualified name: <code>Meridian.Ui.Services.Services.SettingsConfigurationService</code>. Kind: `class`.
@@ -1026,119 +1129,3 @@ Declared public members:
 | <code>public long SizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:31](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L31) |  |
 | <code>public int FileCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:32](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L32) |  |
 | <code>public double Percentage { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:33](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L33) |  |
-
-## StorageHealth
-
-Qualified name: <code>Meridian.Ui.Services.StorageHealth</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SystemHealthService.cs:246](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L246).
-
-Summarizes storage capacity, utilization, corrupt or orphaned files, and current issues.
-
-```csharp
-public sealed class StorageHealth
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsHealthy { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:248](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L248) |  |
-| <code>public long TotalBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:249](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L249) |  |
-| <code>public long UsedBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:250](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L250) |  |
-| <code>public long AvailableBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:251](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L251) |  |
-| <code>public double UsedPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:252](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L252) |  |
-| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:253](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L253) |  |
-| <code>public int CorruptedFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:254](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L254) |  |
-| <code>public int OrphanedFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:255](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L255) |  |
-| <code>public DateTime LastChecked { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:256](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L256) |  |
-| <code>public List&lt;string&gt; Issues { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:257](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L257) |  |
-
-## StorageHealthCheckResult
-
-Qualified name: <code>Meridian.Ui.Services.StorageHealthCheckResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:260](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L260).
-
-Response from /api/storage/health/check endpoint.
-
-```csharp
-public sealed class StorageHealthCheckResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? ReportId { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:262](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L262) |  |
-| <code>public DateTime GeneratedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:263](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L263) |  |
-| <code>public long ScanDurationMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:264](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L264) |  |
-| <code>public HealthSummary? Summary { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:265](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L265) |  |
-| <code>public List&lt;HealthIssue&gt; Issues { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:266](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L266) |  |
-
-## StorageHealthReport
-
-Qualified name: <code>Meridian.Ui.Services.StorageHealthReport</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:90](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L90).
-
-Summarizes storage health, detected issues, recommendations, and the check timestamp.
-
-```csharp
-public sealed class StorageHealthReport
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Status { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:92](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L92) |  |
-| <code>public double HealthScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:93](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L93) |  |
-| <code>public List&lt;StorageIssue&gt; Issues { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:94](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L94) |  |
-| <code>public List&lt;string&gt; Recommendations { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:95](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L95) |  |
-| <code>public DateTime CheckedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:96](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L96) |  |
-
-## StorageIssue
-
-Qualified name: <code>Meridian.Ui.Services.StorageIssue</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:102](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L102).
-
-Describes a storage problem&#x27;s type, severity, explanation, and affected path.
-
-```csharp
-public sealed class StorageIssue
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:104](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L104) |  |
-| <code>public string Severity { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:105](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L105) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:106](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L106) |  |
-| <code>public string? AffectedPath { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:107](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L107) |  |
-
-## StorageOptimizationAdvisorService
-
-Qualified name: <code>Meridian.Ui.Services.StorageOptimizationAdvisorService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:24](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L24).
-
-Service for analyzing storage and providing optimization recommendations. Implements Feature Refinement #63 - Archive Storage Optimization Advisor. This service provides storage analysis and delegates operations to the core service via HTTP API endpoints when available: - /api/storage/catalog - Storage catalog for file discovery - /api/storage/tiers/statistics - Tier statistics - /api/storage/tiers/plan - Migration planning - /api/storage/tiers/migrate - Tier migration execution - /api/storage/maintenance/defrag - Defragmentation execution
-
-```csharp
-public sealed class StorageOptimizationAdvisorService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static StorageOptimizationAdvisorService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:36](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L36) |  |
-| <code>public async Task&lt;StorageOptimizationReport&gt; AnalyzeStorageAsync(string dataRoot, StorageAnalysisOptions options, IProgress&lt;StorageAnalysisProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:46](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L46) | Analyzes storage and generates optimization recommendations. |
-| <code>public async Task&lt;OptimizationExecutionResult&gt; ExecuteOptimizationAsync(OptimizationRecommendation recommendation, IProgress&lt;OptimizationProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:495](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L495) | Executes a specific optimization recommendation. |
-| <code>public async Task&lt;TierStatisticsApiResult?&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1238](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1238) | Gets tier statistics from the core API. |
-| <code>public async Task&lt;MigrationPlanApiResult?&gt; GetMigrationPlanAsync(string targetTier = &quot;cold&quot;, int ageDaysThreshold = 90, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1256](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1256) | Gets a migration plan from the core API for files to move between tiers. |
-| <code>public async Task&lt;DefragmentationApiResult?&gt; RunDefragmentationAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1284](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1284) | Runs defragmentation via the core API. |
-| <code>public async Task&lt;StorageCatalogApiResult?&gt; GetStorageCatalogAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1302](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1302) | Gets the storage catalog from the core API for comprehensive file analysis. |
