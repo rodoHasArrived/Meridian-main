@@ -6,6 +6,64 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityCashFlowTermRole
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRole</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L4).
+
+The economic role a term plays in a calculated cash-flow projection.
+
+```csharp
+public enum SecurityCashFlowTermRole
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Maturity</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L6) |  |
+| <code>Issue</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L7) |  |
+| <code>PrincipalFace</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L8) |  |
+| <code>CurrentFactor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L9) |  |
+| <code>CouponRate</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L10) |  |
+| <code>PaymentFrequency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L11) |  |
+| <code>DayCount</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L12) |  |
+| <code>InflationIndex</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L13) |  |
+| <code>InflationBaseIndexValue</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L14) |  |
+| <code>InflationIndexRatio</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L15) |  |
+
+## SecurityCashFlowTermRoles
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRoles</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L49).
+
+The spellings a calculated cash-flow projection reads for each term role, per class (review D9). A class declares which of its schema keys play which role on its catalog descriptor; this merges those keys with the shared spellings every class reads. The shared spellings are the resolver&#x27;s vendor vocabulary: they are read for every class because governed profile fields, common terms and documents written before a class&#x27;s schema existed carry them. They are not a substitute for a class&#x27;s declaration. A class key that a shared spelling names keeps its shared priority; any other declared key is read before the shared spellings (or after them, when the binding says so). SecurityCashFlowTermRoleTests holds every calculated class to the schema: each declared key is a schema key, each schema key a shared spelling names is declared with that role, and each calculated class declares a maturity and a coupon (or that it pays none).
+
+```csharp
+public static class SecurityCashFlowTermRoles
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyDictionary&lt;SecurityCashFlowTermRole, IReadOnlyList&lt;string&gt;&gt; SharedSpellings { get; } = new Dictionary&lt;SecurityCashFlowTermRole, IReadOnlyList&lt;string&gt;&gt;{[SecurityCashFlowTermRole.Maturity]= [&quot;maturityDate&quot;, &quot;maturity&quot;, &quot;legalFinalMaturity&quot;], [SecurityCashFlowTermRole.Issue]= [&quot;issueDate&quot;, &quot;originationDate&quot;, &quot;effectiveDate&quot;], [SecurityCashFlowTermRole.PrincipalFace]= [&quot;par&quot;, &quot;originalFace&quot;, &quot;notional&quot;, &quot;principal&quot;, &quot;principalAmount&quot;], [SecurityCashFlowTermRole.CurrentFactor]= [&quot;currentFactor&quot;, &quot;factor&quot;], [SecurityCashFlowTermRole.CouponRate]= [&quot;fixedCouponRate&quot;, &quot;couponRate&quot;, &quot;coupon&quot;, &quot;annualRate&quot;], [SecurityCashFlowTermRole.PaymentFrequency]= [&quot;paymentFrequency&quot;, &quot;paymentFrequencyPerYear&quot;, &quot;couponFrequency&quot;], [SecurityCashFlowTermRole.DayCount]= [&quot;dayCountConvention&quot;, &quot;dayCount&quot;, &quot;dayCountBasis&quot;], [SecurityCashFlowTermRole.InflationIndex]= [&quot;inflationIndex&quot;], [SecurityCashFlowTermRole.InflationBaseIndexValue]= [&quot;inflationBaseIndexValue&quot;, &quot;baseIndexValue&quot;], [SecurityCashFlowTermRole.InflationIndexRatio]= [&quot;inflationIndexRatio&quot;, &quot;indexRatio&quot;], };</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L52) | The shared spellings for each role, in priority order: the first key that resolves wins. |
+| <code>public static string[] Spellings(string? assetClass, SecurityCashFlowTermRole role);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L73) | The spellings read for role on a record of assetClass: the class&#x27;s declared keys (with their schema aliases) not already shared, then the shared spellings, then the declared keys bound to read after them. |
+
+## SecurityClassCodecBinding
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:99](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L99).
+
+The bindings of one asset class.
+
+```csharp
+public sealed record SecurityClassCodecBinding(string AssetClass, bool ReadsResolvedTerms, IReadOnlyList<SecurityTermBinding> Members, bool VersionedSchedules = false, SecurityCodecInputs Inputs = SecurityCodecInputs.None, bool WritesConventionsFlag = false);
+```
+
 ## SecurityClassificationDriftEntryDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityClassificationDriftEntryDto</code>. Kind: `record`.
@@ -809,48 +867,3 @@ Declared public members:
 | <code>public static string GetOrComputeNormalizedValue(SecurityIdentifierDto identifier);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs:107](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs#L107) |  |
 | <code>public static string GetOrComputeNormalizedProvider(SecurityIdentifierDto identifier);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs:115](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs#L115) |  |
 | <code>public static bool TryValidateFormat(SecurityIdentifierKind kind, string? value, out string? message);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs#L123) |  |
-
-## SecurityIncomeCashFlow
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIncomeCashFlow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L38).
-
-One declared income cash flow, per unit held, derived from an effective (amendment-folded, non-cancelled) corporate action. Amounts are per share or fund unit in Currency; holders multiply by their position at RecordDate (or ExDate).
-
-```csharp
-public sealed record SecurityIncomeCashFlow(Guid CorpActId, string EventType, SecurityIncomeCashFlowKind Kind, SecurityIncomeComponent Component, DateOnly ExDate, DateOnly? RecordDate, DateOnly PaymentDate, decimal AmountPerUnit, string Currency, bool IsIncome);
-```
-
-## SecurityIncomeCashFlowGap
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIncomeCashFlowGap</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L51).
-
-A corporate action that is a cash distribution but could not be placed on the schedule.
-
-```csharp
-public sealed record SecurityIncomeCashFlowGap(Guid CorpActId, string EventType, DateOnly ExDate, string Reason);
-```
-
-## SecurityIncomeCashFlowKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIncomeCashFlowKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L7).
-
-What a declared income cash flow represents to the holder.
-
-```csharp
-public enum SecurityIncomeCashFlowKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Dividend</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L10) | Regular cash dividend on an equity-like class. |
-| <code>SpecialDividend</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L13) | Extraordinary cash dividend, tax-distinct from regular dividends. |
-| <code>FundDistribution</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L16) | Cash distribution from a fund class (money market, investment fund, fund interest). |
-| <code>ReturnOfCapital</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L19) | Capital returned to the holder; reduces cost basis and is not income. |

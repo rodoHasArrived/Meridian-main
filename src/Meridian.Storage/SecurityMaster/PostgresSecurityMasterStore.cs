@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Serialization;
+using Meridian.Storage.SecurityMaster.AssetPacks;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -33,10 +34,10 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
     /// field rather than a column per term.
     /// </summary>
     private static readonly IReadOnlyList<AssetProjectionWriter> HandWrittenProjectionWriters =
-    [
-        new("Option", static (store, c, t, r, ct) => store.UpsertOptionProjectionTablesAsync(c, t, r, ct)),
-        new(CustomAssetAssetClass, static (store, c, t, r, ct) => store.UpsertCustomAssetProfileFieldProjectionAsync(c, t, r, ct)),
-    ];
+        SecurityTermsStorageModules.All
+            .Where(static contribution => contribution.SpecializedWriter is not null)
+            .Select(static contribution => new AssetProjectionWriter(contribution.AssetClass, contribution.SpecializedWriter!))
+            .ToArray();
 
     /// <summary>
     /// The ordered registry of per-asset-class projection writers. Replaces the previous hard-coded
@@ -622,7 +623,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         return result is string assetClass ? assetClass : null;
     }
 
-    private async Task UpsertOptionProjectionTablesAsync(
+    internal async Task UpsertOptionProjectionTablesAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         SecurityProjectionRecord record,
