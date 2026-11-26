@@ -540,7 +540,8 @@ export interface PortfolioSummary {
   realizedPnl: number;
   unrealizedPnl: number;
   commissions: number;
-  financing: number;
+  /** Null when the run's financing coverage is unavailable (not a measured zero). */
+  financing: number | null;
   positions: PortfolioPositionSummary[];
   securityResolvedCount: number;
   securityMissingCount: number;

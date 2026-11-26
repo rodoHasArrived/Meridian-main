@@ -673,7 +673,7 @@ public sealed record BankStatementImportResultDto(string UploadId, Guid BatchId,
 
 Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:285](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L285).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:289](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L289).
 
 Honest summary of the simulation assumptions behind a backtest result — fill timing, limit/stop realism, universe provenance, corporate-action handling, and forced delisting liquidations. Rendered as a bias-disclosure panel wherever backtest numbers are shown.
 
@@ -685,7 +685,7 @@ public sealed record BiasDisclosureDto(string FillTiming, string FillConservatis
 
 Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureItemDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:274](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L274).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:278](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L278).
 
 One disclosed simulation assumption or detected data-quality issue for a backtest run. Severity is info, caution, or warning.
 

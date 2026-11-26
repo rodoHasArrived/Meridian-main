@@ -330,7 +330,8 @@ export interface AccountingCashFlowSummary {
   totalCash: number;
   totalLedgerCash: number;
   netVariance: number;
-  totalFinancing: number;
+  /** Null when any contributing run's financing coverage is unavailable. */
+  totalFinancing: number | null;
   runsWithCashSignals: number;
   runsWithCashVariance: number;
   tone: "default" | "success" | "warning" | "danger";

@@ -690,7 +690,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
             capitalSummary.TotalCash.ToString("C0"),
             capitalSummary.GrossExposure.ToString("C0"),
             capitalSummary.NetExposure.ToString("C0"),
-            capitalSummary.FinancingCost.ToString("C0"),
+            capitalSummary.FinancingCost?.ToString("C0") ?? "Unavailable",
             capitalSummary.Highlights.FirstOrDefault()
                 ?? "Capital and financing posture is available for the active fund.");
     }

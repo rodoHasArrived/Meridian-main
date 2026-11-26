@@ -161,7 +161,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Services.VerificationJobEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:508](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L508).
+Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:486](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L486).
 
 Carries the archive verification job whose state has changed.
 
@@ -173,13 +173,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public VerificationJob? Job { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:510](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L510) |  |
+| <code>public VerificationJob? Job { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:488](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L488) |  |
 
 ## VerificationProgress
 
 Qualified name: <code>Meridian.Wpf.Services.VerificationProgress</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:524](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L524).
+Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:502](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L502).
 
 Reports archive verification file counts, progress, current file, and processing rate.
 
@@ -191,14 +191,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int ProcessedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:526](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L526) |  |
-| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:527](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L527) |  |
-| <code>public int VerifiedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:528](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L528) |  |
-| <code>public int FailedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:529](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L529) |  |
-| <code>public double ProgressPercent { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:530](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L530) |  |
-| <code>public string? CurrentFile { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:531](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L531) |  |
-| <code>public double FilesPerSecond { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:532](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L532) |  |
-| <code>public int? EstimatedTimeRemainingSeconds { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:533](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L533) |  |
+| <code>public int ProcessedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:504](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L504) |  |
+| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:505](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L505) |  |
+| <code>public int VerifiedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:506](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L506) |  |
+| <code>public int FailedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:507](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L507) |  |
+| <code>public double ProgressPercent { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:508](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L508) |  |
+| <code>public string? CurrentFile { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:509](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L509) |  |
+| <code>public double FilesPerSecond { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:510](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L510) |  |
+| <code>public int? EstimatedTimeRemainingSeconds { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:511](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L511) |  |
 
 ## ViewModelViewResolver
 
@@ -225,7 +225,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Services.Watchlist</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/WatchlistService.cs:619](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L619).
+Source: [src/Meridian.Wpf/Services/WatchlistService.cs:566](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L566).
 
 Represents a symbol watchlist.
 
@@ -237,21 +237,21 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Id { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:622](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L622) | Unique watchlist identifier. |
-| <code>public string Name { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:625](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L625) | Display name for the watchlist. |
-| <code>public List&lt;string&gt; Symbols { get; init; } = new ();</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:628](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L628) | Symbols in this watchlist. |
-| <code>public string? Color { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:631](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L631) | Color for UI display (hex format). |
-| <code>public int SortOrder { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:634](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L634) | Sort order for UI. |
-| <code>public bool IsPinned { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:637](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L637) | Whether this watchlist is pinned/favorited. |
-| <code>public bool IsActive { get; init; } = true;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:640](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L640) | Whether subscriptions are active for this watchlist. |
-| <code>public DateTimeOffset CreatedAt { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:643](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L643) | When the watchlist was created. |
-| <code>public DateTimeOffset ModifiedAt { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:646](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L646) | When the watchlist was last modified. |
+| <code>public string Id { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:569](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L569) | Unique watchlist identifier. |
+| <code>public string Name { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:572](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L572) | Display name for the watchlist. |
+| <code>public List&lt;string&gt; Symbols { get; init; } = new ();</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:575](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L575) | Symbols in this watchlist. |
+| <code>public string? Color { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:578](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L578) | Color for UI display (hex format). |
+| <code>public int SortOrder { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:581](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L581) | Sort order for UI. |
+| <code>public bool IsPinned { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:584](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L584) | Whether this watchlist is pinned/favorited. |
+| <code>public bool IsActive { get; init; } = true;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:587](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L587) | Whether subscriptions are active for this watchlist. |
+| <code>public DateTimeOffset CreatedAt { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:590](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L590) | When the watchlist was created. |
+| <code>public DateTimeOffset ModifiedAt { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:593](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L593) | When the watchlist was last modified. |
 
 ## WatchlistChangeType
 
 Qualified name: <code>Meridian.Wpf.Services.WatchlistChangeType</code>. Kind: `enum`.
 
-Source: [src/Meridian.Wpf/Services/WatchlistService.cs:670](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L670).
+Source: [src/Meridian.Wpf/Services/WatchlistService.cs:617](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L617).
 
 Type of watchlist change.
 
@@ -263,17 +263,16 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Created</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:672](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L672) |  |
-| <code>Updated</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:673](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L673) |  |
-| <code>Deleted</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:674](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L674) |  |
-| <code>Reordered</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:675](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L675) |  |
-| <code>Synced</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:676](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L676) |  |
+| <code>Created</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:619](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L619) |  |
+| <code>Updated</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:620](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L620) |  |
+| <code>Deleted</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:621](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L621) |  |
+| <code>Reordered</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:622](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L622) |  |
 
 ## WatchlistsChangedEventArgs
 
 Qualified name: <code>Meridian.Wpf.Services.WatchlistsChangedEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/WatchlistService.cs:652](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L652).
+Source: [src/Meridian.Wpf/Services/WatchlistService.cs:599](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L599).
 
 Event arguments for watchlist changes.
 
@@ -285,17 +284,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public WatchlistChangeType ChangeType { get; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:655](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L655) | Type of change that occurred. |
-| <code>public Watchlist? Watchlist { get; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:658](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L658) | The affected watchlist (may be null for bulk operations). |
-| <code>public WatchlistsChangedEventArgs(WatchlistChangeType changeType, Watchlist? watchlist);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:660](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L660) |  |
+| <code>public WatchlistChangeType ChangeType { get; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:602](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L602) | Type of change that occurred. |
+| <code>public Watchlist? Watchlist { get; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:605](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L605) | The affected watchlist (may be null for bulk operations). |
+| <code>public WatchlistsChangedEventArgs(WatchlistChangeType changeType, Watchlist? watchlist);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:607](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L607) |  |
 
 ## WatchlistService
 
 Qualified name: <code>Meridian.Wpf.Services.WatchlistService</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/WatchlistService.cs:28](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L28).
+Source: [src/Meridian.Wpf/Services/WatchlistService.cs:29](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L29).
 
-Service for managing symbol watchlists in the WPF application. Provides local persistence and optional synchronization with the backend API. Implements the shared IWatchlistService seam so shared UI services can read this host&#x27;s watchlists instead of the in-memory default.
+Service for managing symbol watchlists in the WPF application. Watchlists are persisted to a local file, which is their source of truth; the host maps no watchlist route, so there is no backend copy to synchronize with. Implements the shared IWatchlistService seam so shared UI services can read this host&#x27;s watchlists instead of the in-memory default.
 
 ```csharp
 public sealed class WatchlistService : IWatchlistReader, IWatchlistService
@@ -306,21 +305,19 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static WatchlistService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:43](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L43) | Gets the singleton instance of the WatchlistService. |
-| <code>public string BaseUrl { get; set; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:48](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L48) | Gets or sets the base URL for the API. |
-| <code>public event EventHandler&lt;WatchlistsChangedEventArgs&gt;? WatchlistsChanged;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:57](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L57) | Occurs when watchlists are updated. |
-| <code>public async Task&lt;IReadOnlyList&lt;Watchlist&gt;&gt; GetAllWatchlistsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:80](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L80) | Gets all watchlists. |
-| <code>public async Task&lt;Watchlist?&gt; GetWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:95](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L95) | Gets a specific watchlist by ID. |
-| <code>public async Task&lt;Watchlist&gt; CreateWatchlistAsync(string name, IEnumerable&lt;string&gt;? symbols = null, string? color = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:112](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L112) | Creates a new watchlist. |
-| <code>public async Task&lt;Watchlist?&gt; UpdateWatchlistAsync(string watchlistId, string? name = null, string? color = null, bool? isPinned = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:152](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L152) | Updates an existing watchlist. |
-| <code>public async Task&lt;bool&gt; DeleteWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:199](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L199) | Deletes a watchlist. |
-| <code>public async Task&lt;int&gt; AddSymbolsAsync(string watchlistId, IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:231](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L231) | Adds symbols to a watchlist. |
-| <code>public async Task&lt;int&gt; RemoveSymbolsAsync(string watchlistId, IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:286](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L286) | Removes symbols from a watchlist. |
-| <code>public async Task&lt;IReadOnlyList&lt;Watchlist&gt;&gt; GetWatchlistsForSymbolAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:337](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L337) | Gets all watchlists that contain a specific symbol. |
-| <code>public async Task&lt;string?&gt; ExportWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:352](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L352) | Exports a watchlist to JSON. |
-| <code>public async Task&lt;Watchlist?&gt; ImportWatchlistAsync(string json, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:367](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L367) | Imports a watchlist from JSON. |
-| <code>public async Task&lt;bool&gt; SyncWithBackendAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:393](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L393) | Syncs local watchlists with the backend API. |
-| <code>public async Task ReorderWatchlistsAsync(IEnumerable&lt;string&gt; watchlistIds, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:435](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L435) | Reorders watchlists. |
-| <code>public async Task&lt;bool&gt; CreateOrUpdateWatchlistAsync(string name, IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:478](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L478) | Creates a new watchlist or updates an existing one with the given name. If a watchlist with the name exists, symbols are added to it. Otherwise, a new watchlist is created. |
+| <code>public event EventHandler&lt;WatchlistsChangedEventArgs&gt;? WatchlistsChanged;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:48](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L48) | Occurs when watchlists are updated. |
+| <code>public async Task&lt;IReadOnlyList&lt;Watchlist&gt;&gt; GetAllWatchlistsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:69](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L69) | Gets all watchlists. |
+| <code>public async Task&lt;Watchlist?&gt; GetWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:84](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L84) | Gets a specific watchlist by ID. |
+| <code>public async Task&lt;Watchlist&gt; CreateWatchlistAsync(string name, IEnumerable&lt;string&gt;? symbols = null, string? color = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:101](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L101) | Creates a new watchlist. |
+| <code>public async Task&lt;Watchlist?&gt; UpdateWatchlistAsync(string watchlistId, string? name = null, string? color = null, bool? isPinned = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:141](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L141) | Updates an existing watchlist. |
+| <code>public async Task&lt;bool&gt; DeleteWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:188](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L188) | Deletes a watchlist. |
+| <code>public async Task&lt;int&gt; AddSymbolsAsync(string watchlistId, IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:220](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L220) | Adds symbols to a watchlist. |
+| <code>public async Task&lt;int&gt; RemoveSymbolsAsync(string watchlistId, IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:275](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L275) | Removes symbols from a watchlist. |
+| <code>public async Task&lt;IReadOnlyList&lt;Watchlist&gt;&gt; GetWatchlistsForSymbolAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:326](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L326) | Gets all watchlists that contain a specific symbol. |
+| <code>public async Task&lt;string?&gt; ExportWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:341](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L341) | Exports a watchlist to JSON. |
+| <code>public async Task&lt;Watchlist?&gt; ImportWatchlistAsync(string json, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:356](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L356) | Imports a watchlist from JSON. |
+| <code>public async Task ReorderWatchlistsAsync(IEnumerable&lt;string&gt; watchlistIds, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:382](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L382) | Reorders watchlists. |
+| <code>public async Task&lt;bool&gt; CreateOrUpdateWatchlistAsync(string name, IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:425](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L425) | Creates a new watchlist or updates an existing one with the given name. If a watchlist with the name exists, symbols are added to it. Otherwise, a new watchlist is created. |
 
 ## WindowStartupRecovery
 

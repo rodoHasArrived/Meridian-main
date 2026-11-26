@@ -457,6 +457,11 @@ public sealed class DesignerPaperRehearsalTests
 
         // A current accepted price marks the run's defensive projection, never the durable fill.
         cache.RecordTrade(Symbol, new Trade(DateTimeOffset.UtcNow, Symbol, 103m, 1000, AggressorSide.Buy, ++tick));
+
+        // A financing charge on the run's own session is the run's, so its metrics measure it.
+        (await sessions.RecordFinancingAsync(new PaperFinancingCharge(sessionId, PaperTradingPortfolio.DefaultAccountId,
+            DateOnly.FromDateTime(DateTime.UtcNow), 2.50m, "run-session-financing", "Assessed run charge", "operator"),
+            timeout.Token)).Should().BeTrue();
         var stopped = await engine.StopRunWithOutcomeAsync(paper.RunId, timeout.Token);
         stopped.Should().NotBeNull();
         stopped!.State.Should().Be(OperationTerminalState.Succeeded,
@@ -464,7 +469,12 @@ public sealed class DesignerPaperRehearsalTests
         var session = sessions.GetSession(sessionId)!;
         session.Summary.FundAccountId.Should().Be(AccountId);
         session.Summary.JournalCurrency.Should().Be("USD");
-        session.Portfolio!.Cash.Should().Be(100_000m - 10m * 102m - 1m);
+        session.Portfolio!.Cash.Should().Be(100_000m - 10m * 102m - 1m - 2.50m);
+        var paperMetrics = (await repository.GetRunByIdAsync(paper.RunId))!.Metrics!;
+        paperMetrics.Metrics.InitialCapital.Should().Be(100_000m, "the run is funded by its own session");
+        paperMetrics.Metrics.TotalMarginInterest.Should().Be(2.50m);
+        paperMetrics.EngineMetadata!.FinancingCoverageStatus.Should().Be(BacktestFinancingCoverageStatuses.Available);
+        paperMetrics.EngineMetadata.RunAttributedMarginInterest.Should().Be(2.50m);
         session.Portfolio.Positions.Should().ContainSingle().Which.Quantity.Should().Be(10);
         session.OrderHistory.Should().Contain(order => order.IntentId.HasValue && order.FilledQuantity == 10m);
         sessions.GetLedger(sessionId)!.Journal.Should().Contain(entry =>
@@ -481,10 +491,11 @@ public sealed class DesignerPaperRehearsalTests
         var completedPaper = (await repository.GetRunByIdAsync(paper.RunId, timeout.Token))!;
         completedPaper.Metrics!.Request.InitialCash.Should().Be(sourceRun.Metrics.Request.InitialCash);
         completedPaper.Metrics.Metrics.InitialCapital.Should().Be(100_000m);
-        completedPaper.Metrics.Metrics.FinalEquity.Should().Be(100_000m - 10m * 102m - 1m + 10m * 103m);
+        completedPaper.Metrics.Metrics.FinalEquity.Should().Be(100_000m - 10m * 102m - 1m - 2.50m + 10m * 103m,
+            "bought at 102 and marked at 103, less commission and the session's financing charge");
         completedPaper.Metrics.Fills.Should().ContainSingle().Which.FillId.Should().Be(handoff.FillId);
         var paperSnapshot = completedPaper.Metrics.Snapshots.Should().ContainSingle().Subject;
-        paperSnapshot.Cash.Should().Be(nativeAccount.Cash);
+        paperSnapshot.Cash.Should().Be(nativeAccount.Cash - 2.50m, "the session paid the financing charge from its cash");
         paperSnapshot.TotalEquity.Should().Be(completedPaper.Metrics.Metrics.FinalEquity);
         paperSnapshot.FunctionalCurrency.Should().Be("USD");
         paperSnapshot.Positions.Keys.Should().Equal(Symbol);

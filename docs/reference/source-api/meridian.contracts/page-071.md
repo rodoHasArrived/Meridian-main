@@ -416,7 +416,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakQueueProjectionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:259](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L259).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:263](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L263).
 
 Reconciliation break-queue projection used by shared operator workflows.
 
@@ -428,7 +428,7 @@ public sealed record ReconciliationBreakQueueProjectionDto(int TotalCount, int O
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakQueueProjectionItemDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:274](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L274).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:278](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L278).
 
 One projected reconciliation break row including routing and sign-off evidence fields.
 

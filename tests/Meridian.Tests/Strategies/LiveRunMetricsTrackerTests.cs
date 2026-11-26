@@ -272,6 +272,57 @@ public sealed class LiveRunMetricsTrackerTests
         Commission: 0m,
         FilledAt: StartedAt);
 
+    [Fact]
+    public void RecordDayEnd_ReportsLongAndShortExposureFromAccounts_NotEquityMinusCash()
+    {
+        // Long $100k and short $60k with $1,000k cash: equity 1,040k. Equity minus cash nets the
+        // book to $40k long and no short; the accounts carry the real split (gross $160k).
+        var tracker = new LiveRunMetricsTracker(1_000_000m, StartedAt);
+        var account = new FinancialAccountSnapshot(
+            AccountId: "live",
+            DisplayName: "Live",
+            Kind: FinancialAccountKind.Brokerage,
+            Institution: "Paper",
+            Cash: 1_000_000m,
+            MarginBalance: 0m,
+            LongMarketValue: 100_000m,
+            ShortMarketValue: -60_000m,
+            Equity: 1_040_000m,
+            Positions: new Dictionary<string, Position>(),
+            Rules: new FinancialAccountRules());
+
+        tracker.RecordDayEnd(
+            DateOnly.FromDateTime(StartedAt.UtcDateTime).AddDays(1),
+            cash: 1_000_000m,
+            equity: 1_040_000m,
+            positions: new Dictionary<string, Position>(),
+            accounts: new Dictionary<string, FinancialAccountSnapshot> { ["live"] = account });
+        var snapshot = tracker.Build("BrokerPaper", new HashSet<string>(), 1_040_000m, new MeridianLedger(), StartedAt.AddDays(1))
+            .Snapshots.Single();
+
+        snapshot.LongMarketValue.Should().Be(100_000m);
+        snapshot.ShortMarketValue.Should().Be(-60_000m);
+        (snapshot.LongMarketValue + Math.Abs(snapshot.ShortMarketValue)).Should().Be(160_000m, "gross exposure");
+    }
+
+    [Fact]
+    public void RecordDayEnd_WithoutAccounts_KeepsTheNetFallback()
+    {
+        var tracker = new LiveRunMetricsTracker(1_000m, StartedAt);
+
+        tracker.RecordDayEnd(
+            DateOnly.FromDateTime(StartedAt.UtcDateTime).AddDays(1),
+            cash: 600m,
+            equity: 1_000m,
+            positions: new Dictionary<string, Position>(),
+            accounts: new Dictionary<string, FinancialAccountSnapshot>());
+        var snapshot = tracker.Build("BrokerPaper", new HashSet<string>(), 1_000m, new MeridianLedger(), StartedAt.AddDays(1))
+            .Snapshots.Single();
+
+        snapshot.LongMarketValue.Should().Be(400m);
+        snapshot.ShortMarketValue.Should().Be(0m);
+    }
+
     private static IReadOnlyList<TradeCashFlow> BuildCashFlows(LiveRunMetricsTracker tracker) => tracker
         .Build(
             engineId: "BrokerPaper",

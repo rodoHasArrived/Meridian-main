@@ -6,16 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## OperationsReconciliationLaneSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsReconciliationLaneSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1155](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1155).
-
-```csharp
-public sealed record OperationsReconciliationLaneSummaryDto(string LaneId, string Label, OperationsReconciliationLaneStatusDto Status, bool IsReady, int BreakCount, string Summary, string? RouteHint, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? RequiredActions = null);
-```
-
 ## OperationsReconciliationRunRequestDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsReconciliationRunRequestDto</code>. Kind: `record`.
@@ -705,3 +695,15 @@ Enum declarations:
 | <code>Success = 1</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L24) |  |
 | <code>Warning = 2</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L25) |  |
 | <code>Critical = 3</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:26](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L26) |  |
+
+## ParameterDiff
+
+Qualified name: <code>Meridian.Contracts.Workstation.ParameterDiff</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:930](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L930).
+
+A single parameter change between two runs.
+
+```csharp
+public sealed record ParameterDiff(string Key, string? BaseValue, string? TargetValue);
+```

@@ -54,15 +54,6 @@ public sealed class DesktopClientRouteContractTests : EndpointIntegrationTestBas
     /// </summary>
     internal static readonly HashSet<string> KnownUnmappedDesktopRoutes = new(StringComparer.Ordinal)
     {
-        // Activity log page polls a server log feed that was never mapped. A non-success response
-        // shows the "Offline Mode" notice once and the page keeps its locally captured log entries.
-        "src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs -> /api/logs",
-        // Optional watchlist backend sync. A 404 returns false without logging and the service
-        // keeps the locally persisted watchlists, which remain the source of truth.
-        "src/Meridian.Wpf/Services/WatchlistService.cs -> /api/watchlists",
-        // Archive health probe. Any non-success response falls through to the locally calculated
-        // health status, so the page still renders.
-        "src/Meridian.Wpf/Services/ArchiveHealthService.cs -> /api/archive/health",
     };
 
     [Fact]

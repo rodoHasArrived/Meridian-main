@@ -8,6 +8,22 @@ public sealed partial class PaperSessionPersistenceService
         => CurrentSessions.TryGetValue(sessionId, out var session)
             && (session.JournalCurrency is not null || _financing is not null && session.AccountingContext == _financing.PostingContext);
 
+    /// <summary>
+    /// The financing charges retained for a session, in the order they were accepted, or
+    /// <see langword="null"/> when the session is not loaded. An empty list is a measured
+    /// absence of charges, which a strategy run that owns its session can report as zero.
+    /// </summary>
+    public IReadOnlyList<PaperFinancingCharge>? GetSessionFinancingCharges(string sessionId)
+    {
+        ThrowIfDisposed();
+        if (!CurrentSessions.TryGetValue(sessionId, out var session))
+            return null;
+        lock (session.SyncRoot)
+        {
+            return session.FinancingHistory.ToArray();
+        }
+    }
+
     /// <summary>Retains and posts an assessed financing charge before changing session cash.
     /// A failed posting remains pending in the durable outbox and is retried on recovery.</summary>
     public async Task<bool> RecordFinancingAsync(PaperFinancingCharge charge, CancellationToken ct = default)

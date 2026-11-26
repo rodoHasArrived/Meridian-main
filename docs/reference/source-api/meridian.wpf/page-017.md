@@ -702,9 +702,9 @@ public partial class AccountPortfolioPage : Page
 
 Qualified name: <code>Meridian.Wpf.Views.ActivityLogPage</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/ActivityLogPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/ActivityLogPage.xaml.cs#L16).
+Source: [src/Meridian.Wpf/Views/ActivityLogPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/ActivityLogPage.xaml.cs#L17).
 
-Activity log page — thin code-behind. All state, HTTP loading, filtering, and timer management live in ActivityLogViewModel. The only UI-level action kept here is LogList.ScrollIntoView which requires a direct reference to the list control.
+Activity log page — thin code-behind. All state and filtering live in ActivityLogViewModel, which shows the desktop&#x27;s own log entries live (the server exposes no log feed). The only UI-level action kept here is LogList.ScrollIntoView which requires a direct reference to the list control.
 
 ```csharp
 public partial class ActivityLogPage : Page
@@ -714,7 +714,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ActivityLogPage(WpfServices.StatusService statusService, WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/Views/ActivityLogPage.xaml.cs:20](../../../../src/Meridian.Wpf/Views/ActivityLogPage.xaml.cs#L20) |  |
+| <code>public ActivityLogPage(WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/Views/ActivityLogPage.xaml.cs:21](../../../../src/Meridian.Wpf/Views/ActivityLogPage.xaml.cs#L21) |  |
 
 Source: [src/Meridian.Wpf/Views/Pages.cs:108](../../../../src/Meridian.Wpf/Views/Pages.cs#L108).
 

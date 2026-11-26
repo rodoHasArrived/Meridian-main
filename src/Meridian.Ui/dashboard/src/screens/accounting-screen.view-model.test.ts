@@ -973,6 +973,25 @@ describe("accounting-screen view model", () => {
     expect(state.statusAnnouncement).toBe("Variance review: Cash-flow coverage is available for 4 runs; 2 runs need variance review.");
   });
 
+  it("shows unmeasured financing as unavailable rather than a measured zero", () => {
+    const cashFlow: AccountingCashFlowSummary = {
+      totalCash: 120000,
+      totalLedgerCash: 120000,
+      netVariance: 0,
+      totalFinancing: null,
+      runsWithCashSignals: 2,
+      runsWithCashVariance: 0,
+      tone: "success",
+      summary: "Cash-flow coverage is aligned across 2 runs."
+    };
+
+    const state = buildAccountingCashFlowViewState(cashFlow, "/accounting", "ledger");
+
+    expect(state.rows).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "financing", value: "Unavailable", ariaLabel: "Financing: Unavailable" })
+    ]));
+  });
+
   it("derives pending cash-flow state when workspace data is unavailable", () => {
     const state = buildAccountingCashFlowViewState(null, "/accounting", "ledger");
 

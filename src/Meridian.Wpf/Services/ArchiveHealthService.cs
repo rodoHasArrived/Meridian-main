@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
@@ -13,20 +11,18 @@ using Meridian.Contracts.Archive;
 using Meridian.Contracts.Configuration;
 using Meridian.Storage.Services;
 using Meridian.Ui.Services;
-using HttpClientFactoryProvider = Meridian.Ui.Services.HttpClientFactoryProvider;
-using HttpClientNames = Meridian.Ui.Services.HttpClientNames;
 
 namespace Meridian.Wpf.Services;
 
 /// <summary>
-/// Service for monitoring archive health and verification.
+/// Service for monitoring archive health and verification. Health is calculated locally from the
+/// configured data root: the host maps no archive health route, so there is no server copy to read.
 /// </summary>
 public sealed class ArchiveHealthService
 {
     private static readonly Lazy<ArchiveHealthService> _instance = new(() => new ArchiveHealthService());
     public static ArchiveHealthService Instance => _instance.Value;
 
-    private readonly HttpClient _httpClient;
     private readonly string _healthStatusPath;
     private ArchiveHealthStatus? _cachedHealthStatus;
     private DateTime _lastHealthCheck;
@@ -36,7 +32,6 @@ public sealed class ArchiveHealthService
 
     private ArchiveHealthService()
     {
-        _httpClient = HttpClientFactoryProvider.CreateClient(HttpClientNames.Default);
         _healthStatusPath = Path.Combine(
             MeridianPathDefaults.GetCatalogRoot(FirstRunService.Instance.ConfigFilePath),
             "archive_health.json");
@@ -55,31 +50,7 @@ public sealed class ArchiveHealthService
             return _cachedHealthStatus;
         }
 
-        try
-        {
-            var response = await _httpClient.GetAsync("/api/archive/health");
-            if (response.IsSuccessStatusCode)
-            {
-                var status = await response.Content.ReadFromJsonAsync<ArchiveHealthStatus>();
-                if (status != null)
-                {
-                    _cachedHealthStatus = status;
-                    _lastHealthCheck = DateTime.UtcNow;
-                    HealthStatusUpdated?.Invoke(this, new ArchiveHealthEventArgs { Status = status });
-                    return status;
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            // Fall through to calculate locally
-            LoggingService.Instance.LogDebug(
-                "Archive health API call failed; calculating status locally.",
-                ("exception", ex.GetType().Name),
-                ("message", ex.Message));
-        }
-
-        var localStatus = await CalculateHealthStatusAsync();
+        var localStatus = await CalculateHealthStatusAsync(ct);
         _cachedHealthStatus = localStatus;
         _lastHealthCheck = DateTime.UtcNow;
         HealthStatusUpdated?.Invoke(this, new ArchiveHealthEventArgs { Status = localStatus });
@@ -176,13 +147,13 @@ public sealed class ArchiveHealthService
 
     public async Task ResolveIssueAsync(string issueId, CancellationToken ct = default)
     {
-        var status = await GetHealthStatusAsync();
+        var status = await GetHealthStatusAsync(ct: ct);
         var issue = status.Issues?.FirstOrDefault(i => i.Id == issueId);
 
         if (issue != null)
         {
             issue.ResolvedAt = DateTime.UtcNow;
-            await SaveHealthStatusAsync(status);
+            await SaveHealthStatusAsync(status, ct);
             IssueResolved?.Invoke(this, new ArchiveIssueEventArgs { Issue = issue });
         }
     }
@@ -212,7 +183,9 @@ public sealed class ArchiveHealthService
 
     private async Task<ArchiveHealthStatus> CalculateHealthStatusAsync(CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var config = await ConfigService.Instance.LoadConfigAsync();
+        ct.ThrowIfCancellationRequested();
         var basePath = ConfigService.Instance.ResolveDataRoot(config);
 
         var status = new ArchiveHealthStatus
@@ -254,6 +227,7 @@ public sealed class ArchiveHealthService
                 var files = Directory.GetFiles(basePath, "*.*", SearchOption.AllDirectories)
                     .Where(f => f.EndsWith(".jsonl") || f.EndsWith(".jsonl.gz") || f.EndsWith(".parquet"))
                     .ToList();
+                ct.ThrowIfCancellationRequested();
 
                 status.TotalFiles = files.Count;
                 status.TotalSizeBytes = files.Sum(f => new FileInfo(f).Length);
@@ -273,7 +247,7 @@ public sealed class ArchiveHealthService
                 }
 
                 status.PendingFiles = status.TotalFiles - status.VerifiedFiles - status.FailedFiles;
-            });
+            }, ct);
         }
 
         status.Issues = issues.ToArray();
@@ -485,7 +459,11 @@ public sealed class ArchiveHealthService
 
             var json = JsonSerializer.Serialize(status, DesktopJsonOptions.PrettyPrint);
 
-            await File.WriteAllTextAsync(_healthStatusPath, json);
+            await File.WriteAllTextAsync(_healthStatusPath, json, ct);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {

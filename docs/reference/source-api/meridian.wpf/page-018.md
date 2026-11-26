@@ -631,7 +631,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.IssueDisplayItem</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:472](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L472).
+Source: [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:476](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L476).
 
 Presents an archive issue&#x27;s severity, suggested action, and automatic-fix availability.
 
@@ -643,14 +643,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IssueDisplayItem(ArchiveIssue issue);</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:476](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L476) |  |
-| <code>public string Id =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:481](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L481) |  |
-| <code>public string Message =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:482](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L482) |  |
-| <code>public string? SuggestedAction =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:483](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L483) |  |
-| <code>public string Severity =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:484](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L484) |  |
-| <code>public bool IsAutoFixable =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:485](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L485) |  |
-| <code>public Brush SeverityColor =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:487](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L487) |  |
-| <code>public Visibility IsAutoFixableVisibility =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:494](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L494) |  |
+| <code>public IssueDisplayItem(ArchiveIssue issue);</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:480](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L480) |  |
+| <code>public string Id =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:485](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L485) |  |
+| <code>public string Message =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:486](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L486) |  |
+| <code>public string? SuggestedAction =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:487](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L487) |  |
+| <code>public string Severity =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:488](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L488) |  |
+| <code>public bool IsAutoFixable =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:489](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L489) |  |
+| <code>public Brush SeverityColor =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:491](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L491) |  |
+| <code>public Visibility IsAutoFixableVisibility =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:498](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L498) |  |
 
 ## IWorkspaceShellPageContextAware
 

@@ -65,7 +65,7 @@ public sealed class SftpFilePublisher : ISftpFilePublisher
                         var relative = Path.GetRelativePath(localPath, file).Replace('\\', '/');
                         var remotePath = SftpRemoteLocation.Combine(location.RemotePath, relative);
                         EnsureRemoteDirectory(client, Path.GetDirectoryName(remotePath)!.Replace('\\', '/'));
-                        UploadAtomic(client, file, remotePath, canOverwrite: true, ct);
+                        UploadAtomic(client, file, remotePath, destination.OverwriteIfExists, ct);
                     }
                 }
                 else
@@ -87,19 +87,37 @@ public sealed class SftpFilePublisher : ISftpFilePublisher
     {
         ct.ThrowIfCancellationRequested();
         var tempPath = remotePath + ".meridian-upload-" + Guid.NewGuid().ToString("N") + ".tmp";
-        var uploaded = false;
+        var renamed = false;
         try
         {
-            using var fs = File.OpenRead(localPath);
-            client.UploadFile(fs, tempPath, canOverwrite: true);
-            uploaded = true;
+            using (var fs = File.OpenRead(localPath))
+            {
+                client.UploadFile(fs, tempPath, canOverwrite: true);
+            }
+
             ct.ThrowIfCancellationRequested();
             client.RenameFile(tempPath, remotePath, canOverwrite);
+            renamed = true;
         }
         finally
         {
-            if (uploaded && client.Exists(tempPath))
+            // An upload that fails part-way can still leave a partial temp file on the
+            // partner's server, so clean up whenever the rename did not happen.
+            if (!renamed)
+                TryDeleteRemoteTemp(client, tempPath);
+        }
+    }
+
+    private static void TryDeleteRemoteTemp(ISftpClient client, string tempPath)
+    {
+        try
+        {
+            if (client.Exists(tempPath))
                 client.DeleteFile(tempPath);
+        }
+        catch (Exception)
+        {
+            // Best effort: never let cleanup mask the upload or rename failure.
         }
     }
 

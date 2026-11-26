@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Meridian.Application.Backfill;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Startup;
@@ -8,6 +9,7 @@ using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Platform.Results;
 using Meridian.Application.Services;
+using Meridian.Application.Subscriptions.Services;
 using Meridian.Application.UI;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Enums;
@@ -53,6 +55,8 @@ public sealed class CollectorModeRunner
             () => ctx.ConfigurationService.LoadAndPrepareConfig(ctx.ConfigPath));
 
         ConfigWatcher? watcher = null;
+        AutoResubscribePolicy? depthResubscribePolicy = null;
+        Action<DepthIntegrityEvent>? depthIntegrityHandler = null;
 
         await using var hostStartup = await HostStartupFactory
             .CreateAsync(ctx.Deployment, ctx.ConfigPath, ct)
@@ -316,6 +320,23 @@ public sealed class CollectorModeRunner
             var runtimeCfg = SharedStartupHelpers.EnsureDefaultSymbols(ctx.Config);
             await subscriptionManager.ApplyAsync(runtimeCfg, ct);
             var symbols = runtimeCfg.Symbols ?? Array.Empty<SymbolConfig>();
+
+            // A depth integrity failure leaves the symbol's book stale until it is reset and the
+            // provider replays it. The policy re-requests depth (rate-limited and circuit-broken);
+            // the simulated feed exercises a stale book on purpose and resets it itself.
+            if (!ctx.CliArgs.SimulateFeed)
+            {
+                var resubscribePolicy = new AutoResubscribePolicy(subscriptionManager);
+                // A stale book reports every rejected update; run at most one recovery per symbol.
+                var recovering = new ConcurrentDictionary<string, byte>(StringComparer.OrdinalIgnoreCase);
+                depthResubscribePolicy = resubscribePolicy;
+                depthIntegrityHandler = evt =>
+                {
+                    if (recovering.TryAdd(evt.Symbol, 0))
+                        _ = RecoverDepthAsync(resubscribePolicy, evt, recovering, ct);
+                };
+                depthCollector.IntegrityDetected += depthIntegrityHandler;
+            }
             gapBackfillSymbols = symbols.Select(static s => s.Symbol).ToArray();
 
             if (ctx.Deployment.HotReloadEnabled)
@@ -394,6 +415,12 @@ public sealed class CollectorModeRunner
         }
         finally
         {
+            if (depthIntegrityHandler is not null)
+                depthCollector.IntegrityDetected -= depthIntegrityHandler;
+
+            if (depthResubscribePolicy is not null)
+                await depthResubscribePolicy.DisposeAsync().ConfigureAwait(false);
+
             if (gapBackfill is not null)
             {
                 foreach (var gapSource in gapSources)
@@ -430,6 +457,35 @@ public sealed class CollectorModeRunner
         }
 
         return 0;
+    }
+
+    /// <summary>
+    /// Runs depth recovery off the provider callback thread. Failures are already counted by the
+    /// policy's breakers; this only keeps an unobserved task from surfacing them.
+    /// </summary>
+    private async Task RecoverDepthAsync(
+        AutoResubscribePolicy policy,
+        DepthIntegrityEvent evt,
+        ConcurrentDictionary<string, byte> recovering,
+        CancellationToken ct)
+    {
+        try
+        {
+            await Task.Yield();
+            await policy.OnDepthIntegrityEventAsync(evt, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Shutdown.
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Depth recovery for {Symbol} failed", evt.Symbol);
+        }
+        finally
+        {
+            recovering.TryRemove(evt.Symbol, out _);
+        }
     }
 
     /// <summary>

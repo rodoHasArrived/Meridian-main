@@ -282,7 +282,9 @@ public sealed class OptionDataCollector
         {
             lock (_sync)
             {
-                var take = Math.Min(limit, _count);
+                // A non-positive limit (e.g. ?limit=-1 from the API) returns nothing rather
+                // than sizing a negative array.
+                var take = Math.Clamp(limit, 0, _count);
                 var result = new OptionTrade[take];
                 for (int i = 0; i < take; i++)
                 {

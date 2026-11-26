@@ -319,6 +319,42 @@ public sealed class StrategyRunReadServiceTests
     }
 
     [Fact]
+    public async Task GetRunDetailAsync_UnavailableFinancingCoverage_ReportsNullMarginInterestAndFinancing()
+    {
+        var store = new StrategyRunStore();
+        var run = BuildCompletedRun(
+            runId: "run-unmeasured-financing",
+            strategyId: "momentum-1",
+            strategyName: "Momentum",
+            finalEquity: 125_000m,
+            netPnl: 25_000m,
+            totalReturn: 0.25m,
+            realizedPnl: 9_000m,
+            unrealizedPnl: 16_000m,
+            fillCount: 2,
+            sharpeRatio: 1.42,
+            maxDrawdown: 5_500m);
+        run = run with
+        {
+            Metrics = run.Metrics! with
+            {
+                EngineMetadata = new BacktestEngineMetadata("BrokerPaper")
+                {
+                    FinancingCoverageStatus = BacktestFinancingCoverageStatuses.Unavailable
+                }
+            }
+        };
+        await store.RecordRunAsync(run);
+        var service = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
+
+        var detail = await service.GetRunDetailAsync("run-unmeasured-financing");
+
+        detail!.Summary.Execution!.TotalMarginInterest.Should().BeNull();
+        detail.Summary.Execution.FinancingCoverageStatus.Should().Be(BacktestFinancingCoverageStatuses.Unavailable);
+        detail.Portfolio!.Financing.Should().BeNull();
+    }
+
+    [Fact]
     public async Task GetRunDetailAsync_BuildsSharedPortfolioAndLedgerModels()
     {
         var store = new StrategyRunStore();

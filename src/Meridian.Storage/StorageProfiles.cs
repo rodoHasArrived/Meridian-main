@@ -97,8 +97,11 @@ public static class StorageProfilePresets
                     {
                         new() { Name = "hot", Path = Path.Combine(options.RootPath, "hot"), MaxAgeDays = 7, Format = "jsonl", Compression = CompressionCodec.None },
                         new() { Name = "warm", Path = Path.Combine(options.RootPath, "warm"), MaxAgeDays = 30, Format = "jsonl", Compression = CompressionCodec.Gzip },
-                        new() { Name = "cold", Path = Path.Combine(options.RootPath, "cold"), MaxAgeDays = 180, Format = "parquet", Compression = CompressionCodec.Zstd },
-                        new() { Name = "archive", Path = Path.Combine(options.RootPath, "archive"), Format = "parquet", Compression = CompressionCodec.Zstd }
+                        // Cold and archive stay jsonl + Gzip: TierMigrationService converts
+                        // only to jsonl and compresses only with Gzip, and rejects parquet or
+                        // Zstd targets, so those settings would fail every scheduled migration.
+                        new() { Name = "cold", Path = Path.Combine(options.RootPath, "cold"), MaxAgeDays = 180, Format = "jsonl", Compression = CompressionCodec.Gzip },
+                        new() { Name = "archive", Path = Path.Combine(options.RootPath, "archive"), Format = "jsonl", Compression = CompressionCodec.Gzip }
                     }
                 },
                 Quotas = options.Quotas,

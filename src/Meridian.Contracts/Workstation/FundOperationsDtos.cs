@@ -53,7 +53,7 @@ public sealed record FundWorkspaceSummary(
     decimal GrossExposure,
     decimal NetExposure,
     decimal TotalEquity,
-    decimal FinancingCost,
+    decimal? FinancingCost, // null when any contributing run's financing is unavailable
     decimal PendingSettlement,
     int OpenReconciliationBreaks,
     int ReconciliationRuns,
@@ -143,7 +143,11 @@ public sealed record CashFinancingSummary(
     string Currency,
     decimal TotalCash,
     decimal PendingSettlement,
-    decimal FinancingCost,
+    /// <summary>
+    /// Financing cost across contributing runs, or <see langword="null"/> when any run's financing
+    /// coverage is unavailable: a partial sum would read as a complete total.
+    /// </summary>
+    decimal? FinancingCost,
     decimal MarginBalance,
     decimal RealizedPnl,
     decimal UnrealizedPnl,

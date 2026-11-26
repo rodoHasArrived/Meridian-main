@@ -4512,6 +4512,10 @@ Conflicting evidence under one ID or corrupted accepted records fails closed. In
 retrievals retain evidence without advancing the resume watermark. A caller can supply `Since` to
 rescan for arrivals earlier than the retained watermark; no API page-token durability is assumed.
 
+Fund cash-and-financing summaries and the accounting cash-flow endpoints report financing as
+`null` ("unavailable") when any contributing run's financing coverage is unavailable, instead of
+summing placeholder zeros into a total that reads as complete.
+
 ## Whole-journal downloads
 
 `POST /api/ledger/periods/{periodId}/journal-export` preserves ledger-read, `ExportData`, authenticated tenant/company and retained book-ownership checks. Its existing CSV/Parquet request optionally accepts `from`, `to` and `journalEntryIds`; defaults select every journal retained in the period, including earlier-effective late postings. Supplying either date bound explicitly filters by effective date within the period and fills the missing bound from the period boundary. A single reporting capture supplies period state and every selected journal. Changed period versions require refresh, missing selected IDs reject the entire download, and response headers retain the source snapshot and exact artifact SHA-256. These neutral downloads grant no external-posting authority.

@@ -70,7 +70,7 @@ public sealed record RevokePreparerAttestationRequestDto(Guid CommandId, Guid Re
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunAttributionSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:998](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L998).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1010](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1010).
 
 Complete attribution breakdown for one run.
 
@@ -82,7 +82,7 @@ public sealed record RunAttributionSummary(string RunId, StrategyRunMode Mode, d
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunCashFlowSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1045](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1045).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1057](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1057).
 
 Cash-flow projection summary for a strategy run. Includes both the raw historical entries and a time-bucketed cash ladder computed by the F# CashLadder.build module.
 
@@ -94,7 +94,7 @@ public sealed record RunCashFlowSummary(string RunId, DateTimeOffset AsOf, strin
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunCashLadder</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1031](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1031).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1043](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1043).
 
 Time-bucketed forward view of projected cash flows for one run.
 
@@ -106,27 +106,27 @@ public sealed record RunCashLadder(DateTimeOffset AsOf, string Currency, int Buc
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunComparisonDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:824](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L824).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:832](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L832).
 
 Normalized cross-mode run comparison DTO that includes the full set of BacktestMetrics fields plus equity curve data and parentage chain info. Returned by GET /api/strategies/runs/compare?ids=a,b. Defined nonfinite outcomes retain the SDK&#x27;s named JSON values: positive infinity for loss-free profit factor or downside-free Sortino, and NaN for unavailable XIRR.
 
 ```csharp
-public sealed record RunComparisonDto(string RunId, string? ParentRunId, string StrategyName, StrategyRunMode Mode, StrategyRunEngine Engine, StrategyRunStatus Status, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, decimal? NetPnl, decimal? TotalReturn, decimal? AnnualizedReturn, decimal? FinalEquity, double? SharpeRatio, [property : JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double? SortinoRatio, double? CalmarRatio, decimal? MaxDrawdown, decimal? MaxDrawdownPercent, int MaxDrawdownRecoveryDays, [property : JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double? ProfitFactor, double? WinRate, int TotalTrades, int WinningTrades, int LosingTrades, int FillCount, decimal TotalCommissions, decimal TotalMarginInterest, decimal TotalShortRebates, [property : JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double? Xirr, EquityCurveSummary? EquityCurve, DateTimeOffset LastUpdatedAt, StrategyRunPromotionState PromotionState = StrategyRunPromotionState.None, bool HasLedger = false, bool HasAuditTrail = false, string ContinuityStatus = "Unknown", int ReconciliationBreakCount = 0, ReconciliationBreakSeverity ReconciliationHighestSeverity = ReconciliationBreakSeverity.Info, bool HasLedgerEntryCoverage = false, string LedgerCoverageStatus = "Missing", string CashFlowHealth = "Missing", IReadOnlyList<string>? CompatibilityWarnings = null, StrategyRunArtifactCompleteness? ArtifactCompleteness = null)
+public sealed record RunComparisonDto(string RunId, string? ParentRunId, string StrategyName, StrategyRunMode Mode, StrategyRunEngine Engine, StrategyRunStatus Status, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, decimal? NetPnl, decimal? TotalReturn, decimal? AnnualizedReturn, decimal? FinalEquity, double? SharpeRatio, [property : JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double? SortinoRatio, double? CalmarRatio, decimal? MaxDrawdown, decimal? MaxDrawdownPercent, int MaxDrawdownRecoveryDays, [property : JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double? ProfitFactor, double? WinRate, int TotalTrades, int WinningTrades, int LosingTrades, int FillCount, decimal TotalCommissions, decimal? TotalMarginInterest, decimal TotalShortRebates, [property : JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double? Xirr, EquityCurveSummary? EquityCurve, DateTimeOffset LastUpdatedAt, StrategyRunPromotionState PromotionState = StrategyRunPromotionState.None, bool HasLedger = false, bool HasAuditTrail = false, string ContinuityStatus = "Unknown", int ReconciliationBreakCount = 0, ReconciliationBreakSeverity ReconciliationHighestSeverity = ReconciliationBreakSeverity.Info, bool HasLedgerEntryCoverage = false, string LedgerCoverageStatus = "Missing", string CashFlowHealth = "Missing", IReadOnlyList<string>? CompatibilityWarnings = null, StrategyRunArtifactCompleteness? ArtifactCompleteness = null)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceMixHash { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:868](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L868) |  |
-| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:870](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L870) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:872](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L872) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceMixHash { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:880](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L880) |  |
+| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:882](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L882) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:884](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L884) |  |
 
 ## RunComparisonRequest
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunComparisonRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:876](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L876).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:888](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L888).
 
 Request to compare multiple strategy runs side by side.
 
@@ -138,7 +138,7 @@ public sealed record RunComparisonRequest(IReadOnlyList<string> RunIds, IReadOnl
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunDiffRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:881](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L881).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:893](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L893).
 
 Request to diff two strategy runs.
 
@@ -150,7 +150,7 @@ public sealed record RunDiffRequest(string BaseRunId, string TargetRunId);
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunFillEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:969](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L969).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:981](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L981).
 
 A single executed fill from a strategy run.
 
@@ -162,7 +162,7 @@ public sealed record RunFillEntry(Guid FillId, Guid OrderId, string Symbol, long
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunFillSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:980](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L980).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:992](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L992).
 
 Trade-level fill list for one run.
 
@@ -174,7 +174,7 @@ public sealed record RunFillSummary(string RunId, StrategyRunMode Mode, int Tota
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunLotSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1218](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1218).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1230](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1230).
 
 Lot history for a single strategy run, optionally filtered to one symbol.
 
@@ -186,7 +186,7 @@ public sealed record RunLotSummary(string RunId, int TotalOpenLots, int TotalClo
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunPortfolioDrillInSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1060](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1060).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1072](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1072).
 
 Composite portfolio drill-in payload that keeps attribution, drawdown, cash-flow, and trade slices aligned under one additive, versioned contract.
 

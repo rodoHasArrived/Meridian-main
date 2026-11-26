@@ -4312,10 +4312,12 @@ function cashFlowContextLabel(workstream: AccountingWorkstream): string {
 function buildCashFlowRow(
   id: string,
   label: string,
-  value: number,
+  value: number | null,
   tone: CashFlowEvidenceTone
 ): AccountingCashFlowRowViewModel {
-  const formattedValue = formatPrefixedCurrency(value);
+  // Null means the figure was not measured (for example financing with unavailable coverage);
+  // showing $0 would present it as a measured zero.
+  const formattedValue = value === null ? "Unavailable" : formatPrefixedCurrency(value);
   return {
     id,
     label,

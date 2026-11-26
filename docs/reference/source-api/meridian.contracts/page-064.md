@@ -239,7 +239,7 @@ public sealed record FundAccountSummary(Guid AccountId, AccountTypeDto AccountTy
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundAuditEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:313](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L313).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:317](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L317).
 
 Lightweight audit row combining journal and reconciliation activity.
 
@@ -534,7 +534,7 @@ public sealed record FundPortfolioPosition(string Symbol, long NetQuantity, deci
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundReconciliationItem</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:167](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L167).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:171](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L171).
 
 Reconciliation row shown in Accounting operator queues.
 
@@ -546,9 +546,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal? ComparableBreakAmountTotal { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:186](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L186) |  |
-| <code>public string? BreakAmountCurrency { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:187](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L187) |  |
-| <code>public string? BreakAmountUnavailableReason { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:188](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L188) |  |
+| <code>public decimal? ComparableBreakAmountTotal { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:190](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L190) |  |
+| <code>public string? BreakAmountCurrency { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:191](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L191) |  |
+| <code>public string? BreakAmountUnavailableReason { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:192](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L192) |  |
 
 ## FundReportAssetClassSectionDto
 

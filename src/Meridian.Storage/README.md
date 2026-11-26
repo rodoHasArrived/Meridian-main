@@ -135,7 +135,22 @@ cancellation) is counted in `mdc_sink_write_failures_total{sink="jsonl"}` and th
 JSONL and Parquet sinks retire empty partition buffers after successful flushes. Admission and
 retirement share the buffer lock, so a producer holding an evicted buffer retries admission to
 the current buffer. Failed flushes restore their batches and retain the buffer. Parquet filenames
-and policy directories both use the event's UTC date. `CompositeSink` in `FailOnAnyFailure` mode
+and policy directories both use the event's UTC date.
+
+`ParquetStorageSink` flushes append to an hourly part file beside the day file
+(`{day file}.h{HH}.{instance}-{seq}.parquet-part`), so each copy-on-write append copies at most an
+hour of rows; appending straight to the day file copied the whole day's file on every 5-second
+pipeline flush and left thousands of one-flush row groups. When the hour closes, or on disposal,
+each part is merged into the one-file-per-day `*.parquet` file as one row group by the same atomic
+copy-plus-rename, then deleted. The day file's footer lists merged part names under
+`meridian.compacted-parts`, so a crash between merge and delete never merges rows twice. Parts left
+by a stopped process are adopted once they are two hours old. The `.parquet-part` extension keeps
+query, export, retention, quota and tier services on day files only, so a day file trails the
+newest rows by up to about an hour; JSONL remains the real-time copy. Historical bars are backfill
+batches rather than a streaming flush, so they append to their day file directly, where the v2 bar
+schema's legacy-file handling applies.
+
+`CompositeSink` in `FailOnAnyFailure` mode
 retains per-child acknowledgements for the same in-process event admission, preventing retries
 from re-appending to successful children; this is not cross-process replay deduplication.
 `CatalogSyncSink` carries whole-file counts and ranges across flush windows and restarts, with
@@ -569,6 +584,19 @@ their recovery copies are retained in execution history. `FileMaintenanceService
 owns this operation and the backup helper shared with repair.
 
 Tier migration decodes compressed input with the production JSONL replay decoder before applying an explicitly requested output codec. An unspecified codec preserves source bytes; `None` emits uncompressed bytes with the compression suffix removed. Gzip rollover therefore produces one gzip layer. Deleting a source always requires equal logical-payload checksums through that decoder, including when optional copy verification is disabled; regression coverage also replays migrated events through `JsonlReplayer`.
+Migration writes JSONL only and compresses with Gzip only; parquet or Zstd tier targets are refused. The built-in `Archival` profile therefore tiers hot (JSONL) → warm, cold and archive (JSONL + Gzip).
+
+`PlanMigrationAsync` chains the tiers with `MaxAgeDays` in ascending age and then the tiers without one
+(the archive tier), so the last aged tier now migrates into archive. A tier whose name is not a
+`StorageTier` is skipped, not mapped to Warm. `horizon` is a look-ahead: the plan also lists files that
+reach their age limit within it, each with a `DueAt`. The maintenance scheduler and scheduled archive
+maintenance execute plans, so they plan with a zero horizon. The scheduler moves files
+(`DeleteSource`, which deletes only after the target checksum matches); copying left the source in
+place, so every run re-copied the same files.
+A migrated file keeps its path relative to the tier folder it came from (the most specific
+configured tier folder containing it), so `hot/AAPL/x` moves to `warm/AAPL/x`. It used to be taken
+relative to the storage root, which nested one more tier folder per migration (`warm/hot/...`, then
+`cold/warm/hot/...`). Files already migrated under the old layout keep it.
 
 `PostgresSecurityMasterPricingStore.ClosePrices` extends retained pricing receipts with immutable
 account/book/date price snapshots and separate independent-review records (Security Master

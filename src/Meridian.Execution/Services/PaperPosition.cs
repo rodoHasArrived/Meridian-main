@@ -22,6 +22,13 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     public string Symbol { get; } = symbol;
     public decimal Quantity { get; set; }
     public decimal CostBasis { get; set; }
+
+    /// <summary>
+    /// Realised P&amp;L booked against this symbol while the entry has been held. The account
+    /// total stays on <c>AccountState.RealisedPnl</c>; this is the per-symbol share of it, and it
+    /// is lost when a flat entry is dropped or restored from canonical lots (which start at zero).
+    /// </summary>
+    public decimal RealisedPnl { get; set; }
     public decimal MarketPrice { get; set; } = marketPrice;
     public DateTimeOffset? MarkObservedAtUtc { get; set; }
     public string? MarkSource { get; set; }
@@ -452,7 +459,7 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         (long)Quantity,
         ReportedCostBasis,
         UnrealisedPnl,
-        0m)  // realised P&L is carried at the account level
+        RealisedPnl)
     {
         OwnerQuantities = new Dictionary<string, decimal>(_ownerQuantities, StringComparer.OrdinalIgnoreCase),
         ContractMultiplier = ContractMultiplier,

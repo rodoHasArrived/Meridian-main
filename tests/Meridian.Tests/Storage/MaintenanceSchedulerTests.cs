@@ -536,6 +536,42 @@ public sealed class MaintenanceSchedulerTests : IDisposable
     }
 
     [Fact]
+    public async Task ExecuteJobAsync_TierMigration_PlansDueNowOnly_AndMovesRatherThanCopies()
+    {
+        var migration = Substitute.For<ITierMigrationService>();
+        migration.PlanMigrationAsync(Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new MigrationPlan(
+                DateTimeOffset.UtcNow,
+                TimeSpan.Zero,
+                [new PlannedMigrationAction("data/input.jsonl", StorageTier.Cold, "age", 10, TimeSpan.FromDays(30), 1)],
+                10,
+                TimeSpan.FromSeconds(1))));
+        migration.MigrateAsync(
+                Arg.Any<string>(),
+                Arg.Any<StorageTier>(),
+                Arg.Any<MigrationOptions>(),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new MigrationResult(
+                Success: true,
+                FilesProcessed: 1,
+                FilesFailed: 0,
+                BytesProcessed: 10,
+                BytesSaved: 0,
+                Duration: TimeSpan.FromSeconds(1),
+                Errors: [])));
+        await using var scheduler = CreateScheduler(migration: migration);
+
+        await scheduler.ExecuteJobAsync(CreateJob(MaintenanceType.TierMigration));
+
+        await migration.Received(1).PlanMigrationAsync(TimeSpan.Zero, Arg.Any<CancellationToken>());
+        await migration.Received(1).MigrateAsync(
+            "data/input.jsonl",
+            StorageTier.Cold,
+            Arg.Is<MigrationOptions>(o => o.DeleteSource && o.VerifyChecksum),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task ScheduleAsync_ReturnsIdentifierUsedByExecutionHistory()
     {
         await using var scheduler = CreateScheduler();

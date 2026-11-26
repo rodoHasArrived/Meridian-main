@@ -749,10 +749,9 @@ Keep desktop support aligned with shared contracts and governance posture.
 Remote workstation calls should migrate through `IRemoteWorkstationClient`, which centralizes the
 configured service URL, host health checks, and typed API calls for deployable WPF clients instead
 of letting pages or services create their own HTTP clients or bind directly to the shared API
-singleton. Watchlist backend synchronization now uses that seam for the optional `/api/watchlists`
-probe while retaining local desktop persistence when the remote host does not provide a watchlist
-payload. Activity Log also loads `/api/logs` through that seam and keeps the local offline
-indicator path when the remote host is unavailable or returns a non-success response. Service
+singleton. Watchlists are persisted only to a local desktop file, which is their source of truth: the
+host maps no watchlist route, so `WatchlistService` has no backend sync. Activity Log makes no server request: the host maps no log feed, so the page shows the
+desktop's own `LoggingService` entries live, matching the browser's client-side activity log. Service
 Manager health checks also use the same seam for deployable desktop clients. Lifecycle status,
 readiness checks, latest receipts, restart, and shutdown use the typed `ILifecycleControlClient`;
 the WPF process neither stores a raw shutdown token nor infers backend process ownership.
@@ -1336,8 +1335,9 @@ its state gate, and preloads the workspace file before taking it. A preload that
 was read before a change made in the meantime, is not applied: the load then reads behind the
 persistence gate, under the state gate, so a reload cannot roll back a concurrent change. **Live data routes.** Order book, ticker strip, quote float, live data
 viewer and corporate-action recording call routes built from `UiApiRoutes`;
-`DesktopClientRouteContractTests` fails on a desktop `/api/` literal the server does not map,
-apart from three listed exceptions (`/api/logs`, `/api/watchlists`, `/api/archive/health`).
+`DesktopClientRouteContractTests` fails on any desktop `/api/` literal the server does not map; its
+known-exception list is empty. Archive Health calculates its status locally from the configured data
+root and makes no server request, because the host maps no archive health route.
 
 ## One refresh control, plain shell copy (2026-11)
 
@@ -1487,3 +1487,7 @@ the same shared running-balance route the browser workstation uses. A response f
 that is no longer selected is discarded, and reloading the trial balance clears the selection.
 The request carries the selected row's symbol, financial account and dimension set, so the postings
 and ending balance are those of that row only.
+
+Fund Ledger, the trading workspace capital panel and the accounting workspace queue show financing
+as "Unavailable" when the shared summary reports it as `null` (any contributing run's financing
+coverage is unavailable), rather than a measured-looking $0.

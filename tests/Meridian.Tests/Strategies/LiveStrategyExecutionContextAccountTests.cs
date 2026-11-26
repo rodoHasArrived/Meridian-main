@@ -66,4 +66,33 @@ public sealed class LiveStrategyExecutionContextAccountTests
         account.Rules.AllowMargin.Should().BeFalse();
         account.Rules.AllowShortSelling.Should().BeFalse();
     }
+
+    [Fact]
+    public void Accounts_FractionalShort_IsCountedAsShort()
+    {
+        // Whole-share Quantity rounds -0.5 to 0, which used to file the short's negative value
+        // under long market value.
+        var positions = new Dictionary<string, IPosition>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["BRK.A"] = new ExecutionPosition("BRK.A", 0, 600_000m, UnrealisedPnl: 0m, RealisedPnl: 0m)
+            {
+                ExactQuantity = -0.5m
+            },
+        };
+        var portfolio = new Mock<IPortfolioState>();
+        portfolio.SetupGet(state => state.Cash).Returns(400_000m);
+        portfolio.SetupGet(state => state.BuyingPower).Returns(400_000m);
+        portfolio.SetupGet(state => state.PortfolioValue).Returns(100_000m);
+        portfolio.SetupGet(state => state.Positions).Returns(positions);
+        var gateway = new Mock<IOrderGateway>();
+        gateway.SetupGet(item => item.BrokerName).Returns("Paper");
+        var context = new LiveStrategyExecutionContext(gateway.Object, new LiveMarketDataCache(),
+            portfolio.Object, new HashSet<string> { "BRK.A" });
+
+        var account = context.Accounts.Values.Single();
+
+        account.ShortMarketValue.Should().Be(-300_000m);
+        account.LongMarketValue.Should().Be(0m);
+        account.Rules.AllowShortSelling.Should().BeTrue();
+    }
 }

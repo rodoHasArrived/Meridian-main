@@ -102,6 +102,31 @@ public sealed class PortfolioReadServiceTests
     }
 
     [Fact]
+    public void BuildSummary_UnavailableFinancingCoverage_ReportsNullFinancing_NotAMeasuredZero()
+    {
+        var entry = BuildCompletedRun(
+            finalEquity: 105_000m,
+            realizedPnl: 4_000m,
+            unrealizedPnl: 1_000m);
+        entry = entry with
+        {
+            Metrics = entry.Metrics! with
+            {
+                EngineMetadata = new BacktestEngineMetadata("BrokerPaper")
+                {
+                    FinancingCoverageStatus = BacktestFinancingCoverageStatuses.Unavailable
+                }
+            }
+        };
+
+        var summary = new PortfolioReadService().BuildSummary(entry);
+
+        summary.Should().NotBeNull();
+        summary!.Financing.Should().BeNull("the stored margin interest is a placeholder when coverage is unavailable");
+        summary.FinancingCoverageStatus.Should().Be(BacktestFinancingCoverageStatuses.Unavailable);
+    }
+
+    [Fact]
     public void BuildSummary_NoSnapshots_ReturnsNull()
     {
         var entry = BuildRunWithNoSnapshots();
