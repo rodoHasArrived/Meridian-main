@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
@@ -32,6 +33,50 @@ public sealed class SecurityFlatCodecGenerationTests
         generated.Should().BeSubsetOf(SecurityAssetTermsSchema.AssetClasses);
         SecurityMasterMapping.GeneratedDecodeClasses.Should().Equal(generated,
             "the decode arms compiled into the mapping are the table's classes");
+    }
+
+    [Fact]
+    public void ExecutableCodecContributions_CoverEveryImplementedClassExactlyOnce()
+    {
+        SecurityMasterMapping.AssetPackDecodeClasses.Should().OnlyHaveUniqueItems();
+        SecurityMasterMapping.AssetPackDecodeClasses.Should().BeEquivalentTo(SecurityAssetClassCatalog.AssetClasses);
+        SecurityMasterMapping.AssetPackDecodeClasses.Should().BeEquivalentTo(
+            SecurityAssetTermsCodecBindings.Classes.Select(static binding => binding.AssetClass).Append("CustomAsset"),
+            "profile-owned CustomAsset is the sole codec outside the generated class bindings");
+    }
+
+    [Fact]
+    public void CodecComposition_RejectsMissingDuplicateAndUnimplementedClasses()
+    {
+        var classes = SecurityAssetClassCatalog.AssetClasses;
+        Action missing = () => SecurityMasterMapping.EnsureAssetPackCodecCoverage(classes.Skip(1));
+        Action duplicate = () => SecurityMasterMapping.EnsureAssetPackCodecCoverage(classes.Append(classes[0]));
+        Action unimplemented = () => SecurityMasterMapping.EnsureAssetPackCodecCoverage(classes.Append("ExchangeTradedFund"));
+
+        missing.Should().Throw<InvalidOperationException>().WithMessage("*Missing:*");
+        duplicate.Should().Throw<InvalidOperationException>().WithMessage("*Duplicate*");
+        unimplemented.Should().Throw<InvalidOperationException>().WithMessage("*unknown:*ExchangeTradedFund*");
+    }
+
+    [Fact]
+    public void BondCouponDiagnosticHook_PrecedesTheGeneratedRequiredDateRead()
+    {
+        var effectiveFrom = new DateTimeOffset(2026, 8, 1, 0, 0, 0, TimeSpan.Zero);
+        var request = new CreateSecurityRequest(
+            SecurityId: Guid.NewGuid(),
+            AssetClass: "Bond",
+            CommonTerms: JsonSerializer.SerializeToElement(new { displayName = "Diagnostic order", currency = "USD" }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(new { couponType = "Floating" }),
+            Identifiers: [new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "CODEC-HOOK", true, effectiveFrom)],
+            EffectiveFrom: effectiveFrom,
+            SourceSystem: "codec-tests",
+            UpdatedBy: "codec-tests",
+            SourceRecordId: null,
+            Reason: "Preserve the coupon diagnostic before required maturity.");
+
+        Action decode = () => SecurityMasterMapping.ToCreateCommand(request);
+
+        decode.Should().Throw<InvalidOperationException>().WithMessage("*floatingIndex*");
     }
 
     [Theory]

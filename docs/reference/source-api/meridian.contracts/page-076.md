@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementColumnConfidenceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementColumnConfidenceDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:50](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L50).
+
+Confidence tier for one detected source column in the import preview.
+
+```csharp
+public enum StatementColumnConfidenceDto : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Exact = 0</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L52) |  |
+| <code>Alias = 1</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L53) |  |
+| <code>Fuzzy = 2</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L54) |  |
+| <code>Unmapped = 3</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:55](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L55) |  |
+
+## StatementColumnMappingDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementColumnMappingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L58).
+
+```csharp
+public sealed record StatementColumnMappingDto(string SourceColumn, string? CanonicalField, StatementColumnConfidenceDto Confidence, decimal Score, string Rationale);
+```
+
+## StatementConnectorDescriptorDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementConnectorDescriptorDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L9).
+
+Describes an available custodian/broker statement connector so workstation clients can offer file import and remote fetch entry points.
+
+```csharp
+public sealed record StatementConnectorDescriptorDto(string ConnectorId, string DisplayName, IReadOnlyList<string> FileExtensions, bool SupportsFileImport, bool SupportsRemoteFetch, bool RequiresMappingProfile, string? DefaultProfileId);
+```
+
 ## StatementFetchScheduleDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementFetchScheduleDto</code>. Kind: `record`.
@@ -630,41 +673,3 @@ Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:81](.
 ```csharp
 public sealed record StorageAssuranceSnapshotDto(DateTimeOffset GeneratedAt, StorageHealthSummaryDto Health, StorageQualitySummaryDto Quality, CanonicalizationAssuranceDto Canonicalization, StorageCapacitySummaryDto Capacity, IReadOnlyList<StorageTierSummaryDto> Tiers, IReadOnlyList<StorageQualityAlertDto> Alerts, StorageAssurancePermissionsDto Permissions);
 ```
-
-## StorageCapacitySummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageCapacitySummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:128](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L128).
-
-```csharp
-public sealed record StorageCapacitySummaryDto(long UsedBytes, long AvailableBytes, double UsedPercent, int? EstimatedDaysRemaining, string Status);
-```
-
-## StorageHealthSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageHealthSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:91](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L91).
-
-```csharp
-public sealed record StorageHealthSummaryDto(string Status, string RootLabel, long TotalBytes, int FileCount, bool Readable, bool Writable, int OrphanCount, int TemporaryFileCount, string? Message);
-```
-
-## StorageMaintenanceActionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageMaintenanceActionDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:154](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L154).
-
-```csharp
-public enum StorageMaintenanceActionDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>QualityCheck</code> | [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:156](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L156) |  |
-| <code>Cleanup</code> | [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:157](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L157) |  |
-| <code>TierMigration</code> | [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:158](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L158) |  |
