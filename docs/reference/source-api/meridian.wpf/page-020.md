@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WatchlistPage
+
+Qualified name: <code>Meridian.Wpf.Views.WatchlistPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:7](../../../../src/Meridian.Wpf/Views/Pages.cs#L7).
+
+```csharp
+public partial class WatchlistPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/WatchlistPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/WatchlistPage.xaml.cs#L11).
+
+Watchlist management page — thin code-behind. All state, business logic, and commands live in WatchlistViewModel.
+
+```csharp
+public partial class WatchlistPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WatchlistPage(WatchlistViewModel viewModel);</code> | [src/Meridian.Wpf/Views/WatchlistPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/WatchlistPage.xaml.cs#L15) |  |
+
+## WelcomePage
+
+Qualified name: <code>Meridian.Wpf.Views.WelcomePage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:100](../../../../src/Meridian.Wpf/Views/Pages.cs#L100).
+
+```csharp
+public partial class WelcomePage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/WelcomePage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/WelcomePage.xaml.cs#L14).
+
+Welcome page — thin code-behind. All state management, data loading, and commands live in WelcomePageViewModel.
+
+```csharp
+public partial class WelcomePage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WelcomePage(WpfServices.NavigationService navigationService, WpfServices.NotificationService notificationService, WpfServices.StatusService statusService, WpfServices.ConnectionService connectionService, WpfServices.ConfigService configService, ILogger&lt;WelcomePageViewModel&gt; logger);</code> | [src/Meridian.Wpf/Views/WelcomePage.xaml.cs:18](../../../../src/Meridian.Wpf/Views/WelcomePage.xaml.cs#L18) |  |
+
 ## WorkflowLibraryPage
 
 Qualified name: <code>Meridian.Wpf.Views.WorkflowLibraryPage</code>. Kind: `class`.
@@ -1048,33 +1096,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IReadOnlyList&lt;string&gt; Describe(LedgerAmountProofDto proof, out string summary, IReadOnlyList&lt;Guid&gt;? reportJournalEntryIds = null);</code> | [src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs:10](../../../../src/Meridian.Wpf/Workstation/Models/AccountingPreparerAttestationPresentation.cs#L10) |  |
-
-## AuditTimelineEntryModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.AuditTimelineEntryModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:366](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L366).
-
-```csharp
-public sealed record AuditTimelineEntryModel(string Title, string Detail, string TimeText, string Tone = WorkspaceTone.Neutral);
-```
-
-## AuditTimelineModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.AuditTimelineModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:357](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L357).
-
-Carries an observable audit timeline with heading and empty-state copy.
-
-```csharp
-public sealed class AuditTimelineModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Title { get; init; } = &quot;Activity&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:359](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L359) |  |
-| <code>public string EmptyText { get; init; } = &quot;No activity recorded.&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:361](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L361) |  |
-| <code>public ObservableCollection&lt;AuditTimelineEntryModel&gt; Entries { get; } = new ();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:363](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L363) |  |

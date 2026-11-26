@@ -67,9 +67,9 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Accounting.HistoricalCloseMarkPriceSource</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs:15](../../../../src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs#L15).
+Source: [src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs:16](../../../../src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs#L16).
 
-Marks positions at the most recent daily close on or before the valuation date, sourced from the provider chain (typically the composite failover provider). Weekends and holidays fall back to the latest prior session within the lookback window.
+Marks positions at the most recent daily close on or before the valuation date, sourced only from an explicit raw accounting-close capability, never generic research bars. Weekends and holidays fall back to the latest prior session within the lookback window.
 
 ```csharp
 public sealed class HistoricalCloseMarkPriceSource : IMarkPriceSource
@@ -79,8 +79,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public HistoricalCloseMarkPriceSource(IHistoricalDataProvider provider, ILogger? log = null);</code> | [src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs:22](../../../../src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs#L22) |  |
-| <code>public async Task&lt;MarkPriceQuote?&gt; GetMarkPriceAsync(string symbol, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs:29](../../../../src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs#L29) |  |
+| <code>public HistoricalCloseMarkPriceSource(IHistoricalDataProvider provider, ILogger? log = null);</code> | [src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs:23](../../../../src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs#L23) |  |
+| <code>public async Task&lt;MarkPriceQuote?&gt; GetMarkPriceAsync(string symbol, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs:30](../../../../src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs#L30) |  |
 
 ## IMarkPriceSource
 
@@ -436,23 +436,24 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public Func&lt;string, DateOnly, DateOnly, CancellationToken, Task&lt;HistoricalSessionSchedule?&gt;&gt;? ResolveSessionsAsync { get; init; }</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:60](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L60) |  |
-| <code>public BackfillCoordinator(ConfigStore store, ProviderRegistry? registry = null, ProviderFactory? factory = null, IEventMetrics? metrics = null, ISymbolResolver? symbolResolver = null, Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null, IProviderCatalog? providerCatalog = null, IScopedProviderCredentialStore? cloneCredentials = null, BackfillRoutingRuntime? routingRuntime = null);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:78](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L78) | Creates a BackfillCoordinator using the unified ProviderRegistry for provider discovery. |
-| <code>public IEnumerable&lt;object&gt; DescribeProviders() =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:117](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L117) |  |
-| <code>public IEnumerable&lt;object&gt; DescribeProviders(string? tenantId);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:119](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L119) |  |
-| <code>public void ValidateRequest(BackfillRequest request) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:138](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L138) |  |
-| <code>public void ValidateRequest(BackfillRequest request, string? tenantId);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:140](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L140) |  |
-| <code>public BackfillResult? TryReadLast() =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:146](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L146) |  |
-| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:151](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L151) | Returns whether a backfill run is currently active. |
-| <code>public IReadOnlyDictionary&lt;string, DateOnly&gt;? TryReadSymbolCheckpoints();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:157](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L157) | Returns the per-symbol checkpoint map saved during the last backfill run, or null when no checkpoints have been persisted yet. |
-| <code>public IReadOnlyDictionary&lt;string, long&gt;? TryReadSymbolBarCounts();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:168](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L168) | Returns the per-symbol bar-count map saved during the last backfill run, or null when no bar-count data has been persisted yet. |
-| <code>public BackfillRunProgressResponse? GetProgress();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:178](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L178) | Gets current backfill progress. Returns null if no active backfill. |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, ProviderHealthStatus&gt;&gt; CheckProviderHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:194](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L194) | Get health status of all providers. |
-| <code>public async Task&lt;SymbolResolution?&gt; ResolveSymbolAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:233](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L233) | Resolve a symbol using OpenFIGI. |
-| <code>public Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:244](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L244) |  |
-| <code>public async Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, string? tenantId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:247](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L247) |  |
-| <code>public Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:368](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L368) | Previews a backfill operation without fetching data: which provider would serve it, estimated bar counts and duration, and existing on-disk coverage per symbol. |
-| <code>public async Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, string? tenantId, CancellationToken ct);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:371](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L371) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:688](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L688) |  |
+| <code>public Func&lt;string, Meridian.Contracts.Operations.MarketDataInputEvidence?&gt;? CaptureInputEvidence { get; init; }</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:61](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L61) |  |
+| <code>public BackfillCoordinator(ConfigStore store, ProviderRegistry? registry = null, ProviderFactory? factory = null, IEventMetrics? metrics = null, ISymbolResolver? symbolResolver = null, Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null, IProviderCatalog? providerCatalog = null, IScopedProviderCredentialStore? cloneCredentials = null, BackfillRoutingRuntime? routingRuntime = null);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:79](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L79) | Creates a BackfillCoordinator using the unified ProviderRegistry for provider discovery. |
+| <code>public IEnumerable&lt;object&gt; DescribeProviders() =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:118](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L118) |  |
+| <code>public IEnumerable&lt;object&gt; DescribeProviders(string? tenantId);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:120](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L120) |  |
+| <code>public void ValidateRequest(BackfillRequest request) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:139](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L139) |  |
+| <code>public void ValidateRequest(BackfillRequest request, string? tenantId);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:141](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L141) |  |
+| <code>public BackfillResult? TryReadLast() =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:147](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L147) |  |
+| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:152](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L152) | Returns whether a backfill run is currently active. |
+| <code>public IReadOnlyDictionary&lt;string, DateOnly&gt;? TryReadSymbolCheckpoints();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:158](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L158) | Returns the per-symbol checkpoint map saved during the last backfill run, or null when no checkpoints have been persisted yet. |
+| <code>public IReadOnlyDictionary&lt;string, long&gt;? TryReadSymbolBarCounts();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:169](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L169) | Returns the per-symbol bar-count map saved during the last backfill run, or null when no bar-count data has been persisted yet. |
+| <code>public BackfillRunProgressResponse? GetProgress();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:179](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L179) | Gets current backfill progress. Returns null if no active backfill. |
+| <code>public async Task&lt;IReadOnlyDictionary&lt;string, ProviderHealthStatus&gt;&gt; CheckProviderHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:195](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L195) | Get health status of all providers. |
+| <code>public async Task&lt;SymbolResolution?&gt; ResolveSymbolAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:234](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L234) | Resolve a symbol using OpenFIGI. |
+| <code>public Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:245](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L245) |  |
+| <code>public async Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, string? tenantId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:248](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L248) |  |
+| <code>public Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:369](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L369) | Previews a backfill operation without fetching data: which provider would serve it, estimated bar counts and duration, and existing on-disk coverage per symbol. |
+| <code>public async Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, string? tenantId, CancellationToken ct);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:372](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L372) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:690](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L690) |  |
 
 ## BackfillCoordinatorExecutionGateway
 
@@ -671,7 +672,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static BackfillRequest FromConfig(AppConfig cfg);</code> | [src/Meridian.Application/Backfill/BackfillRequest.cs:43](../../../../src/Meridian.Application/Backfill/BackfillRequest.cs#L43) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? GapRepairReference { get; init; }</code> | [src/Meridian.Application/Backfill/BackfillRequest.cs:45](../../../../src/Meridian.Application/Backfill/BackfillRequest.cs#L45) | Trusted repair workflow identity; ordinary historical requests leave repair status unassessed. |
+| <code>public static BackfillRequest FromConfig(AppConfig cfg);</code> | [src/Meridian.Application/Backfill/BackfillRequest.cs:47](../../../../src/Meridian.Application/Backfill/BackfillRequest.cs#L47) |  |
 
 ## BackfillRoutingRuntime
 
@@ -713,7 +715,7 @@ public sealed class BackfillSubmissionConflictException(string message) : Except
 
 Qualified name: <code>Meridian.Application.Backfill.CrossSourceBackfillBatchReconciliationRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:483](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L483).
+Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:597](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L597).
 
 ```csharp
 public sealed record CrossSourceBackfillBatchReconciliationRequest(IReadOnlyList<string> Symbols, DateOnly From, DateOnly To, string BaselineProvider, IReadOnlyList<string> ComparisonProviders, decimal CloseToleranceRatio = 0.01m, decimal VolumeToleranceRatio = 0.05m);
@@ -723,7 +725,7 @@ public sealed record CrossSourceBackfillBatchReconciliationRequest(IReadOnlyList
 
 Qualified name: <code>Meridian.Application.Backfill.CrossSourceBackfillBatchReconciliationResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:512](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L512).
+Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:631](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L631).
 
 ```csharp
 public sealed record CrossSourceBackfillBatchReconciliationResult(IReadOnlyList<CrossSourceBackfillReconciliationResult> SymbolResults, DateTimeOffset ReconciledAt)
@@ -733,16 +735,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool IsClean =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:516](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L516) |  |
-| <code>public bool IsSlaClosed =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:518](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L518) |  |
-| <code>public IReadOnlyList&lt;string&gt; SymbolsRequiringReview =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:520](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L520) |  |
-| <code>public CrossSourceBackfillClosureDecision ClosureDecision =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:522](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L522) |  |
+| <code>public bool IsClean =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:635](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L635) |  |
+| <code>public bool IsSlaClosed =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:637](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L637) |  |
+| <code>public IReadOnlyList&lt;string&gt; SymbolsRequiringReview =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:639](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L639) |  |
+| <code>public CrossSourceBackfillClosureDecision ClosureDecision =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:641](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L641) |  |
 
 ## CrossSourceBackfillClosureDecision
 
 Qualified name: <code>Meridian.Application.Backfill.CrossSourceBackfillClosureDecision</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:534](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L534).
+Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:653](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L653).
 
 ```csharp
 public sealed record CrossSourceBackfillClosureDecision(CrossSourceBackfillClosureStatus Status, string ReasonCode, string Message, IReadOnlyList<string> SymbolsRequiringReview)
@@ -752,13 +754,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static CrossSourceBackfillClosureDecision FromResults(IReadOnlyList&lt;CrossSourceBackfillReconciliationResult&gt; symbolResults);</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:540](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L540) |  |
+| <code>public static CrossSourceBackfillClosureDecision FromResults(IReadOnlyList&lt;CrossSourceBackfillReconciliationResult&gt; symbolResults);</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:659](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L659) |  |
 
 ## CrossSourceBackfillClosureStatus
 
 Qualified name: <code>Meridian.Application.Backfill.CrossSourceBackfillClosureStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:526](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L526).
+Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:645](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L645).
 
 ```csharp
 public enum CrossSourceBackfillClosureStatus
@@ -768,16 +770,16 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Closed = 0</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:528](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L528) |  |
-| <code>BlockedByProviderError = 1</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:529](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L529) |  |
-| <code>BlockedByDiscrepancy = 2</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:530](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L530) |  |
-| <code>BlockedByMissingEvidence = 3</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:531](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L531) |  |
+| <code>Closed = 0</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:647](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L647) |  |
+| <code>BlockedByProviderError = 1</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:648](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L648) |  |
+| <code>BlockedByDiscrepancy = 2</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:649](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L649) |  |
+| <code>BlockedByMissingEvidence = 3</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:650](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L650) |  |
 
 ## CrossSourceBackfillDiscrepancy
 
 Qualified name: <code>Meridian.Application.Backfill.CrossSourceBackfillDiscrepancy</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:606](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L606).
+Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:740](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L740).
 
 ```csharp
 public sealed record CrossSourceBackfillDiscrepancy(DateOnly SessionDate, string BaselineProvider, string ComparisonProvider, string Kind, decimal? BaselineClose, decimal? ComparisonClose, long? BaselineVolume, long? ComparisonVolume, decimal? CloseDifferenceRatio, decimal? VolumeDifferenceRatio, string Message);
@@ -787,7 +789,7 @@ public sealed record CrossSourceBackfillDiscrepancy(DateOnly SessionDate, string
 
 Qualified name: <code>Meridian.Application.Backfill.CrossSourceBackfillProviderError</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:619](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L619).
+Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:753](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L753).
 
 ```csharp
 public sealed record CrossSourceBackfillProviderError(string Provider, string Message, string ErrorType);
@@ -797,7 +799,7 @@ public sealed record CrossSourceBackfillProviderError(string Provider, string Me
 
 Qualified name: <code>Meridian.Application.Backfill.CrossSourceBackfillReconciliationRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:474](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L474).
+Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:588](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L588).
 
 ```csharp
 public sealed record CrossSourceBackfillReconciliationRequest(string Symbol, DateOnly From, DateOnly To, string BaselineProvider, IReadOnlyList<string> ComparisonProviders, decimal CloseToleranceRatio = 0.01m, decimal VolumeToleranceRatio = 0.05m);
@@ -807,7 +809,7 @@ public sealed record CrossSourceBackfillReconciliationRequest(string Symbol, Dat
 
 Qualified name: <code>Meridian.Application.Backfill.CrossSourceBackfillReconciliationResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:492](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L492).
+Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:606](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L606).
 
 ```csharp
 public sealed record CrossSourceBackfillReconciliationResult(string Symbol, DateOnly From, DateOnly To, string BaselineProvider, IReadOnlyList<string> ComparisonProviders, IReadOnlyList<CrossSourceBackfillDiscrepancy> Discrepancies, IReadOnlyList<CrossSourceBackfillProviderError> ProviderErrors, DateTimeOffset ReconciledAt)
@@ -817,16 +819,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool IsClean =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:502](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L502) |  |
-| <code>public bool IsSlaClosed =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:504](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L504) |  |
-| <code>public IReadOnlyList&lt;string&gt; SymbolsRequiringReview =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:506](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L506) |  |
-| <code>public CrossSourceBackfillClosureDecision ClosureDecision =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:508](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L508) |  |
+| <code>public CrossSourceBackfillSessionCoverage? SessionCoverage { get; init; }</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:617](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L617) | Expected sessions from an identified calendar, independent of provider observations. |
+| <code>public bool HasVerifiedSessionCoverage =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:619](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L619) |  |
+| <code>public bool IsClean =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:621](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L621) |  |
+| <code>public bool IsSlaClosed =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:623](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L623) |  |
+| <code>public IReadOnlyList&lt;string&gt; SymbolsRequiringReview =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:625](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L625) |  |
+| <code>public CrossSourceBackfillClosureDecision ClosureDecision =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:627](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L627) |  |
 
 ## CrossSourceBackfillReconciliationService
 
 Qualified name: <code>Meridian.Application.Backfill.CrossSourceBackfillReconciliationService</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:10](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L10).
+Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:12](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L12).
 
 Compares bounded daily backfill output across historical providers so data-confidence workflows can retain deterministic discrepancy evidence instead of relying on log-only sampling.
 
@@ -838,18 +842,26 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CrossSourceBackfillReconciliationService(IEnumerable&lt;IHistoricalDataProvider&gt; providers);</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:14](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L14) |  |
-| <code>public async Task&lt;CrossSourceBackfillReconciliationResult&gt; ReconcileDailyAsync(CrossSourceBackfillReconciliationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:23](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L23) |  |
-| <code>public async Task&lt;CrossSourceBackfillBatchReconciliationResult&gt; ReconcileDailyBatchAsync(CrossSourceBackfillBatchReconciliationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:135](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L135) |  |
+| <code>public Func&lt;string, DateOnly, DateOnly, CancellationToken, Task&lt;CrossSourceBackfillSessionCoverage?&gt;&gt;? ResolveSessionCoverageAsync { get; init; }</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:21](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L21) | Resolves the complete expected session population for the requested symbol and bounded range. A missing calendar, unresolved listing or partial coverage cannot close a comparison. Without a host resolver, only an explicit supported listing identity can resolve. |
+| <code>public CrossSourceBackfillReconciliationService(IEnumerable&lt;IHistoricalDataProvider&gt; providers);</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:25](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L25) |  |
+| <code>public async Task&lt;CrossSourceBackfillReconciliationResult&gt; ReconcileDailyAsync(CrossSourceBackfillReconciliationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:34](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L34) |  |
+| <code>public static async Task&lt;CrossSourceBackfillSessionCoverage?&gt; ResolveExchangeSessionCoverageAsync(HistoricalSessionScheduleResolver resolver, string symbol, DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:168](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L168) | Adapts the shared exchange-calendar resolver without inferring sessions from provider rows. |
+| <code>public async Task&lt;CrossSourceBackfillBatchReconciliationResult&gt; ReconcileDailyBatchAsync(CrossSourceBackfillBatchReconciliationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:210](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L210) |  |
 
-## ExistingDataInfo
+## CrossSourceBackfillSessionCoverage
 
-Qualified name: <code>Meridian.Application.Backfill.ExistingDataInfo</code>. Kind: `record`.
+Qualified name: <code>Meridian.Application.Backfill.CrossSourceBackfillSessionCoverage</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Backfill/BackfillPreview.cs:40](../../../../src/Meridian.Application/Backfill/BackfillPreview.cs#L40).
+Source: [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:730](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L730).
 
-Information about existing data for a symbol.
+Complete session population attested by a trusted exchange-calendar resolver over explicit bounds.
 
 ```csharp
-public sealed record ExistingDataInfo(bool HasData, bool IsComplete, DateOnly? ExistingFrom, DateOnly? ExistingTo, int FileCount, long TotalSizeBytes);
+public sealed record CrossSourceBackfillSessionCoverage(string Calendar, DateOnly From, DateOnly To, IReadOnlyList<DateOnly> ExpectedSessions)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Covers(DateOnly from, DateOnly to) =&gt; …;</code> | [src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:733](../../../../src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs#L733) |  |

@@ -304,7 +304,9 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
                 AdjustedClose: adjClose > 0 ? adjClose : null,
                 AdjustedVolume: null,
                 SplitFactor: splitCoeff != 1m && splitCoeff > 0 ? splitCoeff : null,
-                DividendAmount: dividend > 0 ? dividend : null
+                DividendAmount: dividend > 0 ? dividend : null,
+                PriceBasis: HistoricalPriceBasis.Raw,
+                AdjustedPriceBasis: HistoricalPriceBasis.FullyAdjusted
             ));
         }
 

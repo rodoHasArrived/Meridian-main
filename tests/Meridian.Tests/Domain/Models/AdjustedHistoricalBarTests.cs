@@ -10,7 +10,7 @@ namespace Meridian.Tests.Models;
 public class AdjustedHistoricalBarTests
 {
     [Fact]
-    public void ToHistoricalBar_WithNoAdjustedValues_ReturnsUnadjustedBar()
+    public void ToHistoricalBar_WithNoAdjustedValues_PreservesPrimaryBar()
     {
         // Arrange
         var adjustedBar = new AdjustedHistoricalBar(
@@ -47,7 +47,9 @@ public class AdjustedHistoricalBarTests
             Low: 448.00m,
             Close: 452.50m,
             Volume: 50000000,
-            Source: "yahoo",
+            Source: "fixture",
+            PriceBasis: HistoricalPriceBasis.Raw,
+            AdjustedPriceBasis: HistoricalPriceBasis.FullyAdjusted,
             AdjustedOpen: 225.00m,
             AdjustedHigh: 227.50m,
             AdjustedLow: 224.00m,
@@ -76,7 +78,9 @@ public class AdjustedHistoricalBarTests
             Low: 24.00m,
             Close: 25.50m,
             Volume: 10000,
-            Source: "yahoo",
+            Source: "fixture",
+            PriceBasis: HistoricalPriceBasis.Raw,
+            AdjustedPriceBasis: HistoricalPriceBasis.FullyAdjusted,
             AdjustedOpen: 12.50m,
             AdjustedHigh: 12.40m,  // Rounding error: high < open
             AdjustedLow: 12.00m,
@@ -110,7 +114,9 @@ public class AdjustedHistoricalBarTests
             Low: 24.00m,
             Close: 25.50m,
             Volume: 10000,
-            Source: "yahoo",
+            Source: "fixture",
+            PriceBasis: HistoricalPriceBasis.Raw,
+            AdjustedPriceBasis: HistoricalPriceBasis.FullyAdjusted,
             AdjustedOpen: 12.50m,
             AdjustedHigh: 12.60m,  // Rounding error: high < close
             AdjustedLow: 12.00m,
@@ -144,7 +150,9 @@ public class AdjustedHistoricalBarTests
             Low: 24.00m,
             Close: 25.50m,
             Volume: 10000,
-            Source: "yahoo",
+            Source: "fixture",
+            PriceBasis: HistoricalPriceBasis.Raw,
+            AdjustedPriceBasis: HistoricalPriceBasis.FullyAdjusted,
             AdjustedOpen: 11.90m,  // Rounding error: open < low
             AdjustedHigh: 13.00m,
             AdjustedLow: 12.00m,
@@ -177,7 +185,9 @@ public class AdjustedHistoricalBarTests
             Low: 24.00m,
             Close: 25.50m,
             Volume: 10000,
-            Source: "yahoo",
+            Source: "fixture",
+            PriceBasis: HistoricalPriceBasis.Raw,
+            AdjustedPriceBasis: HistoricalPriceBasis.FullyAdjusted,
             AdjustedOpen: 12.50m,
             AdjustedHigh: 13.00m,
             AdjustedLow: 12.10m,  // Rounding error: low > close
@@ -211,7 +221,9 @@ public class AdjustedHistoricalBarTests
             Low: 448.00m,
             Close: 452.50m,
             Volume: 50000000,
-            Source: "yahoo",
+            Source: "fixture",
+            PriceBasis: HistoricalPriceBasis.Raw,
+            AdjustedPriceBasis: HistoricalPriceBasis.FullyAdjusted,
             AdjustedOpen: 225.00m,
             AdjustedHigh: 227.50m,
             AdjustedLow: 224.00m,
@@ -239,7 +251,9 @@ public class AdjustedHistoricalBarTests
             Low: 24.00m,
             Close: 25.50m,
             Volume: 10000,
-            Source: "yahoo",
+            Source: "fixture",
+            PriceBasis: HistoricalPriceBasis.Raw,
+            AdjustedPriceBasis: HistoricalPriceBasis.FullyAdjusted,
             AdjustedOpen: 11.90m,   // Below adjusted low
             AdjustedHigh: 12.40m,   // Below adjusted close
             AdjustedLow: 12.50m,    // Above adjusted open and high
@@ -271,6 +285,8 @@ public class AdjustedHistoricalBarTests
             Close: 181.00m,
             Volume: 25000000,
             Source: "alpaca",
+            PriceBasis: HistoricalPriceBasis.Raw,
+            AdjustedPriceBasis: HistoricalPriceBasis.FullyAdjusted,
             SequenceNumber: 12345,
             AdjustedOpen: 90.00m,
             AdjustedHigh: 91.00m,
@@ -300,6 +316,8 @@ public class AdjustedHistoricalBarTests
         var adjustedBar = new AdjustedHistoricalBar(
             "AAPL", new DateOnly(2024, 6, 15), 180.00m, 182.00m, 179.00m, 181.00m, 25_000_000,
             Source: "alpaca",
+            PriceBasis: HistoricalPriceBasis.Raw,
+            AdjustedPriceBasis: HistoricalPriceBasis.FullyAdjusted,
             AdjustedOpen: 90.00m, AdjustedHigh: 91.00m, AdjustedLow: 89.50m, AdjustedClose: 90.50m);
 
         var bar = adjustedBar.ToHistoricalBar(preferAdjusted: true);
@@ -313,12 +331,14 @@ public class AdjustedHistoricalBarTests
         var adjustedBar = new AdjustedHistoricalBar(
             "AAPL", new DateOnly(2024, 6, 15), 180.00m, 182.00m, 179.00m, 181.00m, 25_000_000,
             Source: "alpaca",
+            PriceBasis: HistoricalPriceBasis.Raw,
+            AdjustedPriceBasis: HistoricalPriceBasis.FullyAdjusted,
             AdjustedOpen: 90.00m, AdjustedHigh: 91.00m, AdjustedLow: 89.50m, AdjustedClose: 90.50m);
 
         var bar = adjustedBar.ToHistoricalBar(preferAdjusted: false);
 
         bar.IsAdjusted.Should().BeFalse(
-            "when adjustment data exists, the base OHLCV values are raw prices by construction");
+            "the primary set explicitly declares raw prices");
     }
 
     [Fact]

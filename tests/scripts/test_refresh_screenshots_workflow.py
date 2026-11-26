@@ -579,9 +579,9 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             [
                 '#reconciliation-run-picker[role="combobox"][value="Paper Index Mean Reversion · 1 open"]',
                 '#reconciliation-break-queue tr[data-dense-row-id="run-42:cash"][aria-selected="true"]',
-                '[aria-label="Case inspector"][aria-busy="false"]',
-                '[aria-label="Case inspector"] [aria-label="Case decisions"] button:not([disabled])',
                 '[aria-label="Case inspector"][data-case-id="run-42:cash"][aria-busy="false"]',
+                '[aria-label="Case inspector"] [aria-label="Case decisions"] button:not([disabled])',
+                '[aria-label="Case inspector"] summary:has-text("Case identifiers")',
             ],
             reconciliation.get("waitForSelectors"),
             "Reconciliation readiness must prove the loaded run, selected queue row, and corresponding inspector",

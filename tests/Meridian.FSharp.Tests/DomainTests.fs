@@ -2133,6 +2133,7 @@ let private scheduleDeposit conventions =
     SecurityKind.CertificateOfDeposit ({
         IssuerTerms = { IssuerName = Some ("First Bank"); InstitutionName = None; IssuerProgram = None; LeiCode = None; UltimateParentName = None; IssuerSector = None; IssuerCountry = None }
         Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2028, 3, 15)) }
+        Notional = { Notional = None; Denomination = None; CommittedAmount = None; FundedAmount = None; UnfundedAmount = None }
         CouponTerms = { CouponType = Some CouponKind.Fixed; CouponRate = Some 4.1m; PaymentFrequency = None; DayCount = Some Meridian.Contracts.SecurityMaster.DayCountConvention.Actual360 }
         Callability = EconomicCallTerms.scalar false None
         DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = conventions }

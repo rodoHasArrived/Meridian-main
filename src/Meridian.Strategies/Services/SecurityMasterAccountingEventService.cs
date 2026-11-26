@@ -29,7 +29,11 @@ public sealed record SecurityMasterAccountingEventRequest(
     IReadOnlyList<SecurityMasterAccountingPosition> Positions,
     IReadOnlyList<SecurityFactorObservation>? FactorSchedule = null,
     IReadOnlyList<SecurityActualCashActivity>? ActualActivity = null,
-    decimal AmountTolerance = 0.01m);
+    decimal AmountTolerance = 0.01m)
+{
+    /// <summary>Retained input coverage failures, even when no safe position can be calculated.</summary>
+    public IReadOnlyList<SecurityMasterAccountingIssueDto> SourceCoverageIssues { get; init; } = [];
+}
 
 public sealed record SecurityMasterAccountingSecurity(
     Guid SecurityId,
@@ -85,6 +89,10 @@ public sealed record SecurityMasterAccountingPosition(
     Guid? PositionId = null,
     long PositionVersion = 1)
 {
+    /// <summary>Source-native conventions when the adapter supplied quantity rather than explicit par.</summary>
+    public SecurityLotUnitKind? SourceQuantityUnit { get; init; }
+    public decimal? SourceQuantityMultiplier { get; init; }
+    public string? SourceQuantityCurrency { get; init; }
     /// <summary>
     /// The durable book position's ORIGINAL face, when it differs from the current outstanding
     /// balance. Factor paydowns are computed against original face (factors are relative to it),
@@ -210,7 +218,7 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         var events = new List<ExpectedAccountingEventDto>();
         var accruals = new List<AccrualCalculationResultDto>();
         var previews = new List<ExpectedJournalPreviewDto>();
-        var issues = new List<SecurityMasterAccountingIssueDto>();
+        var issues = new List<SecurityMasterAccountingIssueDto>(request.SourceCoverageIssues);
 
         foreach (var position in request.Positions)
         {
@@ -253,6 +261,17 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
                     position.AccountId,
                     $"Security '{security.Symbol}' asset class '{security.AssetClass}' is not supported by the first Security Master accounting-event slice.",
                     ReconciliationBreakSeverity.Info));
+                continue;
+            }
+
+            if (position.SourceQuantityUnit is not null &&
+                (position.SourceQuantityUnit != SecurityLotUnitKind.FaceValue || position.SourceQuantityMultiplier != 1m
+                    || !string.Equals(position.SourceQuantityCurrency, security.Currency, StringComparison.OrdinalIgnoreCase)))
+            {
+                issues.Add(CreateIssue("SM_RECON_POSITION_QUANTITY_UNAVAILABLE", "reconciliation-position-coverage",
+                    position.Symbol, position.AccountId,
+                    "Fixed-income expectations require retained face-value units, multiplier one and matching currency; no source-unit or FX conversion was requested.",
+                    ReconciliationBreakSeverity.High));
                 continue;
             }
 

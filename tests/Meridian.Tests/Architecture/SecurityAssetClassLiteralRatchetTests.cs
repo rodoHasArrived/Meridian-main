@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Tests.TestHelpers;
 
 namespace Meridian.Tests.Architecture;
 
@@ -19,14 +20,6 @@ namespace Meridian.Tests.Architecture;
 [Trait("Category", "Architecture")]
 public sealed class SecurityAssetClassLiteralRatchetTests
 {
-    // Directory links are never followed: the dashboard's node_modules links the repository
-    // root back into src/ ("meridian-tools": "file:../../.."), which otherwise recurses forever.
-    private static readonly EnumerationOptions SourceTreeEnumeration = new()
-    {
-        RecurseSubdirectories = true,
-        AttributesToSkip = FileAttributes.ReparsePoint
-    };
-
     private const int Threshold = 5;
 
     private const string SourceOfTruth = "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs";
@@ -35,9 +28,9 @@ public sealed class SecurityAssetClassLiteralRatchetTests
     // is held to the catalog elsewhere (SecurityAssetClassRegistryCoverageTests,
     // SecurityAssetClassParityGuardTests, SecurityAssetClassSurfaceParityTests, SecurityKindMappingTests).
     // The asset-pack registry's readiness and profile dispatch are held to every domain kind and
-    // canonical profile target by SecurityAssetClassOperationalWiringTests. The rate-field unit table
-    // (review D10, slice 4) is keyed by class and schema field like the schema itself, and is held to
-    // the catalog and schema by RateUnitNormalizerTests. The classification label
+    // canonical profile target by SecurityAssetClassOperationalWiringTests. Composed schema,
+    // validation, codec-binding, rate-unit and projection facades are no longer dispatch sites;
+    // their class-owned contributions need no exemption. The classification label
     // reader's KnownCaseNames set is held to the F# AssetClass/AssetFamily/SecuritySubType unions by
     // ClassificationLabelReaderTests.KnownCaseNames_MatchTheFSharpClassificationUnions. The
     // class-gated validateDefinitionTerms dispatch in SecurityMasterCommands.fs (ADR-027 S2-B1) is
@@ -46,26 +39,19 @@ public sealed class SecurityAssetClassLiteralRatchetTests
     // mutation table must cover exactly the ledgered codes.
     private static readonly string[] KnownDispatchSites =
     [
-        // Generated from the binding table; SecurityFlatCodecGenerationTests holds its class list to
-        // the table and the table to the catalog.
+        // Generated from pack binding contributions; SecurityFlatCodecGenerationTests holds its
+        // class list to those contributions and the contributions to the catalog.
         "src/Meridian.Application/SecurityMaster/SecurityMasterMapping.GeneratedDecode.cs",
         "src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs",
-        "src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs",
         "src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs",
         "src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs",
         "src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs",
-        // The flat-codec binding table: SecurityFlatCodecGenerationTests requires every class it
-        // lists to be a declared catalog class and its rows to write exactly the schema's keys.
-        "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs",
-        "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs",
-        "src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs",
         "src/Meridian.FSharp/Domain/SecurityClassification.fs",
         "src/Meridian.FSharp/Domain/SecurityMaster.fs",
         "src/Meridian.FSharp/Domain/SecurityMasterCommands.fs",
         "src/Meridian.ReferenceData/SecurityMaster/SecurityKindMapping.cs",
-        "src/Meridian.Storage/SecurityMaster/SecurityTermsProjectionRegistry.cs",
         // SecurityMasterSecurityReferenceLookup left the list in remediation slice 8: its sub-type
         // switch now reads the F# AssetClassRegistry, keeping only three pinned legacy spellings
         // and one declared ambiguous class (WorkstationSecuritySubTypeCoverageTests).
@@ -121,7 +107,7 @@ public sealed class SecurityAssetClassLiteralRatchetTests
             RegexOptions.CultureInvariant);
 
         var counts = new Dictionary<string, int>(StringComparer.Ordinal);
-        foreach (var file in Directory.EnumerateFiles(sourceRoot, "*.*", SourceTreeEnumeration))
+        foreach (var file in RepositoryFileWalker.EnumerateFiles(sourceRoot, "*.*"))
         {
             var extension = Path.GetExtension(file);
             if (extension is not (".cs" or ".fs"))

@@ -40,6 +40,9 @@ public interface ILedgerReportsApiClient
     Task<ApiResponse<List<LedgerJournalEntryDto>>> GetJournalEntriesAsync(Guid periodId, CancellationToken ct = default)
         => Task.FromResult(ApiResponse<List<LedgerJournalEntryDto>>.Fail("Posted journal detail is unavailable in this session."));
 
+    Task<ApiResponse<byte[]>> ExportJournalCsvAsync(Guid periodId, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<byte[]>.Fail("Journal CSV export is unavailable in this session."));
+
     /// <summary>Posting history and running balance for one account of a ledger period.</summary>
     Task<ApiResponse<LedgerAccountRunningBalanceDto>> GetAccountRunningBalanceAsync(
         Guid periodId, string accountName, string? symbol, string? financialAccountId,
@@ -111,6 +114,9 @@ public sealed class LedgerReportsApiClient : ILedgerReportsApiClient
     public Task<ApiResponse<List<LedgerJournalEntryDto>>> GetJournalEntriesAsync(Guid periodId, CancellationToken ct = default)
         => _apiClient.GetWithResponseAsync<List<LedgerJournalEntryDto>>(
             BuildPeriodRoute(UiApiRoutes.LedgerPeriodJournalEntries, periodId), ct);
+
+    public Task<ApiResponse<byte[]>> ExportJournalCsvAsync(Guid periodId, CancellationToken ct = default)
+        => _apiClient.PostArtifactAsync(BuildPeriodRoute(UiApiRoutes.LedgerPeriodJournalExport, periodId), new { format = "csv" }, ct);
 
     public Task<ApiResponse<EvidencePacketDto>> GetAmountProofAsync(
         string subjectId, Guid ledgerBookId, Guid periodId, string fundProfileId, CancellationToken ct = default)

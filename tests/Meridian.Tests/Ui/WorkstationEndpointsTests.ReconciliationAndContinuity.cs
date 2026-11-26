@@ -282,7 +282,17 @@ public sealed partial class WorkstationEndpointsTests
         });
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
-        await store.RecordRunAsync(BuildReconciliationReadyRun("run-recon"));
+        var run = BuildReconciliationReadyRun("run-recon");
+        var metrics = run.Metrics!;
+        await store.RecordRunAsync(run with
+        {
+            Metrics = metrics with
+            {
+                Snapshots = metrics.Snapshots
+                    .Select(snapshot => snapshot with { AccountingPositions = null })
+                    .ToArray()
+            }
+        });
 
         var client = app.GetTestClient();
         var response = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationRuns, new ReconciliationRunRequest("run-recon"));
@@ -291,7 +301,8 @@ public sealed partial class WorkstationEndpointsTests
         var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         created.Should().NotBeNull();
         created!.Summary.RunId.Should().Be("run-recon");
-        created.Summary.BreakCount.Should().Be(0);
+        created.Breaks.Should().NotBeEmpty("legacy run snapshots do not attest complete native accounting positions");
+        created.Breaks.Should().OnlyContain(item => item.Category == ReconciliationBreakCategory.ClassificationGap);
         created.Matches.Should().Contain(match => match.CheckId == "cash-balance");
 
         var latestResponse = await client.GetAsync(UiApiRoutes.RunsReconciliation.Replace("{runId}", "run-recon"));
@@ -531,9 +542,19 @@ public sealed partial class WorkstationEndpointsTests
         queue.Should().NotContain(item =>
             string.Equals(item.ExceptionRoute, "governance-variance-escalation", StringComparison.OrdinalIgnoreCase));
         var seededBreaks = queue.Where(item => item.RunId == runId).ToArray();
+        seededBreaks.Should().HaveCount(reconciliation!.Breaks.Count);
         seededBreaks.Should().OnlyContain(item =>
-            item.Measures != null && item.Measures.Count == 3 &&
+            item.Measures != null && item.Measures.Count > 0 &&
             item.BlockedOutputs != null && item.BlockedOutputs.Count > 0);
+        foreach (var item in seededBreaks)
+        {
+            var sourceBreak = reconciliation.Breaks.Single(source => item.BreakId == $"{runId}:{source.CheckId}");
+            var expectedMeasures = sourceBreak.Measures ?? ReconciliationBreakQueueProjection.BuildDefaultMeasures(
+                sourceBreak.ExpectedAmount, sourceBreak.ActualAmount, sourceBreak.Variance,
+                reconciliation.Summary.AmountTolerance, "currency");
+            item.Measures.Should().BeEquivalentTo(expectedMeasures, options => options.WithStrictOrdering(),
+                "retained casework must preserve the exact typed source measurements");
+        }
         foreach (var measure in seededBreaks
                      .SelectMany(item => item.Measures!)
                      .Where(measure => measure.Expected.HasValue && measure.Actual.HasValue))
@@ -856,7 +877,7 @@ public sealed partial class WorkstationEndpointsTests
             if (item.Status == ReconciliationBreakQueueStatus.Open)
             {
                 var review = await client.PostAsJsonAsync(
-                    UiApiRoutes.ReconciliationBreakReview.Replace("{breakId}", item.BreakId, StringComparison.Ordinal),
+                    UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakReview, "breakId", item.BreakId),
                     new ReviewReconciliationBreakRequest(
                         BreakId: item.BreakId,
                         AssignedTo: "ops-review",
@@ -866,7 +887,7 @@ public sealed partial class WorkstationEndpointsTests
             }
 
             var resolve = await client.PostAsJsonAsync(
-                UiApiRoutes.ReconciliationBreakResolve.Replace("{breakId}", item.BreakId, StringComparison.Ordinal),
+                UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakResolve, "breakId", item.BreakId),
                 new ResolveReconciliationBreakRequest(
                     BreakId: item.BreakId,
                     Status: ReconciliationBreakQueueStatus.Resolved,

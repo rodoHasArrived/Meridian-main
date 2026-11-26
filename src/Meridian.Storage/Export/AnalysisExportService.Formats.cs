@@ -52,6 +52,7 @@ public sealed partial class AnalysisExportService
                         await writer.WriteLineAsync(string.Join(",", columns.Select(EscapeCsvValue)));
                         foreach (var record in transformedRecords)
                         {
+                            RequireHistoricalBasisColumns(record, columns);
                             var values = columns.Select(column => EscapeCsvValue(GetCsvValue(record, column)));
                             await writer.WriteLineAsync(string.Join(",", values));
                         }
@@ -92,6 +93,7 @@ public sealed partial class AnalysisExportService
                                 await writer.WriteLineAsync(string.Join(",", columns.Select(EscapeCsvValue)));
                             }
 
+                            RequireHistoricalBasisColumns(transformedRecord, columns);
                             var values = columns.Select(column => EscapeCsvValue(GetCsvValue(transformedRecord, column)));
                             await writer.WriteLineAsync(string.Join(",", values));
                             recordCount++;
@@ -136,6 +138,7 @@ public sealed partial class AnalysisExportService
                     transformed[field] = TransformFieldValue(field, value, profile);
             }
 
+            PreserveHistoricalPriceBasis(record, transformed);
             return transformed;
         }
 
@@ -147,6 +150,7 @@ public sealed partial class AnalysisExportService
             transformed[key] = TransformFieldValue(key, value, profile);
         }
 
+        PreserveHistoricalPriceBasis(record, transformed);
         return transformed;
     }
 
@@ -156,12 +160,12 @@ public sealed partial class AnalysisExportService
     {
         if (profile.IncludeFields is { Length: > 0 })
         {
-            return profile.IncludeFields
-                .Where(field => profile.ExcludeFields?.Contains(field, StringComparer.OrdinalIgnoreCase) != true)
+            return PreserveHistoricalBasisColumns(profile.IncludeFields
+                .Where(field => profile.ExcludeFields?.Contains(field, StringComparer.OrdinalIgnoreCase) != true), records)
                 .ToArray();
         }
 
-        return records.FirstOrDefault()?.Keys.ToArray() ?? Array.Empty<string>();
+        return PreserveHistoricalBasisColumns(records.FirstOrDefault()?.Keys.ToArray() ?? [], records).ToArray();
     }
 
     private static object? TransformFieldValue(string key, object? value, ExportProfile profile)

@@ -26,6 +26,28 @@ namespace Meridian.Tests.Ui;
 public sealed class DirectLendingEndpointsTests
 {
     [Fact]
+    public async Task Reconcile_OptionalTolerancesAreRetainedAndChangedRetryConflicts()
+    {
+        var service = new InMemoryDirectLendingService();
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IDirectLendingService>(service));
+        using var client = app.GetTestClient();
+        var loan = await service.CreateLoanAsync(BuildCreateRequest());
+        client.DefaultRequestHeaders.Add("X-Command-Id", Guid.NewGuid().ToString());
+        var route = $"/api/loans/{loan.LoanId}/reconcile";
+        var request = new ReconcileLoanRequest(0.01m, 1);
+        using var response = await client.PostAsJsonAsync(route, request);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var run = await response.Content.ReadFromJsonAsync<ReconciliationRunDto>();
+        run!.AmountTolerance.Should().Be(0.01m);
+        run.DateToleranceDays.Should().Be(1);
+        using var retry = await client.PostAsJsonAsync(route, request);
+        (await retry.Content.ReadFromJsonAsync<ReconciliationRunDto>()).Should().Be(run);
+        using var conflict = await client.PostAsJsonAsync(route, new ReconcileLoanRequest(0.02m, 1));
+        conflict.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        (await service.GetReconciliationRunsAsync(loan.LoanId)).Should().ContainSingle();
+    }
+
+    [Fact]
     public async Task DerivedWrites_ExhaustOwnedLimiter_Return429WithRetryAfterWithoutExtraMutation()
     {
         using var quiet = new Meridian.Tests.Application.Composition.ProductionEnvironmentQuietScope();

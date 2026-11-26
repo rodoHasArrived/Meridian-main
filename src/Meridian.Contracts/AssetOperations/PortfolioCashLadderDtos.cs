@@ -120,9 +120,9 @@ public sealed record PortfolioCashLadderDto(
 
 /// <summary>Query parameters for the portfolio cash ladder read model.</summary>
 /// <remarks>
-/// <see cref="EngineVersion"/> selects a retained ladder engine for explicit historical replay.
-/// Null uses the current engine; <c>portfolio-cash-ladder-v1</c> replays the legacy engine; any
-/// other value returns a blocked ladder that reports the unsupported version.
+/// <see cref="EngineVersion"/> names the ladder engine the caller expects. Null or the current
+/// version uses the current engine; any other value, including the retired
+/// <c>portfolio-cash-ladder-v1</c>, returns a blocked ladder that reports the unsupported version.
 /// </remarks>
 public sealed record PortfolioCashLadderQuery(
     string? ScenarioId = null,

@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+# Pre-push whitespace check for C#/VB sources in the commits being pushed.
+#
+# CI runs `dotnet format whitespace Meridian.sln --verify-no-changes`; a whitespace
+# miss costs a full quality-gate round trip. This hook checks only the C#/VB files
+# changed by the pushed commits, read from the pushed commit (not the working tree),
+# in folder mode so it needs no restore. It never formats, stages, or commits files.
+
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+zero_sha="0000000000000000000000000000000000000000"
+empty_tree="$(git hash-object -t tree /dev/null)"
+
+snapshot="$(mktemp -d "${TMPDIR:-/tmp}/meridian-pre-push.XXXXXX")"
+trap 'rm -rf -- "$snapshot"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+status=0
+checked_any=0
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [[ -n "${local_sha:-}" ]] || continue
+  # Branch deletions push no content.
+  [[ "$local_sha" != "$zero_sha" ]] || continue
+
+  # Base: the remote tip when Git knows it; otherwise the parent of the oldest
+  # commit not yet on any remote-tracking ref (or the empty tree for a root commit).
+  base=""
+  if [[ "$remote_sha" != "$zero_sha" ]] && git cat-file -e "${remote_sha}^{commit}" 2>/dev/null; then
+    base="$remote_sha"
+  else
+    git rev-list --reverse "$local_sha" --not --remotes > "$snapshot/new-commits"
+    oldest=""
+    IFS= read -r oldest < "$snapshot/new-commits" || true
+    if [[ -z "$oldest" ]]; then
+      continue
+    fi
+    if git cat-file -e "${oldest}^" 2>/dev/null; then
+      base="${oldest}^"
+    else
+      base="$empty_tree"
+    fi
+  fi
+
+  git diff --name-only --diff-filter=ACMR -z "$base" "$local_sha" -- '*.cs' '*.vb' > "$snapshot/sources"
+  sources=()
+  include_paths=()
+  while IFS= read -r -d '' path; do
+    sources+=("$path")
+    include_paths+=("./$path")
+  done < "$snapshot/sources"
+
+  if [[ ${#sources[@]} -eq 0 ]]; then
+    continue
+  fi
+
+  if ! command -v dotnet >/dev/null 2>&1; then
+    echo "pre-push: dotnet CLI is required to check C#/VB formatting in ${local_ref}." >&2
+    exit 1
+  fi
+
+  # Formatting configuration from the pushed commit, so the check matches CI.
+  git ls-tree -r -z --name-only "$local_sha" > "$snapshot/all-paths"
+  configs=()
+  while IFS= read -r -d '' path; do
+    case "$path" in
+      global.json|.editorconfig|*/.editorconfig|.globalconfig|*/.globalconfig) configs+=("$path") ;;
+    esac
+  done < "$snapshot/all-paths"
+
+  tree="$snapshot/tree"
+  rm -rf -- "$tree"
+  mkdir "$tree"
+  for path in "${sources[@]}" "${configs[@]}"; do
+    destination="$tree/$path"
+    mkdir -p -- "${destination%/*}"
+    git cat-file blob "${local_sha}:./$path" > "$destination"
+  done
+
+  checked_any=1
+  echo "pre-push: checking whitespace in ${#sources[@]} C#/VB file(s) pushed to ${remote_ref}."
+  if ! (
+    cd "$tree"
+    dotnet format whitespace . --folder --verify-no-changes --verbosity minimal --include "${include_paths[@]}"
+  ); then
+    echo "pre-push: whitespace check failed for ${local_ref}. From the repository root, run:" >&2
+    printf '  dotnet format whitespace --folder --include ' >&2
+    printf '%q ' "${include_paths[@]}" >&2
+    printf '\nThen commit the fix and push again. Do not bypass this hook with --no-verify.\n' >&2
+    status=1
+  fi
+done
+
+if [[ $checked_any -eq 0 && $status -eq 0 ]]; then
+  echo "pre-push: no pushed C#/VB changes; skipping .NET formatting."
+fi
+
+exit "$status"

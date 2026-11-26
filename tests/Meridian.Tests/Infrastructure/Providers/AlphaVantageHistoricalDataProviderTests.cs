@@ -3,6 +3,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Tests.TestHelpers;
@@ -115,6 +116,8 @@ public sealed class AlphaVantageHistoricalDataProviderTests
         bar.High.Should().Be(120m);
         bar.Low.Should().Be(60m);
         bar.Close.Should().Be(100m);
+        bar.PriceBasis.Should().Be(HistoricalPriceBasis.Raw);
+        bar.ToHistoricalBar(preferAdjusted: false).Close.Should().Be(100m);
         bar.AdjustedOpen.Should().Be(decimal.Parse(adjustedOpen, CultureInfo.InvariantCulture));
         bar.AdjustedHigh.Should().Be(decimal.Parse(adjustedHigh, CultureInfo.InvariantCulture));
         bar.AdjustedLow.Should().Be(decimal.Parse(adjustedLow, CultureInfo.InvariantCulture));
@@ -125,6 +128,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
         bar.DividendAmount.Should().Be(expectedDividend == 0m ? null : expectedDividend);
 
         var historicalBar = bar.ToHistoricalBar(preferAdjusted: true);
+        historicalBar.PriceBasis.Should().Be(HistoricalPriceBasis.FullyAdjusted);
         historicalBar.Open.Should().Be(bar.AdjustedOpen);
         historicalBar.High.Should().Be(bar.AdjustedHigh);
         historicalBar.Low.Should().Be(bar.AdjustedLow);

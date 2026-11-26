@@ -1,6 +1,7 @@
 using Meridian.Contracts.Calendars;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
@@ -29,6 +30,15 @@ internal static class IntercompanyP1P2ServiceRegistration
             && sp.GetService<ILedgerJournalStore>() is { } journals
             && sp.GetService<IIntercompanyAgreementAccessAuthority>() is { } access
                 ? new IntercompanyObligationMonitorService(balances, agreements, lifecycle, journals, access, sp.GetService<TimeProvider>()) : null!);
+        services.TryAddSingleton<IIntercompanyAgreementWorkQueueService>(sp =>
+            sp.GetService<IIntercompanyObligationMonitorService>() is { } monitor
+            && sp.GetService<IOperationalCaseHistoryStore>() is { } history
+            && sp.GetService<IIntercompanyAgreementService>() is { } agreements
+            && sp.GetService<ILedgerJournalStore>() is { } journals
+            && sp.GetService<IFundProfileTenancyRegistry>() is { } ownership
+            && sp.GetService<IIntercompanyAgreementAccessAuthority>() is { } access
+                ? new IntercompanyAgreementWorkQueueService(monitor, history, agreements, journals, ownership, access,
+                    sp.GetService<TimeProvider>()) : null!);
         services.TryAddSingleton<IIntercompanyCloseAdvisorySource, IntercompanyCloseAdvisorySource>();
     }
 }

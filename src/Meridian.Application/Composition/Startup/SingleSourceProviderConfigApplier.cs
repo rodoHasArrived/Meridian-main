@@ -6,6 +6,9 @@ namespace Meridian.Application.Composition.Startup;
 
 internal sealed class SingleSourceProviderConfigApplier : IConfigurationRuntimeApplier
 {
+    internal const string FailoverRestartMessage = "Saved; restart the host to start the configured failover group.";
+    internal const string EligibilityOnlyMessage = "Saved; single-source collection uses the host's provider selection. This flag controls failover eligibility.";
+
     public string Name => nameof(SingleSourceProviderConfigApplier);
 
     public bool Handles(string path)
@@ -22,9 +25,7 @@ internal sealed class SingleSourceProviderConfigApplier : IConfigurationRuntimeA
         ct.ThrowIfCancellationRequested();
         var enablesFailover = next.DataSources is { EnableFailover: true, FailoverRules.Length: > 0 };
         var kind = enablesFailover ? ConfigurationApplyKind.Deferred : ConfigurationApplyKind.NoRuntimeEffect;
-        var reason = enablesFailover
-            ? "Saved; restart the host to start the configured failover group."
-            : "Saved; single-source collection uses the host's provider selection. This flag controls failover eligibility.";
+        var reason = enablesFailover ? FailoverRestartMessage : EligibilityOnlyMessage;
         return Task.FromResult<IReadOnlyList<ConfigurationApplyEntry>>(
             changedPaths.Where(Handles).Select(path => new ConfigurationApplyEntry(path, kind, reason)).ToArray());
     }

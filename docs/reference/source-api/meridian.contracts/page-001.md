@@ -6,58 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ILivePositionCorporateActionAdjuster
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.ILivePositionCorporateActionAdjuster</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Compatibility/ILivePositionCorporateActionAdjuster.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/Compatibility/ILivePositionCorporateActionAdjuster.cs#L22).
-
-Compatibility contract. Existing implementations also satisfy the canonical contract; both overloads preserve the implementation&#x27;s exact carrying-basis evidence.
-
-```csharp
-public interface ILivePositionCorporateActionAdjuster : CanonicalAdjuster
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>new Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/Compatibility/ILivePositionCorporateActionAdjuster.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/Compatibility/ILivePositionCorporateActionAdjuster.cs#L24) |  |
-| <code>new Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, decimal totalCostBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Compatibility/ILivePositionCorporateActionAdjuster.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/Compatibility/ILivePositionCorporateActionAdjuster.cs#L31) |  |
-| <code>async Task&lt;CanonicalAdjustment&gt; CanonicalAdjuster.AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, DateTimeOffset positionOpenedAt, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Compatibility/ILivePositionCorporateActionAdjuster.cs:40](../../../../src/Meridian.Contracts/SecurityMaster/Compatibility/ILivePositionCorporateActionAdjuster.cs#L40) |  |
-| <code>async Task&lt;CanonicalAdjustment&gt; CanonicalAdjuster.AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, decimal totalCostBasis, DateTimeOffset positionOpenedAt, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Compatibility/ILivePositionCorporateActionAdjuster.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/Compatibility/ILivePositionCorporateActionAdjuster.cs#L44) |  |
-
-## PositionCorporateActionAdjustment
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.PositionCorporateActionAdjustment</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Compatibility/ILivePositionCorporateActionAdjuster.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/Compatibility/ILivePositionCorporateActionAdjuster.cs#L8).
-
-Compatibility result for callers using the former Application-owned contract.
-
-```csharp
-public sealed record PositionCorporateActionAdjustment(string Ticker, decimal OriginalQuantity, decimal AdjustedQuantity, decimal OriginalCostBasis, decimal AdjustedCostBasis, int ActionCount) : CanonicalAdjustment(Ticker, OriginalQuantity, AdjustedQuantity, OriginalCostBasis, AdjustedCostBasis, ActionCount);
-```
-
-## ISecurityResolver
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityResolver</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Compatibility/ISecurityResolver.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/Compatibility/ISecurityResolver.cs#L7).
-
-Compatibility contract for hosts using the former Application-owned resolver.
-
-```csharp
-public interface ISecurityResolver : Meridian.Contracts.SecurityMaster.ISecurityResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>new Task&lt;Guid?&gt; ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/Compatibility/ISecurityResolver.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/Compatibility/ISecurityResolver.cs#L10) |  |
-| <code>Task&lt;Guid?&gt; Meridian.Contracts.SecurityMaster.ISecurityResolver.ResolveAsync(ResolveSecurityRequest request, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Compatibility/ISecurityResolver.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/Compatibility/ISecurityResolver.cs#L12) |  |
-
 ## ApplyOpenLotBackfillRequest
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.ApplyOpenLotBackfillRequest</code>. Kind: `record`.
@@ -767,3 +715,61 @@ EffectiveYield is the retained annual yield as a decimal: 0.05 means 5%.
 ```csharp
 public sealed record FaceValueAcquisitionTermsDto(decimal ParBasis, decimal BookedFactor, BondAmortizationMethod AmortizationMethod, decimal? EffectiveYield);
 ```
+
+## IBondCouponRecognitionEvidenceVerifier
+
+Qualified name: <code>Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionEvidenceVerifier</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:57](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L57).
+
+```csharp
+public interface IBondCouponRecognitionEvidenceVerifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task VerifyAsync(AccountCashForecastScopeDto scope, IReadOnlyList&lt;BondCouponRecognizedCashDto&gt; cash, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:59](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L59) |  |
+
+## IBondCouponRecognitionService
+
+Qualified name: <code>Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:122](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L122).
+
+```csharp
+public interface IBondCouponRecognitionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task VerifyTerminalOpeningAsync(AccountCashForecastScopeDto scope, OpenLotAmortizationInstructionDto inputs, BondIncomeTerminalCouponOpeningDto opening, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:124](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L124) |  |
+| <code>Task&lt;BondCouponRecognitionPreviewDto&gt; PreviewAsync(AccountCashForecastScopeDto scope, BondCouponRecognitionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:126](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L126) |  |
+| <code>Task&lt;BondCouponRecognitionPreparationDto&gt; PrepareAsync(AccountCashForecastScopeDto scope, BondCouponRecognitionRequest request, string expectedFingerprint, string actor, DateTimeOffset projectedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:128](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L128) |  |
+| <code>Task VerifyAsync(BondCouponRecognitionInstructionDto instruction, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:131](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L131) |  |
+| <code>Task VerifyPreparedSourceAsync(BondCouponRecognitionInstructionDto instruction, RetainedEvidenceIdentityDto source, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:132](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L132) |  |
+
+## IBondCouponRecognitionStore
+
+Qualified name: <code>Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:104](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L104).
+
+```csharp
+public interface IBondCouponRecognitionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BondCouponRecognitionReceiptDto?&gt; GetLatestCouponRecognitionAsync(AccountCashForecastScopeDto scope, Guid taxLotRecordId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:106](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L106) |  |
+| <code>Task&lt;BondCouponRecognitionReceiptDto?&gt; GetCouponRecognitionRunAsync(AccountCashForecastScopeDto scope, Guid taxLotRecordId, string runId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:108](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L108) |  |
+| <code>Task&lt;decimal&gt; GetConsumedCouponCashAsync(AccountCashForecastScopeDto scope, string paymentFlowId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:110](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L110) |  |
+| <code>Task&lt;decimal&gt; GetConsumedCouponObligationAsync(AccountCashForecastScopeDto scope, Guid taxLotRecordId, string expectedFlowId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:112](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L112) |  |
+| <code>Task&lt;BondCouponAllocationConsumptionDto&gt; GetConsumedCouponAllocationAsync(AccountCashForecastScopeDto scope, string allocationId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:114](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L114) |  |
+| <code>Task&lt;IReadOnlyList&lt;BondCouponObligationConsumptionDto&gt;&gt; GetConsumedCouponObligationsAsync(AccountCashForecastScopeDto scope, Guid taxLotRecordId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:116](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L116) |  |
+| <code>Task&lt;BondCouponRecognitionReceiptDto?&gt; GetCouponRecognitionReceiptAsync(AccountCashForecastScopeDto scope, Guid taxLotRecordId, string receiptId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs:118](../../../../src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs#L118) |  |

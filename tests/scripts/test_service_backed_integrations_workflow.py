@@ -1,8 +1,10 @@
 """Protect the shared database gate's failure handling and untrusted PR boundary."""
 import importlib.util
+import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -47,15 +49,23 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
             self.assertEqual(caller["uses"], "./.github/workflows/service-backed-integrations.yml")
             self.assertNotIn("secrets", caller)
             self.assertNotIn("continue-on-error", caller)
-        # Certification always runs its integrations. Meridian CI shares the .NET lane's
-        # change classification, which only a docs-only pull request can make false.
+        # Certification always runs its integrations. Meridian CI opts into in-job
+        # classification, which only a docs-only pull request can make false.
         self.assertNotIn("if", self.production["jobs"]["deterministic-integrations"])
+        self.assertNotIn("skip-when-docs-only", self.production["jobs"]["deterministic-integrations"].get("with", {}))
         caller = self.ci["jobs"]["service-backed-integrations"]
-        self.assertEqual(caller["needs"], "changes")
-        self.assertEqual(caller["if"], "needs.changes.outputs.dotnet == 'true'")
-        detect = self.ci["jobs"]["changes"]["steps"][1]["run"]
-        self.assertIn('if [[ "$EVENT_NAME" == "pull_request" ]]', detect)
-        self.assertIn('echo "dotnet=true"', detect)
+        self.assertNotIn("needs", caller, "The integration lane must not queue behind another job.")
+        self.assertNotIn("if", caller)
+        self.assertEqual(caller["with"]["skip-when-docs-only"], "true")
+        option = self.shared["on"]["workflow_call"]["inputs"]["skip-when-docs-only"]
+        self.assertEqual((option["type"], option["default"]), ("boolean", "false"))
+        detect = next(step for step in self.steps if step.get("id") == "changes")
+        self.assertEqual(detect["env"]["CLASSIFY"],
+                         "${{ inputs.skip-when-docs-only && github.event_name == 'pull_request' }}")
+        self.assertIn('if [[ "$CLASSIFY" == "true" ]]', detect["run"])
+        self.assertIn("build/scripts/ci/detect-dotnet-changes.py", detect["run"])
+        self.assertIn('echo "dotnet=true"', detect["run"])
+        self.assertEqual(self.job["outputs"]["dotnet-required"], "${{ steps.changes.outputs.dotnet }}")
 
     def test_forks_use_event_commit_read_only_token_and_no_production_secrets(self):
         for workflow in (self.shared, self.ci):
@@ -201,52 +211,80 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         self.assertIn("--no-restore", demo["run"])
 
     def test_validation_and_evidence_run_even_after_test_failure(self):
+        guard = "always() && steps.changes.outputs.dotnet == 'true'"
         validate = next(step for step in self.steps if "validate-test-results.py" in step.get("run", ""))
-        self.assertEqual(validate["if"], "always()")
+        self.assertEqual(validate["if"], guard)
         for prefix in ("meridian-integrations", "meridian-integrations-tax-lot-journal",
                        "meridian-integrations-remainder", "direct-lending-integrations", "demo-integrations"):
             self.assertIn(f"--require-trx-prefix {prefix}", validate["run"])
         evidence = next(step for step in self.steps if "pg_dump" in step.get("run", ""))
         upload = next(step for step in self.steps if step.get("uses", "").startswith("actions/upload-artifact@"))
-        self.assertEqual(evidence["if"], "always()")
-        self.assertEqual(upload["if"], "always()")
+        self.assertEqual(evidence["if"], guard)
+        self.assertEqual(upload["if"], guard)
         self.assertEqual(upload["with"]["if-no-files-found"], "error")
 
     def test_companion_gate_always_reports_and_requires_success(self):
         gate = self.ci["jobs"]["integration-gate"]
         self.assertEqual(gate["name"], "integration-gate")
         self.assertEqual(gate["if"], "always()")
-        self.assertEqual(gate["needs"], ["changes", "service-backed-integrations"])
+        self.assertEqual(gate["needs"], ["verify-dotnet", "service-backed-integrations"])
         step = gate["steps"][0]
         self.assertEqual(step["env"], {
-            "CHANGES_RESULT": "${{ needs.changes.result }}",
-            "DOTNET_REQUIRED": "${{ needs.changes.outputs.dotnet }}",
+            "DOTNET_LANE_DECISION": "${{ needs.verify-dotnet.outputs.dotnet-required }}",
+            "INTEGRATION_DECISION": "${{ needs.service-backed-integrations.outputs.dotnet-required }}",
             "INTEGRATION_RESULT": "${{ needs.service-backed-integrations.result }}",
         })
         self.assertIn('if [[ "$INTEGRATION_RESULT" != "success" ]]; then', step["run"])
         self.assertIn("exit 1", step["run"])
         self.assertNotIn("continue-on-error", gate)
 
-        def run_gate(integration, changes="success", required="true"):
+        def run_gate(integration, lane="true", decided="true"):
             with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
-                environment = dict(os.environ, CHANGES_RESULT=changes, DOTNET_REQUIRED=required,
+                environment = dict(os.environ, DOTNET_LANE_DECISION=lane, INTEGRATION_DECISION=decided,
                                    INTEGRATION_RESULT=integration,
                                    GITHUB_STEP_SUMMARY=str(Path(temporary) / "summary.md"))
                 return subprocess.run(["bash", "-c", step["run"]], env=environment,
                                       capture_output=True, text=True, check=False).returncode
 
         self.assertEqual(run_gate("success"), 0)
-        # The only accepted skip: classification succeeded and found a docs-only pull request.
-        self.assertEqual(run_gate("skipped", required="false"), 0)
-        for integration, changes, required in (
-                ("failure", "success", "true"), ("cancelled", "success", "true"),
-                ("skipped", "success", "true"), ("skipped", "failure", "false"),
-                ("skipped", "success", ""), ("skipped", "cancelled", "false"),
-                ("failure", "success", "false"), ("cancelled", "success", "false")):
-            with self.subTest(integration=integration, changes=changes, required=required):
-                self.assertNotEqual(run_gate(integration, changes, required), 0)
+        # The only accepted docs-only result: the integration lane succeeded, classified the
+        # change as docs-only, and verify-dotnet independently reached the same decision.
+        self.assertEqual(run_gate("success", lane="false", decided="false"), 0)
+        for integration, lane, decided in (
+                ("failure", "true", "true"), ("cancelled", "true", "true"),
+                ("skipped", "true", "true"), ("skipped", "false", "false"),
+                ("success", "false", "true"), ("success", "true", "false"),
+                ("success", "", "false"), ("success", "false", ""),
+                ("failure", "false", "false"), ("cancelled", "false", "false")):
+            with self.subTest(integration=integration, lane=lane, decided=decided):
+                self.assertNotEqual(run_gate(integration, lane, decided), 0)
         self.assertEqual(self.ci["jobs"]["quality-gate"]["needs"],
-                         ["changes", "verify-dotnet", "verify-browser", "verify-docs", "verify-workflows"])
+                         ["verify-dotnet", "verify-browser", "verify-docs", "verify-workflows"])
+
+    def test_evidence_gate_accepts_docs_only_only_when_the_caller_opted_in(self):
+        step = self.shared["jobs"]["evidence-gate"]["steps"][0]
+        self.assertEqual(step["env"]["SKIP_WHEN_DOCS_ONLY"], "${{ inputs.skip-when-docs-only }}")
+        script = step["run"].split("<<'PY'\n", 1)[1].rsplit("PY", 1)[0]
+
+        def run_gate(fresh_outputs, opted_in="true", fresh="success", reuse="skipped"):
+            with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
+                environment = dict(os.environ, FRESH_RESULT=fresh, REUSE_RESULT=reuse,
+                                   FRESH_OUTPUTS=json.dumps(fresh_outputs), REUSE_OUTPUTS="{}",
+                                   SKIP_WHEN_DOCS_ONLY=opted_in,
+                                   GITHUB_OUTPUT=str(Path(temporary) / "output"))
+                return subprocess.run([sys.executable, "-c", script], env=environment,
+                                      capture_output=True, text=True, check=False).returncode
+
+        docs_only = {"dotnet-required": "false", "artifact-id": "", "artifact-name": "", "receipt-sha256": ""}
+        self.assertEqual(run_gate(docs_only), 0)
+        # A caller that never opted in cannot pass without evidence, nor can a .NET change.
+        self.assertNotEqual(run_gate(docs_only, opted_in="false"), 0)
+        self.assertNotEqual(run_gate(dict(docs_only, **{"dotnet-required": "true"})), 0)
+        self.assertNotEqual(run_gate(docs_only, fresh="failure"), 0)
+        self.assertNotEqual(run_gate(docs_only, fresh="skipped", reuse="skipped"), 0)
+        complete = {"dotnet-required": "true", "artifact-id": "7", "artifact-name": "meridian-ci-integrations-1-1",
+                    "receipt-sha256": "a" * 64}
+        self.assertEqual(run_gate(complete), 0)
 
     def test_reuse_requires_explicit_producer_outputs_and_validated_bytes(self):
         inputs = self.shared["on"]["workflow_call"]["inputs"]
@@ -267,7 +305,9 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         self.assertNotIn("if", upload, "Never retain unvalidated evidence as a passing certification.")
         self.assertEqual(upload["with"]["retention-days"], "${{ inputs.retention-days }}")
         receipt = next(step for step in self.steps if step.get("id") == "receipt")
-        self.assertNotIn("if", receipt, "Only create passing receipts after all test/schema steps succeed.")
+        # No status function means GitHub's implicit success(): receipts follow passing steps only.
+        self.assertEqual(receipt["if"], "steps.changes.outputs.dotnet == 'true'",
+                         "Only create passing receipts after all test/schema steps succeed.")
 
     def test_standalone_certification_remains_fresh_and_release_passes_receipt(self):
         inputs = self.production["on"]["workflow_call"]["inputs"]

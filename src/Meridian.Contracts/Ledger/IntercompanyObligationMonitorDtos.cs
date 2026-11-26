@@ -12,7 +12,12 @@ public sealed record IntercompanyObligationMonitorRequestDto(
 public sealed record IntercompanyObligationFindingDto(
     string Code, string Severity, string Message, Guid? EntityId = null,
     Guid? AgreementId = null, int? AgreementVersion = null, Guid? LedgerBookId = null,
-    Guid? JournalEntryId = null, string? DrillThrough = null);
+    Guid? JournalEntryId = null, string? DrillThrough = null)
+{
+    /// <summary>Explicit legal boundary, when applicable; clients never parse dates from a message.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DateOnly? DueDate { get; init; }
+}
 
 /// <summary>Retained source authority for this observation, separate from readiness or posting authority.</summary>
 public sealed record IntercompanyObligationSourceVersionDto(

@@ -18,7 +18,7 @@ status is never recorded here. It stays in the roadmap registry (`docs/roadmap/R
 | Engineering working plans | [`docs/engineering/plans/`](../plans/README.md) | Burn-downs, parity plans, tooling backlogs, phased implementation plans |
 | Product delivery plans and prioritization inputs | [`docs/product/plans/`](../../product/plans/README.md) | Wave close-out plans, priority slates, remediation plans, next-work determinations |
 | Domain-owned backlogs | The owning domain folder, e.g. `docs/security/` | Security remediation backlog, SOC 2 roadmap |
-| Finished or superseded plans | [`archive/docs/plans/`](../../../archive/docs/plans/README.md) | Implemented blueprints, superseded determinations |
+| Finished or superseded plans | [`archive/docs/plans/`](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/README.md) | Implemented blueprints, superseded determinations |
 
 `docs/plans/` is not a home for new plans. It keeps only redirect stubs whose paths are read by
 tooling; see [its index](../../plans/README.md). Brainstorms and adversarial reviews are ideation and
@@ -63,6 +63,7 @@ remains in the [roadmap registry](../../roadmap/README.md) and
 
 | [Browser Workstation UX Implementation (2026-11)](../plans/browser-workstation-ux-roadmap-2026-11.md) | `docs/engineering/plans/` | Browser / shared financial controls | Active implementation evidence; source limitations remain explicit |
 | [Security Master Review Remediation](../plans/security-master-review-remediation-plan.md) | `docs/engineering/plans/` | Security Master / audit | Draft; consolidates dated review evidence; domain-policy and migration approvals remain open |
+| [Security Master Integrity and Traceability](../plans/security-master-integrity-implementation-plan.md) | `docs/engineering/plans/` | Security Master / audit | Draft; phased slices from the 2026-11-18 review; six owner decisions (D-XCCY, D-DUP, D-LIN, D-PERM, D-FIX, D-VT) gate later phases |
 | [W9 Close-Out Delivery Plan (2026-08)](../../product/plans/w9-close-out-delivery-plan-2026-08.md) | `docs/product/plans/` | Program | Accepted planning input (`DEC-W9-CLOSEOUT-001`); sequences `W9-SAFETY-007`, `W9-GOV-008`, `W9-INGEST-009` |
 | [2026-07 First-Order Improvement Slate](../../product/plans/product-roadmap-priorities-2026-07.md) | `docs/product/plans/` | Program | Accepted planning input (`DEC-PRIORITY-SLATE-001`); ranked W9 rationale |
 | [2026-07 Depth Slate](../../product/plans/w10-depth-slate-2026-07.md) | `docs/product/plans/` | Program | Accepted planning input (`DEC-DEPTH-SLATE-001`); W10 rationale |
@@ -72,6 +73,7 @@ remains in the [roadmap registry](../../roadmap/README.md) and
 | [WPF / Web-UI Alignment Plan](../plans/wpf-web-ui-alignment-plan.md) | `docs/engineering/plans/` | Desktop workstation | Active; drives `W8-WPF-PARITY-001` |
 | [Desktop Workstation Screen Checklist Reference](../plans/desktop-workstation-screen-blueprint.md) | `docs/engineering/plans/` | Desktop validation | Active compatibility reference; preserves twenty tracked screen scopes without re-certifying readiness |
 | [God-File Burn-Down Plan](../plans/god-file-burn-down-plan.md) | `docs/engineering/plans/` | Engineering hygiene | Active; the size ceilings it burns down are checked by `build/scripts/ci/check-file-size.py` |
+| [Governed Strategy, OMS, and Execution](../plans/governed-strategy-oms-execution-plan.md) | `docs/engineering/plans/` | Strategy Analytics / Execution and Fund Accounts | Draft; phased slices for `W13-STRAT-001` and `W13-OMS-001`, grants no live authority |
 | [Bond Capability Expansion](../plans/bond-capability-expansion.md) | `docs/engineering/plans/` | Fixed income | User-approved implementation and reviewed-cutover acceptance criteria |
 | [Web-UI Improvements Implementation Plan (2026-07)](../plans/web-ui-improvements-implementation-plan-2026-07.md) | `docs/engineering/plans/` | Browser workstation | Proposed |
 | [Browser Workstation UX Review and Improvement Plan (2026-11)](../plans/web-workstation-ux-review-plan-2026-11.md) | `docs/engineering/plans/` | Browser workstation | In progress (Phase 3) |
@@ -84,10 +86,10 @@ remains in the [roadmap registry](../../roadmap/README.md) and
 
 | Plan | Reason |
 |---|---|
-| [Quote-stream fan-out](../../../archive/docs/plans/web-ui-stream-fan-out-blueprint-2026-07.md) | Implemented — PRs A–C shipped; PR D was rescoped into the report-run stream blueprint |
-| [Tooling Workflow Backlog](../../../archive/docs/plans/tooling-workflow-backlog.md) | Completed — all nine items (MW-001–MW-009) verified delivered in source on 2026-09-28; see its closure record |
-| [What To Work On Next (2026-09-20)](../../../archive/docs/plans/next-work-determination-2026-09-20.md) | Superseded by the 2026-09-23 determination |
-| [What To Work On Next (2026-09-23)](../../../archive/docs/plans/next-work-determination-2026-09-23.md) | Superseded by the 2026-09-27 determination |
+| [Quote-stream fan-out](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/web-ui-stream-fan-out-blueprint-2026-07.md) | Implemented — PRs A–C shipped; PR D was rescoped into the report-run stream blueprint |
+| [Tooling Workflow Backlog](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/tooling-workflow-backlog.md) | Completed — all nine items (MW-001–MW-009) verified delivered in source on 2026-09-28; see its closure record |
+| [What To Work On Next (2026-09-20)](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/next-work-determination-2026-09-20.md) | Superseded by the 2026-09-23 determination |
+| [What To Work On Next (2026-09-23)](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/plans/next-work-determination-2026-09-23.md) | Superseded by the 2026-09-27 determination |
 
 The design-system Workstation Template Blueprint
 (`Meridian Design System/guidelines/WORKSTATION_BLUEPRINT.md`) is deliberately **not** in this
@@ -115,7 +117,7 @@ filenames by `python build/scripts/schema-control.py generate-migration-docs`.
 <!-- migration-reservations:start -->
 <!-- Generated by schema-control generate-migration-docs; do not edit this block. -->
 
-**Highest Ledger ordinal on disk: `V_ledger_082__external_gl_posting.sql`.**
+**Highest Ledger ordinal on disk: `V_ledger_084__security_revision_workflow_scope.sql`.**
 
 Historical Ledger ordinal `008` is shared by `V_ledger_008__closing_entry_posting_kind.sql` and `V_ledger_008__operations_continuity.sql`. Preserve these applied filenames and ordinals.
 
