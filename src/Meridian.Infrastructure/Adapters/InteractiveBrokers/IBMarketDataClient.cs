@@ -252,7 +252,6 @@ internal sealed class IBMarketDataClientIBApi :
     private readonly IBOptions _options;
     private readonly ConcurrentDictionary<int, bool> _tradeSubscriptionKinds = new();
 
-    // Track subscription ids if you want per-symbol teardown later
     public bool IsEnabled => true;
 
     public IBMarketDataClientIBApi(

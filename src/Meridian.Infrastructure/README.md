@@ -146,6 +146,15 @@ Vendor references checked 2026-11-13: [Twelve Data credits](https://support.twel
 
 IB historical requests ask for epoch-second bar times (`formatDate = 2`) and send UTC, culture-invariant end times; a zone-less TWS-local timestamp is refused rather than read as UTC. `IBDurableResultStore` publishes an update to memory only after the fsynced atomic file replace succeeds. `ProviderRegistry` availability probes rethrow caller cancellation.
 
+IB streaming unsubscribes (`UnsubscribeMarketDepth`, `UnsubscribeTrades`, `UnsubscribeQuotes`) unregister
+the ticker from `IBCallbackRouter` once TWS accepts the cancel, so late callbacks for a cancelled
+request are dropped instead of writing into a book a resubscription has just reset. Reconnect replay
+resets each depth book before re-sending its request, because TWS replays the full book from
+position 0 and kept levels would otherwise be duplicated. When the connection is lost, the manager
+unregisters every streaming ticker from the router and clears each subscribed depth book, so nothing
+routes and no book sits frozen at its last levels during the outage; each (re)connect replay starts
+from no registrations, so the router routes exactly the retained subscriptions it re-sends.
+
 Statement importers retain parser revision and upstream executed mapping proof; pre-normalized imports without upstream proof remain non-comparable. Immutable match artifacts retain that mapping fingerprint. Source-generated import and match hashing supports exact completed-checkpoint verification without rewriting legacy bytes.
 
 Broker amendment and cancellation failures retain the broker-observed order status and use
@@ -708,6 +717,12 @@ ETL SFTP publishing is an Infrastructure adapter implementation of the Contracts
 only owns transport connection, pinned host-key verification, directory creation, and upload
 mechanics. SFTP source and destination definitions must provide a SHA-256 host-key fingerprint so
 imports and exports fail closed before trusting a remote server identity.
+Uploads go to a temporary remote name and are renamed into place; single-file and directory
+publishes both honour `OverwriteIfExists`, and an upload or rename that fails removes its temporary
+file on a best-effort basis.
+SFTP source file patterns are `;`-separated wildcards (`*`, `?`) matched against the whole file name,
+case-insensitive, the same way the local reader lists files; `*`, `trades_*.csv` and exact names now
+behave the same over SFTP as on disk.
 SFTP imports **and exports** resolve credentials through the same `ISftpCredentialResolver`:
 `ResolveAsync` has source and destination overloads that share one secret model, so an `env:`
 reference resolves identically on both sides. Before this the publisher passed

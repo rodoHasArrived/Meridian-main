@@ -16,7 +16,11 @@ public sealed class QuoteCollector : IQuoteStateStore
     private readonly IMarketEventPublisher _publisher;
     private readonly IQuoteUpdateNotifier _updates;
 
-    private readonly ConcurrentDictionary<SymbolId, BboQuotePayload> _latest = new();
+    // The payload and the provider that sent it are stored together so a reader never pairs one
+    // provider's quote with another provider's source.
+    private readonly ConcurrentDictionary<SymbolId, LatestQuote> _latest = new();
+
+    private sealed record LatestQuote(BboQuotePayload Payload, string? Source);
     private readonly ConcurrentDictionary<SymbolId, long> _seq = new();
 
     public QuoteCollector(IMarketEventPublisher publisher, IQuoteUpdateNotifier? updates = null)
@@ -61,7 +65,26 @@ public sealed class QuoteCollector : IQuoteStateStore
     }
 
     public bool TryGet(string symbol, out BboQuotePayload? quote)
-        => _latest.TryGetValue(new SymbolId(symbol), out quote);
+    {
+        var found = _latest.TryGetValue(new SymbolId(symbol), out var latest);
+        quote = latest?.Payload;
+        return found;
+    }
+
+    /// <inheritdoc />
+    public bool TryGetFromSource(string symbol, string source, out BboQuotePayload? quote)
+    {
+        quote = null;
+        if (string.IsNullOrWhiteSpace(source)
+            || !_latest.TryGetValue(new SymbolId(symbol), out var latest)
+            || !string.Equals(latest.Source, source, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        quote = latest.Payload;
+        return true;
+    }
 
     public BboQuotePayload Upsert(MarketQuoteUpdate update)
     {
@@ -90,7 +113,7 @@ public sealed class QuoteCollector : IQuoteStateStore
         }
 
         var payload = BboQuotePayload.FromUpdate(update, seq, isProviderSequence);
-        _latest[symbolId] = payload;
+        _latest[symbolId] = new LatestQuote(payload, update.Source);
 
         // Fan-out signal for out-of-band consumers (UI quote stream). Guarded at the
         // call site so a faulty notifier can never surface on the ingestion path.
@@ -115,12 +138,13 @@ public sealed class QuoteCollector : IQuoteStateStore
         }
 
         var key = new SymbolId(symbol.Trim());
-        var removedLatest = _latest.TryRemove(key, out removed);
+        var removedLatest = _latest.TryRemove(key, out var latest);
+        removed = latest?.Payload;
         _seq.TryRemove(key, out _);
 
         return removedLatest;
     }
 
     public IReadOnlyDictionary<string, BboQuotePayload> Snapshot()
-        => _latest.ToDictionary(kvp => kvp.Key.Value, kvp => kvp.Value, StringComparer.OrdinalIgnoreCase);
+        => _latest.ToDictionary(kvp => kvp.Key.Value, kvp => kvp.Value.Payload, StringComparer.OrdinalIgnoreCase);
 }

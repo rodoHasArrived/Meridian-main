@@ -196,7 +196,8 @@
       "owner": "Financial Operations",
       "category": "quarantined",
       "tracking": "W9-ASSET-010",
-      "review_by": "2026-12-01"
+      "review_by": "2027-01-15",
+      "review_note": "Extended 2026-11-25 from 2026-12-01: the rewrites depend on an undecided tenant-admin certification-artifact/retained-evidence contract (W9-ASSET-010); re-adjudicate once that DTO+merge design is settled."
     },
     {
       "path": "tests/Meridian.Tests/Ui/AccountingSystemIntegrationServiceTests.cs",
@@ -205,7 +206,8 @@
       "owner": "Financial Operations",
       "category": "quarantined",
       "tracking": "W9-ASSET-010",
-      "review_by": "2026-12-01"
+      "review_by": "2027-01-15",
+      "review_note": "Extended 2026-11-25 from 2026-12-01: the rewrites depend on an undecided tenant-admin certification-artifact/retained-evidence contract (W9-ASSET-010); re-adjudicate once that DTO+merge design is settled."
     },
     {
       "path": "tests/Meridian.Tests/Ui/AccountingSystemIntegrationServiceTests.cs",
@@ -214,7 +216,8 @@
       "owner": "Financial Operations",
       "category": "quarantined",
       "tracking": "W9-ASSET-010",
-      "review_by": "2026-12-01"
+      "review_by": "2027-01-15",
+      "review_note": "Extended 2026-11-25 from 2026-12-01: the rewrites depend on an undecided tenant-admin certification-artifact/retained-evidence contract (W9-ASSET-010); re-adjudicate once that DTO+merge design is settled."
     },
     {
       "path": "tests/Meridian.Tests/Ui/AccountingSystemIntegrationServiceTests.cs",
@@ -223,7 +226,8 @@
       "owner": "Financial Operations",
       "category": "quarantined",
       "tracking": "W9-ASSET-010",
-      "review_by": "2026-12-01"
+      "review_by": "2027-01-15",
+      "review_note": "Extended 2026-11-25 from 2026-12-01: the rewrites depend on an undecided tenant-admin certification-artifact/retained-evidence contract (W9-ASSET-010); re-adjudicate once that DTO+merge design is settled."
     },
     {
       "path": "tests/Meridian.Tests/Ui/AccountingSystemIntegrationServiceTests.cs",
@@ -232,7 +236,8 @@
       "owner": "Financial Operations",
       "category": "quarantined",
       "tracking": "W9-ASSET-010",
-      "review_by": "2026-12-01"
+      "review_by": "2027-01-15",
+      "review_note": "Extended 2026-11-25 from 2026-12-01: the rewrites depend on an undecided tenant-admin certification-artifact/retained-evidence contract (W9-ASSET-010); re-adjudicate once that DTO+merge design is settled."
     }
   ]
 }

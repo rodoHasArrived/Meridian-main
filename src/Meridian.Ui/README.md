@@ -438,3 +438,6 @@ Do not create mobile product surfaces here. Keep browser operator UI work under 
 - `docs/reference/accounting-report-packs.md`
 - `docs/operators/governed-reporting-operations.md`
 - `docs/source/generated/source-module-index.md`
+
+Financing figures that the host reports as `null` (unmeasured run financing) render as
+"Unavailable" in the accounting cash-flow evidence rows, never as $0.

@@ -9,7 +9,8 @@ namespace Meridian.Wpf.Views;
 
 /// <summary>
 /// Activity log page — thin code-behind.
-/// All state, HTTP loading, filtering, and timer management live in <see cref="ActivityLogViewModel"/>.
+/// All state and filtering live in <see cref="ActivityLogViewModel"/>, which shows the desktop's
+/// own log entries live (the server exposes no log feed).
 /// The only UI-level action kept here is <c>LogList.ScrollIntoView</c> which requires
 /// a direct reference to the list control.
 /// </summary>
@@ -18,11 +19,10 @@ public partial class ActivityLogPage : Page
     private readonly ActivityLogViewModel _viewModel;
 
     public ActivityLogPage(
-        WpfServices.StatusService statusService,
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService)
     {
-        _viewModel = new ActivityLogViewModel(statusService, loggingService, notificationService);
+        _viewModel = new ActivityLogViewModel(loggingService, notificationService);
 
         InitializeComponent();
         DataContext = _viewModel;

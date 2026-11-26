@@ -408,7 +408,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:194](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L194).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:198](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L198).
 
 Summary of recent reconciliation posture for a fund.
 
@@ -420,9 +420,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal? ComparableBreakAmountTotal { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:204](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L204) |  |
-| <code>public string? BreakAmountCurrency { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:205](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L205) |  |
-| <code>public string? BreakAmountUnavailableReason { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:206](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L206) |  |
+| <code>public decimal? ComparableBreakAmountTotal { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:208](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L208) |  |
+| <code>public string? BreakAmountCurrency { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:209](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L209) |  |
+| <code>public string? BreakAmountUnavailableReason { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:210](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L210) |  |
 
 ## ReconciliationTaxonomySnapshot
 

@@ -889,7 +889,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Etl.SftpFileSourceReader</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs:10](../../../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs#L10).
+Source: [src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs:11](../../../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs#L11).
 
 Discovers and stages remote SFTP input files and applies configured source post-processing.
 
@@ -901,11 +901,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SftpFileSourceReader(IEtlStagingStore stagingStore, ISftpClientFactory clientFactory, ISftpCredentialResolver credentialResolver, ISftpCapabilityService capabilityService);</code> | [src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs:29](../../../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs#L29) | Creates a reader. Every dependency is required, including the capability gate. |
-| <code>public EtlSourceKind Kind =&gt; …;</code> | [src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs:41](../../../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs#L41) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;EtlRemoteFile&gt;&gt; ListFilesAsync(EtlSourceDefinition source, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs:43](../../../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs#L43) |  |
-| <code>public async Task&lt;EtlStagedFile&gt; StageFileAsync(string jobId, EtlSourceDefinition source, EtlRemoteFile file, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs:76](../../../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs#L76) |  |
-| <code>public async Task PostProcessFileAsync(EtlSourceDefinition source, EtlRemoteFile file, bool succeeded, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs:108](../../../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs#L108) |  |
+| <code>public SftpFileSourceReader(IEtlStagingStore stagingStore, ISftpClientFactory clientFactory, ISftpCredentialResolver credentialResolver, ISftpCapabilityService capabilityService);</code> | [src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs:30](../../../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs#L30) | Creates a reader. Every dependency is required, including the capability gate. |
+| <code>public EtlSourceKind Kind =&gt; …;</code> | [src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs:42](../../../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs#L42) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;EtlRemoteFile&gt;&gt; ListFilesAsync(EtlSourceDefinition source, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs:44](../../../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs#L44) |  |
+| <code>public async Task&lt;EtlStagedFile&gt; StageFileAsync(string jobId, EtlSourceDefinition source, EtlRemoteFile file, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs:77](../../../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs#L77) |  |
+| <code>public async Task PostProcessFileAsync(EtlSourceDefinition source, EtlRemoteFile file, bool succeeded, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs:109](../../../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs#L109) |  |
 
 ## HttpClientConfiguration
 

@@ -38,7 +38,7 @@ public sealed class CashFinancingReadService
 
         decimal totalCash = accounts.Sum(account => account.CashBalance);
         decimal pendingSettlement = accounts.Sum(account => Math.Max(account.SecuritiesMarketValue - account.NetAssetValue + account.CashBalance, 0m));
-        decimal financing = 0m;
+        decimal? financing = 0m; // null once any contributing run's financing is unavailable
         decimal realized = 0m;
         decimal unrealized = 0m;
         decimal longMarketValue = 0m;
@@ -64,7 +64,8 @@ public sealed class CashFinancingReadService
                 continue;
             }
 
-            financing += portfolio.Financing;
+            // A run without measured financing makes the total unavailable, not a partial sum.
+            financing = financing is { } total && portfolio.Financing is { } runFinancing ? total + runFinancing : null;
             realized += portfolio.RealizedPnl;
             unrealized += portfolio.UnrealizedPnl;
             longMarketValue += portfolio.LongMarketValue;
@@ -111,9 +112,11 @@ public sealed class CashFinancingReadService
             relevantRuns.Length == 0
                 ? "No recorded fund-scoped runs are contributing portfolio posture yet."
                 : $"{relevantRuns.Length} recorded run(s) are contributing capital posture.",
-            financing == 0m
-                ? "No financing costs have been recorded for the current fund scope."
-                : $"Financing costs total {financing:C2} across linked runs.",
+            financing is null
+                ? "Financing costs are unavailable: at least one linked run has no measured financing."
+                : financing == 0m
+                    ? "No financing costs have been recorded for the current fund scope."
+                    : $"Financing costs total {financing:C2} across linked runs.",
             cashFlowSummaries.Length == 0
                 ? "No run-derived cash-flow projections are available yet."
                 : $"{aggregatedEntries.Length} cash-flow event(s) are grouped into {aggregatedBuckets.Length} projection bucket(s)."

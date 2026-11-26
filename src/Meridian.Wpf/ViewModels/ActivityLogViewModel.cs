@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
-using Meridian.Contracts.Api;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
-using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -17,8 +15,10 @@ namespace Meridian.Wpf.ViewModels;
 
 /// <summary>
 /// ViewModel for the Activity Log page.
-/// Holds all state, HTTP loading, filtering, and timer management so that the code-behind
-/// is thinned to lifecycle wiring and the single UI-level action (auto-scroll).
+/// Shows the desktop's own log entries live from <see cref="WpfServices.LoggingService"/>; the
+/// server exposes no log feed, matching the browser workstation's client-side activity log.
+/// Holds all state and filtering so that the code-behind is thinned to lifecycle wiring and the
+/// single UI-level action (auto-scroll).
 /// </summary>
 public sealed class ActivityLogViewModel : BindableBase, IDisposable
 {
@@ -33,19 +33,15 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     private static readonly SolidColorBrush InfoLevelForeground = CreateFrozenBrush(Color.FromRgb(88, 166, 255));
     private static readonly SolidColorBrush DebugLevelForeground = CreateFrozenBrush(Color.FromRgb(139, 148, 158));
 
-    private readonly IRemoteWorkstationClient _remoteClient;
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
     private readonly Dispatcher _dispatcher;
 
     private readonly ObservableCollection<LogEntryModel> _allLogs = new();
-    private readonly DispatcherTimer _refreshTimer;
-    private CancellationTokenSource? _cts;
 
     private string _levelFilter = "All";
     private string _categoryFilter = "All";
     private string _searchText = string.Empty;
-    private bool _offlineIndicatorShown;
     private bool _suppressFilterRefresh;
 
     // ── Public collections ────────────────────────────────────────────────────────
@@ -192,47 +188,33 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     // ─────────────────────────────────────────────────────────────────────────────
 
     public ActivityLogViewModel(
-        WpfServices.StatusService statusService,
         WpfServices.LoggingService loggingService,
-        WpfServices.NotificationService notificationService,
-        IRemoteWorkstationClient? remoteClient = null)
+        WpfServices.NotificationService notificationService)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
         _dispatcher = Dispatcher.CurrentDispatcher;
-        _remoteClient = remoteClient ?? WpfServices.WpfRemoteWorkstationClient.Instance;
-        _remoteClient.Configure(statusService.BaseUrl);
 
         ClearCommand = new RelayCommand(ExecuteClear, () => CanClearLog);
         RequestClearCommand = new RelayCommand(RequestClearConfirmation, () => CanClearLog && !IsClearConfirmationVisible);
         ConfirmClearCommand = new RelayCommand(ExecuteClear, () => CanClearLog && IsClearConfirmationVisible);
         CancelClearCommand = new RelayCommand(CancelClearConfirmation, () => IsClearConfirmationVisible);
         ClearFiltersCommand = new RelayCommand(ClearFilters, () => HasActiveFilters);
-
-        _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
-        _refreshTimer.Tick += async (_, _) => await LoadLogsAsync();
     }
 
-    /// <summary>Starts the background refresh timer and subscribes to log events.</summary>
-    public async Task StartAsync(CancellationToken ct = default)
+    /// <summary>Subscribes to the desktop's log events.</summary>
+    public Task StartAsync(CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
+        _loggingService.LogWritten -= OnLogEntryAdded; // a second start must not double-subscribe
         _loggingService.LogWritten += OnLogEntryAdded;
-
-        await LoadLogsAsync(ct);
-        if (ct.IsCancellationRequested)
-        {
-            return;
-        }
-
-        _refreshTimer.Start();
+        return Task.CompletedTask;
     }
 
-    /// <summary>Stops the timer and unsubscribes from events.</summary>
+    /// <summary>Unsubscribes from log events.</summary>
     public void Stop()
     {
         _loggingService.LogWritten -= OnLogEntryAdded;
-        _refreshTimer.Stop();
-        _cts?.Cancel();
     }
 
     // ── Filter/search surface (called from code-behind event handlers) ────────────
@@ -358,95 +340,6 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
         {
             ScrollToTopRequested?.Invoke(this, EventArgs.Empty);
         }
-    }
-
-    private async Task LoadLogsAsync(CancellationToken ct = default)
-    {
-        var previousCts = _cts;
-        previousCts?.Cancel();
-        previousCts?.Dispose();
-        _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-
-        try
-        {
-            var response = await _remoteClient.GetWithResponseAsync<ActivityLogEntryDto[]>(
-                "/api/logs?limit=500",
-                _cts.Token);
-
-            if (response.Success && response.Data is { Length: > 0 } logs)
-            {
-                var existingIds = _allLogs.Select(l => $"{l.RawTimestamp:O}_{l.Message}").ToHashSet();
-
-                foreach (var item in logs)
-                {
-                    var timestamp = item.Timestamp ?? DateTime.UtcNow;
-                    var level = string.IsNullOrWhiteSpace(item.Level) ? "Info" : item.Level;
-                    var category = string.IsNullOrWhiteSpace(item.Category) ? "System" : item.Category;
-                    var message = item.Message ?? string.Empty;
-                    var id = $"{timestamp:O}_{message}";
-                    if (!existingIds.Contains(id))
-                    {
-                        _allLogs.Add(new LogEntryModel
-                        {
-                            RawTimestamp = timestamp,
-                            Timestamp = timestamp.ToString("HH:mm:ss"),
-                            Level = level,
-                            Category = category,
-                            Message = message,
-                            LevelBackground = GetLevelBackground(level),
-                            LevelForeground = GetLevelForeground(level)
-                        });
-                    }
-                }
-
-                ApplyFilters();
-            }
-            else if (_allLogs.Count == 0)
-            {
-                ShowOfflineIndicator("Backend returned non-success status. Showing local logs only.");
-            }
-        }
-        catch (HttpRequestException)
-        {
-            if (_allLogs.Count == 0)
-            {
-                ShowOfflineIndicator("Backend is unreachable. Showing local logs only.");
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // Cancelled — ignore
-        }
-        catch (Exception ex)
-        {
-            _loggingService.LogError("Failed to load activity logs", ex);
-        }
-    }
-
-    private void ShowOfflineIndicator(string reason)
-    {
-        if (_offlineIndicatorShown)
-            return;
-        _offlineIndicatorShown = true;
-
-        _notificationService.ShowNotification(
-            "Offline Mode",
-            $"{reason} Connect the backend service to see live activity logs.",
-            NotificationType.Warning);
-
-        var now = DateTime.Now;
-        _allLogs.Add(new LogEntryModel
-        {
-            RawTimestamp = now,
-            Timestamp = now.ToString("HH:mm:ss"),
-            Level = "Warning",
-            Category = "System",
-            Message = $"[Offline] {reason} Local UI events will still appear here.",
-            LevelBackground = GetLevelBackground("Warning"),
-            LevelForeground = GetLevelForeground("Warning")
-        });
-
-        ApplyFilters();
     }
 
     private void ApplyFilters()
@@ -652,13 +545,7 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     public void Dispose()
     {
         Stop();
-        _cts?.Dispose();
     }
 
 }
 
-internal sealed record ActivityLogEntryDto(
-    DateTime? Timestamp,
-    string? Level,
-    string? Category,
-    string? Message);

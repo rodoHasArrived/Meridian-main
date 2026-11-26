@@ -1312,7 +1312,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         GrossExposureText = summary.GrossExposure.ToString("C2");
         NetExposureText = summary.NetExposure.ToString("C2");
         TotalEquityText = summary.TotalEquity.ToString("C2");
-        FinancingCostText = summary.FinancingCost.ToString("C2");
+        FinancingCostText = summary.FinancingCost?.ToString("C2") ?? "Unavailable";
         PendingSettlementText = summary.PendingSettlement.ToString("C2");
         CashFlowEntryCountText = summary.CashFlowEntryCount.ToString("N0");
         ProjectedInflowsText = summary.ProjectedInflows.ToString("C2");

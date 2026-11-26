@@ -2742,3 +2742,10 @@ External GL posting contracts retain the exact fund, book and period, provider d
 certified mapping, source checkpoint, journal and line identities, and exact decimal amounts.
 `ExternalGlPostingPackage` combines that immutable payload with certification, approval and
 receipt observations. Amounts and journal sequence values use JSON strings for exact review.
+
+Run financing fields are nullable where the source can be unmeasured:
+`StrategyRunExecutionSummary.TotalMarginInterest`, the comparison read model's
+`TotalMarginInterest`, `PortfolioSummary.Financing`, `CashFinancingSummary.FinancingCost`,
+`FundWorkspaceSummary.FinancingCost`, and the accounting cash-flow payloads' `Financing` and
+`TotalFinancing` are `null` when financing coverage is unavailable, and a total is `null` when any
+contributing run's financing is unavailable, so no consumer reads an unmeasured value as $0.

@@ -13,7 +13,11 @@ public static partial class WorkstationEndpoints
     {
         var totalCash = details.Sum(static detail => detail?.Portfolio?.Cash ?? 0m);
         var totalLedgerCash = details.Sum(static detail => GetLedgerCashBalance(detail?.Ledger) ?? 0m);
-        var totalFinancing = details.Sum(static detail => detail?.Portfolio?.Financing ?? 0m);
+        // A run whose financing is unavailable makes the total unavailable, not a partial sum.
+        var portfolios = details.Select(static detail => detail?.Portfolio).Where(static portfolio => portfolio is not null).ToArray();
+        decimal? totalFinancing = portfolios.Any(static portfolio => portfolio!.Financing is null)
+            ? null
+            : portfolios.Sum(static portfolio => portfolio!.Financing!.Value);
         var runsWithCashSignals = details.Count(static detail => detail?.Portfolio is not null || detail?.Ledger is not null);
         var runsWithCashVariance = details.Count(static detail => Math.Abs(GetCashVariance(detail)) > 0.01m);
         var netVariance = totalLedgerCash - totalCash;
@@ -38,7 +42,7 @@ public static partial class WorkstationEndpoints
         var cashBalance = detail?.Portfolio?.Cash ?? 0m;
         var ledgerCashBalance = GetLedgerCashBalance(detail?.Ledger) ?? 0m;
         var cashVariance = ledgerCashBalance - cashBalance;
-        var financing = detail?.Portfolio?.Financing ?? 0m;
+        decimal? financing = detail?.Portfolio is { } portfolio ? portfolio.Financing : 0m;
         var realizedPnl = detail?.Portfolio?.RealizedPnl ?? 0m;
         var unrealizedPnl = detail?.Portfolio?.UnrealizedPnl ?? 0m;
         var journalEntryCount = detail?.Ledger?.JournalEntryCount ?? 0;

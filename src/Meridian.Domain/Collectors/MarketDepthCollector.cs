@@ -26,12 +26,36 @@ public sealed class MarketDepthCollector : SymbolSubscriptionTracker
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
     }
 
+    /// <summary>
+    /// Raised after every depth integrity failure, including each update rejected while the
+    /// symbol's book is already stale, so a recovery policy can resubscribe and reset the book.
+    /// The handler runs on the provider callback thread, so it must return quickly; an exception
+    /// it throws is swallowed so depth ingestion keeps running for every other symbol.
+    /// </summary>
+    public event Action<DepthIntegrityEvent>? IntegrityDetected;
+
     public void ResetSymbolStream(string symbol)
     {
         if (string.IsNullOrWhiteSpace(symbol))
             return;
         if (_books.TryGetValue(new SymbolId(symbol.Trim()), out var buf))
             buf.Reset();
+    }
+
+    private void NotifyIntegrityDetected(DepthIntegrityEvent evt)
+    {
+        var handler = IntegrityDetected;
+        if (handler is null)
+            return;
+
+        try
+        {
+            handler(evt);
+        }
+        catch (Exception)
+        {
+            // A recovery hook must never break depth ingestion for every other symbol.
+        }
     }
 
     public bool IsSymbolStreamStale(string symbol)
@@ -124,6 +148,7 @@ public sealed class MarketDepthCollector : SymbolSubscriptionTracker
 
             TrackIntegrity(evt);
             _publisher.TryPublish(MarketEvent.DepthIntegrity(update.Timestamp, symbol, evt, source));
+            NotifyIntegrityDetected(evt);
 
             _publisher.TryPublish(MarketEvent.ResyncRequested(
                 update.Timestamp,

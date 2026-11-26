@@ -28,6 +28,7 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
     private readonly string? _accountingStrategyRunId;
     private readonly Meridian.Ledger.Ledger _sessionLedger = new();
 
+    /// <summary>A context whose strategy sees <paramref name="portfolio"/> directly.</summary>
     public LiveStrategyExecutionContext(
         IOrderGateway gateway,
         ILiveFeedAdapter feed,
@@ -36,13 +37,41 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
         string defaultAccountId = BacktestDefaults.DefaultBrokerageAccountId,
         string? accountingFinancialAccountId = null,
         string? accountingStrategyRunId = null)
+        : this(gateway, feed, portfolio, universe, defaultAccountId, accountingFinancialAccountId,
+            accountingStrategyRunId, runBook: null)
+    {
+    }
+
+    /// <param name="portfolio">
+    /// The portfolio the run trades against. Strategies see it only when neither an accounting
+    /// account scope nor a <paramref name="runBook"/> is supplied.
+    /// </param>
+    /// <param name="runBook">
+    /// The run's own book, for a run without a scoped accounting account. When supplied,
+    /// strategies see the run's own cash, value, positions and account (marked at the feed
+    /// price) instead of the shared portfolio, which also holds other runs' trades, manual
+    /// orders and holdings that predate the run.
+    /// </param>
+    internal LiveStrategyExecutionContext(
+        IOrderGateway gateway,
+        ILiveFeedAdapter feed,
+        IPortfolioState portfolio,
+        IReadOnlySet<string> universe,
+        string defaultAccountId,
+        string? accountingFinancialAccountId,
+        string? accountingStrategyRunId,
+        LiveRunBook? runBook)
     {
         Gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _feed = feed ?? throw new ArgumentNullException(nameof(feed));
-        _portfolio = portfolio ?? throw new ArgumentNullException(nameof(portfolio));
+        ArgumentNullException.ThrowIfNull(portfolio);
+        _accountingFinancialAccountId = string.IsNullOrWhiteSpace(accountingFinancialAccountId) ? null : accountingFinancialAccountId;
+        if (runBook is not null && _accountingFinancialAccountId is not null)
+            throw new ArgumentException("A run with a scoped accounting account observes that account, not a run book.", nameof(runBook));
+        RunBook = runBook;
+        _portfolio = runBook is null ? portfolio : runBook.AsPortfolioState(GetLastPrice);
         Universe = universe ?? throw new ArgumentNullException(nameof(universe));
         _defaultAccountId = defaultAccountId;
-        _accountingFinancialAccountId = string.IsNullOrWhiteSpace(accountingFinancialAccountId) ? null : accountingFinancialAccountId;
         _accountingStrategyRunId = string.IsNullOrWhiteSpace(accountingStrategyRunId) ? null : accountingStrategyRunId;
         _visiblePortfolio = _accountingFinancialAccountId is null ? _portfolio : new ScopedPortfolioView(this);
         CurrentTime = DateTimeOffset.UtcNow;
@@ -109,6 +138,12 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
         return (quantity * multiplier * position.AverageCostBasis) + position.UnrealizedPnl;
     }
 
+    /// <summary>The run's own book, when strategies trade against it; otherwise null.</summary>
+    internal LiveRunBook? RunBook { get; }
+
+    /// <summary>True when strategies observe a scoped accounting account rather than a run book or the shared portfolio.</summary>
+    internal bool HasScopedAccounting => _accountingFinancialAccountId is not null;
+
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, FinancialAccountSnapshot> Accounts
     {
@@ -116,6 +151,9 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
         {
             if (_accountingFinancialAccountId is not null)
                 return ToStrategyAccount(ReadScopedAccountSnapshot());
+            if (RunBook is { } book)
+                return book.Value(GetLastPrice).Accounts;
+
             var positions = Positions;
             var longMarketValue = 0m;
             var shortMarketValue = 0m;
@@ -123,7 +161,8 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
             foreach (var position in _portfolio.Positions.Values)
             {
                 var value = SignedMarketValue(position);
-                if (position.Quantity < 0)
+                // Exact, not whole-share, quantity: a -0.5 short rounds to 0 and would be filed long.
+                if (position.ExactQuantity < 0m)
                 {
                     holdsShort = true;
                     shortMarketValue += value;

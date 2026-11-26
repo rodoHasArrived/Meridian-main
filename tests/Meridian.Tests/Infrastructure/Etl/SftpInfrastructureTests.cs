@@ -84,6 +84,37 @@ public sealed class SftpInfrastructureTests : IDisposable
         client.DisconnectCalls.Should().Be(1);
     }
 
+    [Theory]
+    [InlineData("*", new[] { "old_trades.csv", "positions.csv", "trades.csv", "trades_2026.csv", "trades_2026.xlsx" })]
+    [InlineData("trades_*.csv", new[] { "trades_2026.csv" })]
+    [InlineData("trades.csv", new[] { "trades.csv" })]
+    [InlineData("TRADES.CSV", new[] { "trades.csv" })]
+    [InlineData("trades_????.*", new[] { "trades_2026.csv", "trades_2026.xlsx" })]
+    [InlineData("*.xlsx; positions.csv", new[] { "positions.csv", "trades_2026.xlsx" })]
+    public async Task ListFilesAsync_MatchesPatternsLikeTheLocalReader(string pattern, string[] expected)
+    {
+        // The local reader lists through Directory.EnumerateFiles: wildcards over the whole name.
+        // The SFTP reader used to honour only "*.ext" and treat anything else as a substring, so
+        // "*" and "trades_*.csv" matched nothing and "trades.csv" also matched "old_trades.csv".
+        var client = new RecordingSftpClient
+        {
+            Entries =
+            [
+                new RecordingSftpFileEntry("trades.csv", "/inbound/trades.csv", 1),
+                new RecordingSftpFileEntry("old_trades.csv", "/inbound/old_trades.csv", 1),
+                new RecordingSftpFileEntry("trades_2026.csv", "/inbound/trades_2026.csv", 1),
+                new RecordingSftpFileEntry("trades_2026.xlsx", "/inbound/trades_2026.xlsx", 1),
+                new RecordingSftpFileEntry("positions.csv", "/inbound/positions.csv", 1)
+            ]
+        };
+        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), new RecordingSftpClientFactory(client), new EnvironmentSftpCredentialResolver(), ReadySftp);
+        var source = CreateSource(filePattern: pattern);
+
+        var files = await reader.ListFilesAsync(source);
+
+        files.Select(f => f.Name).Should().Equal(expected);
+    }
+
     [Fact]
     public async Task StageFileAsync_WithRemoteFileOutsideSourceRoot_ShouldFailClosedBeforeConnecting()
     {
@@ -166,6 +197,7 @@ public sealed class SftpInfrastructureTests : IDisposable
         client.ConnectCalls.Should().Be(1);
         client.RenameCalls.Should().BeEmpty();
         client.DisconnectCalls.Should().Be(1);
+        client.DeletedPaths.Should().BeEmpty("the failed upload never created a remote temp file");
     }
 
     [Fact]
@@ -205,6 +237,21 @@ public sealed class SftpInfrastructureTests : IDisposable
             "/drop/root.csv",
             "/drop/nested/child.csv");
         client.RenameCalls.Should().OnlyContain(call => call.CanOverwrite);
+    }
+
+    [Fact]
+    public async Task PublishAsync_ForDirectory_ShouldHonourOverwriteIfExistsFalse()
+    {
+        var outbound = Path.Combine(_root, "outbound-no-overwrite");
+        Directory.CreateDirectory(outbound);
+        await File.WriteAllTextAsync(Path.Combine(outbound, "root.csv"), "root");
+        var client = new RecordingSftpClient();
+        var publisher = CreatePublisher(new RecordingSftpClientFactory(client));
+
+        await publisher.PublishAsync(CreateDestination(overwriteIfExists: false), outbound);
+
+        client.RenameCalls.Should().ContainSingle();
+        client.RenameCalls.Single().CanOverwrite.Should().BeFalse();
     }
 
     [Fact]
@@ -329,12 +376,13 @@ public sealed class SftpInfrastructureTests : IDisposable
         string? hostKeyFingerprint = Fingerprint,
         EtlSourcePostProcessingAction postProcessingAction = EtlSourcePostProcessingAction.LeaveInPlace,
         string? archiveLocation = null,
-        string? errorLocation = null)
+        string? errorLocation = null,
+        string filePattern = "*.csv")
         => new()
         {
             Kind = EtlSourceKind.Sftp,
             Location = location,
-            FilePattern = "*.csv",
+            FilePattern = filePattern,
             Username = "ops",
             SecretRef = "password",
             HostKeySha256Fingerprint = hostKeyFingerprint,

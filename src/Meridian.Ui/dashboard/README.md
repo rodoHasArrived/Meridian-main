@@ -3982,3 +3982,6 @@ physical source line is labelled unavailable rather than inferred from normalize
 
 For the coordinated implementation and validation record, see
 [Browser workstation UX implementation](../../../docs/engineering/plans/browser-workstation-ux-roadmap-2026-11.md).
+
+Financing figures that the host reports as `null` (unmeasured run financing) render as
+"Unavailable" in the accounting cash-flow evidence rows, never as $0.
