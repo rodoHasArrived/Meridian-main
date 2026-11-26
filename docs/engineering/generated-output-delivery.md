@@ -16,6 +16,7 @@ authority and cannot encompass handwritten blocks or reviewed baselines.
 | Other declared operational status reports, handoff packets, TODO scans and workflow validation reports | CI artifacts; mechanical inventories. Exact files are listed in `delivery.ci_files`, not a directory wildcard. |
 | `database/manifest/contracts.json` | CI artifact; source catalog with file fingerprints. Schema-control still compares reviewed database docs, dependencies, physical manifests and policy findings. Structural diffs reconstruct the contract baseline from pinned base source. |
 | `docs/{source,roadmap}/generated/MANIFEST.json` | CI artifacts; mechanical registry/output digests. |
+| `docs/generated/repository-structure.md` | CI artifact; the full file tree. Every pull request that added or removed a file changed it, so committing it made each merge to `main` conflict with every other open pull request. The doc-health dashboard skips all `delivery` outputs. |
 | Dashboard `ui-api-routes.generated.ts` and `workspace-catalog.generated.ts` | Generated on npm installation and before development, build and validation commands; included in CI evidence. |
 | `src/Meridian.Ui/wwwroot/workstation/` | Build artifact; the browser lane validates emitted entrypoints/assets, and the hosted `verify-dotnet` job builds and validates its own same-run bundle before project evaluation. Packaging builds from source. The canonical served path is unchanged. |
 | Actual source fingerprints | `artifacts/docs/source-hashes.json`; informational evidence, never acceptance of a review baseline. |
