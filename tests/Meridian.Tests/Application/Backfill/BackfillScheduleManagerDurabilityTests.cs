@@ -2,6 +2,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Scheduling;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Tests.Infrastructure;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -303,6 +304,36 @@ public sealed class BackfillScheduleManagerDurabilityTests : IDisposable
         manager.GetSchedule(created.ScheduleId).Should().NotBeNull();
         Directory.Exists(schedulePath).Should().BeTrue();
         deletedEvents.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task DeleteScheduleAsync_TombstoneSyncFails_RollsBackAndRetrySucceeds()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var manager = CreateManager(_dataRoot);
+        var created = await manager.CreateScheduleAsync(
+            CreateSchedule("Unsynced deletion"),
+            timeout.Token);
+        var schedulePath = GetSchedulePath(_dataRoot, created.ScheduleId);
+        var deletedEvents = 0;
+        manager.ScheduleDeleted += (_, _) => deletedEvents++;
+
+        using (DirectorySyncFaults.FailIn(GetSchedulesDirectory(_dataRoot)))
+        {
+            Func<Task> act = () => manager.DeleteScheduleAsync(created.ScheduleId, timeout.Token);
+            await act.Should().ThrowAsync<IOException>();
+        }
+
+        // The rename was rolled back: the schedule is still retained on disk and in memory.
+        File.Exists(schedulePath).Should().BeTrue();
+        Directory.GetFiles(GetSchedulesDirectory(_dataRoot), "*.schedule-tombstone").Should().BeEmpty();
+        manager.GetSchedule(created.ScheduleId).Should().NotBeNull();
+        deletedEvents.Should().Be(0);
+
+        (await manager.DeleteScheduleAsync(created.ScheduleId, timeout.Token)).Should().BeTrue();
+        File.Exists(schedulePath).Should().BeFalse();
+        manager.GetSchedule(created.ScheduleId).Should().BeNull();
+        deletedEvents.Should().Be(1);
     }
 
     [Fact]

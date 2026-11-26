@@ -1378,23 +1378,28 @@ public sealed partial class ExecutionWriteEndpointsTests
     {
         using var artifacts = TestArtifactDirectory.Create(nameof(PaperSessionEndpoints_AfterRestart_RestoreSessionAndReplayEvidence));
 
-        await using var firstApp = await CreateAppAsync(services => RegisterSessionServices(services, artifacts.RootPath));
-        var firstClient = firstApp.GetTestClient();
+        ExecutionServices.PaperSessionSummaryDto summary;
+        // A restart stops the first app before the second starts: two live apps on one root
+        // would share the audit trail's WAL directory, which its owner lock refuses.
+        await using (var firstApp = await CreateAppAsync(services => RegisterSessionServices(services, artifacts.RootPath)))
+        {
+            var firstClient = firstApp.GetTestClient();
 
-        var createResponse = await firstClient.PostAsync(
-            UiApiRoutes.ExecutionSessionCreate,
-            JsonContent(new CreatePaperSessionRequest(
-                StrategyId: "strat-restart",
-                StrategyName: "Restart Strategy",
-                InitialCash: 100_000m,
-                Symbols: ["AAPL"])));
+            var createResponse = await firstClient.PostAsync(
+                UiApiRoutes.ExecutionSessionCreate,
+                JsonContent(new CreatePaperSessionRequest(
+                    StrategyId: "strat-restart",
+                    StrategyName: "Restart Strategy",
+                    InitialCash: 100_000m,
+                    Symbols: ["AAPL"])));
 
-        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-        var summary = await ReadAsync<ExecutionServices.PaperSessionSummaryDto>(createResponse);
+            createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+            summary = await ReadAsync<ExecutionServices.PaperSessionSummaryDto>(createResponse);
 
-        var firstPersistence = firstApp.Services.GetRequiredService<ExecutionServices.PaperSessionPersistenceService>();
-        await firstPersistence.RecordFillAsync(summary.SessionId, CreateFill("AAPL", 10m, 150m));
-        await firstPersistence.RecordOrderUpdateAsync(summary.SessionId, CreateOrderState("order-restart-1", "AAPL", 10m));
+            var firstPersistence = firstApp.Services.GetRequiredService<ExecutionServices.PaperSessionPersistenceService>();
+            await firstPersistence.RecordFillAsync(summary.SessionId, CreateFill("AAPL", 10m, 150m));
+            await firstPersistence.RecordOrderUpdateAsync(summary.SessionId, CreateOrderState("order-restart-1", "AAPL", 10m));
+        }
 
         await using var secondApp = await CreateAppAsync(services => RegisterSessionServices(services, artifacts.RootPath));
         var secondClient = secondApp.GetTestClient();
