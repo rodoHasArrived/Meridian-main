@@ -11,6 +11,17 @@ last_reviewed: 2026-11-25
 
 # src/Meridian.Storage
 
+Backfill batch receipts optionally retain market-data input evidence. The existing content address
+binds repair purpose, repair operation identity and quality snapshot before rows receive that
+revision ID. Tampering with those facts invalidates the receipt. Older receipts omit the optional
+member and keep their existing content addresses; absent quality or repair status remains unknown.
+
+Historical bar evidence retains the precise OHLC price basis through JSON, batch row digests and
+Parquet. Known basis declarations change row identity even when numeric prices coincide; Unknown
+keeps the legacy row digest. Parquet historical-bar v2 files retain readable `PriceBasis` plus the
+legacy flag, while existing v1 files remain unchanged and discoverable. Catalog date parsing accepts
+both filename generations. Structured research exports retain basis companions with exported OHLC;
+legacy data is explicitly Unknown. See the [migration notes](../../docs/development/provider-implementation.md#historical-price-bases).
 Security Master projection storage composes one `SecurityTermsStorageContribution` for each of
 the 32 asset classes through `SecurityTermsStorageModules` (`SecurityMaster/AssetPacks/`). A
 declarative class contributes its `SecurityTermsProjectionDescriptor`; Option and CustomAsset
@@ -1467,6 +1478,12 @@ requeue an unpublished occurrence with the same execution identity, and an expir
 marked running is retained as an interrupted/ambiguous failure instead of being replayed blindly.
 
 ### Market data and evidence
+
+The alignment archive read opens closed JSONL captures, including compressed partitions. It
+refuses corrupt data and limits file count, decoded text, candidate events and read time. Its
+record IDs identify the logical relative archive path, line number and SHA-256 digest of the
+line text so equivalent plain and gzip copies carry the same lineage.
+
 
 Market data and evidence records enter through storage sinks. File-backed writes use the
 write-ahead log or atomic file helpers so a crash is less likely to leave a half-written record.

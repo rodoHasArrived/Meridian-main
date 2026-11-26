@@ -56,23 +56,9 @@ public sealed class CrossProviderComparisonService : IDisposable
             policy.VolumeMode, policy.AssetClassOverrides?.Count ?? 0);
     }
 
-    private CrossProviderTolerances TolerancesFor(string symbol)
-    {
-        string? assetClass = null;
-        if (_assetClassResolver is not null)
-        {
-            try
-            {
-                assetClass = _assetClassResolver(symbol);
-            }
-            catch (Exception ex)
-            {
-                _log.Debug(ex, "Asset-class lookup failed for {Symbol}; using default tolerances", symbol);
-            }
-        }
-
-        return _policy.Resolve(assetClass);
-    }
+    /// <summary>Resolves the live or proposed policy against this monitor's symbol lookup.</summary>
+    public CrossProviderToleranceResolution ResolvePolicy(string symbol, CrossProviderTolerancePolicy? proposed = null)
+        => CrossProviderToleranceResolver.Resolve(symbol, proposed ?? _policy, _assetClassResolver);
 
     /// <summary>
     /// Records a trade event from a provider for comparison.
@@ -231,7 +217,8 @@ public sealed class CrossProviderComparisonService : IDisposable
         if (recentData.Count < 2)
             return;
 
-        var tolerances = TolerancesFor(tracker.Symbol);
+        var resolution = ResolvePolicy(tracker.Symbol);
+        var tolerances = resolution.Tolerances;
 
         var providers = recentData.Keys.ToList();
         for (int i = 0; i < providers.Count - 1; i++)
@@ -265,7 +252,10 @@ public sealed class CrossProviderComparisonService : IDisposable
                             Value2: latestP2.Price.ToString("F4"),
                             Difference: (double)priceDiff,
                             Severity: ClassifyDiscrepancySeverity(priceDiffPercent)
-                        );
+                        )
+                        {
+                            PolicyResolution = resolution
+                        };
 
                         tracker.RecordDiscrepancy(discrepancy);
                         RaiseDiscrepancyEvent(discrepancy);
@@ -293,7 +283,8 @@ public sealed class CrossProviderComparisonService : IDisposable
                             Severity: informational ? DiscrepancySeverity.Low : ClassifyDiscrepancySeverity(volumeDiffPercent)
                         )
                         {
-                            IsInformational = informational
+                            IsInformational = informational,
+                            PolicyResolution = resolution
                         };
 
                         tracker.RecordDiscrepancy(discrepancy);
@@ -310,7 +301,8 @@ public sealed class CrossProviderComparisonService : IDisposable
         if (recentQuotes.Count < 2)
             return;
 
-        var tolerances = TolerancesFor(tracker.Symbol);
+        var resolution = ResolvePolicy(tracker.Symbol);
+        var tolerances = resolution.Tolerances;
 
         var providers = recentQuotes.Keys.ToList();
         for (int i = 0; i < providers.Count - 1; i++)
@@ -344,7 +336,10 @@ public sealed class CrossProviderComparisonService : IDisposable
                             Value2: q2.BidPrice.ToString("F4"),
                             Difference: (double)bidDiff,
                             Severity: ClassifyDiscrepancySeverity(bidDiffPercent)
-                        );
+                        )
+                        {
+                            PolicyResolution = resolution
+                        };
 
                         tracker.RecordDiscrepancy(discrepancy);
                         RaiseDiscrepancyEvent(discrepancy);
@@ -368,7 +363,10 @@ public sealed class CrossProviderComparisonService : IDisposable
                             Value2: q2.AskPrice.ToString("F4"),
                             Difference: (double)askDiff,
                             Severity: ClassifyDiscrepancySeverity(askDiffPercent)
-                        );
+                        )
+                        {
+                            PolicyResolution = resolution
+                        };
 
                         tracker.RecordDiscrepancy(discrepancy);
                         RaiseDiscrepancyEvent(discrepancy);

@@ -22,7 +22,11 @@ public sealed class SecurityMasterAccountingEventSourceRateUnitTests
             start, start.AddMonths(3), null, null, "synthetic", null, null, null, null, 0, start.AddMonths(3));
         var reference = new WorkstationSecurityReference(id, "Synthetic security", assetClass, "USD", SecurityStatusDto.Active, "SYNTH");
         var portfolio = new PortfolioSummary("synthetic", "unit-run", start, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            [new PortfolioPositionSummary("SYNTH", 1000000, 100m, 0, 0, false, reference)]);
+            [new PortfolioPositionSummary("SYNTH", 1000000, 100m, 0, 0, false, reference)])
+        {
+            HasRetainedAccountingPositionPopulation = true,
+            AccountingPositions = [new("SYNTH", "synthetic-account", id, false, 1000000m, null, "FaceValue", 1m, "USD")]
+        };
         var detail = new StrategyRunDetail(summary, new Dictionary<string, string>(), portfolio, null);
         var economic = JsonSerializer.SerializeToElement(new
         {

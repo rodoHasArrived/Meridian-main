@@ -1609,6 +1609,7 @@
                                                     <DataGridTextColumn Header="Expected" Binding="{Binding ExpectedAmountText}" Width="110" ElementStyle="{StaticResource RightAlignedCellStyle}" />
                                                     <DataGridTextColumn Header="Actual" Binding="{Binding ActualAmountText}" Width="110" ElementStyle="{StaticResource RightAlignedCellStyle}" />
                                                     <DataGridTextColumn Header="Variance" Binding="{Binding VarianceText}" Width="110" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                    <DataGridTextColumn Header="Tolerance" Binding="{Binding ToleranceText}" Width="110" ElementStyle="{StaticResource RightAlignedCellStyle}" />
                                                     <DataGridTextColumn Header="Reason" Binding="{Binding Reason}" Width="220" />
                                                 </DataGrid.Columns>
                                             </DataGrid>
@@ -1631,6 +1632,7 @@
                                                     <DataGridTextColumn Header="Expected" Binding="{Binding ExpectedAmountText}" Width="110" ElementStyle="{StaticResource RightAlignedCellStyle}" />
                                                     <DataGridTextColumn Header="Actual" Binding="{Binding ActualAmountText}" Width="110" ElementStyle="{StaticResource RightAlignedCellStyle}" />
                                                     <DataGridTextColumn Header="Variance" Binding="{Binding VarianceText}" Width="110" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                    <DataGridTextColumn Header="Tolerance" Binding="{Binding ToleranceText}" Width="110" ElementStyle="{StaticResource RightAlignedCellStyle}" />
                                                     <DataGridTextColumn Header="Reason" Binding="{Binding Reason}" Width="220" />
                                                 </DataGrid.Columns>
                                             </DataGrid>
@@ -2105,6 +2107,9 @@
                 </TabItem>
                 <TabItem Header="Accrual schedules">
                     <agreementViews:IntercompanyAccrualSchedulesControl DataContext="{Binding AccrualSchedules}" />
+                </TabItem>
+                <TabItem Header="Lifecycle queue">
+                    <agreementViews:IntercompanyAgreementWorkQueueControl DataContext="{Binding AgreementWorkQueue}" />
                 </TabItem>
             </TabControl>
         </StackPanel>

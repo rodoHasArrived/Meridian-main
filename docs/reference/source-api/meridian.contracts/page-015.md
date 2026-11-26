@@ -6,6 +6,168 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ICanonicalSymbolRegistry
+
+Qualified name: <code>Meridian.Contracts.Catalog.ICanonicalSymbolRegistry</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:11](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L11).
+
+Service for canonical symbol naming standardization. Provides a unified interface for resolving symbols across providers using canonical names, aliases, and industry identifiers (ISIN, FIGI, SEDOL, CUSIP).
+
+```csharp
+public interface ICanonicalSymbolRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string? ResolveToCanonical(string input);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:17](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L17) | Resolves any symbol input (alias, ISIN, FIGI, SEDOL, provider-specific format) to its canonical representation. Returns null if no match is found. |
+| <code>CanonicalSymbol? ResolveToCanonical(SymbolId input) =&gt; …;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:23](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L23) | Typed overload: resolves a raw SymbolId to its CanonicalSymbol. Returns null if no match is found. |
+| <code>string? TryResolve(string symbol, string provider);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:33](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L33) | Resolves a provider-specific symbol to canonical form. Checks provider-specific mappings first, then falls back to generic resolution. |
+| <code>CanonicalSymbol? TryResolve(ProviderSymbol providerSymbol) =&gt; …;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:40](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L40) | Typed overload: resolves a ProviderSymbol to its CanonicalSymbol. Checks provider-specific mappings first, then falls back to generic resolution. Returns null if unresolved. |
+| <code>Task RegisterAsync(CanonicalSymbolDefinition definition, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:48](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L48) | Registers a symbol with its canonical entry, updating aliases and identifier indexes. |
+| <code>Task&lt;int&gt; RegisterBatchAsync(IEnumerable&lt;CanonicalSymbolDefinition&gt; definitions, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:53](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L53) | Registers multiple symbols in batch. |
+| <code>CanonicalSymbolDefinition? GetDefinition(string symbolOrIdentifier);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:58](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L58) | Gets the canonical definition for a symbol. Accepts any known identifier. |
+| <code>IReadOnlyList&lt;CanonicalSymbolDefinition&gt; GetAll();</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:63](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L63) | Gets all registered canonical definitions. |
+| <code>IReadOnlyList&lt;CanonicalSymbolDefinition&gt; GetByAssetClass(string assetClass);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:68](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L68) | Gets canonical definitions filtered by asset class. |
+| <code>IReadOnlyList&lt;CanonicalSymbolDefinition&gt; GetByExchange(string exchange);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:73](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L73) | Gets canonical definitions filtered by exchange. |
+| <code>string? TryResolveWithProvider(string symbol, string provider);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:80](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L80) | Resolves a symbol to its canonical form using a provider hint for disambiguation. Checks provider-specific mappings first, then falls back to general resolution. Returns null if no match is found. |
+| <code>string? GetProviderSymbol(string symbolOrIdentifier, string provider);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:87](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L87) | Gets the outbound provider symbol for a canonical symbol or any known identifier. Returns null when the security is unknown or no explicit provider mapping has been registered. |
+| <code>Task SetProviderSymbolAsync(string canonical, string provider, string providerSymbol, string source = SymbolMappingSources.Operator, bool isOverride = true, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:93](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L93) | Adds or replaces one provider-scoped symbol mapping without replacing the security definition or mappings owned by other providers. |
+| <code>Task&lt;bool&gt; RemoveProviderSymbolAsync(string canonical, string provider, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:104](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L104) | Removes one provider-scoped mapping while retaining the canonical security definition. |
+| <code>bool IsKnown(string identifier);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:109](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L109) | Checks if a given identifier (canonical, alias, ISIN, FIGI, etc.) is known. |
+| <code>Task&lt;bool&gt; RemoveAsync(string canonical, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:114](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L114) | Removes a symbol from the registry by its canonical name. |
+| <code>int Count { get; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:119](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L119) | Gets the total count of registered canonical symbols. |
+
+## ICanonicalSymbolRegistryMigrationWriter
+
+Qualified name: <code>Meridian.Contracts.Catalog.ICanonicalSymbolRegistryMigrationWriter</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:126](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L126).
+
+Optional atomic-write capability used by startup migrations without expanding the stable symbol-resolution contract implemented by external registry adapters.
+
+```csharp
+public interface ICanonicalSymbolRegistryMigrationWriter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;int&gt; ApplyMigrationAsync(string migrationId, string fingerprint, IEnumerable&lt;CanonicalSymbolDefinition&gt; definitions, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:132](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L132) | Atomically merges one legacy migration batch and its completion fingerprint. A failed or cancelled write leaves both the retained registry and the in-memory resolver unchanged. |
+
+## ICanonicalSymbolRegistrySecurityMasterWriter
+
+Qualified name: <code>Meridian.Contracts.Catalog.ICanonicalSymbolRegistrySecurityMasterWriter</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:153](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L153).
+
+Optional atomic reconciliation of Security-Master-owned symbol authority.
+
+```csharp
+public interface ICanonicalSymbolRegistrySecurityMasterWriter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;int&gt; ReconcileSecurityMasterAsync(IReadOnlyCollection&lt;Guid&gt; securityIds, IEnumerable&lt;CanonicalSymbolDefinition&gt; definitions, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:162](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L162) | Replaces Security Master identifiers, aliases, canonical tickers and non-override provider mappings for the supplied security IDs only. Definitions describe active securities; an ID without a definition withdraws its Security Master mappings and removes its canonical entry only when no independent authority remains. Retained independent mappings do not authorize the withdrawn Security Master canonical spelling. Unknown legacy provenance is preserved. |
+
+## IdentifierIndex
+
+Qualified name: <code>Meridian.Contracts.Catalog.IdentifierIndex</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:410](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L410).
+
+Index of industry identifiers to canonical symbols.
+
+```csharp
+public sealed class IdentifierIndex
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;isinToSymbol&quot;)] public Dictionary&lt;string, string&gt; IsinToSymbol { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:416](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L416) | ISIN to canonical symbol. |
+| <code>[JsonPropertyName(&quot;figiToSymbol&quot;)] public Dictionary&lt;string, string&gt; FigiToSymbol { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:422](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L422) | FIGI to canonical symbol. |
+| <code>[JsonPropertyName(&quot;cusipToSymbol&quot;)] public Dictionary&lt;string, string&gt; CusipToSymbol { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:428](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L428) | CUSIP to canonical symbol. |
+| <code>[JsonPropertyName(&quot;sedolToSymbol&quot;)] public Dictionary&lt;string, string&gt; SedolToSymbol { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:434](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L434) | SEDOL to canonical symbol. |
+
+## IndexedFileEntry
+
+Qualified name: <code>Meridian.Contracts.Catalog.IndexedFileEntry</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:135](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L135).
+
+Individual file entry in the directory index.
+
+```csharp
+public sealed class IndexedFileEntry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;fileName&quot;)] public string FileName { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:141](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L141) | File name (without path). |
+| <code>[JsonPropertyName(&quot;relativePath&quot;)] public string RelativePath { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:147](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L147) | Relative path from storage root. |
+| <code>[JsonPropertyName(&quot;format&quot;)] public string Format { get; set; } = &quot;jsonl&quot;;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:153](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L153) | File format (jsonl, parquet, csv). |
+| <code>[JsonPropertyName(&quot;isCompressed&quot;)] public bool IsCompressed { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:159](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L159) | Whether the file is compressed. |
+| <code>[JsonPropertyName(&quot;compressionType&quot;)] public string? CompressionType { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:165](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L165) | Compression type if compressed. |
+| <code>[JsonPropertyName(&quot;symbol&quot;)] public string? Symbol { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:171](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L171) | Symbol this file contains data for. |
+| <code>[JsonPropertyName(&quot;eventType&quot;)] public string? EventType { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:177](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L177) | Event type in this file. |
+| <code>[JsonPropertyName(&quot;source&quot;)] public string? Source { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:183](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L183) | Data source/provider. |
+| <code>[JsonPropertyName(&quot;date&quot;)] public DateTime? Date { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:189](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L189) | Date of the data (for date-partitioned files). |
+| <code>[JsonPropertyName(&quot;schemaVersion&quot;)] public string? SchemaVersion { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:195](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L195) | Schema version used in this file. |
+| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:201](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L201) | Compressed size on disk in bytes. |
+| <code>[JsonPropertyName(&quot;uncompressedSizeBytes&quot;)] public long UncompressedSizeBytes { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:207](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L207) | Uncompressed size in bytes. |
+| <code>[JsonPropertyName(&quot;eventCount&quot;)] public long EventCount { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:213](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L213) | Number of events/records in the file. |
+| <code>[JsonPropertyName(&quot;checksumSha256&quot;)] public string ChecksumSha256 { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:219](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L219) | SHA256 checksum for integrity verification. |
+| <code>[JsonPropertyName(&quot;firstTimestamp&quot;)] public DateTime? FirstTimestamp { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:225](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L225) | Timestamp of the first event. |
+| <code>[JsonPropertyName(&quot;lastTimestamp&quot;)] public DateTime? LastTimestamp { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:231](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L231) | Timestamp of the last event. |
+| <code>[JsonPropertyName(&quot;firstSequence&quot;)] public long? FirstSequence { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:237](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L237) | Sequence number of the first event. |
+| <code>[JsonPropertyName(&quot;lastSequence&quot;)] public long? LastSequence { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:243](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L243) | Sequence number of the last event. |
+| <code>[JsonPropertyName(&quot;sequenceGaps&quot;)] public int SequenceGaps { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:249](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L249) | Number of sequence gaps detected within this file. |
+| <code>[JsonPropertyName(&quot;lastModified&quot;)] public DateTime LastModified { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:255](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L255) | File last modified time. |
+| <code>[JsonPropertyName(&quot;indexedAt&quot;)] public DateTime IndexedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:261](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L261) | When this entry was indexed. |
+| <code>[JsonPropertyName(&quot;verificationStatus&quot;)] public string VerificationStatus { get; set; } = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:267](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L267) | Verification status. |
+| <code>[JsonPropertyName(&quot;metadata&quot;)] public Dictionary&lt;string, string&gt;? Metadata { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:273](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L273) | Additional metadata. |
+
+## ISymbolResolutionMismatchReader
+
+Qualified name: <code>Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:355](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L355).
+
+Read-only comparison evidence emitted while symbol resolution runs in SymbolResolutionMode.Compare mode.
+
+```csharp
+public interface ISymbolResolutionMismatchReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>long TotalCount { get; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:358](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L358) | Total mismatches observed since this process started. |
+| <code>IReadOnlyList&lt;SymbolResolutionMismatch&gt; GetRecent();</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:361](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L361) | The most recent bounded set of mismatches, newest first. |
+
+## ProviderSymbolDefinition
+
+Qualified name: <code>Meridian.Contracts.Catalog.ProviderSymbolDefinition</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:290](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L290).
+
+A provider-scoped symbol together with provenance used to merge learned and curated values safely.
+
+```csharp
+public sealed record ProviderSymbolDefinition([property : JsonPropertyName("symbol")] string Symbol, [property : JsonPropertyName("source")] string Source = SymbolMappingSources.Registry, [property : JsonPropertyName("isOverride")] bool IsOverride = false, [property : JsonPropertyName("updatedAt")] DateTimeOffset? UpdatedAt = null);
+```
+
 ## ProviderSymbolMetadata
 
 Qualified name: <code>Meridian.Contracts.Catalog.ProviderSymbolMetadata</code>. Kind: `class`.
@@ -711,7 +873,7 @@ public sealed record BackfillVendorTierDto(string Id, string Label, int? RateLim
 
 Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationApplyEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:38](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L38).
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:41](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L41).
 
 One runtime-apply outcome. Detail is a fixed explanation and may name provider or rule IDs; it never contains configuration or credential values.
 
@@ -739,12 +901,13 @@ Enum declarations:
 | <code>ProviderReconfigured</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:25](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L25) | A streaming provider was excluded from or re-included in failover in-process. |
 | <code>NoRuntimeEffect</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:28](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L28) | The value was saved; it has no runtime effect in the current host mode. |
 | <code>Deferred</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:31](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L31) | The value was saved but the running host could not apply it; a restart is required. |
+| <code>Failed</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:34](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L34) | The running host attempted to apply the saved setting and reported a failure. |
 
 ## ConfigurationApplySummary
 
 Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationApplySummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:41](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L41).
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:44](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L44).
 
 Outcome of the most recent save&#x27;s runtime apply, reported by the host component that applied it.
 
@@ -756,7 +919,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool AnyDeferred =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:45](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L45) |  |
+| <code>public bool AnyDeferred =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:48](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L48) |  |
 
 ## ConfigurationChangeImpact
 
@@ -782,20 +945,20 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationChangeStatus</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:49](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L49).
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:72](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L72).
 
 Shared by browser and desktop clients. Pending means saved, but not confirmed applied.
 
 ```csharp
-public sealed record ConfigurationChangeStatus(ConfigurationChangeImpact Impact, IReadOnlyList<ConfigurationFieldChange> Changes, IReadOnlyList<ConfigurationFieldChange> PendingChanges, DateTimeOffset? SavedAtUtc, bool CanReconnectInProcess = false, ConfigurationApplySummary? LastApply = null)
+public sealed record ConfigurationChangeStatus(ConfigurationChangeImpact Impact, IReadOnlyList<ConfigurationFieldChange> Changes, IReadOnlyList<ConfigurationFieldChange> PendingChanges, DateTimeOffset? SavedAtUtc, bool CanReconnectInProcess = false, ConfigurationApplySummary? LastApply = null, ConfigurationRevision? Revision = null, ConfigurationRuntimeState? RuntimeState = null, ConfigurationRuntimeAcknowledgement? CollectorAcknowledgement = null)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool RequiresRestart =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:57](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L57) |  |
-| <code>public bool RequiresReconnect =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:59](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L59) |  |
+| <code>public bool RequiresRestart =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:83](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L83) |  |
+| <code>public bool RequiresReconnect =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:85](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L85) |  |
 
 ## ConfigurationFieldChange
 
@@ -808,6 +971,50 @@ Contains setting names only; configuration and credential values are never expor
 ```csharp
 public sealed record ConfigurationFieldChange(string Path, ConfigurationChangeImpact Impact);
 ```
+
+## ConfigurationRevision
+
+Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationRevision</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:52](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L52).
+
+Identity and SHA-256 digest of one committed configuration document.
+
+```csharp
+public sealed record ConfigurationRevision(Guid Id, string ContentHash);
+```
+
+## ConfigurationRuntimeAcknowledgement
+
+Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:55](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L55).
+
+Collector observations are bound to an exact saved revision and collector lifetime.
+
+```csharp
+public sealed record ConfigurationRuntimeAcknowledgement(ConfigurationRevision Revision, Guid CollectorInstanceId, DateTimeOffset AppliedAtUtc, IReadOnlyList<ConfigurationApplyEntry> Entries);
+```
+
+## ConfigurationRuntimeState
+
+Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationRuntimeState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:62](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L62).
+
+```csharp
+public enum ConfigurationRuntimeState
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Saved</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:64](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L64) |  |
+| <code>AppliedLive</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:65](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L65) |  |
+| <code>Deferred</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:66](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L66) |  |
+| <code>Failed</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:67](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L67) |  |
+| <code>Unknown</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:68](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L68) |  |
 
 ## ConnectivityProbeOptions
 
@@ -881,236 +1088,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;enableFailover&quot;)] public bool EnableFailover { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:498](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L498) |  |
 | <code>[JsonPropertyName(&quot;failoverTimeoutSeconds&quot;)] public int FailoverTimeoutSeconds { get; set; } = 30;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:501](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L501) |  |
 | <code>[JsonPropertyName(&quot;symbolMappings&quot;)] public SymbolMappingsConfigDto? SymbolMappings { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:504](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L504) |  |
-
-## DemoWorkspaceIsolationException
-
-Qualified name: <code>Meridian.Contracts.Configuration.DemoWorkspaceIsolationException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:211](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L211).
-
-Raised when a demo-workspace path fails the isolation guard — i.e. it is not the dedicated, correctly-named demo root derived from the active data root, or lacks the demo sentinel.
-
-```csharp
-public sealed class DemoWorkspaceIsolationException : Exception
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DemoWorkspaceIsolationException(string message) : base(message);</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:213](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L213) |  |
-
-## DemoWorkspaceLayout
-
-Qualified name: <code>Meridian.Contracts.Configuration.DemoWorkspaceLayout</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:18](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L18).
-
-Shared, host-agnostic rules for the isolated Meridian demo workspace that the --seed-demo / --reset-demo CLI verbs and the --demo serve mode operate on.
-
-```csharp
-public static class DemoWorkspaceLayout
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string DemoWorkspaceFolderName = &quot;demo-workspace&quot;;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:21](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L21) | The dedicated folder name for the demo workspace, nested under the active data root. |
-| <code>public const string SentinelFileName = &quot;.meridian-demo-workspace.json&quot;;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:28](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L28) | Marker file written into the demo root at seed time. EnsureSafeToDelete refuses to tear down a directory that does not carry it, so --reset-demo can only ever remove a workspace Meridian itself seeded. |
-| <code>public const string DemoModeEnvironmentVariable = &quot;MERIDIAN_DEMO&quot;;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:31](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L31) | Environment variable that activates demo mode for the serving host. |
-| <code>public const string SeedDemoFlag = &quot;--seed-demo&quot;;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:34](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L34) | Seeds the isolated demo workspace (and, unless SeedOnlyFlag is set, serves it). |
-| <code>public const string ResetDemoFlag = &quot;--reset-demo&quot;;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:37](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L37) | Tears down the isolated demo workspace only. |
-| <code>public const string DemoFlag = &quot;--demo&quot;;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:40](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L40) | Serves an already-seeded demo workspace by redirecting the active data root to the demo root. |
-| <code>public const string SeedOnlyFlag = &quot;--seed-only&quot;;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:43](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L43) | Seeds without continuing to serve — used by CI and scripted seeding. |
-| <code>public static string ResolveDemoRoot(string baseDataRoot);</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:48](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L48) | Resolves the absolute demo workspace root nested under baseDataRoot. |
-| <code>public static string ResolveSentinelPath(string demoRoot);</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:55](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L55) | Absolute path of the sentinel marker inside a demo root. |
-| <code>public static bool HasFlag(IReadOnlyList&lt;string&gt; args, string flag);</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:62](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L62) | Returns true when flag is present (case-insensitive). |
-| <code>public static bool HasSeedDemoFlag(IReadOnlyList&lt;string&gt; args) =&gt; …;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:77](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L77) | True when the CLI is asking to seed the demo workspace. |
-| <code>public static bool HasResetDemoFlag(IReadOnlyList&lt;string&gt; args) =&gt; …;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:80](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L80) | True when the CLI is asking to tear down the demo workspace. |
-| <code>public static bool HasSeedOnlyFlag(IReadOnlyList&lt;string&gt; args) =&gt; …;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:83](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L83) | True when seeding should stop before serving (CI / scripted use). |
-| <code>public static bool IsDemoModeRequested(IReadOnlyList&lt;string&gt; args);</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:90](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L90) | True when the serving host should redirect its data root to the isolated demo root. This is requested explicitly with --demo / --seed-demo, or ambiently via the MERIDIAN_DEMO environment variable. |
-| <code>public static string EnsureIsolatedDemoRoot(string candidate, string baseDataRoot);</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:123](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L123) | Validates that candidate is the isolated demo root derived from baseDataRoot — a distinct, correctly-named direct child. Throws DemoWorkspaceIsolationException otherwise. This is the structural half of the teardown guard and never touches the filesystem, so it is safe to call before the directory exists. |
-| <code>public static string EnsureSafeToDelete(string candidate, string baseDataRoot);</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:172](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L172) | Validates that candidate is safe to delete: it must pass EnsureIsolatedDemoRoot and carry the demo sentinel marker. Returns the validated absolute path. Throws DemoWorkspaceIsolationException if the guard fails. |
-
-## DerivativesConfigDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.DerivativesConfigDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:8](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L8).
-
-Configuration for derivatives (options and futures) data collection.
-
-```csharp
-public sealed class DerivativesConfigDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;enabled&quot;)] public bool Enabled { get; set; }</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:14](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L14) | Whether derivatives tracking is enabled. |
-| <code>[JsonPropertyName(&quot;underlyings&quot;)] public string[]? Underlyings { get; set; }</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:20](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L20) | Underlying symbols to track options for (e.g., &#91;&quot;SPX&quot;, &quot;SPY&quot;, &quot;QQQ&quot;, &quot;AAPL&quot;&#93;). |
-| <code>[JsonPropertyName(&quot;maxDaysToExpiration&quot;)] public int MaxDaysToExpiration { get; set; } = 90;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:27](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L27) | Maximum days to expiration for tracked contracts (0 = no limit). Default: 90 (only track near-term options). |
-| <code>[JsonPropertyName(&quot;strikeRange&quot;)] public int StrikeRange { get; set; } = 20;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:34](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L34) | Number of strikes above and below ATM to track (0 = all strikes). Default: 20 (±20 strikes from at-the-money). |
-| <code>[JsonPropertyName(&quot;captureGreeks&quot;)] public bool CaptureGreeks { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:40](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L40) | Whether to capture greeks (delta, gamma, theta, vega, rho, IV). |
-| <code>[JsonPropertyName(&quot;captureChainSnapshots&quot;)] public bool CaptureChainSnapshots { get; set; }</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:46](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L46) | Whether to capture periodic chain snapshots. |
-| <code>[JsonPropertyName(&quot;chainSnapshotIntervalSeconds&quot;)] public int ChainSnapshotIntervalSeconds { get; set; } = 300;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:52](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L52) | Interval in seconds between chain snapshots (default: 300 = 5 minutes). |
-| <code>[JsonPropertyName(&quot;captureOpenInterest&quot;)] public bool CaptureOpenInterest { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:58](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L58) | Whether to capture open interest updates (typically daily). |
-| <code>[JsonPropertyName(&quot;expirationFilter&quot;)] public string[]? ExpirationFilter { get; set; }</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:66](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L66) | Filter for expiration types to track. Values: &quot;Weekly&quot;, &quot;Monthly&quot;, &quot;Quarterly&quot;, &quot;LEAPS&quot;, &quot;All&quot;. Default: &#91;&quot;Weekly&quot;, &quot;Monthly&quot;&#93; — skip quarterlies and LEAPS unless needed. |
-| <code>[JsonPropertyName(&quot;indexOptions&quot;)] public IndexOptionsConfigDto? IndexOptions { get; set; }</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:73](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L73) | Index options configuration (SPX, NDX, RUT, VIX). These are European-style and cash-settled. |
-
-## ExtendedSymbolConfigDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.ExtendedSymbolConfigDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:735](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L735).
-
-Extended symbol configuration with group membership and status.
-
-```csharp
-public sealed class ExtendedSymbolConfigDto : SymbolConfigDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;groupIds&quot;)] public string[]? GroupIds { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:738](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L738) |  |
-| <code>[JsonPropertyName(&quot;tags&quot;)] public string[]? Tags { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:741](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L741) |  |
-| <code>[JsonPropertyName(&quot;notes&quot;)] public string? Notes { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:744](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L744) |  |
-| <code>[JsonPropertyName(&quot;addedAt&quot;)] public DateTime AddedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:747](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L747) |  |
-| <code>[JsonPropertyName(&quot;lastModified&quot;)] public DateTime LastModified { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:750](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L750) |  |
-| <code>[JsonPropertyName(&quot;isFavorite&quot;)] public bool IsFavorite { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:753](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L753) |  |
-| <code>[JsonPropertyName(&quot;customColor&quot;)] public string? CustomColor { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:756](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L756) |  |
-
-## IBClientPortalOptionsDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.IBClientPortalOptionsDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:630](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L630).
-
-Interactive Brokers Client Portal HTTP configuration.
-
-```csharp
-public sealed class IBClientPortalOptionsDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;enabled&quot;)] public bool Enabled { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:633](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L633) |  |
-| <code>[JsonPropertyName(&quot;baseUrl&quot;)] public string BaseUrl { get; set; } = ApiEndpointDefaults.IbClientPortalBaseUrl;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:636](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L636) |  |
-| <code>[JsonPropertyName(&quot;allowSelfSignedCertificates&quot;)] public bool AllowSelfSignedCertificates { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:639](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L639) |  |
-
-## IBOptionsDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.IBOptionsDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:603](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L603).
-
-Interactive Brokers connection options.
-
-```csharp
-public sealed class IBOptionsDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;host&quot;)] public string Host { get; set; } = &quot;127.0.0.1&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:606](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L606) |  |
-| <code>[JsonPropertyName(&quot;port&quot;)] public int Port { get; set; } = 7497;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:609](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L609) |  |
-| <code>[JsonPropertyName(&quot;clientId&quot;)] public int ClientId { get; set; } = 1;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:612](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L612) |  |
-| <code>[JsonPropertyName(&quot;usePaperTrading&quot;)] public bool UsePaperTrading { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:615](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L615) |  |
-| <code>[JsonPropertyName(&quot;subscribeDepth&quot;)] public bool SubscribeDepth { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:618](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L618) |  |
-| <code>[JsonPropertyName(&quot;depthLevels&quot;)] public int DepthLevels { get; set; } = 10;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:621](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L621) |  |
-| <code>[JsonPropertyName(&quot;tickByTick&quot;)] public bool TickByTick { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:624](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L624) |  |
-
-## IndexOptionsConfigDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.IndexOptionsConfigDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:79](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L79).
-
-Configuration specific to index options.
-
-```csharp
-public sealed class IndexOptionsConfigDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;enabled&quot;)] public bool Enabled { get; set; }</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:85](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L85) | Whether index options tracking is enabled. |
-| <code>[JsonPropertyName(&quot;indices&quot;)] public string[]? Indices { get; set; }</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:91](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L91) | Index symbols to track (e.g., &#91;&quot;SPX&quot;, &quot;NDX&quot;, &quot;RUT&quot;, &quot;VIX&quot;&#93;). |
-| <code>[JsonPropertyName(&quot;includeWeeklies&quot;)] public bool IncludeWeeklies { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:98](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L98) | Whether to include SPX weekly expirations (0DTE, Mon/Wed/Fri). These have very high volume but generate significant data. |
-| <code>[JsonPropertyName(&quot;includeAmSettled&quot;)] public bool IncludeAmSettled { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:104](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L104) | Whether to include AM-settled expirations (standard monthly SPX). |
-| <code>[JsonPropertyName(&quot;includePmSettled&quot;)] public bool IncludePmSettled { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:110](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L110) | Whether to include PM-settled expirations (SPXW weeklies). |
-
-## MeridianPathDefaults
-
-Qualified name: <code>Meridian.Contracts.Configuration.MeridianPathDefaults</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs:8](../../../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs#L8).
-
-Shared helpers for resolving Meridian config and data paths across hosts.
-
-```csharp
-public static class MeridianPathDefaults
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ApplicationName = &quot;Meridian&quot;;</code> | [src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs:10](../../../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs#L10) |  |
-| <code>public const string ConfigFileName = &quot;appsettings.json&quot;;</code> | [src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs:11](../../../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs#L11) |  |
-| <code>public const string DefaultDataRoot = &quot;data&quot;;</code> | [src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs:12](../../../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs#L12) |  |
-| <code>public static string GetLocalApplicationDataRoot();</code> | [src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs:19](../../../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs#L19) |  |
-| <code>public static string GetDesktopConfigPath() =&gt; …;</code> | [src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs:25](../../../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs#L25) |  |
-| <code>public static string GetFirstRunMarkerPath() =&gt; …;</code> | [src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs:28](../../../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs#L28) |  |
-| <code>public static string GetCatalogRoot(string? configPath) =&gt; …;</code> | [src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs:31](../../../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs#L31) |  |
-| <code>public static string GetConfigBaseDirectory(string? configPath);</code> | [src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs:34](../../../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs#L34) |  |
-| <code>public static string ResolveDataRoot(string? configPath, string? configuredDataRoot);</code> | [src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs:56](../../../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs#L56) |  |
-| <code>public static string ResolvePathFromConfigBase(string? configPath, string? configuredPath, string defaultRelativePath);</code> | [src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs:67](../../../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs#L67) |  |
-| <code>public static string ResolveConfiguredDataRootFromJson(string json, string? currentDataRoot = null);</code> | [src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs:78](../../../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs#L78) |  |
-| <code>public static string? TryReadDataRoot(string json) =&gt; …;</code> | [src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs:97](../../../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs#L97) |  |
-| <code>public static string? TryReadLegacyStorageBaseDirectory(string json) =&gt; …;</code> | [src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs:100](../../../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs#L100) |  |
-
-## PolygonOptionsDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.PolygonOptionsDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:579](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L579).
-
-Polygon.io API configuration options.
-
-```csharp
-public sealed class PolygonOptionsDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;apiKey&quot;)] public string? ApiKey { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:582](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L582) |  |
-| <code>[JsonPropertyName(&quot;useDelayed&quot;)] public bool UseDelayed { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:585](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L585) |  |
-| <code>[JsonPropertyName(&quot;feed&quot;)] public string Feed { get; set; } = &quot;stocks&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:588](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L588) |  |
-| <code>[JsonPropertyName(&quot;subscribeTrades&quot;)] public bool SubscribeTrades { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:591](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L591) |  |
-| <code>[JsonPropertyName(&quot;subscribeQuotes&quot;)] public bool SubscribeQuotes { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:594](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L594) |  |
-| <code>[JsonPropertyName(&quot;subscribeAggregates&quot;)] public bool SubscribeAggregates { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:597](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L597) |  |
-
-## ProviderActivationEntry
-
-Qualified name: <code>Meridian.Contracts.Configuration.ProviderActivationEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Configuration/ProviderActivationResponse.cs:13](../../../../src/Meridian.Contracts/Configuration/ProviderActivationResponse.cs#L13).
-
-Activation evidence for one provider in a streaming, backfill, or module surface.
-
-```csharp
-public sealed record ProviderActivationEntry(string ProviderId, string Surface, string State, DateTimeOffset? ActiveSinceUtc, string? Reason);
-```

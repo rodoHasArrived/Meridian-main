@@ -1520,7 +1520,8 @@ public sealed class EvidenceWorkflowFabricTests
             requestTenantId: "tenant-alpha",
             requestCompanyId: "company-alpha",
             strategyRunReadService: runReadService,
-            additionalContributor: sentinelContributor);
+            additionalContributor: sentinelContributor,
+            strategyRuns: store);
         var client = app.GetTestClient();
 
         var subjectsResponse = await client.GetAsync("/api/workstation/evidence/subjects");
@@ -5124,7 +5125,8 @@ public sealed class EvidenceWorkflowFabricTests
         StrategyRunReadService? strategyRunReadService = null,
         IEvidenceContributor? additionalContributor = null,
         UserPermission? requestPermissions = null,
-        long? evidenceArtifactByteLimit = null)
+        long? evidenceArtifactByteLimit = null,
+        IStrategyRepository? strategyRuns = null)
     {
         Directory.CreateDirectory(root);
         var configPath = Path.Combine(root, "appsettings.json");
@@ -5162,6 +5164,8 @@ public sealed class EvidenceWorkflowFabricTests
         {
             builder.Services.AddSingleton(strategyRunReadService);
         }
+        if (strategyRuns is not null)
+            builder.Services.AddSingleton(strategyRuns);
 
         if (additionalContributor is not null)
         {

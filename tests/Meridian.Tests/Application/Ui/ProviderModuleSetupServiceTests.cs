@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Integrity;
 using Meridian.Core.Contracts;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -94,6 +95,9 @@ public sealed class ProviderModuleSetupServiceTests : IDisposable
         var result = await svc.SetEnabledAsync("mod", false);
 
         result.Success.Should().BeTrue();
+        result.ChangeStatus.Should().NotBeNull();
+        result.ChangeStatus!.Revision.Should().NotBeNull();
+        result.ChangeStatus!.Revision!.ContentHash.Should().Be(Sha256Digest.Compute(await File.ReadAllBytesAsync(_configPath)));
         var cfg = _configStore.Load();
         cfg.ProviderModules!.Modules["mod"].Enabled.Should().BeFalse();
     }

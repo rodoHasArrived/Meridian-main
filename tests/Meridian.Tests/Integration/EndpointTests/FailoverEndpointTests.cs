@@ -80,6 +80,15 @@ public sealed class FailoverEndpointTests : IDisposable, IClassFixture<EndpointT
         var response = await _client.PostAsync("/api/failover/config", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var saved = (await DeserializeAsync(response))["changeImpact"];
+        var revision = saved.GetProperty("revision");
+        saved.GetProperty("runtimeState").GetString().Should().Be("Saved");
+        saved.GetProperty("collectorAcknowledgement").ValueKind.Should().Be(JsonValueKind.Null);
+        using var reader = _fixture.CreateSessionClient(UserPermission.ViewConfig);
+        var current = await DeserializeAsync(await reader.GetAsync("/api/config/changes"));
+        current["revision"].GetProperty("id").GetGuid().Should().Be(revision.GetProperty("id").GetGuid());
+        current["revision"].GetProperty("contentHash").GetString().Should().Be(revision.GetProperty("contentHash").GetString());
+        current["runtimeState"].GetString().Should().Be("Unknown");
     }
 
     #endregion

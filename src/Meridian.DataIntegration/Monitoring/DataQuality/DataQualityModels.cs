@@ -191,6 +191,9 @@ public sealed record ProviderDiscrepancy(
     /// (for example volume in <c>Informational</c> mode). Informational discrepancies are not alerts.
     /// </summary>
     public bool IsInformational { get; init; }
+
+    /// <summary>Thresholds and asset class in use when the discrepancy was detected.</summary>
+    public CrossProviderToleranceResolution? PolicyResolution { get; init; }
 }
 
 /// <summary>

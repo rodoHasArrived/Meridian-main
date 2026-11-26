@@ -15,7 +15,12 @@ public sealed record BackfillBatchReceipt(
     string ContentHash,
     string? Calendar,
     IReadOnlyList<DateOnly>? ExpectedSessions,
-    IReadOnlyList<DateOnly> ReceivedSessions);
+    IReadOnlyList<DateOnly> ReceivedSessions)
+{
+    /// <summary>Optional source quality snapshot bound by the content-addressed receipt.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.Operations.MarketDataInputEvidence? InputEvidence { get; init; }
+}
 
 /// <summary>Batch evidence for execution history. The revision retains the underlying session dates.</summary>
 public sealed record BackfillBatchReceiptSummary(

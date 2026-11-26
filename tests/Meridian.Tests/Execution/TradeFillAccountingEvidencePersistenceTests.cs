@@ -22,11 +22,36 @@ public sealed class TradeFillAccountingEvidencePersistenceTests
         using var document = JsonDocument.Parse(json);
         Assert.False(document.RootElement.TryGetProperty("accountingEvidenceVersion", out _));
         Assert.False(document.RootElement.TryGetProperty("accountingEvidence", out _));
+        Assert.False(document.RootElement.TryGetProperty("accountingRunId", out _));
         var restored = JsonSerializer.Deserialize(json, ExecutionJsonContext.Default.TradeExecutedEvent);
 
         Assert.Equal(legacy, restored);
         Assert.Equal(0, restored!.AccountingEvidenceVersion);
         Assert.Null(restored.AccountingEvidence);
+        Assert.Null(restored.AccountingRunId);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("admitted-run")]
+    public async Task WalRestartPreservesTrustedRunAndCannotUpgradeLegacyRunLabels(string? accountingRunId)
+    {
+        var root = TempRoot();
+        var fill = Event() with { RunId = "admitted-run", AccountingRunId = accountingRunId };
+        var options = new TradeFillPostingStoreOptions(root, PostingScope) { CompactionRecordThreshold = 1 };
+        try
+        {
+            await using (var original = new WalTradeFillPostingStore(options, NullLogger<WalTradeFillPostingStore>.Instance))
+                await original.AcceptAsync(fill);
+            await using var restarted = new WalTradeFillPostingStore(options, NullLogger<WalTradeFillPostingStore>.Instance);
+            var restored = Assert.Single(await restarted.LoadPendingAsync()).TradeEvent;
+            Assert.Equal(accountingRunId, restored.AccountingRunId);
+            Assert.Equal(fill, restored);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => restarted.AcceptAsync(fill with
+            { AccountingRunId = accountingRunId is null ? "admitted-run" : null }));
+            Assert.Equal(fill, Assert.Single(await restarted.LoadPendingAsync()).TradeEvent);
+        }
+        finally { Directory.Delete(root, recursive: true); }
     }
 
     [Fact]

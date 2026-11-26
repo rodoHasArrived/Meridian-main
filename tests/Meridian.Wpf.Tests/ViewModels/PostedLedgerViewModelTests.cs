@@ -639,8 +639,58 @@ public sealed class PostedLedgerViewModelTests
     private static string Metric(PostedLedgerViewModel viewModel, string label)
         => viewModel.PnlMetrics.Single(metric => metric.Label == label).Value;
 
+    [Fact]
+    public async Task ExportJournalCsvAsync_PreservesServerBytesAndSelectedPeriod()
+    {
+        var periodId = Guid.NewGuid();
+        byte[] source = [0xEF, 0xBB, 0xBF, 0x31, 0x2C, 0x32];
+        byte[]? saved = null;
+        var client = new FakeLedgerReportsApiClient
+        {
+            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([Period(periodId)]),
+            Export = (requestedPeriod, _) =>
+            {
+                requestedPeriod.Should().Be(periodId);
+                return Task.FromResult(ApiResponse<byte[]>.Ok(source));
+            }
+        };
+        using var viewModel = new PostedLedgerViewModel(client, (_, bytes, _) => { saved = bytes; return Task.FromResult(true); });
+        await viewModel.RefreshAsync();
+        await viewModel.ExportJournalCsvAsync();
+        saved.Should().BeSameAs(source);
+        viewModel.JournalExportStatus.Should().Contain("Complete period journal saved");
+    }
+
+    [Fact]
+    public async Task ExportJournalCsvAsync_DiscardsLateResultAfterChangingPeriod()
+    {
+        var first = Guid.NewGuid();
+        var second = Guid.NewGuid();
+        var completion = new TaskCompletionSource<ApiResponse<byte[]>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var saved = false;
+        CancellationToken exportToken = default;
+        var client = new FakeLedgerReportsApiClient
+        {
+            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([Period(first), Period(second, periodNo: 6)]),
+            Export = (_, ct) => { exportToken = ct; return completion.Task; }
+        };
+        using var viewModel = new PostedLedgerViewModel(client, (_, _, _) => { saved = true; return Task.FromResult(true); });
+        await viewModel.RefreshAsync();
+        var pending = viewModel.ExportJournalCsvAsync();
+        await viewModel.SelectPeriodAsync(second);
+        exportToken.IsCancellationRequested.Should().BeTrue();
+        viewModel.ExportJournalCsvCommand.CanExecute(null).Should().BeTrue();
+        completion.SetResult(ApiResponse<byte[]>.Ok([1, 2, 3]));
+        await pending;
+        saved.Should().BeFalse();
+        viewModel.JournalExportStatus.Should().NotContain("saved");
+    }
+
     private sealed class FakeLedgerReportsApiClient : ILedgerReportsApiClient
     {
+        public Func<Guid, CancellationToken, Task<ApiResponse<byte[]>>>? Export { get; set; }
+        public Task<ApiResponse<byte[]>> ExportJournalCsvAsync(Guid periodId, CancellationToken ct = default)
+            => Export?.Invoke(periodId, ct) ?? Task.FromResult(ApiResponse<byte[]>.Fail("Export unavailable"));
         public ApiResponse<LedgerAccountRunningBalanceDto> RunningBalance { get; set; }
             = ApiResponse<LedgerAccountRunningBalanceDto>.Fail("not configured", 404);
 

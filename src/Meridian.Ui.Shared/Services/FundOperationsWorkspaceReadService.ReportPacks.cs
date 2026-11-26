@@ -628,7 +628,15 @@ public sealed partial class FundOperationsWorkspaceReadService
             ReportKind = report.ReportKind.ToString(),
             Runs = runs.OrderBy(static run => run.RunId, StringComparer.Ordinal).Select(static run => new { run.RunId, run.StrategyName, run.FundProfileId, run.StartedAt }).ToArray(),
             Ledger = new { ledger.JournalEntryCount, ledger.LedgerEntryCount, ledger.AssetBalance, ledger.LiabilityBalance, ledger.EquityBalance, ledger.RevenueBalance, ledger.ExpenseBalance },
-            Reconciliation = new { reconciliation.RunCount, reconciliation.OpenBreakCount, reconciliation.BreakAmountTotal, reconciliation.SecurityCoverageIssueCount },
+            Reconciliation = new
+            {
+                reconciliation.RunCount,
+                reconciliation.OpenBreakCount,
+                BreakAmountTotal = reconciliation.ComparableBreakAmountTotal,
+                reconciliation.BreakAmountCurrency,
+                reconciliation.BreakAmountUnavailableReason,
+                reconciliation.SecurityCoverageIssueCount
+            },
             Nav = new
             {
                 nav.Currency,

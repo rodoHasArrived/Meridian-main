@@ -35,7 +35,7 @@ public sealed partial class FundOperationsWorkspaceReadService
     {
         var items = new List<FundReconciliationItem>();
         var openBreaks = 0;
-        decimal breakAmountTotal = 0m;
+        var monetaryTotals = new List<ReconciliationMonetaryTotal>();
         var securityCoverageIssues = 0;
 
         foreach (var projection in accountProjections)
@@ -49,7 +49,10 @@ public sealed partial class FundOperationsWorkspaceReadService
             {
                 var results = resultsByRun[run.ReconciliationRunId];
                 var activeBreaks = results.Where(static result => result.IsOpenBreak).ToArray();
-                var activeBreakAmount = activeBreaks.Sum(static result => Math.Abs(result.Variance ?? 0m));
+                // Account-result rows do not retain a per-check currency. An account's current
+                // base currency cannot establish the currency of historical source comparisons.
+                var amount = activeBreaks.Length == 0 ? new ReconciliationMonetaryTotal(0m, null, null)
+                    : ReconciliationMonetaryTotal.Unavailable("Account break rows do not retain comparable monetary currency evidence.");
                 var historicalBreaks = results.Where(static result => !result.IsMatch
                     && !string.Equals(result.Status, "Unverified", StringComparison.OrdinalIgnoreCase)).ToArray();
                 var lifecycleStatus = run.TotalBreaks > 0 && activeBreaks.Length == 0
@@ -65,14 +68,19 @@ public sealed partial class FundOperationsWorkspaceReadService
                     TotalChecks: run.TotalChecks,
                     TotalMatched: run.TotalMatched,
                     TotalBreaks: activeBreaks.Length,
-                    BreakAmountTotal: activeBreakAmount,
+                    BreakAmountTotal: amount.Amount ?? 0m,
                     RequestedAt: run.RequestedAt,
                     CompletedAt: run.CompletedAt,
                     ScopeLabel: "Account",
-                    CoverageLabel: "Account-level reconciliation"));
+                    CoverageLabel: "Account-level reconciliation")
+                {
+                    ComparableBreakAmountTotal = amount.Amount,
+                    BreakAmountCurrency = amount.Currency,
+                    BreakAmountUnavailableReason = amount.UnavailableReason
+                });
 
                 openBreaks += activeBreaks.Length;
-                breakAmountTotal += activeBreakAmount;
+                monetaryTotals.Add(amount);
             }
         }
 
@@ -94,7 +102,7 @@ public sealed partial class FundOperationsWorkspaceReadService
                 var asOf = detail.Summary.PortfolioAsOf
                     ?? detail.Summary.LedgerAsOf
                     ?? detail.Summary.CreatedAt;
-                var strategyBreakAmount = detail.Breaks.Sum(static result => Math.Abs(result.Variance));
+                var amount = ReconciliationMonetaryTotal.FromBreaks(detail.Breaks);
                 var status = MapStrategyStatus(detail.Summary);
 
                 items.Add(new FundReconciliationItem(
@@ -106,7 +114,7 @@ public sealed partial class FundOperationsWorkspaceReadService
                     TotalChecks: detail.Summary.MatchCount + detail.Summary.BreakCount,
                     TotalMatched: detail.Summary.MatchCount,
                     TotalBreaks: detail.Summary.BreakCount,
-                    BreakAmountTotal: strategyBreakAmount,
+                    BreakAmountTotal: amount.Amount ?? 0m,
                     RequestedAt: detail.Summary.CreatedAt,
                     CompletedAt: detail.Summary.CreatedAt,
                     ScopeLabel: "Strategy Run",
@@ -116,12 +124,17 @@ public sealed partial class FundOperationsWorkspaceReadService
                     HasSecurityCoverageIssues: detail.Summary.HasSecurityCoverageIssues,
                     CoverageLabel: detail.Summary.HasSecurityCoverageIssues
                         ? $"{detail.Summary.SecurityIssueCount} security issue(s)"
-                        : "Security Master aligned"));
+                        : "Security Master aligned")
+                {
+                    ComparableBreakAmountTotal = amount.Amount,
+                    BreakAmountCurrency = amount.Currency,
+                    BreakAmountUnavailableReason = amount.UnavailableReason
+                });
+                monetaryTotals.Add(amount);
 
                 if (detail.Summary.BreakCount > 0)
                 {
                     openBreaks += detail.Summary.BreakCount;
-                    breakAmountTotal += strategyBreakAmount;
                 }
 
                 securityCoverageIssues += detail.Summary.SecurityIssueCount;
@@ -134,15 +147,23 @@ public sealed partial class FundOperationsWorkspaceReadService
         var breakQueue = await BuildBreakQueueProjectionAsync(fundProfileId, accessScope, ct)
             .ConfigureAwait(false);
 
+        var total = ReconciliationMonetaryTotal.Combine(monetaryTotals);
         return new ReconciliationSummary(
             RunCount: ordered.Length,
             OpenBreakCount: openBreaks,
-            BreakAmountTotal: breakAmountTotal,
+            BreakAmountTotal: total.Amount ?? 0m,
             RecentRuns: ordered,
             SecurityCoverageIssueCount: securityCoverageIssues,
             BreakQueue: breakQueue,
-            LedgerImpactPreview: BuildLedgerImpactPreview(ordered),
-            HasCriticalBreakOpen: breakQueue?.CriticalOpenCount > 0);
+            // The legacy preview has no currency field. Only proven USD comparison amounts
+            // can enter it; a residual is advisory evidence, never a corrective journal.
+            LedgerImpactPreview: total.Amount.HasValue && total.Currency == "USD" ? BuildLedgerImpactPreview(ordered) : null,
+            HasCriticalBreakOpen: breakQueue?.CriticalOpenCount > 0)
+        {
+            ComparableBreakAmountTotal = total.Amount,
+            BreakAmountCurrency = total.Currency,
+            BreakAmountUnavailableReason = total.UnavailableReason
+        };
     }
 
     private async Task<ReconciliationBreakQueueProjectionDto?> BuildBreakQueueProjectionAsync(

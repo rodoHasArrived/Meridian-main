@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcCollateralBalanceChangedPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OtcCollateralBalanceChangedPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:167](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L167).
+
+OtcCollateral / CollateralBalanceRecorded or CollateralBalanceAmended.
+
+```csharp
+public sealed record OtcCollateralBalanceChangedPayload(Guid MasterAgreementId, OtcCollateralBalancePayload Balance, OtcCollateralBalancePayload? Previous, IReadOnlyList<string> Changes) : ISecurityGovernancePayload;
+```
+
+## OtcCollateralBalancePayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OtcCollateralBalancePayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:147](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L147).
+
+A collateral balance as the OtcCollateral stream records it.
+
+```csharp
+public sealed record OtcCollateralBalancePayload(Guid BalanceId, Guid CollateralAgreementId, string Direction, string Kind, string EligibleCollateralDescription, Guid? SecurityId, string Currency, decimal Quantity, decimal UnitValue, decimal ValuedAmount, decimal HaircutPercent, DateOnly ValuedAsOf, string? Reference, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
+```
+
 ## OtcCollateralMovementPayload
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.OtcCollateralMovementPayload</code>. Kind: `record`.
@@ -1193,46 +1217,3 @@ Declared public members:
 | <code>public static bool TryResolve(string stream, string eventType, out SecurityGovernancePayloadContract contract) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:344](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L344) | The contract declared for stream/eventType, if any. |
 | <code>public static SecurityGovernancePayloadContract Resolve(string stream, string eventType) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:348](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L348) | The contract declared for stream/eventType. |
 | <code>public static TPayload Read&lt;TPayload&gt;(string stream, string eventType, int payloadVersion, JsonElement payload) where TPayload : class, ISecurityGovernancePayload;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:371](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L371) | Reads a stored payload through its declared contract, dispatching on payloadVersion. Throws when the event type has no contract, the version has no reader on this node, or TPayload is not the declared payload type. |
-
-## SecurityGovernancePayloadVersionException
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernancePayloadVersionException</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:394](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L394).
-
-A stored governance payload&#x27;s version has no reader on this node (for example, a newer writer&#x27;s version).
-
-```csharp
-public sealed class SecurityGovernancePayloadVersionException(string stream, string eventType, int payloadVersion, IReadOnlyList<int> readableVersions) : NotSupportedException($"Governance payload {stream}/{eventType} version {payloadVersion} cannot be read; readable versions: {string.Join(", ", readableVersions)}.")
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Stream { get; } = stream;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:398](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L398) |  |
-| <code>public string EventType { get; } = eventType;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:399](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L399) |  |
-| <code>public int PayloadVersion { get; } = payloadVersion;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:400](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L400) |  |
-
-## SecurityGovernanceStreams
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernanceStreams</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:9](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L9).
-
-The governance streams recorded in security_governance_events.
-
-```csharp
-public static class SecurityGovernanceStreams
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string OperatorOverrides = &quot;OperatorOverrides&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:11](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L11) |  |
-| <code>public const string Aliases = &quot;Aliases&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:12](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L12) |  |
-| <code>public const string ProjectionRebuild = &quot;ProjectionRebuild&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:13](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L13) |  |
-| <code>public const string UnderlyingGraph = &quot;UnderlyingGraph&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:16](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L16) | Declared underlying-graph links: declaration, amendment and removal (migration 051). |
-| <code>public const string Curves = &quot;Curves&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:19](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L19) | Stored market curves: definitions and published versions (migration 053). Events carry no security id; the curve id is in the payload. |
-| <code>public const string OtcCollateral = &quot;OtcCollateral&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:22](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L22) | OTC exposure snapshots, collateral balances and margin calls (migrations 054 and 055); events carry no security id and name a netting set (snapshots, calls) or a collateral agreement (balances). |
