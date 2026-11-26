@@ -6,10 +6,25 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-23
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.Contracts
+
+`SecurityAssetClassModules` composes the 32 built-in `SecurityAssetClassModule` contributions under
+`SecurityMaster/AssetModules/`. Each class module owns its descriptor (including its terms-upgrade,
+term-role and accounting declarations), its root and nested term schema, its rate-field
+declarations, and its codec and economic-flattening bindings. `SecurityAssetClassCatalog`,
+`SecurityAssetTermsSchema`, `SecurityRateFieldUnits`, `SecurityAssetTermsCodecBindings` and the
+economic-terms upcaster keep their public members and enumeration order as facades over the
+modules; they hold no per-class table of their own. The 31 flat-codec classes keep their
+generation inputs, and CustomAsset declares its opaque approved-profile codec. Composition refuses
+a duplicate class, schema order or nested element path, a rate or codec row naming another class,
+and a module without its codec rows, at type initialization. The F# `AssetClassRegistry` remains
+the source of per-class classification facts; `SecurityAssetClassFactParityTests` still holds the
+C# declarations to it. A module declaration confers no posting or pack-activation authority.
+`SecurityAssetClassModuleTests` covers the composition contract. To add a class, follow
+[Adding a Security Master asset class](../../docs/engineering/security-master-adding-an-asset-class.md).
 
 `AccountingSystemReconciliationRowDto` and `AccountingSystemReconciliationSummaryDto` retain their
 numeric fields and add read-only invariant `*Exact` string companions for debit, credit, variance
