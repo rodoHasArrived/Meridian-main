@@ -9,6 +9,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
 using Meridian.Contracts.Reconciliation;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -742,11 +743,51 @@ public static partial class WorkstationEndpoints
             return accountGuard;
         }
 
-        var trustedRequest = request with { ImportedBy = currentUser };
         if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
         {
             return EndpointHelpers.Forbidden();
         }
+
+        // A run reconciles against one ledger book and period. Resolve them through the same intake
+        // authority the statement-import routes use; never accept a client-supplied scope, and never
+        // create a run without one.
+        var intakeAuthority = context.RequestServices.GetService<IStatementReconciliationIntakeAuthority>();
+        if (intakeAuthority is null)
+        {
+            return Results.Problem(
+                "Statement runs require the statement intake authority to resolve their ledger book and period.",
+                statusCode: StatusCodes.Status501NotImplemented);
+        }
+
+        Meridian.Domain.Reconciliation.StatementAccountingScope accountingScope;
+        try
+        {
+            accountingScope = await intakeAuthority.ResolveAccountingScopeAsync(
+                    new StatementReconciliationIntakeScopeRequest(
+                        accessScope.TenantId,
+                        accessScope.CompanyId,
+                        request.FundAccountId,
+                        request.ExternalAccountId,
+                        request.SourceInstitution,
+                        request.StatementPeriodStart,
+                        request.StatementPeriodEnd),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+        }
+        catch (StatementReconciliationIntakeAuthorityException ex)
+        {
+            return Results.Conflict(new { error = ex.Message, code = ex.Code });
+        }
+
+        var trustedRequest = request with
+        {
+            ImportedBy = currentUser,
+            ResolvedAccountingScope = new StatementReconciliationAccountingScopeDto(
+                accountingScope.FundProfileId,
+                accountingScope.LedgerBookId,
+                accountingScope.AccountingPeriodId,
+                accountingScope.AsOfDate)
+        };
 
         var detail = await service
             .CreateStatementRunAsync(trustedRequest, accessScope, context.RequestAborted)

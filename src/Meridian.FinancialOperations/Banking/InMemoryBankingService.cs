@@ -1,5 +1,6 @@
 using Meridian.Contracts.Banking;
 using Meridian.Contracts.Operations;
+using Meridian.Contracts.Workstation;
 
 namespace Meridian.FinancialOperations.Banking;
 
@@ -15,6 +16,13 @@ public sealed class InMemoryBankingService : IBankingService
     private readonly Dictionary<Guid, PendingPaymentDto> _pendingPayments = new();
     private readonly Dictionary<Guid, List<BankTransactionDto>> _bankTransactions = new();
     private readonly Dictionary<(Guid PendingPaymentId, string EvidenceId), BankTransactionDto> _paymentEvidence = new();
+    private readonly IBookOfRecordGuard? _bookOfRecord;
+
+    /// <param name="bookOfRecord">Shadow-mode guard consulted before approving a ledger-book-bound intent.</param>
+    public InMemoryBankingService(IBookOfRecordGuard? bookOfRecord = null)
+    {
+        _bookOfRecord = bookOfRecord;
+    }
 
     // -----------------------------------------------------------------------
     // Payment initiation & approval workflow
@@ -38,6 +46,7 @@ public sealed class InMemoryBankingService : IBankingService
         }
 
         var currency = PaymentBankEvidenceFactory.NormalizeRequiredCurrency(request.Currency, "Payment");
+        var binding = PaymentBookOfRecordBinding.Resolve(request);
 
         var pending = new PendingPaymentDto(
             PendingPaymentId: Guid.NewGuid(),
@@ -51,7 +60,10 @@ public sealed class InMemoryBankingService : IBankingService
             ReviewNotes: null,
             InitiatedAt: DateTimeOffset.UtcNow,
             ReviewedAt: null,
-            Currency: currency);
+            Currency: currency,
+            TenantId: binding.TenantId,
+            CompanyId: binding.CompanyId,
+            LedgerBookId: binding.LedgerBookId);
 
         lock (_gate)
         {
@@ -61,7 +73,7 @@ public sealed class InMemoryBankingService : IBankingService
         return Task.FromResult(pending);
     }
 
-    public Task<PendingPaymentDto?> ApprovePaymentAsync(
+    public async Task<PendingPaymentDto?> ApprovePaymentAsync(
         Guid pendingPaymentId,
         ApprovePaymentRequest request,
         CancellationToken ct = default)
@@ -70,11 +82,22 @@ public sealed class InMemoryBankingService : IBankingService
         EnsureHumanOrigin(request.ActionOrigin, "approve payment requests");
         ct.ThrowIfCancellationRequested();
 
+        PendingPaymentDto? candidate;
+        lock (_gate)
+        {
+            _pendingPayments.TryGetValue(pendingPaymentId, out candidate);
+        }
+
+        if (candidate is null)
+            return null;
+        if (candidate.Status == PaymentApprovalStatus.Pending)
+            await PaymentBookOfRecordBinding.EnsureBookOfRecordAsync(_bookOfRecord, candidate, ct).ConfigureAwait(false);
+
         lock (_gate)
         {
             if (!_pendingPayments.TryGetValue(pendingPaymentId, out var pending))
             {
-                return Task.FromResult<PendingPaymentDto?>(null);
+                return null;
             }
 
             if (pending.Status != PaymentApprovalStatus.Pending)
@@ -96,7 +119,7 @@ public sealed class InMemoryBankingService : IBankingService
             };
             _pendingPayments[pendingPaymentId] = approved;
 
-            return Task.FromResult<PendingPaymentDto?>(approved);
+            return approved;
         }
     }
 

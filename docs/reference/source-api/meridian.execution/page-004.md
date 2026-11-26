@@ -251,7 +251,7 @@ public sealed record PaperSessionDetailDto(PaperSessionSummaryDto Summary, IRead
 
 Qualified name: <code>Meridian.Execution.Services.PaperSessionFillAppendResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:272](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L272).
+Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:288](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L288).
 
 Idempotent durable-fill append result.
 
@@ -263,7 +263,7 @@ public sealed record PaperSessionFillAppendResult(PaperSessionFillAppendStatus S
 
 Qualified name: <code>Meridian.Execution.Services.PaperSessionFillAppendStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:264](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L264).
+Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:280](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L280).
 
 Outcome of attempting to durably claim a paper-session FillId.
 
@@ -275,9 +275,9 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Added = 0</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:266](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L266) |  |
-| <code>ExistingSame = 1</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:267](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L267) |  |
-| <code>Conflict = 2</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:268](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L268) |  |
+| <code>Added = 0</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:282](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L282) |  |
+| <code>ExistingSame = 1</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:283](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L283) |  |
+| <code>Conflict = 2</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:284](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L284) |  |
 
 ## PaperSessionFillRecord
 
@@ -302,9 +302,9 @@ Declared public members:
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? RunId { get; init; }</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:136](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L136) |  |
 | <code>public static PaperSessionFillRecord Create(Guid fillId, ExecutionReport fill, DateTimeOffset? recordedAt = null, bool isApplied = false);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:145](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L145) | Creates a validated current-version envelope for fill. |
 | <code>public static PaperSessionFillRecord CreateCanonical(ExecutionReport fill, DateTimeOffset? recordedAt = null, bool isApplied = false);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:177](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L177) | Creates an envelope whose FillId is derived only from stable execution-report content. Account scope and cumulative portfolio state are deliberately excluded so every producer uses the same paper-session idempotency key for the same fill. |
-| <code>public static Guid ComputeCanonicalFillId(ExecutionReport fill);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:191](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L191) | Computes the canonical, account-independent identity of an execution fill. The full payload hash remains a separate conflict detector so changed non-identity content cannot silently reuse this id. |
-| <code>public static string ComputeCanonicalHash(ExecutionReport fill);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:211](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L211) | Computes the stable content hash used to distinguish retry from conflict. |
-| <code>public PaperSessionFillRecord Validate();</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:219](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L219) | Validates the envelope version, identity, and canonical content hash. |
+| <code>public static Guid ComputeCanonicalFillId(ExecutionReport fill);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:199](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L199) | Computes the canonical, account-independent identity of an execution fill. The full payload hash remains a separate conflict detector so changed non-identity content cannot silently reuse this id. |
+| <code>public static string ComputeCanonicalHash(ExecutionReport fill);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:225](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L225) | Computes the stable content hash used to distinguish retry from conflict. |
+| <code>public PaperSessionFillRecord Validate();</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:233](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L233) | Validates the envelope version, identity, and canonical content hash. |
 
 ## PaperSessionJournalBatch
 
@@ -477,7 +477,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.PaperSessionSettlementAppendStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:332](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L332).
+Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:348](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L348).
 
 Outcome of an idempotent durable settlement append.
 
@@ -489,15 +489,15 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Added = 0</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:335](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L335) | The settlement was appended. |
-| <code>ExistingSame = 1</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:338](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L338) | The same settlement (key and price) was already recorded. |
-| <code>Conflict = 2</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:341](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L341) | The key was already settled at a different price. |
+| <code>Added = 0</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:351](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L351) | The settlement was appended. |
+| <code>ExistingSame = 1</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:354](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L354) | The same settlement (key and price) was already recorded. |
+| <code>Conflict = 2</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:357](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L357) | The key was already settled at a different price. |
 
 ## PaperSessionSettlementRecord
 
 Qualified name: <code>Meridian.Execution.Services.PaperSessionSettlementRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:287](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L287).
+Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:303](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L303).
 
 One durable daily variation-margin settlement of a paper futures position. Its identity is the account, symbol and trading date, so a position settles at most once per trading day; replay applies it at SettledAt among the session&#x27;s fills.
 
@@ -509,10 +509,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const int CurrentSchemaVersion = 1;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:296](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L296) | The schema version written by this build. |
-| <code>public static PaperSessionSettlementRecord Create(string accountId, string symbol, DateOnly tradingDate, decimal settlementPrice, DateTimeOffset settledAt);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:299](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L299) | Creates a current-schema settlement record. |
-| <code>public string Key =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:313](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L313) | The once-per-trading-day identity: account, normalized symbol and date. |
-| <code>public void Validate();</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:318](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L318) | Throws InvalidDataException when the record cannot be applied. |
+| <code>public const int CurrentSchemaVersion = 1;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:312](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L312) | The schema version written by this build. |
+| <code>public static PaperSessionSettlementRecord Create(string accountId, string symbol, DateOnly tradingDate, decimal settlementPrice, DateTimeOffset settledAt);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:315](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L315) | Creates a current-schema settlement record. |
+| <code>public string Key =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:329](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L329) | The once-per-trading-day identity: account, normalized symbol and date. |
+| <code>public void Validate();</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:334](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L334) | Throws InvalidDataException when the record cannot be applied. |
 
 ## PaperSessionSummaryDto
 

@@ -723,7 +723,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.BankingEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs#L15).
+Source: [src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs#L17).
 
 Maps banking payment initiation, approval, and status operations to the shared HTTP API.
 
@@ -735,7 +735,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapBankingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs#L17) |  |
+| <code>public static void MapBankingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs#L19) |  |
 
 ## BondAnalyticsEndpoints
 

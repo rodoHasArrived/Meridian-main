@@ -349,6 +349,42 @@ Retains the first completed comparison for each paper session, account, and cuto
 public sealed class PaperSessionDailyReconciliationStore(string root)
 ```
 
+## PartnershipWaterfallInvestorRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PartnershipWaterfallInvestorRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs:7](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs#L7).
+
+One partner taking part in a tiered waterfall allocation.
+
+```csharp
+public sealed record PartnershipWaterfallInvestorRequest(string InvestorId, string DisplayName, decimal AllocationPercent);
+```
+
+## PartnershipWaterfallRuleRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PartnershipWaterfallRuleRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs:10](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs#L10).
+
+One investor&#x27;s share of a waterfall tier, as a fraction of the tier (0 &lt; percent ≤ 1).
+
+```csharp
+public sealed record PartnershipWaterfallRuleRequest(string InvestorId, decimal AllocationPercent);
+```
+
+## PartnershipWaterfallTierRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PartnershipWaterfallTierRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs:13](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs#L13).
+
+One ordered waterfall tier with an optional cap on the profit it absorbs.
+
+```csharp
+public sealed record PartnershipWaterfallTierRequest(string TierId, string Description, IReadOnlyList<PartnershipWaterfallRuleRequest> AllocationRules, decimal? CapAmount = null);
+```
+
 ## PaymentInstruction
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PaymentInstruction</code>. Kind: `record`.
@@ -921,63 +957,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public Task&lt;ProviderVerificationHistoryDto&gt; GetVerificationHistoryForTenantAsync(string connectionId, string tenantId, int limit = 100, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.VerificationHistory.cs:8](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.VerificationHistory.cs#L8) |  |
-
-## ProviderCredentialStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderCredentialStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:10](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L10).
-
-Compatibility adapter from provider-module setup to the Data Integration-owned encrypted vault. A plaintext sidecar retained from earlier releases is never read or imported; it is only kept owner-only. Unknown provider ids fail on writes and never create a sidecar.
-
-```csharp
-public sealed class ProviderCredentialStore : Meridian.Core.Contracts.IProviderCredentialStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderCredentialStore(string dataRoot) : this(new FileProviderCredentialStore(dataRoot), dataRoot);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:16](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L16) |  |
-| <code>public ProviderCredentialStore(IProviderCredentialStore vault, string dataRoot);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:21](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L21) |  |
-| <code>public async Task SaveCredentialsAsync(string moduleId, IReadOnlyDictionary&lt;string, string&gt; values, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:28](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L28) |  |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; GetCredentialsAsync(string moduleId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:50](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L50) |  |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, string&gt;?&gt; ReadCredentialRecordAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:56](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L56) |  |
-| <code>public async Task&lt;IReadOnlySet&lt;string&gt;&gt; GetStoredKeyNamesAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:71](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L71) |  |
-| <code>public async Task DeleteCredentialsAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:82](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L82) |  |
-
-## ProviderDataProjectionSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderDataProjectionSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:30](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L30).
-
-Shared, typed snapshot consumed unchanged by browser endpoints and WPF view models.
-
-```csharp
-public sealed record ProviderDataProjectionSnapshot(IReadOnlyList<ProviderNewsReadModel> News, IReadOnlyList<ProviderScannerReadModel> ScannerResults, IReadOnlyList<ProviderPnlReadModel> PnlStreams, IReadOnlyList<ProviderCalendarReadModel> Calendars, IReadOnlyList<ProviderMarketRuleReadModel> MarketRules, IReadOnlyList<ProviderInstrumentDiscoveryReadModel> Instruments);
-```
-
-## ProviderDataReadModelService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderDataReadModelService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:43](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L43).
-
-Aggregates provider-neutral read interfaces. Rows are de-duplicated by the stable provenance key (ProviderDataProvenance.StableDeduplicationKey), so repeated live snapshots replace older evidence rather than making either workstation show duplicate vendor data.
-
-```csharp
-public sealed class ProviderDataReadModelService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderDataReadModelService(IEnumerable&lt;IProviderDataReadService&gt; providers, IEnumerable&lt;IProviderNewsReadService&gt;? newsProviders = null, IEnumerable&lt;IProviderCalendarReadService&gt;? calendarProviders = null, IEnumerable&lt;IProviderInstrumentDiscoveryReadService&gt;? instrumentProviders = null, IEnumerable&lt;IProviderDataAvailabilityReadService&gt;? availabilityProviders = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:51](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L51) |  |
-| <code>public IReadOnlyList&lt;ProviderDataRequestReadModel&gt; GetRequests() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:69](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L69) | Returns only providers whose contract is explicitly unscoped. Tenant/company-aware providers are excluded rather than downgraded to their compatibility read surface. |
-| <code>public IReadOnlyList&lt;ProviderDataRequestReadModel&gt; GetRequests(string tenantId, string companyId);</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L76) |  |
-| <code>public async IAsyncEnumerable&lt;ProviderDataProjectionSnapshot&gt; WatchAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:92](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L92) | Emits the initial projection and a refreshed snapshot after any optional provider stream changes. |
-| <code>public async IAsyncEnumerable&lt;ProviderDataProjectionSnapshot&gt; WatchAsync(string tenantId, string companyId, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:113](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L113) | Emits only projection updates owned by the requested tenant and company. Tenant-scoped providers are never consumed through their unscoped watch surface. |
-| <code>public ProviderDataProjectionSnapshot GetProjection() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:147](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L147) |  |
-| <code>public ProviderDataProjectionSnapshot GetProjection(string tenantId, string companyId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:150](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L150) |  |

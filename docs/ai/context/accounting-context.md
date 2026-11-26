@@ -9,6 +9,7 @@
 - Accounting workflows are double-entry only.
 - Journal entries are immutable after posting.
 - Corrections occur through reversal and rebook, not in-place mutation.
+- A workbench rebook replaces the posted journal: its draft carries the original's exact inverse plus the replacement lines, so the original is never counted twice. A rebook with no replacement lines nets to zero.
 - Every accounting entry requires source, effective date, posting date, approval status, and retained evidence or explicit operator rationale.
 - Every posted entry must balance debits and credits.
 - Balances must reconcile to source evidence, external statements, or approved operational explanations.

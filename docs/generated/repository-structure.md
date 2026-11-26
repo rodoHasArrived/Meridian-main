@@ -1729,10 +1729,12 @@ Meridian-main
 │   │   ├── operational-evidence-graph.md
 │   │   ├── options-screening-and-assessments.md
 │   │   ├── otc-contract-lifecycle.md
+│   │   ├── partnership-waterfall-allocation.md
 │   │   ├── README.md
 │   │   ├── recurring-journal.md
 │   │   ├── security-asset-pack-admission.md
 │   │   ├── security.md
+│   │   ├── short-carry-charges.md
 │   │   └── strategy-order-execution.md
 │   ├── engineering
 │   │   ├── blueprints
@@ -6959,6 +6961,7 @@ Meridian-main
 │   │   │   ├── IBankingService.cs
 │   │   │   ├── InMemoryBankingService.cs
 │   │   │   ├── PaymentBankEvidenceFactory.cs
+│   │   │   ├── PaymentBookOfRecordBinding.cs
 │   │   │   └── PostgresBankingService.cs
 │   │   ├── Consolidation
 │   │   │   ├── ConsolidationBookPolicyValidator.cs
@@ -7795,6 +7798,7 @@ Meridian-main
 │   │   ├── PartnershipWaterfallAllocationInput.cs
 │   │   ├── PartnershipWaterfallAllocationProjection.cs
 │   │   ├── PartnershipWaterfallAllocationRule.cs
+│   │   ├── PartnershipWaterfallDraftBuilder.cs
 │   │   ├── PartnershipWaterfallProjector.cs
 │   │   ├── PartnershipWaterfallTier.cs
 │   │   ├── PartnershipWaterfallTierAllocation.cs
@@ -7827,6 +7831,7 @@ Meridian-main
 │   │   ├── ShadowNavValidator.cs
 │   │   ├── ShareClass.cs
 │   │   ├── ShareClassUnitRegisterProjector.cs
+│   │   ├── ShortCarryDraftBuilder.cs
 │   │   ├── ShortCarryProjector.cs
 │   │   ├── ShortLotJournalProjector.cs
 │   │   ├── StalePricePolicy.cs
@@ -8200,7 +8205,8 @@ Meridian-main
 │   │   │   ├── Migrations
 │   │   │   │   ├── 001_banking.sql
 │   │   │   │   ├── 002_bank_transaction_recorded_by.sql
-│   │   │   │   └── 003_payment_intent_integrity.sql
+│   │   │   │   ├── 003_payment_intent_integrity.sql
+│   │   │   │   └── 004_payment_book_binding.sql
 │   │   │   ├── BankingMigrationRunner.cs
 │   │   │   ├── BankingStoreOptions.cs
 │   │   │   ├── IBankingStore.cs
@@ -11539,8 +11545,10 @@ Meridian-main
 │   │   │   ├── AutomatedJournalEventProducers.cs
 │   │   │   ├── AutomatedJournalEvidencePolicy.cs
 │   │   │   ├── AutomatedJournalIntakeRunner.cs
+│   │   │   ├── AutomatedJournalIntakeRunner.PartnershipWaterfall.cs
 │   │   │   ├── AutomatedJournalIntakeRunner.PrivateCapital.cs
 │   │   │   ├── AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs
+│   │   │   ├── AutomatedJournalIntakeRunner.ShortCarry.cs
 │   │   │   ├── AutomatedJournalScheduledWorker.cs
 │   │   │   ├── AutomatedJournalScheduleStore.cs
 │   │   │   ├── BackfillCoordinator.cs
@@ -11695,6 +11703,7 @@ Meridian-main
 │   │   │   ├── ManualJournalEntryWorkbenchService.OpeningBalances.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.PeriodAdjustments.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.PrivateCapital.cs
+│   │   │   ├── ManualJournalEntryWorkbenchService.RebookInverse.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.Recurring.cs
 │   │   │   ├── ManualJournalMutationRecoveryStore.cs
 │   │   │   ├── MarginCertificationStore.cs
@@ -13788,6 +13797,7 @@ Meridian-main
 │   │   │   ├── BrokerageOrderRecoveryTests.FaultReplay.cs
 │   │   │   ├── BrokerageOrderRecoveryTests.Retention.cs
 │   │   │   ├── BrokerageValidationEvaluatorTests.cs
+│   │   │   ├── BrokerExecutionFillIdentityTests.cs
 │   │   │   ├── BrokerOrderSweepTests.cs
 │   │   │   ├── CancelAllIncidentReplayTests.cs
 │   │   │   ├── CancelAllIncidentTests.cs
@@ -13896,7 +13906,8 @@ Meridian-main
 │   │   │   │   └── AccountingCloseServicesTests.Readiness.cs
 │   │   │   ├── Banking
 │   │   │   │   ├── BankTransactionSeedTests.cs
-│   │   │   │   └── PaymentApprovalTests.cs
+│   │   │   │   ├── PaymentApprovalTests.cs
+│   │   │   │   └── PaymentBookBindingTests.cs
 │   │   │   ├── Consolidation
 │   │   │   │   ├── ConsolidationArrangementMatchingTests.cs
 │   │   │   │   ├── ConsolidationFxTests.cs
@@ -14151,6 +14162,7 @@ Meridian-main
 │   │   │   │   ├── IBApiVersionValidatorTests.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.AmendmentRaces.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.ExecutionIdentity.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.OperationConflict.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.Operations.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.PositionIdentity.cs
@@ -14255,6 +14267,7 @@ Meridian-main
 │   │   │   │   ├── BackfillEndpointTests.cs
 │   │   │   │   ├── BankingActionOriginTests.cs
 │   │   │   │   ├── BankingAndTreasuryEndpointRegistrationTests.cs
+│   │   │   │   ├── BankingPaymentBookBindingTests.cs
 │   │   │   │   ├── CatalogEndpointTests.cs
 │   │   │   │   ├── CheckpointEndpointTests.cs
 │   │   │   │   ├── ConfigDirectLendingAuthorizationTests.cs
@@ -14402,6 +14415,7 @@ Meridian-main
 │   │   │   ├── PartnersCapitalBespokeRenderTests.cs
 │   │   │   ├── PartnersCapitalStatementLayoutTests.cs
 │   │   │   ├── PeriodCloseProjectorTests.cs
+│   │   │   ├── PeriodCloseTestProjections.cs
 │   │   │   ├── PeriodReopenTests.cs
 │   │   │   ├── PortfolioPricingRuleTests.cs
 │   │   │   ├── PreferredReturnCalculatorTests.cs
@@ -15319,6 +15333,7 @@ Meridian-main
 │   │   │   ├── AccountingConfigurationServiceTests.IntercompanyAccrual.cs
 │   │   │   ├── AccountingConfigurationServiceTests.IntercompanyFee.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ManualAuditRecovery.cs
+│   │   │   ├── AccountingConfigurationServiceTests.ManualRebook.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ManualRecoveryArchive.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ManualRecoveryScope.cs
 │   │   │   ├── AccountingConfigurationServiceTests.PeriodAdjustmentPreparation.cs
@@ -15437,6 +15452,7 @@ Meridian-main
 │   │   │   ├── FirstRunEndpointsTests.cs
 │   │   │   ├── FirstRunExperienceServiceTests.cs
 │   │   │   ├── FixedIncomeHttpPrecisionTests.cs
+│   │   │   ├── FixedStatementIntakeAuthority.cs
 │   │   │   ├── FundAccountEndpointAuthorizationTests.cs
 │   │   │   ├── FundOpsCloseLaneScenarioTests.cs
 │   │   │   ├── FundProfileScopeEndpointFilterTests.cs
@@ -15516,6 +15532,7 @@ Meridian-main
 │   │   │   ├── OptionScreeningServiceTests.cs
 │   │   │   ├── PackagingEndpointsPathContainmentTests.cs
 │   │   │   ├── PaperSessionDailyReconciliationTests.cs
+│   │   │   ├── PartnershipWaterfallIntakeTests.cs
 │   │   │   ├── PerformanceReturnFiguresTests.cs
 │   │   │   ├── PeriodAdjustmentPreparationTests.cs
 │   │   │   ├── PeriodChangeTests.cs
@@ -15636,6 +15653,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterWorkbenchScheduleBookGoldenTests.cs
 │   │   │   ├── SecurityMasterWorkbenchScheduleBookHarness.cs
 │   │   │   ├── SecurityMasterWriteRefusalEndpointsTests.cs
+│   │   │   ├── ShortCarryIntakeTests.cs
 │   │   │   ├── SinglePrincipalAttestationAdditionalTests.cs
 │   │   │   ├── SinglePrincipalAttestationEndpointTests.cs
 │   │   │   ├── SinglePrincipalAttestationStoreTests.cs

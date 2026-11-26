@@ -49,4 +49,11 @@ public sealed record PartnershipWaterfallAllocationInput
     public IReadOnlyList<PartnershipWaterfallTier> Tiers { get; }
 
     public string? Description { get; }
+
+    /// <summary>
+    /// The retained-earnings account the allocated profit is taken from. Defaults to the fund-scoped
+    /// retained earnings for <see cref="FundId"/>; a governed caller sets the account the book's period
+    /// close actually credits, so the allocation draws on the profit that close moved into equity.
+    /// </summary>
+    public LedgerAccount? RetainedEarningsAccount { get; init; }
 }

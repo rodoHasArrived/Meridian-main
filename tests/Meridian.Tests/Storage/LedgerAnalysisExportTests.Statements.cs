@@ -6,6 +6,7 @@ using Apache.Arrow.Ipc;
 using FluentAssertions;
 using Meridian.Ledger;
 using Meridian.Storage.Export;
+using Meridian.Tests.Ledger;
 using Parquet;
 
 namespace Meridian.Tests.Storage;
@@ -88,7 +89,7 @@ public sealed partial class LedgerAnalysisExportTests
         PostStatementActivity(ledger, Start.AddDays(1), LedgerAccounts.Cash, LedgerAccounts.CashInterestIncome, 100m);
         PostStatementActivity(ledger, Start.AddDays(2), LedgerAccounts.CommissionExpense, LedgerAccounts.Cash, 20m);
         ledger.PostLines(AsOf, "Synthetic close",
-            PeriodCloseProjector.ProjectFrom(ledger, "2026-01", AsOf, "synthetic-controller").JournalLines);
+            PeriodCloseTestProjections.FromLedger(ledger, "2026-01", AsOf, "synthetic-controller").JournalLines);
 
         var result = await new AnalysisExportService(_root).ExportLedgerAsync(new(ledger, Start, AsOf, _root));
 

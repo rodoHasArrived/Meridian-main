@@ -145,7 +145,7 @@ public sealed partial class LedgerIncomeStatementTests
         IReadOnlyList<PeriodCloseAccountBalance>? balances = null)
     {
         var projection = balances is null
-            ? PeriodCloseProjector.ProjectFrom(ledger, "2026-01", timestamp, "synthetic-controller")
+            ? PeriodCloseTestProjections.FromLedger(ledger, "2026-01", timestamp, "synthetic-controller")
             : PeriodCloseProjector.Project(new PeriodCloseInput("2026-01", timestamp, balances, "synthetic-controller"));
         var draft = PeriodCloseDraftBuilder.BuildDraft(projection)
             ?? throw new InvalidOperationException("Synthetic close must have temporary balances to close.");

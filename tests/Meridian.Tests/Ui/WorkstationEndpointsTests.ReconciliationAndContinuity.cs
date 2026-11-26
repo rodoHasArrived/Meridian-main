@@ -165,6 +165,8 @@ public sealed partial class WorkstationEndpointsTests
         {
             services.AddSingleton<IReconciliationApiService>(service);
             services.AddSingleton<Meridian.PortfolioRecords.Accounts.IAccountQueryService>(accounts);
+            services.AddSingleton<Meridian.Ui.Shared.Services.IStatementReconciliationIntakeAuthority>(
+                new FixedStatementIntakeAuthority());
         }, currentUserPermissions: UserPermission.AdminMaintenance);
 
         var client = app.GetTestClient();

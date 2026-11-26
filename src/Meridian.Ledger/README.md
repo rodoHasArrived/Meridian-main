@@ -106,6 +106,25 @@ the highest approved revision owns the cap; superseded and draft terms do not co
 dependency-free XLSX path for frozen accounting datasets. It retains all cells as text, preserving
 exact decimal digits and preventing source descriptions from becoming spreadsheet formulas.
 
+`ShortCarryDraftBuilder` and `PartnershipWaterfallDraftBuilder` wrap `ShortCarryProjector.Lines` and
+`PartnershipWaterfallProjector.Project` as governed `AutomatedJournalDraft`s (kinds `ShortCarryCharged` and
+`PartnershipProfitAllocated`) with deterministic input-digest idempotency keys; the Ui.Shared intake runner
+proves their inputs and queues them for review. The waterfall input names the retained-earnings account it
+draws on. `PartnershipInvestorAccountingProjector` is marked superseded: its fees duplicate
+`FundEconomicsJournalFactory` accruals and must not be posted alongside them. `MultiCurrencyJournalProjector`
+is also marked superseded: multi-currency journals post through workbench drafts whose lines carry the
+functional amount with transaction currency, amount and FX rate, which `LedgerEntry` checks per leg; the
+projector has no rounding line and drops dimensions. `JournalTemplateBook.Instantiate` is superseded for
+posting too: recurring journals instantiate the retained template version each occurrence was claimed against,
+whereas the registry resolves whichever template currently holds an id. `AutomatedJournalApproval.Approve`
+and `Reject` are superseded as well: production queues each submitted approval's draft in the manual journal
+workbench, which owns approval and posting, so approving and posting the aggregate too could post twice.
+
+`PeriodCloseProjector.Project` takes a dimension-scoped `PeriodCloseInput`; production closes build it
+from the retained period trial balance and post through `PeriodCloseDraftBuilder` and the workbench. There
+is no in-memory-ledger overload, because the in-memory trial balance is dimension-flat and would collapse
+entity and sleeve scopes into one retained-earnings line.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in the [diagram index](../../docs/source/data/diagram-index.yml).
