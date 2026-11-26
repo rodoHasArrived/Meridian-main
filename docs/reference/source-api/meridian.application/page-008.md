@@ -6,6 +6,57 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionIngestResult
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionIngestResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:65](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L65).
+
+```csharp
+public sealed record CorporateActionIngestResult(int SecuritiesScanned, int ProvidersQueried, int Applied, int Staged, int DuplicatesSkipped, IReadOnlyList<CorporateActionProposal> Proposals, IReadOnlyList<string> Errors)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;CorporateActionProviderFetchOutcome&gt; FetchOutcomes { get; init; } = [];</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:74](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L74) |  |
+
+## CorporateActionOperationsService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionOperationsService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:17](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L17).
+
+Application boundary for durable provider observations and scoped processing cases. Source acceptance is deliberately limited to appending the canonical fact and creating a Detected case; it never approves an accounting treatment or posts a consequence.
+
+```csharp
+public sealed class CorporateActionOperationsService : ICorporateActionOperationsService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string DefaultMethodologyProfileId = &quot;clearwater-corporate-actions/v1&quot;;</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:24](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L24) | Methodology profile recorded on a case when the caller names none. The value is persisted on retained cases and equals the registered rule profile&#x27;s key (guarded by CorporateActionOperationsServiceTests); the domain does not reference the vendor type. |
+| <code>public const string SourceDecisionFanOutBlocker = &quot;Corporate-action source decisions are read-only until an authoritative service can enumerate every affected tenant/company scope and apply the decision atomically.&quot;;</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:31](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L31) | The standing reason a source decision is refused when the scope authority cannot answer. Kept in one place so the endpoint&#x27;s read-side posture and this write-side refusal state the same thing. |
+| <code>public CorporateActionOperationsService(ICorporateActionOperationsStore store, ISecurityMasterEventStore? eventStore = null, ISecurityMasterStore? securityMasterStore = null, ICorporateActionRestatementTrigger? restatementTrigger = null, ICorporateActionScopeFanOutGate? scopeFanOut = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:46](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L46) |  |
+| <code>public async Task&lt;CorporateActionSourceProposalDto&gt; RecordSourceProposalAsync(RecordCorporateActionSourceProposalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:60](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L60) |  |
+| <code>public async Task&lt;CorporateActionSourceProposalDto?&gt; GetSourceProposalAsync(Guid proposalId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:159](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L159) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionSourceProposalDto&gt;&gt; ListSourceProposalsAsync(Guid? securityId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:168](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L168) |  |
+| <code>public async Task&lt;CorporateActionDurableInboxDto&gt; GetInboxAsync(CorporateActionCaseScopeDto acceptanceScope, int take, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:187](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L187) |  |
+| <code>public async Task&lt;CorporateActionSourceProposalAcceptanceResultDto&gt; AcceptSourceProposalAsync(AcceptCorporateActionSourceProposalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:222](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L222) |  |
+| <code>public async Task&lt;CorporateActionSourceProposalDecisionResultDto&gt; RejectSourceProposalAsync(RejectCorporateActionSourceProposalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:411](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L411) |  |
+| <code>public async Task&lt;CorporateActionProcessingCaseDto?&gt; GetCaseAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:436](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L436) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionProcessingCaseDto&gt;&gt; ListCasesAsync(string tenantId, string companyId, Guid? securityId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:449](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L449) |  |
+| <code>public async Task&lt;CorporateActionConflictDto?&gt; GetConflictAsync(Guid caseId, Guid conflictId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:473](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L473) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionConflictDto&gt;&gt; ListConflictsAsync(Guid caseId, string tenantId, string companyId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:488](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L488) |  |
+| <code>public async Task&lt;CorporateActionEvidenceMutationResultDto&gt; AddEvidenceAsync(AddCorporateActionEvidenceRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:510](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L510) |  |
+| <code>public async Task&lt;CorporateActionConflictMutationResultDto&gt; RecordConflictAsync(RecordCorporateActionConflictRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:558](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L558) |  |
+| <code>public async Task&lt;CorporateActionConflictResolutionResultDto&gt; ResolveConflictAsync(ResolveCorporateActionConflictRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:591](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L591) |  |
+| <code>public async Task&lt;CorporateActionProcessingOptionMutationResultDto&gt; UpsertOptionAsync(UpsertCorporateActionProcessingOptionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:634](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L634) |  |
+| <code>public async Task&lt;CorporateActionCaseTransitionResultDto&gt; TransitionCaseAsync(TransitionCorporateActionCaseRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:674](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L674) |  |
+
 ## CorporateActionProposal
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionProposal</code>. Kind: `record`.
@@ -385,25 +436,6 @@ Declared public members:
 | <code>public async Task RetainAsync(SecurityCashFlowCalculationReceipt receipt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/FileSecurityCashFlowReceiptStore.cs:19](../../../../src/Meridian.Application/SecurityMaster/FileSecurityCashFlowReceiptStore.cs#L19) |  |
 | <code>public async Task&lt;SecurityCashFlowCalculationReceipt?&gt; GetAsync(string contentSha256, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/FileSecurityCashFlowReceiptStore.cs:40](../../../../src/Meridian.Application/SecurityMaster/FileSecurityCashFlowReceiptStore.cs#L40) |  |
 
-## FileSecurityMasterImpactPreviewStore
-
-Qualified name: <code>Meridian.Application.SecurityMaster.FileSecurityMasterImpactPreviewStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/FileSecurityMasterImpactPreviewStore.cs:15](../../../../src/Meridian.Application/SecurityMaster/FileSecurityMasterImpactPreviewStore.cs#L15).
-
-Tenant-separated, content-addressed immutable evidence with cross-process create-only publication.
-
-```csharp
-public sealed class FileSecurityMasterImpactPreviewStore(string directory) : ISecurityMasterImpactPreviewStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task RetainAsync(SecurityMasterImpactPreviewReceipt receipt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/FileSecurityMasterImpactPreviewStore.cs:25](../../../../src/Meridian.Application/SecurityMaster/FileSecurityMasterImpactPreviewStore.cs#L25) |  |
-| <code>public async Task&lt;SecurityMasterImpactPreviewReceipt?&gt; GetAsync(SecurityMasterImpactScope scope, string receiptId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/FileSecurityMasterImpactPreviewStore.cs:51](../../../../src/Meridian.Application/SecurityMaster/FileSecurityMasterImpactPreviewStore.cs#L51) |  |
-
 ## GovernedTermAmendmentPolicy
 
 Qualified name: <code>Meridian.Application.SecurityMaster.GovernedTermAmendmentPolicy</code>. Kind: `class`.
@@ -460,7 +492,6 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;IReadOnlyList&lt;Guid&gt;&gt; ResolveAsync(SecurityMasterDownstreamImpactDto impact, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IAffectedLedgerBookResolver.cs:25](../../../../src/Meridian.Application/SecurityMaster/IAffectedLedgerBookResolver.cs#L25) | Resolves the distinct durable ledger book ids implicated by impact. Returns an empty list when the impact has no ledger exposure or no books can be resolved. |
-| <code>async Task&lt;SecurityAffectedLedgerBooksResult&gt; ResolveWithEvidenceAsync(SecurityMasterDownstreamImpactDto impact, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/IAffectedLedgerBookResolver.cs:28](../../../../src/Meridian.Application/SecurityMaster/IAffectedLedgerBookResolver.cs#L28) |  |
 
 ## IEdgarIngestOrchestrator
 
@@ -574,7 +605,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.InMemorySecurityMasterRevisionStore</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:160](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L160).
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:136](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L136).
 
 Process-local revision lifecycle store. Mirrors the in-memory posture of SecurityMasterConflictService; the durable Postgres-backed implementation is wired in the subsequent slice. State transitions are compare-and-set so concurrent lifecycle calls are safe.
 
@@ -586,14 +617,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:165](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L165) |  |
-| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId = null, SecurityMasterRevisionFieldValue? fieldValue = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:168](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L168) |  |
-| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId, SecurityMasterRevisionFieldValue? fieldValue, SecurityMasterRevisionFieldBase fieldBase, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:179](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L179) |  |
-| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId, SecurityMasterRevisionFieldValue fieldValue, SecurityMasterRevisionFieldBase fieldBase, SecurityMasterRevisionDraftContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:191](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L191) |  |
-| <code>public Task&lt;SecurityMasterRevisionRecord?&gt; GetAsync(Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:236](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L236) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SecurityMasterRevisionRecord&gt;&gt; ListBySecurityAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:242](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L242) |  |
-| <code>public Task&lt;SecurityMasterRevisionRecord&gt; TransitionAsync(Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next, string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:246](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L246) |  |
-| <code>public Task&lt;SecurityMasterRevisionRecord&gt; BindImpactPreviewAsync(Guid revisionId, Guid securityId, SecurityMasterRevisionStateDto expectedState, string receiptId, long canonicalVersion, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:291](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L291) |  |
+| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:141](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L141) |  |
+| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId = null, SecurityMasterRevisionFieldValue? fieldValue = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:144](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L144) |  |
+| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId, SecurityMasterRevisionFieldValue? fieldValue, SecurityMasterRevisionFieldBase fieldBase, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:155](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L155) |  |
+| <code>public Task&lt;SecurityMasterRevisionRecord?&gt; GetAsync(Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:198](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L198) |  |
+| <code>public Task&lt;IReadOnlyList&lt;SecurityMasterRevisionRecord&gt;&gt; ListBySecurityAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:204](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L204) |  |
+| <code>public Task&lt;SecurityMasterRevisionRecord&gt; TransitionAsync(Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next, string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:208](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L208) |  |
 
 ## IPeriodAwareRestatementResolver
 
@@ -769,58 +798,6 @@ Declared public members:
 | --- | --- | --- |
 | <code>SecurityMasterGovernanceSnapshot Current { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:92](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L92) | The effective requirements now. Read at each decision so the Standard profile hot-reloads. |
 
-## ISecurityMasterImpactPreviewService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterImpactPreviewService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:24](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L24).
-
-```csharp
-public interface ISecurityMasterImpactPreviewService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityMasterImpactPreviewReceipt&gt; CreateAsync(Guid securityId, Guid revisionId, SecurityMasterImpactScope scope, DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:26](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L26) |  |
-| <code>Task&lt;SecurityMasterImpactPreviewReceipt?&gt; GetAsync(SecurityMasterImpactScope scope, string receiptId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:28](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L28) |  |
-| <code>Task&lt;SecurityMasterImpactPreviewReceipt&gt; ValidateAsync(SecurityMasterRevisionRecord revision, SecurityMasterImpactScope scope, string receiptId, bool canonicalMergeApplied = false, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:29](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L29) |  |
-| <code>Task&lt;IAsyncDisposable&gt; AcquireFinalizationLeaseAsync(SecurityMasterRevisionRecord revision, SecurityMasterImpactScope scope, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:31](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L31) |  |
-
-## ISecurityMasterImpactPreviewStore
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterImpactPreviewStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:18](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L18).
-
-```csharp
-public interface ISecurityMasterImpactPreviewStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task RetainAsync(SecurityMasterImpactPreviewReceipt receipt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:20](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L20) |  |
-| <code>Task&lt;SecurityMasterImpactPreviewReceipt?&gt; GetAsync(SecurityMasterImpactScope scope, string receiptId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:21](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L21) |  |
-
-## ISecurityMasterImpactScopeAccessor
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterImpactScopeAccessor</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:5](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L5).
-
-```csharp
-public interface ISecurityMasterImpactScopeAccessor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>SecurityMasterImpactScope GetRequired();</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:7](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L7) |  |
-
 ## ISecurityMasterImportService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterImportService</code>. Kind: `interface`.
@@ -875,39 +852,6 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;MultiAssetCoverageSummaryDto&gt; GetReadinessAsync(SecurityMasterOperationalReadinessRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:39](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs#L39) |  |
 
-## ISecurityMasterRateRepairDraftWriter
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterRateRepairDraftWriter</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.RateRepair.cs:5](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.RateRepair.cs#L5).
-
-```csharp
-public interface ISecurityMasterRateRepairDraftWriter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityMasterEditResultDto&gt; StageRateRepairAsync(UpdateSecurityFieldRequest request, SecurityMasterRevisionDraftContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.RateRepair.cs:7](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.RateRepair.cs#L7) |  |
-
-## ISecurityMasterReleasedReportImpactQuery
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterReleasedReportImpactQuery</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:10](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L10).
-
-```csharp
-public interface ISecurityMasterReleasedReportImpactQuery
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityReleasedReportImpact&gt; EvaluateAsync(Guid securityId, string? fundProfileId, DateTimeOffset effectiveFrom, SecurityMasterImpactScope scope, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:12](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L12) |  |
-| <code>Task&lt;bool&gt; CanReadRetainedRunIdsAsync(IReadOnlyList&lt;string&gt; runIds, SecurityMasterImpactScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs:14](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterImpactPreviewService.cs#L14) |  |
-
 ## ISecurityMasterRevisionPublishedHandler
 
 Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler</code>. Kind: `interface`.
@@ -946,8 +890,87 @@ Declared public members:
 | <code>Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:15](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L15) | Creates a new SecurityMasterRevisionStateDto.Draft revision for a security. |
 | <code>Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId = null, SecurityMasterRevisionFieldValue? fieldValue = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:23](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L23) | Creates a Draft revision carrying the field-edit metadata (path, effective date, justification, and the optional fund-profile scope) so a later publish can emit the correct effective-from and changed-field set, and resolve the scoped downstream impact, for period-aware / restatement analysis instead of defaulting to publish time and an unscoped (empty) impact. |
 | <code>Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId, SecurityMasterRevisionFieldValue? fieldValue, SecurityMasterRevisionFieldBase fieldBase, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:38](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L38) | Creates a field-edit Draft that also records the canonical state the proposal was drafted against (fieldBase), so publish can refuse it if that field changed since. Stores that do not persist the base fall back to the overload without it. |
-| <code>Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId, SecurityMasterRevisionFieldValue fieldValue, SecurityMasterRevisionFieldBase fieldBase, SecurityMasterRevisionDraftContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:51](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L51) | Creates a repair draft retaining its immutable maker, evidence and batch identity. |
-| <code>Task&lt;SecurityMasterRevisionRecord&gt; BindImpactPreviewAsync(Guid revisionId, Guid securityId, SecurityMasterRevisionStateDto expectedState, string receiptId, long canonicalVersion, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:59](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L59) | Binds immutable reviewed evidence, with an exact-retry and state/version guard. |
-| <code>Task&lt;SecurityMasterRevisionRecord?&gt; GetAsync(Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:65](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L65) | Returns the revision, or null when no revision with that id exists. |
-| <code>Task&lt;IReadOnlyList&lt;SecurityMasterRevisionRecord&gt;&gt; ListBySecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:72](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L72) | All revisions recorded for one security, in no guaranteed order. Used by the approval seam to decide whether a security-level override decision would co-approve values staged by OTHER, not-yet-approved revisions. |
-| <code>Task&lt;SecurityMasterRevisionRecord&gt; TransitionAsync(Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next, string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:81](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L81) | Atomically transitions a revision from expected to next. Throws SecurityMasterRevisionStateException when the revision is missing or its current state is not expected (a concurrent or out-of-order transition). When workflowIdForSubmit is supplied on a Draft→Submitted transition, it is durably bound to the revision so approval can be restricted to that same workflow lane. |
+| <code>Task&lt;SecurityMasterRevisionRecord?&gt; GetAsync(Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:51](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L51) | Returns the revision, or null when no revision with that id exists. |
+| <code>Task&lt;IReadOnlyList&lt;SecurityMasterRevisionRecord&gt;&gt; ListBySecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:58](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L58) | All revisions recorded for one security, in no guaranteed order. Used by the approval seam to decide whether a security-level override decision would co-approve values staged by OTHER, not-yet-approved revisions. |
+| <code>Task&lt;SecurityMasterRevisionRecord&gt; TransitionAsync(Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next, string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:67](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L67) | Atomically transitions a revision from expected to next. Throws SecurityMasterRevisionStateException when the revision is missing or its current state is not expected (a concurrent or out-of-order transition). When workflowIdForSubmit is supplied on a Draft→Submitted transition, it is durably bound to the revision so approval can be restricted to that same workflow lane. |
+
+## ISecurityMasterTermsCapabilityVerifier
+
+Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterTermsCapabilityVerifier</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs#L12).
+
+Verifies the persisted floor before a configured writer may serialize or persist terms.
+
+```csharp
+public interface ISecurityMasterTermsCapabilityVerifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task VerifyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs#L15) | Performs a fresh check; no successful startup or earlier command is cached. |
+
+## ISecurityMasterWorkbenchCommandService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchCommandService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:12](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L12).
+
+Governed write surface for the Security Master Passport Workbench. Unifies operator-authored field edits, source-conflict resolution, and the draft → submit → approve → publish lifecycle over the existing Security Master write primitives and the conflict-authority policy.
+
+```csharp
+public interface ISecurityMasterWorkbenchCommandService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityMasterEditResultDto&gt; UpdateSecurityFieldAsync(UpdateSecurityFieldRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:19](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L19) | Stages an operator-authored field edit. A non-empty justification is required (operator origin), and a stale ExpectedVersion surfaces as a concurrency failure (HTTP 409). Missing provider data stays review-required — this never fabricates completeness. |
+| <code>Task&lt;SecurityMasterConflictResolutionDto&gt; ResolveSourceConflictAsync(ResolveSourceConflictRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:27](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L27) | Records an operator&#x27;s resolution of a source conflict. The conflict-authority policy computes the default winner; if the operator&#x27;s choice diverges, the deviation must be acknowledged and is retained as the audited artifact. |
+| <code>Task&lt;SecurityMasterConflictResolutionDto&gt; ResolveSourceConflictAtCurrentVersionAsync(ResolveSourceConflictRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:38](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L38) | Governed conflict resolution for LEGACY callers that carry no record version (the shared conflict queue&#x27;s browser and WPF actions): resolves the record&#x27;s CURRENT version and runs the full governed path — authority policy, rationale requirement, candidate guard, and the transactional persisted-value check — with that version. The optimistic freshness guard is vacuous by construction here; correctness against concurrent amendments is carried by the conflict store&#x27;s locked persisted-value revalidation. |
+| <code>Task&lt;SecurityMasterEditResultDto&gt; SubmitForApprovalAsync(SubmitSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:45](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L45) | Transitions a draft revision into the governed approval gate. When the request carries a workflow id, submission is routed through IOperationsContinuityWorkflowService. |
+| <code>Task&lt;SecurityMasterEditResultDto&gt; DiscardRevisionAsync(DiscardSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:53](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L53) | Discards a staged (Draft or Submitted) revision: transitions it to Rejected and withdraws the staged override value it governs, so an abandoned draft or gate-rejected submission stops deferring the security-level override decision for every later revision. |
+| <code>Task&lt;OperatorOverridesDto&gt; PatchOperatorOverridesAsync(Guid securityId, OperatorOverridesPatchRequest request, string updatedBy, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:64](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L64) | Applies a raw operator-overrides patch (the generic overrides route&#x27;s free-form sets and removals) under the SAME per-security serialization the field-edit, approve, submit, and discard routes hold. Hosts that wire the workbench must route the generic PATCH endpoint through this seam instead of the bare store: an ungated patch can land between an approval&#x27;s ungoverned-key scan and its recorded security-level decision, silently co-approving a value no reviewer ever saw. |
+| <code>Task&lt;OperatorOverridesDto&gt; RecordOperatorOverrideDecisionAsync(Guid securityId, OperatorOverrideDecision decision, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:76](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L76) | Records a direct operator-override approval decision (the legacy decision route) under the per-security gate, refusing with InvalidOperationException whenever the decision belongs to the governed revision lifecycle instead: staged (Draft/Submitted) revisions are pending, or the overlay carries revision-backed values. Hosts that wire the workbench must route the legacy decision endpoint through this seam so a ModifySecurityMaster actor cannot directly approve values whose revisions were never reviewed. |
+| <code>Task&lt;SecurityMasterEditResultDto&gt; ApproveRevisionAsync(ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:80](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L80) | Approves a submitted revision through the operations-continuity approval gate. |
+| <code>Task&lt;SecurityMasterPublishResultDto&gt; PublishRevisionAsync(PublishSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs:87](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchCommandService.cs#L87) | Publishes an approved revision: fans out to the ordered revision-published handlers and returns any restatement candidates the period-aware handler surfaced. |
+
+## ISecurityMasterWorkbenchQueryService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchQueryService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:9](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L9).
+
+Supplies trust, passport, and operating-model views and bulk conflict resolution for the workbench.
+
+```csharp
+public interface ISecurityMasterWorkbenchQueryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityMasterTrustSnapshotDto?&gt; GetTrustSnapshotAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:11](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L11) |  |
+| <code>Task&lt;InstrumentPassportDto?&gt; GetInstrumentPassportAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:16](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L16) |  |
+| <code>Task&lt;SecurityMasterOperatingModelDto?&gt; GetOperatingModelAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:21](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L21) |  |
+| <code>Task&lt;BulkResolveSecurityMasterConflictsResult&gt; BulkResolveConflictsAsync(BulkResolveSecurityMasterConflictsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs:26](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterWorkbenchQueryService.cs#L26) |  |
+
+## Releaser
+
+Qualified name: <code>Meridian.Application.SecurityMaster.KeyedGatePool.Releaser</code>. Kind: `struct`.
+
+Source: [src/Meridian.Application/SecurityMaster/KeyedGatePool.cs:85](../../../../src/Meridian.Application/SecurityMaster/KeyedGatePool.cs#L85).
+
+```csharp
+public readonly struct Releaser : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public void Dispose();</code> | [src/Meridian.Application/SecurityMaster/KeyedGatePool.cs:98](../../../../src/Meridian.Application/SecurityMaster/KeyedGatePool.cs#L98) |  |

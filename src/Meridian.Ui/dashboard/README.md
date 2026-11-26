@@ -1365,6 +1365,12 @@ test-file roster and of how files are dealt to shards, and `scripts/merge-vitest
 is the lane's verdict: it rejects a run unless the shard(s) together ran every test file in the
 checkout exactly once with no failure.
 
+Tests run under jsdom by default. A test file that needs no DOM (view models, API clients,
+formatters, and other pure modules) starts with `// @vitest-environment node`, which skips
+building a jsdom window for that file; 181 files carry the marker, and the full suite fell from
+550 to 486 seconds locally with the same 7,219 tests passing. Remove the marker when a file starts
+to render components or read `window`, `document`, or browser storage.
+
 `AmountPassportTrigger` opens the shared Amount passport rail from Ledger Explorer, posted journal
 detail, retained brokerage positions, and retained trial-balance amounts in governed reports. Each
 trigger passes its displayed value and the server-issued amount reference. The compact markers pair

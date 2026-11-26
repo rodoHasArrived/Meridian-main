@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { listIntercompanyAgreements, mutateIntercompanyAgreement, previewIntercompanyAgreementSchedule } from "./intercompany-agreements.api";
 import type { AgreementCommand } from "@/types/intercompany-agreements";

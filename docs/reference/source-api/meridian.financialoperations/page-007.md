@@ -463,7 +463,7 @@ Declared public members:
 | <code>public FileStatementRunRecoveryRepository(string dataDirectory);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:558](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L558) |  |
 | <code>public Task&lt;StatementRunRecoveryCheckpoint?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:563](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L563) |  |
 | <code>public async Task&lt;bool&gt; TryCreateAsync(StatementRunRecoveryCheckpoint checkpoint, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:571](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L571) |  |
-| <code>public async Task SaveAsync(StatementRunRecoveryCheckpoint checkpoint, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:616](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L616) |  |
+| <code>public async Task SaveAsync(StatementRunRecoveryCheckpoint checkpoint, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:618](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L618) |  |
 
 ## FileStatementRunRepository
 

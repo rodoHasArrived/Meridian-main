@@ -605,7 +605,9 @@ public sealed class JsonlStorageSink : IStorageSink
             // before the list is cleared, so a failure part-way retries all of them.
             foreach (var directory in pending)
             {
-                AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).GetAwaiter().GetResult();
+                // Strict: this runs before the flush is acknowledged, so an unconfirmed entry
+                // fails the flush (and is retried) instead of acknowledging a file that can vanish.
+                AtomicFileWriter.SyncDirectoryOrThrowAsync(directory, CancellationToken.None).GetAwaiter().GetResult();
             }
 
             _pendingDirectorySyncs = null;

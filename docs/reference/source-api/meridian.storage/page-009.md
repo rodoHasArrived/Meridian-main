@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IDataQueryResultSink
+
+Qualified name: <code>Meridian.Storage.Query.IDataQueryResultSink</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:13](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L13).
+
+```csharp
+public interface IDataQueryResultSink : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task BeginAsync(string sql, string[] columns, string[] columnTypes, CancellationToken ct);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:15](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L15) |  |
+| <code>Task WriteRowAsync(string?[] row, CancellationToken ct);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:16](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L16) |  |
+| <code>Task&lt;DataQueryRetentionReceipt&gt; CompleteAsync(long rowCount, CancellationToken ct);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:17](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L17) |  |
+
 ## RetainedDataQueryException
 
 Qualified name: <code>Meridian.Storage.Query.RetainedDataQueryException</code>. Kind: `class`.
@@ -808,7 +826,7 @@ public sealed record CommodityProjectionRow(Guid SecurityId, string DisplayName,
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.ConnectionLease</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:251](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L251).
+Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:213](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L213).
 
 Holds a mutation connection and optional transaction, releasing its gate and any owned connection on disposal.
 
@@ -820,9 +838,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public NpgsqlConnection Connection { get; } = connection;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:254](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L254) |  |
-| <code>public NpgsqlTransaction? Transaction { get; } = transaction;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:255](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L255) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:256](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L256) |  |
+| <code>public NpgsqlConnection Connection { get; } = connection;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:216](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L216) |  |
+| <code>public NpgsqlTransaction? Transaction { get; } = transaction;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:217](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L217) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:218](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L218) |  |
 
 ## CorporateActionCalendarReadSet
 
@@ -910,14 +928,4 @@ Curves / CurveVersionPublished.
 
 ```csharp
 public sealed record CurveVersionPublishedPayload(Guid CurveId, Guid CurveVersionId, string CurveKey, string Kind, string Currency, string? IndexName, long Version, DateOnly AsOf, int PointCount, string ContentSha256, string Source, DateTimeOffset? SourcedAt) : ISecurityGovernancePayload;
-```
-
-## CustomAssetProfileFieldProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CustomAssetProfileFieldProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs:43](../../../../src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs#L43).
-
-```csharp
-public sealed record CustomAssetProfileFieldProjectionRow(Guid SecurityId, string CustomProfileId, int ProfileVersion, string FieldKey, string ValueKind, string? TextValue, decimal? NumericValue, bool? BooleanValue, string RawValueJson, long Version);
 ```

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildWorkspaceNavViewModel } from "@/components/meridian/workspace-nav.view-model";
 import type { WorkspaceSummary } from "@/types";

@@ -185,7 +185,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterMutationConflictException</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:267](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L267).
+Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:229](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L229).
 
 Signals a concurrent change to a security&#x27;s governed mutation state.
 
@@ -197,7 +197,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Guid SecurityId { get; } = securityId;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:270](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L270) |  |
+| <code>public Guid SecurityId { get; } = securityId;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:232](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L232) |  |
 
 ## SecurityMasterNodeIdentity
 
@@ -838,7 +838,7 @@ public sealed record DateRange(DateTimeOffset Start, DateTimeOffset End);
 
 Qualified name: <code>Meridian.Storage.Services.DefragOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:943](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L943).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:945](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L945).
 
 ```csharp
 public sealed record DefragOptions(long MinFileSizeBytes = 1_048_576, int MaxFilesPerMerge = 100, bool PreserveOriginals = false, System.IO.Compression.CompressionLevel TargetCompression = System.IO.Compression.CompressionLevel.Optimal, TimeSpan MaxFileAge = default, bool DryRun = false)
@@ -848,5 +848,5 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public TimeSpan MaxFileAge { get; init; } = MaxFileAge == default? TimeSpan.FromDays(1) : MaxFileAge;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:952](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L952) |  |
-| <code>public DefragOptions() : this(1_048_576);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:954](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L954) |  |
+| <code>public TimeSpan MaxFileAge { get; init; } = MaxFileAge == default? TimeSpan.FromDays(1) : MaxFileAge;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:954](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L954) |  |
+| <code>public DefragOptions() : this(1_048_576);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:956](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L956) |  |

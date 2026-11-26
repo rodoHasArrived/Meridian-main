@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CustomAssetProfileFieldProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.CustomAssetProfileFieldProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs:43](../../../../src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs#L43).
+
+```csharp
+public sealed record CustomAssetProfileFieldProjectionRow(Guid SecurityId, string CustomProfileId, int ProfileVersion, string FieldKey, string ValueKind, string? TextValue, decimal? NumericValue, bool? BooleanValue, string RawValueJson, long Version);
+```
+
 ## DepositProjectionRow
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.DepositProjectionRow</code>. Kind: `record`.
@@ -673,24 +683,6 @@ Declared public members:
 | <code>Task AppendCorporateActionAsync(CorporateActionDto action, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:51](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L51) | Appends one or more corporate action events for a security. |
 | <code>Task&lt;IReadOnlyList&lt;CorporateActionDto&gt;&gt; LoadCorporateActionsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:56](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L56) | Returns all corporate action events for a security in ascending ex-date order. |
 | <code>Task&lt;CorporateActionEventTypeNormalizationResult&gt; NormalizeCorporateActionEventTypesAsync(bool apply, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:65](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L65) | Reports — and when apply is true, rewrites in one transaction — stored corporate-action EventType values that are non-canonical aliases of the catalog vocabulary (e.g. legacy &quot;Split&quot; rows becoming &quot;StockSplit&quot;). Values that do not normalize are reported and left untouched. Stores without rewrite support (the default) report an empty result. |
-
-## ISecurityMasterImpactGuardParticipant
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterImpactGuardParticipant</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISecurityMasterImpactGuardParticipant.cs:6](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterImpactGuardParticipant.cs#L6).
-
-Identifies the authoritative database whose rows a review finalization must fence.
-
-```csharp
-public interface ISecurityMasterImpactGuardParticipant
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>SecurityMasterOptions ImpactGuardOptions { get; }</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterImpactGuardParticipant.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterImpactGuardParticipant.cs#L8) |  |
 
 ## ISecurityMasterMutationParticipant
 

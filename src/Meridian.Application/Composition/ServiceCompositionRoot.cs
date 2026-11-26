@@ -219,7 +219,8 @@ public sealed record CompositionOptions
         EnableProviderServices = true,
         EnablePipelineServices = true,
         EnableCollectorServices = false,
-        EnableHttpClientFactory = true
+        EnableHttpClientFactory = true,
+        PipelineWorkload = PipelineWorkload.Backfill
     };
 
     /// <summary>
@@ -267,4 +268,11 @@ public sealed record CompositionOptions
     /// listener; independent utility and ETL hosts still own telemetry even without workers.
     /// </summary>
     public bool OwnsTracingProvider { get; init; } = true;
+
+    /// <summary>
+    /// The workload whose WAL and dedup ledger directories this graph's pipeline uses. Separate
+    /// workloads can run against one data root at the same time; two hosts of the same workload
+    /// cannot, because the WAL refuses a directory another live instance owns.
+    /// </summary>
+    public PipelineWorkload PipelineWorkload { get; init; } = PipelineWorkload.Collector;
 }

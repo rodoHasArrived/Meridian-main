@@ -257,6 +257,8 @@ public sealed partial class JsonCanonicalStatementStore : ICanonicalStatementSto
                 return false;
             }
             // Caller cancellation cannot turn a published import into a cancellation response.
+            // Best effort: the create-once move is the commit. A retry would find the target and
+            // report this import as a duplicate, so a throw here cannot be retried safely.
             await _atomicFileWriter.SyncDirectoryAsync(_folder, CancellationToken.None).ConfigureAwait(false);
             return true;
         }

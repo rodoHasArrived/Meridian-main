@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { executeCell } from "@/lib/api";
 import { mapQuantRunResponseToCellResult, quantContextToParameters } from "@/lib/quant-api-mappers";
