@@ -34,7 +34,7 @@ fixture, evidence, and output contracts.
 - `tools/source_docs/`  
   Scripts for source-module README coverage checks and deterministic generated source-doc outputs.
 - `tools/source_reference/`
-  Lexical public C# declaration extraction for the [Source API Reference](../docs/reference/source-api/README.md).
+  Lexical public C# declaration extraction for the Source API Reference, generated into `docs/reference/source-api/` (a CI artifact; run `python build/python/cli/buildctl.py regen --fix` to generate it locally).
 - `tools/schema_control/`
   PostgreSQL migration auditing, `pg_catalog` extraction, data-object cataloguing, policy checks,
   and deterministic schema documentation.

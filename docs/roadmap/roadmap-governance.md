@@ -1,95 +1,14 @@
 # Roadmap Governance
 
-## Phase scope markers
+## Phase scope markers (retired 2026-11-26)
 
-Roadmap/source-doc pull requests must declare a phase (`PR0`…`PR9`) through one of these channels:
+The `scope-gate` job and `tools/roadmap/enforce_phase_scope.py` were retired. Pull requests no
+longer declare a `PR0`…`PR9` phase through a label or a `<!-- phase:PRx -->` body marker, and
+`roadmap-source-docs.yml` no longer re-runs on PR body or label edits. Older plans and evidence
+that mention phase markers describe the gate as it was when they were written.
 
-1. **Workflow dispatch input** (`phase`) when manually running `roadmap-source-docs.yml`.
-2. **PR label** formatted as `phase:PRx` (example: `phase:PR3`).
-3. **PR body marker** comment: `<!-- phase:PRx -->`.
-
-Roadmap Source Docs starts a fresh check when the PR description or labels change, so correcting
-a declaration does not require a source commit. Rerunning an older failed attempt can retain its
-original event payload; use the new metadata-triggered run to validate the corrected declaration.
-
-The CI scope gate (`tools/roadmap/enforce_phase_scope.py`) resolves declarations in this order:
-
-1. Explicit `--phase` (internal/manual override)
-2. Workflow dispatch input
-3. PR labels
-4. PR body marker
-
-If no declaration is found, CI fails with:
-
-```text
-No phase declaration found. Provide --phase/--dispatch-phase, a 'phase:PRx' label, or a PR body marker like '<!-- phase:PR2 -->'.
-```
-
-### Generated-artifact exemption
-
-The gate polices *authored* edits to the roadmap/source-doc surface. Machine-generated files listed
-in `GENERATED_ARTIFACT_PATTERNS` are exempt, because they are already drift-checked by the
-render/regenerate jobs that produce them. A pull request whose only governed-surface changes are
-generated artifacts therefore passes without any phase declaration:
-
-```text
-Phase scope gate passed: no authored roadmap/source-doc changes (generated artifacts and out-of-surface files are exempt).
-```
-
-Without that exemption such a pull request is trapped: the documentation drift gate requires the
-regenerated files to be committed, and this gate would reject the same files as out of phase scope.
-When a new generated file starts landing under a governed path, add it to
-`GENERATED_ARTIFACT_PATTERNS` in `tools/roadmap/enforce_phase_scope.py` rather than widening a phase
-marker to accommodate it.
-
-## Examples
-
-### PR body marker
-
-```markdown
-## Summary
-
-Adds roadmap schema notes for the next planning slice.
-
-<!-- phase:PR1 -->
-```
-
-### Label marker
-
-Apply a label such as:
-
-```text
-phase:PR2
-```
-
-### Workflow dispatch
-
-When triggering **Roadmap Source Docs** manually, set input:
-
-```text
-phase=PR4
-```
-
-## Failure output
-
-When files fall outside declared phase scope, CI emits a diff-style report:
-
-```text
-::error::Phase scope gate failed for PR1 (source: labels).
---- allowed-patterns
-+++ docs/**
-+++ tools/roadmap/**
-+++ .github/workflows/roadmap-source-docs.yml
---- violating-files
-- src/Meridian.Application/Commands/RunbookCommands.cs
-
-Hint: widen phase marker only when roadmap governance allows it.
-```
-
-Use the report to either:
-
-- Move out-of-scope changes into a higher-phase PR, or
-- Re-declare the PR with an approved higher phase marker.
+Roadmap edits are still validated by the `schema` job in `roadmap-source-docs.yml` (registry,
+source README and source TODO validators) and by the required `Meridian CI / quality-gate`.
 
 ## Schema evolution policy
 

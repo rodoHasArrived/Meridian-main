@@ -1,5 +1,3 @@
-<!-- phase:PR7 -->
-<!-- Phase marker for scope-gate (tools/roadmap/enforce_phase_scope.py). PR7 covers src/, tests/, build/ and docs/. Use PR8 if you change .github/workflows. Use PR9 only when nothing narrower fits. Keep this as the first line when editing the body. -->
 ## What changed and why
 
 Briefly explain the behavior changed and intended outcome.

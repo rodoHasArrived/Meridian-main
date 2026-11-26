@@ -20,10 +20,10 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 | Metric | Value |
 | -------- | ------- |
 | Total documentation files | 1292 |
-| Orphaned files | 379 |
+| Orphaned files | 380 |
 | Files without headings | 231 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 303 |
+| TODO/FIXME markers | 304 |
 | **Health score** | **86/100** |
 
 Line counts (total, average and per file) change on every Markdown edit, so they are not
@@ -87,7 +87,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-05-research-promotion-roadmap-review.md`
 - `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-06-provider-health-usability-lab.md`
 - `.agents/skills/meridian-simulated-user-panel/references/artifact-bundles.md`
-- ... and 359 more
+- ... and 360 more
 
 ## Trend
 
@@ -95,7 +95,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 86 | 1292 | 379 | 0 |
+| 1970-01-01 | 86 | 1292 | 380 | 0 |
 
 ---
 

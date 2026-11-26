@@ -199,7 +199,8 @@ Do not embed the generated repository tree in `CLAUDE.md`. Use these maintained 
 - `docs/prompts/repo-maintenance-prompts.md` for prompt, agent, and skill maintenance rules.
 - `docs/ai/navigation/README.md` for the generated repo-navigation workflow.
 - `docs/ai/generated/repo-navigation.md` for subsystem routing and entrypoints.
-- `docs/generated/repository-structure.md` for the full generated repository tree.
+- `docs/generated/repository-structure.md` for the full generated repository tree (CI artifact; run
+  `python build/python/cli/buildctl.py regen --fix` to generate it locally).
 - `docs/ai/agents/README.md` for agent catalogs.
 - `docs/ai/skills/README.md` for skill catalogs and validation commands.
 

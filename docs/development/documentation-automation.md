@@ -68,9 +68,9 @@ the best place to inspect generated changes before they reach a pull request.
 
 ## Repository Tree
 
-The full repository tree is generated into
-[`docs/generated/repository-structure.md`](../generated/repository-structure.md) by the maintained
-documentation generation (`make gen-structure` or `run-maintained-generation.py --docs-only`). No
+The full repository tree is generated into `docs/generated/repository-structure.md`, a CI artifact
+that is not committed, by the maintained documentation generation (`make gen-structure` or
+`run-maintained-generation.py --docs-only`). No
 workflow runs the retired `RavelloH/readme-tree` action; the `<!-- readme-tree -->` markers left in
 `README.md` only wrap a pointer to the generated tree and must not be used to embed a second copy.
 

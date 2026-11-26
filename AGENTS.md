@@ -47,8 +47,8 @@ GitHub repository rules allow, use the pull-request workflow:
 10. Before opening a PR, list open PRs touching the same `src/<Project>/` directory; if one exists,
     build on its branch or name it in the body under `Overlaps`.
 11. Open or update a pull request targeting `main`. Fill `.github/pull_request_template.md`
-    verbatim, keeping its `<!-- phase:PRx -->` first line set to this PR's phase. Keep
-    hand-authored changes under ~40 files per PR; split larger work into stacked PRs.
+    verbatim. Keep hand-authored changes under ~40 files per PR; split larger work into stacked
+    PRs.
 12. Report the commands run and their results in the pull request.
 
 ### GitHub Actions Authority

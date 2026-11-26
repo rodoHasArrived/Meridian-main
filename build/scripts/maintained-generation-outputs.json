@@ -408,6 +408,7 @@
   "delivery": {
     "ci_files": [
       "database/manifest/contracts.json",
+      "docs/generated/repository-structure.md",
       "docs/roadmap/generated/MANIFEST.json",
       "docs/source/generated/MANIFEST.json",
       "docs/status/TODO.md",
@@ -440,6 +441,7 @@
       "src/Meridian.Ui/dashboard/src/lib/workspace-catalog.generated.ts"
     ],
     "ci_trees": [
+      "docs/reference/source-api",
       "src/Meridian.Ui/wwwroot/workstation"
     ],
     "reviewed_baselines": [
