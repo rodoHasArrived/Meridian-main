@@ -56,6 +56,17 @@ stopwords   = [
 ]
 
 [[allowlists]]
+id          = "tax-lot-rekey-test-lot-label"
+description = "Account re-key tests label a fixture tax lot; the generic rule reads the preceding LegacyRekeyAccount argument as a key name"
+condition   = "AND"
+paths       = [
+    '''^tests/Meridian\.Tests/Storage/AtomicTaxLotJournalStoreTests\.AccountRekey\.cs$''',
+]
+stopwords   = [
+    "lot-legacy-20260512",
+]
+
+[[allowlists]]
 id          = "docs-api-reference-placeholder"
 description = "Public documentation placeholder API key"
 condition   = "AND"
