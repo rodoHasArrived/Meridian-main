@@ -655,7 +655,6 @@ export interface ProviderIntegrationQuarantineResolutionRequest {
   syncRunId: string;
   quarantineRecordId: string;
   action: ProviderIntegrationQuarantineResolutionAction;
-  reviewedBy: string;
   reviewedAt: string;
   note?: string | null;
 }
@@ -674,7 +673,6 @@ export interface ProviderIntegrationQuarantineReplayRequest {
   connectionId: string;
   capability: ProviderIntegrationCapabilityKind;
   quarantineRecordIds: string[];
-  requestedBy: string;
   requestedAt: string;
   mode?: ProviderIntegrationReplayMode;
   targetManifestVersion?: number | null;
@@ -810,7 +808,6 @@ export interface ProviderIntegrationReconciliationHandoffRecord {
 export interface ProviderIntegrationReconciliationHandoffRequest {
   connectionId: string;
   stagingRecordIds: string[];
-  requestedBy: string;
   requestedAt: string;
   approvalEvidenceId: string;
   note?: string | null;
@@ -912,7 +909,6 @@ export interface ProviderIntegrationSyncPlan {
 export interface ProviderIntegrationRunDueSyncRequest {
   connectionId: string;
   requestedAt: string;
-  requestedBy: string;
   maxPages: number;
   pathParametersByCapability: Record<string, Record<string, string>>;
   queryParametersByCapability: Record<string, Record<string, string>>;
@@ -956,7 +952,6 @@ export interface ManualCsvProviderIntegrationDryRunRequest {
   capability: ProviderIntegrationCapabilityKind;
   fileName: string;
   csvContent: string;
-  requestedBy: string;
   requestedAt: string;
 }
 
@@ -968,7 +963,6 @@ export interface ProviderIntegrationRestDryRunRequest {
   endpointKey: string;
   pathParameters: Record<string, string>;
   queryParameters: Record<string, string>;
-  requestedBy: string;
   requestedAt: string;
   maxPages: number;
 }
@@ -983,7 +977,6 @@ export interface ProviderIntegrationOpenApiImportRequest {
   scopes: string[];
   capabilities: ProviderIntegrationCapabilityKind[];
   openApiDocumentJson: string;
-  importedBy: string;
   importedAt: string;
   changeReason?: string | null;
   expectedManifestReference?: ProviderIntegrationManifestReference | null;
@@ -1015,7 +1008,6 @@ export interface ProviderIntegrationSchemaDriftCheckRequest {
   endpointKey: string;
   syncRunId: string;
   rawPayloadId: string;
-  checkedBy: string;
   checkedAt: string;
 }
 
@@ -1035,7 +1027,6 @@ export interface ProviderIntegrationSchemaDriftCheckResult {
 export interface ProviderIntegrationSetupSaveRequest {
   manifest: ProviderIntegrationManifest;
   connection: ProviderIntegrationConnection;
-  savedBy: string;
   savedAt: string;
   changeReason?: string | null;
   expectedManifestReference?: ProviderIntegrationManifestReference | null;
@@ -1056,7 +1047,6 @@ export interface ProviderIntegrationSetupSaveResult {
 export interface ProviderIntegrationActivationRequest {
   manifestId: string;
   connectionId: string;
-  approvedBy: string;
   approvedAt: string;
   approvalEvidenceId: string;
   changeReason?: string | null;

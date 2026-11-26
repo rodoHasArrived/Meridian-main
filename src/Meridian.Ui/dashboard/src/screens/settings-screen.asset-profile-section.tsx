@@ -13,7 +13,7 @@ import { utcToday } from "@/lib/local-date";
 import { cn } from "@/lib/utils";
 import { type SettingsMutationConfirmation } from "@/screens/settings-mutation-confirm-dialog";
 import { type SettingsScreenViewModel } from "@/screens/settings-screen.view-model";
-import type { SecurityAssetProfileDefinition, SecurityAssetProfileFieldDefinition, SessionInfo } from "@/types";
+import type { SecurityAssetProfileDefinition, SecurityAssetProfileFieldDefinition } from "@/types";
 import { GitBranch, RefreshCcw, Save, ShieldCheck } from "lucide-react";
 import { type FormEvent } from "react";
 import { buildProfileFieldPayload, createProfileBackedSecurityState, missingRequiredIdentifierDetails, type ProfileBackedSecurityState } from "./settings-profile-backed-security";
@@ -132,13 +132,12 @@ interface UseSettingsAssetProfileSectionStateParams {
   firstApprovedAssetProfile: SecurityAssetProfileDefinition;
   onRefresh: (() => Promise<void> | void) | undefined;
   profileBackedSecurity: ProfileBackedSecurityState;
-  session: SessionInfo | null;
   setAssetProfileDraft: React.Dispatch<React.SetStateAction<AssetProfileDraftState>>;
   setProfileBackedSecurity: React.Dispatch<React.SetStateAction<ProfileBackedSecurityState>>;
   vm: SettingsScreenViewModel;
 }
 
-export function useSettingsAssetProfileSectionState({ approvedAssetProfiles, assetProfileDraft, firstApprovedAssetProfile, onRefresh, profileBackedSecurity, session, setAssetProfileDraft, setProfileBackedSecurity, vm }: UseSettingsAssetProfileSectionStateParams) {
+export function useSettingsAssetProfileSectionState({ approvedAssetProfiles, assetProfileDraft, firstApprovedAssetProfile, onRefresh, profileBackedSecurity, setAssetProfileDraft, setProfileBackedSecurity, vm }: UseSettingsAssetProfileSectionStateParams) {
   const selectedDraftStarterProfile = approvedAssetProfiles.find((profile) => profile.profileId === assetProfileDraft.starterProfileId) ??
     firstApprovedAssetProfile;
   const selectedProfileBackedSecurityProfile = approvedAssetProfiles.find((profile) => profile.profileId === profileBackedSecurity.profileId) ??
@@ -212,7 +211,6 @@ export function useSettingsAssetProfileSectionState({ approvedAssetProfiles, ass
         lifecycleStates: selectedDraftStarterProfile.lifecycleStates,
         accountingImpactHints: selectedDraftStarterProfile.accountingImpactHints,
         dateOrderRules: selectedDraftStarterProfile.dateOrderRules,
-        requestedBy: session?.displayName ?? "settings-screen",
         rationale,
         correlationId: `settings-asset-profile-draft-${Date.now()}`
       });
@@ -264,7 +262,6 @@ export function useSettingsAssetProfileSectionState({ approvedAssetProfiles, ass
         version,
         effectiveFrom: todayDateOnly(),
         approvalReference: `settings:${profileId}:v${version}`,
-        requestedBy: session?.displayName ?? "settings-screen",
         rationale: assetProfileDraft.rationale.trim() || "Approve asset profile for governed Security Master creation.",
         correlationId: `settings-asset-profile-approve-${Date.now()}`
       });
@@ -341,7 +338,6 @@ export function useSettingsAssetProfileSectionState({ approvedAssetProfiles, ass
         targetVersion: assetProfileDraft.rollbackTargetVersion,
         effectiveFrom: todayDateOnly(),
         approvalReference: `settings:${profileId}:rollback:${assetProfileDraft.rollbackTargetVersion}`,
-        requestedBy: session?.displayName ?? "settings-screen",
         rationale: assetProfileDraft.rationale.trim() || "Rollback asset profile to an approved prior version.",
         correlationId: `settings-asset-profile-rollback-${Date.now()}`
       });
@@ -462,7 +458,6 @@ export function useSettingsAssetProfileSectionState({ approvedAssetProfiles, ass
         ],
         effectiveFrom,
         sourceSystem: "Meridian.Settings.AssetProfiles",
-        updatedBy: session?.displayName ?? "settings-screen",
         sourceRecordId: `asset-profile:${selected.profileId}:v${selected.version}`,
         reason: profileBackedSecurity.rationale.trim()
       });

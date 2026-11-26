@@ -31,6 +31,7 @@ import { BondMigrationPreviewPanel } from "@/components/meridian/bond-migration-
 import { SecurityRatesIngestionPanel } from "@/components/meridian/security-rates-ingestion-panel";
 import { BondObservedFixingPanel } from "@/components/meridian/bond-observed-fixing-panel";
 import type { BondObservedFixingReceipt } from "@/lib/api/bond-observed-fixings.api";
+import { useSignedInUsername } from "@/hooks/use-signed-in-username";
 import { BondReferenceLadderPanel } from "@/components/meridian/bond-reference-ladder-panel";
 import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport-drill-in";
 import { ReconciliationComparisonPanel } from "@/components/accounting";
@@ -106,7 +107,9 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
   // only opening the queue itself advances it, not any other Accounting route.
   const breakQueueVisit = useSinceLastVisit(BREAK_QUEUE_VISIT_SURFACE, undefined, { record: false });
   const navigate = useNavigate();
-  const operatorIdentity = session?.displayName.trim() || null;
+  // The signed-in username, not the session's desk-label displayName: it keys per-operator
+  // recovery state. Request bodies carry no actor; the server derives it from the session.
+  const operatorIdentity = useSignedInUsername();
   const workstream = resolveAccountingWorkstream(pathname);
   const taskMode = buildAccountingTaskMode(pathname);
   const sectionVisibility = buildAccountingSectionVisibility(taskMode, hash);
@@ -114,14 +117,17 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
   const closeWorkflowQuery = useMemo(() => parseCloseWorkflowQuery(search), [search]);
   const [accountingSystemReconciliation, setAccountingSystemReconciliation] = useState<AccountingSystemReconciliationSummary | null>(null);
   const reconciliationViewState = useReconciliationViewState(workstream === "reconciliation" || workstream === "exceptions" || taskMode.id === "close-cockpit");
-  const reconciliation = useAccountingReconciliationViewModel(data, workstream, undefined, accountingSystemReconciliation, operatorIdentity, workstream === "reconciliation" || workstream === "exceptions" ? reconciliationViewState : undefined);
+  const reconciliation = useAccountingReconciliationViewModel(data, workstream, undefined, accountingSystemReconciliation, workstream === "reconciliation" || workstream === "exceptions" ? reconciliationViewState : undefined);
   const resolveDialog = useReconciliationResolveDialogViewModel(reconciliation.resolveBreak);
   const selectedReconciliation = reconciliation.selectedReconciliation;
   const selectedReconciliationDetail = reconciliation.detailView;
   const cashFlow = useAccountingCashFlowViewModel(data?.cashFlow ?? null, pathname, workstream);
   const reporting = useAccountingReportingViewModel(data?.reporting ?? null);
   const configuration = useAccountingConfigurationViewModel(undefined, sectionVisibility.showConfiguration);
-  const journalEntries = useManualJournalEntryWorkbenchViewModel(workstream === "journal-entries", undefined, search, session?.displayName.trim() ? JSON.stringify([session.displayName, session.role, session.environment]) : null);
+  // Discards in-flight journal and asset-accounting work when the operator changes; keyed by the
+  // signed-in username, not the session's shared desk-label displayName.
+  const journalSessionIdentity = session && operatorIdentity ? JSON.stringify([operatorIdentity, session.role, session.environment]) : null;
+  const journalEntries = useManualJournalEntryWorkbenchViewModel(workstream === "journal-entries", undefined, search, journalSessionIdentity);
   const capitalAccountWorkbench = useCapitalAccountWorkbenchViewModel(workstream === "capital-accounts", search);
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
   const selectSecurityById = securityMaster.selectSecurity;
@@ -847,7 +853,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
       ) : null}
 
       {sectionVisibility.showConfiguration ? (
-        <IntercompanyAgreementsPanel key={JSON.stringify([session?.displayName, session?.role, session?.environment, search])} initialEntityId={closeWorkflowQuery.entityId ?? ""} initialAgreementId={new URLSearchParams(search).get("agreementId")} initialLedgerBookId={new URLSearchParams(search).get("ledgerBookId") ?? undefined} />
+        <IntercompanyAgreementsPanel key={JSON.stringify([operatorIdentity, session?.role, session?.environment, search])} initialEntityId={closeWorkflowQuery.entityId ?? ""} initialAgreementId={new URLSearchParams(search).get("agreementId")} initialLedgerBookId={new URLSearchParams(search).get("ledgerBookId") ?? undefined} />
       ) : null}
 
       {sectionVisibility.showConfiguration ? (
@@ -859,7 +865,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
       ) : null}
 
       {sectionVisibility.showJournalEntries ? (
-        <ManualJournalEntryWorkbenchPanel key={JSON.stringify([session?.displayName, session?.role, session?.environment])} view={journalEntries} search={search} />
+        <ManualJournalEntryWorkbenchPanel key={journalSessionIdentity ?? "no-operator"} view={journalEntries} search={search} />
       ) : null}
 
       {sectionVisibility.showCapitalAccounts ? <>
@@ -1506,11 +1512,11 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           <div className="grid gap-4" aria-label="Security Master market inputs and discovery">
             <details className="rounded border border-border p-4" onToggle={(event) => setCurvesOpen(event.currentTarget.open)}>
               <summary className="cursor-pointer font-semibold">Curves: definitions, pillars and historical versions</summary>
-              {curvesOpen ? <div className="mt-4"><SecurityCurveWorkbench key={JSON.stringify([search, session?.displayName, session?.role, session?.environment])} /></div> : null}
+              {curvesOpen ? <div className="mt-4"><SecurityCurveWorkbench key={JSON.stringify([search, operatorIdentity, session?.role, session?.environment])} /></div> : null}
             </details>
             <details className="rounded border border-border p-4" onToggle={(event) => setBondDiscoveryOpen(event.currentTarget.open)}>
               <summary className="cursor-pointer font-semibold">Discover provider bonds and stage candidate imports</summary>
-              {bondDiscoveryOpen ? <div className="mt-4"><BondDiscoveryPanel key={JSON.stringify([search, session?.displayName, session?.role, session?.environment])} /></div> : null}
+              {bondDiscoveryOpen ? <div className="mt-4"><BondDiscoveryPanel key={JSON.stringify([search, operatorIdentity, session?.role, session?.environment])} /></div> : null}
             </details>
           </div>
 

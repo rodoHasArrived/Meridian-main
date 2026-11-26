@@ -794,7 +794,9 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     {
         await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
         var username = $"ops-{Guid.NewGuid():N}";
-        using var adminClient = isolated.Fixture.CreatePermittedClient(UserPermission.ManageUsers);
+        // A signed-in administrator: account administration records the session actor, never the
+        // body's RequestedBy, and refuses a permission snapshot that has no actor.
+        using var adminClient = isolated.Fixture.CreateSessionClient(UserPermission.ManageUsers);
 
         var createResponse = await adminClient.PutAsJsonAsync(
             $"/api/auth/accounts/{username}",
@@ -889,13 +891,52 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
             "user-account-disabled",
             "user-sessions-revoked"
         ]);
+        audit.Where(item => item.Username == username).Select(item => item.Actor)
+            .Should().OnlyContain(actor => actor == "session-operator");
+    }
+
+    [Fact]
+    public async Task AuthGovernanceWrites_WithPermissionsButNoActor_RejectBodyRequestedBy()
+    {
+        // A permission snapshot with no authenticated actor used to be recorded under the body's
+        // RequestedBy. The actor is audit evidence, so these writes now refuse it instead.
+        await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
+        using var client = isolated.Fixture.CreatePermittedClient(UserPermission.ManageUsers);
+
+        var profileResponse = await client.PostAsJsonAsync(
+            "/api/auth/role-profiles",
+            new RolePermissionProfileUpsertRequestDto(
+                ProfileName: $"Forged Reviewer {Guid.NewGuid():N}",
+                DisplayName: "Forged Reviewer",
+                Description: null,
+                BaseRole: nameof(UserRole.Accounting),
+                PermissionNames: [nameof(UserPermission.ViewTrades)],
+                RequestedBy: "Meridian Operator",
+                Rationale: "Body-supplied actor must not be recorded."));
+        profileResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        var assignmentResponse = await client.PostAsJsonAsync(
+            "/api/auth/access-assignments",
+            new UserAccessAssignmentCreateRequestDto(
+                PrincipalId: $"forged-{Guid.NewGuid():N}",
+                PrincipalKind: AccessPrincipalKindDto.User,
+                ScopeKind: AccessScopeKindDto.Global,
+                ScopeId: null,
+                Role: nameof(UserRole.Accounting),
+                RoleProfileName: null,
+                PermissionNames: [nameof(UserPermission.ViewTrades)],
+                EffectiveFrom: DateTimeOffset.UtcNow.AddMinutes(-1),
+                EffectiveTo: null,
+                RequestedBy: "Meridian Operator",
+                Rationale: "Body-supplied actor must not be recorded."));
+        assignmentResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
     public async Task AuthScopedAccess_WithAutomationOrigin_ReturnsBadRequestWithoutMutatingAuthority()
     {
         await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
-        using var adminClient = isolated.Fixture.CreatePermittedClient(UserPermission.ManageUsers);
+        using var adminClient = isolated.Fixture.CreateSessionClient(UserPermission.ManageUsers);
         var blockedPrincipal = $"assistant-admin-{Guid.NewGuid():N}";
         var createResponse = await adminClient.PostAsJsonAsync(
             "/api/auth/access-assignments",

@@ -143,7 +143,7 @@ function toWire(set: LocalOperatorPreferences): OperatorPreferenceValues {
 }
 
 export interface OperatorPreferenceSyncOptions {
-  /** The session's `environment:name:role` key, which scopes the page-descriptions setting. */
+  /** The `environment:username:role` key (signed-in username, never the session's desk-label displayName), which scopes the page-descriptions setting. */
   operatorKey: string | null;
   load?: (signal: AbortSignal) => Promise<OperatorPreferences>;
   save?: (preferences: OperatorPreferenceValues, signal: AbortSignal) => Promise<OperatorPreferences>;

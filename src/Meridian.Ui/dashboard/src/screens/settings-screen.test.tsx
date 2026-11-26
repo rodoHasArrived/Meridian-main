@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
 import { SettingsScreen } from "@/screens/settings-screen";
 import { renderWithRouter } from "@/test/render";
@@ -530,7 +530,21 @@ function HeaderRefresh({ children }: { children: ReactNode }) {
   return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence(value => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
 }
 
+// Governed writes take their actor from the authenticated session on the server. Settings must not
+// put one in a request body: the session displayName is a desk label, not the operator.
+const CLIENT_ACTOR_FIELDS = ["requestedBy", "importedBy", "savedBy", "checkedBy", "reviewedBy", "approvedBy", "updatedBy"];
+
 describe("SettingsScreen", () => {
+  afterEach(() => {
+    for (const mock of Object.values(apiMocks)) {
+      for (const [request] of mock.mock.calls as unknown[][]) {
+        if (request && typeof request === "object" && !Array.isArray(request)) {
+          expect(Object.keys(request).filter((key) => CLIENT_ACTOR_FIELDS.includes(key))).toEqual([]);
+        }
+      }
+    }
+  });
+
   beforeEach(() => {
     apiMocks.approveSecurityAssetProfile.mockReset();
     apiMocks.connectAlpacaConnection.mockReset();
@@ -983,7 +997,6 @@ describe("SettingsScreen", () => {
 
     expect(apiMocks.createSecurityMasterEntry).toHaveBeenCalledWith(expect.objectContaining({
       assetClass: "CustomAsset",
-      updatedBy: "Ops Lead",
       sourceRecordId: "asset-profile:private-fund-interest:v1",
       assetSpecificTerms: expect.objectContaining({
         schemaVersion: 3,
@@ -1161,7 +1174,6 @@ describe("SettingsScreen", () => {
     expect(apiMocks.assignLedgerMapping).toHaveBeenCalledWith(expect.objectContaining({
       accountId: "account-2",
       ledgerGroupId: "direct-lending",
-      requestedBy: "Ops Lead",
       rationale: "Reviewed by fund operations"
     }));
     expect(onRefresh).toHaveBeenCalledOnce();
@@ -1226,7 +1238,6 @@ describe("SettingsScreen", () => {
       displayName: "Close Reviewer",
       baseRole: "Accounting",
       permissionNames: ["ViewTrades", "ManageDirectLending"],
-      requestedBy: "Ops Lead",
       rationale: "Scoped close reviewer"
     }));
     expect(onRefresh).toHaveBeenCalledOnce();
@@ -1373,7 +1384,6 @@ describe("SettingsScreen", () => {
       role: "Accounting",
       roleProfileName: null,
       permissionNames: ["ViewTrades", "ManageDirectLending"],
-      requestedBy: "Ops Lead",
       rationale: "Grant fund close authority",
       approvalLimitAmount: 250000,
       approvalLimitCurrency: "USD",
@@ -1390,7 +1400,6 @@ describe("SettingsScreen", () => {
     expect(apiMocks.revokeScopedAccessAssignment).toHaveBeenCalledWith(expect.objectContaining({
       assignmentId: "access-assignment-1",
       expectedVersion: 3,
-      requestedBy: "Ops Lead",
       rationale: "Revoke scoped authority for fund-controller."
     }));
     expect(await within(form).findByText("Scoped access revoked for fund-controller.")).toBeInTheDocument();
@@ -1452,7 +1461,6 @@ describe("SettingsScreen", () => {
       reviewerRole: "Controller",
       requiredDistinctApprovals: 3,
       evidenceRequirement: "Controller packet and checklist control evidence.",
-      requestedBy: "Ops Lead",
       rationale: "Tighten close approval accounting"
     }));
     expect(onRefresh).toHaveBeenCalledOnce();
@@ -1536,7 +1544,6 @@ describe("SettingsScreen", () => {
       taskId: "task-1",
       dueDate: "2026-06-03",
       owner: "Controller",
-      requestedBy: "Ops Lead",
       rationale: "Move close task to controller queue"
     }));
     expect(onRefresh).toHaveBeenCalledOnce();
@@ -2041,7 +2048,6 @@ describe("SettingsScreen", () => {
         environment: "paper",
         authType: "OAuth2",
         capabilities: ["Positions"],
-        importedBy: "Andrew Rowden",
         importedAt: expect.any(String),
         changeReason: "Imported from the Settings Provider Connection Center."
       }));
@@ -2065,7 +2071,6 @@ describe("SettingsScreen", () => {
       expect(apiMocks.createProviderIntegrationReconciliationHandoff).toHaveBeenCalledWith(expect.objectContaining({
         connectionId: "provider-reference",
         stagingRecordIds: ["stage-position-1"],
-        requestedBy: "Andrew Rowden",
         requestedAt: expect.any(String),
         approvalEvidenceId: expect.stringMatching(/^settings-provider-handoff-provider-reference-/),
         note: "Approved from the Settings Provider Connection Center promotion readiness panel.",
@@ -2084,7 +2089,6 @@ describe("SettingsScreen", () => {
         syncRunId: "sync-positions-2",
         quarantineRecordId: "quarantine-position-1",
         action: "ReviewOnly",
-        reviewedBy: "Andrew Rowden",
         reviewedAt: expect.any(String),
         note: "Reviewed from the Settings Provider Connection Center runtime evidence panel."
       }));
@@ -2118,7 +2122,6 @@ describe("SettingsScreen", () => {
         connectionId: "provider-reference",
         capability: "Positions",
         quarantineRecordIds: ["quarantine-position-2", "quarantine-position-3"],
-        requestedBy: "Andrew Rowden",
         requestedAt: expect.any(String),
         replaySyncRunId: expect.stringMatching(/^provider-replay-provider-reference-/)
       }));
@@ -2135,7 +2138,6 @@ describe("SettingsScreen", () => {
         syncRunId: "sync-positions-2",
         quarantineRecordId: "quarantine-position-2",
         action: "ReplayAfterMappingChange",
-        reviewedBy: "Andrew Rowden",
         reviewedAt: expect.any(String),
         note: "Marked from the Settings Provider Connection Center for replay after mapping changes."
       }));
@@ -2156,7 +2158,6 @@ describe("SettingsScreen", () => {
         syncRunId: "sync-positions-2",
         quarantineRecordId: "quarantine-position-3",
         action: "IgnoreProviderRecord",
-        reviewedBy: "Andrew Rowden",
         reviewedAt: expect.any(String),
         note: "Ignored from the Settings Provider Connection Center after operator review."
       }));
@@ -2170,7 +2171,6 @@ describe("SettingsScreen", () => {
     await waitFor(() => {
       expect(apiMocks.runDueProviderIntegrationSync).toHaveBeenCalledWith("provider-reference", expect.objectContaining({
         connectionId: "provider-reference",
-        requestedBy: "Andrew Rowden",
         requestedAt: expect.any(String),
         maxPages: 2,
         pathParametersByCapability: {},
@@ -2341,7 +2341,6 @@ describe("SettingsScreen", () => {
       expect(apiMocks.saveProviderIntegrationSetup).toHaveBeenCalledWith(expect.objectContaining({
         manifest: expect.objectContaining({ manifestId: manifest.manifestId }),
         connection: expect.objectContaining({ connectionId: "provider-reference", credentialSecretRef: expect.stringContaining("provider-credential:polygon") }),
-        savedBy: "Andrew Rowden",
         savedAt: expect.any(String)
       }));
     });
@@ -2368,7 +2367,6 @@ describe("SettingsScreen", () => {
         manifestId: manifest.manifestId,
         connectionId: "provider-reference",
         capability: "Positions",
-        requestedBy: "Andrew Rowden"
       }));
     });
     expect(await within(workbench).findByText("CSV dry-run completed: 1 accepted / 0 quarantined.")).toBeInTheDocument();
@@ -2391,7 +2389,6 @@ describe("SettingsScreen", () => {
         connectionId: "provider-reference",
         endpointKey: "positions",
         rawPayloadId: "raw-rest-1",
-        checkedBy: "Andrew Rowden"
       }));
     });
     expect(await within(workbench).findByText("Schema drift check passed.")).toBeInTheDocument();
@@ -2403,7 +2400,6 @@ describe("SettingsScreen", () => {
       expect(apiMocks.activateProviderIntegration).toHaveBeenCalledWith(expect.objectContaining({
         manifestId: manifest.manifestId,
         connectionId: "provider-reference",
-        approvedBy: "Andrew Rowden",
         expectedManifestReference: savedReference,
         approvalEvidenceId: expect.stringMatching(/^settings-provider-activation-provider-reference-/)
       }));

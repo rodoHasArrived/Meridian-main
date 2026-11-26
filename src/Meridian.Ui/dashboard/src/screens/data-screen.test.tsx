@@ -946,7 +946,6 @@ describe("DataScreen", () => {
     await user.click(screen.getByRole("button", { name: "Open secure bank connection for Chase" }));
 
     await waitFor(() => expect(createPlaidLinkToken).toHaveBeenCalledWith(expect.objectContaining({
-      userId: "Avery Chen",
       institutionId: "ins_3",
       institutionName: "Chase",
       products: ["Transactions", "Auth", "Identity", "Investments"],
@@ -957,7 +956,6 @@ describe("DataScreen", () => {
       publicToken: "public-sandbox-token",
       institutionId: "ins_3",
       institutionName: "Chase",
-      requestedBy: "Avery Chen",
       accounts: [
         expect.objectContaining({
           plaidAccountId: "plaid-account-1",
@@ -969,6 +967,10 @@ describe("DataScreen", () => {
         })
       ]
     })));
+    // The session's displayName is a desk label, not the operator: no actor travels in either body.
+    // The Plaid routes take userId/requestedBy from the authenticated session.
+    expect(vi.mocked(createPlaidLinkToken).mock.calls[0]?.[0]).not.toHaveProperty("userId");
+    expect(vi.mocked(exchangePlaidPublicToken).mock.calls[0]?.[0]).not.toHaveProperty("requestedBy");
     expect(await screen.findByText(/link-sandbox/)).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Plaid sandbox bank connection" }))
       .toHaveTextContent("Chase account evidence was linked and stored by Meridian.");

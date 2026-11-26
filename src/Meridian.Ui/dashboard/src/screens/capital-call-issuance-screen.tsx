@@ -19,9 +19,12 @@ import type { LedgerBook, SessionInfo } from "@/types";
 import type { PrivateCapitalCall, PrivateCapitalCommitment, PrivateCapitalNotice, PrivateCapitalWorkbench } from "@/types/private-capital";
 import { Select } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useSignedInUsername } from "@/hooks/use-signed-in-username";
 
 export function CapitalCallIssuanceScreen({ session }: { session?: SessionInfo | null }) {
-  return <CapitalScopeSelection key={`${session?.displayName}:${session?.role}:${session?.environment}`} />;
+  // Resets scope selection when the signed-in operator changes; never the desk-label displayName.
+  const operatorUsername = useSignedInUsername();
+  return <CapitalScopeSelection key={JSON.stringify([operatorUsername, session?.role, session?.environment])} />;
 }
 
 function CapitalScopeSelection() {
