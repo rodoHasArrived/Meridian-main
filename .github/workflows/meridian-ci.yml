@@ -289,6 +289,25 @@ jobs:
       - name: Run docs/source/AI lane
         run: bash scripts/ci.sh --lane verify-docs
 
+      # Generated Repair runs for a pull request only when it carries the generated-repair
+      # label or when this step fails. It fails only when the lane failed because reviewed
+      # generated files are stale; the trusted repair workflow reads this step's conclusion
+      # through the API (generated_repair.STALE_STEP), so keep its name in step with it.
+      - name: Flag stale generated files for Generated Repair
+        if: failure()
+        env:
+          STEPS_TSV: artifacts/ci-summary/verify-docs/steps.tsv
+          FRESHNESS_STEP: Check reviewed generated documentation freshness
+        run: |
+          set -euo pipefail
+          if [[ -f "$STEPS_TSV" ]] && awk -F '\t' -v step="$FRESHNESS_STEP" \
+              '$1 == step && $2 != 0 { stale = 1 } END { exit !stale }' "$STEPS_TSV"; then
+            echo "Reviewed generated files are stale; Generated Repair will prepare a repair for this head." \
+              | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "verify-docs failed for a reason other than stale generated files."
+
       - name: Upload docs lane artifacts
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -417,12 +436,16 @@ jobs:
   # Classifies the change in its own job, like verify-dotnet, so it starts without waiting
   # for another job. A pull request that changes only recognized documentation skips the
   # suite's steps; main, merge queues, manual runs and release callers always run them.
+  # caller-verifies-evidence: integration-gate below verifies the fresh job's result and
+  # evidence itself, so the reusable workflow's evidence-gate job (one more runner wait
+  # between the suite and this gate) is skipped. Check names are unchanged.
   service-backed-integrations:
     name: service-backed-integrations
     uses: ./.github/workflows/service-backed-integrations.yml
     with:
       artifact-name: meridian-ci-integrations
       skip-when-docs-only: true
+      caller-verifies-evidence: true
 
   integration-gate:
     name: integration-gate
@@ -431,15 +454,20 @@ jobs:
     if: always()
     timeout-minutes: 5
     outputs:
-      artifact-id: ${{ needs.service-backed-integrations.outputs.artifact-id }}
-      artifact-name: ${{ needs.service-backed-integrations.outputs.artifact-name }}
-      receipt-sha256: ${{ needs.service-backed-integrations.outputs.receipt-sha256 }}
+      artifact-id: ${{ steps.evidence.outputs.artifact-id }}
+      artifact-name: ${{ steps.evidence.outputs.artifact-name }}
+      receipt-sha256: ${{ steps.evidence.outputs.receipt-sha256 }}
     steps:
       - name: Evaluate service-backed integration evidence
+        id: evidence
         env:
           DOTNET_LANE_DECISION: ${{ needs.verify-dotnet.outputs.dotnet-required }}
           INTEGRATION_DECISION: ${{ needs.service-backed-integrations.outputs.dotnet-required }}
           INTEGRATION_RESULT: ${{ needs.service-backed-integrations.result }}
+          FRESH_SUCCEEDED: ${{ needs.service-backed-integrations.outputs.fresh-succeeded }}
+          ARTIFACT_ID: ${{ needs.service-backed-integrations.outputs.fresh-artifact-id }}
+          ARTIFACT_NAME: ${{ needs.service-backed-integrations.outputs.fresh-artifact-name }}
+          RECEIPT_SHA256: ${{ needs.service-backed-integrations.outputs.fresh-receipt-sha256 }}
         run: |
           set -euo pipefail
           {
@@ -449,6 +477,12 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           if [[ "$INTEGRATION_RESULT" != "success" ]]; then
             echo "Service-backed integrations did not pass. Inspect the integration job and evidence."
+            exit 1
+          fi
+          # The reusable call reports success when its jobs are skipped, so require the
+          # fresh integration job itself to have completed every step (replaces evidence-gate).
+          if [[ "${FRESH_SUCCEEDED:-}" != "true" ]]; then
+            echo "The fresh integration job did not complete successfully." >&2
             exit 1
           fi
           # Both lanes classify the change independently. They must agree, or a docs-only
@@ -462,5 +496,20 @@ jobs:
             exit 1
           fi
           if [[ "$INTEGRATION_DECISION" == "false" ]]; then
+            # Only an opted-in docs-only pull request reaches this: there is no evidence to bind.
             echo "Docs-only PR: service-backed integrations intentionally skipped." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
           fi
+          # The same identity checks evidence-gate applies: a successful .NET run must have
+          # produced and retained complete, well-formed evidence outputs.
+          if [[ ! "${ARTIFACT_ID:-}" =~ ^[1-9][0-9]*$ ]] \
+              || [[ ! "${ARTIFACT_NAME:-}" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]{0,199}$ ]] \
+              || [[ ! "${RECEIPT_SHA256:-}" =~ ^[0-9a-f]{64}$ ]]; then
+            echo "Successful integration job did not produce complete evidence outputs." >&2
+            exit 1
+          fi
+          {
+            echo "artifact-id=${ARTIFACT_ID}"
+            echo "artifact-name=${ARTIFACT_NAME}"
+            echo "receipt-sha256=${RECEIPT_SHA256}"
+          } >> "$GITHUB_OUTPUT"

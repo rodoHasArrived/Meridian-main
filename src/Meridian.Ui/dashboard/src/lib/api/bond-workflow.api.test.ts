@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { calculateBondWorkflow, getBondMonitoring, planAccountBondIncome, previewBondIncome } from "./bond-workflow.api";
 import type { BondWorkflowRequest } from "@/types/bond-workflow.types";

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { resolveDevFixture } from "../dev-fixtures";
 import type { FamilyOfficeOverview } from "@/types/family-office.types";

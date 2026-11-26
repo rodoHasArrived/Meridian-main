@@ -8,6 +8,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Identity.Auth;
 using Meridian.Ledger;
+using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
@@ -326,33 +327,33 @@ public sealed class PrivateCapitalEndpointsTests
             Vault.VerifyRetainedContentAsync(VaultId, Tenant, Company, Arg.Any<CancellationToken>()).Returns(true);
         }
 
-        public async Task<WebApplication> StartAsync(string? missing = null,
+        public Task<SharedEndpointGraph.EndpointTestApp> StartAsync(string? missing = null,
             UserPermission permission = UserPermission.ManageDirectLending, string? actor = Actor)
-        {
-            var builder = WebApplication.CreateBuilder();
-            builder.WebHost.UseTestServer();
-            builder.Services.AddSingleton(Store);
-            if (missing != "lifecycle")
-                builder.Services.AddSingleton(new PrivateCapitalLifecycleService(Store));
-            if (missing != "books")
-                builder.Services.AddSingleton(Books);
-            if (missing != "registry")
-                builder.Services.AddSingleton(Registry);
-            if (missing != "vault")
-                builder.Services.AddSingleton(Vault);
-            var app = builder.Build();
-            app.Use(async (context, next) =>
-            {
-                context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permission;
-                if (actor is not null)
-                    context.Items[LoginSessionMiddleware.CurrentUserKey] = actor;
-                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = Tenant;
-                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = Company;
-                await next();
-            });
-            app.MapLedgerEndpoints(new JsonSerializerOptions(JsonSerializerDefaults.Web));
-            await app.StartAsync();
-            return app;
-        }
+            // Tests registering the same service types reuse one compiled route graph; each keeps
+            // its own services and caller identity.
+            => SharedEndpointGraph.CreateAsync(
+                graphVariant: "private-capital-ledger",
+                createBuilder: static () => WebApplication.CreateBuilder(),
+                configureServices: services =>
+                {
+                    services.AddSingleton(Store);
+                    if (missing != "lifecycle")
+                        services.AddSingleton(new PrivateCapitalLifecycleService(Store));
+                    if (missing != "books")
+                        services.AddSingleton(Books);
+                    if (missing != "registry")
+                        services.AddSingleton(Registry);
+                    if (missing != "vault")
+                        services.AddSingleton(Vault);
+                },
+                configureRequest: context =>
+                {
+                    context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permission;
+                    if (actor is not null)
+                        context.Items[LoginSessionMiddleware.CurrentUserKey] = actor;
+                    context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = Tenant;
+                    context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = Company;
+                },
+                configureGraph: static app => app.MapLedgerEndpoints(new JsonSerializerOptions(JsonSerializerDefaults.Web)));
     }
 }

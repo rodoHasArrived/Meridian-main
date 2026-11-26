@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { adaptGovernedReportingRunResponse } from "@/lib/reporting-governance-api";
 import type { ReportingRunParameters } from "@/types";
 

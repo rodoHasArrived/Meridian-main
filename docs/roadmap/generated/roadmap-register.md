@@ -2478,7 +2478,7 @@ W11-SHADOW-001: in_progress; health green; evidence in_progress. Shadow onboardi
 - `SRC-CONTRACTS`
 - `SRC-UI-SHARED`
 
-## W11-PACK-001 - Governed contract-pack lifecycle on the Security Master asset-class registry
+## W11-PACK-001 - Runtime contract-pack governance for profile-backed Security Master classes
 | Field | Value |
 | --- | --- |
 | Wave | W11 |
@@ -2487,27 +2487,28 @@ W11-SHADOW-001: in_progress; health green; evidence in_progress. Shadow onboardi
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-10-16 |
+| Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W11-PACK-001: planned; health green; evidence planned_evidence. Govern asset-class contract packs from the existing registry; planned scope retains the recorded migration and acceptance requirements.
+W11-PACK-001: planned; health green; evidence planned_evidence. Narrowed under DEC-PACK-SPLIT-001 to runtime packs for profile-backed (CustomAsset-style) classes. Compiled-class plumbing moved to W11-PACK-002. Planned; no implementation is claimed.
 
 ### Status References
 
-- Decisions: DEC-CHARTER-DIRECTION-001
+- Decisions: DEC-CHARTER-DIRECTION-001, DEC-PACK-SPLIT-001
 - PR references (not inferred acceptance): none recorded
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W11-PACK-001.md)
 - Evidence: [docs/product/meridian-design-document.md](../../product/meridian-design-document.md)
-- Evidence: [docs/architecture/security-master-extensibility-review.md](../../architecture/security-master-extensibility-review.md)
+- Evidence: [docs/engineering/plans/security-master-class-plumbing-codegen.md](../../engineering/plans/security-master-class-plumbing-codegen.md)
 
 
 ### Exit Criteria
 
-- A contract pack is a versioned, content-hashed unit that declares its asset class, term schema, lifecycle events, cash-flow behavior, valuation methods, accounting rule bindings, validations, and reporting taxonomy, and the existing asset-class registry is its first source.
+- A contract pack is a versioned, content-hashed unit for a profile-backed (CustomAsset-style) class. It declares the term schema, lifecycle events, cash-flow behavior, valuation methods, accounting rule bindings, validations and reporting taxonomy, and the existing custom-profile and asset-pack registries are its first source.
 - A pack moves through Draft, Tested, Reviewed, Approved, Active, Superseded, and Retired, and activation requires passing pack tests and a recorded approval.
 - Records keep the pack version they were created under, so activating a new version never silently reinterprets existing terms; migrating records to a new version is an explicit, audited operation.
-- The coverage tests that lock the registry to the F# SecurityKind union, validators, and storage writers extend to every active pack.
+- Compiled SecurityKind classes are out of scope. They change through code review and the class plumbing tracked by W11-PACK-002, not through runtime activation, and a pack cannot claim a compiled class.
+- The coverage tests that lock profile-backed packs to validators and storage writers extend to every active pack.
 - Roadmap status remains planned until this item links the pack contract, the lifecycle, the version-pinning behavior, and the activation and reinterpretation tests.
 
 ### Source Modules
@@ -2556,6 +2557,45 @@ W11-EXEC-001: planned; health green; evidence planned_evidence. Record canonical
 - `SRC-STRATEGIES`
 - `SRC-BACKTESTING`
 - `SRC-CONTRACTS`
+
+## W11-PACK-002 - Generated Security Master class plumbing from one declaration
+| Field | Value |
+| --- | --- |
+| Wave | W11 |
+| Status | accepted |
+| Health | green |
+| Priority | medium |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | complete |
+| Last reviewed | 2026-11-26 |
+
+### Current Summary
+
+W11-PACK-002: accepted; health green; evidence complete. Accepted by the owner (DEC-PACK-ACCEPT-001). SecurityAssetClassDeclarations generates five marked regions in src (decode now goes through the
+
+### Status References
+
+- Decisions: DEC-PACK-SPLIT-001, DEC-PACK-CODEGEN-001, DEC-PACK-ACCEPT-001
+- PR references (not inferred acceptance): [#3760](https://github.com/rodoHasArrived/Meridian-main/pull/3760)
+- Evidence: [docs/engineering/plans/security-master-class-plumbing-codegen.md](../../engineering/plans/security-master-class-plumbing-codegen.md)
+- Evidence: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassDeclarations.cs](../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassDeclarations.cs)
+- Evidence: [tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerationTests.cs](../../../tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerationTests.cs)
+- Evidence: [tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerator.cs](../../../tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerator.cs)
+
+
+### Exit Criteria
+
+- One declaration per class (SecurityAssetClassDeclarations), built on SecurityAssetTermsCodecBindings and SecurityAssetClassCatalog, generates the F# plumbing (SecurityKind union cases, AssetClassRegistry key arms and classification rows, flat-writer dispatch) and the C# SecurityAssetClassNames constants. The ToSecurityKind decode dispatch was generated until
+- The generated code is committed source between generated-region markers. SecurityClassPlumbingGenerationTests regenerates every region and fails when the committed text differs; MERIDIAN_ACCEPT_GENERATED_CODEC=1 writes the regenerated regions, as for the flat codec.
+- The repository owner recorded the switch to generated code (DEC-PACK-CODEGEN-001). The declaration follows the F# union order; the catalog row order stays its hand-written presentation order and is checked as a set.
+- Each remaining per-class site is listed in the plan as a deliberate semantic edit, not generated.
+- The owner accepted the generated regions (DEC-PACK-ACCEPT-001) after Meridian CI / quality-gate passed on the PR head.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-FSHARP`
+- `SRC-APP`
 
 ## W12-BOOK-001 - Accounting book, basis, and FX control workbench
 | Field | Value |

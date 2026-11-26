@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { apiGetJson } from "@/lib/api";
 import { getReportAmountBindings } from "@/lib/report-amount-proof-api";
 

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { buildMetricCardViewModel } from "@/components/meridian/metric-card.view-model";
 

@@ -323,6 +323,19 @@ class MaintenanceWorkflowTests(unittest.TestCase):
                          {"/build/scripts/ci", "/build/scripts/docs", "/tools/source_docs", "/tools/schema_control"})
         self.assertNotEqual(pip[0]["schedule"]["day"], "monday")
 
+    def test_pinned_microsoft_families_never_get_single_package_major_updates(self):
+        # ci-health-020: majors arrive one package at a time and always conflict with the
+        # deliberate one-patch pin (test_central_package_versions.py). Every NuGet entry shares
+        # the central Directory.Packages.props, so each one must ignore them.
+        data = yaml.safe_load((ROOT / ".github/dependabot.yml").read_text())
+        nuget = [item for item in data["updates"] if item["package-ecosystem"] == "nuget"]
+        self.assertGreaterEqual(len(nuget), 3)
+        for entry in nuget:
+            ignored = {rule["dependency-name"]: rule.get("update-types") for rule in entry.get("ignore", [])}
+            for family in ("Microsoft.Extensions.*", "Microsoft.AspNetCore.*"):
+                with self.subTest(directory=entry["directory"], family=family):
+                    self.assertEqual(ignored.get(family), ["version-update:semver-major"])
+
     def test_lock_candidates_require_native_profiles_and_read_only_dispatch(self):
         workflow = self.workflow("dependency-locks.yml")
         self.assertEqual(set(workflow["on"]), {"workflow_dispatch", "pull_request"})

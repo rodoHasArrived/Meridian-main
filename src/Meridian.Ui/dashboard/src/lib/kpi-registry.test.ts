@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { KPI_DEFINITIONS, KPI_REGISTRY, kpiAttributes, parseKpiMoney, resolveKpi, workspaceKpiIds, type KpiReadModels } from "@/lib/kpi-registry";
 import type { FinancialRecordExplorerDto, PortfolioWorkspaceResponse, TradingPosition } from "@/types";

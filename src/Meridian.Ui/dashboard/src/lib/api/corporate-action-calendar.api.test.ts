@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { apiGetJson, apiPostJson } from "@/lib/api";
 import { getCorporateActionCalendar, recordCorporateActionDeadline } from "@/lib/api/corporate-action-calendar.api";

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { statusBadgeVariant, statusMetricTone, statusPanelClass, statusTextClass, toSeverity } from "@/design-system/status-styles";
 

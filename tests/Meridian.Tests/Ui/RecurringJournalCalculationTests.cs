@@ -205,7 +205,9 @@ public sealed partial class RecurringJournalCalculationTests : IDisposable
         await SeedAsync(FixedAssetDepreciationCalculation.CalculationKind, new());
         var fixture = await CreateFixtureAsync(assets: register);
 
-        await fixture.Runner.RunDueAsync(Due(FebruaryEnd));
+        var firstRun = await fixture.Runner.RunDueAsync(Due(FebruaryEnd));
+        // A saved draft is not enough: the occurrence must also accept the draft's provenance.
+        firstRun.Should().HaveCount(2).And.OnlyContain(result => result.State == AutomatedJournalScheduleStateDto.DraftReady);
         await (await CreateFixtureAsync(assets: register)).Runner.RunDueAsync(Due(FebruaryEnd).AddHours(1));
 
         var drafts = await fixture.Drafts.ListAsync(Fund, Book);
