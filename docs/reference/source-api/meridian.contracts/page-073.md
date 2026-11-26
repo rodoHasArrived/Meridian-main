@@ -529,7 +529,7 @@ public sealed record ReportWriterGridDiffRowDto(string RowKey, ReportWriterDiffR
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridKindDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1432](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1432).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1436](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1436).
 
 ```csharp
 public enum ReportWriterGridKindDto
@@ -539,16 +539,16 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Detail = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1434](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1434) |  |
-| <code>Pivot = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1435](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1435) |  |
-| <code>TopN = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1436](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1436) |  |
-| <code>Contribution = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1437](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1437) |  |
+| <code>Detail = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1438](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1438) |  |
+| <code>Pivot = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1439](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1439) |  |
+| <code>TopN = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1440](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1440) |  |
+| <code>Contribution = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1441](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1441) |  |
 
 ## ReportWriterGridLineageDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridLineageDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1584](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1584).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1588](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1588).
 
 ```csharp
 public sealed record ReportWriterGridLineageDto(int InputRowCount, int OutputRowCount, IReadOnlyList<string> SourceFields, IReadOnlyList<ReportWriterMetricLineageDto> Metrics, IReadOnlyList<ReportWriterFormulaLineageDto> Formulas, int? FilteredInputRowCount = null, IReadOnlyList<ReportWriterFilterLineageDto>? Filters = null);
@@ -558,7 +558,7 @@ public sealed record ReportWriterGridLineageDto(int InputRowCount, int OutputRow
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridRenderDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1593](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1593).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1597](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1597).
 
 ```csharp
 public sealed record ReportWriterGridRenderDto(string GridId, string Title, ReportWriterGridKindDto Kind, IReadOnlyList<ReportWriterGridColumnDto> Columns, IReadOnlyList<ReportWriterGridRowDto> Rows, IReadOnlyList<string> Warnings, ReportWriterGridLineageDto? Lineage = null, IReadOnlyList<ReportWriterGridDataDictionaryFieldDto>? DataDictionary = null, IReadOnlyList<ReportWriterGridValidationCheckDto>? ValidationChecks = null, ReportWriterChartRenderDto? Chart = null);
@@ -568,7 +568,7 @@ public sealed record ReportWriterGridRenderDto(string GridId, string Title, Repo
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridRowDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1549](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1549).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1553](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1553).
 
 ```csharp
 public sealed record ReportWriterGridRowDto(string RowKey, IReadOnlyDictionary<string, string> Values, IReadOnlyDictionary<string, ReportWriterCellStyleDto>? StyleHints = null);
@@ -578,7 +578,7 @@ public sealed record ReportWriterGridRowDto(string RowKey, IReadOnlyDictionary<s
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridValidationCheckDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1579](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1579).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1583](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1583).
 
 ```csharp
 public sealed record ReportWriterGridValidationCheckDto(string CheckId, string Status, string Detail);
@@ -588,7 +588,7 @@ public sealed record ReportWriterGridValidationCheckDto(string CheckId, string S
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterMetricDefinitionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1450](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1450).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1454](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1454).
 
 ```csharp
 public sealed record ReportWriterMetricDefinitionDto(string Name, string SourceField, ReportWriterAggregateFunctionDto Function = ReportWriterAggregateFunctionDto.Sum, string? Label = null);
@@ -598,7 +598,7 @@ public sealed record ReportWriterMetricDefinitionDto(string Name, string SourceF
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterMetricLineageDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1554](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1554).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1558](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1558).
 
 ```csharp
 public sealed record ReportWriterMetricLineageDto(string Name, string SourceField, string Function);
