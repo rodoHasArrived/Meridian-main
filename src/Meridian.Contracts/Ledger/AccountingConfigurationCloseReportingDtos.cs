@@ -100,6 +100,10 @@ public sealed record ExternalGlExportPackageDto(
     string? CompanyId = null,
     string? ReconciliationSnapshotHash = null)
 {
+    /// <summary>Content version of the exact mapping reviewed for this legacy export package.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? MappingContentHash { get; init; }
+
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];
 

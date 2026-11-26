@@ -36,7 +36,11 @@ public sealed record LedgerQuery(
     /// <summary>
     /// Journal tag carrying the strategy run that produced an entry. Trade-fill posting stamps
     /// it on attributed fills; <see cref="RunId"/> filters on it. The run stays a tag rather
-    /// than a metadata field so retained journals keep comparing equal on replay.
+    /// than a metadata field so retained journals keep comparing equal on replay. This label
+    /// alone is not trusted execution ownership; use <see cref="LedgerRunAttribution"/> for proof.
     /// </summary>
     public const string StrategyRunIdTag = "strategy.runId";
+
+    /// <summary>New typed, admitted strategy-run ownership retained by the execution posting boundary.</summary>
+    public const string AccountingRunIdTag = "execution.accountingRunId.v1";
 }

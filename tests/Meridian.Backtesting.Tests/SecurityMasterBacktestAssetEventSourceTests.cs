@@ -125,7 +125,7 @@ public sealed class SecurityMasterBacktestAssetEventSourceTests
                 var date = From.AddDays(index);
                 var at = new DateTimeOffset(date.ToDateTime(new TimeOnly(16, 0)), TimeSpan.Zero);
                 var price = index == 0 ? 100m : 50m;
-                var bar = new HistoricalBar("ABC", date, price, price, price, price, 10_000, "synthetic", IsAdjusted: false);
+                var bar = new HistoricalBar("ABC", date, price, price, price, price, 10_000, "synthetic", PriceBasis: HistoricalPriceBasis.Raw);
                 return JsonSerializer.Serialize(MarketEvent.HistoricalBar(at, "ABC", bar, "synthetic"), MarketDataJsonContext.HighPerformanceOptions);
             });
             Directory.CreateDirectory(Path.Combine(root, "ABC"));
@@ -282,6 +282,32 @@ public sealed class SecurityMasterBacktestAssetEventSourceTests
         });
     }
 
+    [Theory]
+    [InlineData(HistoricalPriceBasis.Unknown, false)]
+    [InlineData(HistoricalPriceBasis.Unknown, null)]
+    [InlineData(HistoricalPriceBasis.SplitAdjusted, null)]
+    [InlineData(HistoricalPriceBasis.DividendAdjusted, null)]
+    [InlineData(HistoricalPriceBasis.FullyAdjusted, null)]
+    public async Task Engine_PortfolioActionAccounting_RequiresAnExplicitRawBasis(
+        HistoricalPriceBasis priceBasis, bool? legacyAdjusted)
+    {
+        await WithRawReplayAsync(async root =>
+        {
+            var stored = Engine(root, new CanonicalSource());
+            var storedRun = () => stored.RunAsync(Request(root), new BuyAndHold());
+            await storedRun.Should().ThrowAsync<InvalidOperationException>().WithMessage("*PriceBasis.Raw*");
+
+            var manual = new BacktestEngine(NullLogger<BacktestEngine>.Instance,
+                new StorageCatalogService(root, new StorageOptions()));
+            var manualRun = () => manual.RunAsync(Request(root) with
+            {
+                ApplyStoredCorporateActions = false,
+                AssetEvents = [Distribution(2m)]
+            }, new BuyAndHold());
+            await manualRun.Should().ThrowAsync<InvalidOperationException>().WithMessage("*PriceBasis.Raw*");
+        }, priceBasis, legacyAdjusted);
+    }
+
     private static BacktestEngine Engine(string root, IBacktestAssetEventSource source) =>
         new(NullLogger<BacktestEngine>.Instance, new StorageCatalogService(root, new StorageOptions()),
             (ISecurityTradingParametersQueryService?)null, assetEventSource: source)
@@ -294,7 +320,8 @@ public sealed class SecurityMasterBacktestAssetEventSourceTests
         new DateTimeOffset(From.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
         "ABC", AssetEventType.Dividend, CashPerShare: cash);
 
-    private static async Task WithRawReplayAsync(Func<string, Task> exercise)
+    private static async Task WithRawReplayAsync(Func<string, Task> exercise,
+        HistoricalPriceBasis priceBasis = HistoricalPriceBasis.Raw, bool? legacyAdjusted = null)
     {
         var root = Path.Combine(Path.GetTempPath(), $"meridian-population-merge-{Guid.NewGuid():N}");
         Directory.CreateDirectory(Path.Combine(root, "ABC"));
@@ -304,7 +331,8 @@ public sealed class SecurityMasterBacktestAssetEventSourceTests
             {
                 var date = From.AddDays(index);
                 var at = new DateTimeOffset(date.ToDateTime(new TimeOnly(16, 0)), TimeSpan.Zero);
-                var bar = new HistoricalBar("ABC", date, 100m, 100m, 100m, 100m, 10_000, "synthetic", IsAdjusted: false);
+                var bar = new HistoricalBar("ABC", date, 100m, 100m, 100m, 100m, 10_000, "synthetic",
+                    IsAdjusted: legacyAdjusted, PriceBasis: priceBasis);
                 return JsonSerializer.Serialize(MarketEvent.HistoricalBar(at, "ABC", bar, "synthetic"), MarketDataJsonContext.HighPerformanceOptions);
             });
             await File.WriteAllLinesAsync(Path.Combine(root, "ABC", "ABC_bars_2024-01-02.jsonl"), events);

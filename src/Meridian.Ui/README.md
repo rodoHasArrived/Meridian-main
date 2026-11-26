@@ -11,6 +11,11 @@ last_reviewed: 2026-11-23
 
 # src/Meridian.Ui
 
+The existing Posted Ledger view downloads complete-period journal CSV files from the authorized
+shared snapshot route. Strategy run detail shows retained source-quality warnings, and reconciliation
+views retain quantity and monetary units separately. Missing comparison evidence remains unavailable.
+The dashboard and shared-service READMEs document the source and validation boundaries.
+
 Trading → Risk now includes retained cancel-all incident history for the selected execution
 account. The browser reopens complete per-order observations, shows uncertainty and broker coverage,
 and preserves exact quantity text. Its account-authorized shared endpoints and public audit
@@ -47,6 +52,12 @@ The served Entity operations bundle adds a Rate fixings tab over
 
 The served Entity operations bundle adds a Balance confirmation tab over
 `/api/ledger/intercompany/confirmations`. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
+The served Obligation monitor includes retained lifecycle cases and the guarantee register over
+`/api/ledger/intercompany/work-queue`. Tracking, ownership and case disposition use shared durable
+history and version checks; approved caps remain separate from unavailable measured exposure.
+See [lifecycle casework](../../docs/operators/intercompany-entity-controls.md#tracking-agreement-lifecycle-work)
+and rebuild the dashboard after source changes.
 
 The rebuilt bundle also includes explicit retained quote and observed-fixing selection, typed
 rates ingestion, provider identity-review evidence and shared chart accessibility. Dashboard reads

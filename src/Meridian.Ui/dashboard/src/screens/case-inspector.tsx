@@ -30,7 +30,7 @@ import type { ReconciliationTaxonomySnapshot } from "@/types/reconciliation-read
 import type { ReconciliationBreakMeasure, ReconciliationBreakQueueItem, ReconciliationCaseworkAction, ReconciliationCaseworkCommand, ReconciliationCaseworkOperationResult } from "@/types";
 import "@/styles/case-inspector.css";
 
-import { VALUE_STATE_LABELS } from "@/lib/format";
+import { isUnavailableLabel, VALUE_STATE_LABELS } from "@/lib/format";
 type CaseDecision = ReconciliationCaseworkAction | "Dismiss";
 const decisionLabels: Partial<Record<CaseDecision, string>> = {
   Resolve: "Resolve", Dismiss: "Dismiss", TransitionStatus: "Start review", Waive: "Waive", Assign: "Assign", SignOff: "Sign off", Reopen: "Reopen", Supersede: "Supersede",
@@ -327,7 +327,7 @@ export function CaseInspector({ caseId, initialCase, onChanged, services = defau
         <dl className="mt-3 grid gap-2 sm:grid-cols-2"><Fact label="Owner" value={item.assigneeDisplayName ?? item.assignedTo ?? "Unassigned"} />
           <Fact label="Due" value={item.slaDueAt ?? VALUE_STATE_LABELS.unavailable} /><Fact label="Version" value={String(item.version ?? VALUE_STATE_LABELS.unavailable)} /></dl></header>
       <TechnicalDetails label="Case identifiers">
-        <dl className="grid gap-2 sm:grid-cols-2"><Fact label="Case ID" value={item.breakId} />
+        <dl className="grid gap-2 sm:grid-cols-2"><Fact label="Case ID" value={item.breakId} /><Fact label="Run" value={item.runId} />
           <Fact label="Fund account" value={item.fundAccountId ?? VALUE_STATE_LABELS.unavailable} /><Fact label="Accounting period" value={item.accountingPeriodId ?? VALUE_STATE_LABELS.unavailable} /></dl>
       </TechnicalDetails>
       <section aria-label="Comparison" className="rounded border border-border p-3">
@@ -418,7 +418,7 @@ function ValueFact({ label, value, unit, kind, reason, signed, conditionContextI
 export function CaseVariance({ item, conditionContextId }: { item: ReconciliationBreakQueueItem; conditionContextId?: string }) {
   const residual = caseQueueResidual(item);
   const unit = caseResidualUnit(item);
-  if (["Multiple", VALUE_STATE_LABELS.unavailable, VALUE_STATE_LABELS.unavailable].includes(residual.amount)) return <span>{residual.amount}</span>;
+  if (residual.amount === "Multiple" || residual.amount === "Not recorded" || isUnavailableLabel(residual.amount)) return <span>{residual.amount}</span>;
   return <FinancialValue value={caseResidual(item)} signed
     currency={unit && /^[A-Z]{3}$/.test(unit) ? unit : undefined} unit={residual.unit ?? "Unit unavailable"}
     decimals={reconciliationValueDecimals(caseResidual(item), unit)}

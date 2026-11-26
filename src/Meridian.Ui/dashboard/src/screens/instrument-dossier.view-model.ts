@@ -28,6 +28,7 @@ export interface InstrumentPositionRow {
   currency?: string;
   markStatus: string;
   markReason: string;
+  markPolicyVersion?: string;
   quantityPassport?: AmountPassportReference;
   pricePassport?: AmountPassportReference;
   valuePassport?: AmountPassportReference;
@@ -55,7 +56,8 @@ export function instrumentPositions(
         valuePassport: row.amountPassports?.["market-value"],
         currency: row.currency ?? undefined,
         markStatus: row.markFreshness?.status ?? VALUE_STATE_LABELS.unavailable,
-        markReason: sourceMarkSummary(row.markFreshness)
+        markReason: sourceMarkSummary(row.markFreshness),
+        markPolicyVersion: row.markFreshness?.policyVersion ?? undefined
       })),
       unlinkedCount: scoped.filter((row) => !row.security?.securityId).length
     };
@@ -71,7 +73,8 @@ export function instrumentPositions(
       value: row.exposureExact ?? row.exposure,
       currency: row.currency ?? undefined,
       markStatus: row.markFreshness?.status ?? VALUE_STATE_LABELS.unavailable,
-      markReason: sourceMarkSummary(row.markFreshness)
+      markReason: sourceMarkSummary(row.markFreshness),
+      markPolicyVersion: row.markFreshness?.policyVersion ?? undefined
     })),
     unlinkedCount: positions.filter((row) => !row.markFreshness?.securityId).length
   };
@@ -88,5 +91,5 @@ export function instrumentCases(instrumentId: string, rows: ReconciliationBreakQ
 function sourceMarkSummary(assessment: TradingPosition["markFreshness"]): string {
   if (!assessment) return "Source mark assessment is unavailable.";
   if (assessment.blockReason) return assessment.blockReason;
-  return `Policy ${assessment.policyVersion || "not recorded"} · observed ${assessment.observedOn || "not recorded"} · valuation ${assessment.valuationDate || "not recorded"}`;
+  return `Observed ${assessment.observedOn || "not recorded"} · valuation ${assessment.valuationDate || "not recorded"}`;
 }

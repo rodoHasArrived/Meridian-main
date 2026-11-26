@@ -212,4 +212,13 @@ describe("retained reconciliation case evidence", () => {
     expect(screen.getByText("Reopened")).toBeInTheDocument();
     expect(screen.getByText(/restated the closing balance/)).toBeInTheDocument();
   });
+
+  it("keeps a missing linked earlier case unavailable without showing a prior residual", () => {
+    render(<MemoryRouter><ReconciliationCaseEvidence item={item} comparisonBreakId="unloaded-earlier-case" /></MemoryRouter>);
+
+    expect(screen.getByRole("status")).toHaveTextContent("The earlier case in this link is unavailable in the loaded lineage.");
+    expect(screen.getByRole("table", { name: "Retained residual components" })).toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: "Prior residual" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Open earlier case" })).not.toBeInTheDocument();
+  });
 });

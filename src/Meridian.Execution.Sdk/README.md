@@ -11,6 +11,26 @@ last_reviewed: 2026-11-23
 
 # src/Meridian.Execution.Sdk
 
+`ExecutionReport.AccountingFillId` carries the canonical OMS fill identity to authoritative
+in-process subscribers after the accounting handoff. The hub replaces any gateway-supplied value
+with its accepted identity and retains that delivery object across retries. The field is excluded
+from JSON, so durable broker-report hashes and replay identities do not become self-referential.
+Strategy metrics retain this exact fill identity for posted-journal and data-quality joins.
+
+`ExecutionReport.MarketDataEvidence` optionally carries the source and quality snapshots of the
+observations used to produce a fill. Producers freeze these snapshots before the observation cache
+advances; consumers retain them through accounting and recovery rather than looking up a later
+assessment. The nullable member is omitted when absent, preserving historical report hashes.
+Missing evidence remains unassessed and does not establish clean data or live execution provenance.
+
+`OrderState.AccountingSecurityId` and `ExecutionReport.AccountingSecurityId` retain the accepted
+admission's canonical identity. `OrderState.AccountingRunId` is minted only by new successful typed
+strategy-run admission from its authorized root. The OMS copies this field to the report before
+persistence and paper-book mutation; a gateway, legacy metadata or older `RunId`/`Origin` labels
+cannot supply either assertion or upgrade historical ownership.
+These nullable fields are omitted when absent, preserving historical payload hashes and fill IDs.
+They describe retained lineage and do not grant execution or posting authority.
+
 `CancelAllIncident` and `CancelAllOrderOutcome` define historical cancel-all evidence with stable
 incident and order identities, authority and account attribution, gateway/environment scope,
 filled and possible remaining quantities, explicit broker coverage and nullable valuation.

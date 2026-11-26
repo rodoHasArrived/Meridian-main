@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using FluentAssertions;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.Stooq;
 using Meridian.Tests.TestHelpers;
@@ -42,6 +43,7 @@ public sealed class StooqHistoricalDataProviderTests
         bars.Should().BeInAscendingOrder(b => b.SessionDate);
         bars.Select(b => b.Symbol).Should().OnlyContain(symbol => symbol == "BRK.B");
         bars.Select(b => b.Source).Should().OnlyContain(source => source == "stooq");
+        bars.Should().OnlyContain(bar => bar.PriceBasis == HistoricalPriceBasis.Unknown && bar.IsAdjusted == null);
 
         bars[0].SessionDate.Should().Be(from);
         bars[0].Open.Should().Be(370.10m);

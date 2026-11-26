@@ -48,6 +48,14 @@ public sealed class CanonicalBacktestActionsTests : IDisposable
         result.LedgerIntegrityBreaks.Should().BeEmpty();
         result.Ledger.Journal.Count(journal => journal.Metadata.ActivityType == "canonical_dividend_declaration").Should().Be(1);
         result.Ledger.Journal.Count(journal => journal.Metadata.ActivityType == "canonical_dividend_settlement").Should().Be(settledCash == 0m ? 0 : 1);
+        var entitlement = result.CashFlows.OfType<AssetEventCashFlow>().Should().ContainSingle().Which;
+        entitlement.PositionEvidenceVersion.Should().Be(1);
+        entitlement.QuantityUnit.Should().Be(SecurityLotUnitKind.Shares);
+        entitlement.LotMultiplier.Should().Be(1m);
+        entitlement.FunctionalCurrency.Should().Be("USD");
+        entitlement.UnitsImpacted.Should().Be(10);
+        entitlement.PositionFactor.Should().Be(1m);
+        entitlement.FractionalUnits.Should().Be(0m);
         query.ActionReads.Should().Be(1);
         result.CanonicalCorporateActions!.ContentHash.Should().HaveLength(64);
         result.ToResolvedRealismDescriptor().ToCanonicalString().Should().Contain(result.CanonicalCorporateActions.ContentHash);
@@ -77,6 +85,23 @@ public sealed class CanonicalBacktestActionsTests : IDisposable
         var action = () => Engine(new Query([])).RunAsync(Request(Start.AddDays(1)), strategy);
         await action.Should().ThrowAsync<InvalidOperationException>().WithMessage("*explicitly unadjusted*");
         strategy.Initialized.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(HistoricalPriceBasis.Unknown, false)]
+    [InlineData(HistoricalPriceBasis.SplitAdjusted, null)]
+    [InlineData(HistoricalPriceBasis.DividendAdjusted, null)]
+    [InlineData(HistoricalPriceBasis.FullyAdjusted, null)]
+    public async Task NonRawDeclarationAnywhereInTape_FailsBeforeStrategyInitialization(
+        HistoricalPriceBasis priceBasis, bool? legacyAdjusted)
+    {
+        WriteBarsWithBasis((100m, false, HistoricalPriceBasis.Raw), (99m, legacyAdjusted, priceBasis));
+        var strategy = new TradingStrategy();
+
+        var action = () => Engine(new Query([])).RunAsync(Request(Start.AddDays(1)), strategy);
+
+        await action.Should().ThrowAsync<InvalidOperationException>().WithMessage("*PriceBasis.Raw*");
+        strategy.Initialized.Should().BeFalse("legacy IsAdjusted=false is not proof of raw prices");
     }
 
     [Fact]
@@ -259,6 +284,10 @@ public sealed class CanonicalBacktestActionsTests : IDisposable
         1m, "USD", null, null, null, null, null, null, null);
 
     private void WriteBars(params (decimal Price, bool? Adjusted)[] bars)
+        => WriteBarsWithBasis(bars.Select(static bar => (bar.Price, bar.Adjusted,
+            bar.Adjusted == false ? HistoricalPriceBasis.Raw : HistoricalPriceBasis.Unknown)).ToArray());
+
+    private void WriteBarsWithBasis(params (decimal Price, bool? Adjusted, HistoricalPriceBasis Basis)[] bars)
     {
         var directory = Path.Combine(_root, "XYZ");
         Directory.CreateDirectory(directory);
@@ -266,7 +295,8 @@ public sealed class CanonicalBacktestActionsTests : IDisposable
         for (var index = 0; index < bars.Length; index++)
         {
             var bar = new HistoricalBar("XYZ", Start.AddDays(index), bars[index].Price, bars[index].Price,
-                bars[index].Price, bars[index].Price, 1_000_000L, "synthetic", index + 1, IsAdjusted: bars[index].Adjusted);
+                bars[index].Price, bars[index].Price, 1_000_000L, "synthetic", index + 1,
+                IsAdjusted: bars[index].Adjusted, PriceBasis: bars[index].Basis);
             writer.WriteLine(JsonSerializer.Serialize(MarketEvent.HistoricalBar(bar.ToTimestampUtc(), "XYZ", bar, "synthetic", index + 1),
                 MarketDataJsonContext.HighPerformanceOptions));
         }

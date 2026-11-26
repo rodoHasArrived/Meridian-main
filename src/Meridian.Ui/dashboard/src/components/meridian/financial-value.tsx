@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { createContext, useContext, useId, useState, type ReactNode } from "react";
 import { Lock } from "lucide-react";
 import { LedgerAmountProofDrawer } from "@/components/meridian/proof-drawer";
 import { AmountPassportTrigger } from "@/components/meridian/amount-passport";
@@ -15,6 +15,20 @@ const CONDITION_LABELS: Record<FinancialDataCondition, string> = {
   disputed: "Disputed", unavailable: "Data condition unavailable", "not-recorded": "Not recorded",
   "not-applicable": "Not applicable", pending: "Pending", restated: "Restated", "review-required": "Review required"
 };
+
+const UnavailableConditionDescription = createContext<string | null>(null);
+
+/** Explain a shared missing condition once without changing any value's own status or proof. */
+export function FinancialValueConditionGroup({ children, description, active = true }: { children: ReactNode; description: string; active?: boolean }) {
+  const descriptionId = useId();
+  if (!active) return <>{children}</>;
+  return <UnavailableConditionDescription.Provider value={descriptionId}>
+    <div className="min-w-0">
+      <p id={descriptionId} className="mb-3 text-xs text-muted-foreground">Data condition unavailable: {description}</p>
+      {children}
+    </div>
+  </UnavailableConditionDescription.Provider>;
+}
 
 export interface FinancialValueProps {
   value: string | number | null | undefined;
@@ -74,6 +88,7 @@ function RestrictedFinancialValue({ reason, describedBy, className }: { reason?:
 
 function AccessibleFinancialValue({ value, currency, unit, condition = "unavailable", reason, basis, freshness, passport, amountPassport, decimals, signed, absolute = false, conditionContextId, "aria-describedby": describedBy, className }: FinancialValueProps) {
   const [open, setOpen] = useState(false);
+  const conditionDescription = useContext(UnavailableConditionDescription);
   const detailId = useId();
   const parsed = absolute ? parseExactDecimal(value) : null;
   const displayValue = parsed ? exactDecimalText({ ...parsed, coefficient: parsed.coefficient < 0n ? -parsed.coefficient : parsed.coefficient }) : value;
@@ -94,7 +109,7 @@ function AccessibleFinancialValue({ value, currency, unit, condition = "unavaila
   const text = formatted === null ? missingLabel : `${formatted}${currency || unit ? ` ${currency ?? unit}` : ""}`;
   const accessibleValue = effectiveCondition === "confirmed" || formatted === null
     ? text : `${text} · ${CONDITION_LABELS[effectiveCondition]}`;
-  const sharedConditionId = condition === "unavailable" ? conditionContextId?.trim() || undefined : undefined;
+  const sharedConditionId = condition === "unavailable" ? conditionContextId?.trim() || conditionDescription || undefined : undefined;
   const descriptionIds = [...new Set([
     describedBy, sharedConditionId, sharedConditionId && detail ? detailId : undefined
   ].filter((id): id is string => Boolean(id)).flatMap((id) => id.trim().split(/\s+/)).filter(Boolean))].join(" ") || undefined;

@@ -1,3 +1,4 @@
+import { caseQueueTolerance } from "@/lib/reconciliation-measure-presentation";
 import { sourceObservationLabel, sourceObservationAge } from "./reconciliation-source-observation";
 import { getRunReviewPacketPath } from "@/lib/api";
 import { equalExactDecimals, exactDecimalText, parseExactDecimal, subtractExactDecimals } from "@/lib/exact-financial-value";
@@ -1102,7 +1103,7 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Updated", value: row.lastUpdatedAtLabel },
       { label: "Exception route", value: formatReconciliationMetadata(row.exceptionRoute, "Unrouted") },
       { label: "Tolerance profile", value: formatReconciliationMetadata(row.toleranceProfileId, "Unassigned") },
-      { label: "Tolerance band", value: row.toleranceBand == null ? "Policy default" : formatCurrencyAmount(row.toleranceBand, null) },
+      { label: "Tolerance band", value: caseQueueTolerance(row) ?? (row.toleranceBand == null ? "Policy default" : formatCurrencyAmount(row.toleranceBand, null)) },
       { label: "Priority", value: formatReconciliationMetadata(row.priority, "Normal") },
       { label: "Urgency", value: buildReconciliationExceptionUrgency(row) },
       { label: "SLA tone", value: formatReconciliationMetadata(row.slaBadgeTone, "info") },

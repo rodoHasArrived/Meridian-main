@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolTickSizeStats
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.SymbolTickSizeStats</code>. Kind: `record struct`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:384](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L384).
+
+Per-symbol tick size statistics.
+
+```csharp
+public readonly record struct SymbolTickSizeStats(string Symbol, long TotalViolations, DateTimeOffset LastViolationTime);
+```
+
+## TickSizePriceType
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.TickSizePriceType</code>. Kind: `enum`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:344](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L344).
+
+Type of price being validated.
+
+```csharp
+public enum TickSizePriceType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Trade</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:346](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L346) |  |
+| <code>Bid</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:347](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L347) |  |
+| <code>Ask</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:348](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L348) |  |
+| <code>Open</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:349](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L349) |  |
+| <code>High</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:350](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L350) |  |
+| <code>Low</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:351](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L351) |  |
+| <code>Close</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:352](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L352) |  |
+| <code>Mid</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:353](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L353) |  |
+
 ## TickSizeValidator
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.TickSizeValidator</code>. Kind: `class`.

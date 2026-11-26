@@ -627,7 +627,7 @@ public sealed class BackfillService
         return bars.OrderBy(b => b.SessionDate).ToList();
     }
 
-    private static async Task<List<HistoricalBar>> ParseBarsFromFileAsync(
+    internal static async Task<List<HistoricalBar>> ParseBarsFromFileAsync(
         string filePath,
         string symbol,
         DateOnly fromDate,
@@ -687,6 +687,30 @@ public sealed class BackfillService
 
                     var volume = root.TryGetProperty("Volume", out var v) && v.TryGetInt64(out var vol) ? vol : 0L;
                     var source = root.TryGetProperty("Source", out var src) ? src.GetString() ?? "storage" : "storage";
+                    if (root.EnumerateObject().Count(property => property.Name.Equals("PriceBasis", StringComparison.OrdinalIgnoreCase)) > 1 ||
+                        root.EnumerateObject().Count(property => property.Name.Equals("IsAdjusted", StringComparison.OrdinalIgnoreCase)) > 1)
+                        continue;
+                    var priceBasis = HistoricalPriceBasis.Unknown;
+                    if (root.TryGetProperty("PriceBasis", out var basis) || root.TryGetProperty("priceBasis", out basis))
+                    {
+                        if (basis.ValueKind == System.Text.Json.JsonValueKind.Number && basis.TryGetInt32(out var numericBasis))
+                            priceBasis = (HistoricalPriceBasis)numericBasis;
+                        else if (!HistoricalPriceBasisValues.TryParse(basis.GetString(), out priceBasis))
+                            continue;
+                        if (!Enum.IsDefined(priceBasis))
+                            continue;
+                    }
+                    bool? isAdjusted = null;
+                    if (root.TryGetProperty("IsAdjusted", out var adjusted) || root.TryGetProperty("isAdjusted", out adjusted))
+                    {
+                        isAdjusted = adjusted.ValueKind switch
+                        {
+                            System.Text.Json.JsonValueKind.True => true,
+                            System.Text.Json.JsonValueKind.False => false,
+                            System.Text.Json.JsonValueKind.Null => null,
+                            _ => throw new System.Text.Json.JsonException("Invalid historical adjustment flag.")
+                        };
+                    }
 
                     bars.Add(new HistoricalBar(
                         Symbol: symbol,
@@ -697,7 +721,9 @@ public sealed class BackfillService
                         Close: close,
                         Volume: volume,
                         Source: source,
-                        SequenceNumber: seq++));
+                        SequenceNumber: seq++,
+                        IsAdjusted: isAdjusted,
+                        PriceBasis: priceBasis));
                 }
                 catch
                 {

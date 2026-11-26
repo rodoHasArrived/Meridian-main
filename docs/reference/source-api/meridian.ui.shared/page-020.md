@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QuoteStreamSubscription
+
+Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamSubscription</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:12](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L12).
+
+A live subscription to a quote topic. Read coalesced snapshots from Reader; dispose to unsubscribe and release the session&#x27;s stream slot. Disposal is idempotent.
+
+```csharp
+public sealed class QuoteStreamSubscription : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ChannelReader&lt;QuotesSnapshotResponse&gt; Reader { get; }</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:23](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L23) | Coalesced snapshot feed for this subscription&#x27;s topic. |
+| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L25) |  |
+
 ## ReportRunStreamBroadcaster
 
 Qualified name: <code>Meridian.Ui.Shared.Streaming.ReportRunStreamBroadcaster</code>. Kind: `class`.

@@ -46,12 +46,12 @@ internal static class ProviderQuotaEndpoints
                 return ApiProblemDetails.NotFound(context, "This provider has no editable account quota.");
             try
             {
-                var saved = await store.UpdateAsync(config =>
+                var (saved, changes) = await store.UpdateWithChangeStatusAsync(config =>
                 {
                     var updated = ProviderQuotaCatalog.Apply(config, id, request);
                     return (updated, updated);
                 }, ct).ConfigureAwait(false);
-                var response = BuildResponse(id, saved, store.GetChangeStatus(),
+                var response = BuildResponse(id, saved, changes,
                     HistoricalAdapters(registry, routing), canEdit: true);
                 return Results.Json(response, jsonOptions);
             }

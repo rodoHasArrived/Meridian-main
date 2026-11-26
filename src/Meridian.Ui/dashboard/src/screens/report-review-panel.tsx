@@ -45,6 +45,8 @@ export function ReportReviewPanel({ runId, version, onReview }: {
               <dl className="space-y-2 text-sm">
                 <div><dt className="font-semibold">Current run ID</dt><dd className="break-all font-mono">{review.runId}</dd></div>
                 {review.baselineRunId ? <div><dt className="font-semibold">Prior approved run ID</dt><dd className="break-all font-mono">{review.baselineRunId}</dd></div> : null}
+                <div><dt className="font-semibold">Review receipt</dt><dd className="break-all font-mono">{review.reviewId}</dd></div>
+                <div><dt className="font-semibold">Snapshot</dt><dd className="break-all font-mono">{review.snapshotHash}</dd></div>
               </dl>
             </TechnicalDetails>
           </div>

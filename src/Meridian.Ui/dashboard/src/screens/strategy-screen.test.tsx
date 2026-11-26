@@ -201,6 +201,23 @@ describe("StrategyScreen", () => {
     expect(api.getRunReviewPacket).toHaveBeenCalledWith("run-1");
   });
 
+  it("shows retained source-quality warnings for paper runs", async () => {
+    const packet = buildRunReviewPacket();
+    vi.mocked(api.getRunReviewPacket).mockResolvedValue({ ...packet, run: {
+      ...packet.run,
+      replayProvenance: { sourceMix: [], revisions: [], completedInputHashSha256: null,
+        dataQualityWarnings: [{ kind: "Unknown", message: "Fill source assessments were not retained.", affectedFillCount: 3, evidence: [] }] }
+    } });
+    const user = userEvent.setup();
+    renderWithRouter(<StrategyScreen data={twoRuns} />);
+
+    await user.click(screen.getAllByRole("button", { name: /open/i })[0]);
+
+    const assessment = await screen.findByRole("region", { name: "Replay data-quality assessment" });
+    expect(assessment).toHaveTextContent("Unknown source quality");
+    expect(assessment).toHaveTextContent("Affected fills: 3");
+  });
+
   it("shows replayed bar counts, verified revisions and the provider receipt together", async () => {
     const packet = buildRunReviewPacket();
     vi.mocked(api.getRunReviewPacket).mockResolvedValue({ ...packet, run: {

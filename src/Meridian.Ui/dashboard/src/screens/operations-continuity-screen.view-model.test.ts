@@ -1550,6 +1550,10 @@ describe("Operations Continuity view model", () => {
       id: "recon-break-42",
       caseLabel: "Cash Balance",
       categoryLabel: "Reconciliation check",
+      technicalDetails: expect.arrayContaining([
+        { label: "Break ID", value: "recon-break-42" },
+        { label: "Check ID", value: "cash-balance-check" }
+      ]),
       statusLabel: "Resolved",
       statusTone: "ready",
       severityLabel: "Warning",
@@ -2403,6 +2407,10 @@ describe("Operations Continuity view model", () => {
     expect(vm.closeCockpit.workflows[0]).toMatchObject({
       id: workflowId,
       periodLabel: `${summary.periodId} close`,
+      technicalDetails: expect.arrayContaining([
+        { label: "Workflow ID", value: workflowId },
+        { label: "Fund account ID", value: fundAccountId }
+      ]),
       readinessLabel: "72% ready",
       readinessTone: "blocked",
       blockersLabel: "1 blocker",
@@ -2457,6 +2465,10 @@ describe("Operations Continuity view model", () => {
     expect(vm.closeCockpit.approvalHistory[0]).toMatchObject({
       id: "approval-close-2026-05",
       workflowLabel: `${summary.periodId} close`,
+      technicalDetails: expect.arrayContaining([
+        { label: "Approval ID", value: "approval-close-2026-05" },
+        { label: "Fund account ID", value: fundAccountId }
+      ]),
       statusLabel: "Reviewer Assigned",
       statusTone: "review",
       actorLabel: "Reviewer fund-controller / Operator ops-user",
@@ -2590,6 +2602,10 @@ describe("Operations Continuity view model", () => {
     expect(vm.closeCalendar.rows[0]).toMatchObject({
       id: workflowId,
       periodLabel: "2026-05 close",
+      technicalDetails: expect.arrayContaining([
+        { label: "Workflow ID", value: workflowId },
+        { label: "Fund account ID", value: fundAccountId }
+      ]),
       statusLabel: "Ledger Posting Draft",
       statusTone: "review",
       dueLabel: "May 12, 2026",

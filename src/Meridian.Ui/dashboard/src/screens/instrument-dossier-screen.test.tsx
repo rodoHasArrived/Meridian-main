@@ -108,6 +108,23 @@ describe("InstrumentDossierScreen", () => {
     expect(await screen.findByText("0.000123 units")).toBeInTheDocument();
   });
 
+  it("names the position source and discloses retained identities without implying value confirmation", async () => {
+    const trading = { positions: [{ symbol: "AAPL", side: "Long", quantity: "10", markPrice: "100", exposure: "1000", currency: "USD",
+      markFreshness: { securityId: id, financialAccountId: "account", status: "Current", policyVersion: "retained-mark-policy-7" } }] } as TradingWorkspaceResponse;
+    renderDossier("", { trading });
+    expect(await screen.findByText("10 units")).toBeInTheDocument();
+    const table = screen.getByRole("table", { name: "Instrument positions by account" });
+    expect(table.closest("[data-position-source]")).toHaveTextContent("Source: Trading workspace positions");
+    expect(screen.getAllByText(/^Data condition unavailable for values/)).toHaveLength(1);
+    expect(screen.getByRole("group", { name: "10 units · Data condition unavailable" })).toBeInTheDocument();
+    expect(screen.getByText("Policy version: retained-mark-policy-7")).not.toBeVisible();
+    await userEvent.click(screen.getByText("Mark evidence", { exact: true }));
+    expect(screen.getByText("Policy version: retained-mark-policy-7")).toBeVisible();
+    expect(screen.getByText(id)).not.toBeVisible();
+    await userEvent.click(screen.getByText("Technical identity", { exact: true }));
+    expect(screen.getByText(id)).toBeVisible();
+  });
+
   it("names the brokerage source, consolidates unknown conditions and keeps raw identity and policy inspectable", async () => {
     const brokerage = brokerageHousehold({ ...brokeragePosition,
       markFreshness: { symbol: "AAPL", securityId: id, financialAccountId: "account", status: "Current", policyVersion: "retained-mark-policy-v1", observedOn: "2026-05-07", valuationDate: "2026-05-07" }
@@ -129,11 +146,11 @@ describe("InstrumentDossierScreen", () => {
     expect(screen.getByText(id, { exact: true })).not.toBeVisible();
     await userEvent.click(screen.getByText("Technical identity", { exact: true }));
     expect(screen.getByText(id, { exact: true })).toBeVisible();
-    const policy = screen.getByText(/Policy retained-mark-policy-v1/);
+    const policy = screen.getByText("Policy version: retained-mark-policy-v1");
     expect(policy).not.toBeVisible();
     await userEvent.click(within(table).getByText("Mark evidence", { exact: true }));
     expect(policy).toBeVisible();
-    expect(policy).toHaveTextContent("observed 2026-05-07 · valuation 2026-05-07");
+    expect(within(table).getByText("Observed 2026-05-07 · valuation 2026-05-07")).toBeVisible();
     expect((await axe(container)).violations).toHaveLength(0);
   });
 

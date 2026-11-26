@@ -350,6 +350,19 @@ describe("finance standard pages", () => {
     expect(await screen.findByRole("button", { name: "Run report" })).toBeDisabled();
   });
 
+  it("labels report choices by retained names while keeping exact run identifiers inspectable", async () => {
+    await renderPage(<ReportPreviewValidationScreen data={data.reporting} />, "/reporting/preview");
+    const selector = screen.getByLabelText("Report run");
+    const option = within(selector).getByRole("option", { name: /Trial Balance Pack/ });
+    expect(option).toHaveValue("run-tb-1");
+    expect(option).not.toHaveTextContent("run-tb-1");
+    expect(screen.getByText("run-tb-1", { exact: true })).not.toBeVisible();
+    await userEvent.click(screen.getByText("Report run identifiers", { exact: true }));
+    expect(screen.getByText("run-tb-1", { exact: true })).toBeVisible();
+    fireEvent.change(selector, { target: { value: "run-tb-1" } });
+    expect(selector).toHaveValue("run-tb-1");
+  });
+
   it("names retained preview choices without exposing identifiers and preserves the exact selected run", async () => {
     const retained = requireFirst(data.reporting.recentRuns, "reporting.recentRuns");
     const previewData = {
@@ -368,10 +381,13 @@ describe("finance standard pages", () => {
     fireEvent.change(selector, { target: { value: "report-run-second" } });
 
     expect(selector).toHaveValue("report-run-second");
-    expect(screen.getByText("report-run-second", { exact: true })).not.toBeVisible();
+    const audit = within(screen.getByText("Run audit details", { exact: true }).closest("details")!);
+    expect(audit.getByText("report-run-second", { exact: true })).not.toBeVisible();
     fireEvent.click(screen.getByText("Run audit details", { exact: true }));
-    expect(screen.getByText("report-run-second", { exact: true })).toBeVisible();
-    expect(screen.queryByText("report-run-first", { exact: true })).not.toBeInTheDocument();
+    expect(audit.getByText("report-run-second", { exact: true })).toBeVisible();
+    expect(audit.queryByText("report-run-first", { exact: true })).not.toBeInTheDocument();
+    const identifiers = within(screen.getByText("Report run identifiers", { exact: true }).closest("details")!);
+    expect(identifiers.getByText("report-run-first", { exact: true })).not.toBeVisible();
   });
 
   it("does not substitute reporting-workspace fixtures when run detail has no runId", async () => {

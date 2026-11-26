@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerPostingAuthorityContext
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerPostingAuthorityContext</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:26](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L26).
+
+```csharp
+public sealed record LedgerPostingAuthorityContext(LedgerJournalEntryWrite Write, LedgerBookRecord Book, LedgerBookControlProfileDto Controls, string? TenantId)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IList&lt;LedgerControlDecisionDto&gt; Decisions { get; } = new List&lt;LedgerControlDecisionDto&gt;();</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:32](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L32) |  |
+| <code>public LegalEntityReadAuthorityProof? StructureAuthorityProof { get; private set; }</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:33](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L33) |  |
+| <code>public bool IsReviewOnly { get; internal set; }</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:34](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L34) |  |
+| <code>public IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt; VerifiedCanonicalAgreementRevisions { get; internal set; } = [];</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:35](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L35) |  |
+| <code>public void RetainStructureAuthority(IAsyncDisposable lease);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:36](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L36) |  |
+
+## LedgerPostingIdentity
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerPostingIdentity</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:226](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L226).
+
+```csharp
+public sealed record LedgerPostingIdentity(Guid JournalEntryId, Guid AggregateId, Guid? CommandId, Guid? SourceEventId, string? IdempotencyKey)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LedgerPostingIdentity FromWrite(LedgerJournalEntryWrite write);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:233](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L233) |  |
+
 ## LedgerPostingIdentityCollisionLookupExtensions
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerPostingIdentityCollisionLookupExtensions</code>. Kind: `class`.
@@ -1536,28 +1572,4 @@ Summary of maintenance schedules.
 
 ```csharp
 public sealed record MaintenanceScheduleSummary(int TotalSchedules, int EnabledSchedules, int DisabledSchedules, Dictionary<MaintenanceTaskType, int> ByTaskType, DateTimeOffset? NextDueSchedule, string? NextDueScheduleName);
-```
-
-## MaintenanceServiceStatus
-
-Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceServiceStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs:76](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs#L76).
-
-Status of the maintenance service.
-
-```csharp
-public sealed record MaintenanceServiceStatus(bool IsRunning, int QueuedExecutions, MaintenanceExecution? CurrentExecution, DateTimeOffset? NextScheduledExecution, int ActiveSchedules, long TotalExecutionsToday, TimeSpan Uptime);
-```
-
-## MaintenanceStatistics
-
-Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceStatistics</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:625](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L625).
-
-Statistics summary for archive maintenance.
-
-```csharp
-public sealed record MaintenanceStatistics(DateTimeOffset GeneratedAt, int TotalSchedules, int EnabledSchedules, int DisabledSchedules, int TotalExecutions, int SuccessfulExecutions, int FailedExecutions, int ExecutionsLast24Hours, int ExecutionsLast7Days, long TotalBytesProcessed, long TotalBytesSaved, int TotalIssuesFound, int TotalIssuesResolved, TimeSpan AverageExecutionDuration, DateTimeOffset? LastExecutionAt, DateTimeOffset? NextScheduledExecution);
 ```

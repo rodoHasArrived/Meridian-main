@@ -298,9 +298,9 @@
         "Valuation and period operations"
       ],
       "waitForSelectors": [
-        "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
+        "[aria-label=\"Case inspector\"][data-case-id=\"run-42:cash\"][aria-busy=\"false\"]",
         "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
-        "[aria-label=\"Case inspector\"][data-case-id=\"run-42:cash\"][aria-busy=\"false\"]"
+        "[aria-label=\"Case inspector\"] summary:has-text(\"Case identifiers\")"
       ],
       "waitForAbsentTexts": [
         "Failed to parse URL",
@@ -333,9 +333,9 @@
       "waitForSelectors": [
         "#reconciliation-run-picker[role=\"combobox\"][value=\"Paper Index Mean Reversion · 1 open\"]",
         "#reconciliation-break-queue tr[data-dense-row-id=\"run-42:cash\"][aria-selected=\"true\"]",
-        "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
+        "[aria-label=\"Case inspector\"][data-case-id=\"run-42:cash\"][aria-busy=\"false\"]",
         "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
-        "[aria-label=\"Case inspector\"][data-case-id=\"run-42:cash\"][aria-busy=\"false\"]"
+        "[aria-label=\"Case inspector\"] summary:has-text(\"Case identifiers\")"
       ],
       "waitForAbsentTexts": [
         "Loading reconciliation break queue...",
@@ -682,9 +682,10 @@
       ],
       "waitForSelectors": [
         "[aria-label=\"Case inspector\"] a[href=\"/workstation/reporting/evidence?subjectKind=reconciliation-break&subjectId=run-42%3Acash\"]:visible",
-        "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
+        "[aria-label=\"Case inspector\"][data-case-id=\"run-42:cash\"][aria-busy=\"false\"]",
         "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
-        "[aria-label=\"Case inspector\"][data-case-id=\"run-42:cash\"][aria-busy=\"false\"]"
+        "[aria-label=\"Case inspector\"] summary:has-text(\"Case identifiers\")",
+        "#match-selected-case:has(option:checked[value=\"run-42:cash\"])"
       ],
       "waitForAbsentTexts": [
         "Failed to parse URL",
@@ -1079,12 +1080,15 @@
       ],
       "requiredApiRoutes": [
         "/api/fund-structure/reporting/runs/report-run-investor-202605",
+        "/api/fund-structure/reporting/runs/report-run-investor-202605/review",
         "/api/fund-structure/reporting/runs/series/report-series-investor-monthly-statement",
         "/api/fund-structure/reporting/distribution/transports",
         "/api/fund-structure/reporting/distribution/packages/report-run-investor-202605/deliveries",
         "/api/fund-structure/reporting/distribution/packages/report-run-investor-202605/access-grants"
       ],
       "waitForTexts": [
+        "Changes since prior approved run",
+        "Materiality not assessed",
         "Report lifecycle",
         "Immutable release artifacts",
         "Immutable audit trail",
@@ -1092,6 +1096,8 @@
       ],
       "waitForAbsentTexts": [
         "Loading report run",
+        "Loading retained review evidence",
+        "Review evidence unavailable",
         "Report run unavailable"
       ]
     },
@@ -1767,9 +1773,9 @@
         "height": 900
       },
       "waitForSelectors": [
-        "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
+        "[aria-label=\"Case inspector\"][data-case-id=\"run-42:cash\"][aria-busy=\"false\"]",
         "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
-        "[aria-label=\"Case inspector\"][data-case-id=\"run-42:cash\"][aria-busy=\"false\"]"
+        "[aria-label=\"Case inspector\"] summary:has-text(\"Case identifiers\")"
       ],
       "waitForAbsentTexts": [
         "Failed to parse URL",
@@ -1862,7 +1868,7 @@
       ],
       "waitForSelectors": [
         "[role=\"tab\"][data-tab-id=\"changes\"][aria-selected=\"true\"]",
-        "[role=\"tabpanel\"]:not([hidden])"
+        "[role=\"tabpanel\"][id$=\"-panel-changes\"]:not([hidden])"
       ],
       "waitForAbsentTexts": [
         "Loading retained review evidence",
@@ -2025,6 +2031,7 @@
         "38 units"
       ],
       "waitForSelectors": [
+        "[data-instrument-id=\"sec-dev-001\"]",
         "[role=\"tab\"][data-tab-id=\"positions\"][aria-selected=\"true\"]",
         "[data-position-source=\"brokerage-household\"] table[aria-label=\"Instrument positions by account\"]",
         "[role=\"tabpanel\"]:not([hidden]) tbody tr:has-text(\"alpaca-roth\")"

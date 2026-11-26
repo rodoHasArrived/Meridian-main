@@ -1153,7 +1153,7 @@ function StrategyScreenContent({ data, fundAccountId }: StrategyScreenProps) {
 
             <StrategyRunParityPanel accountId={fundAccountId} runId={vm.selectedRunDetail.runId} />
 
-            {vm.selectedRunDetail.modeBadgeVariant === "research" ? (
+            {vm.selectedRunDetail.modeBadgeVariant === "research" || vm.selectedRunDetail.replayProvenance?.dataQualityWarnings != null ? (
               <StrategyReplayProvenance evidence={vm.selectedRunDetail.replayProvenance}
                 receipt={vm.selectedRunProvenance} loading={vm.selectedRunDetail.replayEvidenceLoading} />
             ) : null}

@@ -131,7 +131,7 @@ public class TimeSeriesAlignmentServiceTests
     }
 
     [Fact]
-    public void ValidateOptions_WithLargeMaxGapIntervals_ReturnsWarning()
+    public void ValidateOptions_WithLargeMaxGapIntervals_ReturnsError()
     {
         var options = new AlignmentOptions
         {
@@ -144,8 +144,8 @@ public class TimeSeriesAlignmentServiceTests
 
         var result = _service.ValidateOptions(options);
 
-        result.IsValid.Should().BeTrue();
-        result.Warnings.Should().HaveCountGreaterThan(0);
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(error => error.Contains("gap"));
     }
 
     [Fact]
@@ -188,9 +188,7 @@ public class TimeSeriesAlignmentServiceTests
     {
         var methods = await _service.GetAggregationMethodsAsync();
 
-        methods.Should().HaveCountGreaterThanOrEqualTo(4);
-        methods.Should().Contain(m => m.Value == AggregationType.OHLCV);
-        methods.Should().Contain(m => m.Value == AggregationType.VWAP);
+        methods.Should().ContainSingle(method => method.Value == AggregationType.OHLCV);
 
         foreach (var method in methods)
         {
