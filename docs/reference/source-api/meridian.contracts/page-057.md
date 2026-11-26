@@ -83,6 +83,68 @@ Declared public members:
 | <code>public static RateUnit? Parse(string? token) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecordRateUnit.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecordRateUnit.cs#L43) |  |
 | <code>public static string? ReadToken(string assetClass, JsonElement terms, bool writeMode = false);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecordRateUnit.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecordRateUnit.cs#L53) | Reads verbatim for codec replay, gated by the stored terms version. |
 
+## SecurityRecurringAccrualPolicies
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualPolicies</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs#L24).
+
+Closed calculation policies shared by operation diagnostics and recurring draft production.
+
+```csharp
+public static class SecurityRecurringAccrualPolicies
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string FixedBulletReceiptModelVersion = &quot;bond-cash-flow-context-v6&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs#L26) |  |
+| <code>public static SecurityRecurringAccrualPolicy ExistingFixedIncome { get; } = new (&quot;existing-fixed-income-v1&quot;, SecurityRecurringAccrualProfile.ExistingFixedIncome);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs#L28) |  |
+| <code>public static SecurityRecurringAccrualPolicy FixedBulletActual365 { get; } = new (&quot;fixed-bullet-actual365-v1&quot;, SecurityRecurringAccrualProfile.FixedBulletActual365);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs#L31) |  |
+| <code>public static IReadOnlyList&lt;SecurityRecurringAccrualPolicy&gt; All { get; } = [ExistingFixedIncome, FixedBulletActual365];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs#L34) |  |
+| <code>public static bool IsProfileDeclared(SecurityDetailDto security, SecurityRecurringAccrualPolicy? policy);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs#L38) | Whether this record explicitly declares the module&#x27;s expanded scalar profile contract. |
+| <code>public static SecurityCashFlowBlockerDto? EvaluateTerms(SecurityDetailDto security, SecurityRecurringAccrualPolicy? policy);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs#L52) |  |
+| <code>public static SecurityCashFlowBlockerDto? EvaluateHoldings(SecurityRecurringAccrualPolicy policy, IReadOnlyList&lt;FaceValueAccrualHolding&gt; holdings);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs#L124) |  |
+
+## SecurityRecurringAccrualPolicy
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs#L14).
+
+Reviewed class admission selects a calculation; it does not approve or post journals.
+
+```csharp
+public sealed record SecurityRecurringAccrualPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs#L19) |  |
+| <code>public SecurityRecurringAccrualProfile Profile { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs#L20) |  |
+
+## SecurityRecurringAccrualProfile
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualProfile</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs#L7).
+
+A tested calculation profile selected by a compiled asset module.
+
+```csharp
+public enum SecurityRecurringAccrualProfile
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ExistingFixedIncome</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs#L9) |  |
+| <code>FixedBulletActual365</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecurringAccrualPolicies.cs#L10) |  |
+
 ## SecurityScheduleDecimal
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityScheduleDecimal</code>. Kind: `class`.
@@ -489,9 +551,9 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsLegacyEventClassifier</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L29).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L30).
 
-The frozen classifier for asset-specific terms carried by Security Master event history written before SecurityTermsEnvelope.FormatKey existed (ADR-024 decision 5, amendment 2026-11-13 steps 5 and 6). Live code dispatches on the declared tag alone: SecurityTermsEnvelope.ResolveFormat and SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument refuse an untagged payload with a precise error. Migration 068 declared the family on every current-state row and its ck_securities_terms_format_declared constraint refuses new untagged rows, but security_events is append-only (migration 059) and retained snapshots keep their pre-tag bytes, so event and snapshot decoding still meets untagged retained terms. Only that decoding — SecurityMasterMapping.FromEconomicPayload and the rebuild paths fed by it — classifies them here, and only in memory: nothing is ever written back to an event. The rule is frozen with the population it classifies and must never grow: a profile envelope (a string customProfileId and a profileFields object) is SecurityTermsFormats.CustomProfile; an object stamped ReservedForEconomicTerms that carries one of the ShapeRuleModules keys is SecurityTermsFormats.Economic; anything else is SecurityTermsFormats.Flat. Migration 042&#x27;s SQL backfill and migration 068&#x27;s refusal step mirror it; the parity test in SecurityTermsVersioningTests pins the SQL to ShapeRuleModules.
+The frozen classifier for asset-specific terms carried by Security Master event history written before SecurityTermsEnvelope.FormatKey existed (ADR-024 decision 5, amendment 2026-11-13 steps 5 and 6). Live code dispatches on the declared tag alone: SecurityTermsEnvelope.ResolveFormat and SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument refuse an untagged payload with a precise error. Migration 068 declared the family on every current-state row and its ck_securities_terms_format_declared constraint refuses new untagged rows, but security_events is append-only (migration 059) and retained snapshots keep their pre-tag bytes, so event, snapshot and immutable cash-flow receipt decoding still meets untagged terms. Only those explicit retained decoding boundaries — SecurityMasterMapping.FromEconomicPayload, its rebuild paths and receipt replay after original content verification — classify them here, and only in memory: nothing is ever written back to retained evidence. The rule is frozen with the population it classifies and must never grow: a profile envelope (a string customProfileId and a profileFields object) is SecurityTermsFormats.CustomProfile; an object stamped ReservedForEconomicTerms that carries one of the ShapeRuleModules keys is SecurityTermsFormats.Economic; anything else is SecurityTermsFormats.Flat. Migration 042&#x27;s SQL backfill and migration 068&#x27;s refusal step mirror it; the parity test in SecurityTermsVersioningTests pins the SQL to ShapeRuleModules.
 
 ```csharp
 public static class SecurityTermsLegacyEventClassifier
@@ -501,12 +563,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const int ReservedForEconomicTerms = 2;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:40](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L40) | The schemaVersion an untagged pre-tag economic-terms document carries, and therefore the one integer the historical shape rule consults. Before the tag existed, the asset-specific-terms slot held two payload families behind one schemaVersion key, so flat version 2 was reserved: declaring it would have routed untagged flat documents into the economic bridge. Live acceptance no longer reserves it (a tagged flat version-2 payload reads as flat and is judged by AssetSpecificTermsSchema.IsAccepted like any other flat version); the reservation survives only here, frozen with the untagged history it classifies. |
-| <code>public static IReadOnlyList&lt;string&gt; ShapeRuleModules { get; } = [&quot;maturity&quot;, &quot;coupon&quot;, &quot;payment&quot;, &quot;accrual&quot;, &quot;discount&quot;, &quot;redemption&quot;, &quot;call&quot;, &quot;auction&quot;, &quot;sweep&quot;, &quot;financing&quot;, &quot;issuer&quot;, &quot;equityBehavior&quot;, &quot;fund&quot;, &quot;structuredProduct&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L49) | The module keys the historical shape rule consults: exactly the modules the economic serializer wrote before SecurityTermsEnvelope.FormatKey existed. Untagged payloads predate the tag, so only these keys can mark one as economic; modules serialized later (ADR-027 stage 1 increment 5) never appear untagged and are deliberately not consulted. This list never grows — migration 042&#x27;s SQL mirror of it is pinned to it. |
-| <code>public static bool IsEconomicTermsShape(JsonElement payload);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L59) | The historical shape rule for an untagged payload: an object stamped ReservedForEconomicTerms that carries at least one of the ShapeRuleModules keys. The economic serializer always wrote them and a flat document never did, so the module keys, not the integer, told the two families apart. |
-| <code>public static string Classify(JsonElement payload);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:83](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L83) | The family of retained terms from event history: the declared SecurityTermsEnvelope.FormatKey when present (a tagged document never depends on its shape), otherwise the frozen shape rule. A non-object is SecurityTermsFormats.Flat. |
-| <code>public static string? GetStampableFormat(JsonElement payload);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:105](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L105) | The family replay declares on untagged retained terms: Classify&#x27;s verdict when it is SecurityTermsFormats.Flat or SecurityTermsFormats.CustomProfile. null for a payload that already declares a family, a non-object, or an untagged economic-shaped document (the asset-specific-terms slot never declares SecurityTermsFormats.Economic). |
-| <code>public static JsonElement StampDeclaredFormat(JsonElement payload) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L123) | Declares SecurityTermsEnvelope.FormatKey on untagged retained terms decoded from an event or snapshot, in memory, as GetStampableFormat classifies them. Only the key is added (after schemaVersion, or last); every other member is copied byte for byte. A payload that already declares a family, a non-object and an untagged economic-shaped document are returned unchanged, so the stamp is idempotent. |
+| <code>public const int ReservedForEconomicTerms = 2;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L41) | The schemaVersion an untagged pre-tag economic-terms document carries, and therefore the one integer the historical shape rule consults. Before the tag existed, the asset-specific-terms slot held two payload families behind one schemaVersion key, so flat version 2 was reserved: declaring it would have routed untagged flat documents into the economic bridge. Live acceptance no longer reserves it (a tagged flat version-2 payload reads as flat and is judged by AssetSpecificTermsSchema.IsAccepted like any other flat version); the reservation survives only here, frozen with the untagged history it classifies. |
+| <code>public static IReadOnlyList&lt;string&gt; ShapeRuleModules { get; } = [&quot;maturity&quot;, &quot;coupon&quot;, &quot;payment&quot;, &quot;accrual&quot;, &quot;discount&quot;, &quot;redemption&quot;, &quot;call&quot;, &quot;auction&quot;, &quot;sweep&quot;, &quot;financing&quot;, &quot;issuer&quot;, &quot;equityBehavior&quot;, &quot;fund&quot;, &quot;structuredProduct&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L50) | The module keys the historical shape rule consults: exactly the modules the economic serializer wrote before SecurityTermsEnvelope.FormatKey existed. Untagged payloads predate the tag, so only these keys can mark one as economic; modules serialized later (ADR-027 stage 1 increment 5) never appear untagged and are deliberately not consulted. This list never grows — migration 042&#x27;s SQL mirror of it is pinned to it. |
+| <code>public static bool IsEconomicTermsShape(JsonElement payload);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L60) | The historical shape rule for an untagged payload: an object stamped ReservedForEconomicTerms that carries at least one of the ShapeRuleModules keys. The economic serializer always wrote them and a flat document never did, so the module keys, not the integer, told the two families apart. |
+| <code>public static string Classify(JsonElement payload);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:84](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L84) | The family of retained terms from event history: the declared SecurityTermsEnvelope.FormatKey when present (a tagged document never depends on its shape), otherwise the frozen shape rule. A non-object is SecurityTermsFormats.Flat. |
+| <code>public static string? GetStampableFormat(JsonElement payload);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:106](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L106) | The family replay declares on untagged retained terms: Classify&#x27;s verdict when it is SecurityTermsFormats.Flat or SecurityTermsFormats.CustomProfile. null for a payload that already declares a family, a non-object, or an untagged economic-shaped document (the asset-specific-terms slot never declares SecurityTermsFormats.Economic). |
+| <code>public static JsonElement StampDeclaredFormat(JsonElement payload) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs#L124) | Declares SecurityTermsEnvelope.FormatKey on untagged retained terms decoded from an event or snapshot, in memory, as GetStampableFormat classifies them. Only the key is added (after schemaVersion, or last); every other member is copied byte for byte. A payload that already declares a family, a non-object and an untagged economic-shaped document are returned unchanged, so the stamp is idempotent. |
 
 ## SecurityTermsProjectionChildRowsDto
 
@@ -782,7 +844,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:764](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L764).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:771](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L771).
 
 The declared mark-based accounting treatment for an asset class.
 
@@ -794,8 +856,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:766](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L766) |  |
-| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:767](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L767) |  |
+| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:773](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L773) |  |
+| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:774](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L774) |  |
 
 ## SecurityValuationBlockerDto
 
@@ -851,54 +913,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>QuotedPrice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L10) | The golden-copy price selected through the pricing hierarchy. |
 | <code>DiscountedCashFlow</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L13) | The projected cash flows discounted on a stored discount curve. |
-
-## SecurityValuationObservability
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationObservability</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L21).
-
-How observable the inputs behind a value are. The mark lane maps this to the ledger&#x27;s FairValueLevel; Contracts cannot reference Ledger.
-
-```csharp
-public enum SecurityValuationObservability
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>QuotedPrice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L24) | A quoted price selected from retained observations. |
-| <code>ObservableInputs</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L27) | A model on stored market inputs (curves) only. |
-| <code>UnobservableInputs</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L30) | A model that fell back to an unobservable input, such as a flat forward at the last fixing. |
-
-## SecurityValuationRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L43).
-
-Value one security as of a date with these market inputs. AsOf is the economic cutoff (curves and schedules use its UTC date); KnownAt the knowledge cutoff, as the golden-copy as-of read takes it. Quantity is in the class&#x27;s lot unit and enables SecurityValuationResult.MarketValue. Model overrides the catalog&#x27;s DefaultValuationModel.
-
-```csharp
-public sealed record SecurityValuationRequest(Guid SecurityId, DateTimeOffset AsOf, DateTimeOffset? KnownAt = null, string? AccountId = null, decimal? Quantity = null, IReadOnlyList<SecurityValuationCurveInput>? Curves = null, SecurityValuationModelKind? Model = null, IReadOnlyDictionary<string, string>? Parameters = null);
-```
-
-## SecurityValuationResult
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:74](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L74).
-
-The outcome of valuing a security. Price is the per-unit quote in PriceUnit when one exists; PresentValue the model&#x27;s PV on the projected principal or notional basis; ObservedAsOf the oldest market input used (the selected price&#x27;s as-of for a quote; the earlier of the discount curve&#x27;s as-of and every forward curve&#x27;s as-of the projection read for discounted cash flow). When IsBlocked, Price, PresentValue and MarketValue are null; zero is never substituted.
-
-```csharp
-public sealed record SecurityValuationResult(Guid SecurityId, SecurityValuationModelKind Model, string ModelKey, string ModelVersion, DateTimeOffset AsOf, DateTimeOffset KnowledgeAsOf, string Currency, decimal? Price, SecurityPriceUnit PriceUnit, decimal? PresentValue, decimal? Quantity, decimal? MarketValue, DateTimeOffset? ObservedAsOf, SecurityValuationObservability Observability, IReadOnlyList<SecurityValuationInputDto> Inputs, IReadOnlyList<string> Diagnostics, IReadOnlyList<SecurityValuationBlockerDto> Blockers)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsBlocked =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L93) |  |
-| <code>public static SecurityValuationResult Blocked(SecurityValuationRequest request, SecurityDetailDto security, SecurityValuationModelKind model, string modelKey, string modelVersion, DateTimeOffset knowledgeAsOf, IReadOnlyList&lt;SecurityValuationBlockerDto&gt; blockers, IReadOnlyList&lt;SecurityValuationInputDto&gt;? inputs = null, IReadOnlyList&lt;string&gt;? diagnostics = null);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L96) | A blocked result for model: no price, value or market value, and the blockers given. |

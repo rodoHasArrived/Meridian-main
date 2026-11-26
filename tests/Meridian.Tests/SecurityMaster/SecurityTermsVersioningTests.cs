@@ -229,7 +229,7 @@ public sealed class SecurityTermsVersioningTests
 
     [Theory]
     [InlineData("Bond", 5, 5)]
-    [InlineData("CertificateOfDeposit", 5, 5)]
+    [InlineData("CertificateOfDeposit", 6, 6)]
     [InlineData("Swap", 4, 4)]
     [InlineData("StructuredCredit", 6, 6)]
     [InlineData("Equity", 1, 1)]

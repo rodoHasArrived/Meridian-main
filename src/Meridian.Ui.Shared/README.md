@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-23
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.Ui.Shared
@@ -4341,6 +4341,14 @@ directory (the packages root, or a requested directory under it).
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
+
+## CertificateOfDeposit recurring accrual (2026-11-25)
+
+CD recurring calculations select the registered fixed-bullet profile, retain version-6 context and
+pin stable daily-lot claims before journal intake; the runner, manual-journal recovery and posting
+checks compare the draft's obligation digest with the occurrence claim. Bond/StructuredCredit
+version-5 evidence and the existing journal approval/posting path remain unchanged. See
+[recurring journal](../../docs/domain/recurring-journal.md#declared-certificateofdeposit-accrual-profile).
 
 ## Roadmap traceability
 

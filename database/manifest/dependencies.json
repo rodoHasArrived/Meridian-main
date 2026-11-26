@@ -16828,6 +16828,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualPolicies"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualPolicy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualProfile"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleDecimal"
     },
     {
@@ -17099,6 +17117,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityVersionedScalarTerms"
     },
     {
       "kind": "contract-set-member",
@@ -34666,6 +34690,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualPolicies"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualPolicy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualProfile"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleDecimal"
     },
     {
@@ -34937,6 +34979,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityVersionedScalarTerms"
     },
     {
       "kind": "contract-set-member",
@@ -51166,6 +51214,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualPolicy"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionKind"
     },
     {
@@ -52073,6 +52127,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityRawPriceDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPriceUnit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualPolicies",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualPolicy"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualPolicy",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualProfile"
     },
     {
       "kind": "contract-reference",
@@ -72514,7 +72580,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "3dddd4029242e34b84556414e44fdc65be81f22aef81275003534cd4df615366",
+  "fingerprint": "014af89ab318f8d7b1fbd1641c68a68b59f663d8742f5a3627b4e79553dca024",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -89393,6 +89459,24 @@
     },
     {
       "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualPolicies",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualPolicies"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualPolicy",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualPolicy"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualProfile",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityRecurringAccrualProfile"
+    },
+    {
+      "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityScheduleDecimal",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityScheduleDecimal"
@@ -89666,6 +89750,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationResult",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityValuationResult"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityVersionedScalarTerms",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityVersionedScalarTerms"
     },
     {
       "classification": "record_struct",
@@ -106511,11 +106601,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4442,
-    "contract_set_memberships": 5861,
-    "edges": 12046,
+    "contract_references": 4445,
+    "contract_set_memberships": 5869,
+    "edges": 12057,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5911
+    "nodes": 5915
   }
 }
