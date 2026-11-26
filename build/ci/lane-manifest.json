@@ -70,7 +70,7 @@
         "docs/status/docs-automation-summary.md",
         "docs/status/docs-automation-summary.json",
         "docs/status/todo-scan-results.json",
-        "artifacts/ci-summary/",
+        "artifacts/ci-summary/verify-docs/",
         "artifacts/docs/",
         "artifacts/maintained-generation/"
       ],
@@ -85,7 +85,8 @@
       "localCommand": "bash scripts/ci.sh --lane verify-workflows",
       "hostedMode": "workflow-hygiene",
       "artifacts": [
-        "artifacts/ci-summary/"
+        "artifacts/build-logs/",
+        "artifacts/ci-summary/verify-workflows/"
       ],
       "timeoutMinutes": 10,
       "pathTriggerNotes": "Covers lane manifest consistency and workflow hygiene checks.",

@@ -97,7 +97,8 @@ class QualityGateChangeDetectionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             env = dict(os.environ, GITHUB_STEP_SUMMARY=str(Path(directory) / 'summary'),
                        DOTNET_LANE_DECISION='true', DOTNET_RESULT='success',
-                       BROWSER_RESULT='success', DOCS_RESULT='success', WORKFLOWS_RESULT='success')
+                       BROWSER_RESULT='success', DOCS_WORKFLOWS_JOB_RESULT='success',
+                       DOCS_RESULT='success', WORKFLOWS_RESULT='success')
             env.update(overrides)
             return subprocess.run(['bash', '-c', step['run']], env=env,
                                   capture_output=True, text=True).returncode
@@ -118,6 +119,15 @@ class QualityGateChangeDetectionTests(unittest.TestCase):
                 with self.subTest(lane=key, result=result):
                     self.assertNotEqual(self.run_gate(**{key: result}), 0)
         self.assertNotEqual(self.run_gate(DOTNET_LANE_DECISION='false', DOTNET_RESULT='failure'), 0)
+        # The docs and workflow lanes share a job: its result and each lane's outcome both count.
+        for result in ['failure', 'cancelled', 'skipped', '']:
+            with self.subTest(shared_job=result):
+                self.assertNotEqual(self.run_gate(DOCS_WORKFLOWS_JOB_RESULT=result), 0)
+        # A cancelled or timed-out job leaves no step outcomes; that must not read as success.
+        self.assertNotEqual(self.run_gate(DOCS_WORKFLOWS_JOB_RESULT='cancelled', DOCS_RESULT='', WORKFLOWS_RESULT=''), 0)
+        # One lane failing does not hide behind the other's success.
+        self.assertNotEqual(self.run_gate(DOCS_WORKFLOWS_JOB_RESULT='failure', DOCS_RESULT='failure'), 0)
+        self.assertNotEqual(self.run_gate(DOCS_WORKFLOWS_JOB_RESULT='failure', WORKFLOWS_RESULT='failure'), 0)
 
     def test_workflow_limits_skipping_to_prs_and_keeps_gate_always_reporting(self):
         self.assertEqual(self.jobs['quality-gate']['if'], 'always()')

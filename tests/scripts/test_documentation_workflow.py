@@ -130,8 +130,8 @@ class DocumentationWorkflowTests(unittest.TestCase):
         for event in ("pull_request", "push"):
             self.assertNotIn("paths", events[event] or {})
             self.assertNotIn("paths-ignore", events[event] or {})
-        self.assertNotIn("if", meridian["jobs"]["verify-docs"])
-        checkout = next(s for s in meridian["jobs"]["verify-docs"]["steps"]
+        self.assertNotIn("if", meridian["jobs"]["verify-docs-workflows"])
+        checkout = next(s for s in meridian["jobs"]["verify-docs-workflows"]["steps"]
                         if s.get("uses", "").startswith("actions/checkout@"))
         self.assertIn(checkout["with"]["fetch-depth"], {"0", "2"})
 
@@ -176,14 +176,20 @@ class DocumentationWorkflowTests(unittest.TestCase):
 
     def test_lane_metadata_matches_hosted_documentation_timeout_and_evidence(self) -> None:
         manifest = json.loads((REPO_ROOT / "build/ci/lane-manifest.json").read_text())
-        lane = next(lane for lane in manifest["lanes"] if lane["id"] == "verify-docs")
+        lanes = {lane["id"]: lane for lane in manifest["lanes"]}
         workflow = yaml.load((REPO_ROOT / ".github/workflows/meridian-ci.yml").read_text(),
                              Loader=yaml.BaseLoader)
-        job = workflow["jobs"]["verify-docs"]
-        self.assertEqual(lane["timeoutMinutes"], int(job["timeout-minutes"]))
-        upload = next(step for step in job["steps"]
-                      if step.get("uses", "").startswith("actions/upload-artifact@"))
-        self.assertEqual(set(lane["artifacts"]), set(upload["with"]["path"].splitlines()))
+        # The docs and workflow lanes run one after the other in one job, so the job's budget
+        # is the sum of both lane budgets.
+        job = workflow["jobs"]["verify-docs-workflows"]
+        self.assertEqual(lanes["verify-docs"]["timeoutMinutes"] + lanes["verify-workflows"]["timeoutMinutes"],
+                         int(job["timeout-minutes"]))
+        uploads = {step["with"]["name"].split("-${{", 1)[0]: step for step in job["steps"]
+                   if step.get("uses", "").startswith("actions/upload-artifact@")}
+        for lane_id, artifact in (("verify-docs", "meridian-ci-docs"), ("verify-workflows", "meridian-ci-workflows")):
+            with self.subTest(lane=lane_id):
+                self.assertEqual(set(lanes[lane_id]["artifacts"]),
+                                 set(uploads[artifact]["with"]["path"].splitlines()))
 
     def test_roadmap_keeps_schema_and_phase_validation_and_manual_standalone_generation(self) -> None:
         workflow = yaml.load(

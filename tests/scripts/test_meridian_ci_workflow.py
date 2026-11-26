@@ -19,9 +19,10 @@ class MeridianCiWorkflowTests(unittest.TestCase):
         self.assertIn("needs:", self.workflow)
         self.assertIn("- verify-dotnet", self.workflow)
         self.assertIn("- verify-browser", self.workflow)
-        self.assertIn("- verify-docs", self.workflow)
-        self.assertIn("- verify-workflows", self.workflow)
+        self.assertIn("- verify-docs-workflows", self.workflow)
         self.assertIn("Evaluate Meridian CI lanes", self.workflow)
+        # The docs and workflow lanes share a job but still report as separate lanes.
+        self.assertIn("for lane in verify-dotnet verify-browser verify-docs verify-workflows; do", self.workflow)
 
     def test_parallel_lanes_use_scripts_ci_named_lanes(self) -> None:
         for lane in ("verify-dotnet", "verify-browser", "verify-docs", "verify-workflows"):
@@ -58,13 +59,18 @@ class MeridianCiWorkflowTests(unittest.TestCase):
         jobs = workflow["jobs"]
         # Every job is a fresh hosted-runner queue wait, so the lanes run and report their
         # verdicts in one job each, with no builder or shard hop in front of them.
-        for removed in ("build-workstation", "dotnet-shards", "browser-shards"):
+        for removed in ("build-workstation", "dotnet-shards", "browser-shards", "verify-docs", "verify-workflows",
+                        "service-backed-integrations"):
             self.assertNotIn(removed, jobs)
-        for lane in ("verify-dotnet", "verify-browser", "verify-docs", "verify-workflows"):
-            with self.subTest(lane=lane):
-                self.assertEqual(jobs[lane]["name"], lane)
-                self.assertNotIn("needs", jobs[lane])
-                self.assertNotIn("if", jobs[lane])
+        # Five jobs: three lane jobs (docs and workflows share one), the aggregator, and an
+        # integration gate that runs the suites itself instead of waiting on two more jobs.
+        self.assertEqual(set(jobs), {"verify-dotnet", "verify-browser", "verify-docs-workflows", "quality-gate",
+                                     "integration-gate"})
+        for job in ("verify-dotnet", "verify-browser", "verify-docs-workflows", "integration-gate"):
+            with self.subTest(job=job):
+                self.assertEqual(jobs[job]["name"], job)
+                self.assertNotIn("needs", jobs[job])
+                self.assertNotIn("if", jobs[job])
 
     def test_dotnet_lane_prepares_workstation_assets_before_msbuild(self):
         import yaml
@@ -101,11 +107,14 @@ class MeridianCiWorkflowTests(unittest.TestCase):
         self.assertEqual(gate["env"]["DOTNET_LANE_DECISION"], "${{ needs.verify-dotnet.outputs.dotnet-required }}")
         self.assertIn('if [[ "$DOTNET_LANE_DECISION" != "true" && "$DOTNET_LANE_DECISION" != "false" ]]; then',
                       gate["run"])
-        # The integration lane classifies independently; its gate requires the two to agree.
-        integration = workflow["jobs"]["integration-gate"]["steps"][0]
-        self.assertEqual(integration["env"]["DOTNET_LANE_DECISION"],
-                         "${{ needs.verify-dotnet.outputs.dotnet-required }}")
-        self.assertIn('if [[ "$INTEGRATION_DECISION" != "$DOTNET_LANE_DECISION" ]]; then', integration["run"])
+        # integration-gate classifies with verify-dotnet's exact steps instead of waiting for it,
+        # so a docs-only skip in one job can never disagree with the other.
+        integration = {step["name"]: step for step in workflow["jobs"]["integration-gate"]["steps"]}
+        for name in ("Check out PR history for change detection", "Detect .NET changes"):
+            with self.subTest(step=name):
+                self.assertEqual(integration[name], steps[name])
+        self.assertEqual(workflow["jobs"]["integration-gate"]["outputs"]["dotnet-required"],
+                         "${{ steps.changes.outputs.dotnet }}")
 
     def test_dotnet_lane_proves_the_complete_roster(self):
         import yaml

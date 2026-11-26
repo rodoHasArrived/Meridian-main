@@ -15,7 +15,10 @@ import xml.etree.ElementTree as ET
 
 
 RECEIPT = "integration-receipt.json"
-WORKFLOW = ".github/workflows/service-backed-integrations.yml"
+# The producer fingerprint covers the file that holds the suite commands. Meridian CI's
+# integration-gate and Production Certification (service-backed-integrations.yml) both run
+# them through this composite action. The receipt key stays "producerWorkflow" (schema 1).
+WORKFLOW = ".github/actions/service-backed-integrations/action.yml"
 # One xUnit class runs serially, and this one is about a third of the suite's test time, so
 # it was the floor under the whole job. It runs as its own process against its own database
 # while every other test runs in a second process. The two terms are exact complements, so
