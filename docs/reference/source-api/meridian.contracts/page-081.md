@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataExportRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1173](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1173).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1178](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1178).
 
 Export row returned by the Data workspace bootstrap payload.
 

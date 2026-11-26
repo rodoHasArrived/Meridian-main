@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetEvidenceRequirementDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1016](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1016).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1021](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1021).
 
 Asset-class-specific evidence requirement rendered by Portfolio, Accounting, and desktop workstations.
 
