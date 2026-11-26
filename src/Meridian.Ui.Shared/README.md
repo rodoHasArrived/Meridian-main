@@ -488,6 +488,24 @@ effect. Validation compares the materialized inverse accounts, amounts, native c
 dimensions with the immutable posted predecessor, so a later chart-mapping change blocks rather
 than redirecting the reversal. Serialized draft saves cannot replace that authority or lineage.
 
+Every workbench rebook, not only prior-period and opening ones, carries the predecessor's exact inverse
+(`rebook-inverse-N`) plus the replacement (`rebook-replacement-N`), so the original is never counted
+twice; a rebook with no replacement lines nets to zero. For an ordinary rebook whose source is a retained
+workbench draft, validation raises critical `manual-je.rebook-inverse-required` when the inverse lines no
+longer reproduce the source's posting economics.
+
+`AutomatedJournalIntakeRunner` also queues two lot- and close-bound drafts. `RunShortCarryIntakeAsync`
+(`POST /api/ledger/journal-automation/short-carry-intake`) proves a borrow-fee or payment-in-lieu
+instruction against the open short lot and queues an `Expense` draft. `RunPartnershipWaterfallIntakeAsync`
+(`POST /api/ledger/journal-automation/partnership-waterfall-intake`) allocates a soft-closed period's profit
+from the named retained earnings to partners' capital, capped at its posted balance, as an adjusting draft.
+See `docs/domain/short-carry-charges.md` and `docs/domain/partnership-waterfall-allocation.md`.
+
+Direct statement-run creation resolves its fund profile, ledger book and period through
+`IStatementReconciliationIntakeAuthority` (409 on refusal) and refuses to create a run without that
+server-resolved scope. Payment initiation binds an optional `LedgerBookId` only for a book the
+authenticated tenant and company own, recording the server's tenant and company with it.
+
 Focused coverage: `PeriodAdjustmentPreparationTests`, the governed mark-to-preparation case in
 `AccountingConfigurationServiceTests.PeriodAdjustmentPreparation`, and `LedgerPeriodCloseSnapshotTests`.
 

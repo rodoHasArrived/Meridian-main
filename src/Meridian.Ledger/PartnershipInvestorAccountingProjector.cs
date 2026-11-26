@@ -6,10 +6,15 @@ namespace Meridian.Ledger;
 /// <summary>
 /// Projects management fees, performance fees, high-water marks, and investor capital allocations.
 /// </summary>
+/// <remarks>
+/// Superseded in production: fees accrue through <see cref="FundEconomicsJournalFactory"/> and investor
+/// allocations through <see cref="PartnershipWaterfallProjector"/>. Do not post this projection alongside them.
+/// </remarks>
 public static class PartnershipInvestorAccountingProjector
 {
     private const decimal AllocationTolerance = LedgerToleranceConstants.Allocation;
 
+    [PostingCalculationNotYetConnected("Superseded, do not connect: management and performance fees post through the recurring fee-accrual journals (FundEconomicsJournalFactory), which also handle hurdle, crystallization and already-accrued deltas, and investor allocations post through the partnership waterfall intake; posting these lines as well would double-count fees on the same expense and payable accounts.")]
     public static PartnershipInvestorAllocationProjection Project(PartnershipInvestorAllocationInput input)
     {
         ArgumentNullException.ThrowIfNull(input);

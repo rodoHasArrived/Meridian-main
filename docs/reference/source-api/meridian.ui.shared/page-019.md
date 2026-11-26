@@ -6,6 +6,143 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterSecurityReferenceLookup
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterSecurityReferenceLookup</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs:12](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs#L12).
+
+Adapts Security Master query services to workstation-facing symbol enrichment.
+
+```csharp
+public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLookup
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterSecurityReferenceLookup(ISecurityMasterQueryService queryService);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs:16](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs#L16) |  |
+| <code>public Task&lt;WorkstationSecurityReference?&gt; GetBySymbolAsync(string symbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs:21](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs#L21) |  |
+| <code>public async Task&lt;WorkstationSecurityReference?&gt; GetByCanonicalAsync(SecurityReferenceLookupRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs:30](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs#L30) |  |
+
+## SecurityMasterWorkbenchQueryService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterWorkbenchQueryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.CashFlowBlocker.cs:8](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.CashFlowBlocker.cs#L8).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Conflicts.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Conflicts.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:27](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L27).
+
+Composes the selected-security trust snapshot used by the Security Master workstation. The endpoint is selection-scoped and additive, so the heavier downstream checks only run when the operator explicitly loads or refreshes a security drill-in.
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkbenchQueryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterWorkbenchQueryService(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService queryService, ISecurityValidationService validationService, ISecurityMasterConflictService conflictService, ISecurityMasterIngestStatusService ingestStatusService, IStrategyRepository strategyRepository, PortfolioReadService portfolioReadService, LedgerReadService ledgerReadService, ReportGenerationService reportGenerationService, IReconciliationRunService? reconciliationRunService = null, ISecurityMasterPricingService? pricingService = null, ISecurityMasterCashFlowService? cashFlowService = null, IDataVendorEntitlementService? entitlementService = null, ISecurityMasterDataQualityService? dataQualityService = null, IFundProfileTenancyRegistry? tenancyRegistry = null, IHttpContextAccessor? httpContextAccessor = null, Meridian.Contracts.Calendars.IBusinessDayCalendarSource? calendars = null, Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null, TimeProvider? timeProvider = null, Microsoft.Extensions.Logging.ILogger&lt;SecurityMasterWorkbenchQueryService&gt;? logger = null, ISecurityMasterGovernanceRequirements? governanceRequirements = null);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:46](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L46) |  |
+| <code>public async Task&lt;SecurityMasterTrustSnapshotDto?&gt; GetTrustSnapshotAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:90](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L90) |  |
+| <code>public async Task&lt;InstrumentPassportDto?&gt; GetInstrumentPassportAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:221](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L221) |  |
+| <code>public async Task&lt;SecurityMasterOperatingModelDto?&gt; GetOperatingModelAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:230](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L230) |  |
+| <code>public async Task&lt;BulkResolveSecurityMasterConflictsResult&gt; BulkResolveConflictsAsync(BulkResolveSecurityMasterConflictsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:273](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L273) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs:22](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs#L22).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string CallEventType = &quot;Call&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs:25](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs#L25) | Schedule-book event type of a declared issuer call date; also the type of the scalar call row. |
+| <code>public const string CallNoticeDeadlineEventType = &quot;CallNoticeDeadline&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs:28](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs#L28) | Schedule-book event type of the last day to give notice for a declared issuer call date. |
+| <code>public const string PutEventType = &quot;Put&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs:31](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs#L31) | Schedule-book event type of a declared holder put date. |
+| <code>public const string PutNoticeDeadlineEventType = &quot;PutNoticeDeadline&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs:34](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs#L34) | Schedule-book event type of the last day to give notice for a declared holder put date. |
+| <code>public const string DeclaredExerciseUnavailableCode = &quot;DeclaredExerciseUnavailable&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs:42](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs#L42) | Blocker code of a declared schedule whose resolution faulted on this node. |
+| <code>public const string DeclaredExerciseUnavailableReason = &quot;The declared call/put schedule could not be evaluated on this node; the service log has the cause.&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs:45](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs#L45) | The fixed reason shown with DeclaredExerciseUnavailableCode; the fault itself goes to the log only. |
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DownstreamImpact.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DownstreamImpact.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Handoffs.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Handoffs.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.History.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.History.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.InstrumentPassport.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.InstrumentPassport.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Json.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Json.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Lots.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Lots.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.OperatingModel.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.OperatingModel.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.ProviderConfidence.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.ProviderConfidence.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.ReferenceDataControls.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.ReferenceDataControls.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Schedules.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Schedules.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.TrustPosture.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.TrustPosture.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
 ## SensitiveActionPolicyEngine
 
 Qualified name: <code>Meridian.Ui.Shared.Services.SensitiveActionPolicyEngine</code>. Kind: `class`.
@@ -385,52 +522,6 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static IReadOnlyList&lt;ThreeWayAdjustmentProposalDto&gt; Build(IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt; sources, IReadOnlyList&lt;ThreeWayReconciliationCheckDto&gt; checks, DateTimeOffset cutoff);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayAdjustmentProposalBuilder.cs:10](../../../../src/Meridian.Ui.Shared/Services/ThreeWayAdjustmentProposalBuilder.cs#L10) |  |
 
-## ThreeWayFillClassification
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayFillClassification</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:6](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L6).
-
-Fill-level difference types reported by the three-way comparison.
-
-```csharp
-public static class ThreeWayFillClassification
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string MissingFillInLedger = &quot;MissingFillInLedger&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:8](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L8) |  |
-| <code>public const string MissingFillAtBroker = &quot;MissingFillAtBroker&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:9](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L9) |  |
-| <code>public const string QuantityMismatch = &quot;QuantityMismatch&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:10](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L10) |  |
-| <code>public const string PriceMismatch = &quot;PriceMismatch&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:11](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L11) |  |
-| <code>public const string FeeMismatch = &quot;FeeMismatch&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:12](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L12) |  |
-| <code>public const string TimingOnly = &quot;TimingOnly&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:13](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L13) |  |
-| <code>public const string FillMatched = &quot;FillMatched&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:14](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L14) |  |
-| <code>public const string FillCoverageUnavailable = &quot;FillCoverageUnavailable&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:15](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L15) |  |
-
-## ThreeWayFillMatcher
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayFillMatcher</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:23](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L23).
-
-Pairs broker fills with posted Meridian fills and classifies each difference. Pairing never guesses across symbols or sides: an exact broker activity id wins, then the client order id, then an economic match (same symbol, side and quantity, price within tolerance, close in time).
-
-```csharp
-public static class ThreeWayFillMatcher
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string TimingStatus = &quot;Timing&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:26](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L26) | Check status for a difference explained only by when each source observed the fill. |
-| <code>public const string NotComparedStatus = &quot;NotCompared&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:32](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L32) | Check status when fill evidence is unavailable. It is recorded and counted, never read as clean, but it does not block the balance comparison that existed before fill matching. |
-| <code>public static bool IsInformational(string status) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:35](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L35) | Statuses that are recorded on the receipt but never queued as breaks. |
-| <code>public static IReadOnlyList&lt;ThreeWayReconciliationCheckDto&gt; Match(ThreeWaySourceSnapshotDto ledger, ThreeWaySourceSnapshotDto broker, decimal priceTolerance, decimal feeTolerance, TimeSpan timeWindow);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs:37](../../../../src/Meridian.Ui.Shared/Services/ThreeWayFillMatcher.cs#L37) |  |
-
 ## ThreeWayReconciliationComparer
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationComparer</code>. Kind: `class`.
@@ -447,29 +538,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlyList&lt;ThreeWayReconciliationCheckDto&gt; Compare(IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt; sources, DateTimeOffset cutoffUtc, TimeSpan maximumAge, TimeSpan maximumDrift, decimal fillPriceTolerance = 0.0001m, decimal fillFeeTolerance = 0.01m);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationComparer.cs:8](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationComparer.cs#L8) |  |
-
-## ThreeWayReconciliationMetrics
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationMetrics</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs:12](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs#L12).
-
-Prometheus metrics for the scheduled three-way reconciliation, served on the existing /metrics scrape endpoint. mdc_reconciliation_health is the alertable signal: 0 healthy, 1 degraded (blocked or overdue run), 2 unhealthy (unbooked broker fills open).
-
-```csharp
-public sealed class ThreeWayReconciliationMetrics(TimeProvider? timeProvider = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const double Healthy = 0, Degraded = 1, Unhealthy = 2;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs:14](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs#L14) |  |
-| <code>public static readonly TimeSpan MaximumRunAge = TimeSpan.FromHours(36);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs:17](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs#L17) | A daily run older than this degrades health; it allows one missed day plus slack. |
-| <code>public void RecordRun(ThreeWayReconciliationResultDto result);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs:44](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs#L44) | Records a completed or blocked run and sets the account&#x27;s health from its checks. |
-| <code>public void ObserveSchedule(Guid accountId);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs:64](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs#L64) | Called on each scheduler tick for an enabled schedule. A daily run that has not completed within MaximumRunAge degrades health; a fresh process gets the same grace before reporting. |
-| <code>public static double HealthValue(Guid accountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs:74](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationMetrics.cs#L74) | The current health value for an account, for tests and diagnostics. |
+| <code>public static IReadOnlyList&lt;ThreeWayReconciliationCheckDto&gt; Compare(IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt; sources, DateTimeOffset cutoffUtc, TimeSpan maximumAge, TimeSpan maximumDrift);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationComparer.cs:8](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationComparer.cs#L8) |  |
 
 ## ThreeWayReconciliationOptions
 
@@ -494,10 +563,7 @@ Declared public members:
 | <code>public string CashAccountPath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:23](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L23) |  |
 | <code>public string FeeExpenseAccountPath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:24](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L24) |  |
 | <code>public TimeOnly DailyRunAfterUtc { get; set; } = new (0, 15);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:25](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L25) |  |
-| <code>public TimeSpan? BrokerRefreshInterval { get; set; }</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:32](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L32) | When set, each scheduled account&#x27;s broker projection is re-synced at most this often before sources are captured, so the daily comparison reads fresh broker evidence. Null keeps the broker projection operator-refreshed only. |
-| <code>public decimal FillPriceTolerance { get; set; } = 0.0001m;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:35](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L35) | Per-share price difference tolerated between matched broker and ledger fills. |
-| <code>public decimal FillFeeTolerance { get; set; } = 0.01m;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:38](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L38) | Commission difference tolerated between matched broker and ledger fills. |
-| <code>public IReadOnlyList&lt;ThreeWayReconciliationSchedule&gt; Schedules { get; set; } = [];</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:39](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L39) |  |
+| <code>public IReadOnlyList&lt;ThreeWayReconciliationSchedule&gt; Schedules { get; set; } = [];</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:26](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L26) |  |
 
 ## ThreeWayReconciliationSchedule
 
@@ -515,19 +581,19 @@ public sealed record ThreeWayReconciliationSchedule(string TenantId, string Comp
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationScheduleRunner</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:40](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L40).
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:35](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L35).
 
 Uses the existing shared scheduler tick; retains one operation per configured scope/day.
 
 ```csharp
-public sealed class ThreeWayReconciliationScheduleRunner(IThreeWayReconciliationSourceReader sources, ThreeWayReconciliationService reconciliation, ThreeWayReconciliationOptions options, ILogger<ThreeWayReconciliationScheduleRunner> logger, BrokeragePortfolioSyncService? brokerage = null, ThreeWayReconciliationMetrics? metrics = null)
+public sealed class ThreeWayReconciliationScheduleRunner(IThreeWayReconciliationSourceReader sources, ThreeWayReconciliationService reconciliation, ThreeWayReconciliationOptions options, ILogger<ThreeWayReconciliationScheduleRunner> logger)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;int&gt; RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:51](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L51) |  |
+| <code>public async Task&lt;int&gt; RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:41](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L41) |  |
 
 ## ThreeWayReconciliationService
 
@@ -538,15 +604,15 @@ Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:10](..
 Retains source operands and routes discrepancies into existing governed casework.
 
 ```csharp
-public sealed class ThreeWayReconciliationService(IThreeWayReconciliationSourceReader sources, FileThreeWayReconciliationEvidenceStore store, IReconciliationBreakQueueRepository queue, ThreeWayReconciliationOptions options, TimeProvider? timeProvider = null, ThreeWayReconciliationMetrics? metrics = null)
+public sealed class ThreeWayReconciliationService(IThreeWayReconciliationSourceReader sources, FileThreeWayReconciliationEvidenceStore store, IReconciliationBreakQueueRepository queue, ThreeWayReconciliationOptions options, TimeProvider? timeProvider = null)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;ThreeWayReconciliationResultDto&gt; RunAsync(Guid accountId, ReconciliationBreakQueueScope access, ThreeWayReconciliationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:20](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs#L20) |  |
-| <code>public async Task&lt;ThreeWayReconciliationResultDto?&gt; GetLatestAsync(Guid accountId, ReconciliationBreakQueueScope access, Guid bookId, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:72](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs#L72) |  |
+| <code>public async Task&lt;ThreeWayReconciliationResultDto&gt; RunAsync(Guid accountId, ReconciliationBreakQueueScope access, ThreeWayReconciliationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:19](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs#L19) |  |
+| <code>public async Task&lt;ThreeWayReconciliationResultDto?&gt; GetLatestAsync(Guid accountId, ReconciliationBreakQueueScope access, Guid bookId, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:69](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs#L69) |  |
 
 ## ThreeWayReconciliationServiceRegistration
 
@@ -582,7 +648,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;ThreeWayReconciliationScopeDto&gt; AuthorizeAsync(Guid accountId, ReconciliationBreakQueueScope accessScope, Guid ledgerBookId, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs:33](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs#L33) |  |
 | <code>public async Task CaptureAsync(ThreeWayReconciliationScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs:58](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs#L58) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt;&gt; ReadAsync(ThreeWayReconciliationScopeDto scope, DateTimeOffset cutoffUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs:131](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs#L131) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt;&gt; ReadAsync(ThreeWayReconciliationScopeDto scope, DateTimeOffset cutoffUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs:116](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationSourceReader.cs#L116) |  |
 
 ## ThreeWayRetainedSource
 
@@ -724,7 +790,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static bool IsSubject(string subjectId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs:21](../../../../src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs#L21) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;LedgerPeriodTrialBalanceLineDto&gt;&gt; BindAsync(LedgerPeriodSummaryDto summary, string? tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs:23](../../../../src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs#L23) |  |
-| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs:55](../../../../src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs#L55) |  |
+| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs:52](../../../../src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs#L52) |  |
 
 ## UiConfigurationSaveGuard
 
@@ -856,7 +922,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:91](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L91) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1672](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1672) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1667](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1667) |  |
 
 ## WorkstationWorkflowReadScope
 
@@ -877,40 +943,3 @@ Declared public members:
 | <code>public static readonly WorkstationWorkflowReadScope All = new (Trading : true, Accounting : true, Strategy : true, Data : true);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:38](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L38) | Every family readable. For a caller whose authority is already established to cover all of them, and for tests; never a stand-in for a scope that was not resolved. |
 | <code>public bool NeedsStrategyRuns =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:49](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L49) | True when any family whose card is built from strategy runs is readable. Trading and Accounting both read the governed (paper and live) runs and Strategy reads the backtest queue, so a caller holding none of the three needs no run load at all. |
 | <code>public static WorkstationWorkflowReadScope ForRequest(HttpContext context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:71](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L71) | The families the current request may read. Each is the permission set already declared by the route that serves that family&#x27;s data directly, so the summary card and the surface it summarises admit the same callers and neither becomes the other&#x27;s second door: Trading — UserPermission.ViewTrades, as the trading read surface. Accounting — the reconciliation break queue&#x27;s set, which the accounting card&#x27;s open-break and continuity posture is drawn from. Strategy — the run-ledger routes&#x27; UserPermission.ViewStrategies and UserPermission.ManageStrategies. Data — the Data workspace&#x27;s own set. The card summarises that workspace and its next action opens it, so the two admit the same callers; the workspace payload reads the same provider metrics the card counts, so nothing reaches the card that the workspace withholds. UserPermission.AdminMaintenance is not a universal override: it appears only in the accounting set, because the reconciliation break queue accepts it and the trading, strategy and data workspaces do not. A profile carrying it alone administers maintenance routines; it is not thereby entitled to strategy candidates or trading posture. |
-
-## WorkstationWorkflowSummaryService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationWorkflowSummaryService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs:12](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs#L12).
-
-Builds a shell-facing workflow summary that keeps next-action ordering shared across hosts.
-
-```csharp
-public sealed class WorkstationWorkflowSummaryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkstationWorkflowSummaryService(StrategyRunReadService runReadService, StrategyRunContinuityService? continuityService = null, IReconciliationRunService? reconciliationRunService = null, Meridian.Application.UI.ConfigStore? configStore = null, IWorkflowActionCatalog? actionCatalog = null, IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null, IFundProfileTenancyRegistry? tenancyRegistry = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs:22](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs#L22) |  |
-| <code>public async Task&lt;OperatorWorkflowHomeSummary&gt; GetAsync(WorkstationWorkflowReadScope readScope, bool hasOperatingContext = false, string? operatingContextDisplayName = null, string? fundProfileId = null, string? fundAccountId = null, string? fundDisplayName = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs:43](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs#L43) |  |
-
-## IQuoteStreamBroadcaster
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.IQuoteStreamBroadcaster</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs:10](../../../../src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs#L10).
-
-Fan-out hub for workstation quote streams. Implements IQuoteUpdateNotifier so the collector can wake it on quote changes, and hands SSE connections a per-topic, coalesced snapshot feed via TrySubscribe.
-
-```csharp
-public interface IQuoteStreamBroadcaster : IQuoteUpdateNotifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>QuoteStreamSubscription? TrySubscribe(StreamTopic topic, string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs:17](../../../../src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs#L17) | Subscribe to a topic&#x27;s coalesced snapshot feed. Returns null when the session&#x27;s concurrent-stream cap is exceeded. Dispose the subscription to unsubscribe and release the session&#x27;s stream slot. |

@@ -3,6 +3,7 @@ namespace Meridian.Ledger;
 /// <summary>
 /// Multi-currency journal projection ready for base-currency ledger posting.
 /// </summary>
+[PostingCalculationNotYetConnected("Superseded, do not connect: produced only by MultiCurrencyJournalProjector, which is superseded by the manual journal workbench's per-line currency posting.")]
 public sealed record MultiCurrencyJournalProjection(
     MultiCurrencyJournalInput Input,
     IReadOnlyList<MultiCurrencyJournalLineProjection> Lines)

@@ -1657,12 +1657,12 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 })
                 .ToArray();
         var openingCorrection = IsOpeningBalanceDraft(posted) || IsOpeningCorrectionDraft(posted);
-        if (!reverseSides && (posted.PriorPeriodAdjustmentSource is not null || openingCorrection || accrualCorrection))
+        if (!reverseSides)
         {
-            // An opening, prior-period or accrual rebook replaces the already posted journal. Retain its
-            // exact inverse and the reviewed replacement in one balanced draft; appending replacement
-            // lines alone would count the earlier adjustment (or the window's interest) twice.
-            // Unchanged terms net to zero.
+            // A rebook replaces the already posted journal, which stays posted and cannot be reversed
+            // afterwards (its status becomes Rebooked). Retain its exact inverse and the reviewed
+            // replacement in one balanced draft; appending the replacement alone would count the
+            // original economics twice. Unchanged terms net to zero.
             var inverse = posted.Lines.Select((line, index) => line with
             {
                 LineId = $"rebook-inverse-{index + 1}",

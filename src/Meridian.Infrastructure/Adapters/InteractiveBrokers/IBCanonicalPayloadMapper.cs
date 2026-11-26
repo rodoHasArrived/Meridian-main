@@ -1,3 +1,4 @@
+using System.Globalization;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Sdk;
 using ExecutionOrderSide = Meridian.Execution.Sdk.OrderSide;
@@ -63,6 +64,68 @@ internal static class IBCanonicalPayloadMapper
 
     public static Meridian.Execution.Sdk.OrderSide ParseSide(string? action, IReadOnlyDictionary<string, string>? metadata = null)
         => TryMap(SideMap, action, "side", Meridian.Execution.Sdk.OrderSide.Buy, metadata);
+
+    /// <summary>
+    /// Parses an Interactive Brokers execution time. IB reports <c>yyyyMMdd-HH:mm:ss</c> in UTC,
+    /// or <c>yyyyMMdd HH:mm:ss</c> followed by the TWS time zone name (for example
+    /// <c>US/Eastern</c>). A time with no zone is in the TWS login's local time zone, which the API
+    /// does not report, so it is not placed on the timeline and the caller keeps its fallback.
+    /// </summary>
+    internal static bool TryParseExecutionTime(string? value, out DateTimeOffset executedAt)
+    {
+        executedAt = default;
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        var text = value.Trim();
+        if (DateTime.TryParseExact(text, "yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var utc))
+        {
+            executedAt = new DateTimeOffset(utc, TimeSpan.Zero);
+            return true;
+        }
+
+        var parts = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != 3 ||
+            !DateTime.TryParseExact($"{parts[0]} {parts[1]}", "yyyyMMdd HH:mm:ss", CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out var local))
+            return false;
+
+        if (!TryFindTimeZone(parts[2], out var zone)
+            && !(LegacyTimeZoneAliases.TryGetValue(parts[2], out var canonical) && TryFindTimeZone(canonical, out zone)))
+            return false;
+
+        executedAt = new DateTimeOffset(local, zone!.GetUtcOffset(local)).ToUniversalTime();
+        return true;
+    }
+
+    // TWS still reports the legacy IANA aliases (US/Eastern and friends), which hosts without the
+    // tz "backward" links cannot resolve.
+    private static readonly IReadOnlyDictionary<string, string> LegacyTimeZoneAliases =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["US/Eastern"] = "America/New_York",
+            ["US/Central"] = "America/Chicago",
+            ["US/Mountain"] = "America/Denver",
+            ["US/Pacific"] = "America/Los_Angeles",
+            ["US/Alaska"] = "America/Anchorage",
+            ["US/Hawaii"] = "Pacific/Honolulu",
+            ["US/Arizona"] = "America/Phoenix"
+        };
+
+    private static bool TryFindTimeZone(string id, out TimeZoneInfo? zone)
+    {
+        try
+        {
+            zone = TimeZoneInfo.FindSystemTimeZoneById(id);
+            return true;
+        }
+        catch (Exception ex) when (ex is TimeZoneNotFoundException or InvalidTimeZoneException)
+        {
+            zone = null;
+            return false;
+        }
+    }
 
     internal static bool TryParseKnownSide(string? action, out ExecutionOrderSide side)
         => TryGetKnown(SideMap, action, out side);

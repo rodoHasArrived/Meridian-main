@@ -1,11 +1,11 @@
 {
-  "total_files": 1292,
+  "total_files": 1290,
   "orphaned_count": 379,
   "no_heading_count": 231,
   "stale_count": 0,
-  "todo_count": 304,
+  "todo_count": 303,
   "health_score": 86,
-  "signal_digest": "sha256:8b0fa3b9a3244fdc1dff15f5e456ad54b18aeed2a31d7b23e6d5059044ade2eb",
+  "signal_digest": "sha256:b452b43317fbb5f538733bc72d7605db29e2b240bc02c632a7a82e0bbf48679b",
   "orphaned_files": [
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
@@ -2345,6 +2345,13 @@
       "stale": false
     },
     {
+      "path": "docs/domain/partnership-waterfall-allocation.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/domain/README.md",
       "has_heading": true,
       "todo_count": 1,
@@ -2367,6 +2374,13 @@
     },
     {
       "path": "docs/domain/security.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/domain/short-carry-charges.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2674,13 +2688,6 @@
       "stale": false
     },
     {
-      "path": "docs/engineering/plans/governed-strategy-oms-execution-plan.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/engineering/plans/intercompany-entity-controls.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2702,28 +2709,7 @@
       "stale": false
     },
     {
-      "path": "docs/engineering/plans/security-master-integrity-implementation-plan.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/engineering/plans/security-master-review-remediation-plan.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/engineering/plans/ui-shared-decomposition-inventory.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/engineering/plans/ui-shared-decomposition-plan.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4503,7 +4489,7 @@
     {
       "path": "docs/reference/source-api/meridian.contracts/page-051.md",
       "has_heading": true,
-      "todo_count": 1,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },

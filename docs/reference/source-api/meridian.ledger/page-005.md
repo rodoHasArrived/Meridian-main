@@ -6,18 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## PartnershipInvestorAllocation
-
-Qualified name: <code>Meridian.Ledger.PartnershipInvestorAllocation</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/PartnershipInvestorAllocation.cs:6](../../../../src/Meridian.Ledger/PartnershipInvestorAllocation.cs#L6).
-
-Investor-level profit/loss allocation resulting from a partnership accounting projection.
-
-```csharp
-public sealed record PartnershipInvestorAllocation(PartnershipInvestor Investor, decimal AllocatedProfitOrLoss, LedgerAccount CapitalAccount);
-```
-
 ## PartnershipInvestorAllocationInput
 
 Qualified name: <code>Meridian.Ledger.PartnershipInvestorAllocationInput</code>. Kind: `record`.
@@ -90,6 +78,7 @@ Declared public members:
 | <code>public IReadOnlyList&lt;PartnershipInvestor&gt; Investors { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs:47](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs#L47) |  |
 | <code>public IReadOnlyList&lt;PartnershipWaterfallTier&gt; Tiers { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs:49](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs#L49) |  |
 | <code>public string? Description { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs:51](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs#L51) |  |
+| <code>public LedgerAccount? RetainedEarningsAccount { get; init; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs:58](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs#L58) | The retained-earnings account the allocated profit is taken from. Defaults to the fund-scoped retained earnings for FundId; a governed caller sets the account the book&#x27;s period close actually credits, so the allocation draws on the profit that close moved into equity. |
 
 ## PartnershipWaterfallAllocationProjection
 
@@ -131,6 +120,27 @@ Declared public members:
 | <code>public PartnershipWaterfallAllocationRule(string investorId, decimal allocationPercent);</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs:8](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs#L8) |  |
 | <code>public string InvestorId { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs:19](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs#L19) |  |
 | <code>public decimal AllocationPercent { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs:21](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs#L21) |  |
+
+## PartnershipWaterfallDraftBuilder
+
+Qualified name: <code>Meridian.Ledger.PartnershipWaterfallDraftBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs:14](../../../../src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs#L14).
+
+Converts a PartnershipWaterfallAllocationProjection into a governed AutomatedJournalDraft (kind AutomatedJournalEventKind.PartnershipProfitAllocated), so tiered profit allocations reach partners&#x27; capital only through workbench review, approval and posting. The journal debits retained earnings and credits each investor&#x27;s capital account; the partners&#x27; capital statement reports those credits as each investor&#x27;s allocated result.
+
+```csharp
+public static class PartnershipWaterfallDraftBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ActivityType = &quot;partnership-waterfall-allocation&quot;;</code> | [src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs:16](../../../../src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs#L16) |  |
+| <code>public const string IdempotencyPrefix = &quot;partnership-waterfall&#124;&quot;;</code> | [src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs:17](../../../../src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs#L17) |  |
+| <code>public static AutomatedJournalDraft BuildDraft(PartnershipWaterfallAllocationProjection projection, DateOnly effectiveDate, DateTimeOffset preparedAtUtc, string preparedBy);</code> | [src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs:19](../../../../src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs#L19) |  |
+| <code>public static string Fingerprint(PartnershipWaterfallAllocationInput input);</code> | [src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs:79](../../../../src/Meridian.Ledger/PartnershipWaterfallDraftBuilder.cs#L79) | Digest of the waterfall inputs, so a changed term or amount is a different allocation identity. |
 
 ## PartnershipWaterfallProjector
 
@@ -307,7 +317,6 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static PeriodCloseProjection Project(PeriodCloseInput input);</code> | [src/Meridian.Ledger/PeriodCloseProjector.cs:11](../../../../src/Meridian.Ledger/PeriodCloseProjector.cs#L11) |  |
-| <code>public static PeriodCloseProjection ProjectFrom(Ledger ledger, string periodId, DateTimeOffset closedAtUtc, string closedBy);</code> | [src/Meridian.Ledger/PeriodCloseProjector.cs:89](../../../../src/Meridian.Ledger/PeriodCloseProjector.cs#L89) | Convenience overload that snapshots the ledger&#x27;s trial balance as of the close time. The in-memory trial balance is dimension-flat, so the projected closing entries carry no dimensional scope. |
 
 ## PeriodReopenEvidence
 
@@ -756,25 +765,19 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Ledger.RecurringJournalEvidence</code>. Kind: `record`.
 
-Source: [src/Meridian.Ledger/RecurringJournalEvidence.cs:10](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L10).
+Source: [src/Meridian.Ledger/RecurringJournalEvidence.cs:9](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L9).
 
 The exact inputs and source references used for one retained recurring draft.
 
 ```csharp
-public sealed record RecurringJournalEvidence(string OccurrenceKey, Guid JournalEntryId, string ScheduleId, int ScheduleVersion, string TemplateId, int TemplateVersion, string ScheduleDefinitionJson, string TemplateDefinitionJson, string FundProfileId, Guid LedgerBookId, string EntityId, string TenantId, string CompanyId, string Currency, DateOnly EffectiveDate, string PeriodId, long PeriodVersion, IReadOnlyList<JournalEvidenceReference> SourceEvidence)
+public sealed record RecurringJournalEvidence(string OccurrenceKey, Guid JournalEntryId, string ScheduleId, int ScheduleVersion, string TemplateId, int TemplateVersion, string ScheduleDefinitionJson, string TemplateDefinitionJson, string FundProfileId, Guid LedgerBookId, string EntityId, string TenantId, string CompanyId, string Currency, DateOnly EffectiveDate, string PeriodId, long PeriodVersion, IReadOnlyList<JournalEvidenceReference> SourceEvidence);
 ```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? EconomicObligationDigest { get; init; }</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:19](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L19) | Exact daily-lot obligation set independently retained on the recurring claim. |
 
 ## RecurringJournalEvidenceGuard
 
 Qualified name: <code>Meridian.Ledger.RecurringJournalEvidenceGuard</code>. Kind: `class`.
 
-Source: [src/Meridian.Ledger/RecurringJournalEvidence.cs:23](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L23).
+Source: [src/Meridian.Ledger/RecurringJournalEvidence.cs:17](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L17).
 
 Source provenance is immutable across edits, human approval and posting.
 
@@ -786,14 +789,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string EvidenceTag = &quot;recurring.journalEvidence.v1&quot;;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:25](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L25) |  |
-| <code>public const string DigestTag = &quot;recurring.journalEvidence.sha256&quot;;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:26](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L26) |  |
-| <code>public static bool IsRecurring(string? key) =&gt; …;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:27](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L27) |  |
-| <code>public static string Serialize(RecurringJournalEvidence evidence) =&gt; …;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:29](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L29) |  |
-| <code>public static RecurringJournalEvidence? Deserialize(string json) =&gt; …;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:30](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L30) |  |
-| <code>public static string? ValidateSources(IReadOnlyList&lt;JournalEvidenceReference&gt;? evidence);</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:32](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L32) |  |
-| <code>public static string? Validate(ManualJournalEntryDraftDto draft);</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:48](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L48) |  |
-| <code>public static string CorrectionKey(string occurrenceKey, Guid journalEntryId) =&gt; …;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:84](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L84) |  |
+| <code>public const string EvidenceTag = &quot;recurring.journalEvidence.v1&quot;;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:19](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L19) |  |
+| <code>public const string DigestTag = &quot;recurring.journalEvidence.sha256&quot;;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:20](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L20) |  |
+| <code>public static bool IsRecurring(string? key) =&gt; …;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:21](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L21) |  |
+| <code>public static string Serialize(RecurringJournalEvidence evidence) =&gt; …;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:23](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L23) |  |
+| <code>public static RecurringJournalEvidence? Deserialize(string json) =&gt; …;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:24](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L24) |  |
+| <code>public static string? ValidateSources(IReadOnlyList&lt;JournalEvidenceReference&gt;? evidence);</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:26](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L26) |  |
+| <code>public static string? Validate(ManualJournalEntryDraftDto draft);</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:42](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L42) |  |
+| <code>public static string CorrectionKey(string occurrenceKey, Guid journalEntryId) =&gt; …;</code> | [src/Meridian.Ledger/RecurringJournalEvidence.cs:73](../../../../src/Meridian.Ledger/RecurringJournalEvidence.cs#L73) |  |
 
 ## RecurringJournalOccurrence
 
@@ -871,39 +874,6 @@ Immutable audit record of a locked accounting period being reopened, capturing t
 public sealed record ReopenedAccountingPeriod(LockedAccountingPeriod Period, DateTimeOffset ReopenedAtUtc, string ReopenedBy, PeriodReopenEvidence Evidence);
 ```
 
-## SecurityTradePositionEffect
-
-Qualified name: <code>Meridian.Ledger.SecurityTradePositionEffect</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:7](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L7).
-
-Native-unit changes and exact monetary basis changes from the existing trade projector.
-
-```csharp
-public sealed record SecurityTradePositionEffect(decimal LongQuantityChange, decimal ShortQuantityChange, decimal LongBasisChange, decimal ShortBasisChange, SecurityLotUnitKind QuantityUnit, decimal Multiplier);
-```
-
-## SecurityTradePositionEvidence
-
-Qualified name: <code>Meridian.Ledger.SecurityTradePositionEvidence</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:11](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L11).
-
-Retains position facts alongside trade journals; fees and financing do not invent units.
-
-```csharp
-public static class SecurityTradePositionEvidence
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string VersionTag = &quot;positionEvidence.version&quot;;</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:13](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L13) |  |
-| <code>public const string ReversalSignTag = &quot;positionEvidence.reversalSign&quot;;</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:14](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L14) |  |
-| <code>public static JournalEntryMetadata WithPostings(JournalEntryMetadata metadata, IReadOnlyList&lt;SecurityTradePosting&gt; postings, SecurityLotUnitKind unit, decimal multiplier);</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:17](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L17) |  |
-| <code>public static bool TryRead(JournalEntry journal, out SecurityTradePositionEffect? effect, out string? failure, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:67](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L67) |  |
-
 ## SecurityTradePosting
 
 Qualified name: <code>Meridian.Ledger.SecurityTradePosting</code>. Kind: `record`.
@@ -942,3 +912,38 @@ Enum declarations:
 | <code>CloseLong</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:7](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L7) |  |
 | <code>OpenShort</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:8](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L8) |  |
 | <code>CoverShort</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:9](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L9) |  |
+
+## SecurityTradePostingProjector
+
+Qualified name: <code>Meridian.Ledger.SecurityTradePostingProjector</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/SecurityTradePostingProjector.cs:7](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L7).
+
+Shared double-entry projection for simulated, paper, and durable execution fills. Callers supply retained lot economics; this service does not select lots or infer position direction.
+
+```csharp
+public static class SecurityTradePostingProjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; Project(SecurityTradePosting posting, string symbol, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:9](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L9) |  |
+| <code>public static void Validate(SecurityTradePosting posting);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:84](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L84) | Validates exact trade facts without resolving or mutating any accounts. |
+| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; Commission(decimal amount, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:110](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L110) |  |
+| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; VariationMargin(string symbol, decimal amount, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:127](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L127) |  |
+| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; ShortCollateral(decimal amount, bool release, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:143](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L143) |  |
+| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; MarginFinancing(decimal borrowed, decimal repaid, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:162](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L162) | Projects the financing cash movement separately from the security trade for statement attribution. |
+
+## ShadowNavOverrideDraft
+
+Qualified name: <code>Meridian.Ledger.ShadowNavOverrideDraft</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/ShadowNavOverrideDraft.cs:6](../../../../src/Meridian.Ledger/ShadowNavOverrideDraft.cs#L6).
+
+Governance handoff record for a material shadow-NAV variance that needs review.
+
+```csharp
+public sealed record ShadowNavOverrideDraft(Guid OverrideDraftId, DateTimeOffset CreatedAtUtc, string CreatedBy, string Reason, string PolicyId, string? ReviewerGroup, LedgerBookKey ActualLedgerKey, LedgerBookKey ShadowLedgerKey, DateTimeOffset AsOf, decimal ActualNav, decimal ShadowNav, decimal NavVariance, IReadOnlyList<ShadowNavValidationFinding> Findings);
+```

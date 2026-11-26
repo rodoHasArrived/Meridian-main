@@ -6,41 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## SecurityTradePostingProjector
-
-Qualified name: <code>Meridian.Ledger.SecurityTradePostingProjector</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/SecurityTradePostingProjector.cs:7](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L7).
-
-Shared double-entry projection for simulated, paper, and durable execution fills. Callers supply retained lot economics; this service does not select lots or infer position direction.
-
-```csharp
-public static class SecurityTradePostingProjector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; Project(SecurityTradePosting posting, string symbol, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:9](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L9) |  |
-| <code>public static void Validate(SecurityTradePosting posting);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:84](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L84) | Validates exact trade facts without resolving or mutating any accounts. |
-| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; Commission(decimal amount, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:110](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L110) |  |
-| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; VariationMargin(string symbol, decimal amount, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:127](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L127) |  |
-| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; ShortCollateral(decimal amount, bool release, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:143](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L143) |  |
-| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; MarginFinancing(decimal borrowed, decimal repaid, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:162](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L162) | Projects the financing cash movement separately from the security trade for statement attribution. |
-
-## ShadowNavOverrideDraft
-
-Qualified name: <code>Meridian.Ledger.ShadowNavOverrideDraft</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/ShadowNavOverrideDraft.cs:6](../../../../src/Meridian.Ledger/ShadowNavOverrideDraft.cs#L6).
-
-Governance handoff record for a material shadow-NAV variance that needs review.
-
-```csharp
-public sealed record ShadowNavOverrideDraft(Guid OverrideDraftId, DateTimeOffset CreatedAtUtc, string CreatedBy, string Reason, string PolicyId, string? ReviewerGroup, LedgerBookKey ActualLedgerKey, LedgerBookKey ShadowLedgerKey, DateTimeOffset AsOf, decimal ActualNav, decimal ShadowNav, decimal NavVariance, IReadOnlyList<ShadowNavValidationFinding> Findings);
-```
-
 ## ShadowNavValidationFinding
 
 Qualified name: <code>Meridian.Ledger.ShadowNavValidationFinding</code>. Kind: `record`.
@@ -208,6 +173,27 @@ Declared public members:
 | --- | --- | --- |
 | <code>public const string RedemptionExceedsHoldingIssueCode = &quot;fund.share-class.redemption-exceeds-holding&quot;;</code> | [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:57](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L57) |  |
 | <code>public static ShareClassUnitRegister Project(ShareClass shareClass, IReadOnlyList&lt;UnitTransaction&gt; transactions, DateOnly asOf, decimal? classNav = null);</code> | [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:59](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L59) |  |
+
+## ShortCarryDraftBuilder
+
+Qualified name: <code>Meridian.Ledger.ShortCarryDraftBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/ShortCarryDraftBuilder.cs:15](../../../../src/Meridian.Ledger/ShortCarryDraftBuilder.cs#L15).
+
+Converts a reviewed ShortCarryInstruction into a governed AutomatedJournalDraft (kind AutomatedJournalEventKind.ShortCarryCharged), so a borrow fee or payment in lieu reaches the ledger only through workbench review, approval and posting. The lines are ShortCarryProjector.Lines against the lot&#x27;s liability carrying account; the caller proves the instruction against the authoritative open short lot first.
+
+```csharp
+public static class ShortCarryDraftBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ActivityType = &quot;short-carry&quot;;</code> | [src/Meridian.Ledger/ShortCarryDraftBuilder.cs:17](../../../../src/Meridian.Ledger/ShortCarryDraftBuilder.cs#L17) |  |
+| <code>public const string IdempotencyPrefix = &quot;short-carry&#124;&quot;;</code> | [src/Meridian.Ledger/ShortCarryDraftBuilder.cs:18](../../../../src/Meridian.Ledger/ShortCarryDraftBuilder.cs#L18) |  |
+| <code>public static AutomatedJournalDraft BuildDraft(ShortCarryInstruction instruction, LedgerAccount carryingAccount, Guid securityId, DateTimeOffset preparedAtUtc, string preparedBy);</code> | [src/Meridian.Ledger/ShortCarryDraftBuilder.cs:20](../../../../src/Meridian.Ledger/ShortCarryDraftBuilder.cs#L20) |  |
+| <code>public static string Fingerprint(ShortCarryInstruction instruction);</code> | [src/Meridian.Ledger/ShortCarryDraftBuilder.cs:82](../../../../src/Meridian.Ledger/ShortCarryDraftBuilder.cs#L82) | Digest of the retained instruction inputs, so a changed input is a different charge identity. |
 
 ## ShortCarryProjector
 
@@ -411,7 +397,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ledger.TradeFillAccountingEvidence</code>. Kind: `record`.
 
-Source: [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:11](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L11).
+Source: [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:10](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L10).
 
 Immutable per-fill accounting facts captured under the portfolio&#x27;s lot-book lock. A fill crossing zero retains both its closing and opening leg. No monetary basis is reconstructed from an average quote, order side, or realized result.
 
@@ -423,11 +409,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityLotUnitKind? QuantityUnit { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:24](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L24) | Native quantity convention captured by the lot book; absent on older evidence. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? LotMultiplier { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:27](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L27) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal AccruedInterest { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:35](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L35) | Bond accrued interest that changed hands on this fill, always nonnegative: paid on a purchase, received on a sale. Zero for fills without an accrual (and on every historical record, which omits it). |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal AccruedInterestRelieved { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:43](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L43) | On a sale, the purchased accrued interest receivable relieved for the face sold; the rest of AccruedInterest is coupon income earned while held (negative if the receivable exceeds what was received). Zero on purchases. |
-| <code>[JsonIgnore] public decimal RealizedPnl =&gt; …;</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:46](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L46) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal AccruedInterest { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:27](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L27) | Bond accrued interest that changed hands on this fill, always nonnegative: paid on a purchase, received on a sale. Zero for fills without an accrual (and on every historical record, which omits it). |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal AccruedInterestRelieved { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:35](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L35) | On a sale, the purchased accrued interest receivable relieved for the face sold; the rest of AccruedInterest is coupon income earned while held (negative if the receivable exceeds what was received). Zero on purchases. |
+| <code>[JsonIgnore] public decimal RealizedPnl =&gt; …;</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:38](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L38) |  |
 
 ## UnitTransaction
 

@@ -144,7 +144,11 @@ Vendor references checked 2026-11-13: [Twelve Data credits](https://support.twel
 [splits](https://twelvedata.com/docs/fundamentals/splits/), and
 [Alpha Vantage support](https://www.alphavantage.co/support/).
 
-IB historical requests ask for epoch-second bar times (`formatDate = 2`) and send UTC, culture-invariant end times; a zone-less TWS-local timestamp is refused rather than read as UTC. `IBDurableResultStore` publishes an update to memory only after the fsynced atomic file replace succeeds. `ProviderRegistry` availability probes rethrow caller cancellation.
+IB historical requests ask for epoch-second bar times (`formatDate = 2`) and send UTC, culture-invariant end times; a zone-less TWS-local timestamp is refused rather than read as UTC. IB execution times (`yyyyMMdd-HH:mm:ss` UTC, or `yyyyMMdd HH:mm:ss <zone>` including legacy `US/*`
+names) parse through `IBCanonicalPayloadMapper.TryParseExecutionTime`; a zone-less local time keeps the
+receipt-time fallback. Fresh IB execution reports carry the broker `execId` as `ExecutionReport.ExecutionId`
+and deliberately leave `LastFillQuantity` unset, so restart adoption stays off without durable
+execution-ID deduplication. `IBDurableResultStore` publishes an update to memory only after the fsynced atomic file replace succeeds. `ProviderRegistry` availability probes rethrow caller cancellation.
 
 Statement importers retain parser revision and upstream executed mapping proof; pre-normalized imports without upstream proof remain non-comparable. Immutable match artifacts retain that mapping fingerprint. Source-generated import and match hashing supports exact completed-checkpoint verification without rewriting legacy bytes.
 

@@ -75,24 +75,6 @@ A titled, tabular section of a financial report, shared by every renderer.
 public sealed record LedgerReportTable(string Title, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyList<string>> Rows);
 ```
 
-## LedgerRunAttribution
-
-Qualified name: <code>Meridian.Ledger.LedgerRunAttribution</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/LedgerRunAttribution.cs:4](../../../../src/Meridian.Ledger/LedgerRunAttribution.cs#L4).
-
-Reads retained execution run ownership; an ordinary strategy label is insufficient.
-
-```csharp
-public static class LedgerRunAttribution
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool TryGetTrustedRunId(JournalEntryMetadata metadata, out string? runId);</code> | [src/Meridian.Ledger/LedgerRunAttribution.cs:6](../../../../src/Meridian.Ledger/LedgerRunAttribution.cs#L6) |  |
-
 ## LedgerScheduledReportExportPackageBuilder
 
 Qualified name: <code>Meridian.Ledger.LedgerScheduledReportExportPackageBuilder</code>. Kind: `class`.
@@ -712,7 +694,7 @@ public sealed record MultiCurrencyJournalLineProjection(LedgerAccount Account, s
 
 Qualified name: <code>Meridian.Ledger.MultiCurrencyJournalProjection</code>. Kind: `record`.
 
-Source: [src/Meridian.Ledger/MultiCurrencyJournalProjection.cs:6](../../../../src/Meridian.Ledger/MultiCurrencyJournalProjection.cs#L6).
+Source: [src/Meridian.Ledger/MultiCurrencyJournalProjection.cs:7](../../../../src/Meridian.Ledger/MultiCurrencyJournalProjection.cs#L7).
 
 Multi-currency journal projection ready for base-currency ledger posting.
 
@@ -724,17 +706,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal TotalBaseDebits =&gt; …;</code> | [src/Meridian.Ledger/MultiCurrencyJournalProjection.cs:10](../../../../src/Meridian.Ledger/MultiCurrencyJournalProjection.cs#L10) |  |
-| <code>public decimal TotalBaseCredits =&gt; …;</code> | [src/Meridian.Ledger/MultiCurrencyJournalProjection.cs:12](../../../../src/Meridian.Ledger/MultiCurrencyJournalProjection.cs#L12) |  |
-| <code>public bool IsBaseBalanced =&gt; …;</code> | [src/Meridian.Ledger/MultiCurrencyJournalProjection.cs:14](../../../../src/Meridian.Ledger/MultiCurrencyJournalProjection.cs#L14) |  |
-| <code>public IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; ToLedgerLines() =&gt; …;</code> | [src/Meridian.Ledger/MultiCurrencyJournalProjection.cs:16](../../../../src/Meridian.Ledger/MultiCurrencyJournalProjection.cs#L16) |  |
-| <code>public IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit, LedgerLineDimensionSet? dimensions, LedgerEntryCurrency? currency)&gt; ToCurrencyAwareLedgerLines() =&gt; …;</code> | [src/Meridian.Ledger/MultiCurrencyJournalProjection.cs:25](../../../../src/Meridian.Ledger/MultiCurrencyJournalProjection.cs#L25) | Projects to base-currency posting lines that preserve each leg&#x27;s original transaction currency, transaction amounts, and FX rate for currency-aware posting. |
+| <code>public decimal TotalBaseDebits =&gt; …;</code> | [src/Meridian.Ledger/MultiCurrencyJournalProjection.cs:11](../../../../src/Meridian.Ledger/MultiCurrencyJournalProjection.cs#L11) |  |
+| <code>public decimal TotalBaseCredits =&gt; …;</code> | [src/Meridian.Ledger/MultiCurrencyJournalProjection.cs:13](../../../../src/Meridian.Ledger/MultiCurrencyJournalProjection.cs#L13) |  |
+| <code>public bool IsBaseBalanced =&gt; …;</code> | [src/Meridian.Ledger/MultiCurrencyJournalProjection.cs:15](../../../../src/Meridian.Ledger/MultiCurrencyJournalProjection.cs#L15) |  |
+| <code>public IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; ToLedgerLines() =&gt; …;</code> | [src/Meridian.Ledger/MultiCurrencyJournalProjection.cs:17](../../../../src/Meridian.Ledger/MultiCurrencyJournalProjection.cs#L17) |  |
+| <code>public IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit, LedgerLineDimensionSet? dimensions, LedgerEntryCurrency? currency)&gt; ToCurrencyAwareLedgerLines() =&gt; …;</code> | [src/Meridian.Ledger/MultiCurrencyJournalProjection.cs:26](../../../../src/Meridian.Ledger/MultiCurrencyJournalProjection.cs#L26) | Projects to base-currency posting lines that preserve each leg&#x27;s original transaction currency, transaction amounts, and FX rate for currency-aware posting. |
 
 ## MultiCurrencyJournalProjector
 
 Qualified name: <code>Meridian.Ledger.MultiCurrencyJournalProjector</code>. Kind: `class`.
 
-Source: [src/Meridian.Ledger/MultiCurrencyJournalProjector.cs:8](../../../../src/Meridian.Ledger/MultiCurrencyJournalProjector.cs#L8).
+Source: [src/Meridian.Ledger/MultiCurrencyJournalProjector.cs:16](../../../../src/Meridian.Ledger/MultiCurrencyJournalProjector.cs#L16).
 
 Converts local-currency journal lines into balanced base-currency ledger posting lines.
 
@@ -746,7 +728,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static MultiCurrencyJournalProjection Project(MultiCurrencyJournalInput input);</code> | [src/Meridian.Ledger/MultiCurrencyJournalProjector.cs:10](../../../../src/Meridian.Ledger/MultiCurrencyJournalProjector.cs#L10) |  |
+| <code>public static MultiCurrencyJournalProjection Project(MultiCurrencyJournalInput input);</code> | [src/Meridian.Ledger/MultiCurrencyJournalProjector.cs:18](../../../../src/Meridian.Ledger/MultiCurrencyJournalProjector.cs#L18) |  |
 
 ## MultiCurrencyLedgerTranslator
 
@@ -925,7 +907,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ledger.PartnershipInvestorAccountingProjector</code>. Kind: `class`.
 
-Source: [src/Meridian.Ledger/PartnershipInvestorAccountingProjector.cs:9](../../../../src/Meridian.Ledger/PartnershipInvestorAccountingProjector.cs#L9).
+Source: [src/Meridian.Ledger/PartnershipInvestorAccountingProjector.cs:13](../../../../src/Meridian.Ledger/PartnershipInvestorAccountingProjector.cs#L13).
 
 Projects management fees, performance fees, high-water marks, and investor capital allocations.
 
@@ -937,4 +919,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static PartnershipInvestorAllocationProjection Project(PartnershipInvestorAllocationInput input);</code> | [src/Meridian.Ledger/PartnershipInvestorAccountingProjector.cs:13](../../../../src/Meridian.Ledger/PartnershipInvestorAccountingProjector.cs#L13) |  |
+| <code>[PostingCalculationNotYetConnected(&quot;Superseded, do not connect: management and performance fees post through the recurring fee-accrual journals (FundEconomicsJournalFactory), which also handle hurdle, crystallization and already-accrued deltas, and investor allocations post through the partnership waterfall intake; posting these lines as well would double-count fees on the same expense and payable accounts.&quot;)] public static PartnershipInvestorAllocationProjection Project(PartnershipInvestorAllocationInput input);</code> | [src/Meridian.Ledger/PartnershipInvestorAccountingProjector.cs:18](../../../../src/Meridian.Ledger/PartnershipInvestorAccountingProjector.cs#L18) |  |
+
+## PartnershipInvestorAllocation
+
+Qualified name: <code>Meridian.Ledger.PartnershipInvestorAllocation</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/PartnershipInvestorAllocation.cs:6](../../../../src/Meridian.Ledger/PartnershipInvestorAllocation.cs#L6).
+
+Investor-level profit/loss allocation resulting from a partnership accounting projection.
+
+```csharp
+public sealed record PartnershipInvestorAllocation(PartnershipInvestor Investor, decimal AllocatedProfitOrLoss, LedgerAccount CapitalAccount);
+```

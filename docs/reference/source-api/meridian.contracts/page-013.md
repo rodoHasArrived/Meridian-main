@@ -281,7 +281,7 @@ public sealed record BacktestPreflightRequestDto(DateOnly From, DateOnly To, str
 
 Qualified name: <code>Meridian.Contracts.Banking.ApprovePaymentRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:68](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L68).
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:90](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L90).
 
 Approve a pending payment request.
 
@@ -293,7 +293,7 @@ public sealed record ApprovePaymentRequest(string? ReviewNotes, string? Reviewed
 
 Qualified name: <code>Meridian.Contracts.Banking.BankTransactionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:104](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L104).
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:126](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L126).
 
 A single bank-side transaction record. This is distinct from a loan-level CashTransactionDto in the DirectLending module; the two may be reconciled but are not the same object.
 
@@ -305,7 +305,7 @@ public sealed record BankTransactionDto(Guid BankTransactionId, Guid EntityId, s
 
 Qualified name: <code>Meridian.Contracts.Banking.BankTransactionSeedRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:133](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L133).
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:155](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L155).
 
 Request to seed representative bank transactions for one or more entities. When EntityIds is null or empty, all known entities are seeded.
 
@@ -317,7 +317,7 @@ public sealed record BankTransactionSeedRequest(IReadOnlyList<Guid>? EntityIds, 
 
 Qualified name: <code>Meridian.Contracts.Banking.BankTransactionSeedResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:140](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L140).
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:162](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L162).
 
 Result returned after seeding bank transactions.
 
@@ -329,7 +329,7 @@ public sealed record BankTransactionSeedResultDto(int EntitiesProcessed, int Tra
 
 Qualified name: <code>Meridian.Contracts.Banking.IBankTransactionSource</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:154](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L154).
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:176](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L176).
 
 Read-only banking data source for cross-domain integrations such as reconciliation. Services outside the Banking module can depend on this narrow interface instead of the full IBankingService.
 
@@ -341,7 +341,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;BankTransactionDto&gt;&gt; GetBankTransactionsAsync(Guid? entityId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:160](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L160) | Return bank transactions. When entityId is provided the result is scoped to that entity; otherwise all transactions are returned. |
+| <code>Task&lt;IReadOnlyList&lt;BankTransactionDto&gt;&gt; GetBankTransactionsAsync(Guid? entityId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:182](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L182) | Return bank transactions. When entityId is provided the result is scoped to that entity; otherwise all transactions are returned. |
 
 ## InitiatePaymentRequest
 
@@ -352,8 +352,15 @@ Source: [src/Meridian.Contracts/Banking/BankingModels.cs:19](../../../../src/Mer
 Request body to submit a payment for approval before it is applied.
 
 ```csharp
-public sealed record InitiatePaymentRequest(decimal Amount, DateOnly EffectiveDate, string? ExternalRef, string? Notes, string? Currency = null);
+public sealed record InitiatePaymentRequest(decimal Amount, DateOnly EffectiveDate, string? ExternalRef, string? Notes, string? Currency = null, Guid? LedgerBookId = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore] public string? BoundTenantId { get; init; }</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:38](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L38) | Authenticated tenant the server bound the intent to; never read from the request body. |
+| <code>[System.Text.Json.Serialization.JsonIgnore] public string? BoundCompanyId { get; init; }</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:42](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L42) | Authenticated company the server bound the intent to; never read from the request body. |
 
 ## PaymentApprovalStatus
 
@@ -380,19 +387,19 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Banking.PendingPaymentDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:31](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L31).
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:46](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L46).
 
 A payment that is awaiting an approval decision.
 
 ```csharp
-public sealed record PendingPaymentDto(Guid PendingPaymentId, Guid EntityId, decimal Amount, DateOnly EffectiveDate, string? ExternalRef, string? Notes, PaymentApprovalStatus Status, string? ReviewedBy, string? ReviewNotes, DateTimeOffset InitiatedAt, DateTimeOffset? ReviewedAt, string? Currency = null, string? CurrencyRemediatedBy = null, string? CurrencyRemediationReason = null, DateTimeOffset? CurrencyRemediatedAt = null);
+public sealed record PendingPaymentDto(Guid PendingPaymentId, Guid EntityId, decimal Amount, DateOnly EffectiveDate, string? ExternalRef, string? Notes, PaymentApprovalStatus Status, string? ReviewedBy, string? ReviewNotes, DateTimeOffset InitiatedAt, DateTimeOffset? ReviewedAt, string? Currency = null, string? CurrencyRemediatedBy = null, string? CurrencyRemediationReason = null, DateTimeOffset? CurrencyRemediatedAt = null, string? TenantId = null, string? CompanyId = null, Guid? LedgerBookId = null);
 ```
 
 ## RecordPaymentBankEvidenceRequest
 
 Qualified name: <code>Meridian.Contracts.Banking.RecordPaymentBankEvidenceRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:80](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L80).
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:102](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L102).
 
 Record retained bank-side evidence for an approved Meridian payment intent.
 
@@ -404,7 +411,7 @@ public sealed record RecordPaymentBankEvidenceRequest(string EvidenceType, DateO
 
 Qualified name: <code>Meridian.Contracts.Banking.RejectPaymentRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:74](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L74).
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:96](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L96).
 
 Reject a pending payment request.
 
@@ -416,7 +423,7 @@ public sealed record RejectPaymentRequest(string Reason, string? ReviewedBy, Ope
 
 Qualified name: <code>Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:61](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L61).
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:83](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L83).
 
 Governed repair request for a legacy Pending payment whose currency was never retained. The command is compare-and-set: it cannot alter economics, replace an existing currency, or repair a payment after a review decision.
 

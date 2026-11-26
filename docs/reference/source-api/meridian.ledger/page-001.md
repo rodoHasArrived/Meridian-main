@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Ledger.AutomatedJournalApproval</code>. Kind: `record`.
 
-Source: [src/Meridian.Ledger/AutomatedJournalApproval.cs:6](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L6).
+Source: [src/Meridian.Ledger/AutomatedJournalApproval.cs:12](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L12).
 
 Governed approval aggregate for a projected automated journal draft.
 
@@ -22,18 +22,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Guid ApprovalId { get; }</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:24](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L24) |  |
-| <code>public Guid JournalEntryId { get; }</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:26](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L26) |  |
-| <code>public IReadOnlyList&lt;Guid&gt; LedgerEntryIds { get; }</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:28](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L28) |  |
-| <code>public AutomatedJournalDraft Draft { get; }</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:30](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L30) |  |
-| <code>public AutomatedJournalApprovalStatus Status { get; init; }</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:32](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L32) |  |
-| <code>public IReadOnlyList&lt;AutomatedJournalApprovalEvent&gt; Events { get; init; }</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:34](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L34) |  |
-| <code>public static AutomatedJournalApproval Submit(AutomatedJournalDraft draft, string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt;? evidenceLinks = null);</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:36](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L36) |  |
-| <code>public AutomatedJournalApproval Approve(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:67](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L67) |  |
-| <code>public AutomatedJournalApproval Reject(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt;? evidenceLinks = null) =&gt; …;</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:80](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L80) |  |
-| <code>public JournalEntry ToJournalEntry();</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:93](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L93) |  |
-| <code>public AutomatedJournalApproval PostTo(Ledger ledger, string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks);</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:118](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L118) |  |
-| <code>public AutomatedJournalApproval MarkPosted(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:141](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L141) | Records the governed posted transition after a posting target has durably accepted the journal. Callers must persist first; this method performs no ledger mutation. |
+| <code>public Guid ApprovalId { get; }</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:30](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L30) |  |
+| <code>public Guid JournalEntryId { get; }</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:32](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L32) |  |
+| <code>public IReadOnlyList&lt;Guid&gt; LedgerEntryIds { get; }</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:34](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L34) |  |
+| <code>public AutomatedJournalDraft Draft { get; }</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:36](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L36) |  |
+| <code>public AutomatedJournalApprovalStatus Status { get; init; }</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:38](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L38) |  |
+| <code>public IReadOnlyList&lt;AutomatedJournalApprovalEvent&gt; Events { get; init; }</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:40](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L40) |  |
+| <code>public static AutomatedJournalApproval Submit(AutomatedJournalDraft draft, string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt;? evidenceLinks = null);</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:42](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L42) |  |
+| <code>[PostingCalculationNotYetConnected(&quot;Superseded, do not connect: production hands each submitted approval&#x27;s Draft to the manual journal workbench (AutomatedJournalIntakeRunner via AutomatedJournalDraftIntakeService), whose lifecycle approves, rejects and posts it; approving here and posting through IAutomatedJournalPostingTarget would add a second approval authority and could post the same journal twice.&quot;)] public AutomatedJournalApproval Approve(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:74](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L74) |  |
+| <code>[PostingCalculationNotYetConnected(&quot;Superseded, do not connect: production hands each submitted approval&#x27;s Draft to the manual journal workbench (AutomatedJournalIntakeRunner via AutomatedJournalDraftIntakeService), whose lifecycle approves, rejects and posts it; approving here and posting through IAutomatedJournalPostingTarget would add a second approval authority and could post the same journal twice.&quot;)] public AutomatedJournalApproval Reject(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt;? evidenceLinks = null) =&gt; …;</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:88](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L88) |  |
+| <code>public JournalEntry ToJournalEntry();</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:101](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L101) |  |
+| <code>public AutomatedJournalApproval PostTo(Ledger ledger, string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks);</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:126](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L126) |  |
+| <code>public AutomatedJournalApproval MarkPosted(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/AutomatedJournalApproval.cs:149](../../../../src/Meridian.Ledger/AutomatedJournalApproval.cs#L149) | Records the governed posted transition after a posting target has durably accepted the journal. Callers must persist first; this method performs no ledger mutation. |
 
 ## AutomatedJournalApprovalEvent
 
@@ -161,6 +161,8 @@ Enum declarations:
 | <code>DistributionDeclared</code> | [src/Meridian.Ledger/AutomatedJournalEventKind.cs:57](../../../../src/Meridian.Ledger/AutomatedJournalEventKind.cs#L57) | A distribution to an investor, declared and split through the waterfall. |
 | <code>OpeningBalanceImported</code> | [src/Meridian.Ledger/AutomatedJournalEventKind.cs:60](../../../../src/Meridian.Ledger/AutomatedJournalEventKind.cs#L60) | Complete broker-account opening balances retained for human review. |
 | <code>PriorPeriodAdjustment</code> | [src/Meridian.Ledger/AutomatedJournalEventKind.cs:63](../../../../src/Meridian.Ledger/AutomatedJournalEventKind.cs#L63) | Source-linked correction prepared in a later open period for independent approval. |
+| <code>ShortCarryCharged</code> | [src/Meridian.Ledger/AutomatedJournalEventKind.cs:66](../../../../src/Meridian.Ledger/AutomatedJournalEventKind.cs#L66) | Carrying charge on an open short lot: a stock borrow fee or a payment in lieu of dividend. |
+| <code>PartnershipProfitAllocated</code> | [src/Meridian.Ledger/AutomatedJournalEventKind.cs:69](../../../../src/Meridian.Ledger/AutomatedJournalEventKind.cs#L69) | Period distributable profit allocated from retained earnings to partners&#x27; capital through a tiered waterfall. |
 
 ## AutomatedJournalPostingContext
 

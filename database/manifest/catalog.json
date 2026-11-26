@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "f3994d37c71daf706637ed87fdac1c9f3f8eeea81c393cc3ddb235868793ff30",
+  "database_fingerprint": "dff5107d68c8e3ec341956816707278c84f92f898ba991c4f2b90005dc314a63",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -383,6 +383,42 @@
       "target": "banking.bank_transactions.pending_payment_id",
       "target_kind": "table column",
       "target_name": "bank_transactions",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "ec1901a264ebba44ab92b4a3c220143b118fafc880e77027a53b8e17a0cdea94",
+      "kind": "normal",
+      "source": "banking.ck_pending_payments_book_binding on banking.pending_payments",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.pending_payments.company_id",
+      "target_kind": "table column",
+      "target_name": "pending_payments",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "ae7de30fd1d332c93c2dc8a6bfdd8a5cd93ed8afe62a26e767cb6625bd0b79d8",
+      "kind": "normal",
+      "source": "banking.ck_pending_payments_book_binding on banking.pending_payments",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.pending_payments.ledger_book_id",
+      "target_kind": "table column",
+      "target_name": "pending_payments",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "d17576596167263f5b333b228ade51de7370dad12016e1595857520122c5a8f6",
+      "kind": "normal",
+      "source": "banking.ck_pending_payments_book_binding on banking.pending_payments",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.pending_payments.tenant_id",
+      "target_kind": "table column",
+      "target_name": "pending_payments",
       "target_schema": "banking"
     },
     {
@@ -6083,18 +6119,6 @@
       "target": "ledger.operations_continuity_workflows_pkey",
       "target_kind": "index",
       "target_name": "operations_continuity_workflows_pkey",
-      "target_schema": "ledger"
-    },
-    {
-      "fingerprint": "f37f516d5bd45da831e75d189622cdc01e79b8a2ae431b37034e51b2620d4ca5",
-      "kind": "normal",
-      "source": "ledger.operations_workflow_purpose_check on ledger.operations_continuity_workflows",
-      "source_kind": "table constraint",
-      "source_name": null,
-      "source_schema": "ledger",
-      "target": "ledger.operations_continuity_workflows.workflow_json",
-      "target_kind": "table column",
-      "target_name": "operations_continuity_workflows",
       "target_schema": "ledger"
     },
     {
@@ -15183,6 +15207,10 @@
       "object": "column:banking.pending_payments.amount"
     },
     {
+      "fingerprint": "5eb3a7b8ae05bd764bd4f1e018529bdb4ce52e9c992c4794ec01ff54e8791dd9",
+      "object": "column:banking.pending_payments.company_id"
+    },
+    {
       "fingerprint": "cabbd8d175f6e479804edc6319eeae6525415f02760c7a4943dd552679f73ba7",
       "object": "column:banking.pending_payments.currency"
     },
@@ -15215,6 +15243,10 @@
       "object": "column:banking.pending_payments.initiated_at"
     },
     {
+      "fingerprint": "bacbf88be3e6ec701389564f2d4f24042b25208fc8ccc91eb67006020e91f068",
+      "object": "column:banking.pending_payments.ledger_book_id"
+    },
+    {
       "fingerprint": "d2e4b7fc20af4dd1082f2226fadafd8d09d9bc36efb869844ac20132d9894ba5",
       "object": "column:banking.pending_payments.notes"
     },
@@ -15237,6 +15269,10 @@
     {
       "fingerprint": "c739de1a25b26dc941d698a1b36f89b41be802b19099e9fe679e5ac243c67075",
       "object": "column:banking.pending_payments.status"
+    },
+    {
+      "fingerprint": "3f3f4f0d0cadce108f557ecccc69406a8dacb84df9f3c3416a7a58ade3b94ccf",
+      "object": "column:banking.pending_payments.tenant_id"
     },
     {
       "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
@@ -24971,10 +25007,6 @@
       "object": "column:security_master.reconciliation_result.created_at"
     },
     {
-      "fingerprint": "7a0a91bf66e0e9940a5516ad9e9728d83d5d6ff90ac3978f60039eacec2df07d",
-      "object": "column:security_master.reconciliation_result.evidence_json"
-    },
-    {
       "fingerprint": "7b889fbc5348e0ba6ed6cb5d8e9b64c6e3efb2d7ee47fbfd33ee1f63b634e4f5",
       "object": "column:security_master.reconciliation_result.expected_amount"
     },
@@ -25025,10 +25057,6 @@
     {
       "fingerprint": "80f387deb77485588e3742efae2cd24bba211d059d934e9f68b33a5e39188029",
       "object": "column:security_master.reconciliation_run.completed_at"
-    },
-    {
-      "fingerprint": "531e1fd7257c27984b51a10d40c6006dd931707f7a5160e28e1cf307153151f8",
-      "object": "column:security_master.reconciliation_run.evidence_json"
     },
     {
       "fingerprint": "7b3945594546ae08dfea3e52d9299cbf09acab26020bda7d54e7aca3b1ccff80",
@@ -27447,6 +27475,10 @@
       "object": "constraint:banking.bank_transactions.fk_bank_transactions_pending_payment"
     },
     {
+      "fingerprint": "d610daa8c264580b303ec2304993f99f15a6fe093f07b1c4c5a9e126e311f43f",
+      "object": "constraint:banking.pending_payments.ck_pending_payments_book_binding"
+    },
+    {
       "fingerprint": "0f0895bdbd9ad16d1df3beb494f13ab8331eedc4b2c1148061986618ed78dd9c",
       "object": "constraint:banking.pending_payments.ck_pending_payments_currency"
     },
@@ -28885,10 +28917,6 @@
     {
       "fingerprint": "76cde6ff908af01dbac299f7e34997267c274d8cedc5d95e1e60bdaba6a970db",
       "object": "constraint:ledger.operations_continuity_workflows.operations_continuity_workflows_pkey"
-    },
-    {
-      "fingerprint": "bb6d5ff970d1ec2fdde2f38a8d7c7f11453ceb082862382dc54523aef19afa31",
-      "object": "constraint:ledger.operations_continuity_workflows.operations_workflow_purpose_check"
     },
     {
       "fingerprint": "119ad2fdb0605b0e4d10427a933641df92083c652cd280597215a5dbc2a758ba",
@@ -31567,6 +31595,18 @@
       "object": "dependency:banking.ck_bank_transactions_payment_evidence on banking.bank_transactions->banking.bank_transactions.pending_payment_id:normal"
     },
     {
+      "fingerprint": "ec1901a264ebba44ab92b4a3c220143b118fafc880e77027a53b8e17a0cdea94",
+      "object": "dependency:banking.ck_pending_payments_book_binding on banking.pending_payments->banking.pending_payments.company_id:normal"
+    },
+    {
+      "fingerprint": "ae7de30fd1d332c93c2dc8a6bfdd8a5cd93ed8afe62a26e767cb6625bd0b79d8",
+      "object": "dependency:banking.ck_pending_payments_book_binding on banking.pending_payments->banking.pending_payments.ledger_book_id:normal"
+    },
+    {
+      "fingerprint": "d17576596167263f5b333b228ade51de7370dad12016e1595857520122c5a8f6",
+      "object": "dependency:banking.ck_pending_payments_book_binding on banking.pending_payments->banking.pending_payments.tenant_id:normal"
+    },
+    {
       "fingerprint": "384fa8323142aad546a80c041af685071d595d6b8ed663d3bfdb08cc15c9f03b",
       "object": "dependency:banking.ck_pending_payments_currency on banking.pending_payments->banking.pending_payments.currency:normal"
     },
@@ -33465,10 +33505,6 @@
     {
       "fingerprint": "75192e323d67ed435ffae22b3f89e786888e4931ec05e846c2ae8bcda2b12cd1",
       "object": "dependency:ledger.operations_continuity_audit_workflow_id_fkey on ledger.operations_continuity_audit->ledger.operations_continuity_workflows_pkey:normal"
-    },
-    {
-      "fingerprint": "f37f516d5bd45da831e75d189622cdc01e79b8a2ae431b37034e51b2620d4ca5",
-      "object": "dependency:ledger.operations_workflow_purpose_check on ledger.operations_continuity_workflows->ledger.operations_continuity_workflows.workflow_json:normal"
     },
     {
       "fingerprint": "3d86d46c218bdda04fbc7318c2d4970f595643fb12c3068561472361a69e5e1d",
@@ -36327,10 +36363,6 @@
       "object": "function:ledger.protect_open_lot_current_factor()"
     },
     {
-      "fingerprint": "4417893c9932c986c3d47408f81bfe8b0b5b2a6324628550b40be02601302d88",
-      "object": "function:ledger.protect_operations_workflow_subject()"
-    },
-    {
       "fingerprint": "6bc9cd1a91d16c35f8ea033855df575429c5db2829ab49dc337ea7480d68b34b",
       "object": "function:ledger.protect_private_capital_authority()"
     },
@@ -36745,6 +36777,10 @@
     {
       "fingerprint": "d8ff81c37f99ca31dd2b439a9a2785b04dbbc7f573c99cadcab11c9d8d9062a1",
       "object": "index:banking.ix_pending_payments_entity_id"
+    },
+    {
+      "fingerprint": "45b5cc10174d6f0c313c8af6fad648110cb5f9350aac0fa7fe70ba564e9a9d60",
+      "object": "index:banking.ix_pending_payments_ledger_book_id"
     },
     {
       "fingerprint": "cdff6b1f17644d97dfdf99283a9a06ed6c62da30fd1009cfc4cf8691245caee4",
@@ -37891,12 +37927,8 @@
       "object": "index:ledger.ux_operations_continuity_audit_previous_hash"
     },
     {
-      "fingerprint": "4d83c31ac66ad65b8f19310adb2c34a61edd5e8cdf7bffbbaf5ec124447a38f2",
+      "fingerprint": "af6e075f52eb3fde4b7605917f3c3d5e3a27982a21123b38207397f7ca4151a5",
       "object": "index:ledger.ux_operations_continuity_open_workflow"
-    },
-    {
-      "fingerprint": "8e48061f0612b2fec7adbe8cdc03d18b2166450bc83ec1224fe89dc86656b07d",
-      "object": "index:ledger.ux_operations_continuity_revision_subject"
     },
     {
       "fingerprint": "11edd1ec6fb218a05914cd9438d2788b4c70931638f937fb2475bae5cf008c55",
@@ -40639,7 +40671,7 @@
       "object": "schema:asset_operations"
     },
     {
-      "fingerprint": "13eb851755849f99d829e419847342c0ee8065d83fcb48e16b188c7c1ea89b90",
+      "fingerprint": "36c365cb3d7d06cc3abeed4d4441755d5df11b587277ba8041a2a765d1b339c3",
       "object": "schema:banking"
     },
     {
@@ -40655,7 +40687,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "c28a2c135ad88f1fef218522d68104969783aa83e843ebb3f37ce720a7ec473a",
+      "fingerprint": "8d39a0241d05b29a6f8988a8aa92014729f9bc65352f7a74ba59c284235851d0",
       "object": "schema:ledger"
     },
     {
@@ -40675,7 +40707,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "5ed9bd94ff664313eab8ada94a9d819c53d3f0009a55d6fae2a95a672e0a0135",
+      "fingerprint": "ae4bd3ea661bce14a2396243cc80ebcebf9c6f6f4d15e296a05b978060382bf2",
       "object": "schema:security_master"
     },
     {
@@ -40791,7 +40823,7 @@
       "object": "table:banking.bank_transactions"
     },
     {
-      "fingerprint": "2ee6d7539cb127fd3267b26c497c546db925bab9a55a503e32d095eda995a103",
+      "fingerprint": "ae6e1d36217b5a19d2f1ccfbface2d0c12b57ebfb803193a0c8a0ba6b4163721",
       "object": "table:banking.pending_payments"
     },
     {
@@ -41039,11 +41071,11 @@
       "object": "table:ledger.external_gl_book_policy"
     },
     {
-      "fingerprint": "5cfc5f675526b00a474e6836658c0a65f02111dea10daa4fe2c333a25ef9fe44",
+      "fingerprint": "f1a6df11fa11fb92cb841abc5dbe6dbc1eb191630b11d7dcb1f0ca6c6914bb68",
       "object": "table:ledger.external_gl_mapping_profiles"
     },
     {
-      "fingerprint": "041964df0d2acfc16868e26f965b2f8fe204e8cd5e5855dd893bfdb36d06083f",
+      "fingerprint": "b012c77c59afa722f3a5ce1e188bafc26764b8585c874af356e410141934a39b",
       "object": "table:ledger.external_gl_posting_decisions"
     },
     {
@@ -41051,11 +41083,11 @@
       "object": "table:ledger.external_gl_posting_outbox"
     },
     {
-      "fingerprint": "7a0a982a51991b859687dac629de0c4321e5fbeeea3ef302ea20c3112f6ad14b",
+      "fingerprint": "545da76a89a54bfc1922df6ccc915cff91db5b2da9824892dc819143afe7f04d",
       "object": "table:ledger.external_gl_posting_packages"
     },
     {
-      "fingerprint": "9a6324937efa0ef9f794f553986d4733707a502fde927aaa75907b8497ef87d1",
+      "fingerprint": "9dbb50b1548416eb3a0a8fea353bf15e1e538e525bfe9cde69e2eecba99fc650",
       "object": "table:ledger.external_gl_posting_receipts"
     },
     {
@@ -41191,7 +41223,7 @@
       "object": "table:ledger.operations_continuity_audit"
     },
     {
-      "fingerprint": "5eb57ed1f520d98512677b114ab60ba11878fa84669a296799896949704901b3",
+      "fingerprint": "a58c2e170e7d6a88108e8369e1fb7437a1ea527a0c3806387c9e4062b5219c6c",
       "object": "table:ledger.operations_continuity_workflows"
     },
     {
@@ -41683,11 +41715,11 @@
       "object": "table:security_master.reconciliation_exception"
     },
     {
-      "fingerprint": "9192a81abbe0f3bf088f4215b8e30828b0038cacd7940b6563ce1e112bd2c589",
+      "fingerprint": "53ff7040b61aa83c6e47e7577bcfd943c9532ab53730e491c5ac9045ad41358c",
       "object": "table:security_master.reconciliation_result"
     },
     {
-      "fingerprint": "a00c895faeb6acdf3215a2476bc57eeb869a0329d2bd4174d3b34fea97f1e06f",
+      "fingerprint": "0fb5fefb5ec56cbdad1886ce6cbc92fa9fc90ebf2a626cf8a600599ce43d73dc",
       "object": "table:security_master.reconciliation_run"
     },
     {
@@ -42043,14 +42075,6 @@
       "object": "trigger:ledger.external_gl_mapping_profiles.external_gl_immutable_mapping"
     },
     {
-      "fingerprint": "451f51f35ae753a30c642f845dea4de89ea9b97005dafa98f3824928deb1450c",
-      "object": "trigger:ledger.external_gl_mapping_profiles.external_gl_mapping_no_truncate"
-    },
-    {
-      "fingerprint": "33d6a1d6d32408249db34dd4d4d6eac0bd3e57e7a5bda8fcd0dba4baeffb0b96",
-      "object": "trigger:ledger.external_gl_posting_decisions.external_gl_decision_no_truncate"
-    },
-    {
       "fingerprint": "4fef6196f1027700ef2911adc1c3171e43c9d195de02d9e33e78abbc8671af6e",
       "object": "trigger:ledger.external_gl_posting_decisions.external_gl_immutable_decision"
     },
@@ -42059,16 +42083,8 @@
       "object": "trigger:ledger.external_gl_posting_packages.external_gl_immutable_package"
     },
     {
-      "fingerprint": "4d1c47771fdd2c829ea63887b19198bac0dc40b61508d8d2aa833ea56fc0fbf8",
-      "object": "trigger:ledger.external_gl_posting_packages.external_gl_package_no_truncate"
-    },
-    {
       "fingerprint": "23a2d21d16b08bd06c027e5edbbcc5a0d5bfc7df4b8ec7965529d91ddc868b2c",
       "object": "trigger:ledger.external_gl_posting_receipts.external_gl_immutable_receipt"
-    },
-    {
-      "fingerprint": "081b58d15e80424c178412f227a70220f3d1b3dde01e8a571261f0891a03dfe1",
-      "object": "trigger:ledger.external_gl_posting_receipts.external_gl_receipt_no_truncate"
     },
     {
       "fingerprint": "5e80e91f217377b69ff20500297a0e6412f2e4040552b0a236e8e6cde920272f",
@@ -42253,10 +42269,6 @@
     {
       "fingerprint": "a4d70ce81f9ae40021746acd809fee5555586cefcf3ecf2787fdac2374eb79b9",
       "object": "trigger:ledger.open_lot_backfill_reviews.protect_open_lot_backfill_evidence"
-    },
-    {
-      "fingerprint": "d73d8e8f7d6eb348c2aa7a9b0be6cd7356845f62dd64d84599403d5ee2ea5816",
-      "object": "trigger:ledger.operations_continuity_workflows.operations_workflow_subject_immutable"
     },
     {
       "fingerprint": "155dacffb9b52dc3901f76e7b4f3b71f3b6f2ce640579c431b81fd4d659a9acc",
@@ -54628,6 +54640,42 @@
           "target_schema": "banking"
         },
         {
+          "fingerprint": "ec1901a264ebba44ab92b4a3c220143b118fafc880e77027a53b8e17a0cdea94",
+          "kind": "normal",
+          "source": "banking.ck_pending_payments_book_binding on banking.pending_payments",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "banking",
+          "target": "banking.pending_payments.company_id",
+          "target_kind": "table column",
+          "target_name": "pending_payments",
+          "target_schema": "banking"
+        },
+        {
+          "fingerprint": "ae7de30fd1d332c93c2dc8a6bfdd8a5cd93ed8afe62a26e767cb6625bd0b79d8",
+          "kind": "normal",
+          "source": "banking.ck_pending_payments_book_binding on banking.pending_payments",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "banking",
+          "target": "banking.pending_payments.ledger_book_id",
+          "target_kind": "table column",
+          "target_name": "pending_payments",
+          "target_schema": "banking"
+        },
+        {
+          "fingerprint": "d17576596167263f5b333b228ade51de7370dad12016e1595857520122c5a8f6",
+          "kind": "normal",
+          "source": "banking.ck_pending_payments_book_binding on banking.pending_payments",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "banking",
+          "target": "banking.pending_payments.tenant_id",
+          "target_kind": "table column",
+          "target_name": "pending_payments",
+          "target_schema": "banking"
+        },
+        {
           "fingerprint": "384fa8323142aad546a80c041af685071d595d6b8ed663d3bfdb08cc15c9f03b",
           "kind": "normal",
           "source": "banking.ck_pending_payments_currency on banking.pending_payments",
@@ -54716,7 +54764,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "13eb851755849f99d829e419847342c0ee8065d83fcb48e16b188c7c1ea89b90",
+      "fingerprint": "36c365cb3d7d06cc3abeed4d4441755d5df11b587277ba8041a2a765d1b339c3",
       "foreign_tables": [],
       "functions": [],
       "logical_modules": [
@@ -55521,10 +55569,80 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "3f3f4f0d0cadce108f557ecccc69406a8dacb84df9f3c3416a7a58ade3b94ccf",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5eb3a7b8ae05bd764bd4f1e018529bdb4ce52e9c992c4794ec01ff54e8791dd9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "bacbf88be3e6ec701389564f2d4f24042b25208fc8ccc91eb67006020e91f068",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": true,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "tenant_id",
+                "company_id",
+                "ledger_book_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (tenant_id IS NULL AND company_id IS NULL AND ledger_book_id IS NULL OR tenant_id IS NOT NULL AND btrim(tenant_id) <> ''::text AND company_id IS NOT NULL AND btrim(company_id) <> ''::text AND ledger_book_id IS NOT NULL) NOT VALID",
+              "delete_action": null,
+              "fingerprint": "d610daa8c264580b303ec2304993f99f15a6fe093f07b1c4c5a9e126e311f43f",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_pending_payments_book_binding",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": false
+            },
             {
               "columns": [
                 "currency"
@@ -55591,7 +55709,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "2ee6d7539cb127fd3267b26c497c546db925bab9a55a503e32d095eda995a103",
+          "fingerprint": "ae6e1d36217b5a19d2f1ccfbface2d0c12b57ebfb803193a0c8a0ba6b4163721",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -55611,6 +55729,28 @@
               "options": [],
               "owner": "meridian",
               "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_pending_payments_ledger_book_id ON banking.pending_payments USING btree (ledger_book_id) WHERE (ledger_book_id IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "45b5cc10174d6f0c313c8af6fad648110cb5f9350aac0fa7fe70ba564e9a9d60",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "ledger_book_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_pending_payments_ledger_book_id",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "ledger_book_id IS NOT NULL",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -56661,10 +56801,80 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "3f3f4f0d0cadce108f557ecccc69406a8dacb84df9f3c3416a7a58ade3b94ccf",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5eb3a7b8ae05bd764bd4f1e018529bdb4ce52e9c992c4794ec01ff54e8791dd9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "bacbf88be3e6ec701389564f2d4f24042b25208fc8ccc91eb67006020e91f068",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": true,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "tenant_id",
+                "company_id",
+                "ledger_book_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (tenant_id IS NULL AND company_id IS NULL AND ledger_book_id IS NULL OR tenant_id IS NOT NULL AND btrim(tenant_id) <> ''::text AND company_id IS NOT NULL AND btrim(company_id) <> ''::text AND ledger_book_id IS NOT NULL) NOT VALID",
+              "delete_action": null,
+              "fingerprint": "d610daa8c264580b303ec2304993f99f15a6fe093f07b1c4c5a9e126e311f43f",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_pending_payments_book_binding",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": false
+            },
             {
               "columns": [
                 "currency"
@@ -56731,7 +56941,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "2ee6d7539cb127fd3267b26c497c546db925bab9a55a503e32d095eda995a103",
+          "fingerprint": "ae6e1d36217b5a19d2f1ccfbface2d0c12b57ebfb803193a0c8a0ba6b4163721",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -56751,6 +56961,28 @@
               "options": [],
               "owner": "meridian",
               "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_pending_payments_ledger_book_id ON banking.pending_payments USING btree (ledger_book_id) WHERE (ledger_book_id IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "45b5cc10174d6f0c313c8af6fad648110cb5f9350aac0fa7fe70ba564e9a9d60",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "ledger_book_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_pending_payments_ledger_book_id",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "ledger_book_id IS NOT NULL",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -89852,18 +90084,6 @@
           "target_schema": "ledger"
         },
         {
-          "fingerprint": "f37f516d5bd45da831e75d189622cdc01e79b8a2ae431b37034e51b2620d4ca5",
-          "kind": "normal",
-          "source": "ledger.operations_workflow_purpose_check on ledger.operations_continuity_workflows",
-          "source_kind": "table constraint",
-          "source_name": null,
-          "source_schema": "ledger",
-          "target": "ledger.operations_continuity_workflows.workflow_json",
-          "target_kind": "table column",
-          "target_name": "operations_continuity_workflows",
-          "target_schema": "ledger"
-        },
-        {
           "fingerprint": "3d86d46c218bdda04fbc7318c2d4970f595643fb12c3068561472361a69e5e1d",
           "kind": "normal",
           "source": "ledger.period_close_events_period_id_fkey on ledger.period_close_events",
@@ -90684,7 +90904,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "c28a2c135ad88f1fef218522d68104969783aa83e843ebb3f37ce720a7ec473a",
+      "fingerprint": "8d39a0241d05b29a6f8988a8aa92014729f9bc65352f7a74ba59c284235851d0",
       "foreign_tables": [],
       "functions": [
         {
@@ -91180,37 +91400,6 @@
           "security_definer": false,
           "security_labels": [],
           "signature": "protect_open_lot_current_factor()",
-          "strict": false,
-          "volatility": "volatile"
-        },
-        {
-          "acl": [
-            {
-              "grantable": false,
-              "grantee": "PUBLIC",
-              "grantor": "meridian",
-              "privilege": "execute"
-            },
-            {
-              "grantable": false,
-              "grantee": "meridian",
-              "grantor": "meridian",
-              "privilege": "execute"
-            }
-          ],
-          "comment": null,
-          "definition_hash": "4d0e52cefd09a4facea7ad3a902e6374bbcd093a2fc8228100004f6728568182",
-          "fingerprint": "4417893c9932c986c3d47408f81bfe8b0b5b2a6324628550b40be02601302d88",
-          "kind": "function",
-          "language": "plpgsql",
-          "name": "protect_operations_workflow_subject",
-          "owner": "meridian",
-          "parallel_safety": "unsafe",
-          "result_type": "trigger",
-          "schema": "ledger",
-          "security_definer": false,
-          "security_labels": [],
-          "signature": "protect_operations_workflow_subject()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -101481,7 +101670,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "5cfc5f675526b00a474e6836658c0a65f02111dea10daa4fe2c333a25ef9fe44",
+          "fingerprint": "f1a6df11fa11fb92cb841abc5dbe6dbc1eb191630b11d7dcb1f0ca6c6914bb68",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -101561,23 +101750,6 @@
               "function_signature": "refuse_external_gl_evidence_mutation()",
               "level": "row",
               "name": "external_gl_immutable_mapping",
-              "relation": "external_gl_mapping_profiles",
-              "schema": "ledger",
-              "timing": "before"
-            },
-            {
-              "comment": null,
-              "definition": "CREATE TRIGGER external_gl_mapping_no_truncate BEFORE TRUNCATE ON ledger.external_gl_mapping_profiles FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
-              "definition_hash": "6cc3d89d62bf8bb8680c91896aa2c5746b3b93f59ee644647befd82a59c120ec",
-              "enabled": "origin",
-              "events": [
-                "truncate"
-              ],
-              "fingerprint": "451f51f35ae753a30c642f845dea4de89ea9b97005dafa98f3824928deb1450c",
-              "function_schema": "ledger",
-              "function_signature": "refuse_external_gl_evidence_mutation()",
-              "level": "statement",
-              "name": "external_gl_mapping_no_truncate",
               "relation": "external_gl_mapping_profiles",
               "schema": "ledger",
               "timing": "before"
@@ -101800,7 +101972,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "041964df0d2acfc16868e26f965b2f8fe204e8cd5e5855dd893bfdb36d06083f",
+          "fingerprint": "b012c77c59afa722f3a5ce1e188bafc26764b8585c874af356e410141934a39b",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -101842,23 +102014,6 @@
           "security_labels": [],
           "sequence": null,
           "triggers": [
-            {
-              "comment": null,
-              "definition": "CREATE TRIGGER external_gl_decision_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_decisions FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
-              "definition_hash": "27bf1bb522acd6371ea3f2df7415ee821c7a89dfa81ddd9072041bfef674a2b0",
-              "enabled": "origin",
-              "events": [
-                "truncate"
-              ],
-              "fingerprint": "33d6a1d6d32408249db34dd4d4d6eac0bd3e57e7a5bda8fcd0dba4baeffb0b96",
-              "function_schema": "ledger",
-              "function_signature": "refuse_external_gl_evidence_mutation()",
-              "level": "statement",
-              "name": "external_gl_decision_no_truncate",
-              "relation": "external_gl_posting_decisions",
-              "schema": "ledger",
-              "timing": "before"
-            },
             {
               "comment": null,
               "definition": "CREATE TRIGGER external_gl_immutable_decision BEFORE DELETE OR UPDATE ON ledger.external_gl_posting_decisions FOR EACH ROW EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
@@ -102653,7 +102808,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "7a0a982a51991b859687dac629de0c4321e5fbeeea3ef302ea20c3112f6ad14b",
+          "fingerprint": "545da76a89a54bfc1922df6ccc915cff91db5b2da9824892dc819143afe7f04d",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -102732,23 +102887,6 @@
               "function_signature": "refuse_external_gl_evidence_mutation()",
               "level": "row",
               "name": "external_gl_immutable_package",
-              "relation": "external_gl_posting_packages",
-              "schema": "ledger",
-              "timing": "before"
-            },
-            {
-              "comment": null,
-              "definition": "CREATE TRIGGER external_gl_package_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_packages FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
-              "definition_hash": "e5d7b95142733e0c9c222fcaa1d19fa5aa8d14b81dbcafa5b8d8c4552bf708f0",
-              "enabled": "origin",
-              "events": [
-                "truncate"
-              ],
-              "fingerprint": "4d1c47771fdd2c829ea63887b19198bac0dc40b61508d8d2aa833ea56fc0fbf8",
-              "function_schema": "ledger",
-              "function_signature": "refuse_external_gl_evidence_mutation()",
-              "level": "statement",
-              "name": "external_gl_package_no_truncate",
               "relation": "external_gl_posting_packages",
               "schema": "ledger",
               "timing": "before"
@@ -102897,7 +103035,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "9a6324937efa0ef9f794f553986d4733707a502fde927aaa75907b8497ef87d1",
+          "fingerprint": "9dbb50b1548416eb3a0a8fea353bf15e1e538e525bfe9cde69e2eecba99fc650",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -102975,23 +103113,6 @@
               "function_signature": "refuse_external_gl_evidence_mutation()",
               "level": "row",
               "name": "external_gl_immutable_receipt",
-              "relation": "external_gl_posting_receipts",
-              "schema": "ledger",
-              "timing": "before"
-            },
-            {
-              "comment": null,
-              "definition": "CREATE TRIGGER external_gl_receipt_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_receipts FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
-              "definition_hash": "4c199d7be768ce37c2ad29edfa37db6b36f8ee9d606854271adf8a165f663e00",
-              "enabled": "origin",
-              "events": [
-                "truncate"
-              ],
-              "fingerprint": "081b58d15e80424c178412f227a70220f3d1b3dde01e8a571261f0891a03dfe1",
-              "function_schema": "ledger",
-              "function_signature": "refuse_external_gl_evidence_mutation()",
-              "level": "statement",
-              "name": "external_gl_receipt_no_truncate",
               "relation": "external_gl_posting_receipts",
               "schema": "ledger",
               "timing": "before"
@@ -117240,26 +117361,6 @@
           "constraints": [
             {
               "columns": [
-                "workflow_json"
-              ],
-              "comment": null,
-              "deferrable": false,
-              "definition": "CHECK ((NOT workflow_json ? 'purpose'::text OR jsonb_typeof(workflow_json -> 'purpose'::text) = 'string'::text) AND (COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = ANY (ARRAY['Close'::text, 'SecurityMasterRevision'::text])) AND (COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'Close'::text AND (workflow_json ->> 'subjectRevisionId'::text) IS NULL AND (workflow_json ->> 'subjectMaker'::text) IS NULL AND (workflow_json ->> 'subjectEvidenceId'::text) IS NULL AND (workflow_json ->> 'subjectEvidenceSha256'::text) IS NULL OR COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'SecurityMasterRevision'::text AND (workflow_json ->> 'subjectRevisionId'::text) IS NOT NULL AND (workflow_json ->> 'subjectMaker'::text) IS NOT NULL AND length(TRIM(BOTH FROM workflow_json ->> 'subjectMaker'::text)) > 0 AND (workflow_json ->> 'subjectEvidenceId'::text) IS NOT NULL AND length(TRIM(BOTH FROM workflow_json ->> 'subjectEvidenceId'::text)) > 0 AND (workflow_json ->> 'subjectEvidenceSha256'::text) IS NOT NULL AND (workflow_json ->> 'subjectEvidenceSha256'::text) ~ '^[a-f0-9]{64}$'::text))",
-              "delete_action": null,
-              "fingerprint": "bb6d5ff970d1ec2fdde2f38a8d7c7f11453ceb082862382dc54523aef19afa31",
-              "initially_deferred": false,
-              "match_type": null,
-              "name": "operations_workflow_purpose_check",
-              "no_inherit": false,
-              "referenced_columns": [],
-              "referenced_schema": null,
-              "referenced_table": null,
-              "type": "check",
-              "update_action": null,
-              "validated": true
-            },
-            {
-              "columns": [
                 "workflow_id"
               ],
               "comment": null,
@@ -117281,7 +117382,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "5eb57ed1f520d98512677b114ab60ba11878fa84669a296799896949704901b3",
+          "fingerprint": "a58c2e170e7d6a88108e8369e1fb7437a1ea527a0c3806387c9e4062b5219c6c",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -117400,9 +117501,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_open_workflow ON ledger.operations_continuity_workflows USING btree (fund_account_id, period_id) WHERE ((derived_status <> 'Closed'::text) AND (COALESCE((workflow_json ->> 'purpose'::text), 'Close'::text) = 'Close'::text))",
+              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_open_workflow ON ledger.operations_continuity_workflows USING btree (fund_account_id, period_id) WHERE (derived_status <> 'Closed'::text)",
               "expression": null,
-              "fingerprint": "4d83c31ac66ad65b8f19310adb2c34a61edd5e8cdf7bffbbaf5ec124447a38f2",
+              "fingerprint": "af6e075f52eb3fde4b7605917f3c3d5e3a27982a21123b38207397f7ca4151a5",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -117414,29 +117515,7 @@
               "name": "ux_operations_continuity_open_workflow",
               "options": [],
               "owner": "meridian",
-              "predicate": "derived_status <> 'Closed'::text AND COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'Close'::text",
-              "primary": false,
-              "ready": true,
-              "security_labels": [],
-              "unique": true,
-              "valid": true
-            },
-            {
-              "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_revision_subject ON ledger.operations_continuity_workflows USING btree ((((workflow_json ->> 'subjectRevisionId'::text))::uuid)) WHERE ((workflow_json ->> 'purpose'::text) = 'SecurityMasterRevision'::text)",
-              "expression": "(workflow_json ->> 'subjectRevisionId'::text)::uuid",
-              "fingerprint": "8e48061f0612b2fec7adbe8cdc03d18b2166450bc83ec1224fe89dc86656b07d",
-              "included_columns": [],
-              "is_replica_identity": false,
-              "key_columns": [
-                "((workflow_json ->> 'subjectRevisionId'::text)::uuid)"
-              ],
-              "live": true,
-              "method": "btree",
-              "name": "ux_operations_continuity_revision_subject",
-              "options": [],
-              "owner": "meridian",
-              "predicate": "(workflow_json ->> 'purpose'::text) = 'SecurityMasterRevision'::text",
+              "predicate": "derived_status <> 'Closed'::text",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -117457,25 +117536,7 @@
           "schema": "ledger",
           "security_labels": [],
           "sequence": null,
-          "triggers": [
-            {
-              "comment": null,
-              "definition": "CREATE TRIGGER operations_workflow_subject_immutable BEFORE UPDATE ON ledger.operations_continuity_workflows FOR EACH ROW EXECUTE FUNCTION ledger.protect_operations_workflow_subject()",
-              "definition_hash": "08edfce8fe454a57baa448d0bb7076b3db155495e701ad1910efbad81833e447",
-              "enabled": "origin",
-              "events": [
-                "update"
-              ],
-              "fingerprint": "d73d8e8f7d6eb348c2aa7a9b0be6cd7356845f62dd64d84599403d5ee2ea5816",
-              "function_schema": "ledger",
-              "function_signature": "protect_operations_workflow_subject()",
-              "level": "row",
-              "name": "operations_workflow_subject_immutable",
-              "relation": "operations_continuity_workflows",
-              "schema": "ledger",
-              "timing": "before"
-            }
-          ]
+          "triggers": []
         },
         {
           "acl": [
@@ -133430,7 +133491,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "5cfc5f675526b00a474e6836658c0a65f02111dea10daa4fe2c333a25ef9fe44",
+          "fingerprint": "f1a6df11fa11fb92cb841abc5dbe6dbc1eb191630b11d7dcb1f0ca6c6914bb68",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -133510,23 +133571,6 @@
               "function_signature": "refuse_external_gl_evidence_mutation()",
               "level": "row",
               "name": "external_gl_immutable_mapping",
-              "relation": "external_gl_mapping_profiles",
-              "schema": "ledger",
-              "timing": "before"
-            },
-            {
-              "comment": null,
-              "definition": "CREATE TRIGGER external_gl_mapping_no_truncate BEFORE TRUNCATE ON ledger.external_gl_mapping_profiles FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
-              "definition_hash": "6cc3d89d62bf8bb8680c91896aa2c5746b3b93f59ee644647befd82a59c120ec",
-              "enabled": "origin",
-              "events": [
-                "truncate"
-              ],
-              "fingerprint": "451f51f35ae753a30c642f845dea4de89ea9b97005dafa98f3824928deb1450c",
-              "function_schema": "ledger",
-              "function_signature": "refuse_external_gl_evidence_mutation()",
-              "level": "statement",
-              "name": "external_gl_mapping_no_truncate",
               "relation": "external_gl_mapping_profiles",
               "schema": "ledger",
               "timing": "before"
@@ -133696,7 +133740,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "041964df0d2acfc16868e26f965b2f8fe204e8cd5e5855dd893bfdb36d06083f",
+          "fingerprint": "b012c77c59afa722f3a5ce1e188bafc26764b8585c874af356e410141934a39b",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -133738,23 +133782,6 @@
           "security_labels": [],
           "sequence": null,
           "triggers": [
-            {
-              "comment": null,
-              "definition": "CREATE TRIGGER external_gl_decision_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_decisions FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
-              "definition_hash": "27bf1bb522acd6371ea3f2df7415ee821c7a89dfa81ddd9072041bfef674a2b0",
-              "enabled": "origin",
-              "events": [
-                "truncate"
-              ],
-              "fingerprint": "33d6a1d6d32408249db34dd4d4d6eac0bd3e57e7a5bda8fcd0dba4baeffb0b96",
-              "function_schema": "ledger",
-              "function_signature": "refuse_external_gl_evidence_mutation()",
-              "level": "statement",
-              "name": "external_gl_decision_no_truncate",
-              "relation": "external_gl_posting_decisions",
-              "schema": "ledger",
-              "timing": "before"
-            },
             {
               "comment": null,
               "definition": "CREATE TRIGGER external_gl_immutable_decision BEFORE DELETE OR UPDATE ON ledger.external_gl_posting_decisions FOR EACH ROW EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
@@ -134549,7 +134576,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "7a0a982a51991b859687dac629de0c4321e5fbeeea3ef302ea20c3112f6ad14b",
+          "fingerprint": "545da76a89a54bfc1922df6ccc915cff91db5b2da9824892dc819143afe7f04d",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -134628,23 +134655,6 @@
               "function_signature": "refuse_external_gl_evidence_mutation()",
               "level": "row",
               "name": "external_gl_immutable_package",
-              "relation": "external_gl_posting_packages",
-              "schema": "ledger",
-              "timing": "before"
-            },
-            {
-              "comment": null,
-              "definition": "CREATE TRIGGER external_gl_package_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_packages FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
-              "definition_hash": "e5d7b95142733e0c9c222fcaa1d19fa5aa8d14b81dbcafa5b8d8c4552bf708f0",
-              "enabled": "origin",
-              "events": [
-                "truncate"
-              ],
-              "fingerprint": "4d1c47771fdd2c829ea63887b19198bac0dc40b61508d8d2aa833ea56fc0fbf8",
-              "function_schema": "ledger",
-              "function_signature": "refuse_external_gl_evidence_mutation()",
-              "level": "statement",
-              "name": "external_gl_package_no_truncate",
               "relation": "external_gl_posting_packages",
               "schema": "ledger",
               "timing": "before"
@@ -134793,7 +134803,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "9a6324937efa0ef9f794f553986d4733707a502fde927aaa75907b8497ef87d1",
+          "fingerprint": "9dbb50b1548416eb3a0a8fea353bf15e1e538e525bfe9cde69e2eecba99fc650",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -134871,23 +134881,6 @@
               "function_signature": "refuse_external_gl_evidence_mutation()",
               "level": "row",
               "name": "external_gl_immutable_receipt",
-              "relation": "external_gl_posting_receipts",
-              "schema": "ledger",
-              "timing": "before"
-            },
-            {
-              "comment": null,
-              "definition": "CREATE TRIGGER external_gl_receipt_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_receipts FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
-              "definition_hash": "4c199d7be768ce37c2ad29edfa37db6b36f8ee9d606854271adf8a165f663e00",
-              "enabled": "origin",
-              "events": [
-                "truncate"
-              ],
-              "fingerprint": "081b58d15e80424c178412f227a70220f3d1b3dde01e8a571261f0891a03dfe1",
-              "function_schema": "ledger",
-              "function_signature": "refuse_external_gl_evidence_mutation()",
-              "level": "statement",
-              "name": "external_gl_receipt_no_truncate",
               "relation": "external_gl_posting_receipts",
               "schema": "ledger",
               "timing": "before"
@@ -148832,26 +148825,6 @@
           "constraints": [
             {
               "columns": [
-                "workflow_json"
-              ],
-              "comment": null,
-              "deferrable": false,
-              "definition": "CHECK ((NOT workflow_json ? 'purpose'::text OR jsonb_typeof(workflow_json -> 'purpose'::text) = 'string'::text) AND (COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = ANY (ARRAY['Close'::text, 'SecurityMasterRevision'::text])) AND (COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'Close'::text AND (workflow_json ->> 'subjectRevisionId'::text) IS NULL AND (workflow_json ->> 'subjectMaker'::text) IS NULL AND (workflow_json ->> 'subjectEvidenceId'::text) IS NULL AND (workflow_json ->> 'subjectEvidenceSha256'::text) IS NULL OR COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'SecurityMasterRevision'::text AND (workflow_json ->> 'subjectRevisionId'::text) IS NOT NULL AND (workflow_json ->> 'subjectMaker'::text) IS NOT NULL AND length(TRIM(BOTH FROM workflow_json ->> 'subjectMaker'::text)) > 0 AND (workflow_json ->> 'subjectEvidenceId'::text) IS NOT NULL AND length(TRIM(BOTH FROM workflow_json ->> 'subjectEvidenceId'::text)) > 0 AND (workflow_json ->> 'subjectEvidenceSha256'::text) IS NOT NULL AND (workflow_json ->> 'subjectEvidenceSha256'::text) ~ '^[a-f0-9]{64}$'::text))",
-              "delete_action": null,
-              "fingerprint": "bb6d5ff970d1ec2fdde2f38a8d7c7f11453ceb082862382dc54523aef19afa31",
-              "initially_deferred": false,
-              "match_type": null,
-              "name": "operations_workflow_purpose_check",
-              "no_inherit": false,
-              "referenced_columns": [],
-              "referenced_schema": null,
-              "referenced_table": null,
-              "type": "check",
-              "update_action": null,
-              "validated": true
-            },
-            {
-              "columns": [
                 "workflow_id"
               ],
               "comment": null,
@@ -148873,7 +148846,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "5eb57ed1f520d98512677b114ab60ba11878fa84669a296799896949704901b3",
+          "fingerprint": "a58c2e170e7d6a88108e8369e1fb7437a1ea527a0c3806387c9e4062b5219c6c",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -148992,9 +148965,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_open_workflow ON ledger.operations_continuity_workflows USING btree (fund_account_id, period_id) WHERE ((derived_status <> 'Closed'::text) AND (COALESCE((workflow_json ->> 'purpose'::text), 'Close'::text) = 'Close'::text))",
+              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_open_workflow ON ledger.operations_continuity_workflows USING btree (fund_account_id, period_id) WHERE (derived_status <> 'Closed'::text)",
               "expression": null,
-              "fingerprint": "4d83c31ac66ad65b8f19310adb2c34a61edd5e8cdf7bffbbaf5ec124447a38f2",
+              "fingerprint": "af6e075f52eb3fde4b7605917f3c3d5e3a27982a21123b38207397f7ca4151a5",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -149006,29 +148979,7 @@
               "name": "ux_operations_continuity_open_workflow",
               "options": [],
               "owner": "meridian",
-              "predicate": "derived_status <> 'Closed'::text AND COALESCE(workflow_json ->> 'purpose'::text, 'Close'::text) = 'Close'::text",
-              "primary": false,
-              "ready": true,
-              "security_labels": [],
-              "unique": true,
-              "valid": true
-            },
-            {
-              "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_operations_continuity_revision_subject ON ledger.operations_continuity_workflows USING btree ((((workflow_json ->> 'subjectRevisionId'::text))::uuid)) WHERE ((workflow_json ->> 'purpose'::text) = 'SecurityMasterRevision'::text)",
-              "expression": "(workflow_json ->> 'subjectRevisionId'::text)::uuid",
-              "fingerprint": "8e48061f0612b2fec7adbe8cdc03d18b2166450bc83ec1224fe89dc86656b07d",
-              "included_columns": [],
-              "is_replica_identity": false,
-              "key_columns": [
-                "((workflow_json ->> 'subjectRevisionId'::text)::uuid)"
-              ],
-              "live": true,
-              "method": "btree",
-              "name": "ux_operations_continuity_revision_subject",
-              "options": [],
-              "owner": "meridian",
-              "predicate": "(workflow_json ->> 'purpose'::text) = 'SecurityMasterRevision'::text",
+              "predicate": "derived_status <> 'Closed'::text",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -149049,25 +149000,7 @@
           "schema": "ledger",
           "security_labels": [],
           "sequence": null,
-          "triggers": [
-            {
-              "comment": null,
-              "definition": "CREATE TRIGGER operations_workflow_subject_immutable BEFORE UPDATE ON ledger.operations_continuity_workflows FOR EACH ROW EXECUTE FUNCTION ledger.protect_operations_workflow_subject()",
-              "definition_hash": "08edfce8fe454a57baa448d0bb7076b3db155495e701ad1910efbad81833e447",
-              "enabled": "origin",
-              "events": [
-                "update"
-              ],
-              "fingerprint": "d73d8e8f7d6eb348c2aa7a9b0be6cd7356845f62dd64d84599403d5ee2ea5816",
-              "function_schema": "ledger",
-              "function_signature": "protect_operations_workflow_subject()",
-              "level": "row",
-              "name": "operations_workflow_subject_immutable",
-              "relation": "operations_continuity_workflows",
-              "schema": "ledger",
-              "timing": "before"
-            }
-          ]
+          "triggers": []
         },
         {
           "acl": [
@@ -155060,40 +154993,6 @@
         },
         {
           "comment": null,
-          "definition": "CREATE TRIGGER external_gl_mapping_no_truncate BEFORE TRUNCATE ON ledger.external_gl_mapping_profiles FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
-          "definition_hash": "6cc3d89d62bf8bb8680c91896aa2c5746b3b93f59ee644647befd82a59c120ec",
-          "enabled": "origin",
-          "events": [
-            "truncate"
-          ],
-          "fingerprint": "451f51f35ae753a30c642f845dea4de89ea9b97005dafa98f3824928deb1450c",
-          "function_schema": "ledger",
-          "function_signature": "refuse_external_gl_evidence_mutation()",
-          "level": "statement",
-          "name": "external_gl_mapping_no_truncate",
-          "relation": "external_gl_mapping_profiles",
-          "schema": "ledger",
-          "timing": "before"
-        },
-        {
-          "comment": null,
-          "definition": "CREATE TRIGGER external_gl_decision_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_decisions FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
-          "definition_hash": "27bf1bb522acd6371ea3f2df7415ee821c7a89dfa81ddd9072041bfef674a2b0",
-          "enabled": "origin",
-          "events": [
-            "truncate"
-          ],
-          "fingerprint": "33d6a1d6d32408249db34dd4d4d6eac0bd3e57e7a5bda8fcd0dba4baeffb0b96",
-          "function_schema": "ledger",
-          "function_signature": "refuse_external_gl_evidence_mutation()",
-          "level": "statement",
-          "name": "external_gl_decision_no_truncate",
-          "relation": "external_gl_posting_decisions",
-          "schema": "ledger",
-          "timing": "before"
-        },
-        {
-          "comment": null,
           "definition": "CREATE TRIGGER external_gl_immutable_decision BEFORE DELETE OR UPDATE ON ledger.external_gl_posting_decisions FOR EACH ROW EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
           "definition_hash": "d679156e7bfde5e20631a1eaa18c6ca5a5c2fa4c30f0c504184a20a5c5518e41",
           "enabled": "origin",
@@ -155130,23 +155029,6 @@
         },
         {
           "comment": null,
-          "definition": "CREATE TRIGGER external_gl_package_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_packages FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
-          "definition_hash": "e5d7b95142733e0c9c222fcaa1d19fa5aa8d14b81dbcafa5b8d8c4552bf708f0",
-          "enabled": "origin",
-          "events": [
-            "truncate"
-          ],
-          "fingerprint": "4d1c47771fdd2c829ea63887b19198bac0dc40b61508d8d2aa833ea56fc0fbf8",
-          "function_schema": "ledger",
-          "function_signature": "refuse_external_gl_evidence_mutation()",
-          "level": "statement",
-          "name": "external_gl_package_no_truncate",
-          "relation": "external_gl_posting_packages",
-          "schema": "ledger",
-          "timing": "before"
-        },
-        {
-          "comment": null,
           "definition": "CREATE TRIGGER external_gl_immutable_receipt BEFORE DELETE OR UPDATE ON ledger.external_gl_posting_receipts FOR EACH ROW EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
           "definition_hash": "f54413b3d6d1a3ffbf2f2e7beb9f238b1f86631841c59d172f804587fb470ad2",
           "enabled": "origin",
@@ -155159,23 +155041,6 @@
           "function_signature": "refuse_external_gl_evidence_mutation()",
           "level": "row",
           "name": "external_gl_immutable_receipt",
-          "relation": "external_gl_posting_receipts",
-          "schema": "ledger",
-          "timing": "before"
-        },
-        {
-          "comment": null,
-          "definition": "CREATE TRIGGER external_gl_receipt_no_truncate BEFORE TRUNCATE ON ledger.external_gl_posting_receipts FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_external_gl_evidence_mutation()",
-          "definition_hash": "4c199d7be768ce37c2ad29edfa37db6b36f8ee9d606854271adf8a165f663e00",
-          "enabled": "origin",
-          "events": [
-            "truncate"
-          ],
-          "fingerprint": "081b58d15e80424c178412f227a70220f3d1b3dde01e8a571261f0891a03dfe1",
-          "function_schema": "ledger",
-          "function_signature": "refuse_external_gl_evidence_mutation()",
-          "level": "statement",
-          "name": "external_gl_receipt_no_truncate",
           "relation": "external_gl_posting_receipts",
           "schema": "ledger",
           "timing": "before"
@@ -155982,23 +155847,6 @@
           "level": "row",
           "name": "protect_open_lot_backfill_evidence",
           "relation": "open_lot_backfill_reviews",
-          "schema": "ledger",
-          "timing": "before"
-        },
-        {
-          "comment": null,
-          "definition": "CREATE TRIGGER operations_workflow_subject_immutable BEFORE UPDATE ON ledger.operations_continuity_workflows FOR EACH ROW EXECUTE FUNCTION ledger.protect_operations_workflow_subject()",
-          "definition_hash": "08edfce8fe454a57baa448d0bb7076b3db155495e701ad1910efbad81833e447",
-          "enabled": "origin",
-          "events": [
-            "update"
-          ],
-          "fingerprint": "d73d8e8f7d6eb348c2aa7a9b0be6cd7356845f62dd64d84599403d5ee2ea5816",
-          "function_schema": "ledger",
-          "function_signature": "protect_operations_workflow_subject()",
-          "level": "row",
-          "name": "operations_workflow_subject_immutable",
-          "relation": "operations_continuity_workflows",
           "schema": "ledger",
           "timing": "before"
         },
@@ -187902,7 +187750,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "5ed9bd94ff664313eab8ada94a9d819c53d3f0009a55d6fae2a95a672e0a0135",
+      "fingerprint": "ae4bd3ea661bce14a2396243cc80ebcebf9c6f6f4d15e296a05b978060382bf2",
       "foreign_tables": [],
       "functions": [
         {
@@ -222552,22 +222400,6 @@
               "security_labels": [],
               "type_name": "uuid",
               "type_schema": "pg_catalog"
-            },
-            {
-              "collation": null,
-              "comment": null,
-              "data_type": "jsonb",
-              "default": null,
-              "fingerprint": "7a0a91bf66e0e9940a5516ad9e9728d83d5d6ff90ac3978f60039eacec2df07d",
-              "generated": null,
-              "generated_expression": null,
-              "identity": null,
-              "name": "evidence_json",
-              "nullable": true,
-              "ordinal_position": 17,
-              "security_labels": [],
-              "type_name": "jsonb",
-              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -222683,7 +222515,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "9192a81abbe0f3bf088f4215b8e30828b0038cacd7940b6563ce1e112bd2c589",
+          "fingerprint": "53ff7040b61aa83c6e47e7577bcfd943c9532ab53730e491c5ac9045ad41358c",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -222907,22 +222739,6 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
-            },
-            {
-              "collation": null,
-              "comment": null,
-              "data_type": "jsonb",
-              "default": null,
-              "fingerprint": "531e1fd7257c27984b51a10d40c6006dd931707f7a5160e28e1cf307153151f8",
-              "generated": null,
-              "generated_expression": null,
-              "identity": null,
-              "name": "evidence_json",
-              "nullable": true,
-              "ordinal_position": 7,
-              "security_labels": [],
-              "type_name": "jsonb",
-              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -222994,7 +222810,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "a00c895faeb6acdf3215a2476bc57eeb869a0329d2bd4174d3b34fea97f1e06f",
+          "fingerprint": "0fb5fefb5ec56cbdad1886ce6cbc92fa9fc90ebf2a626cf8a600599ce43d73dc",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -274474,22 +274290,6 @@
               "security_labels": [],
               "type_name": "uuid",
               "type_schema": "pg_catalog"
-            },
-            {
-              "collation": null,
-              "comment": null,
-              "data_type": "jsonb",
-              "default": null,
-              "fingerprint": "7a0a91bf66e0e9940a5516ad9e9728d83d5d6ff90ac3978f60039eacec2df07d",
-              "generated": null,
-              "generated_expression": null,
-              "identity": null,
-              "name": "evidence_json",
-              "nullable": true,
-              "ordinal_position": 17,
-              "security_labels": [],
-              "type_name": "jsonb",
-              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -274605,7 +274405,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "9192a81abbe0f3bf088f4215b8e30828b0038cacd7940b6563ce1e112bd2c589",
+          "fingerprint": "53ff7040b61aa83c6e47e7577bcfd943c9532ab53730e491c5ac9045ad41358c",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -274829,22 +274629,6 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
-            },
-            {
-              "collation": null,
-              "comment": null,
-              "data_type": "jsonb",
-              "default": null,
-              "fingerprint": "531e1fd7257c27984b51a10d40c6006dd931707f7a5160e28e1cf307153151f8",
-              "generated": null,
-              "generated_expression": null,
-              "identity": null,
-              "name": "evidence_json",
-              "nullable": true,
-              "ordinal_position": 7,
-              "security_labels": [],
-              "type_name": "jsonb",
-              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -274916,7 +274700,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "a00c895faeb6acdf3215a2476bc57eeb869a0329d2bd4174d3b34fea97f1e06f",
+          "fingerprint": "0fb5fefb5ec56cbdad1886ce6cbc92fa9fc90ebf2a626cf8a600599ce43d73dc",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [

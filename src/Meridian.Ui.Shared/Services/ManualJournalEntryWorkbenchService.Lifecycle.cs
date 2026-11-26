@@ -765,6 +765,10 @@ public sealed partial class ManualJournalEntryWorkbenchService
             lines.Add(normalizedLine);
         }
 
+        if (await ValidateRebookInverseAsync(draft, fundProfileId, lines, ct).ConfigureAwait(false) is { } rebookReason)
+            issues.Add(Issue("manual-je.rebook-inverse-required", AccountingConfigurationValidationSeverityDto.Critical,
+                rebookReason, "lines", "Recreate the rebook from the posted journal and edit only its replacement lines."));
+
         ValidateTreasuryContext(treasuryContext, entryType, allowIncomplete, issues,
             intercompanyCounterpart: draft.IntercompanyProposalId is not null);
         await ValidateAgreementDraftAsync(draft, lines, chartByPath, issues, ct).ConfigureAwait(false);

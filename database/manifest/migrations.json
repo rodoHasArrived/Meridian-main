@@ -595,15 +595,6 @@
       "sha256": "54feb10eaf23439837a00c7c0bea029ffe990101e185b95596e52d6d13a00091"
     },
     {
-      "filename": "070_otc_decimal_precision.sql",
-      "immutable": true,
-      "migration_set_id": "security-master",
-      "ordinal": 70,
-      "path": "src/Meridian.Storage/SecurityMaster/Migrations/070_otc_decimal_precision.sql",
-      "schema": "security_master",
-      "sha256": "22f2709179404dddeba75da4c29eeae65202b91ebb6054bd99eac9b7e2721c4c"
-    },
-    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -728,15 +719,6 @@
       "path": "src/Meridian.Storage/DirectLending/Migrations/011_direct_lending_pik_capitalization_and_rate_resets.sql",
       "schema": "security_master",
       "sha256": "a6c0e3895e65dfaa480f5bd5ac360a926f73b8499d9a1e6144f4f767e1b3002c"
-    },
-    {
-      "filename": "012_direct_lending_reconciliation_evidence.sql",
-      "immutable": true,
-      "migration_set_id": "direct-lending",
-      "ordinal": null,
-      "path": "src/Meridian.Storage/DirectLending/Migrations/012_direct_lending_reconciliation_evidence.sql",
-      "schema": "security_master",
-      "sha256": "3d65860ddb7c6afa7a8235685fd386aa99ca0c29baf451ef6eaf599a5b5b8151"
     },
     {
       "filename": "001_asset_operations.sql",
@@ -1450,24 +1432,6 @@
       "sha256": "507b6512c2c48c05793fdae97ebcaf6c4ab46d705e33d7ea06c29a70d5d118a1"
     },
     {
-      "filename": "V_ledger_083__external_gl_evidence_truncate_guards.sql",
-      "immutable": true,
-      "migration_set_id": "ledger",
-      "ordinal": null,
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_083__external_gl_evidence_truncate_guards.sql",
-      "schema": "ledger",
-      "sha256": "0ef40a4b577ae19b1c5c32e4eff5cf73d7e4a6fa11fa8412e9d6ef4b13fa0022"
-    },
-    {
-      "filename": "V_ledger_084__security_revision_workflow_scope.sql",
-      "immutable": true,
-      "migration_set_id": "ledger",
-      "ordinal": null,
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_084__security_revision_workflow_scope.sql",
-      "schema": "ledger",
-      "sha256": "e8837484c7ea4a52d39f8d6967aadf1deac7baa7fb5075ef0ff3450e116cc358"
-    },
-    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1666,6 +1630,15 @@
       "sha256": "b6be816522f0070d1b7da2ddb59f573d4bfa6c3ab431f33eb709d1c61ef964f0"
     },
     {
+      "filename": "004_payment_book_binding.sql",
+      "immutable": true,
+      "migration_set_id": "banking",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Banking/Migrations/004_payment_book_binding.sql",
+      "schema": "banking",
+      "sha256": "216a9cb9f6d9aa02b363bb6f47e4d51d711a28ab9c96b96003b9c40a328a3751"
+    },
+    {
       "filename": "001_money_market.sql",
       "immutable": true,
       "migration_set_id": "money-market",
@@ -1811,7 +1784,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "bc51393146e0fb30f32ace17f726b029603149404d2039866c2682b4c81bda4b",
+  "fingerprint": "f1512798a287e061cc7773c7d24b9a33e21f914710680b4f8aa6271457a6840a",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -2073,9 +2046,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 201,
+    "files": 198,
     "migration_sets": 11,
-    "waivers": 60,
+    "waivers": 56,
     "warnings": 0
   },
   "waivers": [
@@ -2361,27 +2334,6 @@
     },
     {
       "category": "destructive_changes",
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_083__external_gl_evidence_truncate_guards.sql",
-      "reason": "Each DROP TRIGGER IF EXISTS immediately recreates the same named BEFORE TRUNCATE protection trigger on the same table. The migration runner applies this DDL under its transaction and advisory migration lock, so a failed recreation restores the preceding protections. No table, column, row, mapping revision, package, decision or receipt is removed. This exact path/rule exception follows V_ledger_030/V_ledger_031 and permits only the documented replacement guards, not omission of a replacement trigger.",
-      "review_after": "2027-05-21",
-      "rule_id": "migration-drop-object"
-    },
-    {
-      "category": "destructive_changes",
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_083__external_gl_evidence_truncate_guards.sql",
-      "reason": "The lexical TRUNCATE matches are BEFORE TRUNCATE rejection-trigger declarations on immutable external-GL mapping revisions, posting packages, decisions and provider receipts. They call the existing mutation-refusal function and execute no data truncation. PostgreSQL regression coverage requires direct and cascading truncation to refuse while retaining the original approvals and permitting ordinary appended revisions. This exact path/rule exception preserves all UPDATE/DELETE protections and authorizes no data removal.",
-      "review_after": "2027-05-21",
-      "rule_id": "migration-truncate"
-    },
-    {
-      "category": "destructive_changes",
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_084__security_revision_workflow_scope.sql",
-      "reason": "Row-preserving replacement of only ux_operations_continuity_open_workflow: the same transaction recreates close-lane uniqueness for workflows whose purpose is absent or Close and adds canonical-UUID uniqueness for each Security Master revision subject. New checks reject unknown or explicit-null purposes and malformed subject authority; subject and owning scope are immutable. No table, column, workflow or audit row is deleted or rewritten. This SQL was authored as ordinal 073 in the unmerged security-pack change (#3603) and is renumbered unchanged to 084 because main later took 073 and then 083. On 2026-11-26 the renumbered file was applied through the migration runner on a disposable local PostgreSQL 16 database carrying ledger migrations 001-083, and the three SecurityRevisionWorkflowPostgresTests passed against it: missing purpose retains Close uniqueness while distinct revision subjects coexist; null, unknown and incomplete purposes are refused at the database boundary; a retained subject and its accounting scope cannot be rewritten. Apply through the existing transactional/advisory-lock runner with purpose-aware consumers; do not delete retained revision workflows to restore the former all-purpose index. This exact path/rule exception is technical review, not a claim of independent human approval or live rollout.",
-      "review_after": "2027-05-26",
-      "rule_id": "migration-drop-object"
-    },
-    {
-      "category": "destructive_changes",
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/032_security_master_normalized_primary_identifier_uniqueness.sql",
       "reason": "The migration drops only the superseded raw-value unique index and normalized non-unique index after its deterministic collision preflight succeeds, then immediately creates the normalized unique index. No table data or identifier history is removed.",
       "review_after": "2027-02-28",
@@ -2484,13 +2436,6 @@
       "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers on the newly created bounded cash-dividend declaration history, reservations, event aliases, postings and attestation receipts. No TRUNCATE command or data removal is executed. UPDATE and DELETE guards remain intact. The real PostgreSQL native-post regression attempts UPDATE, DELETE and raw TRUNCATE CASCADE after a successful posting, requires SQLSTATE 55000 from the rejection triggers, and checks that every original row remains unchanged. This exception covers only this migration's truncation-rejection trigger declarations.",
       "review_after": "2027-05-12",
       "rule_id": "migration-truncate"
-    },
-    {
-      "category": "destructive_changes",
-      "path": "src/Meridian.Storage/SecurityMaster/Migrations/070_otc_decimal_precision.sql",
-      "reason": "Proposed exception submitted for owner Security Master and schema/storage review; approval remains pending. Widens only the numeric(28,10) amount, quantity and exposure columns of otc_collateral_agreements, otc_contracts, otc_exposure_snapshots, otc_collateral_balances and otc_margin_calls to unconstrained numeric, the same change migration 058 made to the schedule projections. Every existing value is preserved and no row, column or retained document is removed; numeric(p,s) to numeric needs no table rewrite, so the append-only snapshot triggers do not fire. Apply through the transactional migration runner and advisory migration lock; failed-upgrade rollback remains transactional. Do not downgrade after higher-precision values have been accepted. Values already rounded on write are not reconstructed by this DDL.",
-      "review_after": "2027-05-31",
-      "rule_id": "migration-alter-column-type"
     },
     {
       "category": "removed_migrations",

@@ -1093,6 +1093,8 @@ public static class UiApiRoutes
     public const string LedgerJournalAutomationDistributionIntake = "/api/ledger/journal-automation/distribution-intake";
     public const string LedgerFixedAssetRegister = "/api/ledger/fixed-assets";
     public const string LedgerJournalAutomationPeriodCloseIntake = "/api/ledger/journal-automation/period-close-intake";
+    public const string LedgerJournalAutomationShortCarryIntake = "/api/ledger/journal-automation/short-carry-intake";
+    public const string LedgerJournalAutomationPartnershipWaterfallIntake = "/api/ledger/journal-automation/partnership-waterfall-intake";
     public const string LedgerJournalAutomationDailyMarkToMarketPreview = "/api/ledger/journal-automation/daily-mark-to-market-preview";
     public const string LedgerJournalAutomationDailyMarkToMarketIntake = "/api/ledger/journal-automation/daily-mark-to-market-intake";
     public const string LedgerJournalAutomationDailyMarkToMarketSchedules = "/api/ledger/journal-automation/daily-mark-to-market-schedules";

@@ -390,6 +390,42 @@ Retains the first completed comparison for each paper session, account, and cuto
 public sealed class PaperSessionDailyReconciliationStore(string root)
 ```
 
+## PartnershipWaterfallInvestorRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PartnershipWaterfallInvestorRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs:7](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs#L7).
+
+One partner taking part in a tiered waterfall allocation.
+
+```csharp
+public sealed record PartnershipWaterfallInvestorRequest(string InvestorId, string DisplayName, decimal AllocationPercent);
+```
+
+## PartnershipWaterfallRuleRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PartnershipWaterfallRuleRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs:10](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs#L10).
+
+One investor&#x27;s share of a waterfall tier, as a fraction of the tier (0 &lt; percent ≤ 1).
+
+```csharp
+public sealed record PartnershipWaterfallRuleRequest(string InvestorId, decimal AllocationPercent);
+```
+
+## PartnershipWaterfallTierRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PartnershipWaterfallTierRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs:13](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PartnershipWaterfall.cs#L13).
+
+One ordered waterfall tier with an optional cap on the profit it absorbs.
+
+```csharp
+public sealed record PartnershipWaterfallTierRequest(string TierId, string Description, IReadOnlyList<PartnershipWaterfallRuleRequest> AllocationRules, decimal? CapAmount = null);
+```
+
 ## PaymentInstruction
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PaymentInstruction</code>. Kind: `record`.

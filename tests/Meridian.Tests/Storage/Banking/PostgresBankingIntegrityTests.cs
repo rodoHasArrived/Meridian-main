@@ -242,6 +242,26 @@ public sealed class PostgresBankingIntegrityTests : IAsyncLifetime
     }
 
     [BankingDatabaseFact]
+    public async Task BookBoundPayment_ShouldRetainItsBindingAndNeverRebindOnReplay()
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var (options, _) = await CreateServiceAsync("banking_book_binding", cts.Token);
+        var store = new PostgresBankingStore(options);
+        var book = Guid.NewGuid();
+        var pending = new PendingPaymentDto(Guid.NewGuid(), Guid.NewGuid(), 250m, new DateOnly(2026, 6, 1), null, null,
+            PaymentApprovalStatus.Pending, null, null, DateTimeOffset.UtcNow, null, "USD",
+            TenantId: "tenant-a", CompanyId: "company-a", LedgerBookId: book);
+
+        await store.UpsertPendingPaymentAsync(pending, cts.Token);
+        await store.UpsertPendingPaymentAsync(pending, cts.Token);
+        var rebind = () => store.UpsertPendingPaymentAsync(pending with { LedgerBookId = Guid.NewGuid() }, cts.Token);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(rebind);
+        var retained = await store.GetPendingPaymentAsync(pending.PendingPaymentId, cts.Token);
+        (retained!.TenantId, retained.CompanyId, retained.LedgerBookId).Should().Be(("tenant-a", "company-a", book));
+    }
+
+    [BankingDatabaseFact]
     public async Task RecordEvidence_ConcurrentReplayConflictAndRestart_ShouldRetainOneCanonicalResult()
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));

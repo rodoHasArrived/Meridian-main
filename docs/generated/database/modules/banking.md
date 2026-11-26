@@ -44,6 +44,9 @@ erDiagram
         text currency_remediated_by
         text currency_remediation_reason
         timestamp_with_time_zone currency_remediated_at
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
     }
     banking_schema_migrations {
         text filename PK
@@ -56,5 +59,5 @@ erDiagram
 | Relation | Kind | Columns | Primary key | Foreign keys | Indexes | Comment |
 | --- | --- | ---: | --- | ---: | ---: | --- |
 | `bank_transactions` | table | 15 | `bank_transaction_id` | 1 | 5 | - |
-| `pending_payments` | table | 15 | `pending_payment_id` | 0 | 3 | - |
+| `pending_payments` | table | 18 | `pending_payment_id` | 0 | 4 | - |
 | `schema_migrations` | table | 3 | `filename` | 0 | 1 | - |

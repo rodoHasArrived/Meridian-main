@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationWorkflowSummaryService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationWorkflowSummaryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs:12](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs#L12).
+
+Builds a shell-facing workflow summary that keeps next-action ordering shared across hosts.
+
+```csharp
+public sealed class WorkstationWorkflowSummaryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkstationWorkflowSummaryService(StrategyRunReadService runReadService, StrategyRunContinuityService? continuityService = null, IReconciliationRunService? reconciliationRunService = null, Meridian.Application.UI.ConfigStore? configStore = null, IWorkflowActionCatalog? actionCatalog = null, IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null, IFundProfileTenancyRegistry? tenancyRegistry = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs:22](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs#L22) |  |
+| <code>public async Task&lt;OperatorWorkflowHomeSummary&gt; GetAsync(WorkstationWorkflowReadScope readScope, bool hasOperatingContext = false, string? operatingContextDisplayName = null, string? fundProfileId = null, string? fundAccountId = null, string? fundDisplayName = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs:43](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs#L43) |  |
+
+## IQuoteStreamBroadcaster
+
+Qualified name: <code>Meridian.Ui.Shared.Streaming.IQuoteStreamBroadcaster</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs:10](../../../../src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs#L10).
+
+Fan-out hub for workstation quote streams. Implements IQuoteUpdateNotifier so the collector can wake it on quote changes, and hands SSE connections a per-topic, coalesced snapshot feed via TrySubscribe.
+
+```csharp
+public interface IQuoteStreamBroadcaster : IQuoteUpdateNotifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>QuoteStreamSubscription? TrySubscribe(StreamTopic topic, string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs:17](../../../../src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs#L17) | Subscribe to a topic&#x27;s coalesced snapshot feed. Returns null when the session&#x27;s concurrent-stream cap is exceeded. Dispose the subscription to unsubscribe and release the session&#x27;s stream slot. |
+
 ## QuoteStreamBroadcaster
 
 Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamBroadcaster</code>. Kind: `class`.

@@ -386,7 +386,9 @@ portfolio application, accounting acceptance, session persistence, authoritative
 observer publication. Accepted fills and their required handoffs drain before shutdown completes.
 
 These boundaries preserve public APIs, durable recovery formats, order and fill identities,
-comparison rules, and lock ordering. Command/risk/amendment coordination still spans the facade
+comparison rules, and lock ordering. A fill that carries the broker's `ExecutionReport.ExecutionId` takes its canonical
+`FillId` from that identity alone (`PaperSessionFillRecord.ComputeCanonicalFillId`); fills without one keep
+the original content-derived identity, so every retained record still validates. Command/risk/amendment coordination still spans the facade
 and its collaborators; the extraction does not move the whole order state machine into one new
 service.
 

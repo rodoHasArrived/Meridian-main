@@ -309,7 +309,17 @@ public sealed record StatementRunCreateDto(
     string ToleranceProfileId,
     string ImportedBy,
     string? SourceFileHash = null,
-    string? Notes = null);
+    string? Notes = null)
+{
+    /// <summary>
+    /// Server-resolved accounting scope (fund profile, ledger book and period) the run reconciles
+    /// against. It is never read from the request body: the endpoint resolves it through the statement
+    /// intake authority from the authenticated tenant, company, account and statement period, and a run
+    /// is not created without it, so its ledger population is always read from one book.
+    /// </summary>
+    [JsonIgnore]
+    public StatementReconciliationAccountingScopeDto? ResolvedAccountingScope { get; init; }
+}
 
 /// <summary>
 /// Request to trigger reconciliation matching for an existing statement run.
