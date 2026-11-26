@@ -9752,6 +9752,8 @@ Meridian-main
 │   │   │   │   │   ├── use-report-run-stream.ts
 │   │   │   │   │   ├── use-request-lifecycle.test.ts
 │   │   │   │   │   ├── use-request-lifecycle.ts
+│   │   │   │   │   ├── use-signed-in-username.test.ts
+│   │   │   │   │   ├── use-signed-in-username.ts
 │   │   │   │   │   ├── use-visible-interval.test.tsx
 │   │   │   │   │   ├── use-visible-interval.ts
 │   │   │   │   │   ├── use-workstation-data.test.ts
@@ -9779,6 +9781,8 @@ Meridian-main
 │   │   │   │   │   │   ├── asset-market-valuation.api.test.ts
 │   │   │   │   │   │   ├── asset-market-valuation.api.ts
 │   │   │   │   │   │   ├── audit-integrity.api.ts
+│   │   │   │   │   │   ├── auth.api.test.ts
+│   │   │   │   │   │   ├── auth.api.ts
 │   │   │   │   │   │   ├── banking-payments.api.test.ts
 │   │   │   │   │   │   ├── banking-payments.api.ts
 │   │   │   │   │   │   ├── bond-analytics.api.test.ts
