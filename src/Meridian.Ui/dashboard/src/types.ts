@@ -13,6 +13,7 @@ export type * from "./types/intercompany-fees";
 export type * from "./types/intercompany-rate-fixings";
 export type * from "./types/intercompany-confirmations";
 export type * from "./types/intercompany-accrual-schedules";
+export type * from "./types/intercompany-work-queue";
 export * from "./types/brokerage-recovery";
 export type * from "./types/cancel-incidents.types";
 export * from "./types/close-preparation";

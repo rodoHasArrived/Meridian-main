@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { FormGrid } from "@/components/ui/form";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { formatTimestamp } from "@/lib/format";
 import type { EntityOperationScope } from "@/types/entity-operations";
 import type { AgreementWorkItem, AgreementWorkItemAction, AgreementWorkQueue, AgreementWorkQueueScope, ObserveAgreementWorkItem, UpdateAgreementWorkItem } from "@/types/intercompany-work-queue";
 import * as api from "@/lib/api/intercompany-work-queue.api";
@@ -119,7 +120,7 @@ function ScopedWorkQueue({ scope, asOf, expiryHorizonDays, services }: {
     {notice ? <p role="status" className="text-sm">{notice}</p> : null}
     {result ? <>
       <StatusBanner tone={current ? "info" : "warning"} title={`${result.status} lifecycle observation`}
-        detail={`${result.isComplete ? "Complete evidence" : "Incomplete evidence"} · evaluated ${result.evaluatedAtUtc}. A missing finding never resolves a retained case.`} />
+        detail={`${result.isComplete ? "Complete evidence" : "Incomplete evidence"} · evaluated ${formatTimestamp(result.evaluatedAtUtc)}. A missing finding never resolves a retained case.`} />
       {result.diagnostics.length ? <ul className="list-disc space-y-1 pl-5 text-sm">{result.diagnostics.map((value, index) => <li key={index}>{value}</li>)}</ul> : null}
       {!canManage ? <p className="text-sm text-muted-foreground">Read-only access. Ledger management permission is required to retain observations or change cases.</p> : null}
       {!current ? <p className="text-sm text-warning">Case actions require a current, complete source observation. Retained case states are unchanged.</p> : null}
@@ -153,7 +154,7 @@ function ScopedWorkQueue({ scope, asOf, expiryHorizonDays, services }: {
         <TechnicalDetails label="Lifecycle case history and source evidence"><p className="break-all text-sm">Case {selected.caseId} · retained hash {selected.recordHash ?? "None"}</p>
           <p className="break-all text-sm">Current observation {result.sourceFingerprint}</p>
           {selected.history.length ? <ol className="space-y-3 text-sm">{selected.history.map(step => <li key={step.commandId} className="border-t border-border pt-2">
-            <p>{step.action} · {stateText(step.state)} · {step.actor} · {step.recordedAtUtc} · version {step.version}</p><p>{step.reason}</p>
+            <p>{step.action} · {stateText(step.state)} · {step.actor} · {formatTimestamp(step.recordedAtUtc)} · version {step.version}</p><p>{step.reason}</p>
             {step.note ? <p>{step.note}</p> : null}<p>Owner: {step.owner ?? "Unassigned"}</p>
             {step.evidenceReferences.length ? <ul className="list-disc space-y-1 break-all pl-5">{step.evidenceReferences.map((value, index) => <li key={index}>{value}</li>)}</ul> : null}
             <p className="break-all">Source as of {step.observedAsOf}: {step.sourceFingerprint}</p>
