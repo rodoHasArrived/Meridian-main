@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CurveVersionPublishedPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.CurveVersionPublishedPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:111](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L111).
+
+Curves / CurveVersionPublished.
+
+```csharp
+public sealed record CurveVersionPublishedPayload(Guid CurveId, Guid CurveVersionId, string CurveKey, string Kind, string Currency, string? IndexName, long Version, DateOnly AsOf, int PointCount, string ContentSha256, string Source, DateTimeOffset? SourcedAt) : ISecurityGovernancePayload;
+```
+
 ## CustomAssetProfileFieldProjectionRow
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.CustomAssetProfileFieldProjectionRow</code>. Kind: `record`.
@@ -684,6 +696,24 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;CorporateActionDto&gt;&gt; LoadCorporateActionsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:56](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L56) | Returns all corporate action events for a security in ascending ex-date order. |
 | <code>Task&lt;CorporateActionEventTypeNormalizationResult&gt; NormalizeCorporateActionEventTypesAsync(bool apply, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:65](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L65) | Reports — and when apply is true, rewrites in one transaction — stored corporate-action EventType values that are non-canonical aliases of the catalog vocabulary (e.g. legacy &quot;Split&quot; rows becoming &quot;StockSplit&quot;). Values that do not normalize are reported and left untouched. Stores without rewrite support (the default) report an empty result. |
 
+## ISecurityMasterImpactGuardParticipant
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterImpactGuardParticipant</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ISecurityMasterImpactGuardParticipant.cs:6](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterImpactGuardParticipant.cs#L6).
+
+Identifies the authoritative database whose rows a review finalization must fence.
+
+```csharp
+public interface ISecurityMasterImpactGuardParticipant
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>SecurityMasterOptions ImpactGuardOptions { get; }</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterImpactGuardParticipant.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterImpactGuardParticipant.cs#L8) |  |
+
 ## ISecurityMasterMutationParticipant
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterMutationParticipant</code>. Kind: `interface`.
@@ -928,35 +958,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static bool IsSelfApproval(string? stagedBy, string? reviewer) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:59](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L59) | Whether reviewer is the actor who staged the overlay&#x27;s current values. Actor identities compare case-insensitively after trimming. |
 | <code>public static void EnsureIndependentReview(Guid securityId, OperatorOverridesDto overlay, OperatorOverrideDecision decision);</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:69](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L69) | Fails when decision approves values the reviewer staged themselves. A rejection (withdrawing one&#x27;s own staged values) and a restoration of a prior independent decision are allowed. |
-
-## OperatorOverridesDecisionPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverridesDecisionPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:61](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L61).
-
-OperatorOverrides / Approved or Rejected: a recorded review decision.
-
-```csharp
-public sealed record OperatorOverridesDecisionPayload(string Decision, string Reviewer, string StagedBy, string? Comment, string? ReasonCode, bool RestoresPriorDecision, IReadOnlyDictionary<string, string> Values) : ISecurityGovernancePayload;
-```
-
-## OperatorOverrideSelfApprovalException
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideSelfApprovalException</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:83](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L83).
-
-Raised when a reviewer attempts to approve operator-override values they staged.
-
-```csharp
-public sealed class OperatorOverrideSelfApprovalException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OperatorOverrideSelfApprovalException(Guid securityId, string reviewer) : base($&quot;Operator overrides for security &#x27;{securityId:D}&#x27; were staged by &#x27;{reviewer}&#x27;, who cannot also approve them; an independent reviewer must decide.&quot;);</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:85](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L85) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:92](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L92) |  |
-| <code>public string Reviewer { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:94](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L94) |  |

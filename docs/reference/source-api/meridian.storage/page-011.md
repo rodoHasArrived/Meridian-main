@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorOverridesDecisionPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverridesDecisionPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:61](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L61).
+
+OperatorOverrides / Approved or Rejected: a recorded review decision.
+
+```csharp
+public sealed record OperatorOverridesDecisionPayload(string Decision, string Reviewer, string StagedBy, string? Comment, string? ReasonCode, bool RestoresPriorDecision, IReadOnlyDictionary<string, string> Values) : ISecurityGovernancePayload;
+```
+
+## OperatorOverrideSelfApprovalException
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideSelfApprovalException</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:83](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L83).
+
+Raised when a reviewer attempts to approve operator-override values they staged.
+
+```csharp
+public sealed class OperatorOverrideSelfApprovalException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperatorOverrideSelfApprovalException(Guid securityId, string reviewer) : base($&quot;Operator overrides for security &#x27;{securityId:D}&#x27; were staged by &#x27;{reviewer}&#x27;, who cannot also approve them; an independent reviewer must decide.&quot;);</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:85](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L85) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:92](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L92) |  |
+| <code>public string Reviewer { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:94](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L94) |  |
+
 ## OperatorOverridesPatchedPayload
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverridesPatchedPayload</code>. Kind: `record`.
@@ -1177,37 +1209,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public TPayload ReadPayload&lt;TPayload&gt;() where TPayload : class, ISecurityGovernancePayload =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:46](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L46) | The payload as its declared type. Throws SecurityGovernancePayloadContractException when the event type has no contract on this node, SecurityGovernancePayloadVersionException when PayloadVersion has no reader, and InvalidOperationException when TPayload is not the declared type. |
 | <code>public bool TryReadPayload&lt;TPayload&gt;([NotNullWhen(true)] out TPayload? payload) where TPayload : class, ISecurityGovernancePayload;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:55](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L55) | Reads the payload when this node declares a contract and a reader for its version and TPayload is the declared type; otherwise returns false and leaves the raw Payload as the only reading. Malformed JSON for a declared version still throws. |
-
-## SecurityGovernanceJsonContext
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernanceJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:235](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L235).
-
-Source-generated metadata for every governance payload version. The camelCase policy and the default encoder and null handling reproduce the reflective JsonSerializer.Serialize(object) output the version-1 writers produced; dictionary keys are written as stored.
-
-```csharp
-public sealed partial class SecurityGovernanceJsonContext : JsonSerializerContext;
-```
-
-## SecurityGovernancePayloadContract
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernancePayloadContract</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:241](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L241).
-
-The declared payload contract of one governance stream/event type: its payload type, the version new writes carry, and a reader for every version that may be stored.
-
-```csharp
-public sealed class SecurityGovernancePayloadContract
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Stream { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:262](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L262) |  |
-| <code>public string EventType { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:263](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L263) |  |
-| <code>public Type PayloadType { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:264](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L264) |  |
-| <code>public int CurrentVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:267](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L267) | The payload_version new writes record. |
-| <code>public IReadOnlyList&lt;int&gt; ReadableVersions =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:270](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L270) | The stored versions this node can read, ascending. |

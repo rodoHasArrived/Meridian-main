@@ -6,6 +6,204 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GcStats
+
+Qualified name: <code>Meridian.Application.Services.GcStats</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:750](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L750).
+
+Garbage collection statistics.
+
+```csharp
+public sealed class GcStats
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int Gen0 { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:752](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L752) |  |
+| <code>public int Gen1 { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:753](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L753) |  |
+| <code>public int Gen2 { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:754](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L754) |  |
+
+## IExecutionSimulationOrchestrator
+
+Qualified name: <code>Meridian.Application.Services.IExecutionSimulationOrchestrator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:42](../../../../src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs#L42).
+
+Defines historical-data execution simulation for a supplied simulation request.
+
+```csharp
+public interface IExecutionSimulationOrchestrator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ExecutionSimulationResult&gt; RunAsync(ExecutionSimulationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:44](../../../../src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs#L44) |  |
+
+## PreflightChecker
+
+Qualified name: <code>Meridian.Application.Services.PreflightChecker</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/PreflightChecker.cs:19](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L19).
+
+Performs comprehensive pre-flight checks before starting data collection. Verifies disk space, network connectivity, file permissions, and system resources to catch issues early and provide actionable error messages.
+
+```csharp
+public sealed class PreflightChecker
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PreflightChecker(PreflightConfig? config = null);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:24](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L24) |  |
+| <code>public async Task&lt;PreflightResult&gt; RunChecksAsync(string dataRoot, CancellationToken ct = default, DataSourceKind? activeDataSource = null);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:36](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L36) | Runs all pre-flight checks and returns a comprehensive result. |
+| <code>public async Task&lt;PreflightResult&gt; RunChecksAsync(string dataRoot, string? activeDataSource, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:44](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L44) | Runs all pre-flight checks including provider credential validation. |
+| <code>public async Task EnsureReadyAsync(string dataRoot, CancellationToken ct = default, DataSourceKind? activeDataSource = null);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:112](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L112) | Runs checks and throws if any critical check fails. |
+| <code>public PreflightCheckResult ValidateProviderCredentials(string activeDataSource);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:552](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L552) | Validates that all enabled providers have their required credentials configured. Returns a detailed table of missing credentials with the exact env var names to set. |
+
+## PreflightCheckResult
+
+Qualified name: <code>Meridian.Application.Services.PreflightCheckResult</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Application/Services/PreflightChecker.cs:797](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L797).
+
+Result of a single pre-flight check.
+
+```csharp
+public readonly record struct PreflightCheckResult(string Name, PreflightCheckStatus Status, string Message, string? Remediation, IReadOnlyDictionary<string, object>? Details)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static PreflightCheckResult Passed(string name, string message, Dictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:805](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L805) |  |
+| <code>public static PreflightCheckResult Warning(string name, string message, string? remediation = null, Dictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:808](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L808) |  |
+| <code>public static PreflightCheckResult Failed(string name, string message, string? remediation = null, Dictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:811](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L811) |  |
+
+## PreflightCheckStatus
+
+Qualified name: <code>Meridian.Application.Services.PreflightCheckStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Services/PreflightChecker.cs:818](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L818).
+
+Status of a pre-flight check.
+
+```csharp
+public enum PreflightCheckStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Passed</code> | [src/Meridian.Application/Services/PreflightChecker.cs:820](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L820) |  |
+| <code>Warning</code> | [src/Meridian.Application/Services/PreflightChecker.cs:821](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L821) |  |
+| <code>Failed</code> | [src/Meridian.Application/Services/PreflightChecker.cs:822](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L822) |  |
+
+## PreflightConfig
+
+Qualified name: <code>Meridian.Application.Services.PreflightConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/PreflightChecker.cs:744](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L744).
+
+Configuration for pre-flight checks.
+
+```csharp
+public sealed record PreflightConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public double MinDiskSpaceGb { get; init; } = 1.0;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:747](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L747) | Minimum required disk space in GB. |
+| <code>public double WarnDiskSpaceGb { get; init; } = 5.0;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:750](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L750) | Disk space warning threshold in GB. |
+| <code>public double MinMemoryMb { get; init; } = 256;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:753](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L753) | Minimum required memory in MB. |
+| <code>public double WarnMemoryMb { get; init; } = 512;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:756](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L756) | Memory warning threshold in MB. |
+| <code>public int NetworkTimeoutMs { get; init; } = 5000;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:759](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L759) | Network connectivity check timeout in milliseconds. |
+| <code>public bool CheckNetworkConnectivity { get; init; } = true;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:762](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L762) | Whether to check basic network connectivity (DNS, HTTP endpoints). |
+| <code>public bool CheckProviderConnectivity { get; init; } = true;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:765](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L765) | Whether to check provider endpoint connectivity. |
+| <code>public static PreflightConfig Default =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:767](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L767) |  |
+
+## PreflightException
+
+Qualified name: <code>Meridian.Application.Services.PreflightException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/PreflightChecker.cs:828](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L828).
+
+Exception thrown when pre-flight checks fail.
+
+```csharp
+public sealed class PreflightException : Exception
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PreflightResult Result { get; }</code> | [src/Meridian.Application/Services/PreflightChecker.cs:830](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L830) |  |
+| <code>public PreflightException(string message, PreflightResult result) : base(message);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:832](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L832) |  |
+
+## PreflightResult
+
+Qualified name: <code>Meridian.Application.Services.PreflightResult</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Application/Services/PreflightChecker.cs:773](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L773).
+
+Result of all pre-flight checks.
+
+```csharp
+public readonly record struct PreflightResult(bool AllChecksPassed, bool HasWarnings, IReadOnlyList<PreflightCheckResult> Checks, double TotalDurationMs, DateTimeOffset CheckedAt)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string GetSummary();</code> | [src/Meridian.Application/Services/PreflightChecker.cs:784](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L784) | Gets a summary string of the pre-flight results. |
+
+## ServiceCategory
+
+Qualified name: <code>Meridian.Application.Services.ServiceCategory</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Services/ServiceRegistry.cs:17](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L17).
+
+Service categories for organization and discovery.
+
+```csharp
+public enum ServiceCategory : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Setup</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:20](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L20) | Configuration and setup services. |
+| <code>Validation</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:23](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L23) | Validation and preflight check services. |
+| <code>Diagnostics</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:26](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L26) | Diagnostic and error handling services. |
+| <code>Lifecycle</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:29](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L29) | Application lifecycle services. |
+| <code>Data</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:32](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L32) | Data query and manipulation services. |
+| <code>Calendar</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:35](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L35) | Trading calendar services. |
+| <code>Reporting</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:38](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L38) | Reporting and progress display services. |
+
+## ServiceInfo
+
+Qualified name: <code>Meridian.Application.Services.ServiceInfo</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/ServiceRegistry.cs:49](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L49).
+
+Service metadata for discovery and documentation.
+
+```csharp
+public sealed record ServiceInfo(string Name, ServiceCategory Category, string Description, Type ServiceType, bool IsAsync = true);
+```
+
 ## ServiceRegistry
 
 Qualified name: <code>Meridian.Application.Services.ServiceRegistry</code>. Kind: `class`.
@@ -802,269 +1000,3 @@ Declared public members:
 | <code>public FundAccountHoldingScopeAssignmentProvider(IFundAccountStore? accounts, IFundProfileTenancyRegistry? tenancy, ILogger&lt;FundAccountHoldingScopeAssignmentProvider&gt; logger);</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:34](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L34) |  |
 | <code>public string AuthorityId =&gt; …;</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:45](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L45) |  |
 | <code>public async Task&lt;ScopeAssignmentProviderResult&gt; ResolveAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:48](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L48) |  |
-
-## LocalTenantMigrationGate
-
-Qualified name: <code>Meridian.Application.Tenancy.LocalTenantMigrationGate</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs:7](../../../../src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs#L7).
-
-Refuses unpartitioned local snapshots until their ownership is explicitly migrated.
-
-```csharp
-public sealed class LocalTenantMigrationGate(TenantScopeEnforcementOptions options)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool EnforcesStrictTenancy =&gt; …;</code> | [src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs:9](../../../../src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs#L9) |  |
-| <code>public const string RefusalMessage = &quot;Local fund records have no retained tenant attribution and cannot be accessed under strict tenant enforcement. &quot; + &quot;Existing files are retained. Use the supported durable host and reviewed tenant backfill, or explicitly select &quot; + &quot;TenantScopeEnforcement=deployment-boundary only for isolated single-company migration or demo access.&quot;;</code> | [src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs:11](../../../../src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs#L11) |  |
-| <code>public Task&lt;T&gt; ExecuteAsync&lt;T&gt;(Func&lt;Task&lt;T&gt;&gt; operation);</code> | [src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs:16](../../../../src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs#L16) |  |
-
-## LocalTenantMigrationRequiredException
-
-Qualified name: <code>Meridian.Application.Tenancy.LocalTenantMigrationRequiredException</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs:25](../../../../src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs#L25).
-
-A retained local capability is unavailable until its tenant migration is reviewed.
-
-```csharp
-public sealed class LocalTenantMigrationRequiredException() : MeridianException(LocalTenantMigrationGate.RefusalMessage);
-```
-
-## TenantGuardedLocalFundAccountService
-
-Qualified name: <code>Meridian.Application.Tenancy.TenantGuardedLocalFundAccountService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:9](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L9).
-
-Guards every local fund operation before reading or mutating retained snapshots.
-
-```csharp
-public sealed class TenantGuardedLocalFundAccountService(InMemoryFundAccountService inner, LocalTenantMigrationGate gate) : INonProductionOnlyService, IFundAccountService, IAccountManagementService, IAccountQueryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;AccountSummaryDto&gt; CreateAccountAsync(CreateAccountRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:12](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L12) |  |
-| <code>public Task&lt;AccountSummaryDto?&gt; GetAccountAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:15](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L15) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountSummaryDto&gt;&gt; QueryAccountsAsync(AccountStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:18](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L18) |  |
-| <code>public Task&lt;AccountSummaryDto?&gt; UpdateCustodianDetailsAsync(Guid accountId, UpdateCustodianAccountDetailsRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:21](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L21) |  |
-| <code>public Task&lt;AccountSummaryDto?&gt; UpdateBankDetailsAsync(Guid accountId, UpdateBankAccountDetailsRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:24](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L24) |  |
-| <code>public Task&lt;AccountSummaryDto?&gt; DeactivateAccountAsync(Guid accountId, string deactivatedBy, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:27](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L27) |  |
-| <code>public Task&lt;FundAccountsDto&gt; GetFundAccountsAsync(Guid fundId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:30](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L30) |  |
-| <code>public Task&lt;AccountBalanceSnapshotDto&gt; RecordBalanceSnapshotAsync(RecordAccountBalanceSnapshotRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:33](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L33) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountBalanceSnapshotDto&gt;&gt; GetBalanceHistoryAsync(Guid accountId, DateOnly? fromDate = null, DateOnly? toDate = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:36](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L36) |  |
-| <code>public Task&lt;AccountBalanceSnapshotDto?&gt; GetLatestBalanceSnapshotAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:39](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L39) |  |
-| <code>public Task&lt;CustodianStatementBatchDto&gt; IngestCustodianStatementAsync(IngestCustodianStatementRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:42](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L42) |  |
-| <code>public Task&lt;BankStatementBatchDto&gt; IngestBankStatementAsync(IngestBankStatementRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:45](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L45) |  |
-| <code>public Task&lt;IReadOnlyList&lt;CustodianPositionLineDto&gt;&gt; GetCustodianPositionsAsync(Guid accountId, DateOnly asOfDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:48](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L48) |  |
-| <code>public Task&lt;CustodianHoldingSnapshotDto?&gt; GetCustodianSnapshotAsync(Guid accountId, DateOnly asOf, DateTimeOffset? knownAt = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:51](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L51) |  |
-| <code>public Task&lt;IReadOnlyList&lt;BankStatementLineDto&gt;&gt; GetBankStatementLinesAsync(Guid accountId, DateOnly? fromDate = null, DateOnly? toDate = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:55](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L55) |  |
-| <code>public Task&lt;AccountReconciliationRunDto&gt; ReconcileAccountAsync(ReconcileAccountRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:58](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L58) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountReconciliationRunDto&gt;&gt; GetReconciliationRunsAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:61](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L61) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountReconciliationResultDto&gt;&gt; GetReconciliationResultsForAccountsAsync(IReadOnlyCollection&lt;Guid&gt; accountIds, bool openOnly = false, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:64](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L64) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountReconciliationResultDto&gt;&gt; GetReconciliationResultsAsync(Guid reconciliationRunId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:67](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L67) |  |
-| <code>public Task&lt;IReadOnlyList&lt;PositionReconciliationBreakDto&gt;&gt; GetOpenPositionBreaksAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:70](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L70) |  |
-| <code>public Task&lt;IReadOnlyList&lt;CashReconciliationBreakDto&gt;&gt; GetOpenCashBreaksAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:73](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L73) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountReconciliationBreakDto&gt;&gt; GetOpenBreaksAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:76](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L76) |  |
-| <code>public Task&lt;AccountSyncHistoryEntryDto&gt; RecordSyncHistoryAsync(RecordAccountSyncHistoryRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:79](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L79) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountSyncHistoryEntryDto&gt;&gt; GetSyncHistoryAsync(Guid accountId, string? capability = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:82](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L82) |  |
-| <code>public Task&lt;AccountSyncHistoryEntryDto?&gt; GetLatestSyncHistoryAsync(Guid accountId, string? capability = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:85](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L85) |  |
-| <code>public Task&lt;AccountReadinessSnapshotDto?&gt; GetReadinessAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:88](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L88) |  |
-| <code>public Task&lt;MarginSnapshotDto&gt; RecordMarginSnapshotAsync(RecordMarginSnapshotRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:91](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L91) |  |
-| <code>public Task&lt;IReadOnlyList&lt;MarginSnapshotDto&gt;&gt; GetMarginSnapshotsAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:94](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L94) |  |
-| <code>public Task&lt;MarginSnapshotDto?&gt; GetLatestMarginSnapshotAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:97](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L97) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountSummaryDto&gt;&gt; ListAccountsAsync(AccountTypeDto? accountType, bool? isActive, string? currency, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:100](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L100) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountSettlementInstructionView&gt;&gt; ListSettlementInstructionsAsync(Guid? accountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:103](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L103) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountBalanceSnapshotDto&gt;&gt; GetBalanceTimelineAsync(Guid accountId, DateOnly? fromDate = null, DateOnly? toDate = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:106](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L106) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountOpenBreakView&gt;&gt; ListOpenBreaksAsync(Guid? accountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:109](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L109) |  |
-
-## TenantGuardedLocalFundStructureService
-
-Qualified name: <code>Meridian.Application.Tenancy.TenantGuardedLocalFundStructureService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:8](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L8).
-
-Guards every local fund operation before reading or mutating retained snapshots.
-
-```csharp
-public sealed class TenantGuardedLocalFundStructureService(IFundStructureService inner, LocalTenantMigrationGate gate) : INonProductionOnlyService, IFundStructureService, IEntityLifecycleProjectionSink
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool RefusesUnattributedAccess =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:11](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L11) |  |
-| <code>public Task ApplyLifecycleProjectionAsync(EntityLifecycleRevisionDto revision, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:13](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L13) |  |
-| <code>public Task&lt;OrganizationSummaryDto&gt; CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:22](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L22) |  |
-| <code>public Task&lt;BusinessSummaryDto&gt; CreateBusinessAsync(CreateBusinessRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:25](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L25) |  |
-| <code>public Task&lt;ClientSummaryDto&gt; CreateClientAsync(CreateClientRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:28](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L28) |  |
-| <code>public Task&lt;FundSummaryDto&gt; CreateFundAsync(CreateFundRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:31](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L31) |  |
-| <code>public Task&lt;SleeveSummaryDto&gt; CreateSleeveAsync(CreateSleeveRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:34](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L34) |  |
-| <code>public Task&lt;VehicleSummaryDto&gt; CreateVehicleAsync(CreateVehicleRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:37](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L37) |  |
-| <code>public Task&lt;LegalEntitySummaryDto&gt; CreateLegalEntityAsync(CreateLegalEntityRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:40](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L40) |  |
-| <code>public Task&lt;LegalEntitySummaryDto&gt; UpdateLegalEntityProfileAsync(UpdateLegalEntityProfileRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:43](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L43) |  |
-| <code>public Task&lt;InvestmentPortfolioSummaryDto&gt; CreateInvestmentPortfolioAsync(CreateInvestmentPortfolioRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:46](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L46) |  |
-| <code>public Task&lt;OwnershipLinkDto&gt; LinkNodesAsync(LinkFundStructureNodesRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:49](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L49) |  |
-| <code>public Task&lt;OwnershipLinkDto&gt; UpdateOwnershipLinkAsync(UpdateOwnershipLinkRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:52](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L52) |  |
-| <code>public Task&lt;OwnershipLinkDto&gt; ExpireOwnershipLinkAsync(ExpireOwnershipLinkRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:55](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L55) |  |
-| <code>public Task&lt;OwnershipLinkDto&gt; ReplaceOwnershipLinkAsync(ReplaceOwnershipLinkRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:58](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L58) |  |
-| <code>public Task&lt;OwnershipGraphValidationResultDto&gt; ValidateOwnershipGraphAsync(ValidateOwnershipGraphRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:61](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L61) |  |
-| <code>public Task&lt;FundStructureAssignmentDto&gt; AssignNodeAsync(AssignFundStructureNodeRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:64](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L64) |  |
-| <code>public Task&lt;OrganizationStructureGraphDto&gt; GetOrganizationStructureAsync(OrganizationStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:67](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L67) |  |
-| <code>public Task&lt;FundStructureGraphDto&gt; GetFundStructureGraphAsync(FundStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:70](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L70) |  |
-| <code>public Task&lt;AdvisoryStructureViewDto?&gt; GetAdvisoryViewAsync(AdvisoryStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:73](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L73) |  |
-| <code>public Task&lt;FundOperatingViewDto?&gt; GetFundOperatingViewAsync(FundOperatingStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:76](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L76) |  |
-| <code>public Task&lt;AccountingStructureViewDto&gt; GetAccountingViewAsync(AccountingStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:79](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L79) |  |
-| <code>public Task&lt;GovernanceCashFlowViewDto?&gt; GetCashFlowViewAsync(GovernanceCashFlowQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:82](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L82) |  |
-
-## ConfigStore
-
-Qualified name: <code>Meridian.Application.UI.ConfigStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Http/ConfigStore.cs:32](../../../../src/Meridian.Application/Http/ConfigStore.cs#L32).
-
-Service for loading and persisting application configuration. Provides access to config files, status files, and provider metrics. This is the single implementation shared by console, web, and desktop hosts.
-
-```csharp
-public sealed class ConfigStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static Func&lt;string&gt; DefaultPathResolver { get; set; } = ResolveDefaultPath;</code> | [src/Meridian.Application/Http/ConfigStore.cs:37](../../../../src/Meridian.Application/Http/ConfigStore.cs#L37) | Default path resolver that returns the nearest standard Meridian configuration path. |
-| <code>public string ConfigPath { get; }</code> | [src/Meridian.Application/Http/ConfigStore.cs:48](../../../../src/Meridian.Application/Http/ConfigStore.cs#L48) | Gets the path to the configuration file. |
-| <code>public ConfigStore() : this(null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:53](../../../../src/Meridian.Application/Http/ConfigStore.cs#L53) | Creates a new ConfigStore with the default configuration path resolution. |
-| <code>public ConfigStore(string? configPath, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:60](../../../../src/Meridian.Application/Http/ConfigStore.cs#L60) | Creates a new ConfigStore with a custom configuration path. |
-| <code>public static AppConfig LoadConfig(string path);</code> | [src/Meridian.Application/Http/ConfigStore.cs:86](../../../../src/Meridian.Application/Http/ConfigStore.cs#L86) | Static method to load configuration from a path. Used by ConfigurationService.LoadAndPrepareConfig() for consolidated config loading. |
-| <code>public AppConfig Load() =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:114](../../../../src/Meridian.Application/Http/ConfigStore.cs#L114) | Instance method to load configuration from the configured path. Delegates to the static LoadConfig method. |
-| <code>public ConfigurationChangeStatus GetChangeStatus() =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:117](../../../../src/Meridian.Application/Http/ConfigStore.cs#L117) | Saved setting impacts and exact-revision collector evidence; contains no setting values. |
-| <code>public static ConfigurationChangeImpact GetSettingImpact(string path) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:180](../../../../src/Meridian.Application/Http/ConfigStore.cs#L180) | Conservative activation requirement for a configuration field, also exposed by effective settings. |
-| <code>public AppConfig LoadRequired() =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:183](../../../../src/Meridian.Application/Http/ConfigStore.cs#L183) | Loads existing configuration without substituting defaults when authoritative state cannot be read. |
-| <code>public async Task&lt;T&gt; UpdateRequiredCheckedAsync&lt;T&gt;(Func&lt;AppConfig, CancellationToken, Task&lt;(AppConfig Config, T Result)&gt;&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:205](../../../../src/Meridian.Application/Http/ConfigStore.cs#L205) | Applies a checked update to persisted configuration. The callback may read local evidence under the same lock as the commit. It must not perform network I/O or reenter configuration writes. |
-| <code>public async Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;AppConfig, (AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:228](../../../../src/Meridian.Application/Http/ConfigStore.cs#L228) | Read-modify-write of the configuration document under the cross-process configuration lock (PRD-002: concurrent configuration writes). The current document is loaded inside the lock, handed to update, and the returned document is written atomically before the lock is released, so two writers editing different sections can never lose each other&#x27;s change the way a Load() + SaveAsync pair can. |
-| <code>public Task UpdateAsync(Func&lt;AppConfig, AppConfig&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:237](../../../../src/Meridian.Application/Http/ConfigStore.cs#L237) | Result-less form of UpdateAsync{T}. |
-| <code>public async Task&lt;IDisposable&gt; AcquireWriteLeaseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:278](../../../../src/Meridian.Application/Http/ConfigStore.cs#L278) | Holds the cross-process configuration write lock (the .lock sidecar beside the file) until the returned lease is disposed. For writers that persist the document through their own serializer, such as the WPF shell&#x27;s configuration service, so the installed two-process workstation shares one lock with every UpdateAsync{T} caller. Not reentrant. |
-| <code>public async Task SaveAsync(AppConfig cfg, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:300](../../../../src/Meridian.Application/Http/ConfigStore.cs#L300) | Whole-document replacement: the caller&#x27;s snapshot becomes the configuration, last writer wins. Reserved for callers that own the entire document (the CLI &quot;save this configuration&quot; path and the setup wizard&#x27;s generated output). Section-level edits use UpdateAsync{T}, which reads the current document under the same lock and cannot drop a concurrent change. |
-| <code>public async Task SaveFeatureCapabilityOverridesAsync(IReadOnlyDictionary&lt;string, bool&gt; overrides, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:397](../../../../src/Meridian.Application/Http/ConfigStore.cs#L397) |  |
-| <code>public string? TryLoadStatusJson();</code> | [src/Meridian.Application/Http/ConfigStore.cs:478](../../../../src/Meridian.Application/Http/ConfigStore.cs#L478) |  |
-| <code>public string GetStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:495](../../../../src/Meridian.Application/Http/ConfigStore.cs#L495) |  |
-| <code>public string GetBackfillStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:502](../../../../src/Meridian.Application/Http/ConfigStore.cs#L502) |  |
-| <code>public BackfillResult? TryLoadBackfillStatus();</code> | [src/Meridian.Application/Http/ConfigStore.cs:509](../../../../src/Meridian.Application/Http/ConfigStore.cs#L509) |  |
-| <code>public string GetDataRoot(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:516](../../../../src/Meridian.Application/Http/ConfigStore.cs#L516) |  |
-| <code>public string GetProviderMetricsPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:522](../../../../src/Meridian.Application/Http/ConfigStore.cs#L522) |  |
-| <code>public ProviderMetricsStatus? TryLoadProviderMetrics();</code> | [src/Meridian.Application/Http/ConfigStore.cs:529](../../../../src/Meridian.Application/Http/ConfigStore.cs#L529) |  |
-
-## ConfigurationRuntimeAppliers
-
-Qualified name: <code>Meridian.Application.UI.ConfigurationRuntimeAppliers</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:38](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L38).
-
-Process-wide registry of runtime appliers keyed by configuration file path.
-
-```csharp
-public static class ConfigurationRuntimeAppliers
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IDisposable Attach(string configPath, IConfigurationRuntimeApplier applier);</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:44](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L44) | Attaches an applier for a configuration file until the returned handle is disposed. |
-| <code>public static IReadOnlyList&lt;IConfigurationRuntimeApplier&gt; For(string configPath) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:54](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L54) | Appliers currently attached to a configuration file. |
-
-## EffectiveConfigurationEntry
-
-Qualified name: <code>Meridian.Application.UI.EffectiveConfigurationEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Http/EffectiveConfigurationProjection.cs:10](../../../../src/Meridian.Application/Http/EffectiveConfigurationProjection.cs#L10).
-
-A setting&#x27;s displayed value, provenance and activation impact.
-
-```csharp
-public sealed record EffectiveConfigurationEntry(string Key, string Value, string Source, ConfigurationChangeImpact Impact);
-```
-
-## EffectiveConfigurationProjection
-
-Qualified name: <code>Meridian.Application.UI.EffectiveConfigurationProjection</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Http/EffectiveConfigurationProjection.cs:13](../../../../src/Meridian.Application/Http/EffectiveConfigurationProjection.cs#L13).
-
-Projects declared configuration settings without traversing operator-defined keys or values.
-
-```csharp
-public static class EffectiveConfigurationProjection
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;EffectiveConfigurationEntry&gt; Build(AppConfig config, IReadOnlyList&lt;EnvironmentOverrideInfo&gt; environmentVariables);</code> | [src/Meridian.Application/Http/EffectiveConfigurationProjection.cs:18](../../../../src/Meridian.Application/Http/EffectiveConfigurationProjection.cs#L18) |  |
-
-## IConfigurationRuntimeApplier
-
-Qualified name: <code>Meridian.Application.UI.IConfigurationRuntimeApplier</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:15](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L15).
-
-A running host component that can apply part of a saved configuration without a restart.
-
-```csharp
-public interface IConfigurationRuntimeApplier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string Name { get; }</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:18](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L18) | Short name used in logs. |
-| <code>bool ReconcilePendingPaths =&gt; …;</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:21](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L21) | Reconciles previously deferred paths when the next save touches this runtime. |
-| <code>bool Handles(string path);</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:24](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L24) | Whether this applier owns the flattened setting path (for example DataSources.FailoverRules.0.FailoverThreshold). |
-| <code>Task&lt;IReadOnlyList&lt;ConfigurationApplyEntry&gt;&gt; ApplyAsync(AppConfig previous, AppConfig next, IReadOnlyList&lt;string&gt; changedPaths, CancellationToken ct);</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:30](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L30) | Applies a saved configuration. Returns one entry per handled path in changedPaths. Implementations must be idempotent: the same change can arrive from a UI save and a file watcher. |
-
-## StatusEndpointHandlers
-
-Qualified name: <code>Meridian.Application.UI.StatusEndpointHandlers</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:21](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L21).
-
-Shared handlers for status endpoints used by the ASP.NET Core workstation host. Contains the business logic for generating health, status, and monitoring responses.
-
-```csharp
-public sealed class StatusEndpointHandlers
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const double HighDropRateThreshold = 5.0;</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:39](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L39) |  |
-| <code>public const double CriticalDropRateThreshold = 20.0;</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:40](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L40) |  |
-| <code>public const int StaleDataThresholdSeconds = 60;</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:41](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L41) |  |
-| <code>public StatusEndpointHandlers(Func&lt;MetricsSnapshot&gt; metricsProvider, Func&lt;PipelineStatistics&gt; pipelineProvider, Func&lt;IReadOnlyList&lt;DepthIntegrityEvent&gt;&gt; integrityProvider, Func&lt;ErrorRingBuffer?&gt;? errorBufferProvider = null, DateTimeOffset? startTime = null, Func&lt;DegradedModeStatus?&gt;? degradedModeProvider = null);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:43](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L43) |  |
-| <code>public void RegisterExtendedProviders(Func&lt;Task&lt;DetailedHealthReport&gt;&gt;? detailedHealth = null, Func&lt;BackpressureStatus&gt;? backpressure = null, Func&lt;ProviderLatencySummary&gt;? providerLatency = null, Func&lt;ConnectionHealthSnapshot&gt;? connectionHealth = null);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:62](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L62) | Registers extended providers for detailed health, backpressure, and provider latency endpoints. |
-| <code>public TimeSpan Uptime =&gt; …;</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:77](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L77) | Gets the current uptime. |
-| <code>public HealthCheckResponse GetHealthCheck();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:82](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L82) | Generates a comprehensive health check response. |
-| <code>public int GetHealthStatusCode(HealthCheckResponse response);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:234](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L234) | Gets the HTTP status code for a health check response. |
-| <code>public (bool IsReady, string Message) CheckReadiness();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:248](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L248) | Checks if the service is ready to receive traffic. |
-| <code>public StatusResponse GetStatus();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:258](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L258) | Gets the full status response. |
-| <code>public async Task&lt;string&gt; GetPrometheusMetricsAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:319](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L319) | Gets Prometheus metrics in text format, covering both the legacy hand-written series and the prometheus-net default registry. |
-| <code>public string GetPrometheusMetrics();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:345](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L345) | Gets the legacy hand-written Prometheus series in text format. |
-| <code>public ErrorsResponseDto GetErrors(int count = 10, string? levelFilter = null, string? symbolFilter = null);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:395](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L395) | Gets the errors response with optional filtering. |
-| <code>public BackpressureStatusDto GetBackpressure();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:457](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L457) | Gets the backpressure status. |
-| <code>public (ProviderLatencySummaryDto? Summary, string? Error) GetProviderLatency();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:501](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L501) | Gets provider latency summary. |
-| <code>public (ConnectionHealthSnapshotDto? Snapshot, string? Error) GetConnectionHealth();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:536](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L536) | Gets connection health snapshot. |
-| <code>public async Task&lt;(DetailedHealthReport? Report, string? Error)&gt; GetDetailedHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:570](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L570) | Gets detailed health report (async). |
-| <code>public static IReadOnlyList&lt;BackfillProviderInfo&gt; GetBackfillProviderInfo();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:591](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L591) | Gets the list of available backfill providers (static info). |

@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityGovernanceJsonContext
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernanceJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:235](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L235).
+
+Source-generated metadata for every governance payload version. The camelCase policy and the default encoder and null handling reproduce the reflective JsonSerializer.Serialize(object) output the version-1 writers produced; dictionary keys are written as stored.
+
+```csharp
+public sealed partial class SecurityGovernanceJsonContext : JsonSerializerContext;
+```
+
+## SecurityGovernancePayloadContract
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernancePayloadContract</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:241](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L241).
+
+The declared payload contract of one governance stream/event type: its payload type, the version new writes carry, and a reader for every version that may be stored.
+
+```csharp
+public sealed class SecurityGovernancePayloadContract
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Stream { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:262](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L262) |  |
+| <code>public string EventType { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:263](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L263) |  |
+| <code>public Type PayloadType { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:264](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L264) |  |
+| <code>public int CurrentVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:267](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L267) | The payload_version new writes record. |
+| <code>public IReadOnlyList&lt;int&gt; ReadableVersions =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:270](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L270) | The stored versions this node can read, ascending. |
+
 ## SecurityGovernancePayloadContractException
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernancePayloadContractException</code>. Kind: `class`.
@@ -185,7 +219,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterMutationConflictException</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:229](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L229).
+Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:267](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L267).
 
 Signals a concurrent change to a security&#x27;s governed mutation state.
 
@@ -197,7 +231,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Guid SecurityId { get; } = securityId;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:232](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L232) |  |
+| <code>public Guid SecurityId { get; } = securityId;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:270](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L270) |  |
 
 ## SecurityMasterNodeIdentity
 
@@ -823,30 +857,3 @@ Source: [src/Meridian.Storage/Services/StorageSearchService.cs:841](../../../../
 ```csharp
 public sealed record DateIndex(string Date, List<string> Files);
 ```
-
-## DateRange
-
-Qualified name: <code>Meridian.Storage.Services.DateRange</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:837](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L837).
-
-```csharp
-public sealed record DateRange(DateTimeOffset Start, DateTimeOffset End);
-```
-
-## DefragOptions
-
-Qualified name: <code>Meridian.Storage.Services.DefragOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:945](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L945).
-
-```csharp
-public sealed record DefragOptions(long MinFileSizeBytes = 1_048_576, int MaxFilesPerMerge = 100, bool PreserveOriginals = false, System.IO.Compression.CompressionLevel TargetCompression = System.IO.Compression.CompressionLevel.Optimal, TimeSpan MaxFileAge = default, bool DryRun = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TimeSpan MaxFileAge { get; init; } = MaxFileAge == default? TimeSpan.FromDays(1) : MaxFileAge;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:954](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L954) |  |
-| <code>public DefragOptions() : this(1_048_576);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:956](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L956) |  |

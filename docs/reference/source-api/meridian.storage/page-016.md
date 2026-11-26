@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageSinkMetadata
+
+Qualified name: <code>Meridian.Storage.StorageSinkMetadata</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/StorageSinkAttribute.cs:76](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L76).
+
+Metadata extracted from a StorageSinkAttribute for use by the StorageSinkRegistry and composition root.
+
+```csharp
+public sealed record StorageSinkMetadata(string Id, string DisplayName, string? Description, bool EnabledByDefault, Type ImplementationType)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static StorageSinkMetadata FromAttribute(StorageSinkAttribute attr, Type implementationType);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:87](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L87) | Creates metadata from a StorageSinkAttribute and its implementation type. |
+
+## StorageSinkRegistry
+
+Qualified name: <code>Meridian.Storage.StorageSinkRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/StorageSinkRegistry.cs:20](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L20).
+
+Registry for discovering and registering IStorageSink plugins that are decorated with StorageSinkAttribute.
+
+```csharp
+public sealed class StorageSinkRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;StorageSinkMetadata&gt; Sinks =&gt; …;</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:27](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L27) | Gets the discovered storage sink metadata entries, in the order they were found. |
+| <code>public void DiscoverFromAssemblies(params Assembly[] assemblies);</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:40](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L40) | Scans the provided assemblies for concrete types decorated with StorageSinkAttribute that implement IStorageSink, and adds their metadata to the registry. |
+| <code>public void RegisterServices(IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton);</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:77](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L77) | Registers all discovered sink implementation types into the service collection so that they can be resolved by IServiceProvider during composition. |
+| <code>public bool TryGetSink(string id, out StorageSinkMetadata? metadata);</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:103](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L103) | Attempts to find a registered sink by its identifier (case-insensitive). |
+
 ## StorageTier
 
 Qualified name: <code>Meridian.Storage.StorageTier</code>. Kind: `enum`.
