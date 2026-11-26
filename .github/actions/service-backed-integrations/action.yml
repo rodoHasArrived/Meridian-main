@@ -15,7 +15,7 @@ inputs:
     description: Days to retain the test, coverage and schema evidence.
     required: true
   postgres-container-id:
-    description: The caller's `${{ job.services.postgres.id }}`, used for database setup and schema capture.
+    description: The id of the caller's postgres service container (job.services.postgres.id), used for database setup and schema capture.
     required: true
 
 outputs:

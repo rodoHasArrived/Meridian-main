@@ -47,6 +47,13 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         self.assertEqual(len(steps), 1)
         return steps[0]
 
+    def test_action_metadata_text_has_no_expressions(self):
+        # The runner evaluates ${{ }} in action metadata when it loads the action, where
+        # contexts such as `job` are unavailable, so the whole action fails to load.
+        for section in ("inputs", "outputs"):
+            for name, spec in self.action[section].items():
+                self.assertNotIn("${{", spec.get("description", ""), f"{section}.{name}")
+
     def test_same_implementation_runs_for_pr_merge_group_and_certification(self):
         self.assertIn("pull_request", self.ci["on"])
         self.assertFalse(self.ci["on"]["pull_request"], "Integration coverage applies to PRs targeting any branch")
