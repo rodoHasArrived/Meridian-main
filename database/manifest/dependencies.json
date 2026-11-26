@@ -17122,6 +17122,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityVanillaSwapProfile"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityVersionedScalarTerms"
     },
     {
@@ -34979,6 +34985,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityVanillaSwapProfile"
     },
     {
       "kind": "contract-set-member",
@@ -72580,7 +72592,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "014af89ab318f8d7b1fbd1641c68a68b59f663d8742f5a3627b4e79553dca024",
+  "fingerprint": "0e78ecbf62d4d3b71e5dcbc823455e231ceb4fee222baeec1d3f3b6595df4373",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -89753,6 +89765,12 @@
     },
     {
       "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityVanillaSwapProfile",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityVanillaSwapProfile"
+    },
+    {
+      "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityVersionedScalarTerms",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityVersionedScalarTerms"
@@ -106602,10 +106620,10 @@
   ],
   "summary": {
     "contract_references": 4445,
-    "contract_set_memberships": 5869,
-    "edges": 12057,
+    "contract_set_memberships": 5871,
+    "edges": 12059,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5915
+    "nodes": 5916
   }
 }
