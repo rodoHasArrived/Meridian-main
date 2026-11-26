@@ -644,6 +644,8 @@ public sealed class FileUserAccountStore : IUserAccountStore
     {
         File.Delete(_mutationIntentPath);
         var directory = Path.GetDirectoryName(_mutationIntentPath);
+        // Best effort: the mutation has committed; if the delete is lost, recovery replays the
+        // intent idempotently (its audit line is deduplicated by audit id).
         if (!string.IsNullOrEmpty(directory))
         {
             await AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).ConfigureAwait(false);
@@ -654,6 +656,8 @@ public sealed class FileUserAccountStore : IUserAccountStore
     {
         File.Delete(_mutationIntentPath);
         var directory = Path.GetDirectoryName(_mutationIntentPath);
+        // Best effort: the mutation has committed; if the delete is lost, recovery replays the
+        // intent idempotently (its audit line is deduplicated by audit id).
         if (!string.IsNullOrEmpty(directory))
         {
             AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).GetAwaiter().GetResult();

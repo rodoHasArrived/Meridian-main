@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using Meridian.Core.IO;
 using Meridian.Core.Logging;
 using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
@@ -17,6 +18,12 @@ namespace Meridian.Storage.Archival;
 /// </summary>
 public sealed class WriteAheadLog : IAsyncDisposable
 {
+    /// <summary>
+    /// Name of the lock file that marks a WAL directory as owned by one live instance. Its
+    /// extension is not <c>.wal</c>, so segment listings, recovery and retention never see it.
+    /// </summary>
+    public const string OwnerLockFileName = ".owner.lock";
+
     private readonly ILogger _log = LoggingSetup.ForContext<WriteAheadLog>();
     private readonly string _walDirectory;
     private readonly WalOptions _options;
@@ -62,6 +69,13 @@ public sealed class WriteAheadLog : IAsyncDisposable
     private long _corruptedRecordCount;
     private long _skippedRecordCount;
 
+    // Exclusive handle on OwnerLockFileName, held from the first InitializeAsync/RepairAsync
+    // until dispose. Recovery, rotation and truncation all assume no other instance writes or
+    // deletes segments in this directory; without it, a second instance treats the live segment
+    // as closed and archives it away. A crashed holder releases when the OS closes its handles.
+    private FileStream? _ownerLock;
+    private readonly object _ownerLockGate = new();
+
     // WAL file header constants
     private const string LegacyWalMagic = "MDCWAL01";
     private const string WalMagic = "MDCWAL02";
@@ -74,6 +88,8 @@ public sealed class WriteAheadLog : IAsyncDisposable
         _walDirectory = walDirectory;
         _options = options ?? new WalOptions();
         _walDirectoryCreated = !Directory.Exists(_walDirectory);
+        // Not locked here: a host may compose a WAL it never initializes (for example the UI
+        // host's pipeline graph). Ownership is taken by InitializeAsync and RepairAsync.
         Directory.CreateDirectory(_walDirectory);
         WarmChecksumPath();
     }
@@ -143,12 +159,22 @@ public sealed class WriteAheadLog : IAsyncDisposable
     /// </summary>
     public event Action<long>? CorruptionDetected;
 
+    /// <summary>The directory this instance owns.</summary>
+    public string WalDirectory => _walDirectory;
+
     /// <summary>
     /// Initialize the WAL, recovering any uncommitted transactions.
     /// </summary>
+    /// <exception cref="WalDirectoryInUseException">Another live instance owns the directory.</exception>
     public async Task InitializeAsync(CancellationToken ct = default)
     {
+        AcquireOwnership();
         _log.Information("Initializing WAL in {WalDirectory}", _walDirectory);
+
+        if (!string.IsNullOrWhiteSpace(_options.LegacySegmentDirectory))
+        {
+            await AdoptLegacySegmentsAsync(_options.LegacySegmentDirectory, ct).ConfigureAwait(false);
+        }
 
         var recoveryStopwatch = System.Diagnostics.Stopwatch.StartNew();
         long totalRecoveredEvents = 0;
@@ -726,7 +752,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
                         // Persist the archive rename and verify the archive actually landed before
                         // deleting the only remaining copy of the records.
-                        await AtomicFileWriter.SyncDirectoryAsync(archiveDir, ct);
+                        await AtomicFileWriter.SyncDirectoryOrThrowAsync(archiveDir, ct);
 
                         var archiveInfo = new FileInfo(archivePath);
                         if (!archiveInfo.Exists || archiveInfo.Length == 0)
@@ -892,7 +918,9 @@ public sealed class WriteAheadLog : IAsyncDisposable
             // post-create, so it must not observe cancellation.
             await _currentWalFile.FlushAsync(CancellationToken.None).ConfigureAwait(false);
             _currentWalFile.Flush(flushToDisk: true);
-            await AtomicFileWriter.SyncDirectoryAsync(_walDirectory, CancellationToken.None).ConfigureAwait(false);
+            // Strict: records are acknowledged against this segment, so an unconfirmed entry must
+            // fault it (rotation/fault recovery then delete the stub and retry) rather than pass.
+            await AtomicFileWriter.SyncDirectoryOrThrowAsync(_walDirectory, CancellationToken.None).ConfigureAwait(false);
 
             if (_walDirectoryCreated && !_walDirectoryParentSynced)
             {
@@ -900,7 +928,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
                 // treatment or the whole directory can vanish.
                 var parent = Path.GetDirectoryName(Path.GetFullPath(_walDirectory));
                 if (!string.IsNullOrEmpty(parent))
-                    await AtomicFileWriter.SyncDirectoryAsync(parent, CancellationToken.None).ConfigureAwait(false);
+                    await AtomicFileWriter.SyncDirectoryOrThrowAsync(parent, CancellationToken.None).ConfigureAwait(false);
                 _walDirectoryParentSynced = true;
             }
         }
@@ -1249,8 +1277,12 @@ public sealed class WriteAheadLog : IAsyncDisposable
     /// and rewriting only valid records into new WAL files.
     /// Corrupted records are discarded and counted in the result.
     /// </summary>
+    /// <exception cref="WalDirectoryInUseException">Another live instance owns the directory.</exception>
     public async Task<WalRepairResult> RepairAsync(CancellationToken ct = default)
     {
+        // A repair rewrites segments in place, which is only safe when no other process can be
+        // writing them; an instance that never initialized cannot tell which segment is live.
+        AcquireOwnership();
         // Truncation deletes and rewrites committed segments. Rewriting a segment while a
         // truncation runs could restore records it has just removed, so they would replay.
         await _truncateLock.WaitAsync(ct).ConfigureAwait(false);
@@ -1488,6 +1520,95 @@ public sealed class WriteAheadLog : IAsyncDisposable
             _writeLock.Dispose();
             _truncateLock.Dispose();
             _flushLoopCts?.Dispose();
+            ReleaseOwnership();
+        }
+    }
+
+    private void AcquireOwnership()
+    {
+        lock (_ownerLockGate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_ownerLock is not null)
+                return;
+
+            _ownerLock = AcquireDirectoryLock(_walDirectory);
+        }
+    }
+
+    private void ReleaseOwnership()
+    {
+        lock (_ownerLockGate)
+        {
+            _ownerLock?.Dispose();
+            _ownerLock = null;
+        }
+    }
+
+    /// <summary>
+    /// Takes the owner lock of <paramref name="directory"/> without waiting: a WAL directory is
+    /// owned for a process's lifetime, so contention means a second writer, not a brief overlap.
+    /// </summary>
+    private static FileStream AcquireDirectoryLock(string directory)
+    {
+        var lockPath = Path.Combine(directory, OwnerLockFileName);
+        try
+        {
+            return ExclusiveFileLock.Acquire(lockPath, TimeSpan.Zero);
+        }
+        catch (TimeoutException ex)
+        {
+            throw new WalDirectoryInUseException(directory, ex);
+        }
+    }
+
+    /// <summary>
+    /// Moves segments left by the pre-ownership layout (one shared WAL directory) into this
+    /// instance's directory so they are recovered here. Holds the legacy directory's owner lock
+    /// while moving so no other adopter, or a WAL still opened directly on that directory, can
+    /// race the move. A segment whose name already exists here is left in place and reported.
+    /// </summary>
+    private async Task AdoptLegacySegmentsAsync(string legacyDirectory, CancellationToken ct)
+    {
+        if (!Directory.Exists(legacyDirectory) ||
+            string.Equals(Path.GetFullPath(legacyDirectory), Path.GetFullPath(_walDirectory), StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        var legacySegments = Directory.GetFiles(legacyDirectory, "*.wal");
+        if (legacySegments.Length == 0)
+            return;
+
+        using var legacyLock = AcquireDirectoryLock(legacyDirectory);
+        var moved = 0;
+        foreach (var segment in legacySegments.OrderBy(static f => f, StringComparer.Ordinal))
+        {
+            ct.ThrowIfCancellationRequested();
+            var destination = Path.Combine(_walDirectory, Path.GetFileName(segment));
+            if (File.Exists(destination))
+            {
+                _log.Error(
+                    "Legacy WAL segment {Segment} was not adopted because {Destination} already exists; it stays in place and is not recovered",
+                    segment,
+                    destination);
+                continue;
+            }
+
+            File.Move(segment, destination, overwrite: false);
+            moved++;
+        }
+
+        if (moved > 0)
+        {
+            // Both directory entries changed; make the move durable before recovering from it.
+            await AtomicFileWriter.SyncDirectoryOrThrowAsync(_walDirectory, CancellationToken.None).ConfigureAwait(false);
+            await AtomicFileWriter.SyncDirectoryOrThrowAsync(legacyDirectory, CancellationToken.None).ConfigureAwait(false);
+            _log.Information(
+                "Adopted {Count} WAL segments from legacy directory {LegacyDirectory} into {WalDirectory}",
+                moved,
+                legacyDirectory,
+                _walDirectory);
         }
     }
 
@@ -1558,6 +1679,14 @@ public sealed class WalRecord
 /// </summary>
 public sealed class WalOptions
 {
+    /// <summary>
+    /// A directory that held WAL segments under an earlier layout. When set, initialization moves
+    /// any <c>*.wal</c> segments found there into this WAL's directory (under that directory's
+    /// owner lock) before recovery, so they are replayed rather than stranded. Only one workload
+    /// should adopt a given legacy directory.
+    /// </summary>
+    public string? LegacySegmentDirectory { get; set; }
+
     /// <summary>
     /// Maximum WAL file size before rotation.
     /// </summary>
@@ -1657,3 +1786,23 @@ public sealed record WalRepairResult(
     int ValidRecords,
     int CorruptedRecords,
     int RepairedFiles);
+
+/// <summary>
+/// Thrown when a WAL directory is already owned by another live <see cref="WriteAheadLog"/>, in
+/// this process or another. Two owners would hand out the same sequence numbers and archive each
+/// other's live segments, so the second one is refused instead.
+/// </summary>
+public sealed class WalDirectoryInUseException : IOException
+{
+    public WalDirectoryInUseException(string walDirectory, Exception? innerException = null)
+        : base(
+            $"WAL directory '{walDirectory}' is owned by another running process or WAL instance. " +
+            "Stop that process first, or run this workload against a different data root.",
+            innerException)
+    {
+        WalDirectory = walDirectory;
+    }
+
+    /// <summary>The directory whose owner lock is held elsewhere.</summary>
+    public string WalDirectory { get; }
+}
