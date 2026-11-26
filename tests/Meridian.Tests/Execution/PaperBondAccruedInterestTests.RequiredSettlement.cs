@@ -21,7 +21,8 @@ public sealed partial class PaperBondAccruedInterestTests
         var analytics = Substitute.For<IBondAnalyticsService>();
         analytics.CalculateAsync(Arg.Any<BondAnalyticsRequest>(), Arg.Any<CancellationToken>())
             .Returns(call => Analytics(call.Arg<BondAnalyticsRequest>(), accrued));
-        await using var gateway = BondGateway(Guid.NewGuid(), analytics, RequiredSettlement(),
+        var securityId = Guid.NewGuid();
+        await using var gateway = BondGateway(securityId, analytics, RequiredSettlement(),
             costOptions: new Meridian.Execution.PaperMatching.PaperTradingCostOptions
             { CommissionRate = 0m, CommissionMinimum = 0m });
 
@@ -34,7 +35,10 @@ public sealed partial class PaperBondAccruedInterestTests
         report.AccruedInterestPer100.Should().Be(accrued);
         portfolio.Cash.Should().Be(98_750m - accrued * 1_000m);
         (portfolio.Positions[Bond].AverageCostBasis * portfolio.Positions[Bond].Quantity).Should().Be(101_250m);
-        ledger.GetBalance(Meridian.Ledger.LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Unresolved(Bond))).Should().Be(accrued * 1_000m);
+        // The gateway stamps the fill with the bond's SecurityId, so accrued interest posts to the
+        // SecurityId-keyed receivable (Security Master review F2).
+        ledger.GetBalance(Meridian.Ledger.LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Resolved(securityId, Bond)))
+            .Should().Be(accrued * 1_000m);
         ledger.GetBalance(Meridian.Ledger.LedgerAccounts.CouponIncome).Should().Be(0m);
         portfolio.CheckLedgerIntegrity().Should().BeEmpty();
     }

@@ -1109,7 +1109,10 @@ public sealed class PaperTradingPortfolioMarginRulesTests
                 portfolio.PortfolioValue.Should().Be(100_000m - expense);
                 ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.Cash)).Should().Be(cash);
                 ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.MarginLoanPayable)).Should().Be(principal);
-                ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.Securities, "AAPL")).Should().Be(securities);
+                // These synthetic fills carry no Security Master identity, so the paper position posts to the
+                // legacy ticker-keyed account (LedgerSecurityKey.Unresolved).
+                ledger.GetBalance(StandardChartOfAccounts.Instance.Resolve(LedgerAccountRole.Securities, "margin-1",
+                    LedgerSecurityKey.Unresolved("AAPL"))).Should().Be(securities);
                 ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.MarginInterestExpense)).Should().Be(expense);
                 ledger.Journal.Should().HaveCount(entries).And.OnlyContain(entry => entry.IsBalanced);
                 portfolio.CheckLedgerIntegrity().Should().BeEmpty();
