@@ -963,14 +963,6 @@ public static class WorkstationServiceCollectionExtensions
                     sp.GetRequiredService<ReportingScheduleStoreOptions>(),
                     sp.GetRequiredService<ILogger<FileReportingScheduleStore>>()));
         }
-#pragma warning disable CS0618
-        services.TryAddSingleton<IReportingScheduleStore>(sp =>
-        {
-            var canonical = sp.GetRequiredService<Meridian.Reporting.IReportingScheduleStore>();
-            return canonical as IReportingScheduleStore
-                ?? new ReportingScheduleStoreCompatibilityAdapter(canonical);
-        });
-#pragma warning restore CS0618
         // Resolve the durable ledger dependencies only when a certification attempt is made. This
         // keeps lightweight hosts startable while preserving fail-closed behavior: a run cannot be
         // certified from fixtures or synthesized rows when the production ledger graph is absent.

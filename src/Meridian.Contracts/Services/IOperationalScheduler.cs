@@ -244,15 +244,3 @@ public interface IOperationalTradingCalendar
     /// <returns>List of holiday dates.</returns>
     IReadOnlyList<DateOnly> GetHolidays(int year, string market = "US");
 }
-
-
-/// <summary>
-/// Compatibility alias for the former local scheduling calendar contract.
-/// New local scheduling code must use <see cref="IOperationalTradingCalendar"/>; provider
-/// adapters must use <c>Meridian.ProviderSdk.ITradingCalendarProvider</c> so their calendar
-/// output retains provider provenance.
-/// </summary>
-[Obsolete("Use IOperationalTradingCalendar for local scheduling or Meridian.ProviderSdk.ITradingCalendarProvider for provider data.")]
-public interface ITradingCalendarProvider : IOperationalTradingCalendar
-{
-}

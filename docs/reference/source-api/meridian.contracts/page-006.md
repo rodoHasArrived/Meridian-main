@@ -6,51 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## FieldError
-
-Qualified name: <code>Meridian.Contracts.Api.FieldError</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ErrorResponse.cs:267](../../../../src/Meridian.Contracts/Api/ErrorResponse.cs#L267).
-
-Represents a field-level validation error.
-
-```csharp
-public sealed record FieldError([property : JsonPropertyName("field")] string Field, [property : JsonPropertyName("message")] string Message, [property : JsonPropertyName("code")] string? Code = null, [property : JsonPropertyName("attemptedValue")] object? AttemptedValue = null);
-```
-
-## ForceFailoverRequest
-
-Qualified name: <code>Meridian.Contracts.Api.ForceFailoverRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:74](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L74).
-
-Request to force a failover to a specific provider.
-
-```csharp
-public record ForceFailoverRequest(string TargetProviderId);
-```
-
-## FreshnessStates
-
-Qualified name: <code>Meridian.Contracts.Api.FreshnessStates</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Api/StatusModels.cs:375](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L375).
-
-Freshness state constants for metric staleness indicators.
-
-```csharp
-public static class FreshnessStates
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Fresh = &quot;Fresh&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:378](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L378) | Data is fresh and within acceptable thresholds. |
-| <code>public const string Warning = &quot;Warning&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:381](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L381) | Data is approaching staleness (&gt;70% of threshold). |
-| <code>public const string Stale = &quot;Stale&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:384](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L384) | Data has exceeded the staleness threshold. |
-| <code>public const string NoData = &quot;NoData&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:387](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L387) | No data has been received yet. |
-
 ## GapFillRequest
 
 Qualified name: <code>Meridian.Contracts.Api.GapFillRequest</code>. Kind: `class`.
@@ -869,4 +824,38 @@ Response containing provider comparison data.
 
 ```csharp
 public record ProviderComparisonResponse(DateTimeOffset Timestamp, ProviderMetricsResponse[] Providers, int TotalProviders, int HealthyProviders);
+```
+
+## ProviderConnectionDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs:85](../../../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs#L85).
+
+Provider connection DTO exposed to clients.
+
+```csharp
+public sealed record ProviderConnectionDto(string ConnectionId, string ProviderFamilyId, string DisplayName, string ConnectionType, string ConnectionMode, bool Enabled, string? CredentialReference, string? InstitutionId, string? ExternalAccountId, ProviderRouteScopeDto? Scope, string[] Tags, string? Description, bool ProductionReady, string? TenantId = null, string? CredentialEnvironment = null);
+```
+
+## ProviderConnectionHealthResponse
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionHealthResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:16](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L16).
+
+Minimal typed projection of GET /api/providers/health used by operator clients. A null connection value means no runtime diagnostic probe exists; it must not be treated as false.
+
+```csharp
+public sealed record ProviderConnectionHealthResponse([property : JsonPropertyName("providers")] IReadOnlyList<ProviderConnectionHealthSnapshotDto> Providers, [property : JsonPropertyName("timestamp")] DateTimeOffset Timestamp);
+```
+
+## ProviderConnectionHealthSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionHealthSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:20](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L20).
+
+```csharp
+public sealed record ProviderConnectionHealthSnapshotDto([property : JsonPropertyName("providerId")] string ProviderId, [property : JsonPropertyName("displayName")] string DisplayName, [property : JsonPropertyName("isEnabled")] bool IsEnabled, [property : JsonPropertyName("isConnected")] bool? IsConnected, [property : JsonPropertyName("connectionState")] string ConnectionState, [property : JsonPropertyName("diagnosticsAvailable")] bool DiagnosticsAvailable, [property : JsonPropertyName("lastFailureKind")] string? LastFailureKind, [property : JsonPropertyName("reconnectAttempts")] int? ReconnectAttempts = null);
 ```

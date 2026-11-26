@@ -97,7 +97,6 @@ context, and the minimum route-specific docs needed for its task.
 | Provider | `meridian-provider-builder` or `provider-management-workflow` | provider contract or workflow change |
 | Contract impact | `meridian-contract-governance` | DTO/API/read-model consumer map |
 | Performance | `performance-resource-review` | resource and lifecycle risk review |
-| Archive | `meridian-archive-organizer` | archive classification and references |
 | Roadmap | `meridian-roadmap-strategist` | roadmap and target-state reconciliation |
 | Simulated user feedback | `meridian-simulated-user-panel` | persona-grounded artifact critique |
 | Skill/package work | `meridian-codex-skill-builder` | package, metadata, eval, and route coverage |

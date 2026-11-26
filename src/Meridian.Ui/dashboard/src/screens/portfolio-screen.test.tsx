@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
+import { backToWorkList, expectNarrowWorkbenchViewport, inspectSelection, installViewportMatchMedia } from "@/test/narrow-workbench";
 import { PortfolioScreen } from "@/screens/portfolio-screen";
 import { formatUtcTimestamp } from "@/lib/format";
 import { WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
@@ -372,7 +373,11 @@ async function renderPortfolioScreen(...args: Parameters<typeof renderWithRouter
 }
 
 describe("PortfolioScreen", () => {
+  // The test viewport is the constrained layout: the holdings workbench shows its queue or the
+  // selected holding's detail, not both (see @/test/narrow-workbench).
   beforeEach(() => {
+    expectNarrowWorkbenchViewport();
+    installViewportMatchMedia();
     vi.spyOn(api, "getFinancialRecordExplorer").mockResolvedValue(createPortfolioFinancialRecordExplorer());
     vi.spyOn(api, "saveFinancialRecordExplorerView").mockImplementation((_explorerId, request) =>
       Promise.resolve({
@@ -389,6 +394,7 @@ describe("PortfolioScreen", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it.each([
@@ -469,15 +475,19 @@ describe("PortfolioScreen", () => {
   });
 
   it("renders live positions and opens retained records only on request", async () => {
+    const user = userEvent.setup();
     await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)} trading={trading} strategy={strategy} accounting={accounting} />);
     expect(screen.getByRole("region", { name: /portfolio workbench context/i })).toBeDefined();
     expect(screen.queryByRole("heading", { name: "Portfolio Explorer" })).not.toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Position source" })).toHaveValue("live");
     expect(screen.getByRole("treegrid", { name: /open positions/i })).toBeDefined();
-    expect(screen.getByRole("row", { name: /inspect aapl long holding/i })).toHaveAttribute("aria-expanded", "true");
+    const aaplRow = screen.getByRole("row", { name: /inspect aapl long holding/i });
+    expect(aaplRow).toHaveAttribute("aria-expanded", "true");
+    await inspectSelection(user, aaplRow);
     expect(screen.getByRole("region", { name: /aapl holding detail/i })).toBeDefined();
     expect(screen.getByText(/\$18,900 exposure with \+\$90 unrealized p&l/i)).toBeDefined();
-    await userEvent.setup().selectOptions(screen.getByRole("combobox", { name: "Position source" }), "retained");
+    await backToWorkList(user, aaplRow);
+    await user.selectOptions(screen.getByRole("combobox", { name: "Position source" }), "retained");
     expect(screen.getByRole("heading", { name: "Portfolio Explorer" })).toBeInTheDocument();
     expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Trading workspace");
     expect(screen.getByLabelText("Portfolio Explorer proof actions")).toHaveTextContent("Open evidence packet");
@@ -513,8 +523,10 @@ describe("PortfolioScreen", () => {
     expect(screen.getByLabelText("Live holdings comparison")).toHaveTextContent("$37,699");
     expect(screen.getByLabelText("Retained records comparison")).toHaveTextContent("$25,587");
     await user.selectOptions(screen.getByRole("combobox", { name: "Position source" }), "live");
+    const openPositions = screen.getByRole("treegrid", { name: "Open positions" });
+    expect(within(openPositions).getByRole("columnheader", { name: "Exposure" })).toBeInTheDocument();
+    await inspectSelection(user, openPositions);
     expect(screen.getByRole("region", { name: "AAPL holding detail" })).toHaveTextContent("$7,159");
-    expect(within(screen.getByRole("treegrid", { name: "Open positions" })).getByRole("columnheader", { name: "Exposure" })).toBeInTheDocument();
     expect(container.querySelector('[data-kpi-id="portfolio.total-exposure"]')).toHaveAttribute("data-kpi-display", "$37,699");
   });
 
@@ -526,8 +538,10 @@ describe("PortfolioScreen", () => {
   });
 
   it("names the selected holding in one heading line and lists what its row does not show", async () => {
+    const user = userEvent.setup();
     await renderPortfolioScreen(<PortfolioScreen portfolio={portfolioFromTrading(trading, strategy)} trading={trading} strategy={strategy} accounting={accounting} />);
 
+    await inspectSelection(user, screen.getByRole("treegrid", { name: /open positions/i }));
     const pane = screen.getByRole("region", { name: /aapl holding detail/i });
     expect(within(pane).getByRole("heading", { level: 3, name: "Holding AAPL" })).toBeInTheDocument();
     expect(pane).toHaveAttribute("data-detail-pane", "true");
@@ -1346,6 +1360,7 @@ describe("PortfolioScreen", () => {
 
     expect(msftRow).toHaveAttribute("aria-selected", "true");
     expect(msftRow).toHaveAttribute("aria-expanded", "true");
+    await inspectSelection(user, msftRow);
     expect(screen.getByRole("region", { name: /msft holding detail/i })).toBeDefined();
     expect(screen.getByText(/\$10,250 exposure with \+\$52.50 unrealized p&l/i)).toBeDefined();
     expect(screen.getByRole("link", { name: "Open asset detail for MSFT" })).toHaveAttribute(
