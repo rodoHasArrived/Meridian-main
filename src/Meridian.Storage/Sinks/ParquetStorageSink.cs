@@ -246,12 +246,14 @@ public sealed partial class ParquetStorageSink : IStorageSink
 
         try
         {
-            // Rows land in the current hour's part file for this day file; compaction merges the
-            // part into the day file once the hour closes.
-            var path = GetPartPath(GetFilePath(events[0]));
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-
+            // Streaming rows land in the current hour's part file for this day file; compaction
+            // merges the part into the day file once the hour closes. Historical bars arrive as
+            // backfill batches rather than a 5-second stream, so they append to the day file
+            // directly, where the bar schema's legacy-file handling applies.
             var eventType = events[0].Type;
+            var dayPath = GetFilePath(events[0]);
+            var path = eventType == MarketEventType.HistoricalBar ? dayPath : GetPartPath(dayPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 
             switch (eventType)
             {

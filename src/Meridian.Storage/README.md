@@ -135,7 +135,9 @@ copy-plus-rename, then deleted. The day file's footer lists merged part names un
 `meridian.compacted-parts`, so a crash between merge and delete never merges rows twice. Parts left
 by a stopped process are adopted once they are two hours old. The `.parquet-part` extension keeps
 query, export, retention, quota and tier services on day files only, so a day file trails the
-newest rows by up to about an hour; JSONL remains the real-time copy.
+newest rows by up to about an hour; JSONL remains the real-time copy. Historical bars are backfill
+batches rather than a streaming flush, so they append to their day file directly, where the v2 bar
+schema's legacy-file handling applies.
 
 `CompositeSink` in `FailOnAnyFailure` mode
 retains per-child acknowledgements for the same in-process event admission, preventing retries
