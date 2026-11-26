@@ -67,6 +67,12 @@ The round-trip guard for rows stamped above their class&#x27;s S2 document floor
 public sealed partial class SecurityMasterService
 ```
 
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterService.BondCouponRoundTrip.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.BondCouponRoundTrip.cs#L10).
+
+```csharp
+public sealed partial class SecurityMasterService
+```
+
 Source: [src/Meridian.Application/SecurityMaster/SecurityMasterService.ClassificationText.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.ClassificationText.cs#L18).
 
 Keeps newly written classification text unambiguous for ClassificationLabelReader.
@@ -278,6 +284,12 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;OperatorOverridesDto&gt; PatchOperatorOverridesAsync(Guid securityId, OperatorOverridesPatchRequest request, string updatedBy, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Overrides.cs:139](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Overrides.cs#L139) |  |
 | <code>public async Task&lt;OperatorOverridesDto&gt; RecordOperatorOverrideDecisionAsync(Guid securityId, OperatorOverrideDecision decision, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Overrides.cs:182](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Overrides.cs#L182) |  |
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.PrincipalSchedule.cs:11](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.PrincipalSchedule.cs#L11).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchCommandService
+```
 
 Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.ProfileFieldValidation.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.ProfileFieldValidation.cs#L13).
 
