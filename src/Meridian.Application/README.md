@@ -6,10 +6,23 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.Application
+
+Security Master validation composes one built-in contribution for each of the 32 asset classes
+through `SecurityAssetValidationModules` (`SecurityMaster/Validation/Modules/`). Each class-owned
+factory keeps the rules the class had in `AssetClassValidatorRegistry`; the registry keeps shared
+schema validation, the shared rule types and its public custom-registry constructor. Composition
+refuses a duplicate, missing or mismatched class. `SecurityAssetValidationModuleTests` covers it.
+
+`SecurityMasterMapping.AssetPackCodecs` composes the decode contributions generated from the
+Contracts binding rows, with the handwritten CustomAsset profile decode and Bond's existing
+diagnostic-order hook. It checks exact catalog coverage before dispatch, so a catalog class
+without exactly one decoder fails at type initialization. The mapping keeps its guards, its
+write refusal and read fallback for an unrecognized class, and the generated-code check in
+`SecurityFlatCodecGenerationTests`. The F# writer and replay behavior are unchanged.
 
 Corporate-action ingest forwards specialized source terms and the provider's original JSON
 record into durable source proposals. Exact raw-text digests are checked before recording; source
@@ -316,7 +329,7 @@ schedule when effective interest is negative, after contractual caps and floors.
 an entire signed-interest schedule before any period posts. Calculation-only signed-interest
 previews keep their existing signed model; explicit v1/v2 receipt replay retains its original arithmetic.
 
-Hand-written asset-class validators (`AssetClassValidatorRegistry`) must agree with the declared
+Hand-written asset-class validators (the per-class modules under `SecurityMaster/Validation/Modules/`) must agree with the declared
 sign and fraction range of each rate field in `SecurityRateFieldUnits`;
 `SecurityRateFieldUnitsValidatorParityTests` enforces this and lists the disagreements still waiting
 on an owner ruling. A negative Bond `spreadBps` therefore validates, as the unit table declares.

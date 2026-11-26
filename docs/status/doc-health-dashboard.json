@@ -1,11 +1,11 @@
 {
-  "total_files": 1288,
+  "total_files": 1289,
   "orphaned_count": 379,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 304,
   "health_score": 86,
-  "signal_digest": "sha256:aa6f8c7b1a151617eaa00ffd8b02ac6fe385fbd9d37b929057a2f4d9e53f691b",
+  "signal_digest": "sha256:9f60322e61b954872b67f900b6628b9ba8657ade97278c63bcaae803821f5149",
   "orphaned_files": [
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
@@ -2696,6 +2696,13 @@
     },
     {
       "path": "docs/engineering/plans/security-master-review-remediation-plan.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/ui-shared-decomposition-plan.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

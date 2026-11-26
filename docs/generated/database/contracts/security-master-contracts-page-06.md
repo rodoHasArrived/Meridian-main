@@ -2,11 +2,26 @@
 
 # `security-master-contracts` data objects - page 6 of 8
 
-Objects 401-480 of 608. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 611. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto["SecurityCashFlowSourceDto"] {
+        +DateTimeOffset? ClientConfirmedAt
+        +string? ClientConfirmedBy
+        +bool IsClientOverride
+        +DateTimeOffset? LastUpdatedUtc
+        +Guid SecurityId
+        +StructuredCashFlowSourceKind SourceKind
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityCashFlowTermBinding["SecurityCashFlowTermBinding"] {
+        +string Key
+        +bool ReadAfterSharedSpellings
+        +SecurityCashFlowTermRole Role
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRole["SecurityCashFlowTermRole"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRoles["SecurityCashFlowTermRoles"] {
         +IReadOnlyDictionary~SecurityCashFlowTermRole__IReadOnlyList~string~~ SharedSpellings
     }
@@ -420,28 +435,8 @@ classDiagram
         +string? SourceRecordId
         +string SourceSystem
     }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto["SecurityMasterCorporateActionAppendResultDto"] {
-        +SecurityMasterCorporateActionAuditDto Audit
-        +CorporateActionDto CorporateAction
-        +SecurityMasterCorporateActionRestatementDto? Restatement
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAuditDto["SecurityMasterCorporateActionAuditDto"] {
-        +string Actor
-        +string AuditId
-        +Guid CorporateActionId
-        +string? CorrelationId
-        +string EventType
-        +string? Reason
-        +DateTimeOffset RecordedAtUtc
-        +Guid SecurityId
-        +string? SourceRecordId
-        +string SourceSystem
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionRestatementDto["SecurityMasterCorporateActionRestatementDto"] {
-        +IReadOnlyList~RestatementCandidateDto~ Candidates
-        +string EvaluationStatus
-        +bool RestatementRequired
-    }
+    Meridian_Contracts_SecurityMaster_SecurityCashFlowTermBinding --> Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRole
+    Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRoles --> Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRole
     Meridian_Contracts_SecurityMaster_SecurityClassCodecBinding --> Meridian_Contracts_SecurityMaster_SecurityCodecInputs
     Meridian_Contracts_SecurityMaster_SecurityClassificationDriftReportDto --> Meridian_Contracts_SecurityMaster_SecurityClassificationDriftEntryDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceInputDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto
@@ -475,6 +470,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityInstrumentTermsDto --> Meridian_Contracts_SecurityMaster_SecurityInstrumentTermsStatus
     Meridian_Contracts_SecurityMaster_SecurityInstrumentTermsSourceDto --> Meridian_Contracts_SecurityMaster_SecurityInstrumentTermsSourceStatus
     Meridian_Contracts_SecurityMaster_SecurityLotUnitDescriptor --> Meridian_Contracts_SecurityMaster_SecurityLotUnitKind
-    Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAuditDto
-    Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionRestatementDto
 ```

@@ -6,6 +6,70 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementBreakType
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementBreakType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L53).
+
+Canonical category for a statement reconciliation break.
+
+```csharp
+public enum StatementBreakType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:55](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L55) |  |
+| <code>MissingStatementPosition = 1</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L56) |  |
+| <code>MissingBookPosition = 2</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L57) |  |
+| <code>PositionQuantityMismatch = 3</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L58) |  |
+| <code>PositionMarketValueMismatch = 4</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:59](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L59) |  |
+| <code>MissingStatementCash = 5</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:60](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L60) |  |
+| <code>MissingBookCash = 6</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:61](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L61) |  |
+| <code>CashBalanceMismatch = 7</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L62) |  |
+| <code>MissingStatementTransaction = 8</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L63) |  |
+| <code>MissingBookTransaction = 9</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L64) |  |
+| <code>TransactionAmountMismatch = 10</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L65) |  |
+| <code>SecurityIdentifierMismatch = 11</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:66](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L66) |  |
+| <code>TimingMismatch = 12</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:67](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L67) |  |
+| <code>ClassificationMismatch = 13</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L68) |  |
+| <code>DuplicateStatementItem = 14</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L69) |  |
+| <code>ValidationFailure = 15</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L70) |  |
+
+## StatementColumnConfidenceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementColumnConfidenceDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:50](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L50).
+
+Confidence tier for one detected source column in the import preview.
+
+```csharp
+public enum StatementColumnConfidenceDto : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Exact = 0</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L52) |  |
+| <code>Alias = 1</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L53) |  |
+| <code>Fuzzy = 2</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L54) |  |
+| <code>Unmapped = 3</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:55](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L55) |  |
+
+## StatementColumnMappingDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementColumnMappingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L58).
+
+```csharp
+public sealed record StatementColumnMappingDto(string SourceColumn, string? CanonicalField, StatementColumnConfidenceDto Confidence, decimal Score, string Rationale);
+```
+
 ## StatementConnectorDescriptorDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementConnectorDescriptorDto</code>. Kind: `record`.
@@ -631,34 +695,4 @@ Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:147](
 
 ```csharp
 public sealed record StorageAssurancePermissionsDto(bool CanView, bool CanRunQualityCheck, bool CanMigrate, bool CanDelete);
-```
-
-## StorageAssuranceSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageAssuranceSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:81](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L81).
-
-```csharp
-public sealed record StorageAssuranceSnapshotDto(DateTimeOffset GeneratedAt, StorageHealthSummaryDto Health, StorageQualitySummaryDto Quality, CanonicalizationAssuranceDto Canonicalization, StorageCapacitySummaryDto Capacity, IReadOnlyList<StorageTierSummaryDto> Tiers, IReadOnlyList<StorageQualityAlertDto> Alerts, StorageAssurancePermissionsDto Permissions);
-```
-
-## StorageCapacitySummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageCapacitySummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:128](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L128).
-
-```csharp
-public sealed record StorageCapacitySummaryDto(long UsedBytes, long AvailableBytes, double UsedPercent, int? EstimatedDaysRemaining, string Status);
-```
-
-## StorageHealthSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageHealthSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:91](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L91).
-
-```csharp
-public sealed record StorageHealthSummaryDto(string Status, string RootLabel, long TotalBytes, int FileCount, bool Readable, bool Writable, int OrphanCount, int TemporaryFileCount, string? Message);
 ```

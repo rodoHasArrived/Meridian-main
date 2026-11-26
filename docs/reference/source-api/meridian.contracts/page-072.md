@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RenderReportTemplateResponseDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.RenderReportTemplateResponseDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1692](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1692).
+
+```csharp
+public sealed record RenderReportTemplateResponseDto(VersionedReportTemplateIdDto TemplateId, string RenderedContent, IReadOnlyList<string> MissingRequiredParameters, IReadOnlyList<ReportWriterGridRenderDto>? Grids = null, IReadOnlyList<string>? Warnings = null);
+```
+
+## ReopenWorkflow
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReopenWorkflow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:32](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L32).
+
+```csharp
+public sealed record ReopenWorkflow(Guid WorkflowId, string Reason, FundWorkflowCommandMetadata Metadata);
+```
+
+## ReportAccessEvaluationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportAccessEvaluationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1675](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1675).
+
+```csharp
+public sealed record ReportAccessEvaluationDto(bool IsAccessible, string Reason, IReadOnlyList<ReportAccessPrincipalDto> MatchedPrincipals);
+```
+
 ## ReportAccessModeDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportAccessModeDto</code>. Kind: `enum`.
@@ -601,43 +631,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1021]
 
 ```csharp
 public sealed record ReportPackDeliveryFailureRequestDto(string DistributionId, string FailureReason, string? Actor = null, string? DeliveryReference = null, string? Note = null, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## ReportPackDeliveryHistoryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryHistoryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1030](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1030).
-
-```csharp
-public sealed record ReportPackDeliveryHistoryDto(Guid ReportId, IReadOnlyList<ReportPackDeliveryAttemptDto> Attempts);
-```
-
-## ReportPackDeliveryModeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryModeDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:864](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L864).
-
-```csharp
-public enum ReportPackDeliveryModeDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>EmailLink = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:866](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L866) |  |
-| <code>SecurePortal = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:867](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L867) |  |
-| <code>EvidenceVault = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:868](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L868) |  |
-| <code>InternalRoute = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:869](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L869) |  |
-
-## ReportPackDeliveryNotificationDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryNotificationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:891](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L891).
-
-```csharp
-public sealed record ReportPackDeliveryNotificationDto(string NotificationId, string Channel, string Recipient, string RecipientRole, ReportPackDeliveryModeDto DeliveryMode, string Subject, string Body, string Href, bool RequiresToken, DateTimeOffset CreatedAtUtc, DateTimeOffset? ExpiresAtUtc = null, string Status = "Ready");
 ```

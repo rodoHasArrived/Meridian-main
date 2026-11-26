@@ -108,7 +108,7 @@ public sealed partial class PostgresSecurityMasterStore
     /// envelope declares, or clears them when the record has no projection (another class after a
     /// class change, or a row without an envelope).
     /// </summary>
-    private async Task UpsertCustomAssetProfileFieldProjectionAsync(
+    internal async Task UpsertCustomAssetProfileFieldProjectionAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         SecurityProjectionRecord record,
