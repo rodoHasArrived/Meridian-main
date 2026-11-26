@@ -117,6 +117,8 @@ BenchmarkDotNet.Artifacts/
 # systems instead. appsettings.sample.json provides a template.
 
 appsettings.json
+*.runtime-revision.json
+*.runtime-collector.*.lock
 appsettings.*.json
 !appsettings.sample.json
 !config/appsettings.schema.json

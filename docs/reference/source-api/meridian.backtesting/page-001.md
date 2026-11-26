@@ -232,12 +232,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Ticker { get; }</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:43](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L43) |  |
-| <code>public DateTimeOffset EffectiveThroughUtc { get; }</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:48](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L48) | Economic cutoff for action effective dates. This does not claim transaction-time reconstruction of Security Master revisions. |
-| <code>public string ContentVersion { get; }</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:49](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L49) |  |
-| <code>public int BarCount { get; }</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:50](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L50) |  |
-| <code>public HistoricalBar Apply(HistoricalBar bar);</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:53](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L53) | Applies this plan to one bar from the captured history. |
-| <code>public static CorporateActionAdjustmentPlan FromAdjustedBars(string ticker, DateTimeOffset effectiveThroughUtc, IReadOnlyList&lt;HistoricalBar&gt; originalBars, IReadOnlyList&lt;HistoricalBar&gt; adjustedBars);</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:95](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L95) | Creates a plan from an original captured bar window and the corresponding adjusted window. This factory lets external adjustment-service implementations provide a native prepared result without exposing mutable adjustment steps. |
+| <code>public string Ticker { get; }</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:53](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L53) |  |
+| <code>public DateTimeOffset EffectiveThroughUtc { get; }</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:58](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L58) | Economic cutoff for action effective dates. This does not claim transaction-time reconstruction of Security Master revisions. |
+| <code>public string ContentVersion { get; }</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:59](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L59) |  |
+| <code>public int BarCount { get; }</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:60](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L60) |  |
+| <code>public HistoricalBar Apply(HistoricalBar bar);</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:63](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L63) | Applies this plan to one bar from the captured history. |
+| <code>public static CorporateActionAdjustmentPlan FromAdjustedBars(string ticker, DateTimeOffset effectiveThroughUtc, IReadOnlyList&lt;HistoricalBar&gt; originalBars, IReadOnlyList&lt;HistoricalBar&gt; adjustedBars);</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:109](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L109) | Creates a plan from an original captured bar window and the corresponding adjusted window. This factory lets external adjustment-service implementations provide a native prepared result without exposing mutable adjustment steps. |
 
 ## CorporateActionAdjustmentService
 
@@ -260,8 +260,8 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; AdjustAsync(IReadOnlyList&lt;HistoricalBar&gt; bars, string ticker, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:53](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L53) |  |
 | <code>public async Task&lt;HistoricalBar&gt; AdjustBarAsync(HistoricalBar bar, string ticker, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:73](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L73) |  |
 | <code>public async IAsyncEnumerable&lt;HistoricalBar&gt; AdjustAsync(IAsyncEnumerable&lt;HistoricalBar&gt; bars, string ticker, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:83](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L83) |  |
-| <code>public Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:271](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L271) |  |
-| <code>public Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, decimal totalCostBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:280](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L280) |  |
+| <code>public Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:285](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L285) |  |
+| <code>public Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, decimal totalCostBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Backtesting/CorporateActionAdjustmentService.cs:294](../../../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs#L294) |  |
 
 ## BacktestEngine
 
@@ -348,7 +348,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Backtesting.ICorporateActionAdjustmentService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:236](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L236).
+Source: [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:272](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L272).
 
 Service for adjusting historical bar prices and volumes for corporate actions (stock splits and dividends).
 
@@ -360,10 +360,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;CorporateActionAdjustmentPlan&gt; PrepareAsync(IReadOnlyList&lt;HistoricalBar&gt; bars, string ticker, DateTimeOffset effectiveThroughUtc, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:243](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L243) | Prepares one immutable adjustment from complete price history and one captured action-query result at a caller-supplied economic cutoff. Implementations must override this method so actions outside that boundary cannot enter the prepared plan. |
-| <code>Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; AdjustAsync(IReadOnlyList&lt;HistoricalBar&gt; bars, string ticker, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:264](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L264) | Adjusts historical bars for stock splits and dividends using Security Master data. |
-| <code>async Task&lt;HistoricalBar&gt; AdjustBarAsync(HistoricalBar bar, string ticker, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:276](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L276) | Adjusts a single historical bar without requiring the caller to buffer a replay window. |
-| <code>async IAsyncEnumerable&lt;HistoricalBar&gt; AdjustAsync(IAsyncEnumerable&lt;HistoricalBar&gt; bars, string ticker, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:292](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L292) | Adjusts historical bars as a stream, yielding adjusted bars incrementally. |
+| <code>Task&lt;CorporateActionAdjustmentPlan&gt; PrepareAsync(IReadOnlyList&lt;HistoricalBar&gt; bars, string ticker, DateTimeOffset effectiveThroughUtc, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:279](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L279) | Prepares one immutable adjustment from complete price history and one captured action-query result at a caller-supplied economic cutoff. Implementations must override this method so actions outside that boundary cannot enter the prepared plan. |
+| <code>Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; AdjustAsync(IReadOnlyList&lt;HistoricalBar&gt; bars, string ticker, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:300](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L300) | Adjusts historical bars for stock splits and dividends using Security Master data. |
+| <code>async Task&lt;HistoricalBar&gt; AdjustBarAsync(HistoricalBar bar, string ticker, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:312](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L312) | Adjusts a single historical bar without requiring the caller to buffer a replay window. |
+| <code>async IAsyncEnumerable&lt;HistoricalBar&gt; AdjustAsync(IAsyncEnumerable&lt;HistoricalBar&gt; bars, string ticker, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs:328](../../../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs#L328) | Adjusts historical bars as a stream, yielding adjusted bars incrementally. |
 
 ## MeridianNativeBacktestStudioEngine
 

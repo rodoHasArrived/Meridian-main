@@ -1,11 +1,11 @@
 {
-  "total_files": 1289,
+  "total_files": 1291,
   "orphaned_count": 379,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 86,
-  "signal_digest": "sha256:dc65f38a64ed28e1ead22da125bbbc3a310c38af51a4096eb85e2983f020d44a",
+  "signal_digest": "sha256:348d1f10e1700d8729a5be1bfcfc58a3dc8ba0b7cf892d56db440c0c527b5474",
   "orphaned_files": [
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
@@ -2674,6 +2674,13 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/plans/governed-strategy-oms-execution-plan.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/plans/intercompany-entity-controls.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2689,6 +2696,13 @@
     },
     {
       "path": "docs/engineering/plans/review-remediation-2026-11-12.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/security-master-integrity-implementation-plan.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

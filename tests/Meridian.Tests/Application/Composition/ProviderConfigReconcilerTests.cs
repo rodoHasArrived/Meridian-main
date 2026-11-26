@@ -147,6 +147,22 @@ public sealed class ProviderConfigReconcilerTests : IDisposable
     }
 
     [Fact]
+    public async Task RemovingLiveRule_RemainsDeferredOnLaterUnrelatedRevision()
+    {
+        var removed = With(ds => ds with { FailoverRules = [] });
+        var paths = ConfigurationChangeTracker.ChangedPaths(_startup, removed);
+        (await _reconciler.ApplyAsync(_startup, removed, paths, CancellationToken.None))
+            .Should().OnlyContain(entry => entry.Kind == ConfigurationApplyKind.Deferred);
+
+        var next = removed with { DataSources = removed.DataSources! with { AutoRecover = false } };
+        var laterPaths = paths.Concat(ConfigurationChangeTracker.ChangedPaths(removed, next)).ToArray();
+        (await _reconciler.ApplyAsync(removed, next, laterPaths, CancellationToken.None))
+            .Should().Contain(entry => entry.Path == "dataSources.failoverRules"
+                && entry.Kind == ConfigurationApplyKind.Deferred);
+        _failover.GetActiveProviderId(Rule.Id).Should().Be("alpaca");
+    }
+
+    [Fact]
     public async Task ApplyAsync_HonoursCancellation()
     {
         using var cts = new CancellationTokenSource();

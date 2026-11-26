@@ -8,6 +8,7 @@ import type { EntityOperationScope } from "@/types/entity-operations";
 import type { IntercompanyObligationMonitor } from "@/types/intercompany-obligations";
 import { EntityOperationTable, OperationError, OperationField, today, useEntityData } from "./accounting-screen.entity-operations.shared";
 import { LegacyIntercompanyCoverageReview } from "./accounting-screen.entity-legacy-coverage";
+import { IntercompanyAgreementWorkQueue } from "./accounting-screen.intercompany-work-queue";
 
 const agreementLink = (id: string) => `/accounting/configure?agreementId=${encodeURIComponent(id)}#configure-section-agreements`;
 function SafeDrillThrough({ href }: { href?: string | null }) {
@@ -41,6 +42,7 @@ export function EntityObligationMonitor({ scope }: { scope: EntityOperationScope
       <TechnicalDetails label="Guarantee disclosure register"><p className="mb-2 text-sm text-muted-foreground">Disclosure only. Guarantees never satisfy ordinary receivable/payable coverage.</p>{monitor.data.guarantees.length ? <ul className="space-y-3 text-sm">{monitor.data.guarantees.map((agreement) => <li key={agreement.agreementId}><Link className="underline underline-offset-4" to={agreementLink(agreement.agreementId)}>{agreement.code} · {agreement.name}</Link><p>{agreement.currency} · {agreement.effectiveStatus} · applicable version {agreement.applicableRevision?.agreementVersion ?? "None"}</p><p>Beneficiary {agreement.applicableRevision?.terms.terms?.structuredTerms?.guarantee?.beneficiaryReference ?? "Unstructured / unknown"} · limit {agreement.applicableRevision?.terms.terms?.structuredTerms?.guarantee?.limitAmount ?? "Unknown"}</p></li>)}</ul> : <p className="text-sm">No guarantee records in this observation.</p>}</TechnicalDetails>
       <TechnicalDetails label="Observation source versions and fingerprints"><p className="break-all text-sm">{monitor.data.sourceFingerprint}</p><ul className="space-y-1 break-all text-sm">{monitor.data.sourceVersions.map((source, index) => <li key={index}>{source.sourceKind} · {source.sourceId} · version {source.version} · {source.contentHash}</li>)}</ul></TechnicalDetails>
     </> : !request ? <p className="text-sm text-muted-foreground">Choose an as-of date and evaluate to inspect an explicit population.</p> : null}
+    <IntercompanyAgreementWorkQueue scope={scope} asOf={asOf} expiryHorizonDays={/^\d+$/.test(horizon) ? Number(horizon) : Number.NaN} />
     {scope.capabilities.canManageLedger ? <LegacyIntercompanyCoverageReview scope={scope} asOf={asOf} onSaved={() => { setRequest(null); }} /> : null}
   </section>;
 }

@@ -298,8 +298,6 @@ public partial class App : System.Windows.Application
                 WpfServices.NavigationService.Instance.SetServiceProvider(Services);
                 Services.GetRequiredService<WpfServices.ViewModelViewResolver>()
                     .LogMissingViewModels(Services.GetRequiredService<Meridian.Wpf.Shell.Services.IShellPageRegistry>());
-                StartOAuthRefresh();
-
                 mainWindow = Services.GetRequiredService<MainWindow>();
                 Current.MainWindow = mainWindow;
                 ShutdownMode = ShutdownMode.OnMainWindowClose;
@@ -326,6 +324,10 @@ public partial class App : System.Windows.Application
         }
 
         if (mainWindow is null || _startupCancellation.IsCancellationRequested)
+            return;
+
+        await StartOAuthRefreshAsync(_startupCancellation.Token);
+        if (_startupCancellation.IsCancellationRequested)
             return;
 
         // Begin listening for args forwarded from secondary instances as soon as
@@ -1039,23 +1041,28 @@ public partial class App : System.Windows.Application
     /// Starts background OAuth token refresh against the DPAPI-backed credential store.
     /// A failure here must not block the shell, so it is logged and startup continues.
     /// </summary>
-    private static void StartOAuthRefresh()
+    private static async Task StartOAuthRefreshAsync(CancellationToken ct)
     {
         try
         {
             var service = Services.GetRequiredService<Meridian.Ui.Services.OAuthRefreshService>();
+            await Services.GetRequiredService<WpfServices.CredentialService>().InitializeAsync(ct);
+            ct.ThrowIfCancellationRequested();
             service.Start();
             _oauthRefreshService = service;
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
         }
         catch (Exception ex)
         {
             WpfServices.LoggingService.Instance.LogWarning(
                 "OAuth token auto-refresh could not be started",
-                ("Error", ex.Message));
+                ("Exception", ex.GetType().Name));
         }
     }
 
-    private static void StopOAuthRefresh()
+    private static async Task StopOAuthRefreshAsync(CancellationToken ct)
     {
         var service = Interlocked.Exchange(ref _oauthRefreshService, null);
         if (service is null)
@@ -1065,20 +1072,22 @@ public partial class App : System.Windows.Application
 
         try
         {
-            service.Dispose();
+            await service.StopAsync().WaitAsync(ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             WpfServices.LoggingService.Instance.LogWarning(
                 "Failed to stop OAuth token auto-refresh during shutdown",
-                ("Error", ex.Message));
+                ("Exception", ex.GetType().Name));
+        }
+        finally
+        {
+            service.Dispose();
         }
     }
 
     private static async Task SafeOnExitAsync(CancellationToken ct = default)
     {
-        StopOAuthRefresh();
-
         const int ShutdownTimeoutMs = 5000; // 5 second timeout for graceful shutdown
 
         try
@@ -1088,6 +1097,7 @@ public partial class App : System.Windows.Application
             WpfServices.TearOffPanelService.Instance.CloseAll();
 
             using var cts = new CancellationTokenSource(ShutdownTimeoutMs);
+            var oauthShutdown = StopOAuthRefreshAsync(cts.Token);
 
             // Save workspace session before shutting down services
             await SaveWorkspaceSessionAsync(cts.Token).ConfigureAwait(false);
@@ -1095,6 +1105,7 @@ public partial class App : System.Windows.Application
             // Shutdown services in parallel with timeout for better performance
             var shutdownTasks = new[]
             {
+                oauthShutdown,
                 ShutdownServiceAsync(() => WpfServices.BackgroundTaskSchedulerService.Instance.StopAsync(cts.Token), "BackgroundTaskScheduler", cts.Token),
                 ShutdownServiceAsync(() => WpfServices.PendingOperationsQueueService.Instance.ShutdownAsync(), "PendingOperationsQueue", cts.Token),
                 ShutdownServiceAsync(() => WpfServices.OfflineTrackingPersistenceService.Instance.ShutdownAsync(), "OfflineTrackingPersistence", cts.Token),

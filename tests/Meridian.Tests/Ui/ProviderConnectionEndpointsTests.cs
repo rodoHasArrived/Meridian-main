@@ -12,6 +12,7 @@ using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Integrity;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
@@ -1073,6 +1074,15 @@ public sealed class ProviderConnectionEndpointsTests
         probes.Select(uri => uri.AbsolutePath).Should().Equal("/v2/account", "/v2/stocks/AAPL/trades/latest");
         probes.Last().Query.Should().Be("?feed=sip");
         (await response.Content.ReadAsStringAsync()).Should().NotContain("fixture-secret");
+        if (expectedStatus == HttpStatusCode.OK)
+        {
+            var status = await ReadAsync<ConfigurationChangeStatus>(response);
+            status.Revision.Should().NotBeNull();
+            status.Revision!.ContentHash.Should().Be(Sha256Digest.Compute(await File.ReadAllBytesAsync(configStore.ConfigPath)));
+            status.RuntimeState.Should().Be(ConfigurationRuntimeState.Saved);
+            status.CollectorAcknowledgement.Should().BeNull();
+        }
+
         var config = configStore.Load();
         var expectedFeed = expectedStatus == HttpStatusCode.OK ? "sip" : "iex";
         config.Alpaca!.Feed.Should().Be(expectedFeed);

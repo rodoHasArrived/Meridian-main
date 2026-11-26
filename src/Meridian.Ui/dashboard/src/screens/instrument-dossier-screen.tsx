@@ -1,7 +1,7 @@
 import { useEffect, useId, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { AssetDetailPanel } from "@/screens/asset-detail-screen";
-import { FinancialValue } from "@/components/meridian/financial-value";
+import { FinancialValue, type FinancialDataCondition } from "@/components/meridian/financial-value";
 import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
 import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { Badge } from "@/components/ui/badge";
@@ -73,7 +73,7 @@ export function InstrumentDossierScreen({ portfolio, trading, accounting, broker
   });
   const allMarksCurrent = positionState.rows.length > 0 && positionState.rows.every((row) => row.markStatus === "Current"
     && row.price !== null && row.pricePassport?.freshness !== "stale" && row.pricePassport?.freshness !== "blocked");
-  return <div className="min-w-0 space-y-4">
+  return <div className="min-w-0 space-y-4" data-instrument-id={entry.securityId}>
     <header className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
       <div className="min-w-0"><p className="text-xs text-muted-foreground">Instrument dossier</p><h1 className="text-xl font-semibold">{entry.displayName}</h1><p className="break-all font-mono text-xs text-muted-foreground">{entry.classification.primaryIdentifierValue ?? "Identifier not recorded"} · {entry.economicDefinition.currency}</p></div>
       <div className="flex flex-wrap gap-2"><Badge variant="outline">{entry.status}</Badge><Badge variant={allMarksCurrent ? "success" : "warning"}>{allMarksCurrent ? "Marks current" : positionState.rows.length > 0 ? "Marks need review" : "Mark unavailable"}</Badge></div>
@@ -106,10 +106,14 @@ function DossierValue({ value, currency, unit, amountPassport, conditionContextI
   if (typeof value === "string" && (value.trim() === "—" || value.trim() === "")) value = null;
   // Legacy display strings such as "$1,000" have already been formatted upstream.
   if (typeof value === "string" && !/^[+-]?\d+(?:\.\d+)?(?:e[+-]?\d+)?$/i.test(value.trim())) return <span className="font-mono" aria-describedby={conditionContextId}>{value}<span className="block text-xs text-muted-foreground">Source-formatted value</span></span>;
-  const condition = amountPassport?.freshness === "stale" ? "stale" : amountPassport?.freshness === "blocked" ? "review-required"
-    : amountPassport?.origin === "estimated" ? "estimated" : amountPassport && amountPassport.origin !== "unavailable" ? "provisional" : "unavailable";
+  const condition = dossierValueCondition(amountPassport);
   const denomination = amountPassport ? amountPassport.currency ?? undefined : currency;
   return <FinancialValue value={value} currency={denomination} unit={unit ?? (!denomination ? "Unit not recorded" : undefined)} decimals={unit === "units" ? Math.min(28, parseExactDecimal(value)?.scale ?? 0) : undefined} condition={condition} conditionContextId={condition === "unavailable" ? conditionContextId : undefined} amountPassport={amountPassport} freshness={amountPassport?.freshness ?? undefined} reason={amountPassport ? "Inspect the source-owned snapshot and its recorded condition in the Amount passport." : "This legacy source has not supplied an amount-level data condition or exact scoped proof."} />;
+}
+
+function dossierValueCondition(amountPassport?: AmountPassportReference): FinancialDataCondition {
+  return amountPassport?.freshness === "stale" ? "stale" : amountPassport?.freshness === "blocked" ? "review-required"
+    : amountPassport?.origin === "estimated" ? "estimated" : amountPassport && amountPassport.origin !== "unavailable" ? "provisional" : "unavailable";
 }
 
 function InstrumentLedger({ instrumentId }: { instrumentId: string }) {
@@ -186,14 +190,14 @@ function InstrumentLedger({ instrumentId }: { instrumentId: string }) {
 function InstrumentPositionsTable({ rows, sourceKey, source, observedAt }: { rows: InstrumentPositionRow[]; sourceKey: string; source: PositionSource; observedAt?: string | null }) {
   const conditionContextId = useId();
   const missingCondition = rows.some(row => [row.quantityPassport, row.pricePassport, row.valuePassport]
-    .some(reference => !reference || reference.origin === "unavailable"));
+    .some(reference => dossierValueCondition(reference) === "unavailable"));
   const sharedCondition = missingCondition ? conditionContextId : undefined;
   const columns: TableWorkbenchColumn<InstrumentPositionRow>[] = [
     { id: "account", label: "Account", rowHeader: true, render: row => row.account, exportValue: row => row.account },
     { id: "quantity", label: "Quantity", numeric: true, render: row => <DossierValue value={row.quantity} unit="units" amountPassport={row.quantityPassport} conditionContextId={sharedCondition} />, exportValue: row => row.quantity },
     { id: "mark", label: "Mark", numeric: true, render: row => <DossierValue value={row.price} currency={row.currency} amountPassport={row.pricePassport} conditionContextId={sharedCondition} />, exportValue: row => row.price },
     { id: "value", label: "Market value / exposure", numeric: true, render: row => <DossierValue value={row.value} currency={row.currency} amountPassport={row.valuePassport} conditionContextId={sharedCondition} />, exportValue: row => row.value },
-    { id: "condition", label: "Mark condition", wrap: true, render: row => <><span>{row.markStatus}</span><details className="mt-1 text-xs text-muted-foreground"><summary className="cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">Mark evidence</summary><p className="mt-1">{row.markReason}</p></details></>, exportValue: row => `${row.markStatus}: ${row.markReason}` }
+    { id: "condition", label: "Mark condition", wrap: true, render: row => <><span>{row.markStatus}</span><details className="mt-1 text-xs text-muted-foreground"><summary className="cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">Mark evidence</summary><p className="mt-1">{row.markReason}</p><p className="mt-1 break-all font-mono">Policy version: {row.markPolicyVersion || "Not recorded"}</p></details></>, exportValue: row => `${row.markStatus}: ${row.markReason}; policy ${row.markPolicyVersion || "not recorded"}` }
   ];
   return <div {...positionSourceAttributes(source)} className="space-y-3">
     <p className="text-sm text-muted-foreground">Source: {source.label}{observedAt ? <> · Snapshot observed <time dateTime={observedAt}>{observedAt}</time></> : " · Snapshot observation time not supplied"}</p>

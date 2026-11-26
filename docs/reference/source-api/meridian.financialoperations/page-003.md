@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyJournalFamily
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyJournalFamily</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:7](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L7).
+
+Indexes actual same-book correction lineage; shared transaction labels never merge unrelated settlements.
+
+```csharp
+public sealed class IntercompanyJournalFamily
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyJournalFamily(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, DateOnly asOf);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:12](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L12) |  |
+| <code>public bool Contains(Guid id) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:20](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L20) |  |
+| <code>public IReadOnlyList&lt;LedgerJournalEntryRecord&gt; Resolve(Guid anchor);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:22](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L22) |  |
+| <code>public static DateOnly EffectiveDate(LedgerJournalEntryRecord record) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:50](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L50) |  |
+
 ## IntercompanyLedgerPostingAuthority
 
 Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyLedgerPostingAuthority</code>. Kind: `class`.
@@ -951,14 +972,4 @@ Source: [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextTransacti
 
 ```csharp
 public sealed record LedgerTextPosting(int LineNumber, LedgerAccount Account, decimal Amount, bool WasInferred);
-```
-
-## LedgerTextReportOptions
-
-Qualified name: <code>Meridian.FinancialOperations.LedgerTextJournal.LedgerTextReportOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextReportOptions.cs:3](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextReportOptions.cs#L3).
-
-```csharp
-public sealed record LedgerTextReportOptions(string Report, string? AccountFilter);
 ```

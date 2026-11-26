@@ -116,7 +116,7 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
         var startDate = from?.ToString("yyyy-MM-dd") ?? DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-2)).ToString("yyyy-MM-dd");
         var endDate = to?.ToString("yyyy-MM-dd") ?? DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd");
 
-        // Use aggregates/range endpoint with adjusted=true for split/dividend adjusted data
+        // Polygon aggregates adjust for splits only; these are not raw or dividend-adjusted prices.
         var url = $"{BaseUrl}/v2/aggs/ticker/{normalizedSymbol}/range/1/day/{startDate}/{endDate}?adjusted=true&sort=asc&limit=50000";
 
         Log.Information("Requesting Polygon history for {Symbol} ({StartDate} to {EndDate})", symbol, startDate, endDate);
@@ -170,7 +170,9 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
                     AdjustedClose: result.Close,
                     AdjustedVolume: (long)(result.Volume ?? 0),
                     SplitFactor: null,
-                    DividendAmount: null
+                    DividendAmount: null,
+                    PriceBasis: HistoricalPriceBasis.SplitAdjusted,
+                    AdjustedPriceBasis: HistoricalPriceBasis.SplitAdjusted
                 ));
             }
 
@@ -254,7 +256,9 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
                     AdjustedHigh: result.High,
                     AdjustedLow: result.Low,
                     AdjustedClose: result.Close,
-                    AdjustedVolume: (long)(result.Volume ?? 0)
+                    AdjustedVolume: (long)(result.Volume ?? 0),
+                    PriceBasis: HistoricalPriceBasis.SplitAdjusted,
+                    AdjustedPriceBasis: HistoricalPriceBasis.SplitAdjusted
                 ));
             }
 
@@ -382,6 +386,12 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
             var page = DeserializeResponse<PolygonResponse<T>>(json, symbol)
                 ?? throw new DataProviderException(
                     $"Polygon returned an empty {dataType} response for {symbol}.", provider: Name, symbol: symbol);
+            if (typeof(T) == typeof(PolygonAggregate) && page.Adjusted == false)
+            {
+                throw new DataProviderException(
+                    $"Polygon returned unadjusted {dataType} for an adjusted request for {symbol}.",
+                    provider: Name, symbol: symbol);
+            }
             if ((!string.IsNullOrWhiteSpace(page.Status)
                     && !string.Equals(page.Status, "OK", StringComparison.OrdinalIgnoreCase)
                     && !string.Equals(page.Status, "DELAYED", StringComparison.OrdinalIgnoreCase))
@@ -442,6 +452,9 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 
     private sealed class PolygonResponse<T>
     {
+        [JsonPropertyName("adjusted")]
+        public bool? Adjusted { get; set; }
+
         [JsonPropertyName("results")]
         public List<T>? Results { get; set; }
 

@@ -44,6 +44,7 @@ import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
 import { useAccountingPostedLedgerViewModel, type PostedLedgerJournalLine } from "@/screens/accounting-screen.posted-ledger.view-model";
 import { AccountingPeriodComparison } from "@/screens/accounting-period-comparison";
 import { usePostedLedgerRouteScope } from "@/screens/posted-ledger-route-scope";
+import { PostedJournalCsvButton } from "@/components/accounting/PostedJournalCsvButton";
 import { ConsolidationPanel } from "@/screens/accounting-screen.consolidation-panel";
 import { EntityOperationsPanel } from "@/screens/accounting-screen.entity-operations";
 import { FactorPaydownPanel } from "@/screens/accounting-screen.factor-paydown-panel";
@@ -170,6 +171,10 @@ export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenP
           {runChoices.map((choice, index) => <option key={choice.id} value={choice.id}>{choice.label}{(runLabelCounts.get(choice.label) ?? 0) > 1 ? ` · Retained run ${index + 1}` : ""}</option>)}
         </Select>
       </FormRow>
+      <TechnicalDetails label="Report run identifiers">
+        <dl className="grid gap-2 text-xs">{runChoices.map((choice, index) => <div key={choice.id}><dt>{choice.label}{(runLabelCounts.get(choice.label) ?? 0) > 1 ? ` · Retained run ${index + 1}` : ""}</dt><dd className="break-all font-mono">{choice.id || "Not recorded"}</dd></div>)}</dl>
+        {requestedRunId && !run ? <p className="break-all font-mono text-xs">{requestedRunId}</p> : null}
+      </TechnicalDetails>
       {requestedRunId && !run ? <StatusBanner tone="warning" title="Requested run unavailable" detail={<Link className="underline" to={workstationRouteWithQuery("reportingRunDetail", { runId: requestedRunId })}>Open the exact retained run outside the loaded register</Link>} /> : null}
       {requestedRunId && !run ? <TechnicalDetails label="Requested run identifier"><p className="break-all font-mono text-sm">{requestedRunId}</p></TechnicalDetails> : null}
       <OperationalTrustSummary
@@ -714,6 +719,7 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
                   : `${pluralizeCount(filteredRows.length, "posted entry", { plural: "posted entries" })}${postedLedger.selectedPeriodLabel ? ` for ${postedLedger.selectedPeriodLabel}` : ""}.${filteredRows.length > 0 ? " Select a posting amount to open its proof." : ""}`}
             </p>
             <Badge variant={filteredRows.length > 0 ? "success" : "outline"}>{filteredRows.length}</Badge>
+            <PostedJournalCsvButton periodId={postedLedger.selectedPeriod?.periodId ?? null} bookId={postedLedger.selectedBook?.ledgerBookId ?? null} />
             <SectionDescription descriptionKey="accounting:ledger-explorer" label="About Ledger Explorer">
               Search journal activity by account, amount, journal ID, source, security, or entity.
             </SectionDescription>

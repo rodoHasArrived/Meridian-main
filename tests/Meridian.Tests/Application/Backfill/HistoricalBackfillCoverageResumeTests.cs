@@ -5,6 +5,7 @@ using Meridian.Application.Backfill;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Backfill;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Operations;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage;
@@ -28,6 +29,57 @@ namespace Meridian.Tests.Application.Backfill;
 /// </summary>
 public sealed class HistoricalBackfillCoverageResumeTests : IDisposable
 {
+    [Fact]
+    public async Task Repair_receipt_pins_quality_flags_before_row_stamp_and_detects_metadata_tampering()
+    {
+        var from = new DateOnly(2024, 3, 4);
+        var to = from.AddDays(2);
+        var store = new BackfillStatusStore(_dataRoot);
+        var provider = new WeekdayBarProvider("alpha");
+        var assessmentTime = DateTimeOffset.UtcNow;
+        var service = new HistoricalBackfillService([provider], checkpointStore: store)
+        {
+            ResolveSessionsAsync = WeekdaysOnlyAsync,
+            CaptureInputEvidence = _ => new(QualityScore: .4, QualityThreshold: .85,
+                QualityAssessedAt: assessmentTime, AssessmentFrom: from, AssessmentTo: to)
+        };
+        var options = new StorageOptions { RootPath = _dataRoot };
+        Meridian.Contracts.Backfill.BackfillResult result;
+        await using (var pipeline = new EventPipeline(new JsonlStorageSink(options, new JsonlStoragePolicy(options)),
+            capacity: 1000, enablePeriodicFlush: false))
+        {
+            result = await service.RunAsync(new AppBackfillRequest("alpha", ["SPY"], from, to)
+            { GapRepairReference = "retained-gap-operation" }, pipeline);
+        }
+        var receipt = result.BatchReceipts.Should().ContainSingle().Which;
+        var retained = (await store.Batches.ReadAsync(receipt.RevisionId))!;
+
+        result.Success.Should().BeTrue();
+        receipt.InputEvidence!.Repaired.Should().BeTrue();
+        receipt.InputEvidence.GapFilled.Should().BeTrue();
+        receipt.InputEvidence.RepairReceiptId.Should().Be("retained-gap-operation");
+        receipt.InputEvidence.QualityScore.Should().Be(.4);
+        receipt.InputEvidence.QualityThreshold.Should().Be(.85);
+        receipt.InputEvidence.QualityAssessedAt.Should().Be(assessmentTime);
+        var replayedRows = new List<MarketEvent>();
+        await foreach (var row in new JsonlReplayer(_dataRoot).ReadEventsAsync())
+            replayedRows.Add(row);
+        replayedRows.Should().HaveCount(3);
+        replayedRows.Should().OnlyContain(row => row.BackfillRevisionId == receipt.RevisionId);
+        foreach (var changedEvidence in new[]
+        {
+            retained.Receipt.InputEvidence! with { Repaired = false },
+            retained.Receipt.InputEvidence! with { GapFilled = false },
+            retained.Receipt.InputEvidence! with { RepairReceiptId = "different-operation" },
+            retained.Receipt.InputEvidence! with { QualityScore = .99 }
+        })
+        {
+            var changed = retained with { Receipt = retained.Receipt with { InputEvidence = changedEvidence } };
+            var validate = () => changed.Validate();
+            validate.Should().Throw<InvalidDataException>();
+        }
+    }
+
     private readonly string _dataRoot = Path.Combine(
         Path.GetTempPath(), "meridian-backfill-coverage", Guid.NewGuid().ToString("N"));
 

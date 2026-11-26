@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Strategies.Interfaces;
@@ -13,6 +14,8 @@ namespace Meridian.Tests.Strategies;
 
 public sealed class StrategyRunContinuityServiceTests
 {
+    private static readonly Guid AaplSecurityId = new("33333333-3333-3333-3333-333333333333");
+
     [Fact]
     public async Task UnallocatedFinancing_IsAContinuityReviewWarningEvenWithRecordedCashFlows()
     {
@@ -360,7 +363,13 @@ public sealed class StrategyRunContinuityServiceTests
             {
                 [accountSnapshot.AccountId] = accountSnapshot
             },
-            DayCashFlows: []);
+            DayCashFlows: [])
+        {
+            AccountingPositions =
+            [
+                new("AAPL", accountSnapshot.AccountId, AaplSecurityId, false, 10m, 400m, "Shares", 1m, "USD")
+            ]
+        };
 
         var cashFlows = includeCashFlows
             ? new CashFlowEntry[]
@@ -523,37 +532,18 @@ public sealed class StrategyRunContinuityServiceTests
 
     private static global::Meridian.Ledger.Ledger CreateLedger(DateTimeOffset startedAt, DateTimeOffset completedAt)
     {
-        var ledger = new global::Meridian.Ledger.Ledger();
-        PostBalancedEntry(ledger, startedAt, "Initial capital",
+        var ledger = new global::Meridian.Ledger.Ledger(LedgerPolicy.Trading());
+        var accountId = BacktestDefaults.DefaultBrokerageAccountId;
+        ledger.PostLines(startedAt, "Initial capital",
         [
-            (LedgerAccounts.Cash, 1_000m, 0m),
-            (LedgerAccounts.CapitalAccount, 0m, 1_000m)
+            (LedgerAccounts.CashFor(accountId), 1_000m, 0m),
+            (LedgerAccounts.CapitalAccountFor(accountId), 0m, 1_000m)
         ]);
-        PostBalancedEntry(ledger, completedAt, "Buy AAPL",
-        [
-            (LedgerAccounts.Securities("AAPL"), 400m, 0m),
-            (LedgerAccounts.Cash, 0m, 400m)
-        ]);
+        var posting = new SecurityTradePosting(SecurityTradePostingKind.OpenLong, 10m, 400m);
+        var metadata = SecurityTradePositionEvidence.WithPostings(
+            new(ActivityType: "execution.trade-fill", Symbol: "AAPL", SecurityId: AaplSecurityId, FinancialAccountId: accountId),
+            [posting], SecurityLotUnitKind.Shares, 1m);
+        ledger.PostLines(completedAt, "Buy AAPL", SecurityTradePostingProjector.Project(posting, "AAPL", accountId), metadata);
         return ledger;
-    }
-
-    private static void PostBalancedEntry(
-        global::Meridian.Ledger.Ledger ledger,
-        DateTimeOffset timestamp,
-        string description,
-        IReadOnlyList<(LedgerAccount Account, decimal Debit, decimal Credit)> lines)
-    {
-        var journalId = Guid.NewGuid();
-        var ledgerLines = lines
-            .Select(line => new LedgerEntry(
-                Guid.NewGuid(),
-                journalId,
-                timestamp,
-                line.Account,
-                line.Debit,
-                line.Credit,
-                description))
-            .ToArray();
-        ledger.Post(new JournalEntry(journalId, timestamp, description, ledgerLines));
     }
 }

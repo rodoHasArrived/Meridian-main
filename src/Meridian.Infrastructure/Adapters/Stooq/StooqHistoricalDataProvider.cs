@@ -128,7 +128,9 @@ public sealed class StooqHistoricalDataProvider : BaseHistoricalDataProvider
                 Close: close,
                 Volume: volume,
                 Source: Name,
-                SequenceNumber: date.DayNumber));
+                SequenceNumber: date.DayNumber,
+                // The CSV response does not establish an adjustment basis.
+                PriceBasis: HistoricalPriceBasis.Unknown));
         }
 
         return bars;
