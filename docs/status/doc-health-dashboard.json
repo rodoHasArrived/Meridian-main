@@ -1,11 +1,11 @@
 {
-  "total_files": 1293,
+  "total_files": 1292,
   "orphaned_count": 379,
   "no_heading_count": 231,
   "stale_count": 0,
-  "todo_count": 303,
+  "todo_count": 297,
   "health_score": 86,
-  "signal_digest": "sha256:7d3fb2ddc0a5debb95c79bdf9cb2e4a41ac2c94bb6da99e9e9a795d3aa0d5278",
+  "signal_digest": "sha256:ade44bd8645fcb1d8b4bc91b73a86bbb349c014139f9ccb9593283fd622113a9",
   "orphaned_files": [
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
@@ -3216,13 +3216,6 @@
       "path": "docs/generated/README.md",
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/generated/repository-structure.md",
-      "has_heading": true,
-      "todo_count": 6,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
