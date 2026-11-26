@@ -124,15 +124,6 @@
       "activeWorkspace": "trading",
       "commandCount": 7
     },
-    "/api/auth/me": {
-      "username": "screenshot-operator",
-      "role": "Admin",
-      "roleProfileName": null,
-      "companyId": null,
-      "passwordResetRequired": false,
-      "permissions": "None",
-      "permissionNames": []
-    },
     "/api/status": {
       "systemStatus": "Degraded",
       "providersOnline": 3,
