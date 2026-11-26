@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RetainedDataQueryException
+
+Qualified name: <code>Meridian.Storage.Query.RetainedDataQueryException</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:20](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L20).
+
+```csharp
+public sealed class RetainedDataQueryException(string code, string message) : InvalidOperationException(message)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Code { get; } = code;</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:22](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L22) |  |
+
 ## RetainedDataQueryManifest
 
 Qualified name: <code>Meridian.Storage.Query.RetainedDataQueryManifest</code>. Kind: `record`.
@@ -792,7 +808,7 @@ public sealed record CommodityProjectionRow(Guid SecurityId, string DisplayName,
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.ConnectionLease</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:213](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L213).
+Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:251](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L251).
 
 Holds a mutation connection and optional transaction, releasing its gate and any owned connection on disposal.
 
@@ -804,9 +820,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public NpgsqlConnection Connection { get; } = connection;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:216](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L216) |  |
-| <code>public NpgsqlTransaction? Transaction { get; } = transaction;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:217](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L217) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:218](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L218) |  |
+| <code>public NpgsqlConnection Connection { get; } = connection;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:254](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L254) |  |
+| <code>public NpgsqlTransaction? Transaction { get; } = transaction;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:255](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L255) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:256](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L256) |  |
 
 ## CorporateActionCalendarReadSet
 
@@ -904,14 +920,4 @@ Source: [src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionS
 
 ```csharp
 public sealed record CustomAssetProfileFieldProjectionRow(Guid SecurityId, string CustomProfileId, int ProfileVersion, string FieldKey, string ValueKind, string? TextValue, decimal? NumericValue, bool? BooleanValue, string RawValueJson, long Version);
-```
-
-## DepositProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.DepositProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs#L15).
-
-```csharp
-public sealed record DepositProjectionRow(Guid SecurityId, string DisplayName, string Currency, string DepositType, string InstitutionName, DateOnly? Maturity, decimal? InterestRate, string? DayCount, bool IsCallable, string PrimaryIdentifierValue, long Version);
 ```
