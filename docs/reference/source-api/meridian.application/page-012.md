@@ -6,57 +6,11 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ServiceRegistryExtensions
-
-Qualified name: <code>Meridian.Application.Services.ServiceRegistryExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/ServiceRegistry.cs:199](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L199).
-
-Extension methods for service registration with common patterns.
-
-```csharp
-public static class ServiceRegistryExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ServiceRegistry RegisterSetupServices(this ServiceRegistry registry, ConfigurationWizard? wizard = null, AutoConfigurationService? autoConfig = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:204](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L204) | Registers setup services (configuration, wizard, auto-config). |
-| <code>public static ServiceRegistry RegisterValidationServices(this ServiceRegistry registry, CredentialValidationService? credentialValidator = null, ConnectivityTestService? connectivityTest = null, PreflightChecker? preflightChecker = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:221](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L221) | Registers validation services (credentials, connectivity, preflight). |
-| <code>public static ServiceRegistry RegisterDiagnosticServices(this ServiceRegistry registry, DiagnosticBundleService? diagnosticBundle = null, ErrorTracker? errorTracker = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:242](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L242) | Registers diagnostic services (error tracking, diagnostics bundle). |
-| <code>public static ServiceRegistry RegisterLifecycleServices(this ServiceRegistry registry, GracefulShutdownService? shutdownService = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:259](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L259) | Registers lifecycle services (shutdown, startup summary). |
-| <code>public static ServiceRegistry RegisterDataServices(this ServiceRegistry registry, HistoricalDataQueryService? historicalQuery = null, SampleDataGenerator? sampleGenerator = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:272](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L272) | Registers data services (historical query, sample generator). |
-| <code>public static ServiceRegistry RegisterCalendarServices(this ServiceRegistry registry, TradingCalendar? tradingCalendar = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:289](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L289) | Registers calendar services (trading calendar). |
-| <code>public static ServiceRegistry RegisterReportingServices(this ServiceRegistry registry, ProgressDisplayService? progressDisplay = null, ApiDocumentationService? apiDocs = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:302](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L302) | Registers reporting services (progress, webhooks, documentation). |
-
-## StoredProviderCredentialResolver
-
-Qualified name: <code>Meridian.Application.Services.StoredProviderCredentialResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:14](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L14).
-
-Resolves catalog-managed provider credentials exclusively through the credential store. Unmanaged provider types retain their legacy resolver; managed records never mix sources.
-
-```csharp
-public sealed class StoredProviderCredentialResolver : IProviderCredentialResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:23](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L23) |  |
-| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, UI.ConfigStore configStore, ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:32](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L32) | Resolves host defaults from the current retained configuration at provider construction. |
-| <code>public StoredProviderCredentialResolver(IScopedProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, ProviderCredentialScope scope) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:45](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L45) | Binds runtime credential resolution to an already authorized connection scope. The caller must derive this scope from trusted ownership context. Missing scoped records never fall back to provider-wide credentials, configuration or environment. |
-| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:54](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L54) |  |
-| <code>public async ValueTask&lt;IPreparedProviderCredentials&gt; PrepareAsync(IReadOnlyCollection&lt;Type&gt;? providerTypes = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:113](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L113) |  |
-
 ## SymbolPreset
 
 Qualified name: <code>Meridian.Application.Services.SymbolPreset</code>. Kind: `enum`.
 
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:979](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L979).
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:977](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L977).
 
 Preset symbol lists.
 
@@ -68,11 +22,11 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Custom</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:981](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L981) |  |
-| <code>USMajorIndices</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:982](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L982) |  |
-| <code>TechGiants</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:983](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L983) |  |
-| <code>SP500Top20</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:984](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L984) |  |
-| <code>Crypto</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:985](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L985) |  |
+| <code>Custom</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:979](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L979) |  |
+| <code>USMajorIndices</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:980](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L980) |  |
+| <code>TechGiants</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:981](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L981) |  |
+| <code>SP500Top20</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:982](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L982) |  |
+| <code>Crypto</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:983](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L983) |  |
 
 ## UseCase
 
@@ -92,10 +46,9 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Development</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:967](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L967) |  |
 | <code>Strategy</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:968](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L968) |  |
-| <code>[Obsolete(&quot;Use Strategy. Research is retained only as a compatibility alias.&quot;)] Research = Strategy</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:969](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L969) |  |
-| <code>RealTimeTrading</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:971](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L971) |  |
-| <code>BackfillOnly</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:972](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L972) |  |
-| <code>Production</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:973](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L973) |  |
+| <code>RealTimeTrading</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:969](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L969) |  |
+| <code>BackfillOnly</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:970](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L970) |  |
+| <code>Production</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:971](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L971) |  |
 
 ## ValidationCheck
 
@@ -1063,3 +1016,52 @@ Declared public members:
 | --- | --- | --- |
 | <code>WizardStepId StepId { get; }</code> | [src/Meridian.Application/Wizard/Core/IWizardStep.cs:12](../../../../src/Meridian.Application/Wizard/Core/IWizardStep.cs#L12) | The unique identifier of this step in the workflow graph. |
 | <code>Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Core/IWizardStep.cs:19](../../../../src/Meridian.Application/Wizard/Core/IWizardStep.cs#L19) | Executes the step. Implementations should not throw for user-facing cancellations — return WizardStepResult.Cancelled instead. |
+
+## WizardContext
+
+Qualified name: <code>Meridian.Application.Wizard.Core.WizardContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Wizard/Core/WizardContext.cs:11](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L11).
+
+Mutable bag of state threaded through all wizard steps. Each step reads from it, updates it, and the coordinator persists it across calls.
+
+```csharp
+public sealed class WizardContext
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;AutoConfigurationService.DetectedProvider&gt; DetectedProviders { get; set; } = Array.Empty&lt;AutoConfigurationService.DetectedProvider&gt;();</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:16](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L16) | Providers detected from environment variables. |
+| <code>public UseCase? SelectedUseCase { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:22](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L22) | Use-case chosen by the user in SelectUseCaseStep. |
+| <code>public DataSourceSelection? DataSource { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:25](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L25) | Data-source selection assembled by ConfigureDataSourceStep. |
+| <code>public SymbolConfig[]? Symbols { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:28](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L28) | Symbol list assembled by ConfigureSymbolsStep. |
+| <code>public StorageConfig? Storage { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:31](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L31) | Storage config assembled by ConfigureStorageStep. |
+| <code>public BackfillConfig? Backfill { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:34](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L34) | Backfill config assembled by ConfigureBackfillStep. |
+| <code>public AppConfig? FinalConfig { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:39](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L39) | The assembled application config, available after ReviewConfigurationStep. |
+| <code>public string? SavedConfigPath { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:42](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L42) | File path where configuration was saved by SaveConfigurationStep. |
+| <code>public Dictionary&lt;string, object&gt; Metadata { get; } = new (StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:50](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L50) | Open bag for steps to exchange information that does not fit a typed property. Keys are step-specific strings; values must be serialisable. |
+| <code>public bool IsCancelled { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:55](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L55) | When true the coordinator stops execution immediately. |
+| <code>public T? GetMeta&lt;T&gt;(string key) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:60](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L60) | Gets a typed metadata value set by a previous step, or the default if not present. |
+| <code>public void SetMeta&lt;T&gt;(string key, T value) where T : notnull =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:64](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L64) | Stores a typed metadata value. |
+
+## WizardCoordinator
+
+Qualified name: <code>Meridian.Application.Wizard.Core.WizardCoordinator</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:12](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L12).
+
+Orchestrates execution of a wizard step graph. Steps are registered via AddStep; transitions are declared via AddTransition. Call RunAsync to execute the graph from the entry step.
+
+```csharp
+public sealed class WizardCoordinator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WizardCoordinator AddStep(IWizardStep step);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:19](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L19) | Registers a step implementation. |
+| <code>public WizardCoordinator AddTransition(WizardStepId from, WizardStepId to, Func&lt;WizardContext, bool&gt;? condition = null);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:26](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L26) | Adds a directed transition between two steps. |
+| <code>public async Task&lt;WizardContext&gt; RunAsync(WizardContext context, WizardStepId entryStep, CancellationToken ct = default);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:37](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L37) | Runs the step graph starting at entryStep and returns the final WizardContext after all steps have been executed. |

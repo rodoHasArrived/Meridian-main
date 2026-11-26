@@ -103,7 +103,6 @@ Stable lookup details for storage and streaming should live in reference, genera
 | [Provider Integration Snapshot](provider-integration-status.md) | Retains the 2026-05-20 board and evidence dates. Its registration gaps and sprint queue are historical; use the generated adapter matrix for current implementation. |
 | [UFL Conformance Matrix](ufl-conformance-matrix.md) | Retains the 2026-05-29 maturity assessment; revalidate source/tests before making a current coverage claim. |
 | [Design Review Memo](design-review-memo.md) | Design history; follow its current-source pointers for planning. |
-| [Research Briefing](research-briefing-workflow.md) and [Governance Report Packs](governance-report-packs.md) | Redirects to the current Strategy and Accounting contracts; retained identifiers are compatibility surfaces. |
 
 ## Migration Rules
 

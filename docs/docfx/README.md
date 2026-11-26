@@ -50,7 +50,6 @@ The root `docfx.json` configuration pulls from:
 
 - **API metadata**: All public `.csproj` files under `src/` — generates API reference from XML doc comments
 - **Conceptual docs**: Markdown files under `docs/` — architecture, guides, operations, etc.
-- **Local archives**: Markdown under `archive/docs/`, preserving historical links from current indexes
 - **Table of contents**: `docs/toc.yml` — top-level navigation structure
 - **Registry downloads**: `docs/roadmap/data/*.yml` and `docs/source/data/*.yml` are copied as resources;
   they remain raw YAML, while the linked generated Markdown views provide readable summaries

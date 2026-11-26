@@ -37,7 +37,8 @@ installed launcher is a thin shim. The supervisor owns dynamic loopback-port sel
 dedicated database and host process identities, data-root separation, readiness polling, shutdown
 deadlines, session receipts, and browser launch. The host owns its cooperative drain and flush
 sequence. Direct host commands remain developer/operator surfaces, not end-user installation
-instructions.
+instructions. The `data-root` readiness check fails when the data root is missing and reports
+Degraded, without leaving service, when its volume has less than 2 GiB free.
 
 ## Purpose
 

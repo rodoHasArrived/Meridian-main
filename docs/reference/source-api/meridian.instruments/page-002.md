@@ -6,26 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## IEquityReferenceService
-
-Qualified name: <code>Meridian.Instruments.Equity.IEquityReferenceService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Instruments/Equity/IEquityReferenceService.cs:8](../../../../src/Meridian.Instruments/Equity/IEquityReferenceService.cs#L8).
-
-Queries equity reference data by security identifier and supported asset-specific filters.
-
-```csharp
-public interface IEquityReferenceService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;EquityReferenceDto?&gt; GetReferenceAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Instruments/Equity/IEquityReferenceService.cs:10](../../../../src/Meridian.Instruments/Equity/IEquityReferenceService.cs#L10) |  |
-| <code>Task&lt;IReadOnlyList&lt;EquityReferenceDto&gt;&gt; GetByExchangeAsync(string exchangeCode, CancellationToken ct = default);</code> | [src/Meridian.Instruments/Equity/IEquityReferenceService.cs:11](../../../../src/Meridian.Instruments/Equity/IEquityReferenceService.cs#L11) |  |
-| <code>Task&lt;IReadOnlyList&lt;EquityReferenceDto&gt;&gt; GetByIssuerAsync(string issuerName, CancellationToken ct = default);</code> | [src/Meridian.Instruments/Equity/IEquityReferenceService.cs:12](../../../../src/Meridian.Instruments/Equity/IEquityReferenceService.cs#L12) |  |
-
 ## NullEquityReferenceService
 
 Qualified name: <code>Meridian.Instruments.Equity.NullEquityReferenceService</code>. Kind: `class`.

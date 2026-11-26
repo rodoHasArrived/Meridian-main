@@ -106,7 +106,7 @@ public sealed partial class FileProviderCredentialStore
     /// <summary>
     /// True while a provider-wide OAuth token for <paramref name="providerName"/> has been transferred to an owned
     /// connection and not rolled back: the owned scope holds the token, and no provider-wide token for the provider
-    /// may be saved or imported beside it, whatever runtime still caches the transferred value.
+    /// may be saved beside it, whatever runtime still caches the transferred value.
     /// </summary>
     private static bool IsOAuthTokenTransferred(ProviderCredentialVault vault, string providerName)
     {
