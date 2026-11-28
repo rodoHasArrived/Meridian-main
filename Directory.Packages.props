@@ -169,7 +169,7 @@
   </ItemGroup>
 
   <ItemGroup Label="FSharp Event Sourcing">
-    <PackageVersion Include="Sharpino" Version="4.9.4" />
+    <PackageVersion Include="Sharpino" Version="7.0.5" />
   </ItemGroup>
 
   <ItemGroup Label="WinUI / Desktop">
@@ -233,11 +233,11 @@
     <!-- Microsoft.IdentityModel.JsonWebTokens / System.IdentityModel.Tokens.Jwt:
          Fix GHSA-59j7-ghrg-fj52 (Moderate) - DoS from transitive Microsoft.Data.SqlClient 4.0.5.
          Fixed in 6.34.0+ on the 6.x line. Pin the related IdentityModel family together. -->
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.35.0" />
-    <PackageVersion Include="Microsoft.IdentityModel.Logging" Version="6.35.0" />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols" Version="6.35.0" />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.35.0" />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="6.35.0" />
-    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="6.35.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.7.1" />
+    <PackageVersion Include="Microsoft.IdentityModel.Logging" Version="7.7.1" />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols" Version="7.7.1" />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="7.7.1" />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="7.7.1" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="7.7.1" />
   </ItemGroup>
 </Project>
